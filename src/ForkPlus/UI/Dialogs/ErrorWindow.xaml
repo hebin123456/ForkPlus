@@ -1,0 +1,17 @@
+<dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" Height="330" Width="740" MinHeight="220" MinWidth="420" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ErrorWindow" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Border Grid.Row="1" Grid.Column="1" BorderThickness="1" BorderBrush="{DynamicResource AccentSecondaryBrush}" Margin="0,10,0,10">
+      <editor:CodeEditor Padding="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="Consolas" FontSize="13" VerticalScrollBarVisibility="Auto" IsReadOnly="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="MessageEditor" />
+    </Border>
+    <Button Grid.Row="2" Grid.Column="1" Margin="0,14,4,4" HorizontalAlignment="Left" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="FirstButton_Click" x:Name="FirstButton" />
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

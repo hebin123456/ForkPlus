@@ -1,0 +1,105 @@
+<UserControl xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SidebarUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+      <Style x:Key="SidebarFilterButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+      <Style x:Key="SidebarHideButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+      <Style x:Key="SidebarPinButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+      <Style x:Key="SidebarTruncateHyperlink" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource GrayUnderlineHyperlinkStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+      <Style x:Key="SidebarTagTitleTextBlock" TargetType="{x:Type TextBlock}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid Background="{DynamicResource Sidebar.Static.Background}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="0">
+      <DockPanel Height="22" Margin="20,2,2,2">
+        <controls:DropDownButton DockPanel.Dock="Right" Margin="0" Padding="0" Height="16" Width="16" BorderThickness="0" Background="#00FFFFFF" ToolTip="Repository Settings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RepositorySettingsDropdownButton">
+          <controls:DropDownButton.ContextMenu>
+            <ContextMenu MaxWidth="500" Opened="RepositorySettingsDropdownButtonContextMenu_Opened" />
+          </controls:DropDownButton.ContextMenu>
+          <Image Source="{DynamicResource SettingsIcon}" />
+        </controls:DropDownButton>
+        <TextBlock DockPanel.Dock="Left" Margin="0" FontWeight="Medium" VerticalAlignment="Center" FontSize="13.5">
+          <Hyperlink NavigateUri=" " Style="{DynamicResource RepositoryTitleHyperlinkStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" RequestNavigate="RepositoryParentNameTextBlock_RequestNavigate">
+            <TextBlock HorizontalAlignment="Center" Margin="0" x:Name="RepositoryParentNameTextBlock" />
+          </Hyperlink>
+        </TextBlock>
+        <AdornerDecorator>
+          <controls:EditableTextBlock Margin="0" FontWeight="Medium" FontSize="13.5" Foreground="{DynamicResource ForegroundBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RepositoryNameTextBlock" />
+        </AdornerDecorator>
+      </DockPanel>
+      <RadioButton Style="{DynamicResource SidebarButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="Changes_Selected" x:Name="ChangesRadioButton">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Source="{DynamicResource ChangesIcon}" Height="16" Width="16" />
+          <TextBlock Grid.Column="1" Text="Changes" Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" x:Name="ChangesTextBlock" />
+        </Grid>
+      </RadioButton>
+      <RadioButton IsChecked="True" HorizontalAlignment="Stretch" Style="{DynamicResource SidebarButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="AllCommits_Selected" x:Name="AllCommitsRadioButton">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Source="{DynamicResource RevisionListIcon}" Height="16" Width="16" />
+          <TextBlock Grid.Column="1" Text="All Commits" Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" x:Name="AllCommitsTextBlock" />
+        </Grid>
+      </RadioButton>
+      <Border Margin="0,5,0,0" HorizontalAlignment="Stretch" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource BorderBrush}">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" ToolTip="Branches" Content="{DynamicResource SidebarBranchGeometry}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchesRadioButton">
+            <RadioButton.IsChecked>
+              <Binding ElementName="BranchesTabItem" Path="IsSelected" Mode="TwoWay" />
+            </RadioButton.IsChecked>
+          </RadioButton>
+          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" ToolTip="Search Commits" Content="{DynamicResource SidebarSearchGeometry}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SearchRadioButton">
+            <RadioButton.IsChecked>
+              <Binding ElementName="SearchTabItem" Path="IsSelected" Mode="TwoWay" />
+            </RadioButton.IsChecked>
+          </RadioButton>
+          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" Visibility="Collapsed" ToolTip="Pull Requests" Content="{DynamicResource GenericRemoteGeometry}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ServiceRadioButton">
+            <RadioButton.IsChecked>
+              <Binding ElementName="ServiceTabItem" Path="IsSelected" Mode="TwoWay" />
+            </RadioButton.IsChecked>
+          </RadioButton>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+    <TabControl Grid.Row="1" Background="{DynamicResource Sidebar.Static.Background}" Padding="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="TabControl_SelectionChanged">
+      <TabItem x:Name="BranchesTabItem">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" Visibility="Collapsed" />
+          <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
+          <Grid Grid.Row="2">
+            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Style="{DynamicResource SideBarMultiselectionTreeViewStyle}" TextSearch.TextPath="Title" x:Name="SidebarTreeView">
+              <controls:MultiselectionTreeView.ItemTemplate>
+                <DataTemplate>
+                  <ContentControl>
+                    <ContentControl.Content>
+                      <Binding />
+                    </ContentControl.Content>
+                  </ContentControl>
+                </DataTemplate>
+              </controls:MultiselectionTreeView.ItemTemplate>
+              <controls:MultiselectionTreeView.ContextMenu>
+                <ContextMenu />
+              </controls:MultiselectionTreeView.ContextMenu>
+            </controls:MultiselectionTreeView>
+          </Grid>
+        </Grid>
+      </TabItem>
+      <local:SearchTabItem x:Name="SearchTabItem" />
+      <local:ServiceTabItem x:Name="ServiceTabItem" />
+    </TabControl>
+  </Grid>
+</UserControl>

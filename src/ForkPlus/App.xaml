@@ -1,0 +1,9 @@
+<Application ShutdownMode="OnExplicitShutdown" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:f="clr-namespace:ForkPlus" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.App">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/ForkPlus;component/Theme/Generic.Light.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

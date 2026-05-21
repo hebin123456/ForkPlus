@@ -1,0 +1,87 @@
+<UserControl FontFamily="Segoe UI Variable Display" Width="600" Height="80" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionGraphTooltipUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Border Style="{DynamicResource MenuShadowBorderStyle}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Border CornerRadius="6" Padding="4,10" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ListBox.Static.Background}">
+      <Grid>
+        <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Margin="0,0,0,0" Padding="0" Style="{DynamicResource ListViewWithGridViewStyle}" ItemContainerStyle="{DynamicResource NoSelectionRevisionListViewItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionListView">
+          <controls:NoUIAutomationListView.View>
+            <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
+              <GridViewColumn>
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid Height="23">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip="False" />
+                      <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
+                        <Ellipse.Fill>
+                          <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
+                        </Ellipse.Fill>
+                        <Ellipse.Visibility>
+                          <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
+                        </Ellipse.Visibility>
+                      </Ellipse>
+                      <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+                        <ItemsControl.ItemsSource>
+                          <Binding Path="References" />
+                        </ItemsControl.ItemsSource>
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                      <controls:HighlightableTextBlock Grid.Column="3" VerticalAlignment="Center" Margin="2 0 0 2" TextTrimming="CharacterEllipsis">
+                        <controls:HighlightableTextBlock.Text>
+                          <Binding Path="Subject" />
+                        </controls:HighlightableTextBlock.Text>
+                        <controls:HighlightableTextBlock.HighlightString>
+                          <Binding Path="SubjectSearchString" />
+                        </controls:HighlightableTextBlock.HighlightString>
+                      </controls:HighlightableTextBlock>
+                    </Grid>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="19">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+                      <Border.Background>
+                        <Binding Path="UserBackgroundBrush" />
+                      </Border.Background>
+                      <Border.BorderBrush>
+                        <Binding Path="UserBackgroundBrush" />
+                      </Border.BorderBrush>
+                      <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,0">
+                        <controls:AvatarImage.UserIdentity>
+                          <Binding Path="Author" />
+                        </controls:AvatarImage.UserIdentity>
+                      </controls:AvatarImage>
+                    </Border>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="125">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">
+                      <TextBlock.Text>
+                        <Binding Path="AuthorDateLongString" />
+                      </TextBlock.Text>
+                    </TextBlock>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </controls:NoUIAutomationListView.View>
+        </controls:NoUIAutomationListView>
+        <TextBlock Margin="10, 4" TextAlignment="Center" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FallbackMessageTextBlock" />
+        <ProgressBar Style="{DynamicResource CircularProgressBar}" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BusyIndicator" />
+      </Grid>
+    </Border>
+  </Border>
+</UserControl>

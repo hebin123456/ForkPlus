@@ -1,0 +1,63 @@
+<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleBranchesWindow">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,6,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Branches:" FontSize="13" />
+      <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchesItemsControl">
+            <ItemsControl.FocusVisualStyle>
+              <x:Null />
+            </ItemsControl.FocusVisualStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Height="18">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource BranchIcon}" Height="16" Width="16" Margin="0,0,4,0" />
+                    <TextBlock VerticalAlignment="Center" FontSize="13">
+                      <TextBlock.Text>
+                        <Binding Path="BranchName" />
+                      </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Text="→" Margin="4,0,4,0" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Grid.Column="1">
+                    <Image Grid.Column="0" Height="16" Width="16" Margin="0,0,4,0">
+                      <Image.Source>
+                        <Binding Path="Remote.Icon" />
+                      </Image.Source>
+                    </Image>
+                    <TextBlock VerticalAlignment="Center" FontSize="13">
+                      <TextBlock.Text>
+                        <Binding Path="UpstreamName" />
+                      </TextBlock.Text>
+                    </TextBlock>
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

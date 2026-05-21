@@ -1,0 +1,304 @@
+<UserControl BorderThickness="0,0,0,1" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileControlHeaderUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.BorderBrush>
+    <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+  </UserControl.BorderBrush>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="100" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="140" />
+    </Grid.ColumnDefinitions>
+    <Grid.Children>
+      <StackPanel Grid.Column="0" Orientation="Horizontal" Visibility="Collapsed" x:Name="TextModeNavigationButtonsContainer">
+        <StackPanel.Children>
+          <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
+            <Button.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Button.Style>
+            <ToolTipService.ToolTip>Go to previous change</ToolTipService.ToolTip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="UpIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+          <Button IsTabStop="False" Click="NextButton_Click" x:Name="NextButton">
+            <Button.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Button.Style>
+            <ToolTipService.ToolTip>Go to next change</ToolTipService.ToolTip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="DownIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+        </StackPanel.Children>
+      </StackPanel>
+      <DockPanel Grid.Column="1" HorizontalAlignment="Center">
+        <DockPanel.Children>
+          <Image DockPanel.Dock="Left" Margin="2,1,2,1" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="FileTypeImage" />
+          <FilePathTextBlock xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="FilePathTextBlock">
+            <FilePathTextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </FilePathTextBlock.Foreground>
+            <FilePathTextBlock.Margin>0</FilePathTextBlock.Margin>
+          </FilePathTextBlock>
+        </DockPanel.Children>
+      </DockPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed" x:Name="TextModeButtonsContainer">
+        <StackPanel.Children>
+          <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <ToolTipService.ToolTip>Ignore whitespaces</ToolTipService.ToolTip>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="IgnoreWhiteSpacesOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="IgnoreWhiteSpacesIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="ShowHiddenSymbolsToggleButton_Click" x:Name="ShowHiddenSymbolsToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <ToolTipService.ToolTip>Show hidden symbols</ToolTipService.ToolTip>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="ShowHiddenSymbolsOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="ShowHiddenSymbolsIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="WordWrapToggleButton_Click" x:Name="WordWrapToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <ToolTipService.ToolTip>Word wrap</ToolTipService.ToolTip>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="WordWrapOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="WordWrapIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+          <Button IsTabStop="False" Click="DecreaseVisibleLines_Click" x:Name="DecreaseNumberOfVisibleLinesButton">
+            <Button.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Button.Style>
+            <ToolTipService.ToolTip>Decrease number of visible lines</ToolTipService.ToolTip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="DecreaseVisibleLinesIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+            </Image>
+          </Button>
+          <Button IsTabStop="False" Click="IncreaseVisibleLines_Click" x:Name="IncreaseNumberOfVisibleLinesButton">
+            <Button.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Button.Style>
+            <ToolTipService.ToolTip>Increase number of visible lines</ToolTipService.ToolTip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="IncreaseVisibleLinesIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+            </Image>
+          </Button>
+          <ToggleButton IsTabStop="False" Click="ShowEntireFileToggleButton_Click" x:Name="ShowEntireFileToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <ToolTipService.ToolTip>Show entire file</ToolTipService.ToolTip>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="ShowEntireFileOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="ShowEntireFileIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="DiffLayoutModeToggleButton_Click" x:Name="DiffLayoutModeToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="SideBySideOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="SideBySideIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed" x:Name="ImageModeButtonsContainer">
+        <StackPanel.Children>
+          <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
+            <ToggleButton.Style>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToggleButton.Style>
+            <ToolTipService.ToolTip>Highlight pixels</ToolTipService.ToolTip>
+            <Image>
+              <Image.Style>
+                <Style>
+                  <Style.TargetType>
+                    <x:Type Type="Image" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                  </Style.TargetType>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="HighlightPixelsOnIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
+                      <Setter>
+                        <Setter.Property>
+                          <x:Static Member="Image.SourceProperty" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+                        </Setter.Property>
+                        <Setter.Value>
+                          <DynamicResource ResourceKey="HighlightPixelsIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Image.Style>
+            </Image>
+          </ToggleButton>
+        </StackPanel.Children>
+      </StackPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

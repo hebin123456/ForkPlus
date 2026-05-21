@@ -1,0 +1,71 @@
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ChangeRemoteTrackingWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <dialogs:ForkPlusDialogWindow.Resources>
+    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <Style.Triggers>
+          <DataTrigger>
+            <DataTrigger.Binding>
+              <Binding Path="ItemType" />
+            </DataTrigger.Binding>
+            <Setter Property="FrameworkElement.Height" Value="1" />
+            <Setter Property="UIElement.IsEnabled" Value="False" />
+            <Setter Property="Control.Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                  <Separator HorizontalAlignment="Stretch" />
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </dialogs:ForkPlusDialogWindow.Resources>
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Track:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
+        <ComboBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ComboBox.ItemsPanel>
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <Image Source="{DynamicResource BranchIcon}" Height="16" Width="16" Margin="0">
+                <Image.Visibility>
+                  <Binding Path="IconVisibility" />
+                </Image.Visibility>
+              </Image>
+              <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" FontSize="13">
+                <TextBlock.Text>
+                  <Binding Path="Title" />
+                </TextBlock.Text>
+              </TextBlock>
+            </StackPanel>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

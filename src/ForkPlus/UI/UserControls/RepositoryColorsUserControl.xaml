@@ -1,0 +1,70 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryColorsUserControl">
+  <StackPanel Orientation="Horizontal">
+    <StackPanel.Children>
+      <RadioButton Padding="0,2,2,2" Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color0Button">
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color1Button">
+        <RadioButton.Background>
+          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FF008000</SolidColorBrush>
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color2Button">
+        <RadioButton.Background>
+          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FFFFA500</SolidColorBrush>
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color3Button">
+        <RadioButton.Background>
+          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FF0000FF</SolidColorBrush>
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color4Button">
+        <RadioButton.Background>
+          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FFFFFF00</SolidColorBrush>
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color5Button">
+        <RadioButton.Background>
+          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FFFF00FF</SolidColorBrush>
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+      </RadioButton>
+      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="NoColorButton">
+        <RadioButton.BorderBrush>
+          <DynamicResource ResourceKey="SecondaryLabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.BorderBrush>
+        <RadioButton.Background>
+          <DynamicResource ResourceKey="NoColorButtonBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Background>
+        <RadioButton.Style>
+          <DynamicResource ResourceKey="RepositoryColorRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </RadioButton.Style>
+        <Image>
+          <Image.Source>
+            <DynamicResource ResourceKey="CancelSearchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+          </Image.Source>
+          <Image.Width>10</Image.Width>
+          <Image.Height>10</Image.Height>
+          <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+        </Image>
+      </RadioButton>
+    </StackPanel.Children>
+  </StackPanel>
+</UserControl>

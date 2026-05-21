@@ -1,0 +1,85 @@
+<dialogs:ForkPlusDialogWindow Width="700" MinWidth="400" Height="400" MinHeight="300" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitLfsStatusWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="23" />
+      </Grid.RowDefinitions>
+      <controls:FilterTextBox Margin="0,0,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FilterTextBox" />
+      <ListBox Grid.Row="1" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" SelectionMode="Extended" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid Height="20" UseLayoutRounding="True">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Image Grid.Column="0" VerticalAlignment="Center" Margin="4,2,0,2" Width="12" Height="12">
+                <Image.Source>
+                  <Binding Path="FileTypeIcon" />
+                </Image.Source>
+              </Image>
+              <controls:AutoTooltipTextBlock Grid.Column="1" Margin="4,2,2,2" FontSize="12" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
+                <controls:AutoTooltipTextBlock.Text>
+                  <Binding Path="Path" />
+                </controls:AutoTooltipTextBlock.Text>
+              </controls:AutoTooltipTextBlock>
+              <Image Source="{DynamicResource LockIcon}" Grid.Column="2" Margin="0,1,0,0" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Image.Visibility>
+                  <Binding Path="Owner"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
+                </Image.Visibility>
+              </Image>
+              <TextBlock Grid.Column="3" Margin="2,2,4,2" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" HorizontalAlignment="Left" x:Name="OwnerTextBlock">
+                <TextBlock.Text>
+                  <Binding Path="Owner" />
+                </TextBlock.Text>
+              </TextBlock>
+            </Grid>
+            <DataTemplate.Triggers>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition>
+                    <Condition.Binding>
+                      <Binding Path="IsSelected">
+                        <Binding.RelativeSource>
+                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                        </Binding.RelativeSource>
+                      </Binding>
+                    </Condition.Binding>
+                  </Condition>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="OwnerTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                </MultiDataTrigger.Setters>
+              </MultiDataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" Background="{DynamicResource BackgroundBrush}">
+        <StackPanel Orientation="Horizontal">
+          <Button Margin="-1,-1,-1,-1" Style="{DynamicResource InlineButton}" ToolTip="Lock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="LockButton_Click" x:Name="LockButton">
+            <Image Source="{DynamicResource LockIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LockButtonImage" />
+          </Button>
+          <Button Margin="0,-1,0,-1" Style="{DynamicResource InlineButton}" ToolTip="Unlock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="UnlockButton_Click" x:Name="UnlockButton">
+            <Image Source="{DynamicResource UnlockIcon}" Width="16" Height="16" VerticalAlignment="Center" />
+          </Button>
+        </StackPanel>
+      </Border>
+      <usercontrols:FallbackUserControl Grid.Row="0" Grid.RowSpan="3" Margin="1" VerticalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FallbackUserControl" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

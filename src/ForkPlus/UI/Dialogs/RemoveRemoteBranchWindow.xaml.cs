@@ -1,0 +1,102 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using ForkPlus.Git;
+using ForkPlus.Git.Commands;
+using ForkPlus.Jobs;
+using ForkPlus.UI.Controls;
+using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
+
+namespace ForkPlus.UI.Dialogs
+{
+	public partial class RemoveRemoteBranchWindow : ForkPlusDialogWindow
+	{
+		private readonly RepositoryUserControl _repositoryUserControl;
+
+		private readonly RepositoryReferences _references;
+
+		private readonly RemoteBranch[] _remoteBranches;
+
+		private readonly LocalBranch[] _localBranches;
+
+		public RemoveRemoteBranchWindow(RepositoryUserControl repositoryUserControl, RemoteBranch[] remoteBranches, RepositoryReferences repositoryReferences)
+		{
+			InitializeComponent();
+			_repositoryUserControl = repositoryUserControl;
+			_references = repositoryReferences;
+			_remoteBranches = remoteBranches;
+			_localBranches = repositoryReferences.LocalBranches;
+			if (remoteBranches.Length == 1)
+			{
+				GitPointsContainer.Collapse();
+				GitPointView.Show();
+				GitPointView.Value = remoteBranches.FirstItem();
+				base.DialogTitle = "Delete Branch";
+				base.DialogDescription = "Delete branch from remote repository";
+				StartPointTextBlock.Text = PreferencesLocalization.Current("Branch:");
+				base.SubmitButtonTitle = "Delete";
+			}
+			else
+			{
+				GitPointView.Collapse();
+				GitPointsContainer.Show();
+				GitPoints.ItemsSource = _remoteBranches;
+				base.DialogTitle = "Delete Branches";
+				base.DialogDescription = "Delete branches from remote repository";
+				StartPointTextBlock.Text = PreferencesLocalization.Current("Branches:");
+				base.SubmitButtonTitle = $"Delete {remoteBranches.Length} branches";
+			}
+		}
+
+		protected override void OnSubmit()
+		{
+			DisableEditableControls();
+			GitModule gitModule = _repositoryUserControl.GitModule;
+			string name = ((_remoteBranches.Length > 1) ? $"Delete {_remoteBranches.Length} branches" : ("Delete '" + _remoteBranches[0].Name + "'"));
+			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+			{
+				for (int i = 0; i < _remoteBranches.Length; i++)
+				{
+					RemoteBranch remoteBranch = _remoteBranches[i];
+					base.Dispatcher.Async(delegate
+					{
+						SetStatus(ForkPlusDialogStatus.InProgress, "Deleting '" + remoteBranch.Name + "'...");
+					});
+					GitCommandResult removeRemoteBranchResult = new RemoveRemoteBranchGitCommand().Execute(gitModule, remoteBranch, monitor);
+					if (!removeRemoteBranchResult.Succeeded)
+					{
+						base.Dispatcher.Async(delegate
+						{
+							Close(removeRemoteBranchResult);
+						});
+						return;
+					}
+					LocalBranch localBranch = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.UpstreamFullReference == remoteBranch.FullReference);
+					if (localBranch != null)
+					{
+						GitCommandResult removeTrackingReferenceResult = new UpdateTrackingReferenceGitCommand().Execute(gitModule, localBranch, null, monitor);
+						if (!removeTrackingReferenceResult.Succeeded)
+						{
+							base.Dispatcher.Async(delegate
+							{
+								Close(removeTrackingReferenceResult);
+							});
+							return;
+						}
+					}
+				}
+				gitModule.Settings.PinnedReferences = _references.PinnedReferences.Filter((string p) => !_remoteBranches.ContainsItem((RemoteBranch b) => b.FullReference == p)).ToArray();
+				gitModule.Settings.FilterReferences = _references.FilterReferences.Filter((string p) => !_remoteBranches.ContainsItem((RemoteBranch b) => b.FullReference == p)).ToArray();
+				gitModule.Settings.Save();
+				base.Dispatcher.Async(delegate
+				{
+					Close(GitCommandResult.Success());
+				});
+			}, JobFlags.SaveToLog);
+		}
+
+	}
+}

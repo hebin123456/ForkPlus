@@ -1,0 +1,28 @@
+<dialogs:ForkPlusDialogWindow Width="750" Height="650" ResizeMode="CanResize" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AddGitignoreTemplateWindow" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="0" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="180" />
+        <ColumnDefinition Width="12" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TemplateListPanel" />
+        </ScrollViewer>
+      </Border>
+      <Border Grid.Column="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+        <editor:CodeEditor xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PreviewCodeEditor" />
+      </Border>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

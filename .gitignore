@@ -1,0 +1,17 @@
+# Build outputs
+**/bin/
+**/obj/
+**/obj_agent/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# Logs
+*.log

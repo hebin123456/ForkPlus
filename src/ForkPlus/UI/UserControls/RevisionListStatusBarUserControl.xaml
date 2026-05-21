@@ -1,0 +1,31 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionListStatusBarUserControl">
+  <Border Height="22" BorderThickness="0,0,0,1" x:Name="Container">
+    <Border.BorderBrush>
+      <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+    </Border.BorderBrush>
+    <Border.Background>
+      <DynamicResource ResourceKey="BackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+    </Border.Background>
+    <Border.Child>
+      <StackPanel Orientation="Horizontal">
+        <StackPanel.Children>
+          <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" x:Name="HeaderTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" x:Name="ReferencesTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <Button Margin="0,0,0,0" VerticalAlignment="Center" FontSize="12" Click="StatusBarButton_Click" x:Name="StatusBarButton">
+            <Button.Style>
+              <DynamicResource ResourceKey="TextButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Button.Style>
+          </Button>
+        </StackPanel.Children>
+      </StackPanel>
+    </Border.Child>
+  </Border>
+</UserControl>

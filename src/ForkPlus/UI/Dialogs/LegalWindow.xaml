@@ -1,0 +1,14 @@
+<dialogs:ForkPlusDialogWindow Height="500" Width="770" MinHeight="250" MinWidth="450" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.LegalWindow">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="0" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="13" IsReadOnly="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LicencesTextBox" />
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

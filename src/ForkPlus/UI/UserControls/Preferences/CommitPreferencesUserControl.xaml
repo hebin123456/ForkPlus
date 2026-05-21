@@ -1,0 +1,87 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuup="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.CommitPreferencesUserControl">
+  <Grid Width="500">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="190" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Commit Message">
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </TextBlock.Style>
+      </TextBlock>
+      <TextBlock Grid.Row="1" Grid.Column="0" Margin="0" HorizontalAlignment="Right" Text="Length indicator:" VerticalAlignment="Bottom" />
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+        <StackPanel.Children>
+          <TextBlock Margin="10,0,0,0">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.WindowsInfo" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </TextBlock.Foreground>
+            <TextBlock.Text>Low limit:</TextBlock.Text>
+            <TextBlock.VerticalAlignment>Bottom</TextBlock.VerticalAlignment>
+          </TextBlock>
+          <TextBox Width="30" Margin="10,0,0,0" TextAlignment="Left" VerticalAlignment="Bottom" TextChanged="CommitSubjectLowLimitTextBox_TextChanged" x:Name="CommitSubjectLowLimitTextBox" />
+          <TextBlock Margin="10,0,0,0">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.WindowsInfo" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </TextBlock.Foreground>
+            <TextBlock.Text>High limit:</TextBlock.Text>
+            <TextBlock.VerticalAlignment>Bottom</TextBlock.VerticalAlignment>
+          </TextBlock>
+          <TextBox Width="30" Margin="10,0,0,0" TextAlignment="Left" VerticalAlignment="Bottom" TextChanged="CommitSubjectHighLimitTextBox_TextChanged" x:Name="CommitSubjectHighLimitTextBox" />
+        </StackPanel.Children>
+      </StackPanel>
+      <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Spell checking:" />
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="10,8,0,0" Width="132" HorizontalAlignment="Left" VerticalAlignment="Center" SelectionChanged="CommintSpellCheckingComboBox_SelectionChanged" x:Name="CommintSpellCheckingComboBox">
+        <ComboBox.Items>
+          <ComboBoxItem x:Name="DisableComboBoxItem">Disable</ComboBoxItem>
+          <ComboBoxItem x:Name="SystemComboBoxItem">System</ComboBoxItem>
+          <ComboBoxItem x:Name="EnglishComboBoxItem">English</ComboBoxItem>
+        </ComboBox.Items>
+      </ComboBox>
+      <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Page guide at column:" />
+      <TextBox Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Width="30" HorizontalAlignment="Left" TextChanged="PageGuideLinePositionTextBox_TextChanged" x:Name="PageGuideLinePositionTextBox" />
+      <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
+      <TextBlock Grid.Row="5" Grid.Column="0" Text="Generate Commit Message">
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </TextBlock.Style>
+      </TextBlock>
+      <TextBlock Grid.Row="6" Grid.Column="0" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="OpenAI:" />
+      <DockPanel Grid.Row="6" Grid.Column="1">
+        <DockPanel.Children>
+          <DockPanel Dock="Top" Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" x:Name="OpenAiStatusContainer">
+            <DockPanel.Children>
+              <Grid DockPanel.Dock="Left">
+                <Grid.Children>
+                  <ProgressBar Margin="1,0,6,-1" Width="14" Height="14" Visibility="Hidden" x:Name="OpenAiStatusBusyIndicator">
+                    <ProgressBar.Style>
+                      <DynamicResource ResourceKey="CircularProgressBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                    </ProgressBar.Style>
+                    <ProgressBar.Foreground>
+                      <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                    </ProgressBar.Foreground>
+                  </ProgressBar>
+                  <Ellipse DockPanel.Dock="Left" Margin="1,0,6,-1" Width="10" Height="10" VerticalAlignment="Center" x:Name="OpenAiStatusEllipse" />
+                </Grid.Children>
+              </Grid>
+              <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" x:Name="OpenAiStatusTextBlock" />
+            </DockPanel.Children>
+          </DockPanel>
+          <Button DockPanel.Dock="Top" Margin="10,-1,0,0" Padding="4,0" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Click="OpenAiLoginButton_Click" x:Name="OpenAiLoginButton">Log In...</Button>
+          <Button DockPanel.Dock="Top" Margin="10,6,0,0" Padding="4,0" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Click="OpenAiLogoutButton_Click" x:Name="OpenAiLogoutButton">Log Out</Button>
+        </DockPanel.Children>
+      </DockPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

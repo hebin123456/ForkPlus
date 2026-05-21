@@ -1,0 +1,17 @@
+<dialogs:ForkPlusDialogWindow Height="180" Width="520" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.LongOperationWindow">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,8,0,10">
+      <TextBlock Text="This operation is taking longer than usual. Please wait." TextWrapping="Wrap" FontSize="13" x:Name="MessageTextBlock" />
+      <ProgressBar Margin="0,14,0,0" Height="6" IsIndeterminate="True" />
+    </StackPanel>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

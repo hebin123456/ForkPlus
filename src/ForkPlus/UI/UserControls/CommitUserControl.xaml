@@ -1,0 +1,63 @@
+<UserControl xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CommitUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid Background="{DynamicResource BackgroundBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="CommitGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="280" MinWidth="220" MaxWidth="850" />
+      <ColumnDefinition Width="1" />
+      <ColumnDefinition Width="*" MinWidth="200" />
+    </Grid.ColumnDefinitions>
+    <local:StageFileUserControl TabIndex="1" x:Name="StageFileUserControl" />
+    <Grid Grid.Column="2" Background="{DynamicResource PanelBackgroundBrush}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" x:Name="DiffRow" />
+        <RowDefinition Height="1" x:Name="BorderRow" />
+        <RowDefinition Height="Auto" x:Name="MessageRow" />
+      </Grid.RowDefinitions>
+      <controls:CommitFileDiffControl Grid.Row="0" Background="{DynamicResource HeaderToolbarBackgroundBrush}" x:Name="FileDiffControl" />
+      <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" />
+      <Grid Grid.Row="2" Margin="15,15,15,15">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="24" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" PreviewKeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,52,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" Style="{DynamicResource CommitPlaceholderTextBox}" TabIndex="2" x:Name="CommitSubjectTextBox" />
+        <TextBlock Grid.Row="0" Margin="1,3,25,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
+        <controls:DropDownButton Grid.Row="0" Background="#00FFFFFF" Height="18" Width="18" Margin="1,1,3,1" BorderThickness="0" ClickMode="Press" HorizontalAlignment="Right" Focusable="False" ToolTip="Recent Commit Messages" x:Name="RecentCommitMessagesDropDownButton">
+          <controls:DropDownButton.FocusVisualStyle>
+            <x:Null />
+          </controls:DropDownButton.FocusVisualStyle>
+          <controls:DropDownButton.ContextMenu>
+            <ContextMenu Opened="RecentCommitMessagesContextMenu_Opened" />
+          </controls:DropDownButton.ContextMenu>
+          <Image Source="{DynamicResource ListIcon}" Margin="2" />
+        </controls:DropDownButton>
+        <controls:CommitDescriptionTextBox PreviewKeyDown="CommitDescriptionTextBox_PreviewKeyDown" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="1" Margin="0,-1,0,0" BorderThickness="1,0,1,1" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" TabIndex="3" x:Name="CommitDescriptionTextBox" />
+        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Height="1" VerticalAlignment="Bottom" Margin="1,0,1,0" />
+        <DockPanel Grid.Row="2" LastChildFill="False" Margin="0,8,0,0">
+          <CheckBox IsThreeState="False" Content="Amend" DockPanel.Dock="Left" Margin="0,6,0,4" VerticalAlignment="Center" Checked="AmendCheckBox_Changed" Unchecked="AmendCheckBox_Changed" x:Name="CheckBoxAmend" />
+          <StackPanel DockPanel.Dock="Right" Margin="0" Orientation="Horizontal">
+            <StackPanel Margin="0,3,8,0" VerticalAlignment="Center" Orientation="Horizontal" x:Name="StagedDiffStatsContainer">
+              <TextBlock FontSize="12" Foreground="{DynamicResource Diff.Added.Foreground}" x:Name="StagedDiffAddedRun" />
+              <TextBlock Text=" " FontSize="12" />
+              <TextBlock FontSize="12" Foreground="{DynamicResource Diff.Removed.Foreground}" x:Name="StagedDiffDeletedRun" />
+            </StackPanel>
+            <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" Style="{DynamicResource CommitButtonVisibleDropdownStyle}" x:Name="CommitButton" />
+            <controls:DropDownButton Grid.Row="0" Height="24" Margin="0" HorizontalAlignment="Right" ToolTip="Commit Settings" Style="{DynamicResource CommitDropDownButtonStyle}" x:Name="CommitDropdownButton">
+              <controls:DropDownButton.IsEnabled>
+                <Binding Path="IsEnabled" />
+              </controls:DropDownButton.IsEnabled>
+              <controls:DropDownButton.ContextMenu>
+                <ContextMenu Opened="CommitDropdownButtonContextMenu_Opened" />
+              </controls:DropDownButton.ContextMenu>
+            </controls:DropDownButton>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" x:Name="WarningMessageContainer">
+            <TextBlock Margin="4,2,4,2" VerticalAlignment="Center" x:Name="WarningTextBlock" />
+            <Image Grid.Column="0" Margin="0,4,4,4" Width="16" Height="Auto" VerticalAlignment="Center" Source="/ForkPlus;component/Assets/Warning.png" />
+          </StackPanel>
+        </DockPanel>
+      </Grid>
+    </Grid>
+    <GridSplitter Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" x:Name="gridSplitter" />
+  </Grid>
+</UserControl>

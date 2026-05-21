@@ -1,0 +1,1035 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="RepositoryTitleHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkContentElement.FocusVisualStyle">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Inline.TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Style.Triggers>
+      <Trigger Property="ContentElement.IsMouseOver" Value="True">
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="Inline.TextDecorations" Value="Underline" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="SidebarButton" TargetType="{x:Type RadioButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
+    <Setter Property="Panel.Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Control.Padding" Value="20 2 20 2" />
+    <Setter Property="FrameworkElement.Margin" Value="2,0,2,0" />
+    <Setter Property="FrameworkElement.Height" Value="22" />
+    <Setter Property="Border.BorderThickness" Value="0" />
+    <Setter Property="Control.HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="FrameworkElement.FocusVisualStyle">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type RadioButton}">
+          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="true" Margin="{TemplateBinding FrameworkElement.Margin}" CornerRadius="4" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="contentPresenter" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+              <Setter TargetName="border" Value="{DynamicResource Sidebar.SelectionActive.Background}" Property="Panel.Background" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="false">
+              <Setter TargetName="border" Value="{DynamicResource Sidebar.Static.Background}" Property="Panel.Background" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="true">
+              <Setter TargetName="border" Value="{DynamicResource Sidebar.Static.Background}" Property="Panel.Background" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="SidebarPathImageRadioButtonStyle" TargetType="{x:Type RadioButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkElement.Margin" Value="0,1,0,1" />
+    <Setter Property="Control.Padding" Value="5,2,5,2" />
+    <Setter Property="FrameworkElement.Width" Value="40" />
+    <Setter Property="FrameworkElement.Height" Value="24" />
+    <Setter Property="Panel.Background" Value="#00FFFFFF" />
+    <Setter Property="Border.BorderThickness" Value="0" />
+    <Setter Property="Border.CornerRadius" Value="3" />
+    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
+    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type RadioButton}">
+          <Border CornerRadius="{TemplateBinding Border.CornerRadius}" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="true" x:Name="border">
+            <Path Height="16" Width="16" Margin="{TemplateBinding Control.Padding}" Focusable="False" Data="{TemplateBinding ContentControl.Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="ImagePath" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="True">
+              <DataTrigger.Binding>
+                <Binding Path="IsChecked"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="ImagePath" Value="{DynamicResource SystemAccentBrush}" Property="Shape.Fill" />
+            </DataTrigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="true">
+              <Setter TargetName="border" Value="{DynamicResource Button.MouseOver.Background}" Property="Panel.Background" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="true">
+              <Setter TargetName="border" Value="{DynamicResource Button.Pressed.Background}" Property="Panel.Background" />
+            </Trigger>
+            <Trigger Property="UIElement.IsEnabled" Value="false">
+              <Setter TargetName="border" Property="UIElement.Opacity" Value="0.4" />
+              <Setter TargetName="border" Property="Panel.Background" Value="#00FFFFFF" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="{x:Type ui:SidebarGroupItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
+      <TextBlock.Text>
+        <Binding Path="Title" />
+      </TextBlock.Text>
+    </TextBlock>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="{x:Type ui:RemoteSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16">
+        <Image.Source>
+          <Binding Path="Remote.Icon" />
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="{x:Type ui:FilterableRemoteSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16">
+        <Image.Source>
+          <Binding Path="Remote.Icon" />
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <DataTrigger Value="Filter">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+      </DataTrigger>
+      <DataTrigger Value="Hide">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="{x:Type ui:FolderSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarFolderIcon}" Height="16" Width="16" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="{x:Type ui:FilterableFolderSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="18" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarFolderIcon}" Height="16" Width="16" Margin="2,0,0,0" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <DataTrigger Value="Filter">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+      </DataTrigger>
+      <DataTrigger Value="Hide">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="{x:Type ui:TruncateSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="1" FontSize="13" Margin="4,0,0,0" Padding="0" VerticalAlignment="Center">
+        <Hyperlink Style="{DynamicResource SidebarTruncateHyperlink}" NavigateUri=" ">
+          <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+            <TextBlock.Text>
+              <Binding Path="Title" />
+            </TextBlock.Text>
+          </TextBlock>
+        </Hyperlink>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="{x:Type ui:TagSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource TagIcon}" Height="16" Width="16" x:Name="TagImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip="" Style="{DynamicResource SidebarTagTitleTextBlock}" x:Name="TagTitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource SearchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="TagImage" Value="{DynamicResource TagSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
+        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="Pinned" />
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Image.Source" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="Pinned" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Filter">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Hide">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Hide">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="{x:Type ui:RemoteBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource BranchIcon}" Height="16" Width="16" x:Name="RemoteBranchImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="RemoteBranchImage" Value="{DynamicResource BranchSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
+        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="Pinned" />
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Image.Source" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="Pinned" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Filter">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Hide">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Hide">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="{x:Type ui:LocalBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid HorizontalAlignment="Stretch">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16" x:Name="BranchImage">
+        <Image.Source>
+          <Binding Path="UpstreamStatus"><Binding.Converter><ui:UpstreamStatusToImageConverter /></Binding.Converter></Binding>
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Normal" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,2,0">
+        <TextBlock.Text>
+          <Binding Path="UpstreamStatusString" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="3" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="4" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="5" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="BranchImage" Property="Image.Source">
+          <Setter.Value>
+            <Binding Path="UpstreamStatus"><Binding.Converter><ui:UpstreamStatusToImageConverter /></Binding.Converter></Binding>
+          </Setter.Value>
+        </Setter>
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="LocalBranch.IsActive" />
+        </DataTrigger.Binding>
+        <Setter TargetName="BranchImage" Value="{DynamicResource ActiveBranchIcon}" Property="Image.Source" />
+        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="LocalBranch.IsActive" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="BranchImage" Value="{DynamicResource ActiveBranchSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
+        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="Pinned" />
+        </DataTrigger.Binding>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Image.Source" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="Pinned" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Filter">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
+        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="Hide">
+        <DataTrigger.Binding>
+          <Binding Path="FilterState" />
+        </DataTrigger.Binding>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="Hide">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="Filter">
+            <Condition.Binding>
+              <Binding Path="FilterState" />
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="{x:Type ui:StashSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarStashIcon}" Height="16" Width="16" x:Name="StashImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="StashImage" Value="{DynamicResource SidebarStashSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="{x:Type ui:SubmoduleSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SubmoduleIcon}" Height="16" Width="16" x:Name="SubmoduleImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="SubmoduleImage" Value="{DynamicResource SubmoduleSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="{x:Type ui:WorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="WorktreeImage" Value="{DynamicResource WorktreeSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="Worktree.IsActive" />
+        </DataTrigger.Binding>
+        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="{x:Type ui:MainWorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    <DataTemplate.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+          <Condition Value="true">
+            <Condition.Binding>
+              <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+            </Condition.Binding>
+          </Condition>
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="WorktreeImage" Value="{DynamicResource WorktreeSelectedIcon}" Property="Image.Source" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True">
+        <DataTrigger.Binding>
+          <Binding Path="Worktree.IsActive" />
+        </DataTrigger.Binding>
+        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+</ResourceDictionary>

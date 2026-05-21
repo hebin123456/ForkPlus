@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+    <Setter Property="Panel.Background" Value="#00FFFFFF" />
+    <Setter Property="UIElement.Focusable" Value="False" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type RepeatButton}">
+          <Rectangle Height="{TemplateBinding FrameworkElement.Height}" Width="{TemplateBinding FrameworkElement.Width}" Fill="{TemplateBinding Panel.Background}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="{x:Type Thumb}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid HorizontalAlignment="Center" UseLayoutRounding="True" VerticalAlignment="Center">
+      <Ellipse Width="11" Height="11" VerticalAlignment="Center" Stretch="Fill" UseLayoutRounding="True" SnapsToDevicePixels="True" StrokeThickness="1" Fill="{DynamicResource SliderThumb.Static.Background}" Stroke="{DynamicResource SliderThumb.Static.Border}" x:Name="grip" />
+    </Grid>
+    <ControlTemplate.Triggers>
+      <Trigger Property="UIElement.IsMouseOver" Value="true">
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Background}" Property="Shape.Fill" />
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Border}" Property="Shape.Stroke" />
+      </Trigger>
+      <Trigger Property="Thumb.IsDragging" Value="true">
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Background}" Property="Shape.Fill" />
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Border}" Property="Shape.Stroke" />
+      </Trigger>
+      <Trigger Property="UIElement.IsEnabled" Value="false">
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Background}" Property="Shape.Fill" />
+        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Border}" Property="Shape.Stroke" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="{x:Type Slider}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border SnapsToDevicePixels="True" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" x:Name="border">
+      <Grid MinHeight="{TemplateBinding FrameworkElement.MinHeight}">
+        <Border Grid.Row="1" Height="4.0" Margin="5,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SliderThumb.Track.Border}" Background="{DynamicResource SliderThumb.Track.Background}" x:Name="TrackBackground">
+          <Canvas Margin="-6,-1">
+            <Rectangle Height="4.0" Visibility="Hidden" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" x:Name="PART_SelectionRange" />
+          </Canvas>
+        </Border>
+        <Track Grid.Row="1" x:Name="PART_Track">
+          <Track.DecreaseRepeatButton>
+            <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Style="{DynamicResource RepeatButtonTransparent}" />
+          </Track.DecreaseRepeatButton>
+          <Track.IncreaseRepeatButton>
+            <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Style="{DynamicResource RepeatButtonTransparent}" />
+          </Track.IncreaseRepeatButton>
+          <Track.Thumb>
+            <Thumb Height="18" Width="11" VerticalAlignment="Center" OverridesDefaultStyle="True" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
+          </Track.Thumb>
+        </Track>
+      </Grid>
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="Slider.IsSelectionRangeEnabled" Value="true">
+        <Setter TargetName="PART_SelectionRange" Property="UIElement.Visibility" Value="Visible" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <Style x:Key="OnionSkinSliderStyle" TargetType="{x:Type Slider}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
+    <Setter Property="Panel.Background" Value="#00FFFFFF" />
+    <Setter Property="Border.BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
+    <Setter Property="Control.Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
+  </Style>
+</ResourceDictionary>

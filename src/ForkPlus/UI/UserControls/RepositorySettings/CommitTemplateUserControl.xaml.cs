@@ -1,0 +1,108 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using ForkPlus.Git;
+using ForkPlus.Git.Commands;
+using ForkPlus.UI.Controls;
+
+namespace ForkPlus.UI.UserControls.RepositorySettings
+{
+	public partial class CommitTemplateUserControl : UserControl
+	{
+		private GitModule _gitModule;
+
+		private bool _saveCommitTemplateRequired;
+
+		private bool _updateInProgress;
+
+		public CommitTemplateUserControl()
+		{
+			InitializeComponent();
+		}
+
+		public void Initialize(GitModule gitModule)
+		{
+			_gitModule = gitModule;
+			Refresh();
+		}
+
+		public void Save()
+		{
+			if (_saveCommitTemplateRequired)
+			{
+				SaveCommitTemplate();
+			}
+		}
+
+		private void CommitTemplateTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!_updateInProgress)
+			{
+				_saveCommitTemplateRequired = true;
+			}
+		}
+
+		private void UseGlobalCommitTemplateCheckbox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (!_updateInProgress)
+			{
+				SaveCommitTemplate();
+				Refresh();
+			}
+		}
+
+		private void AddSignedOffMessageCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (!_updateInProgress)
+			{
+				_gitModule.Settings.SignOff = AddSignedOffMessageCheckBox.IsChecked.GetValueOrDefault();
+				_gitModule.Settings.Save();
+			}
+		}
+
+		private void Refresh()
+		{
+			_updateInProgress = true;
+			AddSignedOffMessageCheckBox.IsChecked = _gitModule.Settings.SignOff;
+			GitCommandResult<CommitTemplate> gitCommandResult = new GetCommitTemplateGitCommand().Execute(_gitModule, GitConfigLocation.Local);
+			if (gitCommandResult.Succeeded)
+			{
+				UseGlobalCommitTemplateCheckBox.IsChecked = false;
+				CommitTemplatePathTextBlock.Text = PathHelper.NormalizeUnix(gitCommandResult.Result.Path);
+				CommitTemplateTextBox.Text = gitCommandResult.Result.StringValue;
+				CommitTemplateTextBox.IsEnabled = true;
+				_updateInProgress = false;
+				return;
+			}
+			UseGlobalCommitTemplateCheckBox.IsChecked = true;
+			CommitTemplateTextBox.IsEnabled = false;
+			GitCommandResult<CommitTemplate> gitCommandResult2 = new GetCommitTemplateGitCommand().Execute(_gitModule, GitConfigLocation.Global);
+			if (gitCommandResult2.Succeeded)
+			{
+				CommitTemplatePathTextBlock.Text = PathHelper.NormalizeUnix(gitCommandResult2.Result.Path);
+				CommitTemplateTextBox.Text = gitCommandResult2.Result.StringValue;
+			}
+			else
+			{
+				CommitTemplatePathTextBlock.Text = "";
+				CommitTemplateTextBox.Text = "";
+			}
+			_updateInProgress = false;
+		}
+
+		private void SaveCommitTemplate()
+		{
+			if (UseGlobalCommitTemplateCheckBox.IsChecked.GetValueOrDefault())
+			{
+				new UnsetLocalCommitTemplateGitCommand().Execute(_gitModule);
+				return;
+			}
+			string text = CommitTemplatePathTextBlock.Text;
+			string commitTemplate = CommitTemplateTextBox.Text.Replace(Environment.NewLine, "\n");
+			new SetLocalCommitTemplateGitCommand().Execute(_gitModule, text, commitTemplate);
+		}
+
+	}
+}

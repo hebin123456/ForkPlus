@@ -1,0 +1,31 @@
+<dialogs:ForkPlusDialogWindow Width="670" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AddGitIgnorePatternWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Pattern:" FontSize="13" />
+      <TextBlock Grid.Row="0" Grid.Column="2" FontSize="11" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PatternLabelTextBlock" />
+      <controls:PlaceholderTextBox TextChanged="PatternTextBox_TextChanged" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,4,0,4" HorizontalAlignment="Stretch" Height="70" VerticalAlignment="Stretch" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PatternTextBox" />
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Preview:" FontSize="13" Margin="0,8,0,0" />
+      <TextBlock Grid.Row="2" Grid.Column="2" Margin="0,8,0,0" FontSize="11" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PreviewLabelTextBlock" />
+      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Height="140" Margin="0,4,0,4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PreviewTextBox" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

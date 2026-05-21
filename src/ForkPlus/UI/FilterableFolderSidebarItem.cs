@@ -1,0 +1,68 @@
+using ForkPlus.Git;
+using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
+
+namespace ForkPlus.UI
+{
+	public class FilterableFolderSidebarItem : FolderSidebarItem
+	{
+		private ReferenceFilterState _filterState;
+
+		public string FilterTooltip => PreferencesLocalization.Current("Show '" + base.Title + "' commits only");
+
+		public string HideTooltip => PreferencesLocalization.Current("Hide '" + base.Title + "' in the commit list");
+
+		public ReferenceFilterState FilterState
+		{
+			get
+			{
+				return _filterState;
+			}
+			set
+			{
+				_filterState = value;
+				RaisePropertyChanged("FilterState");
+			}
+		}
+
+		[Null]
+		public string FullReference
+		{
+			get
+			{
+				if (base.Parent is FilterableRemoteSidebarItem filterableRemoteSidebarItem)
+				{
+					return filterableRemoteSidebarItem.FullReference + base.Title + "/";
+				}
+				if (base.Parent is FilterableFolderSidebarItem filterableFolderSidebarItem)
+				{
+					return filterableFolderSidebarItem.FullReference + base.Title + "/";
+				}
+				if (base.Parent is SidebarGroupItem sidebarGroupItem)
+				{
+					if (sidebarGroupItem.GroupType == SidebarGroupItem.Group.Branches)
+					{
+						return "refs/heads/" + base.Title + "/";
+					}
+					if (sidebarGroupItem.GroupType == SidebarGroupItem.Group.Tags)
+					{
+						return "refs/tags/" + base.Title + "/";
+					}
+				}
+				return null;
+			}
+		}
+
+		public FilterableFolderSidebarItem(string title, SidebarItem parent, SidebarUserControl sidebarUserControl)
+			: base(title, parent, sidebarUserControl)
+		{
+		}
+
+		public void ApplyLocalization()
+		{
+			RaisePropertyChanged(nameof(FilterTooltip));
+			RaisePropertyChanged(nameof(HideTooltip));
+		}
+
+	}
+}

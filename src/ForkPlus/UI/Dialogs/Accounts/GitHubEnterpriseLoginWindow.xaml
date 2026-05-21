@@ -1,0 +1,39 @@
+<dialogs:ForkPlusDialogWindow Title="Login to GitHub Enterprise Server" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.GitHubEnterpriseLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="0" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="140" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <Image Width="24" Height="24" Source="pack://application:,,,/ForkPlus;component/Assets/GitHub.png" />
+        <TextBlock Text="Log in to GitHub Enterprise Server" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
+      </StackPanel>
+      <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Server:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="https://github.yourcompany.com" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ServerTextBox" />
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="Personal Access Token:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Token" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TokenTextBox" />
+      <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,-6,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PersonalAccessTokenHint">
+        <TextBlock Margin="8,4,0,0" FontSize="12" Text="Manage " x:Name="StatusTextBlock" />
+        <Button Content="personal access tokens" Margin="0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" x:Name="OpenPersonalAccessTokenConfigurationUrlButton" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

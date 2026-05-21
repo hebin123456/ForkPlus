@@ -1,0 +1,42 @@
+<dialogs:ForkPlusDialogWindow Width="530" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowFinishHotfixWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Hotfix:" />
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchesComboBox">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <Image Source="{DynamicResource BranchIcon}" Height="16" Width="16" Margin="0,0,4,0" />
+              <TextBlock VerticalAlignment="Center" FontSize="13">
+                <TextBlock.Text>
+                  <Binding Path="Name" />
+                </TextBlock.Text>
+              </TextBlock>
+            </StackPanel>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Top" Margin="0,4,0,4" HorizontalAlignment="Right" Text="Message:" />
+      <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter hotfix message (optional)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagMessageTextBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" IsChecked="True" ToolTip="--keep (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DeleteBranchesCheckBox" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

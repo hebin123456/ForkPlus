@@ -1,0 +1,32 @@
+<dialogs:ForkPlusDialogWindow MinHeight="215" Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SaveStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Message:" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <controls:PlaceholderTextBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
+      <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Vertical" Margin="8,6,0,4">
+        <CheckBox Content="Stage new files" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StageNewFilesCheckBox" />
+        <TextBlock Margin="22,0,0,0" Text="By default stash ignores new files until you stage them" FontSize="12" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

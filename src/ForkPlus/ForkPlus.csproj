@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ForkPlus</AssemblyName>
+    <TargetName>ForkPlus</TargetName>
+    <RootNamespace>ForkPlus</RootNamespace>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>11.0</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)obj\**;$(MSBuildThisFileDirectory)obj_agent\**;$(MSBuildThisFileDirectory)bin\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="assets\**\*.*" />
+    <None Remove="ForkPlus.Assets.Legal.txt" />
+    <None Remove="ForkPlus.Assets.gitignore.txt" />
+    <None Remove="ForkPlus.Assets.md-ai-output.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\**\*.*" />
+    <Content Include="Languages\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.md">
+      <Link>Docs\gitmm.zh-Hans.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.zh-Hant.md">
+      <Link>Docs\gitmm.zh-Hant.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.en.md">
+      <Link>Docs\gitmm.en.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="ForkPlus.Assets.Legal.txt" LogicalName="ForkPlus.Assets.Legal.txt" />
+    <EmbeddedResource Include="ForkPlus.Assets.gitignore.txt" LogicalName="ForkPlus.Assets.gitignore.txt" />
+    <EmbeddedResource Include="ForkPlus.Assets.md-ai-output.css" LogicalName="ForkPlus.Assets.md-ai-output.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="NLog" Version="6.1.3" />
+    <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\third_party\biturbo.dll">
+      <Link>biturbo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="CopyHelperExecutables" AfterTargets="Build">
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

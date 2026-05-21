@@ -1,0 +1,234 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:p="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ToolbarUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <Grid.Background>
+      <DynamicResource ResourceKey="ToolbarBackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+    </Grid.Background>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="300" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.Children>
+      <StackPanel Orientation="Horizontal" Grid.Column="0">
+        <StackPanel.Children>
+          <ToolbarButton Margin="8,3,0,3" Title="Quick Launch" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="OpenQuicklyToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="OpenQuicklyIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
+          <ToolbarButton Margin="16,3,0,3" Title="Fetch" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="FetchToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="FetchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
+          <ToolbarButton Margin="0,3,0,3" Title="Pull" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="PullToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="PullIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
+          <ToolbarButton Margin="0,3,0,3" Title="Push" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="PushToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="PushIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
+          <StackPanel Orientation="Horizontal" Margin="20,3,0,3">
+            <StackPanel.Children>
+              <ToolbarButton Title="Stash" Padding="4,0,4,0" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="StashToolbarButton">
+                <ToolbarButton.Style>
+                  <DynamicResource ResourceKey="StashToolbarButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </ToolbarButton.Style>
+                <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Image.Source>
+                    <DynamicResource ResourceKey="StashIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Image.Source>
+                  <Image.Width>20</Image.Width>
+                  <Image.Height>20</Image.Height>
+                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                </Image>
+              </ToolbarButton>
+              <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="StashToolbarDropdownButton">
+                <DropDownButton.Style>
+                  <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </DropDownButton.Style>
+                <DropDownButton.ContextMenu>
+                  <ContextMenu MaxWidth="500" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Opened="StashToolbarDropdownButtonContextMenu_Opened" />
+                </DropDownButton.ContextMenu>
+                <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <DynamicResource ResourceKey="ArrowGeometry" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Data>
+                </Path>
+              </DropDownButton>
+            </StackPanel.Children>
+          </StackPanel>
+        </StackPanel.Children>
+      </StackPanel>
+      <Canvas Grid.Column="0" IsHitTestVisible="False" x:Name="BadgesCanvas">
+        <Canvas.Children>
+          <Border x:Name="PullBadge">
+            <Border.Style>
+              <DynamicResource ResourceKey="PullPushBadge" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Border.Style>
+            <Border.Visibility>Collapsed</Border.Visibility>
+            <Border.Child>
+              <TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PullBadgeText">
+                <TextBlock.Foreground>
+                  <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FFFFFFFF</SolidColorBrush>
+                </TextBlock.Foreground>
+                <TextBlock.FontWeight>Medium</TextBlock.FontWeight>
+              </TextBlock>
+            </Border.Child>
+          </Border>
+          <Border x:Name="PushBadge">
+            <Border.Style>
+              <DynamicResource ResourceKey="PullPushBadge" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Border.Style>
+            <Border.Visibility>Collapsed</Border.Visibility>
+            <Border.Child>
+              <TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PushBadgeText">
+                <TextBlock.Foreground>
+                  <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#FFFFFFFF</SolidColorBrush>
+                </TextBlock.Foreground>
+                <TextBlock.FontWeight>Medium</TextBlock.FontWeight>
+              </TextBlock>
+            </Border.Child>
+          </Border>
+        </Canvas.Children>
+      </Canvas>
+      <StatusUserControl p:Grid.Column="1" Margin="0,0,0,3" Height="36" UseLayoutRounding="True" xmlns="clr-namespace:ForkPlus.UI.UserControls" x:Name="StatusUserControl" />
+      <DockPanel Grid.Column="2" LastChildFill="False">
+        <DockPanel.Children>
+          <StackPanel Orientation="Horizontal" Margin="10,3,0,3">
+            <StackPanel.Children>
+              <ToolbarButton Title="Branch" Padding="4,0,4,0" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="BranchToolbarButton">
+                <ToolbarButton.Style>
+                  <DynamicResource ResourceKey="BranchToolbarButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </ToolbarButton.Style>
+                <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Image.Source>
+                    <DynamicResource ResourceKey="CreateBranchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Image.Source>
+                  <Image.Width>20</Image.Width>
+                  <Image.Height>20</Image.Height>
+                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                </Image>
+              </ToolbarButton>
+              <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="BranchToolbarDropdownButton">
+                <DropDownButton.Style>
+                  <DynamicResource ResourceKey="BranchToolbarDropdownButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </DropDownButton.Style>
+                <DropDownButton.ContextMenu>
+                  <ContextMenu MaxWidth="500" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Opened="BranchToolbarDropdownButtonContextMenu_Opened" />
+                </DropDownButton.ContextMenu>
+                <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <DynamicResource ResourceKey="ArrowGeometry" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Data>
+                </Path>
+              </DropDownButton>
+            </StackPanel.Children>
+          </StackPanel>
+          <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,4,3" Title="Workspaces" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="WorkspacesToolbarDropdownButton">
+            <ToolbarDropDownButton.Style>
+              <DynamicResource ResourceKey="ToolbarDropdownButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarDropDownButton.Style>
+            <ToolbarDropDownButton.ContextMenu>
+              <ContextMenu xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarDropDownButton.ContextMenu>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="WorkspaceIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarDropDownButton>
+          <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,0,3" Title="Appearance" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="AppearanceToolbarDropdownButton">
+            <ToolbarDropDownButton.Style>
+              <DynamicResource ResourceKey="ToolbarDropdownButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarDropDownButton.Style>
+            <ToolbarDropDownButton.ContextMenu>
+              <ContextMenu xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarDropDownButton.ContextMenu>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="LayoutVerticalIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarDropDownButton>
+          <ToolbarButton Margin="0,3,0,3" p:DockPanel.Dock="Right" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="OpenInConsoleToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="ConsoleIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
+          <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="4,3,4,3" Title="Open in" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="OpenInDropDownButton">
+            <ToolbarDropDownButton.Style>
+              <DynamicResource ResourceKey="ToolbarDropdownButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarDropDownButton.Style>
+            <ToolbarDropDownButton.ContextMenu>
+              <ContextMenu xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Opened="OpenInDropDownButtonContextMenu_Opened" />
+            </ToolbarDropDownButton.ContextMenu>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="OpenInIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarDropDownButton>
+        </DockPanel.Children>
+      </DockPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

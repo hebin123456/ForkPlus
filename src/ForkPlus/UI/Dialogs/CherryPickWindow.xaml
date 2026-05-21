@@ -1,0 +1,59 @@
+<dialogs:ForkPlusDialogWindow MinHeight="180" Width="620" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CherryPickWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,6,0,2" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointTextBlock" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,6,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionGitPointView" />
+      <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Parent to skip:" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionParentTextBlock" />
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,8,0,0" HorizontalContentAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionParentComboBox">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <controls:BindableGitPointView>
+              <controls:BindableGitPointView.GitPoint>
+                <Binding />
+              </controls:BindableGitPointView.GitPoint>
+            </controls:BindableGitPointView>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointsContainer">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints">
+            <ItemsControl.FocusVisualStyle>
+              <x:Null />
+            </ItemsControl.FocusVisualStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <controls:BindableGitPointView Margin="0,1,0,1">
+                  <controls:BindableGitPointView.GitPoint>
+                    <Binding />
+                  </controls:BindableGitPointView.GitPoint>
+                </controls:BindableGitPointView>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip="--no-commit (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CommitCheckBox_Changed" Unchecked="CommitCheckBox_Changed" x:Name="CommitCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Append origin to commit message" ToolTip="-x" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AppendOriginShaCheckBox" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

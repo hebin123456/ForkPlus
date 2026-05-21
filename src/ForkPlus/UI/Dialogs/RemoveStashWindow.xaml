@@ -1,0 +1,39 @@
+<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RemoveStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" FontSize="13" Margin="0,6,0,2" VerticalAlignment="Top" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StartPointTextBlock" />
+      <controls:GitPointView Grid.Column="1" Margin="8,6,0,2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <Border Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointsContainer">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints">
+            <ItemsControl.FocusVisualStyle>
+              <x:Null />
+            </ItemsControl.FocusVisualStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <controls:BindableGitPointView>
+                  <controls:BindableGitPointView.GitPoint>
+                    <Binding />
+                  </controls:BindableGitPointView.GitPoint>
+                </controls:BindableGitPointView>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,57 @@
+<dialogs:ForkPlusDialogWindow Title="Login to Bitbucket" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.BitbucketLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="0" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <Image Width="24" Height="24" Source="pack://application:,,,/ForkPlus;component/Assets/BitBucket.png" />
+        <TextBlock Text="Log in to Bitbucket" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
+      </StackPanel>
+      <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />
+      <ComboBox Grid.Row="2" Margin="95,4,0,6" HorizontalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="AuthenticationTypeComboBox_SelectionChanged" x:Name="AuthenticationTypeComboBox">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="0,0,4,0">
+              <TextBlock.Text>
+                <Binding Path="Title" />
+              </TextBlock.Text>
+            </TextBlock>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <Grid Grid.Row="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TokenContainer">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="95" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="24" />
+          <RowDefinition Height="28" />
+          <RowDefinition Height="16" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Email:" Margin="0,0,8,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <controls:PlaceholderTextBox Grid.Row="0" Grid.Column="1" Margin="0" Padding="4,2,4,2" FontSize="13" Placeholder="Email" x:Name="EmailTextBox" />
+        <TextBlock Grid.Column="0" Grid.Row="1" Text="API Token:" Margin="0,4,8,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="1" Margin="0,4,0,0" Padding="4,2,4,2" FontSize="13" Placeholder="Token" x:Name="TokenTextBox" />
+        <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal" x:Name="ApiTokenHint">
+          <TextBlock Margin="0" FontSize="12" Text="Create" x:Name="StatusTextBlock" />
+          <Button Content="API token with scopes" Margin="2,-3,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenApiTokensConfigurationUrlButton_Click" x:Name="OpenApiTokensConfigurationUrlButton" />
+        </StackPanel>
+      </Grid>
+      <Grid Grid.Row="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="OAuthContainer" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

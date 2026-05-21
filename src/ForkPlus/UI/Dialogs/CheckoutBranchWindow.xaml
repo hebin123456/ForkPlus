@@ -1,0 +1,44 @@
+<dialogs:ForkPlusDialogWindow MinWidth="500" MaxWidth="670" SizeToContent="WidthAndHeight" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" Margin="0" HorizontalAlignment="Right" Text="Switch to:" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Fast-Forward to:" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FastForwardTextBlock" />
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FastForwardGitPointView" />
+      <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Local changes:" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesTextBlock" />
+      <Grid Grid.Row="2" Grid.Column="1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesOptionsContainer">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <RadioButton Grid.Row="0" Grid.Column="1" Margin="8,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Don't change" ToolTip="Stop if some local changes would be overwritten by checkout" Checked="LocalChangesOption_Changed" x:Name="DoNotChangeRadioButton" />
+        <RadioButton Grid.Row="1" Grid.Column="1" Margin="8,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Stash and reapply" ToolTip="Hold Shift to not reapply" Checked="LocalChangesOption_Changed" x:Name="StashAndReapplyRadioButton" />
+        <Image Grid.Row="2" Grid.Column="0" Margin="-16,6,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" x:Name="DiscardWarningImage" />
+        <RadioButton Grid.Row="2" Grid.Column="1" Margin="8,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Discard" ToolTip="Discard local changes (--force)" Checked="LocalChangesOption_Changed" x:Name="DiscardRadioButton" />
+      </Grid>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

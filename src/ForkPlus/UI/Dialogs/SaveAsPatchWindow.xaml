@@ -1,0 +1,35 @@
+<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SaveAsPatchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" FontSize="13" VerticalAlignment="Center" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionsTextBlock" />
+      <Border Grid.Row="1" Height="80" Margin="0,6,0,2" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionsItemsControl">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <controls:BindableGitPointView>
+                  <controls:BindableGitPointView.GitPoint>
+                    <Binding />
+                  </controls:BindableGitPointView.GitPoint>
+                </controls:BindableGitPointView>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

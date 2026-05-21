@@ -1,0 +1,19 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ReferenceDropdownUserControl">
+  <ComboBox Margin="0" x:Name="ReferenceComboBox">
+    <ComboBox.ItemsPanel>
+      <ItemsPanelTemplate>
+        <VirtualizingStackPanel />
+      </ItemsPanelTemplate>
+    </ComboBox.ItemsPanel>
+    <ComboBox.ItemTemplate>
+      <DataTemplate>
+        <StackPanel Orientation="Horizontal">
+          <StackPanel.Children>
+            <Image Height="16" Width="16" Margin="0" Source="{Binding Icon}" />
+            <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" FontSize="13" Text="{Binding Title}" />
+          </StackPanel.Children>
+        </StackPanel>
+      </DataTemplate>
+    </ComboBox.ItemTemplate>
+  </ComboBox>
+</UserControl>

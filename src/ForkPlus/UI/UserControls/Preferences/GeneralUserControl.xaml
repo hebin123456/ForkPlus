@@ -1,0 +1,168 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor.Diff" xmlns:fuup="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GeneralUserControl" xmlns:fuced="clr-namespace:ForkPlus.UI.Controls.Editor.Diff">
+  <Grid Width="500">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Source Code Folder" Margin="0">
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </TextBlock.Style>
+      </TextBlock>
+      <Grid Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="52" />
+          <RowDefinition Height="17" />
+        </Grid.RowDefinitions>
+        <Grid.Children>
+          <ListBox VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" ContextMenuOpening="SrcDirsListBox_ContextMenuOpening" x:Name="SrcDirsListBox">
+            <ListBox.BorderBrush>
+              <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ListBox.BorderBrush>
+            <ScrollViewer.HorizontalScrollBarVisibility>Disabled</ScrollViewer.HorizontalScrollBarVisibility>
+            <ListBox.ContextMenu>
+              <ContextMenu />
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <DockPanel Height="18">
+                  <DockPanel.Children>
+                    <Button DockPanel.Dock="Right" Margin="2,0,0,0" Height="16" Width="18" Padding="1,0" Click="EditSrcDirButton_Click">
+                      <Image>
+                        <Image.Source>
+                          <DynamicResource ResourceKey="OpenedFolderIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                        </Image.Source>
+                        <Image.Width>12</Image.Width>
+                        <Image.Height>12</Image.Height>
+                        <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                      </Image>
+                    </Button>
+                    <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0" VerticalAlignment="Center" Source="{Binding SrcFolderIcon}" ToolTipService.ToolTip="{Binding SrcFolderIconTooltip}" />
+                    <TextBlock FontSize="13" Margin="6,1,2,1" TextTrimming="CharacterEllipsis" Text="{Binding Path}" />
+                  </DockPanel.Children>
+                </DockPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Grid.Row="1" BorderThickness="1,0,1,1">
+            <Border.BorderBrush>
+              <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Border.BorderBrush>
+            <Border.Background>
+              <DynamicResource ResourceKey="BackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </Border.Background>
+            <Border.Child>
+              <StackPanel Orientation="Horizontal">
+                <StackPanel.Children>
+                  <Button Height="18" Width="18" Margin="-1,-1,0,-1" Click="AddSrcDirButton_Click">
+                    <Button.Style>
+                      <DynamicResource ResourceKey="InlineButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                    </Button.Style>
+                    <Image>
+                      <Image.Source>
+                        <DynamicResource ResourceKey="AddIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                      </Image.Source>
+                      <Image.Width>16</Image.Width>
+                      <Image.Height>16</Image.Height>
+                      <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                    </Image>
+                  </Button>
+                  <Button Margin="0,-1,0,-1" Height="18" Width="18" Click="RemoveSrcDirButton_Click" x:Name="RemoveSrcDirButton">
+                    <Button.Style>
+                      <DynamicResource ResourceKey="InlineButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                    </Button.Style>
+                    <Image>
+                      <Image.Source>
+                        <DynamicResource ResourceKey="RemoveIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                      </Image.Source>
+                      <Image.Width>16</Image.Width>
+                      <Image.Height>16</Image.Height>
+                      <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                    </Image>
+                  </Button>
+                </StackPanel.Children>
+              </StackPanel>
+            </Border.Child>
+          </Border>
+        </Grid.Children>
+      </Grid>
+      <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
+      <TextBlock Grid.Row="4" Grid.Column="0" Text="Diff View" Margin="0,4,0,0">
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </TextBlock.Style>
+      </TextBlock>
+      <editor:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
+        <Control.BorderBrush>
+          <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+        </Control.BorderBrush>
+        <ScrollViewer.VerticalScrollBarVisibility>Auto</ScrollViewer.VerticalScrollBarVisibility>
+      </editor:DiffCodeEditor>
+      <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <StackPanel.Children>
+          <CheckBox Margin="10,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="ShowDiffChangeMarksCheckBox_Changed" Unchecked="ShowDiffChangeMarksCheckBox_Changed" x:Name="ShowDiffChangeMarksCheckBox">Show -+ marks</CheckBox>
+          <TextBlock Margin="14,4,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Font size:" />
+          <TextBox Width="30" Margin="10,4,0,0" HorizontalAlignment="Left" TextAlignment="Left" TextChanged="CodeEditorFontSizeTextBox_TextChanged" x:Name="CodeEditorFontSizeTextBox" />
+        </StackPanel.Children>
+      </StackPanel>
+      <CheckBox Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DisableSyntaxHighlightingCheckBox_Changed" Unchecked="DisableSyntaxHighlightingCheckBox_Changed" x:Name="DisableSyntaxHighlightingCheckBox">Disable syntax highlighting</CheckBox>
+      <Separator Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />
+      <TextBlock Grid.Row="9" Grid.Column="0" Text="Sort commits:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,0" Orientation="Horizontal">
+        <StackPanel.Children>
+          <RadioButton Click="RevisionSortOrder_Changed" x:Name="TopologicalSortOrderRadioButton">Topologically</RadioButton>
+          <RadioButton Click="RevisionSortOrder_Changed" x:Name="DateSortOrderRadioButton">By date<RadioButton.Margin>10,0,0,0</RadioButton.Margin></RadioButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <Separator Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,12" />
+      <CheckBox Grid.Row="11" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="FetchRemotesAutomaticallyCheckBox_Changed" Unchecked="FetchRemotesAutomaticallyCheckBox_Changed" x:Name="FetchRemotesAutomaticallyCheckBox">Fetch remotes automatically</CheckBox>
+      <CheckBox Grid.Row="12" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="FetchAllTagsCheckBox_Changed" Unchecked="FetchAllTagsCheckBox_Changed" x:Name="FetchAllTagsCheckBox">Always include tags into fetch</CheckBox>
+      <CheckBox Grid.Row="13" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="UpdateRepoStatusAutomaticallyCheckBox_Changed" Unchecked="UpdateRepoStatusAutomaticallyCheckBox_Changed" x:Name="UpdateRepoStatusAutomaticallyCheckBox">Tab indicator for uncommitted changes</CheckBox>
+      <CheckBox Grid.Row="14" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="UpdateSubmodulesAutomaticallyCheckBox_Changed" Unchecked="UpdateSubmodulesAutomaticallyCheckBox_Changed" x:Name="UpdateSubmodulesAutomaticallyCheckBox">Update submodules automatically on checkout</CheckBox>
+      <StackPanel Grid.Row="15" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4,0,0">
+        <StackPanel.Children>
+          <TextBlock Margin="33,0,0,0">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.WindowsInfo" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </TextBlock.Foreground>
+            <TextBlock.Text>Space character in branch names:</TextBlock.Text>
+          </TextBlock>
+          <ComboBox Width="40" Height="20" Margin="10,0,0,0" Padding="4,0,0,0" SelectionChanged="SpaceCharacterComboBox_SelectionChanged" x:Name="SpaceCharacterComboBox">
+            <ComboBox.ItemContainerStyle>
+              <DynamicResource ResourceKey="SmallComboBoxItemStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ComboBox.ItemContainerStyle>
+          </ComboBox>
+        </StackPanel.Children>
+      </StackPanel>
+      <CheckBox Grid.Row="16" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="PushAutomaticallyOnCommitCheckBox_Changed" Unchecked="PushAutomaticallyOnCommitCheckBox_Changed" x:Name="PushAutomaticallyOnCommitCheckBox">Push automatically on commit</CheckBox>
+      <CheckBox Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="CompactBranchLabelsCheckBox_Changed" Unchecked="CompactBranchLabelsCheckBox_Changed" x:Name="CompactBranchLabelsCheckBox">Compact branch labels</CheckBox>
+      <Separator Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />
+      <TextBlock Grid.Row="19" Grid.Column="0" Text="Language:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="19" Grid.Column="1" Grid.ColumnSpan="2" Width="150" Margin="10,0,0,0" HorizontalAlignment="Left" SelectionChanged="LanguageComboBox_SelectionChanged" x:Name="LanguageComboBox" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

@@ -1,0 +1,112 @@
+<dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmUploadWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.Resources>
+      <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="{x:Type Expander}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Expander}">
+              <DockPanel>
+                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
+                  <ToggleButton.Template>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                      <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
+                        <DockPanel Margin="{TemplateBinding Padding}">
+                          <TextBlock Text=">" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
+                          <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </DockPanel>
+                      </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                          <Setter TargetName="ArrowText" Property="Text" Value="v" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </ToggleButton.Template>
+                </ToggleButton>
+                <ContentPresenter DockPanel.Dock="Bottom" Visibility="Collapsed" ContentSource="Content" x:Name="ExpandSite" />
+              </DockPanel>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsExpanded" Value="True">
+                  <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </Grid.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Column="0" Grid.Row="0" Text="Workspace:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <TextBlock Grid.Column="1" Grid.Row="0" Margin="8,4,0,4" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="WorkspacePathTextBlock" />
+      <TextBlock Grid.Column="0" Grid.Row="1" Text="Commit title:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Commit title" x:Name="CommitTitleTextBox" />
+      <TextBlock Grid.Column="0" Grid.Row="2" Text="Topic:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Topic" x:Name="TopicTextBox" />
+      <TextBlock Grid.Column="0" Grid.Row="3" Text="Reviewers:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="name1;name2" x:Name="ReviewersTextBox" />
+      <TextBlock Grid.Column="0" Grid.Row="4" Text="CC:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="email1;email2" x:Name="CcTextBox" />
+      <Expander Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Style="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
+        <Grid Margin="0,4,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" x:Name="ForceUploadWarningImage" />
+          <Grid Grid.Column="1" Grid.Row="0" Margin="8,4,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="145" />
+              <ColumnDefinition Width="145" />
+              <ColumnDefinition Width="170" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="_Force upload" ToolTip="-f" x:Name="ForceUploadCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Assume yes" ToolTip="-y" IsChecked="True" x:Name="AssumeYesCheckBox" />
+            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Current branch only" ToolTip="--cbr" x:Name="CurrentBranchOnlyCheckBox" />
+          </Grid>
+          <Grid Grid.Column="1" Grid.Row="1" Margin="8,4,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="145" />
+              <ColumnDefinition Width="145" />
+              <ColumnDefinition Width="170" />
+              <ColumnDefinition Width="170" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Upload HEAD" ToolTip="--head" x:Name="HeadCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Ready" ToolTip="--ready" x:Name="ReadyCheckBox" />
+            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Work in progress" ToolTip="--wip" x:Name="WipCheckBox" />
+            <CheckBox Grid.Column="3" HorizontalAlignment="Left" Content="No update manifest" ToolTip="-N" x:Name="NoUpdateManifestCheckBox" />
+          </Grid>
+        </Grid>
+      </Expander>
+      <TextBlock Grid.Column="0" Grid.Row="7" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
+      <TextBlock Grid.Column="1" Grid.Row="7" Margin="8,8,0,0" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>
+

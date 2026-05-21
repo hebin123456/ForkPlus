@@ -1,0 +1,12 @@
+<ui:CustomWindow xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RevisionDetailsWindow" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <userControls:RevisionDetailsUserControl Grid.Row="1" Grid.Column="0" BorderThickness="0" x:Name="RevisionDetails" />
+    </Grid.Children>
+  </Grid>
+</ui:CustomWindow>

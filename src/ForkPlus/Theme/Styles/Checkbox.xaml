@@ -1,0 +1,141 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="OptionMarkFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Rectangle Margin="0,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Geometry x:Key="OptionMarkGeomentry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M12.667,4.712L6.127,11.252L5.813,11.553L5.498,11.252L1.998,7.752L3.045,6.705L5.813,9.473L11.621,3.665L12.667,4.712Z</Geometry>
+  <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}" />
+    <Setter Property="Panel.Background" Value="{DynamicResource OptionMark.Static.Background}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Border.BorderThickness" Value="1" />
+    <Setter Property="Border.CornerRadius" Value="3" />
+    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type CheckBox}">
+          <Grid Background="#00FFFFFF" SnapsToDevicePixels="True" Height="17" x:Name="TemplateRoot">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Height="16" Width="16" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" Background="{TemplateBinding Panel.Background}" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="CheckBoxBorder">
+              <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
+                <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
+              </Grid>
+            </Border>
+            <ContentPresenter Grid.Column="1" Focusable="False" RecognizesAccessKey="True" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="ContentPresenter" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ContentControl.HasContent" Value="true">
+              <Setter Value="{StaticResource OptionMarkFocusVisual}" Property="FrameworkElement.FocusVisualStyle" />
+              <Setter Property="Control.Padding" Value="6,-1,0,0" />
+            </Trigger>
+            <Trigger Property="UIElement.IsEnabled" Value="false">
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Disabled.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Shape.Fill" />
+              <Setter TargetName="IndeterminateMark" Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Shape.Fill" />
+              <Setter TargetName="ContentPresenter" Value="{DynamicResource Disabled.ForegroundBrush}" Property="TextElement.Foreground" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="true">
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Pressed.Background}" Property="Panel.Background" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Pressed.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="CheckBoxBorder" Property="UIElement.Opacity" Value="0.7" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Shape.Fill" />
+              <Setter TargetName="IndeterminateMark" Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Shape.Fill" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+              <Setter TargetName="OptionMark" Property="UIElement.Opacity" Value="1" />
+              <Setter TargetName="IndeterminateMark" Property="UIElement.Opacity" Value="0" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource SystemAccentBrush}" Property="Panel.Background" />
+              <Setter TargetName="CheckBoxBorder" Property="Border.BorderThickness" Value="0" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource OptionMark.Static.Glyph}" Property="Shape.Fill" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked">
+              <Trigger.Value>
+                <x:Null />
+              </Trigger.Value>
+              <Setter TargetName="OptionMark" Property="UIElement.Opacity" Value="0" />
+              <Setter TargetName="IndeterminateMark" Property="UIElement.Opacity" Value="1" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="MergerSelectAllCheckBox" TargetType="{x:Type CheckBox}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Setter Property="FrameworkElement.FocusVisualStyle">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Panel.Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Border.BorderThickness" Value="1" />
+    <Setter Property="Control.Padding" Value="8,2,8,4" />
+    <Setter Property="Border.CornerRadius" Value="3" />
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type CheckBox}">
+          <Grid Background="#00FFFFFF" SnapsToDevicePixels="True" x:Name="TemplateRoot">
+            <Border CornerRadius="5" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="ContentBorder">
+              <DockPanel Margin="{TemplateBinding Control.Padding}">
+                <Border DockPanel.Dock="Left" Height="16" Width="16" Margin="4,2,12,0" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="CheckBoxBorder">
+                  <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
+                  </Grid>
+                </Border>
+                <ContentPresenter Focusable="False" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="ContentPresenter" />
+              </DockPanel>
+            </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsEnabled" Value="False">
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.Disabled.Background}" Property="Panel.Background" />
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.Disabled.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Disabled.Background}" Property="Panel.Background" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Disabled.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Shape.Fill" />
+              <Setter TargetName="IndeterminateMark" Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Shape.Fill" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="True">
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Panel.Background" />
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.Pressed.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource OptionMark.Pressed.Background}" Property="Panel.Background" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource MergeCheckBox.Pressed.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Shape.Fill" />
+              <Setter TargetName="IndeterminateMark" Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Shape.Fill" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Panel.Background" />
+              <Setter TargetName="ContentBorder" Value="{DynamicResource AccentBrush}" Property="Border.BorderBrush" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource AccentBrush}" Property="Panel.Background" />
+              <Setter TargetName="CheckBoxBorder" Value="{DynamicResource AccentBrush}" Property="Border.BorderBrush" />
+              <Setter TargetName="OptionMark" Value="{DynamicResource ForegroundBrush.Light}" Property="Shape.Fill" />
+              <Setter TargetName="OptionMark" Property="UIElement.Opacity" Value="1" />
+              <Setter TargetName="IndeterminateMark" Property="UIElement.Opacity" Value="0" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked">
+              <Trigger.Value>
+                <x:Null />
+              </Trigger.Value>
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.MouseOver.Background}" Property="Panel.Background" />
+              <Setter TargetName="ContentBorder" Value="{DynamicResource MergeCheckBox.MouseOver.Border}" Property="Border.BorderBrush" />
+              <Setter TargetName="OptionMark" Property="UIElement.Opacity" Value="0" />
+              <Setter TargetName="IndeterminateMark" Property="UIElement.Opacity" Value="1" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>
