@@ -12,10 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Tests", "ForkPlus.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AutomationTests", "ForkPlus.AutomationTests\ForkPlus.AutomationTests.csproj", "{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}"
 EndProject
-Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "ForkPlus.Biturbo", "ForkPlus.Biturbo\ForkPlus.Biturbo.vcxproj", "{A7D6110D-7C92-45CB-BE95-F88353F7FB30}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Biturbo.Compare", "ForkPlus.Biturbo.Compare\ForkPlus.Biturbo.Compare.csproj", "{65F5FC5D-B698-43FB-AE5B-A7B834FD62EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,10 +42,6 @@ Global
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Debug|Any CPU.Build.0 = Debug|x64
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Release|Any CPU.ActiveCfg = Release|x64
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Release|Any CPU.Build.0 = Release|x64
-		{65F5FC5D-B698-43FB-AE5B-A7B834FD62EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65F5FC5D-B698-43FB-AE5B-A7B834FD62EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65F5FC5D-B698-43FB-AE5B-A7B834FD62EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65F5FC5D-B698-43FB-AE5B-A7B834FD62EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
