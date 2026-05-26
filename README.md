@@ -1,6 +1,6 @@
 # ForkPlus
 
-一个名为ForkPlus的Git图形化工具, 复用Fork工具的能力, 增加语言包, 增加git mm和git repo支持, 优化大数据性能, 修复部分bug
+一个名为ForkPlus的Git图形化工具, 用rust重写了Fork工具的底层能力, 增加语言包, 增加git mm和git repo支持, 优化大数据性能, 修复部分bug
 
 This workspace contains the ForkPlus WPF application project in a normal source layout.
 
