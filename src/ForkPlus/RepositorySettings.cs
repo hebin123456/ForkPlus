@@ -112,6 +112,14 @@ namespace ForkPlus
 
 		private bool _gitignoreSuggestionDismissed;
 
+		private static readonly string CommitMessageRegexKey = "commitMessageRegex";
+
+		private string _commitMessageRegex;
+
+		private static readonly string SkipCommitMessageKey = "skipCommitMessage";
+
+		private bool _skipCommitMessage;
+
 		public GitModule GitModule { get; private set; }
 
 		public string DraftMessage
@@ -408,6 +416,31 @@ namespace ForkPlus
 			}
 		}
 
+		[Null]
+		public string CommitMessageRegex
+		{
+			get
+			{
+				return _commitMessageRegex;
+			}
+			set
+			{
+				_commitMessageRegex = value;
+			}
+		}
+
+		public bool SkipCommitMessage
+		{
+			get
+			{
+				return _skipCommitMessage;
+			}
+			set
+			{
+				_skipCommitMessage = value;
+			}
+		}
+
 		public static RepositorySettings Load(GitModule gitModule)
 		{
 			Log.Debug("Loading " + gitModule.RepositoryName + " settings");
@@ -503,6 +536,8 @@ namespace ForkPlus
 			int tabWidth = json[TabWidthKey]?.Value<int>() ?? 4;
 			bool hideUntrackedFiles = json[HideUntrackedFilesKey]?.Value<bool>() ?? false;
 			bool gitignoreSuggestionDismissed = json[GitignoreSuggestionDismissedKey]?.Value<bool>() ?? false;
+			string commitMessageRegex = json[CommitMessageRegexKey]?.Value<string>() ?? string.Empty;
+			bool skipCommitMessage = json[SkipCommitMessageKey]?.Value<bool>() ?? false;
 			return new RepositorySettings
 			{
 				DraftMessage = draftMessage,
@@ -528,7 +563,9 @@ namespace ForkPlus
 				LeanBranchingNoFastForward = leanBranchingNoFastForward,
 				TabWidth = tabWidth,
 				HideUntrackedFiles = hideUntrackedFiles,
-				GitignoreSuggestionDismissed = gitignoreSuggestionDismissed
+				GitignoreSuggestionDismissed = gitignoreSuggestionDismissed,
+				CommitMessageRegex = commitMessageRegex,
+				SkipCommitMessage = skipCommitMessage
 			};
 		}
 
@@ -631,6 +668,14 @@ namespace ForkPlus
 				{
 					GitignoreSuggestionDismissedKey,
 					new JValue(target.GitignoreSuggestionDismissed)
+				},
+				{
+					CommitMessageRegexKey,
+					new JValue(target.CommitMessageRegex)
+				},
+				{
+					SkipCommitMessageKey,
+					new JValue(target.SkipCommitMessage)
 				}
 			};
 		}

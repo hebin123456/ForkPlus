@@ -1,7 +1,7 @@
-<ui:CustomWindow xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiCodeReviewWindow" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
+<ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="720" Width="1080" MinHeight="400" MinWidth="560" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiCodeReviewWindow" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
   <Grid x:Name="AiResultGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" MinWidth="365" />
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition MinWidth="120" Width="350" />
     </Grid.ColumnDefinitions>
@@ -10,9 +10,26 @@
       <RowDefinition />
     </Grid.RowDefinitions>
     <Grid.Children>
-      <TextBlock Grid.Row="0" Margin="10,0,0,6" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
+      <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="10,0,10,6" LastChildFill="True">
+        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry AI Review" Click="RetryButton_Click" x:Name="RetryButton" />
+        <TextBlock FontSize="16" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
+      </DockPanel>
       <Separator HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0" VerticalAlignment="Bottom" />
       <userControls:RevisionDetailsUserControl Grid.Row="1" Grid.Column="0" x:Name="RevisionDetails" />
+      <Grid Grid.Row="1" Grid.Column="0" Visibility="Collapsed" x:Name="FileReviewGrid">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="320" MinWidth="160" />
+          <ColumnDefinition Width="5" />
+          <ColumnDefinition Width="*" MinWidth="200" />
+        </Grid.ColumnDefinitions>
+        <userControls:FileListUserControl Grid.Column="0" EnableMultiSelection="True" ContextMenuOpening="FileReviewFileListUserControl_ContextMenuOpening" x:Name="FileReviewFileListUserControl">
+          <userControls:FileListUserControl.ContextMenu>
+            <ContextMenu />
+          </userControls:FileListUserControl.ContextMenu>
+        </userControls:FileListUserControl>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{DynamicResource VerticalGridSplitter}" x:Name="FileReviewGridSplitter" />
+        <controls:CommitFileDiffControl Grid.Column="2" x:Name="FileReviewDiffControl" />
+      </Grid>
       <Grid Grid.Row="1" Grid.Column="2">
         <Grid.Children>
           <wv2:WebView2 x:Name="AiResponseWebView" />

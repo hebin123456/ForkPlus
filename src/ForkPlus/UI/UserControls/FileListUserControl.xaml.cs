@@ -67,14 +67,6 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _restoringColumnWidth;
 
-		static FileListUserControl()
-		{
-			if (FolderIcon.CanFreeze)
-			{
-				FolderIcon.Freeze();
-			}
-		}
-
 		public bool EnableMultiSelection
 		{
 			get
@@ -306,9 +298,17 @@ namespace ForkPlus.UI.UserControls
 				}
 				return;
 			}
-			FileListMode mode = GetEffectiveMode(source, Mode);
-			Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
-			FileListItem rootItem = await Task.Run(() => BuildRootItem(source, mode, fileIcons));
+			FileListItem rootItem;
+			if (isLargeRebuild)
+			{
+				FileListMode mode = GetEffectiveMode(source, Mode);
+				Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
+				rootItem = await Task.Run(() => BuildRootItem(source, mode, fileIcons));
+			}
+			else
+			{
+				rootItem = BuildRootItem(source, GetEffectiveMode(source, Mode), CreateFileIconCache(source), FolderIcon);
+			}
 			using (TreeView.LockUpdates())
 			{
 				if (restoreSelection)
@@ -327,7 +327,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RebuildItems(ChangedFile[] source)
 		{
-			TreeView.RootItem = BuildRootItem(source, GetEffectiveMode(source, Mode), CreateFileIconCache(source));
+			TreeView.RootItem = BuildRootItem(source, GetEffectiveMode(source, Mode), CreateFileIconCache(source), FolderIcon);
 		}
 
 		private static FileListMode GetEffectiveMode(ChangedFile[] source, FileListMode mode)
@@ -347,10 +347,10 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static FileListItem BuildRootItem(ChangedFile[] source, FileListMode mode, Dictionary<string, ImageSource> fileIcons)
+		private static FileListItem BuildRootItem(ChangedFile[] source, FileListMode mode, Dictionary<string, ImageSource> fileIcons, ImageSource folderIcon = null)
 		{
 			FileListItem rootItem = new FileListItem(new ChangedFile("", staged: true), "", null);
-			ApplyAddedEntries(rootItem, mode, source, fileIcons);
+			ApplyAddedEntries(rootItem, mode, source, fileIcons, folderIcon);
 			return rootItem;
 		}
 
@@ -629,10 +629,10 @@ namespace ForkPlus.UI.UserControls
 
 		private void ApplyAddedEntries(FileListMode mode, ChangedFile[] addedEntries)
 		{
-			ApplyAddedEntries(TreeView.RootItem as FileListItem, mode, addedEntries, null);
+			ApplyAddedEntries(TreeView.RootItem as FileListItem, mode, addedEntries, null, FolderIcon);
 		}
 
-		private static void ApplyAddedEntries(FileListItem fileListItem, FileListMode mode, ChangedFile[] addedEntries, Dictionary<string, ImageSource> fileIcons)
+		private static void ApplyAddedEntries(FileListItem fileListItem, FileListMode mode, ChangedFile[] addedEntries, Dictionary<string, ImageSource> fileIcons, ImageSource folderIcon = null)
 		{
 			foreach (ChangedFile changedFile in addedEntries)
 			{
@@ -648,7 +648,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						for (int j = 0; j < array.Length - 1; j++)
 						{
-							parent = FindOrCreateFolder(parent, array[j], changedFile.Staged);
+							parent = FindOrCreateFolder(parent, array[j], changedFile.Staged, folderIcon);
 						}
 					}
 					name = array[num];
@@ -739,13 +739,13 @@ namespace ForkPlus.UI.UserControls
 			parent.Children.Insert(index, newItem);
 		}
 
-		private static FileListItem FindOrCreateFolder(FileListItem parent, string name, bool staged)
+		private static FileListItem FindOrCreateFolder(FileListItem parent, string name, bool staged, ImageSource folderIcon)
 		{
 			if (parent.Children.FirstOrDefault((MultiselectionTreeViewItem x) => x.Title == name && (x as FileListItem).IsDirectory) is FileListItem result)
 			{
 				return result;
 			}
-			FileListItem fileListItem = new FileListItem(new ChangedFile(Path.Combine(parent.ChangedFile.Path, name), staged), name, FolderIcon);
+			FileListItem fileListItem = new FileListItem(new ChangedFile(Path.Combine(parent.ChangedFile.Path, name), staged), name, folderIcon);
 			int index = BinarySearch(parent.Children, fileListItem);
 			parent.Children.Insert(index, fileListItem);
 			parent.IsExpanded = true;

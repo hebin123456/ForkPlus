@@ -35,16 +35,6 @@ namespace ForkPlus.Accounts
 		{
 		}
 
-		public ServiceResult<OAuthToken> GetAccessToken(string code)
-		{
-			ApiRequest apiRequest = new ApiRequest(HttpMethod.Post, "/site/oauth2/access_token");
-			apiRequest.AddParameter("grant_type", "authorization_code");
-			apiRequest.AddParameter("code", code);
-			apiRequest.AddParameter("redirect_uri", BitbucketConsts.CallbackUri);
-			ServiceResult<object> jsonResponse = Connection.JsonRequest(apiRequest);
-			return Decode(jsonResponse, Coder.DecodeAccessToken);
-		}
-
 		public ServiceResult<OAuthToken> RefreshToken(string refreshToken)
 		{
 			ApiRequest apiRequest = new ApiRequest(HttpMethod.Post, "/site/oauth2/access_token");

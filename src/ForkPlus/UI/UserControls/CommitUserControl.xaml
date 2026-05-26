@@ -20,8 +20,24 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" PreviewKeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,52,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" Style="{DynamicResource CommitPlaceholderTextBox}" TabIndex="2" x:Name="CommitSubjectTextBox" />
-        <TextBlock Grid.Row="0" Margin="1,3,25,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
+        <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" PreviewKeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,74,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" Style="{DynamicResource CommitPlaceholderTextBox}" TabIndex="2" x:Name="CommitSubjectTextBox" />
+        <TextBlock Grid.Row="0" Margin="1,3,47,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
+        <Button Grid.Row="0" Background="#00FFFFFF" Height="18" Width="18" Margin="1,1,25,1" Padding="0" BorderThickness="0" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="False" ToolTip="Clear commit message" Click="ClearCommitMessageButton_Click" x:Name="ClearCommitMessageButton">
+          <Button.FocusVisualStyle>
+            <x:Null />
+          </Button.FocusVisualStyle>
+          <Button.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Background="{TemplateBinding Background}">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+            </ControlTemplate>
+          </Button.Template>
+          <Grid Width="12" Height="12" IsHitTestVisible="False">
+            <Line X1="3" Y1="3" X2="9" Y2="9" Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+            <Line X1="9" Y1="3" X2="3" Y2="9" Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+          </Grid>
+        </Button>
         <controls:DropDownButton Grid.Row="0" Background="#00FFFFFF" Height="18" Width="18" Margin="1,1,3,1" BorderThickness="0" ClickMode="Press" HorizontalAlignment="Right" Focusable="False" ToolTip="Recent Commit Messages" x:Name="RecentCommitMessagesDropDownButton">
           <controls:DropDownButton.FocusVisualStyle>
             <x:Null />
@@ -31,7 +47,7 @@
           </controls:DropDownButton.ContextMenu>
           <Image Source="{DynamicResource ListIcon}" Margin="2" />
         </controls:DropDownButton>
-        <controls:CommitDescriptionTextBox PreviewKeyDown="CommitDescriptionTextBox_PreviewKeyDown" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="1" Margin="0,-1,0,0" BorderThickness="1,0,1,1" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" TabIndex="3" x:Name="CommitDescriptionTextBox" />
+        <controls:CommitDescriptionTextBox TextChanged="CommitDescriptionTextBox_TextChanged" PreviewKeyDown="CommitDescriptionTextBox_PreviewKeyDown" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="1" Margin="0,-1,0,0" BorderThickness="1,0,1,1" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" TabIndex="3" x:Name="CommitDescriptionTextBox" />
         <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Height="1" VerticalAlignment="Bottom" Margin="1,0,1,0" />
         <DockPanel Grid.Row="2" LastChildFill="False" Margin="0,8,0,0">
           <CheckBox IsThreeState="False" Content="Amend" DockPanel.Dock="Left" Margin="0,6,0,4" VerticalAlignment="Center" Checked="AmendCheckBox_Changed" Unchecked="AmendCheckBox_Changed" x:Name="CheckBoxAmend" />

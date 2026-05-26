@@ -1096,7 +1096,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					RepositoryUserControl.Commands.ShowRemoveLocalBranchWindow.Execute(repositoryUserControl, branches);
 				}, activeBranch != branch));
-				if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlusSettings.Default.OpenAiLoggedIn)
+				if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured())
 				{
 					LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
 					if (localBranch != null)
@@ -1288,7 +1288,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					RepositoryUserControl.Commands.ShowRemoveRemoteBranchWindow.Execute(repositoryUserControl, branches);
 				}));
-				if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlusSettings.Default.OpenAiLoggedIn)
+				if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured())
 				{
 					LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
 					if (localBranch != null)

@@ -35,5 +35,18 @@ namespace ForkPlus.UI.Dialogs
 				Dst = dst;
 			}
 		}
+
+		public class Files : AiCodeReviewTarget
+		{
+			public ChangedFile[] ChangedFiles { get; }
+
+			public bool Amend { get; }
+
+			public Files(ChangedFile[] changedFiles, bool amend)
+			{
+				ChangedFiles = changedFiles;
+				Amend = amend;
+			}
+		}
 	}
 }

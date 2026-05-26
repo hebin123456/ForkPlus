@@ -14,14 +14,36 @@ namespace ForkPlus.Biturbo
 		public static GitCommandResult<TResult> Run<TBtResult, TResult>(Func<TBtResult> with, ExecuteDelegate<TBtResult> execute, MapResultDelegate<TBtResult, TResult> map, ReleaseResultDelegate<TBtResult> release)
 		{
 			TBtResult outResult = with();
-			BtResult btResult = execute(ref outResult);
-			if (btResult != 0)
+			bool shouldRelease = false;
+			try
 			{
-				return GitCommandResult<TResult>.Failure(btResult.ToGitCommandError());
+				BtResult btResult = execute(ref outResult);
+				if (btResult != 0)
+				{
+					return GitCommandResult<TResult>.Failure(btResult.ToGitCommandError());
+				}
+				shouldRelease = true;
+				GitCommandResult<TResult> result = map(ref outResult);
+				return result;
 			}
-			GitCommandResult<TResult> result = map(ref outResult);
-			release(ref outResult);
-			return result;
+			catch (Exception ex)
+			{
+				return GitCommandResult<TResult>.Failure(new GitCommandError.BtError("Biturbo request failed: " + ex));
+			}
+			finally
+			{
+				if (shouldRelease)
+				{
+					try
+					{
+						release(ref outResult);
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to release biturbo result: " + ex);
+					}
+				}
+			}
 		}
 	}
 }

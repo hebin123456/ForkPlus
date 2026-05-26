@@ -13,6 +13,9 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid.Children>
       <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Text="Commit Template">
@@ -29,6 +32,10 @@
       <controls:PlaceholderTextBox TextChanged="CommitTemplateTextBox_TextChanged" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,4" HorizontalAlignment="Stretch" Height="120" VerticalAlignment="Stretch" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" x:Name="CommitTemplateTextBox" />
       <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,20,0,8" />
       <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="AddSignedOffMessageCheckBox_Changed" Unchecked="AddSignedOffMessageCheckBox_Changed" x:Name="AddSignedOffMessageCheckBox">Add Signed-off-by line at the end of the commit message</CheckBox>
+      <Separator Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,12,0,8" />
+      <CheckBox Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="SkipCommitMessageCheckBox_Changed" Unchecked="SkipCommitMessageCheckBox_Changed" x:Name="SkipCommitMessageCheckBox">Do not require commit message</CheckBox>
+      <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Commit message regex:" x:Name="CommitMessageRegexLabel" />
+      <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
     </Grid.Children>
   </Grid>
 </UserControl>

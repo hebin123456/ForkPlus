@@ -62,11 +62,35 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 			}
 		}
 
+		private void SkipCommitMessageCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (!_updateInProgress)
+			{
+				bool skip = SkipCommitMessageCheckBox.IsChecked.GetValueOrDefault();
+				_gitModule.Settings.SkipCommitMessage = skip;
+				_gitModule.Settings.Save();
+				CommitMessageRegexTextBox.IsEnabled = !skip;
+			}
+		}
+
+		private void CommitMessageRegexTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!_updateInProgress && _gitModule != null)
+			{
+				_gitModule.Settings.CommitMessageRegex = CommitMessageRegexTextBox.Text ?? "";
+				_gitModule.Settings.Save();
+			}
+		}
+
 		private void Refresh()
 		{
 			_updateInProgress = true;
 			AddSignedOffMessageCheckBox.IsChecked = _gitModule.Settings.SignOff;
-			GitCommandResult<CommitTemplate> gitCommandResult = new GetCommitTemplateGitCommand().Execute(_gitModule, GitConfigLocation.Local);
+			bool skip = _gitModule.Settings.SkipCommitMessage;
+			SkipCommitMessageCheckBox.IsChecked = skip;
+			CommitMessageRegexTextBox.Text = _gitModule.Settings.CommitMessageRegex ?? "";
+			CommitMessageRegexTextBox.IsEnabled = !skip;
+			GitCommandResult<CommitTemplate> gitCommandResult = _gitModule == null ? GitCommandResult<CommitTemplate>.Failure(new GitCommandError.GenericError("Module is null")) : new GetCommitTemplateGitCommand().Execute(_gitModule, GitConfigLocation.Local);
 			if (gitCommandResult.Succeeded)
 			{
 				UseGlobalCommitTemplateCheckBox.IsChecked = false;

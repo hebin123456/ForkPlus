@@ -64,10 +64,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\third_party\biturbo.dll">
-      <Link>biturbo.dll</Link>
+    <None Include="..\..\third_party\biturbo.dll" Link="biturbo.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -78,5 +77,16 @@
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
     <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="RemoveDuplicateWebView2Loader" AfterTargets="Build;Publish">
+    <ItemGroup>
+      <DuplicateWebView2Loader Include="$(TargetDir)runtimes\**\WebView2Loader.dll" />
+      <DuplicateWebView2Loader Include="$(PublishDir)runtimes\**\WebView2Loader.dll" Condition="'$(PublishDir)' != ''" />
+    </ItemGroup>
+    <Delete Files="@(DuplicateWebView2Loader)" />
+    <RemoveDir Directories="$(TargetDir)runtimes" Condition="Exists('$(TargetDir)runtimes')" />
+    <RemoveDir Directories="$(PublishDir)runtimes" Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes')" />
   </Target>
 </Project>

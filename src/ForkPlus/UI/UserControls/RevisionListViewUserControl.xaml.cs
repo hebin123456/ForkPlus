@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using ForkPlus.Biturbo;
+using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Commands.LeanBranching;
@@ -618,7 +619,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.Execute(repositoryUserControl, gitModule, selectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
 				});
 				yield return new Separator();
-				if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlusSettings.Default.OpenAiLoggedIn)
+				if (AiAgent.GetAvailableAiAgents().Length != 0 || OpenAiService.IsAiReviewConfigured())
 				{
 					yield return CreateRevisionRangeAiCodeReviewMenuItem(repositoryUserControl, selectedRevisions);
 					yield return new Separator();
@@ -997,7 +998,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				RepositoryUserControl.Commands.ShowRemoveRemoteBranchWindow.Execute(repositoryUserControl, new RemoteBranch[1] { remoteBranch });
 			});
-			if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (AiAgent.GetAvailableAiAgents().Length != 0 || OpenAiService.IsAiReviewConfigured())
 			{
 				LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
 				if (localBranch != null)
@@ -1177,7 +1178,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowRemoveLocalBranchWindow.Execute(repositoryUserControl, new LocalBranch[1] { localBranch });
 				});
 			}
-			if (AiAgent.GetAvailableAiAgents().Length != 0 || ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (AiAgent.GetAvailableAiAgents().Length != 0 || OpenAiService.IsAiReviewConfigured())
 			{
 				LocalBranch localMain = repositoryData.References.LocalMain(gitModule);
 				if (localMain != null)
@@ -1295,10 +1296,10 @@ namespace ForkPlus.UI.UserControls
 				};
 				menuItem.Items.Add(menuItem2);
 			}
-			if (ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (OpenAiService.IsAiReviewConfigured())
 			{
 				MenuItem menuItem3 = new MenuItem();
-				menuItem3.Header = PreferencesLocalization.FormatMenuHeader("Code Review with {0}...", "OpenAI");
+				menuItem3.Header = PreferencesLocalization.FormatMenuHeader("Code Review with {0}...", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI");
 				menuItem3.IsEnabled = isEnabled;
 				menuItem3.Click += delegate
 				{
@@ -1343,10 +1344,10 @@ namespace ForkPlus.UI.UserControls
 				};
 				menuItem.Items.Add(menuItem2);
 			}
-			if (ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (OpenAiService.IsAiReviewConfigured())
 			{
 				MenuItem menuItem3 = new MenuItem();
-				menuItem3.Header = PreferencesLocalization.FormatMenuHeader("Code Review with {0}...", "OpenAI");
+				menuItem3.Header = PreferencesLocalization.FormatMenuHeader("Code Review with {0}...", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI");
 				menuItem3.Click += delegate
 				{
 					Revision[] array = SortRevisionsByRows(decoratedRevisions).Map((DecoratedRevision x) => x.ToRevision());

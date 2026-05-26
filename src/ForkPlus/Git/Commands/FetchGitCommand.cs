@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -32,7 +33,7 @@ namespace ForkPlus.Git.Commands
 				gitCommand.Add("--tags");
 			}
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, "Fetching...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Fetching..."));
 			(string, string)[] env = new(string, string)[1] { (Consts.Env.NoPrompt, noPrompt ? "1" : "0") };
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor, isBt: false);
 			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).Env(env).ExecuteWithCallback(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
@@ -75,13 +76,14 @@ namespace ForkPlus.Git.Commands
 			}
 			if (num > 0)
 			{
-				string resultMessage = ((num == 1) ? $"Fetched {num} branch" : $"Fetched {num} branches");
+				string resultMessage = ((num == 1) ? PreferencesLocalization.FormatCurrent("Fetched {0} branch", num) : PreferencesLocalization.FormatCurrent("Fetched {0} branches", num));
 				monitor.Success(resultMessage);
 			}
 			else
 			{
-				monitor.AppendOutputLine("Already up to date");
-				monitor.Success("Already up to date");
+				string message = PreferencesLocalization.Current("Already up to date");
+				monitor.AppendOutputLine(message);
+				monitor.Success(message);
 			}
 			return GitCommandResult.Success();
 		}

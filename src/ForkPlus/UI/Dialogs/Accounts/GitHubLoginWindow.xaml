@@ -48,14 +48,6 @@
           <Button Content="personal access tokens" Margin="2,-3,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" x:Name="OpenPersonalAccessTokenConfigurationUrlButton" />
         </StackPanel>
       </Grid>
-      <Grid Grid.Row="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="OAuthContainer">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="95" />
-          <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,8,0" Text="Username:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-        <controls:PlaceholderTextBox TextChanged="UsernameTextBox_TextChanged" Grid.Column="1" Margin="0" Padding="4,2,4,2" FontSize="13" Placeholder="Username" x:Name="UsernameTextBox" />
-      </Grid>
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

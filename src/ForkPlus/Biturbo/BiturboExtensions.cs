@@ -40,6 +40,10 @@ namespace ForkPlus.Biturbo
 				int count = array.IndexOfItem((byte x) => x == 0) ?? array.Length;
 				string @string = Encoding.UTF8.GetString(array, 0, count);
 				Marshal.FreeHGlobal(intPtr);
+				if (string.IsNullOrWhiteSpace(@string))
+				{
+					@string = "Biturbo failed with " + btResult;
+				}
 				return new GitCommandError.BtError(@string);
 			}
 			}
@@ -83,7 +87,7 @@ namespace ForkPlus.Biturbo
 
 		public static byte[] GetData(this IntPtr _this, long length)
 		{
-			if (length == 0L)
+			if (length <= 0L || _this == IntPtr.Zero)
 			{
 				return new byte[0];
 			}
@@ -94,7 +98,7 @@ namespace ForkPlus.Biturbo
 
 		public static string GetUtf8String(this IntPtr _this, long length)
 		{
-			if (length == 0L)
+			if (length <= 0L || _this == IntPtr.Zero)
 			{
 				return "";
 			}
@@ -105,6 +109,10 @@ namespace ForkPlus.Biturbo
 
 		public static string[] GetStringArray(this IntPtr ptr, long length)
 		{
+			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new string[0];
+			}
 			string[] array = new string[length];
 			for (int i = 0; i < length; i++)
 			{
@@ -116,6 +124,10 @@ namespace ForkPlus.Biturbo
 
 		public static uint[] GetUInt32Array(this IntPtr ptr, long length)
 		{
+			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new uint[0];
+			}
 			int[] array = new int[length];
 			Marshal.Copy(ptr, array, 0, (int)length);
 			return Array.ConvertAll(array, x => unchecked((uint)x));
@@ -123,6 +135,10 @@ namespace ForkPlus.Biturbo
 
 		public static byte[] GetByteArray(this IntPtr ptr, long length)
 		{
+			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new byte[0];
+			}
 			byte[] array = new byte[length];
 			Marshal.Copy(ptr, array, 0, (int)length);
 			return array;
@@ -130,6 +146,10 @@ namespace ForkPlus.Biturbo
 
 		public static TResult[] GetStructArray<TSource, TResult>(this IntPtr ptr, long length, Func<TSource, TResult> selector)
 		{
+			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new TResult[0];
+			}
 			int num = Marshal.SizeOf<TSource>();
 			TResult[] array = new TResult[length];
 			for (int i = 0; i < length; i++)
@@ -142,6 +162,10 @@ namespace ForkPlus.Biturbo
 
 		public static TResult[] GetStructArray<TSource, TResult>(this IntPtr ptr, long length, Func<int, TSource, TResult> selector)
 		{
+			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new TResult[0];
+			}
 			int num = Marshal.SizeOf<TSource>();
 			TResult[] array = new TResult[length];
 			for (int i = 0; i < length; i++)

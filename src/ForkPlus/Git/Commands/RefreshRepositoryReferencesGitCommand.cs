@@ -42,18 +42,6 @@ namespace ForkPlus.Git.Commands
 			string[] hiddenReferences = gitModule.Settings.HiddenReferences;
 			string[] pinnedReferences = gitModule.Settings.PinnedReferences;
 			RepositoryReferences repositoryReferences = RepositoryReferences.New(result, filterReferences, hiddenReferences, pinnedReferences, hideTags);
-			if (new Random().Next(0, 5) == 0 && result.Refs.Length != 0)
-			{
-				GitCommandResult<RepositoryReferences> gitCommandResult2 = ExecuteOld(gitModule, gitConfig, null, new SubdomainsToReload(SubDomain.References));
-				if (gitCommandResult2.Succeeded)
-				{
-					GitCommandResult gitCommandResult3 = ReferencesAreEqual(gitCommandResult2.Result, repositoryReferences);
-					if (!gitCommandResult3.Succeeded)
-					{
-						return GitCommandResult<RepositoryReferences>.Failure(gitCommandResult3.Error);
-					}
-				}
-			}
 			if (oldRepositoryReferences != null && result == oldRepositoryReferences.ReferenceStorage && Equals(oldRepositoryReferences.FilterReferences, filterReferences) && Equals(oldRepositoryReferences.HiddenReferences, hiddenReferences) && Equals(oldRepositoryReferences.PinnedReferences, pinnedReferences))
 			{
 				return GitCommandResult<RepositoryReferences>.Success(oldRepositoryReferences);

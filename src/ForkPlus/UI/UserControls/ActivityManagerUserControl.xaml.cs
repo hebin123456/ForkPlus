@@ -227,7 +227,7 @@ namespace ForkPlus.UI.UserControls
 
 			public void Refresh()
 			{
-				Message = Job.Monitor.ProgressMessage ?? "";
+				Message = PreferencesLocalization.Current(Job.Monitor.ProgressMessage ?? "");
 				CurrentProgress = Job.Monitor.Progress.GetValueOrDefault();
 				FinishTime = Job.FinishTime?.ToLocalTime();
 				JobProgressProgressBarVisibility = ((Job.Status != JobStatus.Running) ? Visibility.Collapsed : Visibility.Visible);

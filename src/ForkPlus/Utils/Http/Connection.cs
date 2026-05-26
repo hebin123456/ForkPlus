@@ -4,7 +4,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using ForkPlus.Jobs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -47,6 +49,8 @@ namespace ForkPlus.Utils.Http
 		[Null]
 		public readonly IRestServiceAuthentication Authentication;
 
+		private readonly int _timeoutSeconds;
+
 		static Connection()
 		{
 			ClientHandler = new HttpClientHandler();
@@ -55,12 +59,23 @@ namespace ForkPlus.Utils.Http
 		}
 
 		public Connection(string serverUrl, [Null] IRestServiceAuthentication authentication)
+			: this(serverUrl, authentication, 0)
+		{
+		}
+
+		public Connection(string serverUrl, [Null] IRestServiceAuthentication authentication, int timeoutSeconds)
 		{
 			ServerUrl = serverUrl;
 			Authentication = authentication;
+			_timeoutSeconds = timeoutSeconds;
 		}
 
 		public HttpRequestResult Request(ApiRequest apiRequest, bool jsonRequest = false)
+		{
+			return Request(apiRequest, jsonRequest, null);
+		}
+
+		public HttpRequestResult Request(ApiRequest apiRequest, bool jsonRequest, JobMonitor monitor)
 		{
 			Stopwatch stopwatch = Stopwatch.StartNew();
 			string text = ServerUrl + apiRequest.Slug;
@@ -99,13 +114,24 @@ namespace ForkPlus.Utils.Http
 			{
 				return HttpRequestResult.Failure(new ServiceError.AuthorizationLoadingError());
 			}
-			Task<HttpResponseMessage> task = Client.SendAsync(request);
+			CancellationTokenSource cancellationTokenSource = _timeoutSeconds > 0 ? new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds)) : null;
+			monitor?.SetCancellationAction(delegate
+			{
+				cancellationTokenSource?.Cancel();
+			});
+			Task<HttpResponseMessage> task = cancellationTokenSource != null ? Client.SendAsync(request, cancellationTokenSource.Token) : Client.SendAsync(request);
 			try
 			{
-				task.Wait();
+				HttpRequestResult waitResult = WaitForCompletion(task, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+				if (waitResult != null)
+				{
+					return waitResult;
+				}
 			}
 			catch (Exception ex2)
 			{
+				monitor?.SetCancellationAction(null);
+				cancellationTokenSource?.Dispose();
 				string innerExceptionMessage2 = GetInnerExceptionMessage(ex2);
 				Log.Warn($"{apiRequest.HttpMethod} {text} ({innerExceptionMessage2})");
 				return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage2));
@@ -117,24 +143,94 @@ namespace ForkPlus.Utils.Http
 				Log.Warn($"{(int)result.StatusCode} {result.ReasonPhrase}");
 				if (result.StatusCode == HttpStatusCode.NotFound)
 				{
+					ClearCancellation(monitor, cancellationTokenSource);
 					return HttpRequestResult.Failure(new ServiceError.NotFound(text));
 				}
 				if (IsJsonError(result))
 				{
-					return DeserializeJsonError(result);
+					Task<string> errorContentTask = result.Content.ReadAsStringAsync();
+					HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+					if (errorBodyWaitResult != null)
+					{
+						return errorBodyWaitResult;
+					}
+					ClearCancellation(monitor, cancellationTokenSource);
+					return DeserializeJsonError(errorContentTask.Result);
 				}
+				ClearCancellation(monitor, cancellationTokenSource);
 				return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
 			}
 			Task<string> task2 = result.Content.ReadAsStringAsync();
-			task2.Wait();
+			HttpRequestResult bodyWaitResult = WaitForCompletion(task2, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+			if (bodyWaitResult != null)
+			{
+				return bodyWaitResult;
+			}
+			ClearCancellation(monitor, cancellationTokenSource);
 			return HttpRequestResult.Success(result.Headers, task2.Result);
 		}
 
-		private static HttpRequestResult DeserializeJsonError(HttpResponseMessage errorResponse)
+		[Null]
+		private HttpRequestResult WaitForCompletion(Task task, [Null] CancellationTokenSource cancellationTokenSource, [Null] JobMonitor monitor, Stopwatch stopwatch, HttpMethod method, string url)
 		{
-			Task<string> task = errorResponse.Content.ReadAsStringAsync();
-			task.Wait();
-			string result = task.Result;
+			while (true)
+			{
+				bool completed;
+				try
+				{
+					completed = task.Wait(250);
+				}
+				catch (Exception ex)
+				{
+					string innerExceptionMessage = GetInnerExceptionMessage(ex);
+					Log.Warn($"{method} {url} ({innerExceptionMessage})");
+					ClearCancellation(monitor, cancellationTokenSource);
+					return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage));
+				}
+				if (completed)
+				{
+					break;
+				}
+				if (monitor?.IsCanceled == true)
+				{
+					cancellationTokenSource?.Cancel();
+					Log.Warn($"{method} {url} (cancelled)");
+					monitor?.SetCancellationAction(null);
+					cancellationTokenSource?.Dispose();
+					return HttpRequestResult.Failure(new ServiceError.Cancelled());
+				}
+				if (cancellationTokenSource?.IsCancellationRequested == true || (_timeoutSeconds > 0 && stopwatch.Elapsed >= TimeSpan.FromSeconds(_timeoutSeconds)))
+				{
+					cancellationTokenSource?.Cancel();
+					Log.Warn($"{method} {url} (timeout after {_timeoutSeconds}s)");
+					monitor?.SetCancellationAction(null);
+					cancellationTokenSource?.Dispose();
+					return HttpRequestResult.Failure(new ServiceError.UnknownError("The operation timed out."));
+				}
+			}
+			if (task.IsCanceled)
+			{
+				ClearCancellation(monitor, cancellationTokenSource);
+				return HttpRequestResult.Failure(new ServiceError.Cancelled());
+			}
+			if (task.IsFaulted)
+			{
+				string innerExceptionMessage = GetInnerExceptionMessage(task.Exception);
+				Log.Warn($"{method} {url} ({innerExceptionMessage})");
+				ClearCancellation(monitor, cancellationTokenSource);
+				return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage));
+			}
+			return null;
+		}
+
+		private static void ClearCancellation([Null] JobMonitor monitor, [Null] CancellationTokenSource cancellationTokenSource)
+		{
+			monitor?.SetCancellationAction(null);
+			cancellationTokenSource?.Dispose();
+		}
+
+		private static HttpRequestResult DeserializeJsonError(string result)
+		{
 			if (!(JsonConvert.DeserializeObject(result) is JContainer json))
 			{
 				Log.Error("Cannot deserialize json in the server error");
@@ -161,7 +257,12 @@ namespace ForkPlus.Utils.Http
 
 		public ServiceResult<object> JsonRequest(ApiRequest apiRequest)
 		{
-			HttpRequestResult httpRequestResult = Request(apiRequest, jsonRequest: true);
+			return JsonRequest(apiRequest, null);
+		}
+
+		public ServiceResult<object> JsonRequest(ApiRequest apiRequest, JobMonitor monitor)
+		{
+			HttpRequestResult httpRequestResult = Request(apiRequest, jsonRequest: true, monitor);
 			if (!httpRequestResult.Succeeded)
 			{
 				return ServiceResult<object>.Failure(httpRequestResult.Error);

@@ -17,7 +17,7 @@ using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
-	public partial class BinaryDiffUserControl : UserControl
+	public partial class BinaryDiffUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
 		private bool _showTitle;
 
@@ -529,6 +529,13 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			{
 				ViewModeButtonsContainer.Hide();
 			}
+		}
+
+		public void ApplyLocalization()
+		{
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+			SrcFileContentUserControl.ApplyLocalization();
+			DstFileContentUserControl.ApplyLocalization();
 		}
 
 		private Job StartSmudgeLfsImageJob(LfsPointer lfsPointer, GitModule gitModule, Action<JobMonitor> progressCallback, Action<GitCommandResult<MemoryStream>> completedCallback)

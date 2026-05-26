@@ -51,7 +51,6 @@
           <Button Content="API token with scopes" Margin="2,-3,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenApiTokensConfigurationUrlButton_Click" x:Name="OpenApiTokensConfigurationUrlButton" />
         </StackPanel>
       </Grid>
-      <Grid Grid.Row="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="OAuthContainer" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

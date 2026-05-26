@@ -45,6 +45,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.OnSubmit();
 			IntegrationUserControl.Save();
+			AiReviewPreferencesUserControl.Save();
 			CustomCommandsUserControl.Save();
 			ForkPlusSettings.Default.Save();
 		}
@@ -53,6 +54,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			GeneralUserControl.Initialize(this);
 			CommitUserControl.Initialize();
+			AiReviewPreferencesUserControl.Initialize();
 			IntegrationUserControl.Initialize(this);
 			GitUserControl.Initialize(this);
 			CustomCommandsUserControl.InitializeGlobal(this);
@@ -74,6 +76,7 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = PreferencesLocalization.Translate("Close", language);
 			GeneralTabItem.Header = PreferencesLocalization.Translate("General", language);
 			CommitTabItem.Header = PreferencesLocalization.Translate("Commit", language);
+			AiReviewTabItem.Header = PreferencesLocalization.Translate("AI Enhancement", language);
 			GitTabItem.Header = PreferencesLocalization.Translate("Git", language);
 			IntegrationTabItem.Header = PreferencesLocalization.Translate("Integration", language);
 			CustomCommandsTab.Header = PreferencesLocalization.Translate("Custom Commands", language);

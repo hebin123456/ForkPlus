@@ -59,7 +59,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				await ManualWebView.EnsureCoreWebView2Async();
+				await ManualWebView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
 				ManualWebView.CoreWebView2.ContextMenuRequested += delegate(object sender, CoreWebView2ContextMenuRequestedEventArgs args)
 				{
 					args.Handled = true;

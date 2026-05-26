@@ -114,7 +114,7 @@ namespace ForkPlus.UI.UserControls
 				else
 				{
 					CancelButton.Visibility = ((primaryJob.Status == JobStatus.Finished) ? Visibility.Collapsed : Visibility.Visible);
-					DescriptionTextBlock.Text = primaryJob.Monitor.ProgressMessage ?? "";
+					DescriptionTextBlock.Text = Translate(primaryJob.Monitor.ProgressMessage ?? "");
 				}
 				double? progress = primaryJob.Monitor.Progress;
 				if (progress.HasValue)

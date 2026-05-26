@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -39,7 +40,7 @@ namespace ForkPlus.Git.Commands
 			}
 			gitCommand.Add("--progress");
 			monitor.Append(null, gitCommand);
-			monitor.Update(0.0, "Pulling...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Pulling..."));
 			using GitLfsProgressHandler gitLfsProgressHandler = new GitLfsProgressHandler(monitor);
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteLong(delegate(string stdOutLine)
 			{
@@ -65,7 +66,7 @@ namespace ForkPlus.Git.Commands
 			{
 				if (NoChangesRegEx.FirstMatch(monitor.Output) != null)
 				{
-					monitor.Success("Already up to date");
+					monitor.Success(PreferencesLocalization.Current("Already up to date"));
 				}
 				else
 				{
@@ -73,7 +74,7 @@ namespace ForkPlus.Git.Commands
 					if (match != null)
 					{
 						string text = match.Groups[1].Value.TrimEnd();
-						monitor.Success("Pulled '" + text + "'");
+						monitor.Success(PreferencesLocalization.FormatCurrent("Pulled '{0}'", text));
 					}
 				}
 			}

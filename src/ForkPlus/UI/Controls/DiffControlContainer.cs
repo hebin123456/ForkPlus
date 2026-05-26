@@ -33,6 +33,10 @@ namespace ForkPlus.UI.Controls
 		public void ApplyLocalization()
 		{
 			Header.ApplyLocalization();
+			if (_subView is ForkPlus.UI.ILocalizableControl localizableControl)
+			{
+				localizableControl.ApplyLocalization();
+			}
 		}
 
 		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : FrameworkElement

@@ -45,38 +45,74 @@ namespace ForkPlus
 
 		public static RepositoryManager Load()
 		{
-			string repositoriesTomlPath = App.RepositoriesFilePath;
-			GitCommandResult<RepositoryManager> gitCommandResult = BtRequest.Run(() => default(BtRepositoryManager), delegate(ref BtRepositoryManager x)
+			try
 			{
-				return Bt.bt_get_repository_manager(repositoriesTomlPath, ref x);
-			}, delegate(ref BtRepositoryManager x)
-			{
-				return x.Into();
-			}, delegate(ref BtRepositoryManager x)
-			{
-				Bt.bt_release_repository_manager(ref x);
-			});
-			if (!gitCommandResult.Succeeded)
-			{
-				Log.Warn("Failed to read '" + repositoriesTomlPath + "':\n" + gitCommandResult.Error.FriendlyDescription);
-				string[] sourceDirs = ForkPlusSettings.Default.RepositoryManager.SourceDirectories;
-				int scanDepth = ForkPlusSettings.Default.RepositoryManager.ScanDepth;
-				ForkPlusSettings.RepositoryManagerSettings.Repository[] repositories = ForkPlusSettings.Default.RepositoryManager.Repositories;
-				sourceDirs.Map((string x) => PathHelper.NormalizeUnix(x));
-				Repository[] repositories2 = repositories.Map((ForkPlusSettings.RepositoryManagerSettings.Repository r) => Import(r, sourceDirs));
-				RepositoryManager repositoryManager = new RepositoryManager(sourceDirs, (byte)scanDepth, new string[0], repositories2);
-				repositoryManager.Save();
-				return repositoryManager;
+				string repositoriesTomlPath = App.RepositoriesFilePath;
+				GitCommandResult<RepositoryManager> gitCommandResult = BtRequest.Run(() => default(BtRepositoryManager), delegate(ref BtRepositoryManager x)
+				{
+					return Bt.bt_get_repository_manager(repositoriesTomlPath, ref x);
+				}, delegate(ref BtRepositoryManager x)
+				{
+					return x.Into();
+				}, delegate(ref BtRepositoryManager x)
+				{
+					Bt.bt_release_repository_manager(ref x);
+				});
+				if (!gitCommandResult.Succeeded)
+				{
+					Log.Warn("Failed to read '" + repositoriesTomlPath + "':\n" + gitCommandResult.Error.FriendlyDescription);
+					ForkPlusSettings.RepositoryManagerSettings repositoryManagerSettings = ForkPlusSettings.Default.RepositoryManager;
+					string[] sourceDirs = repositoryManagerSettings?.SourceDirectories ?? new string[0];
+					int scanDepth = repositoryManagerSettings?.ScanDepth ?? 5;
+					ForkPlusSettings.RepositoryManagerSettings.Repository[] repositories = repositoryManagerSettings?.Repositories ?? new ForkPlusSettings.RepositoryManagerSettings.Repository[0];
+					List<Repository> importedRepositories = new List<Repository>(repositories.Length);
+					foreach (ForkPlusSettings.RepositoryManagerSettings.Repository repository in repositories)
+					{
+						try
+						{
+							if (repository != null)
+							{
+								importedRepositories.Add(Import(repository, sourceDirs));
+							}
+						}
+						catch (Exception ex)
+						{
+							Log.Warn("Failed to import repository manager entry", ex);
+						}
+					}
+					Repository[] repositories2 = importedRepositories.ToArray();
+					RepositoryManager repositoryManager = new RepositoryManager(sourceDirs, (byte)scanDepth, new string[0], repositories2);
+					try
+					{
+						repositoryManager.Save();
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to save fallback repository manager", ex);
+					}
+					return repositoryManager;
+				}
+				return gitCommandResult.Result ?? Empty();
 			}
-			return gitCommandResult.Result;
+			catch (Exception ex)
+			{
+				Log.Error("Failed to initialize repository manager", ex);
+				return Empty();
+			}
+		}
+
+		private static RepositoryManager Empty()
+		{
+			return new RepositoryManager(new string[0], 5, new string[0], new Repository[0]);
 		}
 
 		public RepositoryManager(string[] sourceDirs, byte scanDepth, string[] ignore, Repository[] repositories)
 		{
-			SourceDirs = sourceDirs.Map((string x) => (!x.EndsWith("\\")) ? (x + "\\") : x);
+			sourceDirs = sourceDirs ?? new string[0];
+			SourceDirs = sourceDirs.CompactMap((string x) => string.IsNullOrWhiteSpace(x) ? null : ((!x.EndsWith("\\")) ? (x + "\\") : x));
 			ScanDepth = scanDepth;
-			Ignore = ignore;
-			Repositories = repositories;
+			Ignore = ignore ?? new string[0];
+			Repositories = repositories ?? new Repository[0];
 		}
 
 		public void Save()
@@ -225,9 +261,10 @@ namespace ForkPlus
 
 		public static (string, string) RelativePathFor(string path, string[] sourceDirs)
 		{
+			sourceDirs = sourceDirs ?? new string[0];
 			foreach (string text in sourceDirs)
 			{
-				if (path.StartsWith(text))
+				if (!string.IsNullOrEmpty(text) && path.StartsWith(text))
 				{
 					string text2 = path.Substring(text.Length).TrimStart('/');
 					int num = text2.LastIndexOf('/');

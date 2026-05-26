@@ -32,10 +32,6 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class CommitUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
-		private static readonly string CommitMessageSeparator;
-
-		private static readonly string CommitMessageWindowsSeparator;
-
 		private static readonly string PrepareCommitMsgHook;
 
 		private static readonly CommitUserControlCommands Commands;
@@ -119,19 +115,10 @@ namespace ForkPlus.UI.UserControls
 			set
 			{
 				string text = value ?? string.Empty;
+				SplitCommitMessageForFields(text, out var subject, out var description);
 				CommitDescriptionTextBox.DisableUpdates = true;
-				Range? range = RangeOfAny(text, CommitMessageSeparator, CommitMessageWindowsSeparator);
-				if (range.HasValue)
-				{
-					Range valueOrDefault = range.GetValueOrDefault();
-					CommitSubjectTextBox.Text = text.Substring(0, valueOrDefault.Start);
-					CommitDescriptionTextBox.Text = text.Substring(valueOrDefault.End);
-				}
-				else
-				{
-					CommitSubjectTextBox.Text = text.Trim(Consts.Chars.NewLines);
-					CommitDescriptionTextBox.Text = "";
-				}
+				CommitSubjectTextBox.Text = subject;
+				CommitDescriptionTextBox.Text = description;
 				CommitDescriptionTextBox.DisableUpdates = false;
 			}
 		}
@@ -168,6 +155,11 @@ namespace ForkPlus.UI.UserControls
 				if (StageFileUserControl.StagedFilesFileListUserControl.TreeView.Items.Count == 0 && !AmendMode)
 				{
 					return false;
+				}
+				GitModule gitModule = RepositoryUserControl.GitModule;
+				if (gitModule != null && gitModule.Settings != null && gitModule.Settings.SkipCommitMessage)
+				{
+					return true;
 				}
 				if (string.IsNullOrWhiteSpace(CommitSubjectTextBox.Text))
 				{
@@ -225,8 +217,6 @@ namespace ForkPlus.UI.UserControls
 
 		static CommitUserControl()
 		{
-			CommitMessageSeparator = "\n\n";
-			CommitMessageWindowsSeparator = "\r\n\r\n";
 			PrepareCommitMsgHook = "prepare-commit-msg";
 			Commands = new CommitUserControlCommands();
 			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(CommitUserControl), new FrameworkPropertyMetadata(KeyboardNavigationMode.Local));
@@ -238,7 +228,7 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			PreferencesLocalization.ApplyCurrent(this);
 			CommitDescriptionTextBox.SetAutocompleteProvider(_commitMessageAutocompleteProvider);
-			SubjectLengthLimitTextBlock.ToolTip = $"The recommended subject line should be {ForkPlusSettings.Default.CommitSubjectLowLimit} characters or less";
+			RefreshSubjectLengthLimitToolTip();
 			base.Loaded += delegate
 			{
 				if (!_isLoaded)
@@ -372,12 +362,12 @@ namespace ForkPlus.UI.UserControls
 			StageFileUserControl.UnstagedFilesContextMenuOpening += delegate(object s, ContextMenu contextMenu)
 			{
 				contextMenu.SetItems(CreateUnstagedFileListContextMenuItems());
-				AddCodeAiReviewMenuItem(contextMenu, StageFileUserControl.SelectedUnstagedFiles);
+				AddCodeAiReviewMenuItem(contextMenu, StageFileUserControl.ExpandedSelectedUnstagedFiles);
 			};
 			StageFileUserControl.StagedFilesContextMenuOpening += delegate(object s, ContextMenu contextMenu)
 			{
 				contextMenu.SetItems(CreateStagedFileListContextMenuItems());
-				AddCodeAiReviewMenuItem(contextMenu, StageFileUserControl.SelectedStagedFiles);
+				AddCodeAiReviewMenuItem(contextMenu, StageFileUserControl.ExpandedSelectedStagedFiles);
 			};
 			StageFileUserControl.FileListSettingsMenuOpened += delegate(object s, ContextMenu contextMenu)
 			{
@@ -401,10 +391,12 @@ namespace ForkPlus.UI.UserControls
 			});
 			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectLowLimitChanged", delegate
 			{
+				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
 			});
 			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectHighLimitChanged", delegate
 			{
+				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
 			});
 			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "PushAutomaticallyOnCommitChanged", delegate
@@ -417,6 +409,7 @@ namespace ForkPlus.UI.UserControls
 		public void ApplyLocalization()
 		{
 			PreferencesLocalization.ApplyCurrent(this);
+			RefreshSubjectLengthLimitToolTip();
 			StageFileUserControl.ApplyLocalization();
 			StageFileUserControl.RefreshStageAllButton();
 			StageFileUserControl.RefreshStageButtons();
@@ -424,6 +417,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				StageFileUserControl.RefreshUnstagedStatusLabel(GitModule.Settings.HideUntrackedFiles, ShowIgnoredFiles);
 			}
+			UpdateCommitButtonTitle();
+			UpdateCommitWarningMessage();
 			FileDiffControl.ApplyLocalization();
 		}
 
@@ -1131,6 +1126,16 @@ namespace ForkPlus.UI.UserControls
 			GitModule.Settings.Save();
 		}
 
+		private void ClearCommitMessageButton_Click(object sender, RoutedEventArgs e)
+		{
+			FullCommitMessage = "";
+			EraseSavedCommitMessage();
+			UpdateCommitButtonState();
+			UpdateSubjectLengthLimit();
+			UpdateCommitWarningMessage();
+			CommitSubjectTextBox.Focus();
+		}
+
 		private void RepositoryDataUpdated(object sender, RepositoryDataUpdatedEventArgs args)
 		{
 			if (args.RepositoryUserControl == RepositoryUserControl)
@@ -1431,11 +1436,16 @@ namespace ForkPlus.UI.UserControls
 			MenuItem menuItem = new MenuItem
 			{
 				Header = PreferencesLocalization.MenuHeader("Code AI Review..."),
-				IsEnabled = false
+				IsEnabled = ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured()
 			};
 			menuItem.Click += delegate
 			{
-				new MessageBoxWindow("Code AI Review", "Code AI Review is not implemented yet.", "OK", showCancelButton: false).ShowDialog();
+				ChangedFile[] files = selectedFiles.Filter((ChangedFile file) => !file.IsDirectory && !(file is SubmoduleChangedFile)).ToArray();
+				if (files.Length == 0)
+				{
+					return;
+				}
+				RepositoryUserControl.Commands.ShowAiResultWindow.Execute(RepositoryUserControl, new AiCodeReviewTarget.Files(files, AmendMode));
 			};
 			contextMenu.Items.Add(menuItem);
 		}
@@ -1731,9 +1741,23 @@ namespace ForkPlus.UI.UserControls
 
 		private void UpdateCommitWarningMessage()
 		{
+			GitModule gitModule = RepositoryUserControl?.GitModule;
+			bool skipRegex = gitModule?.Settings?.SkipCommitMessage ?? false;
+			if (!skipRegex)
+			{
+				string commitMessageRegex = gitModule?.Settings?.CommitMessageRegex;
+				if (string.IsNullOrWhiteSpace(commitMessageRegex))
+				{
+					commitMessageRegex = ForkPlusSettings.Default.CommitMessageRegex;
+				}
+				if (!OpenAiService.MatchesCommitMessageRegex(FullCommitMessage, commitMessageRegex, out string commitRegexWarning))
+				{
+					ShowCommitWarning(commitRegexWarning, isError: true);
+					return;
+				}
+			}
 			if (IsCommitAllowed && !RebaseInProgress)
 			{
-				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
 				{
 					RepositoryData repositoryData = RepositoryUserControl.RepositoryData;
@@ -1741,8 +1765,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						if (repositoryData.References.HeadSha.HasValue && repositoryData.References.ActiveBranch == null)
 						{
-							WarningMessageContainer.Show();
-							WarningTextBlock.Text = PreferencesLocalization.Current("Repository is in detached HEAD state");
+							ShowCommitWarning(PreferencesLocalization.Current("Repository is in detached HEAD state"));
 							return;
 						}
 						if (AmendMode)
@@ -1759,8 +1782,7 @@ namespace ForkPlus.UI.UserControls
 										CommitGraphCache commitGraphCache = RepositoryUserControl.CommitGraphCache;
 										if (commitGraphCache != null && !activeBranch.IsInfrontUpstream(remoteBranch, gitModule, commitGraphCache))
 										{
-											WarningMessageContainer.Show();
-											WarningTextBlock.Text = PreferencesLocalization.Current("Amending commit that has already been pushed");
+											ShowCommitWarning(PreferencesLocalization.Current("Amending commit that has already been pushed"));
 											return;
 										}
 									}
@@ -1771,6 +1793,33 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			WarningMessageContainer.Hide();
+		}
+
+		private void ShowCommitWarning(string message, bool isError = false)
+		{
+			WarningMessageContainer.Show();
+			const int maxWarningLength = 60;
+			if (message != null && message.Length > maxWarningLength)
+			{
+				string truncated = message.Substring(0, maxWarningLength) + "...";
+				WarningTextBlock.Text = truncated;
+				WarningTextBlock.ToolTip = message;
+				WarningMessageContainer.ToolTip = message;
+			}
+			else
+			{
+				WarningTextBlock.Text = message;
+				WarningTextBlock.ToolTip = null;
+				WarningMessageContainer.ToolTip = null;
+			}
+			if (isError)
+			{
+				WarningTextBlock.Foreground = Application.Current.TryFindResource("Diff.Removed.Foreground") as Brush;
+			}
+			else
+			{
+				WarningTextBlock.ClearValue(TextBlock.ForegroundProperty);
+			}
 		}
 
 		private void UpdateSubjectLengthLimit()
@@ -1850,6 +1899,11 @@ namespace ForkPlus.UI.UserControls
 			UpdateCommitSection();
 		}
 
+		private void RefreshSubjectLengthLimitToolTip()
+		{
+			SubjectLengthLimitTextBlock.ToolTip = PreferencesLocalization.FormatCurrent("The recommended subject line should be {0} characters or less", ForkPlusSettings.Default.CommitSubjectLowLimit);
+		}
+
 		public void LoadCommitMessage()
 		{
 			GitCommandResult<string> gitCommandResult = new GetMergeCommitMessageGitCommand().Execute(GitModule);
@@ -1867,6 +1921,13 @@ namespace ForkPlus.UI.UserControls
 		{
 			UpdateCommitButtonState();
 			UpdateSubjectLengthLimit();
+			UpdateCommitWarningMessage();
+		}
+
+		private void CommitDescriptionTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			UpdateCommitButtonState();
+			RefreshDescriptionFieldHeight();
 			UpdateCommitWarningMessage();
 		}
 
@@ -1959,11 +2020,11 @@ namespace ForkPlus.UI.UserControls
 				contextMenu.Items.Add(menuItem);
 				contextMenu.Items.Add(new Separator());
 			}
-			if (ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (OpenAiService.IsAiReviewConfigured())
 			{
 				MenuItem menuItem2 = new MenuItem
 				{
-					Header = PreferencesLocalization.FormatCurrent("Generate commit message with {0}", "OpenAI")
+					Header = PreferencesLocalization.FormatCurrent("Generate commit message with {0}", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI")
 				};
 				menuItem2.Click += delegate
 				{
@@ -1977,9 +2038,8 @@ namespace ForkPlus.UI.UserControls
 								new ErrorWindow(RepositoryUserControl, patchResult.Error).ShowDialog();
 							});
 						}
-						PrivateAccessTokenAuthentication authentication = new PrivateAccessTokenAuthentication("https://api.openai.com", "generic");
-						OpenAiService openAiService = new OpenAiService(new Connection("https://api.openai.com", authentication));
-						ServiceResult<OpenAiResponse> response = openAiService.GenerateCommitMessage(patchResult.Result, monitor);
+						OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
+						ServiceResult<OpenAiResponse> response = openAiService.GenerateCommitMessage(patchResult.Result, GitModule, monitor);
 						base.Dispatcher.Async(delegate
 						{
 							if (!response.Succeeded)
@@ -2041,7 +2101,7 @@ namespace ForkPlus.UI.UserControls
 			string[] array2 = result;
 			foreach (string fullMessage in array2)
 			{
-				SplitRecentCommitMessage(fullMessage, out var subject, out var description);
+				SplitCommitMessageForFields(fullMessage, out var subject, out var description);
 				string text = subject + (string.IsNullOrEmpty(description) ? "" : "...");
 				MenuItem menuItem4 = new MenuItem
 				{
@@ -2057,7 +2117,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SetRecentCommitMessage(string fullMessage)
 		{
-			SplitRecentCommitMessage(fullMessage, out var subject, out var description);
+			SplitCommitMessageForFields(fullMessage, out var subject, out var description);
 			CommitDescriptionTextBox.DisableUpdates = true;
 			CommitSubjectTextBox.Text = subject;
 			CommitDescriptionTextBox.Text = description;
@@ -2066,7 +2126,7 @@ namespace ForkPlus.UI.UserControls
 			UpdateCommitButtonState();
 		}
 
-		private static void SplitRecentCommitMessage(string fullMessage, out string subject, out string description)
+		private static void SplitCommitMessageForFields(string fullMessage, out string subject, out string description)
 		{
 			string text = (fullMessage ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n').TrimEnd(Consts.Chars.NewLines);
 			int lineBreakIndex = text.IndexOf('\n');

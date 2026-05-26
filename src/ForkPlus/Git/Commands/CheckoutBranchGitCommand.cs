@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -52,7 +53,7 @@ namespace ForkPlus.Git.Commands
 			if (match != null)
 			{
 				string text = match.Groups[1].Value.TrimEnd();
-				monitor.Success("Up to date with '" + text + "'");
+				monitor.Success(PreferencesLocalization.FormatCurrent("Up to date with '{0}'", text));
 			}
 			else
 			{
@@ -63,11 +64,11 @@ namespace ForkPlus.Git.Commands
 					string value2 = match2.Groups[4].Value;
 					if (match2.Groups[1].Value != "")
 					{
-						monitor.Success("Behind '" + value + "' '" + value2 + "'");
+						monitor.Success(PreferencesLocalization.FormatCurrent("Behind '{0}' '{1}'", value, value2));
 					}
 					else if (match2.Groups[2].Value != "")
 					{
-						monitor.Success("Ahead of '" + value + "' '" + value2 + "'");
+						monitor.Success(PreferencesLocalization.FormatCurrent("Ahead of '{0}' '{1}'", value, value2));
 					}
 				}
 				else
@@ -76,7 +77,7 @@ namespace ForkPlus.Git.Commands
 					if (match3 != null)
 					{
 						string text2 = match3.Groups[1].Value.TrimEnd();
-						monitor.Success("Switched to branch '" + text2 + "'");
+						monitor.Success(PreferencesLocalization.FormatCurrent("Switched to branch '{0}'", text2));
 					}
 				}
 			}

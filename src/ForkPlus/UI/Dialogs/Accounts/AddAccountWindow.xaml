@@ -33,31 +33,17 @@
             </StackPanel>
           </Border>
           <DataTemplate.Triggers>
-            <MultiDataTrigger>
-              <MultiDataTrigger.Conditions>
-                <Condition>
-                  <Condition.Binding>
-                    <Binding Path="IsSelected">
-                      <Binding.RelativeSource>
-                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                      </Binding.RelativeSource>
-                    </Binding>
-                  </Condition.Binding>
-                </Condition>
-                <Condition>
-                  <Condition.Binding>
-                    <Binding Path="IsFocused">
-                      <Binding.RelativeSource>
-                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                      </Binding.RelativeSource>
-                    </Binding>
-                  </Condition.Binding>
-                </Condition>
-              </MultiDataTrigger.Conditions>
-              <MultiDataTrigger.Setters>
-                <Setter TargetName="Border" Value="{DynamicResource Item.SelectedActive.Background}" Property="Border.BorderBrush" />
-              </MultiDataTrigger.Setters>
-            </MultiDataTrigger>
+            <DataTrigger Value="True">
+              <DataTrigger.Binding>
+                <Binding Path="IsSelected">
+                  <Binding.RelativeSource>
+                    <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                  </Binding.RelativeSource>
+                </Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedActive.Background}" Property="Border.BorderBrush" />
+              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Border.Background" />
+            </DataTrigger>
           </DataTemplate.Triggers>
         </DataTemplate>
       </ListBox.ItemTemplate>

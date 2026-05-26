@@ -51,37 +51,8 @@
       </ComboBox>
       <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Page guide at column:" />
       <TextBox Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Width="30" HorizontalAlignment="Left" TextChanged="PageGuideLinePositionTextBox_TextChanged" x:Name="PageGuideLinePositionTextBox" />
-      <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
-      <TextBlock Grid.Row="5" Grid.Column="0" Text="Generate Commit Message">
-        <TextBlock.Style>
-          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </TextBlock.Style>
-      </TextBlock>
-      <TextBlock Grid.Row="6" Grid.Column="0" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="OpenAI:" />
-      <DockPanel Grid.Row="6" Grid.Column="1">
-        <DockPanel.Children>
-          <DockPanel Dock="Top" Margin="10,0,0,0" Grid.Row="6" Grid.Column="1" x:Name="OpenAiStatusContainer">
-            <DockPanel.Children>
-              <Grid DockPanel.Dock="Left">
-                <Grid.Children>
-                  <ProgressBar Margin="1,0,6,-1" Width="14" Height="14" Visibility="Hidden" x:Name="OpenAiStatusBusyIndicator">
-                    <ProgressBar.Style>
-                      <DynamicResource ResourceKey="CircularProgressBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </ProgressBar.Style>
-                    <ProgressBar.Foreground>
-                      <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </ProgressBar.Foreground>
-                  </ProgressBar>
-                  <Ellipse DockPanel.Dock="Left" Margin="1,0,6,-1" Width="10" Height="10" VerticalAlignment="Center" x:Name="OpenAiStatusEllipse" />
-                </Grid.Children>
-              </Grid>
-              <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" x:Name="OpenAiStatusTextBlock" />
-            </DockPanel.Children>
-          </DockPanel>
-          <Button DockPanel.Dock="Top" Margin="10,-1,0,0" Padding="4,0" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Click="OpenAiLoginButton_Click" x:Name="OpenAiLoginButton">Log In...</Button>
-          <Button DockPanel.Dock="Top" Margin="10,6,0,0" Padding="4,0" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Click="OpenAiLogoutButton_Click" x:Name="OpenAiLogoutButton">Log Out</Button>
-        </DockPanel.Children>
-      </DockPanel>
+      <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Commit message regex:" />
+      <TextBox Grid.Row="4" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
     </Grid.Children>
   </Grid>
 </UserControl>

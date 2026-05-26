@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git
 {
@@ -74,13 +75,13 @@ namespace ForkPlus.Git
 			{
 				if (Behind > 0)
 				{
-					return $"'{branch.Name}' {Ahead} commits ahead, {Behind} commits behind '{branch.UpstreamFullName}'";
+					return PreferencesLocalization.FormatCurrent("'{0}' {1} commits ahead, {2} commits behind '{3}'", branch.Name, Ahead, Behind, branch.UpstreamFullName);
 				}
-				return $"'{branch.Name}' {Ahead} commits ahead '{branch.UpstreamFullName}'";
+				return PreferencesLocalization.FormatCurrent("'{0}' {1} commits ahead '{2}'", branch.Name, Ahead, branch.UpstreamFullName);
 			}
 			if (Behind > 0)
 			{
-				return $"'{branch.Name}' {Behind} commits behind '{branch.UpstreamFullName}'";
+				return PreferencesLocalization.FormatCurrent("'{0}' {1} commits behind '{2}'", branch.Name, Behind, branch.UpstreamFullName);
 			}
 			return "";
 		}

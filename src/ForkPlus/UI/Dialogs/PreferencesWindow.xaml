@@ -12,6 +12,9 @@
       <TabItem Header="Commit" x:Name="CommitTabItem">
         <preferences:CommitPreferencesUserControl Margin="0,10,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitUserControl" />
       </TabItem>
+      <TabItem Header="AI Review" x:Name="AiReviewTabItem">
+        <preferences:AiReviewPreferencesUserControl Margin="0,10,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AiReviewPreferencesUserControl" />
+      </TabItem>
       <TabItem Header="Git" x:Name="GitTabItem">
         <preferences:GitUserControl Margin="0,10,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitUserControl" />
       </TabItem>

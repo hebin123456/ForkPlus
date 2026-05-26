@@ -38,8 +38,18 @@ namespace ForkPlus
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to get file name in '" + filepath + "'", ex);
-				return filepath;
+				Log.Error("Failed to get file name in path length " + (filepath?.Length ?? 0), ex);
+				if (string.IsNullOrEmpty(filepath))
+				{
+					return filepath;
+				}
+				string normalized = Normalize(filepath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				int separatorIndex = normalized.LastIndexOf(Path.DirectorySeparatorChar);
+				if (separatorIndex >= 0 && separatorIndex + 1 < normalized.Length)
+				{
+					return normalized.Substring(separatorIndex + 1);
+				}
+				return normalized.Length > 256 ? normalized.Substring(0, 256) : normalized;
 			}
 		}
 
@@ -79,8 +89,8 @@ namespace ForkPlus
 		[Null]
 		public static (string, string) FindFirstDifferentComponent(string path1, string path2)
 		{
-			string[] array = Path.GetFullPath(path1).Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar);
-			string[] array2 = Path.GetFullPath(path2).Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar);
+			string[] array = GetComparablePathComponents(path1);
+			string[] array2 = GetComparablePathComponents(path2);
 			int num = array.Length - 1;
 			int num2 = array2.Length - 1;
 			while (num >= 0 && num2 >= 0 && string.Equals(array[num], array2[num2], StringComparison.OrdinalIgnoreCase))
@@ -91,6 +101,21 @@ namespace ForkPlus
 			string item = ((num >= 0) ? array[num] : null);
 			string item2 = ((num2 >= 0) ? array2[num2] : null);
 			return (item, item2);
+		}
+
+		private static string[] GetComparablePathComponents(string path)
+		{
+			string normalizedPath = path ?? "";
+			try
+			{
+				normalizedPath = Path.GetFullPath(normalizedPath);
+			}
+			catch (Exception ex) when (ex is PathTooLongException || ex is NotSupportedException || ex is ArgumentException)
+			{
+				Log.Warn("Failed to normalize path for comparison '" + path + "': " + ex.Message);
+			}
+			normalizedPath = Normalize(normalizedPath).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			return normalizedPath.Split(new char[2] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 		}
 	}
 }

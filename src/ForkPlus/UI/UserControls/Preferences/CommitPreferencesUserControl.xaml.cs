@@ -4,21 +4,13 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
-using System.Windows.Shapes;
-using ForkPlus.Accounts;
-using ForkPlus.Accounts.AiServices;
-using ForkPlus.Jobs;
 using ForkPlus.Settings;
-using ForkPlus.UI.Dialogs.Accounts;
 using ForkPlus.UI.UserControls.Preferences;
-using ForkPlus.Utils.Http;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
 	public partial class CommitPreferencesUserControl : UserControl
 	{
-		private readonly JobQueue _jobQueue = new JobQueue();
-
 		private bool _initialized;
 
 		public CommitPreferencesUserControl()
@@ -44,52 +36,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			CommitSubjectLowLimitTextBox.Text = ForkPlusSettings.Default.CommitSubjectLowLimit.ToString();
 			CommitSubjectHighLimitTextBox.Text = ForkPlusSettings.Default.CommitSubjectHighLimit.ToString();
 			PageGuideLinePositionTextBox.Text = ForkPlusSettings.Default.PageGuideLinePosition.ToString();
-			RefreshOpenAiControls();
+			CommitMessageRegexTextBox.Text = ForkPlusSettings.Default.CommitMessageRegex;
 			_initialized = true;
-		}
-
-		private void RefreshOpenAiControls()
-		{
-			if (!ForkPlusSettings.Default.OpenAiLoggedIn)
-			{
-				OpenAiLoginButton.Show();
-				OpenAiStatusContainer.Collapse();
-				OpenAiLogoutButton.Collapse();
-				return;
-			}
-			OpenAiLoginButton.Collapse();
-			OpenAiStatusContainer.Show();
-			OpenAiStatusBusyIndicator.Show();
-			OpenAiStatusEllipse.Collapse();
-			OpenAiStatusTextBlock.Text = PreferencesLocalization.Current("Updating...");
-			PrivateAccessTokenAuthentication authentication = new PrivateAccessTokenAuthentication("https://api.openai.com", "generic");
-			Connection connection = new Connection("https://api.openai.com", authentication);
-			OpenAiService service = new OpenAiService(connection);
-			_jobQueue.Add(PreferencesLocalization.Current("Signing in..."), delegate
-			{
-				ServiceResult<OpenAiResponse> result = service.Test();
-				base.Dispatcher.Async(delegate
-				{
-					OpenAiStatusBusyIndicator.Collapse();
-					OpenAiStatusEllipse.Show();
-					if (!result.Succeeded)
-					{
-						OpenAiStatusEllipse.Fill = Theme.ApplicationColors.YellowBrush;
-						int num = result.Error.FriendlyMessage.IndexOf(':');
-						string text = ((num > 0) ? result.Error.FriendlyMessage.Substring(0, num) : result.Error.FriendlyMessage);
-						OpenAiStatusTextBlock.Text = text;
-						OpenAiStatusTextBlock.ToolTip = result.Error.FriendlyMessage;
-						OpenAiLogoutButton.Show();
-					}
-					else
-					{
-						OpenAiStatusEllipse.Fill = Theme.ApplicationColors.GreenBrush;
-						OpenAiStatusTextBlock.Text = PreferencesLocalization.Current("Logged in");
-						OpenAiStatusTextBlock.ToolTip = null;
-						OpenAiLogoutButton.Show();
-					}
-				});
-			});
 		}
 
 		private void PageGuideLinePositionTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -148,25 +96,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 			NotificationCenter.Current.RaiseCommitSubjectHighLimitChanged(this, result);
 		}
 
-		private void OpenAiLoginButton_Click(object sender, RoutedEventArgs e)
+		private void CommitMessageRegexTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (new OpenAiLoginWindow().ShowDialog().GetValueOrDefault() && ForkPlusSettings.Default.OpenAiLoggedIn)
+			if (_initialized)
 			{
-				OpenAiLoginButton.Collapse();
-				OpenAiStatusContainer.Show();
-				OpenAiLogoutButton.Show();
-				OpenAiStatusEllipse.Fill = Theme.ApplicationColors.GreenBrush;
-				OpenAiStatusTextBlock.Text = PreferencesLocalization.Current("Logged in");
+				ForkPlusSettings.Default.CommitMessageRegex = CommitMessageRegexTextBox.Text ?? "";
 			}
-		}
-
-		private void OpenAiLogoutButton_Click(object sender, RoutedEventArgs e)
-		{
-			new PrivateAccessTokenAuthentication("https://api.openai.com", "generic").Destroy();
-			ForkPlusSettings.Default.OpenAiLoggedIn = false;
-			OpenAiLogoutButton.Collapse();
-			OpenAiStatusContainer.Collapse();
-			OpenAiLoginButton.Show();
 		}
 
 	}

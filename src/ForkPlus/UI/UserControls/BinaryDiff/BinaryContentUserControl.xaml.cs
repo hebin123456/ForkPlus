@@ -14,7 +14,7 @@ using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
-	public partial class BinaryContentUserControl : UserControl
+	public partial class BinaryContentUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
 		public EventHandler<EventArgs> ShowLfsImageButtonClick;
 
@@ -23,6 +23,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		public EventHandler<EventArgs> SaveAsMenuItemClick;
 
 		private bool _highlightImageDiff;
+
+		private string _statusLabel;
 
 		[Null]
 		public BitmapSource DiffImageSource { get; set; }
@@ -53,6 +55,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public void SetContent(BinaryContent content, [Null] string statusLabel = null, [Null] Brush statusBrush = null, [Null] BitmapSource diffImageSource = null)
 		{
+			_statusLabel = statusLabel;
 			DiffImageSource = diffImageSource;
 			if (statusBrush != null)
 			{
@@ -120,6 +123,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				FileIcon.Source = IconTools.GetImageSourceForExtension(extension2, ShellIconSize.LargeIcon);
 				FileIcon.Show();
 			}
+		}
+
+		public void ApplyLocalization()
+		{
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+			TitleTextBlock.Text = string.IsNullOrEmpty(_statusLabel) ? "" : PreferencesLocalization.Translate(_statusLabel, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void SetProgress(double? progress)

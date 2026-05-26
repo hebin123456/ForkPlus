@@ -16,7 +16,12 @@ namespace ForkPlus.Utils.Http
 
 		protected ServiceResult<T> Request<T>(ApiRequest request, Func<JObject, T> decoder)
 		{
-			ServiceResult<object> jsonResponse = Connection.JsonRequest(request);
+			return Request(request, decoder, null);
+		}
+
+		protected ServiceResult<T> Request<T>(ApiRequest request, Func<JObject, T> decoder, ForkPlus.Jobs.JobMonitor monitor)
+		{
+			ServiceResult<object> jsonResponse = Connection.JsonRequest(request, monitor);
 			return Decode(jsonResponse, decoder);
 		}
 

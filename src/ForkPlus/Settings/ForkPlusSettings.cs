@@ -957,7 +957,23 @@ namespace ForkPlus.Settings
 
 		private int _commitSubjectHighLimit;
 
+		private string _commitMessageRegex;
+
 		private bool _openAiLoggedIn;
+
+		private string _aiReviewServiceUrl;
+
+		private string _aiReviewApiKey;
+
+		private bool _aiReviewAutoFetchModels;
+
+		private string[] _aiReviewModels;
+
+		private string _aiReviewSelectedModel;
+
+		private int _aiReviewRetryCount;
+
+		private int _aiReviewTimeoutSeconds;
 
 		private bool _pushAutomaticallyOnCommit;
 
@@ -996,6 +1012,8 @@ namespace ForkPlus.Settings
 		private double _revisionDetailsFileTreeColumnWidth;
 
 		private double _aiResultColumnWidth;
+
+		private double _aiReviewFileTreeColumnWidth;
 
 		private double _verticalLayoutRevisionListViewWidth;
 
@@ -1606,6 +1624,18 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		public string CommitMessageRegex
+		{
+			get
+			{
+				return _commitMessageRegex;
+			}
+			set
+			{
+				_commitMessageRegex = value;
+			}
+		}
+
 		public bool OpenAiLoggedIn
 		{
 			get
@@ -1615,6 +1645,90 @@ namespace ForkPlus.Settings
 			set
 			{
 				_openAiLoggedIn = value;
+			}
+		}
+
+		public string AiReviewServiceUrl
+		{
+			get
+			{
+				return _aiReviewServiceUrl;
+			}
+			set
+			{
+				_aiReviewServiceUrl = value;
+			}
+		}
+
+		public string AiReviewApiKey
+		{
+			get
+			{
+				return _aiReviewApiKey;
+			}
+			set
+			{
+				_aiReviewApiKey = value;
+			}
+		}
+
+		public bool AiReviewAutoFetchModels
+		{
+			get
+			{
+				return _aiReviewAutoFetchModels;
+			}
+			set
+			{
+				_aiReviewAutoFetchModels = value;
+			}
+		}
+
+		public string[] AiReviewModels
+		{
+			get
+			{
+				return _aiReviewModels ?? new string[0];
+			}
+			set
+			{
+				_aiReviewModels = value ?? new string[0];
+			}
+		}
+
+		public string AiReviewSelectedModel
+		{
+			get
+			{
+				return _aiReviewSelectedModel;
+			}
+			set
+			{
+				_aiReviewSelectedModel = value;
+			}
+		}
+
+		public int AiReviewRetryCount
+		{
+			get
+			{
+				return _aiReviewRetryCount;
+			}
+			set
+			{
+				_aiReviewRetryCount = value;
+			}
+		}
+
+		public int AiReviewTimeoutSeconds
+		{
+			get
+			{
+				return _aiReviewTimeoutSeconds;
+			}
+			set
+			{
+				_aiReviewTimeoutSeconds = value;
 			}
 		}
 
@@ -1845,6 +1959,18 @@ namespace ForkPlus.Settings
 			set
 			{
 				_aiResultColumnWidth = value;
+			}
+		}
+
+		public double AiReviewFileTreeColumnWidth
+		{
+			get
+			{
+				return _aiReviewFileTreeColumnWidth;
+			}
+			set
+			{
+				_aiReviewFileTreeColumnWidth = value;
 			}
 		}
 
@@ -2367,7 +2493,15 @@ namespace ForkPlus.Settings
 			int pageGuideLinePosition = json["PageGuideLinePosition"]?.Value<int>() ?? 72;
 			int commitSubjectLowLimit = json["CommitSubjectLowLimit"]?.Value<int>() ?? 50;
 			int commitSubjectHighLimit = json["CommitSubjectHighLimit"]?.Value<int>() ?? 70;
+			string commitMessageRegex = json["CommitMessageRegex"]?.Value<string>() ?? "";
 			bool openAiLoggedIn = json["OpenAiLoggedIn"]?.Value<bool>() ?? false;
+			string aiReviewServiceUrl = json["AiReviewServiceUrl"]?.Value<string>() ?? "https://api.openai.com";
+			string aiReviewApiKey = json["AiReviewApiKey"]?.Value<string>() ?? "";
+			bool aiReviewAutoFetchModels = json["AiReviewAutoFetchModels"]?.Value<bool>() ?? true;
+			string[] aiReviewModels = JsonHelper.DecodeStringArray(json["AiReviewModels"] as JArray) ?? new string[0];
+			string aiReviewSelectedModel = json["AiReviewSelectedModel"]?.Value<string>() ?? "";
+			int aiReviewRetryCount = json["AiReviewRetryCount"]?.Value<int>() ?? 3;
+			int aiReviewTimeoutSeconds = json["AiReviewTimeoutSeconds"]?.Value<int>() ?? 300;
 			bool pushAutomaticallyOnCommit = json["PushAutomaticallyOnCommit"]?.Value<bool>() ?? false;
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
@@ -2387,6 +2521,7 @@ namespace ForkPlus.Settings
 			double revisionDetailsChangesColumnWidth = json["RevisionDetailsChangesColumnWidth"]?.Value<double>() ?? 280.0;
 			double revisionDetailsFileTreeColumnWidth = json["RevisionDetailsFileTreeColumnWidth"]?.Value<double>() ?? 220.0;
 			double aiResultColumnWidth = json["AiResultColumnWidth"]?.Value<double>() ?? 350.0;
+			double aiReviewFileTreeColumnWidth = json["AiReviewFileTreeColumnWidth"]?.Value<double>() ?? 320.0;
 			double verticalLayoutRevisionListViewWidth = json["VerticalLayoutRevisionListViewWidth"]?.Value<double>() ?? 350.0;
 			bool showWorktrees = json["ShowWorktrees"]?.Value<bool>() ?? false;
 			bool updateSubmodulesOnCheckout = json["UpdateSubmodulesOnCheckout"]?.Value<bool>() ?? true;
@@ -2466,7 +2601,15 @@ namespace ForkPlus.Settings
 				PageGuideLinePosition = pageGuideLinePosition,
 				CommitSubjectLowLimit = commitSubjectLowLimit,
 				CommitSubjectHighLimit = commitSubjectHighLimit,
+				CommitMessageRegex = commitMessageRegex,
 				OpenAiLoggedIn = openAiLoggedIn,
+				AiReviewServiceUrl = aiReviewServiceUrl,
+				AiReviewApiKey = aiReviewApiKey,
+				AiReviewAutoFetchModels = aiReviewAutoFetchModels,
+				AiReviewModels = aiReviewModels,
+				AiReviewSelectedModel = aiReviewSelectedModel,
+				AiReviewRetryCount = aiReviewRetryCount,
+				AiReviewTimeoutSeconds = aiReviewTimeoutSeconds,
 				PushAutomaticallyOnCommit = pushAutomaticallyOnCommit,
 				CompactBranchLabels = compactBranchLabels,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
@@ -2486,6 +2629,7 @@ namespace ForkPlus.Settings
 				RevisionDetailsChangesColumnWidth = revisionDetailsChangesColumnWidth,
 				RevisionDetailsFileTreeColumnWidth = revisionDetailsFileTreeColumnWidth,
 				AiResultColumnWidth = aiResultColumnWidth,
+				AiReviewFileTreeColumnWidth = aiReviewFileTreeColumnWidth,
 				VerticalLayoutRevisionListViewWidth = verticalLayoutRevisionListViewWidth,
 				ShowWorktrees = showWorktrees,
 				UpdateSubmodulesOnCheckout = updateSubmodulesOnCheckout,
@@ -2782,8 +2926,40 @@ namespace ForkPlus.Settings
 					new JValue(target.CommitSubjectHighLimit)
 				},
 				{
+					"CommitMessageRegex",
+					new JValue(target.CommitMessageRegex)
+				},
+				{
 					"OpenAiLoggedIn",
 					new JValue(target.OpenAiLoggedIn)
+				},
+				{
+					"AiReviewServiceUrl",
+					new JValue(target.AiReviewServiceUrl)
+				},
+				{
+					"AiReviewApiKey",
+					new JValue(target.AiReviewApiKey)
+				},
+				{
+					"AiReviewAutoFetchModels",
+					new JValue(target.AiReviewAutoFetchModels)
+				},
+				{
+					"AiReviewModels",
+					JsonHelper.EncodeStringArray(target.AiReviewModels)
+				},
+				{
+					"AiReviewSelectedModel",
+					new JValue(target.AiReviewSelectedModel)
+				},
+				{
+					"AiReviewRetryCount",
+					new JValue(target.AiReviewRetryCount)
+				},
+				{
+					"AiReviewTimeoutSeconds",
+					new JValue(target.AiReviewTimeoutSeconds)
 				},
 				{
 					"PushAutomaticallyOnCommit",
@@ -2860,6 +3036,10 @@ namespace ForkPlus.Settings
 				{
 					"AiResultColumnWidth",
 					new JValue(target.AiResultColumnWidth)
+				},
+				{
+					"AiReviewFileTreeColumnWidth",
+					new JValue(target.AiReviewFileTreeColumnWidth)
 				},
 				{
 					"VerticalLayoutRevisionListViewWidth",

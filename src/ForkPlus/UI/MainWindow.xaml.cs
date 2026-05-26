@@ -107,6 +107,13 @@ namespace ForkPlus.UI
 			}
 			TabManager?.ActiveRepositoryManager?.ApplyLocalization();
 			TabManager?.ActiveGitMmUserControl?.ApplyLocalization();
+			foreach (Window window in Application.Current.Windows)
+			{
+				if (window != this && window is ILocalizableControl localizableControl)
+				{
+					localizableControl.ApplyLocalization();
+				}
+			}
 		}
 
 		public void PreventRefreshAfterChildDialogClose(string reason)

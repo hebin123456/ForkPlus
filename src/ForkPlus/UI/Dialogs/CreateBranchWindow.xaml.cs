@@ -339,12 +339,17 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (CheckoutAfterCreateCheckBox.IsChecked.GetValueOrDefault())
 			{
-				base.SubmitButtonTitle = "Create and Checkout";
+				base.SubmitButtonTitle = Translate("Create and Checkout");
 			}
 			else
 			{
-				base.SubmitButtonTitle = "Create";
+				base.SubmitButtonTitle = Translate("Create");
 			}
+		}
+
+		private static string Translate(string text)
+		{
+			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		private void SaveUnfinishedBranchName()

@@ -18,12 +18,12 @@ namespace ForkPlus.Git.Commands
 		private GitCommandResult<RepositoryWorktrees> ExecuteInternal(GitModule gitModule)
 		{
 			string text = gitModule.WorktreesDirectoryPath();
-			if (!Directory.Exists(text))
+			if (!SafeDirectoryExists(text))
 			{
 				return GitCommandResult<RepositoryWorktrees>.Success(RepositoryWorktrees.Empty);
 			}
 			string commonGitDir = gitModule.CommonGitDir;
-			if (!Directory.Exists(commonGitDir))
+			if (!SafeDirectoryExists(commonGitDir))
 			{
 				return GitCommandResult<RepositoryWorktrees>.Success(RepositoryWorktrees.Empty);
 			}
@@ -34,8 +34,8 @@ namespace ForkPlus.Git.Commands
 			}
 			catch (Exception ex)
 			{
-				Log.Error($"Can't open worktrees directory at '{text}': '{ex}'");
-				return GitCommandResult<RepositoryWorktrees>.Failure(ex);
+				Log.Warn($"Can't open worktrees directory at '{text}': '{ex}'");
+				return GitCommandResult<RepositoryWorktrees>.Success(RepositoryWorktrees.Empty);
 			}
 			if (array.Length == 0)
 			{
@@ -46,7 +46,7 @@ namespace ForkPlus.Git.Commands
 			{
 				string text2 = ((Path.GetFileName(commonGitDir) == ".git") ? Path.GetDirectoryName(commonGitDir) : commonGitDir);
 				string head = GetHead(commonGitDir);
-				if (head != null && Directory.Exists(text2))
+				if (head != null && SafeDirectoryExists(text2))
 				{
 					mainWorktree = new Worktree(text2, head, isMain: true, gitModule.Path == text2);
 				}
@@ -64,7 +64,7 @@ namespace ForkPlus.Git.Commands
 				if (text4 != null)
 				{
 					string directoryName = Path.GetDirectoryName(text4);
-					if (Directory.Exists(directoryName))
+					if (SafeDirectoryExists(directoryName))
 					{
 						list.Add(new Worktree(directoryName, head2, isMain: false, gitModule.Path == directoryName));
 					}
@@ -78,7 +78,7 @@ namespace ForkPlus.Git.Commands
 		private static string ReadWorktreeGitdirFile(string worktreeGitDirectory)
 		{
 			string text = PathHelper.Combine(worktreeGitDirectory, "gitdir");
-			if (!File.Exists(text))
+			if (!SafeFileExists(text))
 			{
 				Log.Warn("Can't find gitdir in '" + worktreeGitDirectory + "'");
 				return null;
@@ -102,7 +102,7 @@ namespace ForkPlus.Git.Commands
 		[Null]
 		private static string GetHead(string gitDirectory)
 		{
-			if (Directory.Exists(PathHelper.Combine(gitDirectory, "reftable")))
+			if (SafeDirectoryExists(PathHelper.Combine(gitDirectory, "reftable")))
 			{
 				return ReadHeadStringFromReferences(gitDirectory);
 			}
@@ -136,6 +136,32 @@ namespace ForkPlus.Git.Commands
 				return gitCommandResult.Result.GetString("core", null, "bare") == "true";
 			}
 			return false;
+		}
+
+		private static bool SafeDirectoryExists(string path)
+		{
+			try
+			{
+				return !string.IsNullOrEmpty(path) && Directory.Exists(path);
+			}
+			catch (PathTooLongException ex)
+			{
+				Log.Warn($"Path is too long: '{path}': '{ex.Message}'");
+				return false;
+			}
+		}
+
+		private static bool SafeFileExists(string path)
+		{
+			try
+			{
+				return !string.IsNullOrEmpty(path) && File.Exists(path);
+			}
+			catch (PathTooLongException ex)
+			{
+				Log.Warn($"Path is too long: '{path}': '{ex.Message}'");
+				return false;
+			}
 		}
 
 		[Null]
