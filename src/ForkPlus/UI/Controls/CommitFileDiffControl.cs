@@ -6,6 +6,7 @@ using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls.BinaryDiff;
 
 namespace ForkPlus.UI.Controls
@@ -46,8 +47,8 @@ namespace ForkPlus.UI.Controls
 					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 					{
 						c.ResetEvents();
-						c.FallbackMessage = "Changes are too large (" + FileHelper.GetReadableFileSize(error.FileSize, addSizeInBytes: false) + ")";
-						c.Button1Title = "Load Diff";
+						c.FallbackMessage = PreferencesLocalization.Current("Changes are too large (") + FileHelper.GetReadableFileSize(error.FileSize, addSizeInBytes: false) + ")";
+						c.Button1Title = PreferencesLocalization.Current("Load Diff");
 						c.Button1Click += delegate
 						{
 							ShowLargeUntrackedChanges?.Invoke(this, EventArgs.Empty);
@@ -135,8 +136,8 @@ namespace ForkPlus.UI.Controls
 						ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 						{
 							c.ResetEvents();
-							c.FallbackMessage = "Changes are too large to display";
-							c.Button1Title = "Load Diff";
+							c.FallbackMessage = PreferencesLocalization.Current("Changes are too large to display");
+							c.Button1Title = PreferencesLocalization.Current("Load Diff");
 							c.Button1Click += delegate
 							{
 								UpdateView(loadLargeDiff: true);
@@ -209,8 +210,8 @@ namespace ForkPlus.UI.Controls
 					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 					{
 						c.ResetEvents();
-						c.FallbackMessage = "Changes are too large to display";
-						c.Button1Title = "Load Diff";
+						c.FallbackMessage = PreferencesLocalization.Current("Changes are too large to display");
+						c.Button1Title = PreferencesLocalization.Current("Load Diff");
 						c.Button1Click += delegate
 						{
 							UpdateView(loadLargeDiff: true);

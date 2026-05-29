@@ -142,7 +142,23 @@ namespace ForkPlus
 
 		public static string ProcessIdString { get; }
 
-		public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+		public static string Version
+		{
+			get
+			{
+				AssemblyInformationalVersionAttribute informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+				if (informationalVersion != null && !string.IsNullOrEmpty(informationalVersion.InformationalVersion))
+				{
+					return informationalVersion.InformationalVersion;
+				}
+				Version version = Assembly.GetExecutingAssembly().GetName().Version;
+				if (version != null)
+				{
+					return version.ToString();
+				}
+				return "0.0.0.0";
+			}
+		}
 
 		public static string UserAgent => AppName + " " + Version;
 

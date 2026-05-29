@@ -20,6 +20,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Accounts;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -579,6 +580,13 @@ namespace ForkPlus.UI.UserControls
 					}
 					SetCommandStateForVisibleSubrepos(result.Success ? GitMmSubrepoCommandState.Success : GitMmSubrepoCommandState.Failed);
 					SetStatus(result.Success ? Translate("git mm command finished") : Translate("git mm command finished with errors"));
+					string commandName = args.FirstItem();
+					string title = PreferencesLocalization.FormatCurrent("git mm {0}", commandName);
+					string body = result.Success
+						? PreferencesLocalization.Current("Command succeeded")
+						: PreferencesLocalization.Current("Command failed");
+					NotificationManager.SendWindowsNotification(
+						$"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{System.Net.WebUtility.HtmlEncode(title)}</text>\n        <text>{System.Net.WebUtility.HtmlEncode(body)}</text>\n    </binding>\n</visual>\n</toast>\n");
 				});
 				if (!monitor.IsCanceled)
 				{

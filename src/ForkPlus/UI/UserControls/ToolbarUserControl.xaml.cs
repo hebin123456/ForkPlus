@@ -432,44 +432,6 @@ namespace ForkPlus.UI.UserControls
 			if (mainBranch != null)
 			{
 				contextMenu.Items.Add(new Separator());
-				TextBlock element = new TextBlock
-				{
-					Text = "Lean Branching",
-					Foreground = Theme.HeaderMenuItemBrush
-				};
-				Button button = new Button
-				{
-					Style = Theme.BranchOptionButtonStyle,
-					Margin = new Thickness(0.0, 0.0, 16.0, 0.0),
-					Content = new TextBlock
-					{
-						Text = "?",
-						Margin = new Thickness(0.0),
-						VerticalAlignment = VerticalAlignment.Center,
-						HorizontalAlignment = HorizontalAlignment.Right,
-						FontWeight = FontWeights.Medium,
-						Foreground = Theme.AccentBrush,
-						Background = Brushes.Transparent
-					}
-				};
-				button.Click += delegate
-				{
-					e.Handled = true;
-					new Uri("https://github.com/fork-dev/TrackerWin/issues/1432").OpenInBrowser();
-				};
-				DockPanel dockPanel = new DockPanel
-				{
-					HorizontalAlignment = HorizontalAlignment.Stretch,
-					LastChildFill = true
-				};
-				DockPanel.SetDock(button, Dock.Right);
-				dockPanel.Children.Add(button);
-				dockPanel.Children.Add(element);
-				contextMenu.Items.Add(new MenuItem
-				{
-					Header = dockPanel,
-					Style = Theme.CustomContentMenuItemStyle
-				});
 				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem("Start Branch on '" + mainBranch.Name + "'...", delegate
 				{
 					RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.Execute(repositoryUserControl, mainBranch);

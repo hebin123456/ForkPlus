@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Git.Interaction;
 
 namespace ForkPlus.Jobs
@@ -53,9 +54,9 @@ namespace ForkPlus.Jobs
 		{
 			if (operationName.StartsWith(ASCII_EL0))
 			{
-				return operationName.Substring(ASCII_EL0.Length);
+				operationName = operationName.Substring(ASCII_EL0.Length);
 			}
-			return operationName;
+			return PreferencesLocalization.Current(operationName);
 		}
 	}
 }

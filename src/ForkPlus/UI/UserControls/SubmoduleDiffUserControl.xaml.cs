@@ -120,16 +120,17 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshUncommittedChangesTextBlock(string[] changedFilePaths)
 		{
-			int num = changedFilePaths.Length;
-			if (num > 0)
-			{
-				string arg = ((num == 1) ? "file" : "files");
-				string text = $"{num} uncommitted {arg}";
-				string text2 = string.Join("\n", changedFilePaths);
-				UncommittedFilesTextBlock.Show();
-				UncommittedFilesTextBlock.Text = text;
-				UncommittedFilesTextBlock.ToolTip = text + ":\n" + text2;
-			}
+		 int num = changedFilePaths.Length;
+		 if (num > 0)
+		 {
+		  string text = (num == 1)
+		   ? PreferencesLocalization.FormatCurrent("{0} uncommitted file", num)
+		   : PreferencesLocalization.FormatCurrent("{0} uncommitted files", num);
+		  string text2 = string.Join("\n", changedFilePaths);
+		  UncommittedFilesTextBlock.Show();
+		  UncommittedFilesTextBlock.Text = text;
+		  UncommittedFilesTextBlock.ToolTip = text + ":\n" + text2;
+		 }
 			else
 			{
 				UncommittedFilesTextBlock.Text = "";

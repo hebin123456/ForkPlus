@@ -211,7 +211,7 @@ namespace ForkPlus.Accounts.AiServices
 			jObject3.Add("messages", new JArray(jObject, jObject2));
 			jObject3.Add("stream", false);
 			apiRequest.SetJson(jObject3);
-			return Request(apiRequest, OpenAiResponse.Decode);
+			return LocalizeCancellationError(Request(apiRequest, OpenAiResponse.Decode));
 		}
 
 		private ServiceResult<OpenAiResponse> OpenAiRequestWithRetry(string message, JobMonitor monitor)
@@ -472,11 +472,22 @@ namespace ForkPlus.Accounts.AiServices
 
 		private static ServiceResult<T> LocalizeCancellationError<T>(ServiceResult<T> result)
 		{
-			if (result != null && !result.Succeeded && IsCancellationMessage(result.Error?.FriendlyMessage))
-			{
-				return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(PreferencesLocalization.Current("AI request timed out or was canceled.")));
-			}
-			return result;
+		 if (result != null && !result.Succeeded)
+		 {
+		  string message = result.Error?.FriendlyMessage ?? "";
+		  if (IsCancellationMessage(message))
+		  {
+		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(PreferencesLocalization.Current("AI request timed out or was canceled.")));
+		  }
+		  if (message.IndexOf("not supported", StringComparison.OrdinalIgnoreCase) >= 0
+		   && (message.IndexOf("country", StringComparison.OrdinalIgnoreCase) >= 0
+		    || message.IndexOf("region", StringComparison.OrdinalIgnoreCase) >= 0
+		    || message.IndexOf("territory", StringComparison.OrdinalIgnoreCase) >= 0))
+		  {
+		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(PreferencesLocalization.Current("Country, region, or territory not supported")));
+		  }
+		 }
+		 return result;
 		}
 
 		private static bool IsCancellationMessage(string message)

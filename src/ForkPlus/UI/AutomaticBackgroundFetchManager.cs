@@ -108,7 +108,7 @@ namespace ForkPlus.UI
 
 		private static string JobName(Remote remote)
 		{
-			return "Fetch '" + remote.Name + "'";
+			return PreferencesLocalization.FormatCurrent("Fetch '{0}'", remote.Name);
 		}
 	}
 }

@@ -77,7 +77,14 @@ namespace ForkPlus
 				}
 				finally
 				{
-					pipeServer.WaitForPipeDrain();
+					try
+					{
+						pipeServer.WaitForPipeDrain();
+					}
+					catch (IOException)
+					{
+						// Pipe already broken — nothing to drain
+					}
 					if (pipeServer.IsConnected)
 					{
 						pipeServer.Disconnect();

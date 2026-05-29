@@ -6,6 +6,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -63,8 +64,11 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
-			string arg = ((changedFiles.Length > 1) ? "Files" : "File");
-			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add($"Stage {changedFiles.Length} {arg}", delegate(JobMonitor monitor)
+			int fileCount = changedFiles.Length;
+			string stageName = (fileCount == 1)
+				? PreferencesLocalization.FormatCurrent("Stage {0} File", fileCount)
+				: PreferencesLocalization.FormatCurrent("Stage {0} Files", fileCount);
+			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(stageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, changedFiles, monitor);
 				if (!stageResult.Succeeded)
@@ -156,8 +160,11 @@ namespace ForkPlus.UI.Commands
 			}
 			bool amendMode = amend;
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
-			string arg = ((changedFiles.Length > 1) ? "Files" : "File");
-			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add($"Unstage {changedFiles.Length} {arg}", delegate(JobMonitor monitor)
+			int fileCount = changedFiles.Length;
+			string unstageName = (fileCount == 1)
+				? PreferencesLocalization.FormatCurrent("Unstage {0} File", fileCount)
+				: PreferencesLocalization.FormatCurrent("Unstage {0} Files", fileCount);
+			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(unstageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult unstageResult = (amendMode ? new UnstageForAmendGitCommand().Execute(gitModule, changedFiles, monitor) : new UnstageGitCommand().Execute(gitModule, changedFiles, monitor));
 				if (!unstageResult.Succeeded)

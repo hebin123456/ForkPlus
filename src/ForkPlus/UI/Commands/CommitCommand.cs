@@ -133,13 +133,20 @@ namespace ForkPlus.UI.Commands
 			}
 			string message = commitUserControl.FullCommitMessage;
 			bool amend = commitUserControl.AmendMode;
-			string filesString = ((commitUserControl.StageFileUserControl.StagedItemsCount == 1) ? "1 file" : $"{commitUserControl.StageFileUserControl.StagedItemsCount} files");
-			string name = (amend ? "Amend" : ("Commit " + filesString));
+			int stagedCount = commitUserControl.StageFileUserControl.StagedItemsCount;
+			string name = amend
+			 ? PreferencesLocalization.Current("Amend")
+			 : ((stagedCount == 1)
+			  ? PreferencesLocalization.FormatCurrent("Commit {0} File", stagedCount)
+			  : PreferencesLocalization.FormatCurrent("Commit {0} Files", stagedCount));
 			commitUserControl.CommittingInProgress = true;
 			commitUserControl.UpdateCommitSection();
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
-				monitor.Update(0.0, filesString + "...");
+			 string monitorMsg = (stagedCount == 1)
+			  ? PreferencesLocalization.FormatCurrent("{0} file...", stagedCount)
+			  : PreferencesLocalization.FormatCurrent("{0} files...", stagedCount);
+			 monitor.Update(0.0, monitorMsg);
 				GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate
 				{

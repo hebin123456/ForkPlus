@@ -424,8 +424,8 @@ namespace ForkPlus.UI.Dialogs
 						RetryButton.IsEnabled = true;
 						AiResponseWebView.Collapse();
 						AiResponseFallback.Show();
-						AiResponseFallback.FallbackTitle = "Error";
-						AiResponseFallback.FallbackMessage = "Cannot get diff:\n" + patchResult.Error.FriendlyDescription;
+						AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
+						AiResponseFallback.FallbackMessage = PreferencesLocalization.Current("Cannot get diff:\n") + patchResult.Error.FriendlyDescription;
 						SendAiReviewCompletedNotification(gitModule, success: false);
 					});
 				}
@@ -1035,7 +1035,7 @@ namespace ForkPlus.UI.Dialogs
 			RetryButton.IsEnabled = true;
 			AiResponseWebView.Collapse();
 			AiResponseFallback.Show();
-			AiResponseFallback.FallbackTitle = "Error";
+			AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
 			AiResponseFallback.FallbackMessage = error;
 		}
 

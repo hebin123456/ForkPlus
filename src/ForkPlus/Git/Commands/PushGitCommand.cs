@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -16,40 +17,40 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, string remote, LocalBranch localBranch, [Null] RemoteBranch remoteBranch, [Null] string customRefspec, bool pushAllTags, bool force, bool track, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "-c", "push.default=upstream", "push", remote);
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remote);
 			if (remoteBranch != null)
 			{
-				string fullReference = localBranch.FullReference;
-				string text = ((!(remoteBranch.Remote == remote)) ? ("refs/heads/" + localBranch.Name) : ("refs/heads/" + remoteBranch.ShortName));
-				gitCommand.Add(fullReference + ":" + text);
+			 string fullReference = localBranch.FullReference;
+			 string text = ((!(remoteBranch.Remote == remote)) ? ("refs/heads/" + localBranch.Name) : ("refs/heads/" + remoteBranch.ShortName));
+			 gitCommand.Add(fullReference + ":" + text);
 			}
 			else if (customRefspec != null)
 			{
-				string fullReference2 = localBranch.FullReference;
-				gitCommand.Add(fullReference2 + ":" + customRefspec);
+			 string fullReference2 = localBranch.FullReference;
+			 gitCommand.Add(fullReference2 + ":" + customRefspec);
 			}
 			else
 			{
-				gitCommand.Add(localBranch.FullReference);
+			 gitCommand.Add(localBranch.FullReference);
 			}
 			if (force)
 			{
-				gitCommand.Add("--force-with-lease");
+			 gitCommand.Add("--force-with-lease");
 			}
 			if (pushAllTags)
 			{
-				gitCommand.Add("--tags");
+			 gitCommand.Add("--tags");
 			}
 			if (track)
 			{
-				gitCommand.Add("--set-upstream");
+			 gitCommand.Add("--set-upstream");
 			}
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, "Pushing...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
 			using GitLfsProgressHandler gitLfsProgressHandler = new GitLfsProgressHandler(monitor);
-			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor, isBt: false);
-			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteWithCallback(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
+			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
+			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
 			if (monitor.IsCanceled)
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
@@ -74,7 +75,7 @@ namespace ForkPlus.Git.Commands
 					if (match2 != null)
 					{
 						string text3 = match2.Groups[1].Value.TrimEnd();
-						monitor.Fail("Could not resolve host '" + text3 + "'");
+						monitor.Fail(PreferencesLocalization.FormatCurrent("Could not resolve host '{0}'", text3));
 					}
 					else
 					{
@@ -93,7 +94,7 @@ namespace ForkPlus.Git.Commands
 				if (match3 != null)
 				{
 					string text4 = match3.Groups[1].Value.TrimEnd();
-					monitor.Success("Updated '" + text4 + "'");
+					monitor.Success(PreferencesLocalization.FormatCurrent("Updated '{0}'", text4));
 				}
 			}
 			return GitCommandResult.Success();
@@ -101,14 +102,14 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, RemoteBranch remoteBranch, string destination, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "-c", "push.default=upstream", "push", remoteBranch.Remote);
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remoteBranch.Remote);
 			gitCommand.Add(destination + ":refs/heads/" + remoteBranch.ShortName);
 			gitCommand.Add("--force-with-lease");
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, "Pushing...");
-			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor, isBt: false);
-			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).ExecuteWithCallback(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
+			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
+			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
+			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
 			if (monitor.IsCanceled)
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());

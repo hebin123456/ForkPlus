@@ -15,6 +15,11 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="0" Text="AI Model Configuration" Style="{DynamicResource SettingsHeaderTextBlockStyle}" />
     <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Inference service URL:" />
@@ -39,5 +44,32 @@
       </ProgressBar>
       <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
     </DockPanel>
+    <!-- Skills section - unified layout matching the menu pattern above -->
+    <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Text="Skills" Style="{DynamicResource SettingsHeaderTextBlockStyle}" Margin="0,12,0,0" />
+    
+    <!-- Row 9: Skill name input + Add button -->
+    <TextBlock Grid.Row="9" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Skill name:" />
+    <TextBox Grid.Row="9" Grid.Column="1" Margin="10,8,0,0" Padding="4,2,4,2" VerticalContentAlignment="Center" x:Name="SkillNameTextBox" />
+    <Button Grid.Row="9" Grid.Column="2" Margin="6,8,0,0" Padding="8,4,8,4" FontSize="12" x:Name="AddCustomSkillButton">
+      <TextBlock Text="Add Skill" TextDecorations="{x:Null}" />
+    </Button>
+    
+    <!-- Row 10: Skill content editor -->
+    <TextBlock Grid.Row="10" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Content:" />
+    <Border Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="2" Height="120" Margin="10,4,0,0" BorderBrush="{DynamicResource ForkPlusDialogDescriptionForeground}" BorderThickness="1" CornerRadius="2" x:Name="CustomSkillInputBorder" />
+    
+    <!-- Row 11: Import file button + hint -->
+    <TextBlock Grid.Row="11" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Import:" />
+    <StackPanel Grid.Row="11" Grid.Column="1" Margin="10,8,0,0" Orientation="Horizontal">
+      <Button Padding="8,4,8,4" FontSize="12" x:Name="LoadSkillButton">
+        <TextBlock Text="Load Skill File..." TextDecorations="{x:Null}" />
+      </Button>
+      <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="8,0,0,0" x:Name="CtrlEnterHintTextBlock" Text="Ctrl+Enter to add" />
+    </StackPanel>
+    
+    <!-- Row 12: Loaded skills list (scrollable with max height) -->
+    <TextBlock Grid.Row="12" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Loaded skills:" />
+    <ListBox Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,0" Height="200" BorderThickness="1"
+             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" x:Name="SkillListBox" />
   </Grid>
 </UserControl>

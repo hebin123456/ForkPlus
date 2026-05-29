@@ -438,6 +438,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			result = ReplacePattern(result, @"^Stash (\d+) File\.\.\.$", "Stash {0} File...", dictionary);
 			result = ReplacePattern(result, @"^Stash (\d+) Files\.\.\.$", "Stash {0} Files...", dictionary);
 			result = ReplacePattern(result, @"^Stash (\d+) (.+)\.\.\.$", "Stash {0} {1}...", dictionary);
+			result = ReplacePattern(result, @"^Stage (\d+) File$", "Stage {0} File", dictionary);
+			result = ReplacePattern(result, @"^Stage (\d+) Files$", "Stage {0} Files", dictionary);
+			result = ReplacePattern(result, @"^Unstage (\d+) File$", "Unstage {0} File", dictionary);
+			result = ReplacePattern(result, @"^Unstage (\d+) Files$", "Unstage {0} Files", dictionary);
 			result = ReplacePattern(result, @"^Ignore all files in '(.+)'\.\.\.$", "Ignore all files in '{0}'...", dictionary);
 			result = ReplacePattern(result, @"^Ignore '(.+)'$", "Ignore '{0}'", dictionary);
 			result = ReplacePattern(result, @"^Ignore All (.+) Files\.\.\.$", "Ignore All {0} Files...", dictionary);
@@ -499,6 +503,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			result = ReplacePattern(result, @"^Do you want to delete submodule (.+)\?$", "Do you want to delete submodule {0}?", dictionary);
 			result = ReplacePattern(result, @"^Can not move submodule to (.+)$", "Can not move submodule to {0}", dictionary);
 			result = ReplacePattern(result, @"^Do you want to discard changes in (\d+) submodules\?$", "Do you want to discard changes in {0} submodules?", dictionary);
+			result = ReplacePattern(result, @"^(\d+) uncommitted file$", "{0} uncommitted file", dictionary);
+			result = ReplacePattern(result, @"^(\d+) uncommitted files$", "{0} uncommitted files", dictionary);
 			result = ReplacePattern(result, @"^Discard all changes in '(.+)'\?$", "Discard all changes in '{0}'?", dictionary);
 			result = ReplacePattern(result, @"^Cannot find private key: '(.+)'$", "Cannot find private key: '{0}'", dictionary);
 			result = ReplacePattern(result, @"^Cannot find public key: '(.+)'$", "Cannot find public key: '{0}'", dictionary);

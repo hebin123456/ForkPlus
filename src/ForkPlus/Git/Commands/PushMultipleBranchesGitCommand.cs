@@ -1,5 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -16,7 +17,7 @@ namespace ForkPlus.Git.Commands
 			gitCommand.Add("--atomic");
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, "Pushing...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
 			if (monitor.IsCanceled)

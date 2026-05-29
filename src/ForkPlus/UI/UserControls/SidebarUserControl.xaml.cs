@@ -18,6 +18,9 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
+using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Accounts.AiServices;
+using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -194,6 +197,7 @@ namespace ForkPlus.UI.UserControls
 		public void ApplyLocalization()
 		{
 			string language = ForkPlusSettings.Default.UiLanguage;
+			AiDevelopmentButton.ToolTip = Preferences.PreferencesLocalization.Translate("AI 辅助开发", language);
 			RepositorySettingsDropdownButton.ToolTip = Preferences.PreferencesLocalization.Translate("Repository Settings", language);
 			FilterTextBox.Placeholder = Preferences.PreferencesLocalization.Translate("Filter", language);
 			AllCommitsTextBlock.Text = Preferences.PreferencesLocalization.Translate("All Commits", language);
@@ -452,6 +456,27 @@ namespace ForkPlus.UI.UserControls
 			{
 				RepositoryUserControl.Commands.ShowRepositorySettingsWindow.Execute(gitModule, _repositoryData);
 			}));
+		}
+
+		private void AiDevelopmentButton_Click(object sender, RoutedEventArgs e)
+		{
+			GitModule gitModule = RepositoryUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			if (!OpenAiService.IsAiReviewConfigured())
+			{
+				Preferences.PreferencesLocalization.Current("AI 开发功能需要先配置 API。请在 设置 → AI Review 中配置服务地址和 API Key。");
+				System.Windows.MessageBox.Show(
+					Preferences.PreferencesLocalization.Current("AI 开发功能需要先配置 API。请在 设置 → AI Review 中配置服务地址和 API Key。"),
+					Preferences.PreferencesLocalization.Current("配置提醒"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Information);
+				return;
+			}
+			AiDevelopmentWindow window = new AiDevelopmentWindow(RepositoryUserControl, gitModule);
+			window.Show();
 		}
 
 		private void RenameRepository(string newName)
@@ -832,7 +857,7 @@ namespace ForkPlus.UI.UserControls
 		private IEnumerable<Control> CreateRemoteSidebarItemMenuItems(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remote)
 		{
 			List<Control> list = new List<Control>();
-			list.Add(MainWindow.Commands.ShowFetchWindow.CreateMenuItem("Fetch '" + remote.Name + "'...", delegate
+			list.Add(MainWindow.Commands.ShowFetchWindow.CreateMenuItem(PreferencesLocalization.FormatCurrent("Fetch '{0}'...", remote.Name), delegate
 			{
 				MainWindow.Commands.ShowFetchWindow.Execute(repositoryUserControl, gitModule, remote);
 			}));
@@ -846,7 +871,7 @@ namespace ForkPlus.UI.UserControls
 				RepositoryUserControl.Commands.ShowRemoveRemoteWindow.Execute(repositoryUserControl, gitModule, remote);
 			}));
 			list.Add(new Separator());
-			MenuItem menuItem = RepositoryUserControl.Commands.DisableImplicitRemoteFetch.CreateMenuItem("Fetch '" + remote.Name + "' Automatically", delegate
+			MenuItem menuItem = RepositoryUserControl.Commands.DisableImplicitRemoteFetch.CreateMenuItem(PreferencesLocalization.FormatCurrent("Fetch '{0}' Automatically", remote.Name), delegate
 			{
 				RepositoryUserControl.Commands.DisableImplicitRemoteFetch.Execute(repositoryUserControl, gitModule, remote, !remote.DisableImplicitFetch);
 			});

@@ -975,6 +975,12 @@ namespace ForkPlus.Settings
 
 		private int _aiReviewTimeoutSeconds;
 
+		private string _aiDevSkillContent;
+
+		private string _aiDevSkillList;
+
+		private string _aiDevSendMode;
+
 		private bool _pushAutomaticallyOnCommit;
 
 		private bool _compactBranchLabels;
@@ -1729,6 +1735,42 @@ namespace ForkPlus.Settings
 			set
 			{
 				_aiReviewTimeoutSeconds = value;
+			}
+		}
+
+		public string AiDevSkillContent
+		{
+			get
+			{
+				return _aiDevSkillContent;
+			}
+			set
+			{
+				_aiDevSkillContent = value;
+			}
+		}
+
+		public string AiDevSkillList
+		{
+			get
+			{
+				return _aiDevSkillList;
+			}
+			set
+			{
+				_aiDevSkillList = value;
+			}
+		}
+
+		public string AiDevSendMode
+		{
+			get
+			{
+				return _aiDevSendMode;
+			}
+			set
+			{
+				_aiDevSendMode = value;
 			}
 		}
 
@@ -2502,6 +2544,9 @@ namespace ForkPlus.Settings
 			string aiReviewSelectedModel = json["AiReviewSelectedModel"]?.Value<string>() ?? "";
 			int aiReviewRetryCount = json["AiReviewRetryCount"]?.Value<int>() ?? 3;
 			int aiReviewTimeoutSeconds = json["AiReviewTimeoutSeconds"]?.Value<int>() ?? 300;
+			string aiDevSkillContent = json["AiDevSkillContent"]?.Value<string>() ?? "";
+			string aiDevSkillList = json["AiDevSkillList"]?.Value<string>() ?? "";
+			string aiDevSendMode = json["AiDevSendMode"]?.Value<string>() ?? "Enter";
 			bool pushAutomaticallyOnCommit = json["PushAutomaticallyOnCommit"]?.Value<bool>() ?? false;
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
@@ -2610,6 +2655,9 @@ namespace ForkPlus.Settings
 				AiReviewSelectedModel = aiReviewSelectedModel,
 				AiReviewRetryCount = aiReviewRetryCount,
 				AiReviewTimeoutSeconds = aiReviewTimeoutSeconds,
+				AiDevSkillContent = aiDevSkillContent,
+				AiDevSkillList = aiDevSkillList,
+				AiDevSendMode = aiDevSendMode,
 				PushAutomaticallyOnCommit = pushAutomaticallyOnCommit,
 				CompactBranchLabels = compactBranchLabels,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
@@ -2961,10 +3009,22 @@ namespace ForkPlus.Settings
 					"AiReviewTimeoutSeconds",
 					new JValue(target.AiReviewTimeoutSeconds)
 				},
-				{
-					"PushAutomaticallyOnCommit",
-					new JValue(target.PushAutomaticallyOnCommit)
-				},
+			{
+				"AiDevSkillContent",
+				new JValue(target.AiDevSkillContent)
+			},
+			{
+				"AiDevSkillList",
+				new JValue(target.AiDevSkillList)
+			},
+			{
+				"AiDevSendMode",
+				new JValue(target.AiDevSendMode)
+			},
+			{
+				"PushAutomaticallyOnCommit",
+				new JValue(target.PushAutomaticallyOnCommit)
+			},
 				{
 					"CompactBranchLabels",
 					new JValue(target.CompactBranchLabels)

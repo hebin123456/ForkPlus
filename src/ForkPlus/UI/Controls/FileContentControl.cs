@@ -5,6 +5,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Controls
 {
@@ -141,8 +142,8 @@ namespace ForkPlus.UI.Controls
 				ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 				{
 					c.ResetEvents();
-					c.FallbackMessage = "Changes are too large to display";
-					c.Button1Title = "Load Diff";
+					c.FallbackMessage = PreferencesLocalization.Current("Changes are too large to display");
+					c.Button1Title = PreferencesLocalization.Current("Load Diff");
 					c.Button1Click += delegate
 					{
 						UpdateView(loadLargeDiff: true);

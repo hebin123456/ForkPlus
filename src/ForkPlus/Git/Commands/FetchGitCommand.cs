@@ -57,7 +57,7 @@ namespace ForkPlus.Git.Commands
 				if (match != null)
 				{
 					string text2 = match.Groups[1].Value.TrimEnd();
-					monitor.Fail("Could not resolve host '" + text2 + "'");
+					monitor.Fail(PreferencesLocalization.FormatCurrent("Could not resolve host '{0}'", text2));
 				}
 				else
 				{
