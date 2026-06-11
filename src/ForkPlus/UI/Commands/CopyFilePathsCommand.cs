@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -14,7 +15,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(string[] filePaths)
 		{
-			ClipboardHelper.SetText(string.Join(Environment.NewLine, filePaths.Map((string x) => PathHelper.Normalize(x))));
+			ServiceLocator.Clipboard.SetText(string.Join(Environment.NewLine, filePaths.Map((string x) => PathHelper.Normalize(x))));
 		}
 	}
 }

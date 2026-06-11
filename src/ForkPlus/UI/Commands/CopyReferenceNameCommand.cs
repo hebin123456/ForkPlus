@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +14,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(Reference reference)
 		{
-			ClipboardHelper.SetText(reference.Name);
+			ServiceLocator.Clipboard.SetText(reference.Name);
 		}
 	}
 }

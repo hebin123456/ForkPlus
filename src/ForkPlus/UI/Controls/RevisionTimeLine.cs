@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Controls
 {
 	public class RevisionTimeLine : FrameworkElement
 	{
-		private readonly Typeface _typeface = new Typeface(Consts.Fonts.Proportional, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+		private readonly Typeface _typeface = new Typeface(FontConstants.ProportionalFontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
 		private Brush _labelBrush;
 

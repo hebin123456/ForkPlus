@@ -1,5 +1,3 @@
-using System.Windows.Media;
-
 namespace ForkPlus
 {
 	public static class Consts
@@ -154,9 +152,9 @@ namespace ForkPlus
 
 		public static class Fonts
 		{
-			public static readonly FontFamily Monospace = new FontFamily("Consolas");
+		public const string Monospace = "Consolas";
 
-			public static readonly FontFamily Proportional = new FontFamily("Segoe UI");
+		public const string Proportional = "Segoe UI";
 		}
 
 		public static class Sidebar

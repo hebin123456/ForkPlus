@@ -1825,6 +1825,14 @@
     "# Synchronize '{0}' with '{1}':": "# 同步 '{0}' 与 '{1}'：",
     "# Move '{0}' to '{1}':": "# 移动 '{0}' 到 '{1}'：",
     "# Update submodules:": "# 更新子模块：",
-    "# Apply stashed changes:": "# 应用暂存的变更："
+    "# Apply stashed changes:": "# 应用暂存的变更：",
+    "fork: try to disable 'ignore whitespaces'": "fork: 尝试禁用'忽略空白'选项",
+    "fork: * ensure Fork has access to your organization": "fork: * 确保 Fork 有权访问您的组织",
+    "fork: * ensure Fork uses correct account for the remote": "fork: * 确保 Fork 为远程仓库使用了正确的账号",
+    "error: open('{0}'): Permission denied": "错误：打开'{0}'时权限被拒绝",
+    "fatal: cannot hash {0}": "致命错误：无法计算 {0} 的哈希值",
+    "fatal: cannot hash": "致命错误：无法计算哈希值",
+    "error: open({0}): Permission denied": "错误：打开{0}时权限被拒绝",
+    "Allowed parameters:": "允许的参数："
   }
 }

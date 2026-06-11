@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -14,7 +15,7 @@ namespace ForkPlus.UI.Commands
 		{
 			if (remoteAddress != null)
 			{
-				ClipboardHelper.SetText(remoteAddress);
+				ServiceLocator.Clipboard.SetText(remoteAddress);
 			}
 		}
 	}

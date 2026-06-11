@@ -152,7 +152,6 @@ namespace ForkPlus.Tests
 			new ClassCoverageEntry("src/ForkPlus/ChildProcess.cs", "class", "ChildProcess", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/CliArguments.cs", "class", "CliArguments", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/CliCommand.cs", "class", "CliCommand", "UNIT-SOURCE-COVERAGE-001"),
-			new ClassCoverageEntry("src/ForkPlus/ClipboardHelper.cs", "class", "ClipboardHelper", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Consts.cs", "class", "Consts", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Consts.cs", "class", "ForkPlus", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Consts.cs", "class", "ApplicationUpdate", "UNIT-SOURCE-COVERAGE-001"),

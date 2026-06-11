@@ -18,6 +18,7 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {

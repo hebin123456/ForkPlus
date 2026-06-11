@@ -18,6 +18,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -399,7 +400,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			string text = ClipboardHelper.GetText();
+			string text = ServiceLocator.Clipboard.GetText();
 			if (text != null)
 			{
 				text = RemoveGitClonePrefix(text).Trim().Trim('"');

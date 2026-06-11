@@ -6,7 +6,7 @@ using System.Windows.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Controls.Editor.Diff;
-
+using ForkPlus.Services;
 namespace ForkPlus.UI.Controls.Commands
 {
 	public class CopyAsPatchCommand
@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Controls.Commands
 					string text = new Patch(new Diff[1] { diff }).CreatePatchString();
 					if (text != null)
 					{
-						ClipboardHelper.SetText(text);
+						ServiceLocator.Clipboard.SetText(text);
 					}
 				}
 				return;
@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Controls.Commands
 				string text2 = new Patch(new Diff[1] { diff2 }).CreatePatchString();
 				if (text2 != null)
 				{
-					ClipboardHelper.SetText(text2);
+					ServiceLocator.Clipboard.SetText(text2);
 				}
 			}
 		}

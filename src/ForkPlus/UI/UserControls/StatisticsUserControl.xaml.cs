@@ -12,6 +12,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
@@ -305,7 +306,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (!_isCalendarUpdatingInProgress)
 				{
-					UpdatePreview(_gitModule, DateRangeButton.DateRange);
+				UpdatePreview(_gitModule, DateRangeButton.DateRange.ToServiceCalendarDateRange());
 				}
 			};
 			StatsContainer.Collapse();
@@ -336,7 +337,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void UpdatePreview(GitModule gitModule, [Null] CalendarDateRange dateRange)
+private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.CalendarDateRange? dateRange)
 		{
 			StatsContainer.Collapse();
 			FallbackUserControl.FallbackTitle = Translate("Generating statistics...");

@@ -1,53 +1,47 @@
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows;
+using ForkPlus.Services;
 
 namespace ForkPlus
 {
-	internal static class DesignTimeHelper
+ /// <summary>
+ /// 设计时模式检测。优先使用 ServiceLocator 中的 IDesignModeService，
+ /// 回退到进程名检测（兼容无 ServiceLocator 的启动早期阶段）。
+ /// </summary>
+ internal static class DesignTimeHelper
+ {
+  private static readonly bool _isDesignMode;
+
+  static DesignTimeHelper()
+  {
+   if (ServiceLocator.IsInitialized)
+   {
+    _isDesignMode = ServiceLocator.DesignMode.IsInDesignMode;
+   }
+   else
+   {
+    _isDesignMode = DetectByProcessName();
+   }
+  }
+
+	public static bool IsInDesignMode()
 	{
-		private static readonly bool _isDesignMode = ComputeIsDesignMode();
-
-		public static bool IsInDesignMode()
-		{
-			return _isDesignMode;
-		}
-
-		public static bool IsInDesignMode(DependencyObject dependencyObject)
-		{
-			if (dependencyObject != null && DesignerProperties.GetIsInDesignMode(dependencyObject))
-			{
-				return true;
-			}
-			return _isDesignMode;
-		}
-
-		private static bool ComputeIsDesignMode()
-		{
-			if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
-			{
-				return true;
-			}
-			try
-			{
-				if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
-				{
-					return true;
-				}
-			}
-			catch
-			{
-			}
-			try
-			{
-				string processName = Process.GetCurrentProcess().ProcessName;
-				return processName.Equals("XDesProc", StringComparison.OrdinalIgnoreCase) || processName.Equals("DesignToolsServer", StringComparison.OrdinalIgnoreCase) || processName.Equals("DesignToolsServerHost", StringComparison.OrdinalIgnoreCase) || processName.IndexOf("XamlDesigner", StringComparison.OrdinalIgnoreCase) >= 0;
-			}
-			catch
-			{
-				return false;
-			}
-		}
+		return _isDesignMode;
 	}
+
+	private static bool DetectByProcessName()
+  {
+   try
+   {
+    string processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+    return processName.Equals("XDesProc", StringComparison.OrdinalIgnoreCase)
+     || processName.Equals("DesignToolsServer", StringComparison.OrdinalIgnoreCase)
+     || processName.Equals("DesignToolsServerHost", StringComparison.OrdinalIgnoreCase)
+     || processName.IndexOf("XamlDesigner", StringComparison.OrdinalIgnoreCase) >= 0;
+   }
+   catch
+   {
+    return false;
+   }
+  }
+ }
 }

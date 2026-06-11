@@ -429,7 +429,9 @@ namespace ForkPlus.Git.Commands
 
 		public class GitError : GitCommandError
 		{
-			private static readonly Regex NoPathInCommitRegex = new Regex("fatal: There is no path '(.+)' in the commit", RegexOptions.Compiled);
+				private static readonly Regex NoPathInCommitRegex = new Regex("fatal: There is no path '(.+)' in the commit", RegexOptions.Compiled);
+			private static readonly Regex PermissionDeniedOpenRegex = new Regex("error: open\\('?(.+?)'?\\): Permission denied", RegexOptions.Compiled);
+			private static readonly Regex CannotHashRegex = new Regex("fatal: cannot hash (.+)", RegexOptions.Compiled);
 
 			public string FullOutput { get; }
 
@@ -462,14 +464,30 @@ namespace ForkPlus.Git.Commands
 
 			private static string Translate(string output)
 			{
-				if (string.IsNullOrEmpty(output))
-				{
-					return output;
-				}
-				return NoPathInCommitRegex.Replace(output, delegate(Match match)
-				{
-					return string.Format(PreferencesLocalization.Translate("fatal: There is no path '{0}' in the commit", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
-				});
+			 if (string.IsNullOrEmpty(output))
+			 {
+			  return output;
+			 }
+			 output = NoPathInCommitRegex.Replace(output, delegate(Match match)
+			 {
+			  return string.Format(PreferencesLocalization.Translate("fatal: There is no path '{0}' in the commit", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			 });
+			 output = PermissionDeniedOpenRegex.Replace(output, delegate(Match match)
+			 {
+			  return string.Format(PreferencesLocalization.Translate("error: open('{0}'): Permission denied", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			 });
+			 output = CannotHashRegex.Replace(output, delegate(Match match)
+			 {
+			  string key = (match.Groups.Count > 1 && !string.IsNullOrEmpty(match.Groups[1].Value))
+			   ? "fatal: cannot hash {0}"
+			   : "fatal: cannot hash";
+			  if (key.Contains("{0}"))
+			  {
+			   return string.Format(PreferencesLocalization.Translate(key, ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			  }
+			  return PreferencesLocalization.Translate(key, ForkPlusSettings.Default.UiLanguage);
+			 });
+			 return output;
 			}
 		}
 

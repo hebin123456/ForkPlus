@@ -1,6 +1,7 @@
+using ForkPlus.UI.Helpers;
 using System.Windows.Input;
 
-namespace ForkPlus
+namespace ForkPlus.UI.Helpers
 {
 	public static class KeyboardHelper
 	{

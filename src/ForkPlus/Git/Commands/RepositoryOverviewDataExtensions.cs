@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
+using CalendarDateRange = ForkPlus.Services.CalendarDateRange;
 
 namespace ForkPlus.Git.Commands
 {

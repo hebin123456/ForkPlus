@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private static readonly SolidColorBrush _noiseBrushDark;
 
-		private static Typeface BoldTypeface => new Typeface(Consts.Fonts.Monospace, FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+		private static Typeface BoldTypeface => new Typeface(FontConstants.MonospaceFontFamily, FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
 
 		static GitOutputColorizer()
 		{

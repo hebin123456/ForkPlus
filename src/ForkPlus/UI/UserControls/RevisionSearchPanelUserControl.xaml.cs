@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {

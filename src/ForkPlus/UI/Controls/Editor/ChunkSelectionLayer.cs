@@ -11,6 +11,7 @@ using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
 using ICSharpCode.AvalonEdit.Utils;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor
 {

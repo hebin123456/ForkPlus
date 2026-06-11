@@ -16,6 +16,7 @@ using ForkPlus.Shell.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -97,7 +98,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CopyPublicKey_RequestNavigate(object sender, RequestNavigateEventArgs e)
 		{
-			ClipboardHelper.SetText(SshKeyPublicKeyTextBox.Text);
+			ServiceLocator.Clipboard.SetText(SshKeyPublicKeyTextBox.Text);
 		}
 
 		private void ActivateAndSelectSshKey(string keyName)

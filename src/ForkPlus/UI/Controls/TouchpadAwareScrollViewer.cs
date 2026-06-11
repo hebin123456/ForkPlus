@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls
 		{
 			base.Loaded += delegate
 			{
-				if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+				if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 				{
 					return;
 				}

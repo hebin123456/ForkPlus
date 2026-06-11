@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Controls;
+using CalendarDateRange = ForkPlus.Services.CalendarDateRange;
 using ForkPlus.Git.Interaction;
 
 namespace ForkPlus.Git.Commands
@@ -15,13 +15,13 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		public GitCommandResult<RepositoryStats> Execute(GitModule gitModule, [Null] CalendarDateRange dateRange)
+		public GitCommandResult<RepositoryStats> Execute(GitModule gitModule, CalendarDateRange? dateRange)
 		{
 			GitCommand gitCommand = new GitCommand("log", "--no-show-signature", "--date-order", "--pretty=format:" + RevisionParser.Format);
 			if (dateRange != null)
 			{
-				gitCommand.Add($"--since={ConvertToUnixTime(dateRange.Start)}");
-				gitCommand.Add($"--until={ConvertToUnixTime(dateRange.End)}");
+				gitCommand.Add($"--since={ConvertToUnixTime(dateRange.Value.Start)}");
+				gitCommand.Add($"--until={ConvertToUnixTime(dateRange.Value.End)}");
 			}
 			gitCommand.Add("--");
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute();

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Shell;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
@@ -55,7 +56,7 @@ namespace ForkPlus.UI
 
 		private bool _showHeader = true;
 
-		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode(this);
+		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		public double HeaderHeight
 		{

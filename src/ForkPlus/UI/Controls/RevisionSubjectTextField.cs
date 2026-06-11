@@ -68,7 +68,7 @@ namespace ForkPlus.UI.Controls
 				}
 				if (codeIndex.HasValue)
 				{
-					run2.FontFamily = Consts.Fonts.Monospace;
+					run2.FontFamily = FontConstants.MonospaceFontFamily;
 					run2.FontSize = 11.0;
 					run2.Background = (IsParentSelected ? codeTransparentBackgroundBrush : codeSolidBackgroundBrush);
 				}

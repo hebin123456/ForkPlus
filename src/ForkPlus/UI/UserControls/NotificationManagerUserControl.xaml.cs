@@ -6,6 +6,9 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 using ForkPlus.Accounts;
+using ForkPlus.Settings;
+using ForkPlus.UI.Helpers;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -20,6 +23,7 @@ namespace ForkPlus.UI.UserControls
 		public NotificationManagerUserControl()
 		{
 			InitializeComponent();
+			HeaderLabel.Text = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 			ListBox.ItemsSource = _notifications;
 			NotificationManager.Current.IsUpdatingChanged += NotificationManager_IsUpdatingChanged;
 			NotificationManager.Current.NotificationsChanged += NotificationManager_NotificationsChanged;

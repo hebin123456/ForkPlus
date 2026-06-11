@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using ForkPlus.Git;
+using ForkPlus.Services;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json;

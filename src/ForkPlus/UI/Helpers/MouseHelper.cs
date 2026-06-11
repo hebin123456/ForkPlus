@@ -1,7 +1,8 @@
+using ForkPlus.UI.Helpers;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-namespace ForkPlus
+namespace ForkPlus.UI.Helpers
 {
 	internal static class MouseHelper
 	{

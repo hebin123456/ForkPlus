@@ -21,6 +21,8 @@ using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.IO.Ipc;
+using ForkPlus.Services;
+using ForkPlus.Services.Wpf;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.Dialogs;
@@ -489,6 +491,15 @@ namespace ForkPlus
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
+			ServiceLocator.Initialize(
+				dispatcher: new WpfDispatcher(Dispatcher.CurrentDispatcher),
+				designMode: new WpfDesignModeService(),
+				appContext: new WpfAppContext(),
+				clipboard: new WpfClipboardService(),
+				timer: new WpfTimerService(),
+				toast: new WpfToastNotificationService(),
+				windowManager: new WpfWindowManagerService()
+			);
 			_ = IsDebug;
 			InitializeRenderMode();
 			InitializeTheme();

@@ -20,6 +20,7 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {

@@ -7,6 +7,7 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -21,7 +22,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowInTaskbar = true;
 			base.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 			InitializeComponent();
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				base.Title = PreferencesLocalization.Current("Revision Details");
 			}
@@ -31,7 +32,7 @@ namespace ForkPlus.UI.Dialogs
 			: this()
 		{
 			RevisionDetailsWindow revisionDetailsWindow = this;
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}
@@ -52,7 +53,7 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}

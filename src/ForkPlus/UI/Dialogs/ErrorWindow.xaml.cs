@@ -56,11 +56,11 @@ namespace ForkPlus.UI.Dialogs
 			string text;
 			if (gitCommandError is GitCommandError.GitError gitError)
 			{
-				text = gitError.FullOutput;
+				text = gitError.FriendlyDescription;
 				if (gitCommandError is GitCommandError.AutomaticMergeFailed)
 				{
-					base.DialogTitle = "Merge Conflict";
-					base.DialogDescription = "Automatic merge failed. Fix conflicts and then commit the result";
+					base.DialogTitle = Translate("Merge Conflict");
+					base.DialogDescription = Translate("Automatic merge failed. Fix conflicts and then commit the result");
 					base.ShowWarningIcon = false;
 				}
 				else if (gitCommandError is GitCommandError.TagMismatch)
@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else if (gitCommandError is GitCommandError.PatchDoesNotApply)
 				{
-					text += "\nfork: try to disable 'ignore whitespaces'";
+					text += "\n" + Translate("fork: try to disable 'ignore whitespaces'");
 				}
 				else
 				{
@@ -97,15 +97,15 @@ namespace ForkPlus.UI.Dialogs
 							break;
 						case GitCommandError.AuthenticationFailed.Kind.GitHubConnectionError:
 						{
-							text = gitError.FullOutput;
+							text = gitError.FriendlyDescription;
 							int count2 = AccountManager.Current.Accounts.Filter((Account x) => x.ServiceType == RemoteType.Github).Count;
 							if (count2 > 0)
 							{
-								text += "\nfork: * ensure Fork has access to your organization:\nfork:   https://github.com/settings/connections/applications/debde513eaa447b74d51";
+								text += "\n" + Translate("fork: * ensure Fork has access to your organization") + "\nfork:   https://github.com/settings/connections/applications/debde513eaa447b74d51";
 							}
 							if (count2 > 1)
 							{
-								text += "\nfork: * ensure Fork uses correct account for the remote\nfork:   (right click on the remote on sidebar and select Edit)";
+								text += "\n" + Translate("fork: * ensure Fork uses correct account for the remote") + "\nfork:   (right click on the remote on sidebar and select Edit)";
 							}
 							break;
 						}

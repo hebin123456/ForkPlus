@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Controls
 				SpellingError spellingError = GetSpellingError(base.CaretIndex);
 				base.ContextMenu.AddSpellingMenuItems(spellingError, this);
 			};
-			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				WeakEventManager<NotificationCenter, EventArgs<CommitSpellCheckingMode>>.AddHandler(NotificationCenter.Current, "CommitSpellCheckingModeChanged", delegate
 				{

@@ -127,7 +127,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			else if (e.Property.Name == "IsMonospace")
 			{
-				FallbackMessageTextBlock.FontFamily = Consts.Fonts.Monospace;
+				FallbackMessageTextBlock.FontFamily = FontConstants.MonospaceFontFamily;
 				FallbackMessageTextBlock.FontSize = 14.0;
 				FallbackMessageTextBlock.TextAlignment = TextAlignment.Left;
 				FallbackMessageTextBlock.HorizontalAlignment = HorizontalAlignment.Left;

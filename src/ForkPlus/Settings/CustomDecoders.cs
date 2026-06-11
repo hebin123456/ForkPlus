@@ -1,5 +1,5 @@
 using System;
-using System.Windows;
+using WindowState = System.Windows.WindowState;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 

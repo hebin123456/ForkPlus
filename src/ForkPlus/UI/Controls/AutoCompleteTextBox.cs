@@ -115,7 +115,7 @@ namespace ForkPlus.UI.Controls
 
 		private void OpenPopup(AutoCompleteSuggestions autoComplete)
 		{
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this) || _popup == null || Application.Current == null)
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode() || _popup == null || Application.Current == null)
 			{
 				return;
 			}

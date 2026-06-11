@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
@@ -25,7 +26,7 @@ namespace ForkPlus.UI.Controls
 
 		public CommitDescriptionTextBox()
 		{
-			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "PageGuideLinePositionChanged", delegate
 				{

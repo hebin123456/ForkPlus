@@ -29,7 +29,7 @@ namespace ForkPlus.UI.QuickLaunch
 		public QuickLaunchWindow(bool showCheckout = false)
 		{
 			InitializeComponent();
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				base.Title = PreferencesLocalization.Current("Quick Launch");
 				return;

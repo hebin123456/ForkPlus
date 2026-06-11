@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {

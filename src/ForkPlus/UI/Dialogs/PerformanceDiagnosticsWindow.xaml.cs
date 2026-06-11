@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Markup;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -27,7 +28,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CopyButton_Click(object sender, RoutedEventArgs e)
 		{
-			ClipboardHelper.SetText(SamplesTextBox.Text);
+			ServiceLocator.Clipboard.SetText(SamplesTextBox.Text);
 		}
 
 		private void RefreshSamples()

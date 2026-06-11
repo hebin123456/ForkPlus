@@ -1825,6 +1825,14 @@
     "# Synchronize '{0}' with '{1}':": "# 同步 '{0}' 與 '{1}'：",
     "# Move '{0}' to '{1}':": "# 移動 '{0}' 到 '{1}'：",
     "# Update submodules:": "# 更新子模組：",
-    "# Apply stashed changes:": "# 套用暫存的變更："
+    "# Apply stashed changes:": "# 套用暫存的變更：",
+    "fork: try to disable 'ignore whitespaces'": "fork: 嘗試停用'忽略空白'選項",
+    "fork: * ensure Fork has access to your organization": "fork: * 確保 Fork 有權存取您的組織",
+    "fork: * ensure Fork uses correct account for the remote": "fork: * 確保 Fork 為遠端倉庫使用了正確的帳號",
+    "error: open('{0}'): Permission denied": "錯誤：打開'{0}'時權限被拒絕",
+    "fatal: cannot hash {0}": "致命錯誤：無法計算 {0} 的雜湊值",
+    "fatal: cannot hash": "致命錯誤：無法計算雜湊值",
+    "error: open({0}): Permission denied": "錯誤：打開{0}時權限被拒絕",
+    "Allowed parameters:": "允許的參數："
   }
 }

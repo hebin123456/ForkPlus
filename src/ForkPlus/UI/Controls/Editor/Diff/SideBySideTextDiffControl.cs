@@ -2,6 +2,7 @@ using System;
 using System.Windows.Controls;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

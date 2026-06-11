@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -17,7 +18,7 @@ namespace ForkPlus.UI.Commands
 		public void Execute(GitModule gitModule, string[] filePaths)
 		{
 			string normalizedGitModulePath = PathHelper.Normalize(gitModule.Path);
-			ClipboardHelper.SetText(string.Join(Environment.NewLine, filePaths.Map((string x) => Path.Combine(normalizedGitModulePath, PathHelper.Normalize(x)))));
+			ServiceLocator.Clipboard.SetText(string.Join(Environment.NewLine, filePaths.Map((string x) => Path.Combine(normalizedGitModulePath, PathHelper.Normalize(x)))));
 		}
 	}
 }

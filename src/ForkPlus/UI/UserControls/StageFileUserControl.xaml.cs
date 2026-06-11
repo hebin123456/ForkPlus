@@ -9,6 +9,7 @@ using System.Windows.Markup;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {

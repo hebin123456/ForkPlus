@@ -1,72 +1,71 @@
-using System.Windows.Media;
-using ForkPlus.UI;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git
 {
-	public static class RemoteTypeExtension
-	{
-		public static ImageSource Icon(this RemoteType remoteType)
-		{
-			switch (remoteType)
-			{
-			case RemoteType.Azure:
-			case RemoteType.Visualstudio:
-				return Theme.AzureIcon;
-			case RemoteType.Bitbucket:
-			case RemoteType.BitbucketServer:
-				return Theme.BitbucketIcon;
-			case RemoteType.Gitea:
-				return Theme.GiteaIcon;
-			case RemoteType.Github:
-			case RemoteType.GithubEnterprise:
-				return Theme.GitHubIcon;
-			case RemoteType.Gitlab:
-			case RemoteType.GitlabServer:
-				return Theme.GitLabIcon;
-			default:
-				return Theme.RemoteIcon;
-			}
-		}
+ public static class RemoteTypeExtension
+ {
+  public static string GetIconKey(this RemoteType remoteType)
+  {
+   switch (remoteType)
+   {
+   case RemoteType.Azure:
+   case RemoteType.Visualstudio:
+    return IconKeys.Azure;
+   case RemoteType.Bitbucket:
+   case RemoteType.BitbucketServer:
+    return IconKeys.Bitbucket;
+   case RemoteType.Gitea:
+    return IconKeys.Gitea;
+   case RemoteType.Github:
+   case RemoteType.GithubEnterprise:
+    return IconKeys.GitHub;
+   case RemoteType.Gitlab:
+   case RemoteType.GitlabServer:
+    return IconKeys.GitLab;
+   default:
+    return IconKeys.Remote;
+   }
+  }
 
-		public static Geometry IconGeometry(this RemoteType remoteType)
-		{
-			switch (remoteType)
-			{
-			case RemoteType.Azure:
-			case RemoteType.Visualstudio:
-				return Theme.AzureGeometry;
-			case RemoteType.Bitbucket:
-			case RemoteType.BitbucketServer:
-				return Theme.BitbucketGeometry;
-			case RemoteType.Gitea:
-				return Theme.GiteaGeometry;
-			case RemoteType.Github:
-			case RemoteType.GithubEnterprise:
-				return Theme.GitHubGeometry;
-			case RemoteType.Gitlab:
-			case RemoteType.GitlabServer:
-				return Theme.GitLabGeometry;
-			default:
-				return Theme.RemoteGeometry;
-			}
-		}
+  public static string GetIconGeometryKey(this RemoteType remoteType)
+  {
+   switch (remoteType)
+   {
+   case RemoteType.Azure:
+   case RemoteType.Visualstudio:
+    return IconKeys.AzureGeometry;
+   case RemoteType.Bitbucket:
+   case RemoteType.BitbucketServer:
+    return IconKeys.BitbucketGeometry;
+   case RemoteType.Gitea:
+    return IconKeys.GiteaGeometry;
+   case RemoteType.Github:
+   case RemoteType.GithubEnterprise:
+    return IconKeys.GitHubGeometry;
+   case RemoteType.Gitlab:
+   case RemoteType.GitlabServer:
+    return IconKeys.GitLabGeometry;
+   default:
+    return IconKeys.RemoteGeometry;
+   }
+  }
 
-		[Null]
-		public static string FriendlyName(this RemoteType remoteType)
-		{
-			return remoteType switch
-			{
-				RemoteType.Azure => "Azure", 
-				RemoteType.Bitbucket => "Bitbucket", 
-				RemoteType.BitbucketServer => "Bitbucket Server", 
-				RemoteType.Gitea => "Gitea", 
-				RemoteType.Github => "GitHub", 
-				RemoteType.GithubEnterprise => "GitHub Enterprise Server", 
-				RemoteType.Gitlab => "GitLab", 
-				RemoteType.GitlabServer => "GitLab Server", 
-				RemoteType.Visualstudio => "Visualstudio", 
-				_ => null, 
-			};
-		}
-	}
+  [Null]
+  public static string FriendlyName(this RemoteType remoteType)
+  {
+   return remoteType switch
+   {
+    RemoteType.Azure => "Azure",
+    RemoteType.Bitbucket => "Bitbucket",
+    RemoteType.BitbucketServer => "Bitbucket Server",
+    RemoteType.Gitea => "Gitea",
+    RemoteType.Github => "GitHub",
+    RemoteType.GithubEnterprise => "GitHub Enterprise Server",
+    RemoteType.Gitlab => "GitLab",
+    RemoteType.GitlabServer => "GitLab Server",
+    RemoteType.Visualstudio => "Visualstudio",
+    _ => null,
+   };
+  }
+ }
 }

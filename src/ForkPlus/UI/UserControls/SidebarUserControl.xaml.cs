@@ -21,6 +21,7 @@ using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {

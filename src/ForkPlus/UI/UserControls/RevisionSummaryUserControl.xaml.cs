@@ -38,7 +38,7 @@ namespace ForkPlus.UI.UserControls
 		public RevisionSummaryUserControl()
 		{
 			InitializeComponent();
-			DescriptionTextBlock.FontFamily = Consts.Fonts.Monospace;
+			DescriptionTextBlock.FontFamily = FontConstants.MonospaceFontFamily;
 		}
 
 		public void Refresh(Sha sha, BugtrackerLinkDefinition[] bugtrackers, UserColors userColors)

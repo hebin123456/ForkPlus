@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Media;
 using ForkPlus.Accounts;
 
 namespace ForkPlus.Git
 {
-	public class Remote
+	public partial class Remote
 	{
 		public sealed class RemoteComparer : IComparer<Remote>
 		{
@@ -80,9 +79,9 @@ namespace ForkPlus.Git
 
 		public RemoteType RemoteType { get; }
 
-		public ImageSource Icon => RemoteType.Icon();
+		public string IconKey => RemoteType.GetIconKey();
 
-		public Geometry IconGeometry => RemoteType.IconGeometry();
+		public string IconGeometryKey => RemoteType.GetIconGeometryKey();
 
 		public Remote(string name, string url, bool disableImplicitFetch, [Null] Account account)
 		{

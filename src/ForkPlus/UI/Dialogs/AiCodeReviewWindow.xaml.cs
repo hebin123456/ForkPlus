@@ -28,6 +28,7 @@ using ForkPlus.Utils.Http;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json.Linq;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -87,7 +88,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			FileReviewFileListUserControl.SelectionChanged += FileReviewFileListUserControl_SelectionChanged;
 			FileReviewGrid.SizeChanged += FileReviewGrid_SizeChanged;
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				base.Title = PreferencesLocalization.Current("AI Code Review");
 				TitleTextBlock.Text = PreferencesLocalization.Current("AI Code Review");
@@ -98,7 +99,7 @@ namespace ForkPlus.UI.Dialogs
 			: this()
 		{
 			AiCodeReviewWindow aiCodeReviewWindow = this;
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}
@@ -223,7 +224,7 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}
@@ -258,7 +259,7 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnClosed(EventArgs e)
 		{
 			base.OnClosed(e);
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}

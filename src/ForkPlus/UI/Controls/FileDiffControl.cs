@@ -18,6 +18,8 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Helpers;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Controls
 {
@@ -126,7 +128,7 @@ namespace ForkPlus.UI.Controls
 				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
 				if (repositoryUserControl != null)
 				{
-					string text = ClipboardHelper.GetText();
+					string text = ServiceLocator.Clipboard.GetText();
 					if (text != null && (text.StartsWith("diff ") || text.StartsWith("From ")))
 					{
 						e.Handled = true;

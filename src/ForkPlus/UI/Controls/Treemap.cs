@@ -7,6 +7,7 @@ using System.Windows.Media;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {

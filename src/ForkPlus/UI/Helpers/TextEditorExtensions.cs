@@ -1,8 +1,9 @@
+using ForkPlus.UI.Helpers;
 using System.Windows.Controls.Primitives;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Rendering;
 
-namespace ForkPlus
+namespace ForkPlus.UI.Helpers
 {
 	internal static class TextEditorExtensions
 	{

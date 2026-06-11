@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode(this))
+			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
 			}

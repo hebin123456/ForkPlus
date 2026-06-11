@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -29,7 +30,7 @@ namespace ForkPlus.UI.Commands
 					stringBuilder.Append(Environment.NewLine);
 				}
 			}
-			ClipboardHelper.SetText(stringBuilder.ToString());
+			ServiceLocator.Clipboard.SetText(stringBuilder.ToString());
 		}
 	}
 }

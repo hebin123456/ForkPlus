@@ -12,6 +12,7 @@ using ForkPlus.UI.Controls;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -126,7 +127,7 @@ namespace ForkPlus.UI.UserControls
 		public CodeEditorSearchPanelUserControl()
 		{
 			InitializeComponent();
-			SearchTextBox.FontFamily = Consts.Fonts.Proportional;
+			SearchTextBox.FontFamily = FontConstants.ProportionalFontFamily;
 			base.Loaded += delegate
 			{
 				TranslateTransform.Y = 0.0 - ControlHeight;

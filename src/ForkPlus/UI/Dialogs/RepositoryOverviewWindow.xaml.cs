@@ -16,6 +16,7 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs.RepositoryOverview;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -102,7 +103,7 @@ namespace ForkPlus.UI.Dialogs
 							string text = dataSource.GetPath(selectedIndexPath).TrimEnd('/');
 							string text2 = text;
 							string text3 = "";
-							Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize(), text);
+							Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
 							GitCommandResult<RevisionHeader[]> gitCommandResult = new GetRevisionHeadersGitCommand().Execute(repositoryOverviewWindow._gitModule, shas);
 							if (!gitCommandResult.Succeeded)
 							{
@@ -117,7 +118,7 @@ namespace ForkPlus.UI.Dialogs
 								}
 								repositoryOverviewWindow.CommitsUserControl.UpdateData(text, array);
 							}
-							(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize(), text);
+							(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
 							repositoryOverviewWindow.AuthorsUserControl.UpdateData(authorStats, repositoryOverviewWindow._repositoryOverviewData.UserIdentities);
 							int num = text.LastIndexOf("/");
 							if (num != -1)
@@ -140,7 +141,7 @@ namespace ForkPlus.UI.Dialogs
 			};
 			DateRangeButton.DateRangeChanged += delegate
 			{
-				repositoryOverviewWindow.RefreshData(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize());
+				repositoryOverviewWindow.RefreshData(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize());
 			};
 			Fallback.Show();
 			Fallback.FallbackTitle = Translate("Loading...");
@@ -189,7 +190,7 @@ namespace ForkPlus.UI.Dialogs
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 		}
 
-		private void RefreshData(CalendarDateRange dateRange)
+		private void RefreshData(ForkPlus.Services.CalendarDateRange dateRange)
 		{
 			RepositoryOverviewData repositoryOverviewData = _repositoryOverviewData;
 			(string, List<int>)[] files = repositoryOverviewData.Files.Map((KeyValuePair<string, List<int>> x) => (Key: x.Key, Value: x.Value)).ToSortedArray(((string Key, List<int> Value) x, (string Key, List<int> Value) y) => string.CompareOrdinal(x.Key, y.Key));
@@ -389,4 +390,3 @@ namespace ForkPlus.UI.Dialogs
 
 	}
 }
-

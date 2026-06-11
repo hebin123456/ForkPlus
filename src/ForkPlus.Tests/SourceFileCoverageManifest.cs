@@ -105,7 +105,6 @@ namespace ForkPlus.Tests
 			"src/ForkPlus/ChildProcess.cs",
 			"src/ForkPlus/CliArguments.cs",
 			"src/ForkPlus/CliCommand.cs",
-			"src/ForkPlus/ClipboardHelper.cs",
 			"src/ForkPlus/Consts.cs",
 			"src/ForkPlus/Credential.cs",
 			"src/ForkPlus/CredentialType.cs",

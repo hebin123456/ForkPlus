@@ -4,6 +4,7 @@ using System.Windows.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ICSharpCode.AvalonEdit.Rendering;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

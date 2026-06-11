@@ -4,31 +4,19 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 
-namespace ForkPlus
+namespace ForkPlus.Services.Wpf
 {
-	public static class ClipboardHelper
+	public class WpfClipboardService : IClipboardService
 	{
-		[Null]
-		public static string GetText()
-		{
-			try
-			{
-				return Clipboard.GetData(DataFormats.Text) as string;
-			}
-			catch
-			{
-				return null;
-			}
-		}
-
-		public static void SetText(string text)
+		public void SetText(string text)
 		{
 			Exception exception = null;
+			text = text ?? "";
 			for (int i = 0; i < 6; i++)
 			{
 				try
 				{
-					Clipboard.SetDataObject(text ?? "", copy: true);
+					Clipboard.SetDataObject(text, copy: true);
 					return;
 				}
 				catch (COMException ex)
@@ -44,15 +32,29 @@ namespace ForkPlus
 			}
 			try
 			{
-				Clipboard.SetText(text ?? "");
-				return;
+				Clipboard.SetText(text);
 			}
 			catch (Exception ex3)
 			{
 				exception = ex3;
 			}
-			Log.Error("Failed to copy text to clipboard", exception);
-			LogProcessLockingClipboard();
+			if (exception != null)
+			{
+				Log.Error("Failed to copy text to clipboard", exception);
+				LogProcessLockingClipboard();
+			}
+		}
+
+		public string GetText()
+		{
+			try
+			{
+				return Clipboard.GetData(DataFormats.Text) as string;
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		private static void LogProcessLockingClipboard()

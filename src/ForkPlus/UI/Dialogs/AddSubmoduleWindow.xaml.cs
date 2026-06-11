@@ -10,6 +10,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -129,7 +130,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private static string TryGetClipboardRepositoryUrl()
 		{
-			string text = ClipboardHelper.GetText();
+			string text = ServiceLocator.Clipboard.GetText();
 			if (string.IsNullOrWhiteSpace(text))
 			{
 				return null;

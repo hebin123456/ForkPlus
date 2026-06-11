@@ -15,6 +15,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -412,7 +413,7 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = "Add New Remote";
 			RemoteNameTextBox.Icon = Theme.RemoteIcon;
 			RemoteNameTextBox.Text = Consts.Git.DefaultRemoteName;
-			string text = ClipboardHelper.GetText();
+			string text = ServiceLocator.Clipboard.GetText();
 			if (text != null)
 			{
 				GitUrl gitUrl = new GitUrl(text.Trim());

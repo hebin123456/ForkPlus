@@ -1,10 +1,11 @@
+using ForkPlus.UI.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace ForkPlus
+namespace ForkPlus.UI.Helpers
 {
 	public static class ListViewScrollbarDoubleClickHelper
 	{

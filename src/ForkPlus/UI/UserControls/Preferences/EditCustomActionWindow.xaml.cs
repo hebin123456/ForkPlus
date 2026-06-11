@@ -61,7 +61,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			base.DialogTitle = "Edit Action";
 			base.DialogDescription = "Edit custom command action";
 			base.SubmitButtonTitle = "Save";
-			ShScriptTextBox.FontFamily = Consts.Fonts.Monospace;
+			ShScriptTextBox.FontFamily = FontConstants.MonospaceFontFamily;
 			_customCommand = customCommand;
 			_initialAction = action;
 			RefreshControls(customCommand.Target, action);

@@ -196,7 +196,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private IEnumerable<UIElement> EditableControls => FindVisualChildren<Control>(this);
 
-		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode(this);
+		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		public ForkPlusDialogWindow(bool preventMainWindowRefresh = true)
 		{

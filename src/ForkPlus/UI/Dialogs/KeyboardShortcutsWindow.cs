@@ -232,7 +232,7 @@ namespace ForkPlus.UI.Dialogs
 			TextBlock textBlock = new TextBlock
 			{
 				Text = key,
-				FontFamily = Consts.Fonts.Monospace,
+				FontFamily = FontConstants.MonospaceFontFamily,
 				FontSize = 12.0,
 				VerticalAlignment = VerticalAlignment.Center
 			};

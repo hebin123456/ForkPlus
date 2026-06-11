@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 using ForkPlus.Git;
-
+using ForkPlus.Services;
 namespace ForkPlus.UI.Commands
 {
 	public class CopyWorktreePathsCommand : IUICommand, IForkPlusCommand
@@ -14,7 +14,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(Worktree[] worktrees)
 		{
-			ClipboardHelper.SetText(string.Join(Environment.NewLine, worktrees.Map((Worktree x) => PathHelper.Normalize(x.Path))));
+			ServiceLocator.Clipboard.SetText(string.Join(Environment.NewLine, worktrees.Map((Worktree x) => PathHelper.Normalize(x.Path))));
 		}
 	}
 }

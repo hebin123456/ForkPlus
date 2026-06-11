@@ -1,16 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Windows;
-using System.Windows.Threading;
 using CommunityToolkit.WinUI.Notifications;
 using ForkPlus.Jobs;
-using ForkPlus.UI;
-using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 
 namespace ForkPlus.Accounts
 {
@@ -23,8 +17,6 @@ namespace ForkPlus.Accounts
 		private static readonly TimeSpan UpdateInterval = TimeSpan.FromMinutes(15.0);
 
 		private readonly JobQueue _jobQueue = new JobQueue();
-
-		private readonly DispatcherTimer _dispatcherTimer = new DispatcherTimer();
 
 		[Null]
 		private Job _activeJob;
@@ -89,9 +81,12 @@ namespace ForkPlus.Accounts
 		public NotificationManager()
 		{
 			ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
-			_dispatcherTimer.Interval = FirstUpdateDelay;
-			_dispatcherTimer.Tick += _dispatcherTimer_Tick;
-			_dispatcherTimer.Start();
+			if (Services.ServiceLocator.Timer != null)
+			{
+				Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
+				Services.ServiceLocator.Timer.Tick += _timer_Tick;
+				Services.ServiceLocator.Timer.Start();
+			}
 		}
 
 		public void UnsetUnread(GitServiceNotification notification)
@@ -101,7 +96,10 @@ namespace ForkPlus.Accounts
 
 		public void Refresh()
 		{
-			_dispatcherTimer.Interval = UpdateInterval;
+			if (Services.ServiceLocator.Timer != null)
+			{
+				Services.ServiceLocator.Timer.Interval = UpdateInterval;
+			}
 			_activeJob?.Monitor.Cancel();
 			List<Account> notificationAccounts = AccountManager.Current.Accounts.Filter((Account x) => x.EnableNotifications && x.Service is INotificationGitService);
 			if (notificationAccounts.Count == 0)
@@ -143,7 +141,7 @@ namespace ForkPlus.Accounts
 				GitServiceNotification[] result = list.ToArray();
 				if (!monitor.IsCanceled)
 				{
-					_dispatcherTimer.Dispatcher.Async(delegate
+					Services.ServiceLocator.Dispatcher.Post(delegate
 					{
 						AccountManager.Current.Save();
 						IsUpdating = false;
@@ -166,7 +164,7 @@ namespace ForkPlus.Accounts
 			});
 		}
 
-		private void _dispatcherTimer_Tick(object sender, EventArgs e)
+		private void _timer_Tick(object sender, EventArgs e)
 		{
 			Refresh();
 		}
@@ -185,19 +183,18 @@ namespace ForkPlus.Accounts
 			if (toastNotificaton != null)
 			{
 				new Uri(toastNotificaton.Url).OpenInBrowser();
-				_dispatcherTimer.Dispatcher.Async(delegate
+				Services.ServiceLocator.Dispatcher.Post(delegate
 				{
 					UnsetUnread(toastNotificaton.ThreadId);
 				});
 				return;
 			}
-			_dispatcherTimer.Dispatcher.Async(delegate
+			Services.ServiceLocator.Dispatcher.Post(delegate
 			{
-				MainWindow instance = MainWindow.Instance;
-				if (instance != null)
+				var windowManager = Services.ServiceLocator.WindowManager;
+				if (windowManager != null)
 				{
-					instance.Activate();
-					instance.ShowNotificationManager();
+					windowManager.ActivateAndShowNotifications();
 				}
 			});
 		}
@@ -230,11 +227,17 @@ namespace ForkPlus.Accounts
 
 		public static void SendWindowsNotification(string xmlString)
 		{
+			if (Services.ServiceLocator.Toast != null)
+			{
+				Services.ServiceLocator.Toast.Show(xmlString);
+				return;
+			}
+			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）
 			try
 			{
-				XmlDocument document = new XmlDocument();
+				Windows.Data.Xml.Dom.XmlDocument document = new Windows.Data.Xml.Dom.XmlDocument();
 				document.LoadXml(xmlString);
-				ToastNotifier notifier = ToastNotificationManager.GetDefault().CreateToastNotifier("com.squirrel.ForkPlus.ForkPlus");
+				Windows.UI.Notifications.ToastNotifier notifier = Windows.UI.Notifications.ToastNotificationManager.GetDefault().CreateToastNotifier("com.squirrel.ForkPlus.ForkPlus");
 				Windows.UI.Notifications.ToastNotification notification = new Windows.UI.Notifications.ToastNotification(document);
 				notifier.Show(notification);
 			}
@@ -246,22 +249,14 @@ namespace ForkPlus.Accounts
 
 		private void FindAiCodeReviewWindowAndActivate(string windowTitle)
 		{
-			Application.Current?.Dispatcher.Async(delegate
+			var windowManager = Services.ServiceLocator.WindowManager;
+			if (windowManager != null)
 			{
-				WindowCollection windowCollection = Application.Current?.Windows;
-				if (windowCollection == null)
+				windowManager.DispatchToUiThread(delegate
 				{
-					return;
-				}
-				foreach (object item in windowCollection)
-				{
-					if (item is AiCodeReviewWindow aiCodeReviewWindow && aiCodeReviewWindow.Title == windowTitle)
-					{
-						aiCodeReviewWindow.Activate();
-						break;
-					}
-				}
-			});
+					windowManager.TryActivateWindowByTitle(windowTitle);
+				});
+			}
 		}
 	}
 }

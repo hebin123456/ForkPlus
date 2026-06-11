@@ -12,6 +12,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {

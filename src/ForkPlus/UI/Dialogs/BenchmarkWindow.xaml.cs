@@ -10,6 +10,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -42,7 +43,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CopyResultButton_Click(object sender, RoutedEventArgs e)
 		{
-			ClipboardHelper.SetText(_benchmarkLog);
+			ServiceLocator.Clipboard.SetText(_benchmarkLog);
 		}
 
 		private void StartButton_Click(object sender, RoutedEventArgs e)

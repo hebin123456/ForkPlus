@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Controls
 {
@@ -74,14 +75,14 @@ namespace ForkPlus.UI.Controls
 			menuItem.Header = PreferencesLocalization.MenuHeader("Copy");
 			menuItem.Click += delegate
 			{
-				ClipboardHelper.SetText(title);
+				ServiceLocator.Clipboard.SetText(title);
 			};
 			obj.Items.Add(menuItem);
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Copy Link");
 			menuItem2.Click += delegate
 			{
-				ClipboardHelper.SetText(url);
+				ServiceLocator.Clipboard.SetText(url);
 			};
 			obj.Items.Add(menuItem2);
 			return obj;

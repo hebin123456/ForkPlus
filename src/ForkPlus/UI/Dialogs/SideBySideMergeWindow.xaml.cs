@@ -22,6 +22,7 @@ using ForkPlus.UI.Controls.Editor.Merge;
 using ForkPlus.UI.UserControls;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {

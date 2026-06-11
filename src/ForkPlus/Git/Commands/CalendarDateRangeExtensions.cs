@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Controls;
+using CalendarDateRange = ForkPlus.Services.CalendarDateRange;
 
 namespace ForkPlus.Git.Commands
 {

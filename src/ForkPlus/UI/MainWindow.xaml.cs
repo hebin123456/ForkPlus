@@ -19,6 +19,8 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using NLog;
 using NLog.Targets;
+using ForkPlus.UI.Helpers;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI
 {
@@ -52,7 +54,7 @@ namespace ForkPlus.UI
 
 		private string _lastActivationStatusRefreshRepositoryPath;
 
-		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode(this);
+		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		[Null]
 		public static MainWindow Instance => Application.Current.MainWindow as MainWindow;
@@ -100,6 +102,10 @@ namespace ForkPlus.UI
 			_menuManager?.ApplyLocalization();
 			Toolbar.ApplyLocalization();
 			TabManager?.RefreshTabTitles();
+			if (_templatePartNotificationManagerToggleButton != null)
+			{
+				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+			}
 			RepositoryUserControl activeRepositoryUserControl = ActiveRepositoryUserControl;
 			if (activeRepositoryUserControl != null)
 			{
@@ -141,6 +147,7 @@ namespace ForkPlus.UI
 					_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
 				};
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
+				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 			}
 		}
 
@@ -169,6 +176,7 @@ namespace ForkPlus.UI
 		{
 			base.OnSourceInitialized(e);
 			this.SetWindowLocationState(ForkPlusSettings.Default.MainWindowLocationState);
+			base.WindowState = WindowState.Maximized;
 		}
 
 		protected override void OnKeyUp(KeyEventArgs e)
@@ -205,7 +213,7 @@ namespace ForkPlus.UI
 				RepositoryUserControl activeRepositoryUserControl2 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl2 != null)
 				{
-					string text = ClipboardHelper.GetText();
+					string text = ServiceLocator.Clipboard.GetText();
 					if (text != null && (text.StartsWith("diff ") || text.StartsWith("From ")))
 					{
 						e.Handled = true;

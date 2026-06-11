@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
-using ForkPlus.UI;
+using ForkPlus.Settings;
 
-namespace ForkPlus
+namespace ForkPlus.UI.Helpers
 {
 	public static class WindowLocationStateExtensions
 	{
@@ -37,22 +37,6 @@ namespace ForkPlus
 		}
 
 		[Serializable]
-		private struct WindowPlacement
-		{
-			public int length;
-
-			public int flags;
-
-			public int showCmd;
-
-			public Point minPosition;
-
-			public Point maxPosition;
-
-			public Rect normalPosition;
-		}
-
-		[Serializable]
 		private struct Rect
 		{
 			public int Left;
@@ -72,6 +56,22 @@ namespace ForkPlus
 			}
 		}
 
+		[Serializable]
+		private struct WindowPlacement
+		{
+			public int Length;
+
+			public int Flags;
+
+			public int ShowCmd;
+
+			public Point MinPosition;
+
+			public Point MaxPosition;
+
+			public Rect normalPosition;
+		}
+
 		private struct MonitorInfo
 		{
 			public uint cbSize;
@@ -84,7 +84,7 @@ namespace ForkPlus
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		private class MinMaxInfo
+		private struct MinMaxInfo
 		{
 			public Point ptReserved;
 
@@ -99,7 +99,7 @@ namespace ForkPlus
 
 		private struct AppBarData
 		{
-			public int cbSize;
+			public uint cbSize;
 
 			public IntPtr hWnd;
 
@@ -114,9 +114,13 @@ namespace ForkPlus
 
 		private enum GetSystemMetricsIndex
 		{
-			CXFRAME = 32,
-			CYFRAME = 33,
-			SM_CXPADDEDBORDER = 92
+			SM_CXSCREEN = 0,
+			SM_CYSCREEN = 1,
+			SM_CXVIRTUALSCREEN = 78,
+			SM_CYVIRTUALSCREEN = 79,
+			SM_CMONITORS = 80,
+			SM_XVIRTUALSCREEN = 76,
+			SM_YVIRTUALSCREEN = 77
 		}
 
 		private enum GetDeviceCapsIndex
@@ -125,68 +129,35 @@ namespace ForkPlus
 			LOGPIXELSY = 90
 		}
 
-		internal const int WM_GETMINMAXINFO = 36;
-
-		internal const int WM_WINDOWPOSCHANGED = 71;
-
-		private const int MONITOR_DEFAULTTONEAREST = 2;
-
-		private const int SW_SHOWNORMAL = 1;
-
-		private const int SW_SHOWMINIMIZED = 2;
-
-		private const int SW_SHOWMAXIMIZED = 3;
-
-		public static Thickness WindowResizeBorderThickness
-		{
-			get
-			{
-				if (DesignTimeHelper.IsInDesignMode())
-				{
-					return new Thickness(6.0);
-				}
-				int systemMetrics = GetSystemMetrics(GetSystemMetricsIndex.CXFRAME);
-				int systemMetrics2 = GetSystemMetrics(GetSystemMetricsIndex.CYFRAME);
-				int systemMetrics3 = GetSystemMetrics(GetSystemMetricsIndex.SM_CXPADDEDBORDER);
-				int num = systemMetrics + systemMetrics3;
-				systemMetrics2 += systemMetrics3;
-				DisplayScale displayScale = GetDisplayScale(IntPtr.Zero);
-				float num2 = (float)num / displayScale.X;
-				float num3 = (float)systemMetrics2 / displayScale.Y;
-				return new Thickness(num2, num3, num2, num3);
-			}
-		}
-
 		[DllImport("user32.dll")]
-		private static extern IntPtr MonitorFromRect([In] ref Rect lprc, uint dwFlags);
+		private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
 
 		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool GetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WindowPlacement lpwndpl);
 
-		[DllImport("user32.dll")]
-		private static extern bool GetWindowPlacement(IntPtr hWnd, out WindowPlacement lpwndpl);
-
 		[DllImport("shell32.dll", CallingConvention = CallingConvention.StdCall)]
-		private static extern uint SHAppBarMessage(int dwMessage, ref AppBarData pData);
+		private static extern uint SHAppBarMessage(uint dwMessage, ref AppBarData pData);
 
 		[DllImport("user32.dll")]
-		private static extern IntPtr MonitorFromWindow(IntPtr handle, int flags);
-
-		[DllImport("user32.dll")]
-		private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-		[DllImport("user32.dll")]
-		private static extern IntPtr GetDC(IntPtr hwnd);
+		private static extern int GetSystemMetrics(GetSystemMetricsIndex nIndex);
 
 		[DllImport("gdi32.dll")]
 		private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
 
 		[DllImport("user32.dll")]
-		private static extern int GetSystemMetrics(GetSystemMetricsIndex nIndex);
+		private static extern IntPtr GetDC(IntPtr hWnd);
+
+		[DllImport("user32.dll")]
+		private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
 		public static void SetWindowLocationState(this Window window, WindowLocationState state)
 		{
@@ -194,19 +165,14 @@ namespace ForkPlus
 			{
 				return;
 			}
-			IntPtr handle = new WindowInteropHelper(window).Handle;
-			DisplayScale displayScale = GetDisplayScale(IntPtr.Zero);
-			WindowPlacement lpwndpl = ToWindowPlacement(state, displayScale.X, displayScale.Y);
-			IntPtr hMonitor = MonitorFromRect(ref lpwndpl.normalPosition, 2u);
-			MonitorInfo lpmi = new MonitorInfo
+			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window);
+			WindowPlacement windowPlacement = ToWindowPlacement(state);
+			windowPlacement.Length = Marshal.SizeOf(typeof(WindowPlacement));
+			windowPlacement.Flags = 0;
+			if (window.WindowState != WindowState.Minimized)
 			{
-				cbSize = (uint)Marshal.SizeOf(typeof(MonitorInfo))
-			};
-			if (GetMonitorInfo(hMonitor, ref lpmi) && !RectanglesIntersect(lpwndpl.normalPosition, lpmi.rcMonitor))
-			{
-				lpwndpl.normalPosition = PlaceOnScreen(lpmi.rcMonitor, lpwndpl.normalPosition);
+				SetWindowPlacement(windowInteropHelper.Handle, ref windowPlacement);
 			}
-			SetWindowPlacement(handle, ref lpwndpl);
 		}
 
 		public static WindowLocationState GetWindowLocationState(this Window window)
@@ -216,12 +182,13 @@ namespace ForkPlus
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			}
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-			int left = placement.normalPosition.Left;
-			int top = placement.normalPosition.Top;
-			int num = placement.normalPosition.Bottom - placement.normalPosition.Top;
-			int num2 = placement.normalPosition.Right - placement.normalPosition.Left;
-			DisplayScale displayScale = GetDisplayScale(IntPtr.Zero);
-			return new WindowLocationState((float)left / displayScale.X, (float)top / displayScale.Y, (float)num2 / displayScale.X, (float)num / displayScale.Y, window.WindowState);
+			if (placement.ShowCmd == 2)
+			{
+				return new WindowLocationState(window.Left, window.Top, window.Width, window.Height, WindowState.Minimized);
+			}
+			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
+			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
+			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, (WindowState)placement.ShowCmd);
 		}
 
 		public static WindowLocationState GetWindowLocationStateX(this Window window)
@@ -231,15 +198,9 @@ namespace ForkPlus
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			}
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-			int unitX = 0;
-			int unitY = 0;
-			if (window.WindowState != WindowState.Maximized)
-			{
-				TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out unitX, out unitY);
-			}
-			double actualWidth = window.ActualWidth;
-			double actualHeight = window.ActualHeight;
-			return new WindowLocationState(unitX, unitY, actualWidth, actualHeight, window.WindowState);
+			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
+			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
+			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, (WindowState)placement.ShowCmd);
 		}
 
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
@@ -250,7 +211,7 @@ namespace ForkPlus
 			}
 			MinMaxInfo minMaxInfo = (MinMaxInfo)Marshal.PtrToStructure(lParam, typeof(MinMaxInfo));
 			IntPtr hMonitor = MonitorFromWindow(hwnd, 2);
-			if (minMaxInfo != null && AutoHideEnabled())
+			if (AutoHideEnabled())
 			{
 				MonitorInfo lpmi = default(MonitorInfo);
 				lpmi.cbSize = (uint)Marshal.SizeOf(typeof(MonitorInfo));
@@ -260,7 +221,7 @@ namespace ForkPlus
 				minMaxInfo.ptMaxPosition.X = Math.Abs(rcWork.Left - rcMonitor.Left);
 				minMaxInfo.ptMaxPosition.Y = Math.Abs(rcWork.Top - rcMonitor.Top);
 				minMaxInfo.ptMaxSize.X = Math.Abs(rcWork.Right - rcWork.Left);
-				minMaxInfo.ptMaxSize.Y = Math.Abs(rcWork.Bottom - rcWork.Top - 1);
+				minMaxInfo.ptMaxSize.Y = Math.Abs(rcWork.Bottom - rcMonitor.Top - 1);
 			}
 			Marshal.StructureToPtr(minMaxInfo, lParam, fDeleteOld: true);
 		}
@@ -271,9 +232,13 @@ namespace ForkPlus
 			{
 				return false;
 			}
-			AppBarData pData = default(AppBarData);
-			return SHAppBarMessage(4, ref pData) != 0;
+			AppBarData appBarData = default(AppBarData);
+			appBarData.cbSize = (uint)Marshal.SizeOf(typeof(AppBarData));
+			AppBarData abd = appBarData;
+			return 1 == SHAppBarMessage(4u, ref abd);
 		}
+
+		public static Thickness WindowResizeBorderThickness => new Thickness(SystemParameters.WindowResizeBorderThickness.Left, SystemParameters.WindowResizeBorderThickness.Top, SystemParameters.WindowResizeBorderThickness.Left, SystemParameters.WindowResizeBorderThickness.Top);
 
 		public static void TransformFromPixels(Visual visual, double pixelX, double pixelY, out int unitX, out int unitY)
 		{
@@ -284,46 +249,51 @@ namespace ForkPlus
 				return;
 			}
 			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			Matrix transformToDevice;
-			if (presentationSource != null)
+			if (presentationSource?.CompositionTarget != null)
 			{
-				transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
+				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
+				unitX = (int)(pixelX / transformToDevice.M11);
+				unitY = (int)(pixelY / transformToDevice.M22);
 			}
 			else
 			{
-				using HwndSource hwndSource = new HwndSource(default(HwndSourceParameters));
-				transformToDevice = hwndSource.CompositionTarget.TransformToDevice;
+				unitX = (int)pixelX;
+				unitY = (int)pixelY;
 			}
-			unitX = (int)(pixelX / transformToDevice.M11);
-			unitY = (int)(pixelY / transformToDevice.M22);
 		}
 
 		public static void TransformToPixels(Visual visual, double unitX, double unitY, out int pixelX, out int pixelY)
 		{
-			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			Matrix transformToDevice;
-			if (presentationSource != null)
+			if (DesignTimeHelper.IsInDesignMode() || visual == null)
 			{
-				transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
+				pixelX = (int)unitX;
+				pixelY = (int)unitY;
+				return;
+			}
+			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
+			if (presentationSource?.CompositionTarget != null)
+			{
+				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
+				pixelX = (int)(unitX * transformToDevice.M11);
+				pixelY = (int)(unitY * transformToDevice.M22);
 			}
 			else
 			{
-				using HwndSource hwndSource = new HwndSource(default(HwndSourceParameters));
-				transformToDevice = hwndSource.CompositionTarget.TransformToDevice;
+				pixelX = (int)unitX;
+				pixelY = (int)unitY;
 			}
-			pixelX = (int)(transformToDevice.M11 * unitX);
-			pixelY = (int)(transformToDevice.M22 * unitY);
 		}
 
-		private static WindowPlacement ToWindowPlacement(WindowLocationState state, float scaleX, float scaleY)
+		private static WindowPlacement ToWindowPlacement(WindowLocationState state)
 		{
 			WindowPlacement result = default(WindowPlacement);
-			result.minPosition = new Point(-1, -1);
-			result.maxPosition = new Point(-1, -1);
-			result.normalPosition = new Rect((int)(state.Left * (double)scaleX), (int)(state.Top * (double)scaleY), (int)((state.Left + state.Width) * (double)scaleX), (int)((state.Top + state.Height) * (double)scaleY));
-			result.length = Marshal.SizeOf(typeof(WindowPlacement));
-			result.flags = 0;
-			result.showCmd = ToShowCmd(state.WindowState);
+			result.ShowCmd = ToShowCmd(state.WindowState);
+			Window window = null;
+			TransformToPixels(window, state.Left, state.Top, out var pixelX, out var pixelY);
+			TransformToPixels(window, state.Left + state.Width, state.Top + state.Height, out var pixelX2, out var pixelY2);
+			result.normalPosition = new Rect(pixelX, pixelY, pixelX2, pixelY2);
+			result.MinPosition = default(Point);
+			result.MaxPosition = default(Point);
 			return result;
 		}
 
@@ -331,23 +301,23 @@ namespace ForkPlus
 		{
 			return windowState switch
 			{
-				WindowState.Maximized => 3, 
-				WindowState.Minimized => 2, 
-				_ => 1, 
+				WindowState.Minimized => 2,
+				WindowState.Maximized => 3,
+				_ => 1,
 			};
 		}
 
 		private static bool RectanglesIntersect(Rect a, Rect b)
 		{
-			if (a.Left > b.Right || a.Right < b.Left)
+			if (a.Left < b.Right && a.Right > b.Left)
 			{
-				return false;
+				if (a.Top >= b.Bottom)
+				{
+					return a.Bottom > b.Top;
+				}
+				return true;
 			}
-			if (a.Top > b.Bottom || a.Bottom < b.Top)
-			{
-				return false;
-			}
-			return true;
+			return false;
 		}
 
 		private static Rect PlaceOnScreen(Rect monitorRect, Rect windowRect)
@@ -399,26 +369,19 @@ namespace ForkPlus
 
 		private static WindowPlacement GetPlacement(IntPtr windowHandle)
 		{
-			WindowPlacement lpwndpl = default(WindowPlacement);
-			GetWindowPlacement(windowHandle, out lpwndpl);
-			return lpwndpl;
+			WindowPlacement result = default(WindowPlacement);
+			result.Length = Marshal.SizeOf(typeof(WindowPlacement));
+			GetWindowPlacement(windowHandle, ref result);
+			return result;
 		}
 
 		private static DisplayScale GetDisplayScale(IntPtr hwnd)
 		{
-			IntPtr dC = GetDC(hwnd);
-			float num = 96f;
-			float num2 = 96f;
-			try
-			{
-				num = GetDeviceCaps(dC, 88);
-				num2 = GetDeviceCaps(dC, 90);
-			}
-			finally
-			{
-				ReleaseDC(hwnd, dC);
-			}
-			return new DisplayScale(num / 96f, num2 / 96f);
+			IntPtr hdc = GetDC(hwnd);
+			int deviceCaps = GetDeviceCaps(hdc, 88);
+			int deviceCaps2 = GetDeviceCaps(hdc, 90);
+			ReleaseDC(hwnd, hdc);
+			return new DisplayScale((float)deviceCaps / 96f, (float)deviceCaps2 / 96f);
 		}
 	}
 }

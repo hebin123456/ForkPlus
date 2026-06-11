@@ -4,6 +4,7 @@ using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using ICSharpCode.AvalonEdit;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor
 {
