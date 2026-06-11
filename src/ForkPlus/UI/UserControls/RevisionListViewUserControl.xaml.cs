@@ -1103,7 +1103,7 @@ namespace ForkPlus.UI.UserControls
 				if (pullRequestUrl != null)
 				{
 					bool pushRequired = upstreamBranch == null || isLocalBranchInfrontUpstream.GetValueOrDefault();
-					string header = pushRequired ? ("Push and Create Pull Request on '" + remote.Name + "'...") : ("Create Pull Request on '" + remote.Name + "'...");
+					string header = pushRequired ? PreferencesLocalization.FormatCurrent("Push and Create Pull Request on '{0}'...", remote.Name) : PreferencesLocalization.FormatCurrent("Create Pull Request on '{0}'...", remote.Name);
 					yield return RepositoryUserControl.Commands.CreatePullRequest.CreateMenuItem(header, delegate
 					{
 						if (pushRequired)
@@ -1137,7 +1137,7 @@ namespace ForkPlus.UI.UserControls
 					}
 					RemoteBranch matchingUpstreamBranch = IReadOnlyListExtensions.FirstItem(repositoryData?.References.RemoteBranches, (RemoteBranch x) => x.FullReference == localBranch.UpstreamFullReference && x.Remote == remote.Name);
 					bool pushRequired = matchingUpstreamBranch == null || isLocalBranchInfrontUpstream.GetValueOrDefault();
-					string header = pushRequired ? ("Push and Create Pull Request on '" + remote.Name + "'...") : ("Create Pull Request on '" + remote.Name + "'...");
+					string header = pushRequired ? PreferencesLocalization.FormatCurrent("Push and Create Pull Request on '{0}'...", remote.Name) : PreferencesLocalization.FormatCurrent("Create Pull Request on '{0}'...", remote.Name);
 					MenuItem newItem2 = RepositoryUserControl.Commands.CreatePullRequest.CreateMenuItem(header, delegate
 					{
 						if (pushRequired)

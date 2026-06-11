@@ -54,6 +54,8 @@ namespace ForkPlus.UI.UserControls
 
 		private static readonly ChangedFileEqualityComparer _changedFileEqualityComparer = new ChangedFileEqualityComparer();
 
+		private readonly Dictionary<string, ImageSource> _fileIconCache = new Dictionary<string, ImageSource>(StringComparer.OrdinalIgnoreCase);
+
 		private ChangedFile[] _rawChangedFiles;
 
 		public static readonly DependencyProperty EnableMultiSelectionProperty = DependencyProperty.RegisterAttached("EnableMultiSelection", typeof(bool), typeof(FileListUserControl), new PropertyMetadata(false, delegate(DependencyObject sender, DependencyPropertyChangedEventArgs e)
@@ -354,18 +356,17 @@ namespace ForkPlus.UI.UserControls
 			return rootItem;
 		}
 
-		private static Dictionary<string, ImageSource> CreateFileIconCache(ChangedFile[] source)
+		private Dictionary<string, ImageSource> CreateFileIconCache(ChangedFile[] source)
 		{
-			Dictionary<string, ImageSource> result = new Dictionary<string, ImageSource>(StringComparer.OrdinalIgnoreCase);
 			foreach (ChangedFile changedFile in source)
 			{
 				string extension = Path.GetExtension(changedFile.Path) ?? "";
-				if (!result.ContainsKey(extension))
+				if (!_fileIconCache.ContainsKey(extension))
 				{
-					result[extension] = IconTools.GetImageSourceForExtension(extension);
+					_fileIconCache[extension] = IconTools.GetImageSourceForExtension(extension);
 				}
 			}
-			return result;
+			return _fileIconCache;
 		}
 
 		public void FocusSelectedElement()
@@ -850,4 +851,3 @@ namespace ForkPlus.UI.UserControls
 
 	}
 }
-

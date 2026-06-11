@@ -1179,15 +1179,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (RepositoryUserControl.RepositoryStatus.ChangedFiles.Length >= LongFileListOperationThreshold)
-			{
-				LongOperationWindow.RunAsync(
-					"Loading changed files",
-					"Large file lists can take a while to render.",
-					() => RefreshRepositoryStatusUiAsync(showNestedWait: false));
-				return;
-			}
-			await RefreshRepositoryStatusUiAsync(showNestedWait: true);
+			await RefreshRepositoryStatusUiAsync(showNestedWait: false);
 		}
 
 		private async Task RefreshRepositoryStatusUiAsync(bool showNestedWait)
@@ -1214,15 +1206,20 @@ namespace ForkPlus.UI.UserControls
 				_rebaseAmendSha = null;
 			}
 			ChangedFile[] changedFiles = FilterGitMmManagedSubmoduleChanges(RepositoryUserControl.RepositoryStatus.ChangedFiles);
-			ChangedFile[] unstagedFiles = changedFiles.Filter((ChangedFile x) => !x.Staged).ToArray();
-			ChangedFile[] stagedFiles = (AmendMode ? FilterGitMmManagedSubmoduleChanges(new GetWorkingDirectoryChangedFilesGitCommand().ExecuteForAmend(GitModule, RepositoryUserControl.RepositoryData?.Submodules.Items).Result) : changedFiles.Filter((ChangedFile x) => x.Staged).ToArray());
+			ChangedFile[] unstagedFiles;
+			ChangedFile[] stagedFiles;
+			SplitByStaged(changedFiles, out unstagedFiles, out stagedFiles);
+			if (AmendMode)
+			{
+				stagedFiles = FilterGitMmManagedSubmoduleChanges(new GetWorkingDirectoryChangedFilesGitCommand().ExecuteForAmend(GitModule, RepositoryUserControl.RepositoryData?.Submodules.Items).Result);
+			}
 			_updateDiffAction.Cancel();
 			FileDiffControl.Content = null;
 			_diffPopupWindow?.UpdateDiff(null);
 			_refreshing = true;
 			try
 			{
-				await SetStageFileDataWithWaitIfNeededAsync(unstagedFiles, stagedFiles, showNestedWait);
+				await SetStageFileDataWithWaitIfNeededAsync(unstagedFiles, stagedFiles);
 			}
 			finally
 			{
@@ -1237,28 +1234,41 @@ namespace ForkPlus.UI.UserControls
 			_ = RepositoryUserControl.GitModule;
 		}
 
-		private async Task SetStageFileDataWithWaitIfNeededAsync(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles, bool showWaitWindow)
+		private async Task SetStageFileDataWithWaitIfNeededAsync(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles)
 		{
-			int fileCount = (unstagedFiles?.Length ?? 0) + (stagedFiles?.Length ?? 0);
-			if (fileCount < LongFileListOperationThreshold)
-			{
-				StageFileUserControl.SetData(unstagedFiles, stagedFiles, selectFirstAvailableFile: true);
-				return;
-			}
-			if (showWaitWindow)
-			{
-				LongOperationWindow.RunAsync(
-					"Loading changed files",
-					"Large file lists can take a while to render.",
-					() => StageFileUserControl.SetDataAsync(unstagedFiles, stagedFiles, selectFirstAvailableFile: true));
-				return;
-			}
 			await StageFileUserControl.SetDataAsync(unstagedFiles, stagedFiles, selectFirstAvailableFile: true);
 		}
 
 		private ChangedFile[] FilterGitMmManagedSubmoduleChanges(ChangedFile[] changedFiles)
 		{
 			return RepositoryUserControl.NormalizeChangedFilesForDisplay(changedFiles);
+		}
+
+		private static void SplitByStaged(ChangedFile[] changedFiles, out ChangedFile[] unstagedFiles, out ChangedFile[] stagedFiles)
+		{
+			int unstagedCount = 0;
+			for (int i = 0; i < changedFiles.Length; i++)
+			{
+				if (!changedFiles[i].Staged)
+				{
+					unstagedCount++;
+				}
+			}
+			unstagedFiles = new ChangedFile[unstagedCount];
+			stagedFiles = new ChangedFile[changedFiles.Length - unstagedCount];
+			int unstagedIndex = 0;
+			int stagedIndex = 0;
+			for (int j = 0; j < changedFiles.Length; j++)
+			{
+				if (!changedFiles[j].Staged)
+				{
+					unstagedFiles[unstagedIndex++] = changedFiles[j];
+				}
+				else
+				{
+					stagedFiles[stagedIndex++] = changedFiles[j];
+				}
+			}
 		}
 
 		private void RefreshDescriptionFieldHeight()

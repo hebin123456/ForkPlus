@@ -25,20 +25,32 @@ namespace ForkPlus.UI.UserControls
 
 		private static bool IsGitMmManagedSubrepoChange(GitModule gitModule, GitMmUserControl gitMmUserControl, ChangedFile changedFile, Dictionary<string, string> gitLinkTargets)
 		{
-			string changedFilePath = null;
-			if (changedFile is SubmoduleChangedFile submoduleChangedFile)
-			{
-				changedFilePath = submoduleChangedFile.Submodule.Path;
-			}
-			else if (changedFile.FileMode == "160000" || IsGitWorkTreePath(gitModule, changedFile.Path))
-			{
-				changedFilePath = changedFile.Path;
-			}
-			if (!string.IsNullOrWhiteSpace(changedFilePath))
-			{
-				return gitMmUserControl.ContainsSubrepoPath(gitModule.MakePath(changedFilePath));
-			}
-			return IsGitMmManagedLinkChange(gitModule, gitMmUserControl, changedFile, gitLinkTargets);
+		 string changedFilePath = null;
+		 if (changedFile is SubmoduleChangedFile submoduleChangedFile)
+		 {
+		  changedFilePath = submoduleChangedFile.Submodule.Path;
+		 }
+		 else if (changedFile.FileMode == "160000" || IsGitWorkTreePath(gitModule, changedFile.Path))
+		 {
+		  changedFilePath = changedFile.Path;
+		 }
+		 if (!string.IsNullOrWhiteSpace(changedFilePath))
+		 {
+		  return gitMmUserControl.ContainsSubrepoPath(gitModule.MakePath(changedFilePath));
+		 }
+		 // Fallback: for regular ChangedFile entries without a submodule/gitlink marker,
+		 // check if the file's absolute path is inside a git mm managed subrepo directory.
+		 // This catches cases where git mm subrepos are not registered as .gitmodules entries
+		 // and git status --porcelain doesn't report file modes (FileMode is null).
+		 if (changedFile != null && !string.IsNullOrWhiteSpace(changedFile.Path))
+		 {
+		  string fullPath = gitModule.MakePath(changedFile.Path);
+		  if (gitMmUserControl.ContainsSubrepoPath(fullPath))
+		  {
+		   return true;
+		  }
+		 }
+		 return IsGitMmManagedLinkChange(gitModule, gitMmUserControl, changedFile, gitLinkTargets);
 		}
 
 		private static bool IsGitMmManagedLinkChange(GitModule gitModule, GitMmUserControl gitMmUserControl, ChangedFile changedFile, Dictionary<string, string> gitLinkTargets)

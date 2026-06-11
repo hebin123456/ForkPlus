@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Helpers
 				return;
 			}
 			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window);
-			WindowPlacement windowPlacement = ToWindowPlacement(state);
+			WindowPlacement windowPlacement = ToWindowPlacement(state, window);
 			windowPlacement.Length = Marshal.SizeOf(typeof(WindowPlacement));
 			windowPlacement.Flags = 0;
 			if (window.WindowState != WindowState.Minimized)
@@ -284,11 +284,10 @@ namespace ForkPlus.UI.Helpers
 			}
 		}
 
-		private static WindowPlacement ToWindowPlacement(WindowLocationState state)
+		private static WindowPlacement ToWindowPlacement(WindowLocationState state, Window window)
 		{
 			WindowPlacement result = default(WindowPlacement);
 			result.ShowCmd = ToShowCmd(state.WindowState);
-			Window window = null;
 			TransformToPixels(window, state.Left, state.Top, out var pixelX, out var pixelY);
 			TransformToPixels(window, state.Left + state.Width, state.Top + state.Height, out var pixelX2, out var pixelY2);
 			result.normalPosition = new Rect(pixelX, pixelY, pixelX2, pixelY2);

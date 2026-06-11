@@ -6,7 +6,7 @@ namespace ForkPlus.Jobs
 {
 	public static class JobMonitorExtensions
 	{
-		private static readonly Regex GitProgressRegEx = new Regex("([A-z ]+):\\s+(\\d+)%.*?(\\r)?");
+		private static readonly Regex GitProgressRegEx = new Regex("(?:remote:\\s*)?([A-z ]+):\\s+(\\d+)%.*?(\\r)?");
 
 		private static readonly string ASCII_EL0 = "[K";
 

@@ -175,8 +175,16 @@ namespace ForkPlus.UI
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
-			this.SetWindowLocationState(ForkPlusSettings.Default.MainWindowLocationState);
-			base.WindowState = WindowState.Maximized;
+			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
+			if (windowLocationState.WindowState == WindowState.Minimized)
+			{
+				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, WindowState.Normal);
+			}
+			this.SetWindowLocationState(windowLocationState);
+			if (windowLocationState.WindowState == WindowState.Maximized)
+			{
+				base.WindowState = WindowState.Maximized;
+			}
 		}
 
 		protected override void OnKeyUp(KeyEventArgs e)
@@ -432,7 +440,9 @@ namespace ForkPlus.UI
 
 		private void Window_Closing(object sender, CancelEventArgs e)
 		{
+			ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationStateX();
 			TabManager.SaveSession();
+			ForkPlusSettings.Default.Save();
 		}
 
 		private void Window_Activated(object sender, EventArgs e)
