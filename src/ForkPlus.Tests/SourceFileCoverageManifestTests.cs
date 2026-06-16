@@ -12,6 +12,7 @@ namespace ForkPlus.Tests
 		{
 			"src/ForkPlus",
 			"src/ForkPlus.AskPass",
+			"src/ForkPlus.Core",
 			"src/ForkPlus.RI"
 		};
 

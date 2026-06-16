@@ -4,6 +4,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus", "ForkPlus\ForkPlus.csproj", "{08974715-68FB-44BD-82C8-9F260686A753}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Core", "ForkPlus.Core\ForkPlus.Core.csproj", "{6E2D69C8-0F31-4D2A-9E73-1D2A3F4C1C0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Avalonia", "ForkPlus.Avalonia\ForkPlus.Avalonia.csproj", "{7A3E69C8-0F31-4D2A-9E73-1D2A3F4C1C0B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AskPass", "ForkPlus.AskPass\ForkPlus.AskPass.csproj", "{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.RI", "ForkPlus.RI\ForkPlus.RI.csproj", "{D8C10C64-DA39-4E43-94C6-3E0FE21B2F49}"
@@ -22,6 +26,14 @@ Global
 		{08974715-68FB-44BD-82C8-9F260686A753}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08974715-68FB-44BD-82C8-9F260686A753}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08974715-68FB-44BD-82C8-9F260686A753}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E2D69C8-0F31-4D2A-9E73-1D2A3F4C1C0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E2D69C8-0F31-4D2A-9E73-1D2A3F4C1C0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E2D69C8-0F31-4D2A-9E73-1D2A3F4C1C0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E2D69C8-0F31-4D2A-9E73-1D2A3F4C1C0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A3E69C8-0F31-4D2A-9E73-1D2A3F4C1C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A3E69C8-0F31-4D2A-9E73-1D2A3F4C1C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A3E69C8-0F31-4D2A-9E73-1D2A3F4C1C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A3E69C8-0F31-4D2A-9E73-1D2A3F4C1C0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Release|Any CPU.ActiveCfg = Release|Any CPU

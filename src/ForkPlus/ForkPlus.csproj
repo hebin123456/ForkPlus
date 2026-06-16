@@ -71,6 +71,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 

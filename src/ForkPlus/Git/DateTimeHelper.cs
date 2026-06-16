@@ -5,7 +5,7 @@ namespace ForkPlus.Git
 {
 	public class DateTimeHelper
 	{
-		public static readonly DateTime UnixStartTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+		public static readonly DateTime UnixStartTime = ForkPlus.Git.UnixTime.UnixStartTime;
 
 		public static bool TryParseUnixDate(string date, out DateTime result)
 		{
