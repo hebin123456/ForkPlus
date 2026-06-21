@@ -96,7 +96,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void InitializeDiffCodeEditor()
 		{
 			string input = "diff --git forkSrcPrefix/file1.swift forkDstPrefix/file2.swift\nindex a57cc90ef2fe70c4da807e0b8369503b45572774..ded5ed9cf2fe70c4da807e0b8369503b45572774 100644\n--- {Consts.Git.Diff.SrcPrefix}file1.swift\n+++ {Consts.Git.Diff.DstPrefix}file2.swift\n@@ -1,3 +1,3 @@\n public func elementsEqual<OtherSequence>(\n _ other: OtherSequence,\n-isEquivalent isEquivalent: (${GElement}, ${GElement}) throws -> Bool\n+isEquivalent: (${GElement}, ${GElement}) throws -> Bool\n";
-			GitCommandResult<Patch> gitCommandResult = new PatchParser().Parse(input);
+			GitCommandResult<Patch> gitCommandResult = new BiturboPatchParser().Parse(input);
 			DiffCodeEditor.VisualPatch = VisualPatch.CreateVisualPatch(gitCommandResult.Result.Diffs.FirstItem(), entireFile: false, DiffLocation.Revision);
 		}
 

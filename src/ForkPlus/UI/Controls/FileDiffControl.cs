@@ -44,7 +44,7 @@ namespace ForkPlus.UI.Controls
 
 		public static readonly FileDiffControlCommands Commands = new FileDiffControlCommands();
 
-		protected static readonly PatchParser Parser = new PatchParser();
+		protected static readonly PatchParser Parser = new BiturboPatchParser();
 
 		protected readonly CodeEditorScrollPositionCache _positionCache = new CodeEditorScrollPositionCache();
 

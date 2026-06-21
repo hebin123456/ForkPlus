@@ -188,7 +188,7 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult<DiffContent>.Success(new UnmergedDiffContent(fileType: (GetFileChangesGitCommand.ParseLfsDiff(gitRequestResult.Stdout, flag) != null) ? UnmergedDiffContent.ContentType.Lfs : ((changedFile is SubmoduleChangedFile) ? UnmergedDiffContent.ContentType.Submodule : ((!GetFileChangesGitCommand.IsBinaryContent(gitRequestResult.Stdout)) ? UnmergedDiffContent.ContentType.Text : UnmergedDiffContent.ContentType.Binary)), gitModule: gitModule, changedFile: changedFile, diffString: gitRequestResult.Stdout));
 			}
-			GitCommandResult<Patch> gitCommandResult = new PatchParser().Parse(gitRequestResult.Stdout);
+			GitCommandResult<Patch> gitCommandResult = new BiturboPatchParser().Parse(gitRequestResult.Stdout);
 			if (!gitCommandResult.Succeeded)
 			{
 				return GitCommandResult<DiffContent>.Failure(new GitCommandError.ParseError("Failed to parse '" + changedFile.Path + "' diff: " + gitCommandResult.Error.FriendlyDescription));

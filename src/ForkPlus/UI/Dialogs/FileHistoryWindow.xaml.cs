@@ -613,7 +613,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private GitCommandResult<DiffContent> ParsePatch(string diffString, ChangedFile changedFile, GitModule gitModule, int tabWidth)
 		{
-			GitCommandResult<Patch> gitCommandResult = new PatchParser().Parse(diffString, "a/", "b/");
+			GitCommandResult<Patch> gitCommandResult = new BiturboPatchParser().Parse(diffString, "a/", "b/");
 			if (!gitCommandResult.Succeeded)
 			{
 				return GitCommandResult<DiffContent>.Failure(gitCommandResult.Error);

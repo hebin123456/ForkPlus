@@ -22,7 +22,7 @@ namespace ForkPlus.Git.Commands
 				}
 				if (gitCommandResult.Result is TextDiffContent textDiffContent)
 				{
-					GitCommandResult<Patch> gitCommandResult2 = new PatchParser().Parse(textDiffContent.Text);
+					GitCommandResult<Patch> gitCommandResult2 = new BiturboPatchParser().Parse(textDiffContent.Text);
 					if (!gitCommandResult2.Succeeded)
 					{
 						return GitCommandResult<DiffContent>.Failure(gitCommandResult2.Error);
@@ -105,7 +105,7 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult<DiffContent>.Failure(gitRequestResult.ToGitCommandError());
 			}
-			GitCommandResult<Patch> gitCommandResult = new PatchParser().Parse(gitRequestResult.Stdout);
+			GitCommandResult<Patch> gitCommandResult = new BiturboPatchParser().Parse(gitRequestResult.Stdout);
 			if (!gitCommandResult.Succeeded)
 			{
 				return GitCommandResult<DiffContent>.Failure(gitCommandResult.Error);
