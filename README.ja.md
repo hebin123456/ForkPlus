@@ -1,0 +1,108 @@
+# ForkPlus
+
+Fork ベースの Git グラフィカルツール拡張版。Rust で基盤機能を書き直し、多言語サポート、git mm および git repo ワークフローを追加し、大規模リポジトリのパフォーマンスを最適化し、多くの不具合を修正しました。
+
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md)
+
+## 主な特徴
+
+- **多言語サポート**: 英語、簡体字中国語、繁体字中国語、日本語を内蔵し、JSON ファイルによる追加言語の拡張も可能
+- **git mm ワークフロー**: `git mm` サブコマンドを内蔵し、リーンブランチング（Lean Branching）ワークフローを提供
+- **AI 支援開発**: AI コードレビュー、コミットメッセージ自動生成、AI 支援によるコード変更を統合
+- **パフォーマンス最適化**: 大規模リポジトリのリフレッシュ、diff レンダリング、サブモジュール管理に対する専用最適化
+- **不具合修正**: オリジナル Fork の複数の問題を修正（空の変更、AI キュー生成失敗など）
+
+## プロジェクト構成
+
+```
+ForkPlus/
+├── src/
+│   ├── ForkPlus/              # メイン WPF アプリケーションソース、XAML、アセット
+│   │   ├── Languages/         # 多言語翻訳ファイル（JSON）
+│   │   │   ├── zh-Hans.json   # 簡体字中国語
+│   │   │   ├── zh-Hant.json   # 繁体字中国語
+│   │   │   ├── ja-JP.json     # 日本語
+│   │   │   └── README.md      # 言語ファイル形式の説明
+│   │   └── ...
+│   ├── ForkPlus.AskPass/      # Git/SSH パスワード入力ヘルパー
+│   ├── ForkPlus.RI/           # インタラクティブ rebase エディタヘルパー
+│   ├── ForkPlus.Tests/        # xUnit 単体テスト
+│   └── ForkPlus.AutomationTests/  # FlaUI UI スモークテスト
+├── third_party/               # アプリと共に配布されるランタイムツールとネイティブバイナリ
+├── gitmm/                     # git mm ワークフローリファレンスドキュメント
+└── .github/workflows/         # GitHub Actions CI 設定
+```
+
+## ビルド
+
+### 前提条件
+
+- Windows 10 以降
+- Visual Studio 2019/2022、または .NET SDK + MSBuild
+- .NET Framework 4.7.2 ターゲットパック
+
+### ビルド手順
+
+- Visual Studio で `ForkPlus.sln` を開き、Release 構成を選択してビルド
+- またはコマンドラインから: `msbuild ForkPlus.sln /p:Configuration=Release`
+
+### 継続的インテグレーション
+
+プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
+
+```bash
+git tag v1.2.1
+git push origin v1.2.1
+```
+
+ビルド成果物には `ForkPlus.exe`、すべての依存 DLL、`biturbo.dll`、言語ファイルなどが含まれ、解凍するだけで実行できます。
+
+## テスト
+
+- 単体テスト: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
+- UI スモークテスト: `FORKPLUS_AUTOMATION_EXE` 環境変数をビルド済みの `ForkPlus.exe` に設定し、`dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj` を実行
+
+## 多言語サポート
+
+### 内蔵言語
+
+| 言語コード | 表示名 | 状態 |
+|-----------|--------|------|
+| `en` | English | 完全（ソース言語） |
+| `zh-Hans` | 简体中文 | 完全 |
+| `zh-Hant` | 繁體中文 | 完全 |
+| `ja-JP` | 日本語 | 基本カバー |
+
+### 新しい言語の追加
+
+`src/ForkPlus/Languages/` ディレクトリに `<言語コード>.json` ファイルを新規作成するだけで、コード変更なしで追加できます。ファイル形式:
+
+```json
+{
+  "code": "ko",
+  "name": "한국어",
+  "translations": {
+    "Preferences": "환경설정",
+    "General": "일반",
+    "Commit": "커밋"
+  }
+}
+```
+
+詳細は [src/ForkPlus/Languages/README.md](src/ForkPlus/Languages/README.md) を参照してください。
+
+### 国際化 API
+
+コードベースでは以下の API を使用して国際化を実現しています:
+
+- `PreferencesLocalization.Current("English text")` — 単純な文字列の翻訳
+- `PreferencesLocalization.FormatCurrent("...{0}...", args)` — パラメータ付き文字列の翻訳
+- `PreferencesLocalization.Translate(text, language)` — 特定の言語の翻訳
+
+## ダウンロード
+
+最新版は [Releases ページ](https://github.com/hebin123456/ForkPlus/releases) からダウンロードしてください。
+
+## 開発規約
+
+アプリケーション自体を変更する場合は、`third_party` 配下のランタイムファイルを意図的に更新する場合を除き、`src/ForkPlus` ディレクトリ内に留めてください。

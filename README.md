@@ -2,6 +2,8 @@
 
 一个基于 Fork 的 Git 图形化工具增强版，使用 Rust 重写了底层能力，新增多语言支持、git mm 和 git repo 工作流，优化了大数据量仓库性能，并修复了大量缺陷。
 
+[English](README.en.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
+
 ## 主要特性
 
 - **多语言支持**：内置英语、简体中文、繁體中文、日本語，并支持通过 JSON 文件扩展更多语言
