@@ -140,6 +140,85 @@ namespace ForkPlus
 
 		public static string BashPath => Path.Combine(Path.GetDirectoryName(GitPath), "bash.exe");
 
+		/// <summary>
+		/// git-mm 可执行文件路径。优先使用用户在偏好设置中指定的路径；
+		/// 否则在 PATH 环境变量中查找 <c>git-mm.exe</c>；
+		/// 再否则在 git.exe 同目录查找。三者都找不到返回 null。
+		/// </summary>
+		public static string GitMmPath => ResolveGitMmPath();
+
+		private static string ResolveGitMmPath()
+		{
+			string saved = ForkPlusSettings.Default.GitMmInstancePath;
+			if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved))
+			{
+				return saved;
+			}
+			string fromPath = FindExecutableInPath("git-mm.exe");
+			if (fromPath != null)
+			{
+				return fromPath;
+			}
+			try
+			{
+				string gitDir = Path.GetDirectoryName(GitPath);
+				if (gitDir != null)
+				{
+					string sibling = Path.Combine(gitDir, "git-mm.exe");
+					if (File.Exists(sibling))
+					{
+						return sibling;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to resolve git-mm path from git directory", ex);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 在 PATH 环境变量中查找指定可执行文件，返回第一个匹配的完整路径；未找到返回 null。
+		/// </summary>
+		public static string FindExecutableInPath(string fileName)
+		{
+			try
+			{
+				string pathEnv = Environment.GetEnvironmentVariable("PATH");
+				if (string.IsNullOrEmpty(pathEnv))
+				{
+					return null;
+				}
+				string[] segments = pathEnv.Split(Path.PathSeparator);
+				foreach (string raw in segments)
+				{
+					if (string.IsNullOrWhiteSpace(raw))
+					{
+						continue;
+					}
+					string dir = raw.Trim();
+					try
+					{
+						string candidate = Path.Combine(dir, fileName);
+						if (File.Exists(candidate))
+						{
+							return Path.GetFullPath(candidate);
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Error("Failed to check '" + dir + "' in PATH for '" + fileName + "'", ex);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to search PATH for '" + fileName + "'", ex);
+			}
+			return null;
+		}
+
 		public static int ProcessId { get; }
 
 		public static string ProcessIdString { get; }
@@ -605,6 +684,7 @@ namespace ForkPlus
 				}
 			}
 			WarnIfGitVersionUnsupported(GitPath);
+			WarnIfGitMmVersionUnsupported();
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
 				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
@@ -653,6 +733,38 @@ namespace ForkPlus
 			catch (Exception ex)
 			{
 				Log.Error("Failed to check git version", ex);
+			}
+		}
+
+		/// <summary>
+		/// 检测当前 git-mm 版本，未找到或低于 3.0 时弹警告（不阻止启动）。
+		/// </summary>
+		private static void WarnIfGitMmVersionUnsupported()
+		{
+			try
+			{
+				string gitMmPath = GitMmPath;
+				if (string.IsNullOrWhiteSpace(gitMmPath))
+				{
+					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current(
+						"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.");
+					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("git-mm not found"), MessageBoxButton.OK, MessageBoxImage.Warning);
+					return;
+				}
+				GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
+				if (result.Status == GitMmVersionStatus.Unsupported)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
+					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
+						"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
+						versionText, minText);
+					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("git-mm version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git-mm version", ex);
 			}
 		}
 

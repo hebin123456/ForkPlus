@@ -1076,6 +1076,8 @@ namespace ForkPlus.Settings
 
 		private string _gitInstancePath;
 
+		private string _gitMmInstancePath;
+
 		private bool _verboseGitOutput;
 
 		private string[] _sshKeys;
@@ -2331,6 +2333,18 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		public string GitMmInstancePath
+		{
+			get
+			{
+				return _gitMmInstancePath;
+			}
+			set
+			{
+				_gitMmInstancePath = value;
+			}
+		}
+
 		public bool VerboseGitOutput
 		{
 			get
@@ -2594,6 +2608,7 @@ namespace ForkPlus.Settings
 			MergerLayoutOrientation mergerLayoutOrientation = (MergerLayoutOrientation)(json["MergerLayoutOrientation"]?.Value<int>() ?? 0);
 			DateTime lastUpdateCheck = json["LastUpdateCheck"]?.Value<DateTime>() ?? DateTime.Today.AddMonths(-1);
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
+			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
 			string recentPatchDirectory = json["RecentPatchDirectory"]?.Value<string>();
@@ -2705,6 +2720,7 @@ namespace ForkPlus.Settings
 				MergerLayoutOrientation = mergerLayoutOrientation,
 				LastUpdateCheck = lastUpdateCheck,
 				GitInstancePath = gitInstancePath,
+				GitMmInstancePath = gitMmInstancePath,
 				VerboseGitOutput = verboseGitOutput,
 				SshKeys = sshKeys,
 				RecentPatchDirectory = recentPatchDirectory,
@@ -3201,6 +3217,10 @@ namespace ForkPlus.Settings
 				{
 					"GitInstancePath",
 					new JValue(target.GitInstancePath)
+				},
+				{
+					"GitMmInstancePath",
+					new JValue(target.GitMmInstancePath)
 				},
 				{
 					"VerboseGitOutput",

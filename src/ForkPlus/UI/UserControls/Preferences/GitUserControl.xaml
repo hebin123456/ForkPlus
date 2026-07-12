@@ -35,6 +35,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
     <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
@@ -49,12 +50,24 @@
       </ComboBox.ItemTemplate>
     </ComboBox>
     <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="VerboseGitOutputCheckBox_Checked" Unchecked="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
-    <Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
-    <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Text="Global User Information" Style="{DynamicResource SettingsHeaderTextBlockStyle}" />
-    <controls:AvatarImage Grid.Row="4" Grid.RowSpan="2" Grid.Column="1" Margin="10,0,0,0" Width="42" Height="42" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AuthorAvatarImage" />
-    <controls:PlaceholderTextBox TextChanged="UserNameTextBox_TextChanged" LostFocus="UserNameTextBox_LostFocus" Grid.Row="4" Grid.Column="2" Margin="10,0,0,4" Padding="4,2,4,2" Placeholder="User name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UserNameTextBox" />
-    <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" LostFocus="EmailTextBox_LostFocus" Grid.Row="5" Grid.Column="2" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="Email" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="EmailTextBox" />
-    <TextBlock Grid.Row="6" Grid.Column="2" Margin="12,0,10,0" VerticalAlignment="Center">
+    <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
+    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock FontSize="13" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="FileName" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+    <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
+    <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="Global User Information" Style="{DynamicResource SettingsHeaderTextBlockStyle}" />
+    <controls:AvatarImage Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" Margin="10,0,0,0" Width="42" Height="42" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AuthorAvatarImage" />
+    <controls:PlaceholderTextBox TextChanged="UserNameTextBox_TextChanged" LostFocus="UserNameTextBox_LostFocus" Grid.Row="5" Grid.Column="2" Margin="10,0,0,4" Padding="4,2,4,2" Placeholder="User name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UserNameTextBox" />
+    <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" LostFocus="EmailTextBox_LostFocus" Grid.Row="6" Grid.Column="2" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="Email" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="EmailTextBox" />
+    <TextBlock Grid.Row="7" Grid.Column="2" Margin="12,0,10,0" VerticalAlignment="Center">
       <Span>
         <Run>Change the avatar at</Run> <Hyperlink Style="{DynamicResource BlueHyperlinkStyle}" NavigateUri="https://gravatar.com" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" RequestNavigate="Hyperlink_RequestNavigate"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></Hyperlink></Span>
     </TextBlock>

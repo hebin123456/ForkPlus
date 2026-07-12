@@ -45,6 +45,7 @@ ForkPlus/
 - Visual Studio 2019/2022, 또는 .NET SDK + MSBuild
 - .NET Framework 4.7.2 타겟 팩
 - Git 2.31 이상(2.40+ 권장, 미만 버전은 시작 시 경고가 표시되며 일부 기능이 정상적으로 작동하지 않을 수 있습니다)
+- git-mm 3.0 이상 (git mm 워크플로 사용 시 필수, 미지원 버전이나 미설치 시 시작 시 경고, 환경설정에서 git-mm.exe 경로 구성 가능)
 
 ### 빌드 단계
 

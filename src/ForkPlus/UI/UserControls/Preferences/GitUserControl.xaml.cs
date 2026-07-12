@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -81,6 +82,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 			public static GitInstanceItem CreateAddCustomGitInstance()
 			{
 				return new GitInstanceItem(PreferencesLocalization.Current("Custom Git Instance..."), string.Empty, GitInstanceType.AddCustom);
+			}
+
+			public static GitInstanceItem CreateAddCustomGitMmInstance()
+			{
+				return new GitInstanceItem(PreferencesLocalization.Current("Custom git-mm Instance..."), string.Empty, GitInstanceType.AddCustom);
 			}
 
 			private GitInstanceItem(string fileName, string path, GitInstanceType itemType)
@@ -183,6 +189,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			_parentWindow = parentWindow;
 			RefreshGitInstanceComboBox();
+			RefreshGitMmInstanceComboBox();
 			VerboseGitOutputCheckBox.IsChecked = ForkPlusSettings.Default.VerboseGitOutput;
 			VerboseGitOutputCheckBox.ToolTip = new TextBlock
 			{
@@ -371,6 +378,134 @@ namespace ForkPlus.UI.UserControls.Preferences
 			else
 			{
 				GitInstanceComboBox.SelectedItem = gitInstanceItem4 ?? gitInstanceItem2;
+			}
+		}
+
+		/// <summary>
+		/// 填充 git-mm 实例下拉框。候选项：PATH 中发现的 git-mm.exe、用户已保存的自定义路径、
+		/// 以及"添加自定义..."入口。未找到任何 git-mm.exe 时仍展示"添加自定义..."以便用户手动指定。
+		/// </summary>
+		private void RefreshGitMmInstanceComboBox()
+		{
+			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
+			// 1. PATH 中查找的 git-mm.exe
+			string pathCandidate = App.FindExecutableInPath("git-mm.exe");
+			if (!string.IsNullOrWhiteSpace(pathCandidate))
+			{
+				string version = GitMmVersionText(pathCandidate);
+				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + pathCandidate;
+				list.Add(new GitInstanceItem(label, pathCandidate, GitInstanceType.System));
+			}
+			// 2. git.exe 同目录的 git-mm.exe
+			try
+			{
+				string gitDir = Path.GetDirectoryName(App.GitPath);
+				if (gitDir != null)
+				{
+					string sibling = Path.Combine(gitDir, "git-mm.exe");
+					if (File.Exists(sibling) && (pathCandidate == null || !string.Equals(pathCandidate, sibling, StringComparison.OrdinalIgnoreCase)))
+					{
+						string version = GitMmVersionText(sibling);
+						string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + sibling;
+						list.Add(new GitInstanceItem(label, sibling, GitInstanceType.Local));
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git-mm in git directory", ex);
+			}
+			// 3. 用户已保存的自定义路径（若不在上述候选中）
+			string savedPath = ForkPlusSettings.Default.GitMmInstancePath;
+			GitInstanceItem customItem = null;
+			if (!string.IsNullOrWhiteSpace(savedPath) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, savedPath, StringComparison.OrdinalIgnoreCase)))
+			{
+				if (File.Exists(savedPath))
+				{
+					string version = GitMmVersionText(savedPath);
+					string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + savedPath;
+					customItem = new GitInstanceItem(label, savedPath, GitInstanceType.Custom);
+					list.Add(customItem);
+				}
+			}
+			list.Add(GitInstanceItem.CreateSeparator());
+			list.Add(GitInstanceItem.CreateAddCustomGitMmInstance());
+			GitMmInstanceComboBox.ItemsSource = list.ToArray();
+			// 选中当前生效的路径
+			string current = App.GitMmPath;
+			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
+			GitMmInstanceComboBox.SelectedItem = match ?? list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType == GitInstanceType.AddCustom);
+		}
+
+		private static string GitMmVersionText(string path)
+		{
+			GitCommandResult<string> result = new GetGitMmVersionShellCommand().Execute(path);
+			return result.Succeeded ? result.Result : null;
+		}
+
+		private void GitMmInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			GitInstanceItem previous = (e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as GitInstanceItem) : null;
+			if (!(GitMmInstanceComboBox.SelectedItem is GitInstanceItem item))
+			{
+				return;
+			}
+			switch (item.GitInstanceType)
+			{
+			case GitInstanceType.System:
+			case GitInstanceType.Local:
+			case GitInstanceType.Custom:
+				ForkPlusSettings.Default.GitMmInstancePath = item.GitPath;
+				ForkPlusSettings.Default.Save();
+				break;
+			case GitInstanceType.AddCustom:
+			{
+				string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+				if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-mm instance"), initialDirectory, out var filePath))
+				{
+					string normalized = PathHelper.Normalize(filePath);
+					ForkPlusSettings.Default.GitMmInstancePath = normalized;
+					ForkPlusSettings.Default.Save();
+					RefreshGitMmInstanceComboBox();
+				}
+				else
+				{
+					GitMmInstanceComboBox.SelectedItem = previous;
+				}
+				break;
+			}
+			}
+			Log.Info("git-mm Location: " + (App.GitMmPath ?? "(none)"));
+			WarnIfGitMmVersionUnsupported();
+		}
+
+		/// <summary>
+		/// 选中的 git-mm 版本过低或未找到时弹警告（不阻止选择）。
+		/// </summary>
+		private static void WarnIfGitMmVersionUnsupported()
+		{
+			try
+			{
+				string gitMmPath = App.GitMmPath;
+				if (string.IsNullOrWhiteSpace(gitMmPath))
+				{
+					new ErrorWindow(PreferencesLocalization.Current(
+						"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.")).ShowDialog();
+					return;
+				}
+				GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
+				if (result.Status == GitMmVersionStatus.Unsupported)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
+					new ErrorWindow(PreferencesLocalization.FormatCurrent(
+						"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
+						versionText, minText)).ShowDialog();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git-mm version on selection", ex);
 			}
 		}
 

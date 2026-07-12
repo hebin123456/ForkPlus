@@ -45,6 +45,7 @@ ForkPlus/
 - Visual Studio 2019/2022, o .NET SDK + MSBuild
 - .NET Framework 4.7.2 targeting pack
 - Git 2.31 o superior (se recomienda 2.40+; las versiones anteriores muestran una advertencia al iniciar y algunas funciones pueden no funcionar)
+- git-mm 3.0 o superior (necesario para el flujo de trabajo git mm; se muestra una advertencia al iniciar si la versión es anterior o está ausente; ruta de git-mm.exe configurable en Preferencias)
 
 ### Pasos de compilación
 

@@ -32,3 +32,10 @@
 - 修复 9 处 `ErrorWindow` 字符串拼接，改为 `FormatCurrent` 模板化翻译
 - 修复 12 处 `monitor.Fail` 原始英文字符串，改为 `Current` 本地化
 - 新增 11 个翻译 key，同步补全简体中文、繁體中文、日本語、한국어、Français、Deutsch、Español 七种语言
+
+### git mm 版本检测
+
+- 启动时检测 `git-mm.exe` 版本，低于 3.0 弹警告（未找到也提示）
+- 偏好设置 Git 选项卡新增 git-mm 实例选择下拉框，支持自动发现 PATH 与 git 同目录的 `git-mm.exe`、手动添加自定义路径、选择后即时版本校验
+- 新增 `GitMmInstancePath` 设置项持久化用户选择的 git-mm 路径
+- 新增 7 个本地化 key 补全 7 种语言
