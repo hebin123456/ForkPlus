@@ -167,6 +167,10 @@ namespace ForkPlus.Accounts.AiServices
 			{
 				return "German";
 			}
+			if (string.Equals(language, "es-ES", StringComparison.OrdinalIgnoreCase))
+			{
+				return "Spanish";
+			}
 			return "English";
 		}
 

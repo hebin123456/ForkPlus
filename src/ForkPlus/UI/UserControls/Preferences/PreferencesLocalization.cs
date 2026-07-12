@@ -24,6 +24,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public const string Korean = "ko-KR";
 		public const string French = "fr-FR";
 		public const string German = "de-DE";
+		public const string Spanish = "es-ES";
 
 		private const string LanguagesDirectoryName = "Languages";
 
@@ -47,7 +48,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{ Japanese, "日本語" },
 			{ Korean, "한국어" },
 			{ French, "Français" },
-			{ German, "Deutsch" }
+			{ German, "Deutsch" },
+			{ Spanish, "Español" }
 		};
 
 		private static readonly Dictionary<string, LoadedLanguage> ExternalLanguages = LoadExternalLanguages();
@@ -190,6 +192,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (language == German)
 			{
 				return 6;
+			}
+			if (language == Spanish)
+			{
+				return 7;
 			}
 			return 10;
 		}
