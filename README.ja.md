@@ -40,6 +40,7 @@ ForkPlus/
 - Windows 10 以降
 - Visual Studio 2019/2022、または .NET SDK + MSBuild
 - .NET Framework 4.7.2 ターゲットパック
+- Git 2.31 以上（2.40+ 推奨、これ未満の場合は起動時に警告が表示され、一部機能が正常に動作しない可能性があります）
 
 ### ビルド手順
 
@@ -51,8 +52,8 @@ ForkPlus/
 プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
 
 ```bash
-git tag v1.2.3
-git push origin v1.2.3
+git tag v1.2.4
+git push origin v1.2.4
 ```
 
 ビルド成果物には `ForkPlus.exe`、すべての依存 DLL、`biturbo.dll`、言語ファイルなどが含まれ、解凍するだけで実行できます。

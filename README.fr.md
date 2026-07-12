@@ -40,6 +40,7 @@ ForkPlus/
 - Windows 10 ou version ultérieure
 - Visual Studio 2019/2022, ou .NET SDK + MSBuild
 - Pack de ciblage .NET Framework 4.7.2
+- Git 2.31 ou version ultérieure (2.40+ recommandé ; les versions antérieures déclenchent un avertissement au démarrage et certaines fonctionnalités peuvent dysfonctionner)
 
 ### Étapes de compilation
 
@@ -51,8 +52,8 @@ ForkPlus/
 Le projet est configuré avec GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Pousser un tag `v*` déclenche automatiquement une compilation sur Windows et publie un zip d'exécution complet vers GitHub Release.
 
 ```bash
-git tag v1.2.3
-git push origin v1.2.3
+git tag v1.2.4
+git push origin v1.2.4
 ```
 
 L'artefact de compilation inclut `ForkPlus.exe`, toutes les DLL de dépendance, `biturbo.dll`, les fichiers de langue, etc. — il suffit de décompresser et d'exécuter.

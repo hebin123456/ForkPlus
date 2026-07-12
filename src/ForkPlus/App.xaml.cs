@@ -604,6 +604,7 @@ namespace ForkPlus
 					return false;
 				}
 			}
+			WarnIfGitVersionUnsupported(GitPath);
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
 				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
@@ -620,6 +621,39 @@ namespace ForkPlus
 		{
 			string gitPath = GitPath;
 			return !string.IsNullOrWhiteSpace(gitPath) && File.Exists(gitPath) && new GetGitVersionGitCommand().Execute(gitPath).Succeeded;
+		}
+
+		/// <summary>
+		/// 检测当前 git 版本，过低时弹警告（不阻止启动）。
+		/// </summary>
+		private static void WarnIfGitVersionUnsupported(string gitPath)
+		{
+			try
+			{
+				GitVersionCheckResult result = GitVersionChecker.Check(gitPath);
+				if (result.Status == GitVersionStatus.Unsupported)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string minText = GitVersionChecker.MinimumRequiredVersion.ToString(2);
+					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
+						"Detected git version {0} is older than the required {1}. Some features (diff, status, empty-changes detection) may not work correctly. Please upgrade git.",
+						versionText, minText);
+					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+				else if (result.Status == GitVersionStatus.Outdated)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string recText = GitVersionChecker.RecommendedVersion.ToString(2);
+					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
+						"Detected git version {0} is below the recommended {1}. Consider upgrading for better compatibility.",
+						versionText, recText);
+					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), MessageBoxButton.OK, MessageBoxImage.Information);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git version", ex);
+			}
 		}
 
 		protected override void OnExit(ExitEventArgs e)

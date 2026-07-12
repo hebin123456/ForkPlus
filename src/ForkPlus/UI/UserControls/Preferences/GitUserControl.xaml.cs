@@ -282,6 +282,38 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			}
 			Log.Info("Git Location: " + App.GitPath);
+			WarnIfGitVersionUnsupported(App.GitPath);
+		}
+
+		/// <summary>
+		/// 选中的 git 版本过低时弹警告（不阻止选择）。
+		/// </summary>
+		private static void WarnIfGitVersionUnsupported(string gitPath)
+		{
+			try
+			{
+				GitVersionCheckResult result = GitVersionChecker.Check(gitPath);
+				if (result.Status == GitVersionStatus.Unsupported)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string minText = GitVersionChecker.MinimumRequiredVersion.ToString(2);
+					new ErrorWindow(PreferencesLocalization.FormatCurrent(
+						"Detected git version {0} is older than the required {1}. Some features (diff, status, empty-changes detection) may not work correctly. Please upgrade git.",
+						versionText, minText)).ShowDialog();
+				}
+				else if (result.Status == GitVersionStatus.Outdated)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string recText = GitVersionChecker.RecommendedVersion.ToString(2);
+					new ErrorWindow(PreferencesLocalization.FormatCurrent(
+						"Detected git version {0} is below the recommended {1}. Consider upgrading for better compatibility.",
+						versionText, recText)).ShowDialog();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git version on selection", ex);
+			}
 		}
 
 		private void RefreshGitInstanceComboBox()

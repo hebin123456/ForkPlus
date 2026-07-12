@@ -40,6 +40,7 @@ ForkPlus/
 - Windows 10 或更高版本
 - Visual Studio 2019/2022，或 .NET SDK + MSBuild
 - .NET Framework 4.7.2 目標包
+- Git 2.31 或更高版本（推薦 2.40+，低於此版本啟動時會警告，部分功能可能異常）
 
 ### 編譯步驟
 
@@ -51,8 +52,8 @@ ForkPlus/
 專案配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 開頭的 tag 會自動在 Windows 環境編譯，並發布完整執行時 zip 包到 GitHub Release。
 
 ```bash
-git tag v1.2.3
-git push origin v1.2.3
+git tag v1.2.4
+git push origin v1.2.4
 ```
 
 編譯產物包含 `ForkPlus.exe`、所有依賴 dll、`biturbo.dll`、語言檔案等，解壓即可執行。
