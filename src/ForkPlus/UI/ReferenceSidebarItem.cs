@@ -16,9 +16,9 @@ namespace ForkPlus.UI
 
 		public string PinTooltip => PreferencesLocalization.FormatCurrent("Pin '{0}'", base.Title);
 
-		public string FilterTooltip => PreferencesLocalization.Current("Show '" + base.Title + "' commits only");
+		public string FilterTooltip => PreferencesLocalization.FormatCurrent("Show '{0}' commits only", base.Title);
 
-		public string HideTooltip => PreferencesLocalization.Current("Hide '" + base.Title + "' in the commit list");
+		public string HideTooltip => PreferencesLocalization.FormatCurrent("Hide '{0}' in the commit list", base.Title);
 
 		public bool Pinned
 		{
