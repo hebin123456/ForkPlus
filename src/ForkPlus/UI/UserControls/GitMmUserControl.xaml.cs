@@ -139,6 +139,37 @@ namespace ForkPlus.UI.UserControls
 			RefreshCommandButtonTooltips();
 			SetBusy(isBusy: false);
 			RestoreSettings();
+			WarnIfGitMmUnavailable();
+		}
+
+		/// <summary>
+		/// 打开 git mm 仓库时检测 git-mm 是否可用；缺失或版本过低才提示，其他场景不打扰。
+		/// </summary>
+		private void WarnIfGitMmUnavailable()
+		{
+			try
+			{
+				string gitMmPath = App.GitMmPath;
+				if (string.IsNullOrWhiteSpace(gitMmPath))
+				{
+					new ErrorWindow(PreferencesLocalization.Current(
+						"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.")).ShowDialog();
+					return;
+				}
+				GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
+				if (result.Status == GitMmVersionStatus.Unsupported)
+				{
+					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
+					string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
+					new ErrorWindow(PreferencesLocalization.FormatCurrent(
+						"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
+						versionText, minText)).ShowDialog();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git-mm version on open", ex);
+			}
 		}
 
 		public static bool IsGitMmWorkspace(string path)

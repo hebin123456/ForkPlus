@@ -684,7 +684,6 @@ namespace ForkPlus
 				}
 			}
 			WarnIfGitVersionUnsupported(GitPath);
-			WarnIfGitMmVersionUnsupported();
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
 				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
@@ -733,38 +732,6 @@ namespace ForkPlus
 			catch (Exception ex)
 			{
 				Log.Error("Failed to check git version", ex);
-			}
-		}
-
-		/// <summary>
-		/// 检测当前 git-mm 版本，未找到或低于 3.0 时弹警告（不阻止启动）。
-		/// </summary>
-		private static void WarnIfGitMmVersionUnsupported()
-		{
-			try
-			{
-				string gitMmPath = GitMmPath;
-				if (string.IsNullOrWhiteSpace(gitMmPath))
-				{
-					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current(
-						"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.");
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("git-mm not found"), MessageBoxButton.OK, MessageBoxImage.Warning);
-					return;
-				}
-				GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
-				if (result.Status == GitMmVersionStatus.Unsupported)
-				{
-					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
-					string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
-					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
-						"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
-						versionText, minText);
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("git-mm version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to check git-mm version", ex);
 			}
 		}
 

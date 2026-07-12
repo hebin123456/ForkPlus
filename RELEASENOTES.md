@@ -4,13 +4,14 @@
 
 ## v1.3.1
 
-### git mm 版本检测
+### git mm 版本检测（按需提示）
 
-- 启动时检测 `git-mm.exe` 版本，低于 3.0 弹警告（未找到也提示）
-- 偏好设置 Git 选项卡新增 git-mm 实例选择下拉框，支持自动发现 PATH 与 git 同目录的 `git-mm.exe`、手动添加自定义路径、选择后即时版本校验
-- 新增 `GitMmInstancePath` 设置项持久化用户选择的 git-mm 路径
-- 新增 7 个本地化 key 补全 7 种语言
-- 8 个 README 环境要求补充 git-mm 3.0
+- 新增 `GitMmVersionChecker` + `GetGitMmVersionShellCommand`，执行 `git-mm.exe --version` 解析版本号，最低要求 3.0.0
+- 新增 `App.GitMmPath` 属性：用户设置 → PATH 查找 → git.exe 同目录三级回退；`FindExecutableInPath` 辅助方法
+- `ForkPlusSettings` 新增 `GitMmInstancePath` 字段持久化用户选择的 git-mm 路径
+- 偏好设置 Git 选项卡新增 git-mm 实例选择下拉框：自动发现 PATH 与 git 同目录的 `git-mm.exe`、支持手动添加自定义路径
+- **检测时机**：仅当用户打开 git mm 仓库（`GitMmUserControl` 构造）时才检测 git-mm 是否存在及版本是否满足 3.0，缺失或版本过低才弹 `ErrorWindow`；启动和偏好设置中不再打扰不使用该功能的用户
+- 新增 7 个本地化 key 补全 7 种语言，8 个 README 环境要求补充 git-mm 3.0
 
 ## v1.3.0
 
