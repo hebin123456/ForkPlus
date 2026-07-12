@@ -32,7 +32,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(processOutputHandler.Stderr());
 				return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success("Everything is up to date");
+			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
 			return GitCommandResult.Success();
 		}
 	}

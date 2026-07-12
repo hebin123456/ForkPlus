@@ -217,7 +217,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			else
 			{
-				ControlsButtonTitle = "No controls";
+				ControlsButtonTitle = PreferencesLocalization.Current("No controls");
 			}
 		}
 

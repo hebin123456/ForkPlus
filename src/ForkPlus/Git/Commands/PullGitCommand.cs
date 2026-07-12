@@ -49,7 +49,7 @@ namespace ForkPlus.Git.Commands
 			{
 				if (stdErrLine.Contains("bash: /dev/tty: No such device or address"))
 				{
-					monitor.AppendOutputLine("Cancel background fetch...");
+					monitor.AppendOutputLine(PreferencesLocalization.Current("Cancel background fetch..."));
 					Thread.Sleep(100);
 					monitor.Cancel();
 				}

@@ -500,7 +500,7 @@ namespace ForkPlus.UI.Controls
 		{
 			ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 			{
-				c.FallbackTitle = "Error";
+				c.FallbackTitle = PreferencesLocalization.Current("Error");
 				c.FallbackMessage = error.FriendlyDescription;
 				h.Collapse();
 			});

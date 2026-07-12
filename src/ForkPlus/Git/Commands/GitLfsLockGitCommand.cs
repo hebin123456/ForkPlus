@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -23,7 +24,7 @@ namespace ForkPlus.Git.Commands
 				ISpawnError error = executeWithCallbackResponse.Error;
 				if (error != null)
 				{
-					monitor.Fail("LFS lock failed");
+					monitor.Fail(PreferencesLocalization.Current("LFS lock failed"));
 					return GitCommandResult.Failure(error.ToGitCommandError());
 				}
 				if (!executeWithCallbackResponse.Result.Success)
@@ -33,7 +34,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (gitCommandError != null)
 			{
-				monitor.Fail("LFS lock failed");
+				monitor.Fail(PreferencesLocalization.Current("LFS lock failed"));
 				return GitCommandResult.Failure(gitCommandError);
 			}
 			string resultMessage = ((filePaths.Count == 1) ? ("Locked '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Locked {filePaths.Count} files");

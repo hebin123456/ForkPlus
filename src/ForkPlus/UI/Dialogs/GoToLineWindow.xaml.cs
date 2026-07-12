@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Dialogs
 			base.IsTitleVisible = true;
 			InitializeComponent();
 			base.Title = PreferencesLocalization.Current("Go To Line");
-			base.SubmitButtonTitle = "Go";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Go");
 		}
 
 		protected override void OnSubmit()

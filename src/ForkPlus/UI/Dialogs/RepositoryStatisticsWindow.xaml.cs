@@ -5,6 +5,7 @@ using System.Windows.Markup;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -19,7 +20,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowHeader = false;
 			InitializeComponent();
 			base.ShowCancelButton = false;
-			base.SubmitButtonTitle = "Close";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
 			RepositoryNameTextBlock.Text = gitModule.Path;
 			base.Loaded += RepositoryStatisticsWindow_Loaded;

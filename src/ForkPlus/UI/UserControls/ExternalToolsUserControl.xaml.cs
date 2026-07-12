@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -88,7 +89,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void AddToolButton_Click(object sender, RoutedEventArgs e)
 		{
-			string name = "Custom";
+			string name = PreferencesLocalization.Current("Custom");
 			int num = _toolViewModels.Count((ExternalToolViewModel x) => x.Name.ToLower().StartsWith(name.ToLower()));
 			if (num > 0)
 			{

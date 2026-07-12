@@ -1,5 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -10,10 +11,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("am", "--3way", patchPath).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail("Cannot apply patch");
+				monitor.Fail(PreferencesLocalization.Current("Cannot apply patch"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success("Applied");
+			monitor.Success(PreferencesLocalization.Current("Applied"));
 			return GitCommandResult.Success();
 		}
 
@@ -22,10 +23,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("am", "--3way").Stdin(patchData).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail("Cannot apply patch");
+				monitor.Fail(PreferencesLocalization.Current("Cannot apply patch"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success("Applied");
+			monitor.Success(PreferencesLocalization.Current("Applied"));
 			return GitCommandResult.Success();
 		}
 	}

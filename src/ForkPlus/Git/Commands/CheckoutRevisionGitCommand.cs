@@ -1,5 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -40,7 +41,7 @@ namespace ForkPlus.Git.Commands
 				}
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success("Detached HEAD");
+			monitor.Success(PreferencesLocalization.Current("Detached HEAD"));
 			return GitCommandResult.Success();
 		}
 	}

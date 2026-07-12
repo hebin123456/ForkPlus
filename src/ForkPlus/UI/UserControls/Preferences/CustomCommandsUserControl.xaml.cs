@@ -343,7 +343,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private string CreateCustomCommandName()
 		{
-			string name = "Custom Command";
+			string name = PreferencesLocalization.Current("Custom Command");
 			int num = _customCommandViewModels.Count((CustomCommandViewModel x) => x.Name.ToLower().StartsWith(name.ToLower()));
 			if (num > 0)
 			{

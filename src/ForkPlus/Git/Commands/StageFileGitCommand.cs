@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -26,19 +27,19 @@ namespace ForkPlus.Git.Commands
 			ISpawnError error = executeWithCallbackResponse.Error;
 			if (error != null)
 			{
-				monitor.Fail("stage failed");
+				monitor.Fail(PreferencesLocalization.Current("stage failed"));
 				return GitCommandResult.Failure(error.ToGitCommandError());
 			}
 			if (!executeWithCallbackResponse.Result.Success)
 			{
-				monitor.Fail("stage failed");
+				monitor.Fail(PreferencesLocalization.Current("stage failed"));
 				if (GitCommandError.RepositoryIsLocked.Test(stageProcessOutputHandler.Stderr()))
 				{
 					return GitCommandResult.Failure(new GitCommandError.RepositoryIsLocked(stageProcessOutputHandler.FullOutput(), stageProcessOutputHandler.Stderr()));
 				}
 				return GitCommandResult.Failure(new GitCommandError.GitError(stageProcessOutputHandler.FullOutput(), stageProcessOutputHandler.Stderr()));
 			}
-			monitor.Success("staged");
+			monitor.Success(PreferencesLocalization.Current("staged"));
 			return GitCommandResult.Success();
 		}
 	}

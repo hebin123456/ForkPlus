@@ -63,9 +63,9 @@ namespace ForkPlus.Accounts.AiServices
 			}
 			string regexInstruction = string.IsNullOrWhiteSpace(commitMessageRegex) ? "" : $"\nThe commit message must match this Go regular expression when represented as `title\\ndescription` using one LF between the title and description:\n`{commitMessageRegex}`\nIf there is no description, match the title only. If the regex implies a required prefix, issue id, type, scope, or format, follow it strictly.\n";
 			string text = $"\nWrite a commit message for my changes.\nThe commit message must be written in {responseLanguage}.\nExplain what were the changes and why the changes were done.\nFocus the most important changes.\nUse the present tense.\nUse a single word lowercase commit prefix only if it is natural for {responseLanguage} and allowed by the configured format.\nHard wrap lines at {pageGuideLinePosition} characters.\nEnsure the title is less than {commitSubjectLowLimit} (soft limit) and {commitSubjectHighLimit} (hard limit).\nDo not start any lines with the hash symbol.{regexInstruction}\nOnly respond with the commit message.\n\nBelow is my git diff:\n\n```\n{patchString}\n```\n";
-			monitor.AppendOutputLine("Message:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine("\nResponse:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
@@ -78,7 +78,7 @@ namespace ForkPlus.Accounts.AiServices
 			if (!MatchesCommitMessageRegex(message, commitMessageRegex, out string regexError) && !string.IsNullOrWhiteSpace(commitMessageRegex))
 			{
 				monitor.AppendOutputLine(regexError);
-				monitor.AppendOutputLine("Regenerating commit message with configured regex...");
+				monitor.AppendOutputLine(PreferencesLocalization.Current("Regenerating commit message with configured regex..."));
 				ServiceResult<OpenAiResponse> retryResult = OpenAiRequestWithRetry(CreateRegexRetryPrompt(message, commitMessageRegex, responseLanguage), monitor);
 				if (retryResult.Succeeded)
 				{
@@ -158,9 +158,9 @@ namespace ForkPlus.Accounts.AiServices
 		{
 			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing with {0}...", _model));
 			string text = "\nMake code review for changes.\nDo not thank.\n\nBelow is the git diff:\n\n```\n" + patchString + "\n```\n";
-			monitor.AppendOutputLine("Message:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine("\nResponse:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
@@ -169,7 +169,7 @@ namespace ForkPlus.Accounts.AiServices
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
 			monitor.AppendOutputLine(serviceResult.Result.Message);
-			monitor.Success("reviewed");
+			monitor.Success(PreferencesLocalization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
@@ -177,9 +177,9 @@ namespace ForkPlus.Accounts.AiServices
 		{
 			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing files with {0}...", _model));
 			string text = "\nReview the following file changes.\nUse concise Chinese by default unless the code/comment language clearly suggests another language.\nReturn actionable findings only.\nGroup findings by file. Start each file section with exactly `## File: relative/path`, using the same relative path from the review context.\nFor every issue, include file path and line number in the format `path:line` when possible.\nIf a finding has a safe concrete fix, also include it in one fenced JSON block named `forkplus-ai-suggestions` with this shape:\n\n```forkplus-ai-suggestions\n[\n  {\n    \"file\": \"relative/path\",\n    \"line\": 12,\n    \"comment\": \"why this should change\",\n    \"oldText\": \"exact text to replace\",\n    \"newText\": \"replacement text\"\n  }\n]\n```\n\nOnly include suggestions when `oldText` is an exact contiguous snippet from the full file content. Do not invent fixes for uncertain findings.\nIf there are no issues for a file, omit that file section. If there are no issues in all files, say clearly that no obvious issues were found.\n\nThe review context includes both full file content and diff.\n\n" + reviewContext;
-			monitor.AppendOutputLine("Message:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine("\nResponse:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
@@ -188,7 +188,7 @@ namespace ForkPlus.Accounts.AiServices
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
 			monitor.AppendOutputLine(serviceResult.Result.Message);
-			monitor.Success("reviewed");
+			monitor.Success(PreferencesLocalization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 

@@ -38,7 +38,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail("Checkout failed");
+				monitor.Fail(PreferencesLocalization.Current("Checkout failed"));
 				if (GitCommandError.RepositoryIsLocked.Test(gitRequestResult.Stderr))
 				{
 					return GitCommandResult.Failure(new GitCommandError.RepositoryIsLocked(gitRequestResult));

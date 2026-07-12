@@ -67,7 +67,7 @@ namespace ForkPlus.Git.Commands
 				if (match != null)
 				{
 					string text2 = match.Groups[1].Value.TrimEnd();
-					monitor.Fail("'" + text2 + "' rejected");
+					monitor.Fail(PreferencesLocalization.FormatCurrent("'{0}' rejected", text2));
 				}
 				else
 				{
@@ -79,14 +79,14 @@ namespace ForkPlus.Git.Commands
 					}
 					else
 					{
-						monitor.Fail("Push failed");
+						monitor.Fail(PreferencesLocalization.Current("Push failed"));
 					}
 				}
 				return GitCommandResult.Failure(new GitCommandError.CallbackUnknownError(processOutputHandler.FullOutput()));
 			}
 			if (NoChangesRegEx.FirstMatch(input) != null)
 			{
-				monitor.Success("Everything is up to date");
+				monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
 			}
 			else
 			{
@@ -124,7 +124,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(processOutputHandler.Stderr());
 				return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success("Everything is up to date");
+			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
 			return GitCommandResult.Success();
 		}
 	}

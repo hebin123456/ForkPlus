@@ -1,6 +1,7 @@
 using System.Threading;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -15,7 +16,7 @@ namespace ForkPlus.Git.Commands
 			}
 			gitCommand.AddRange(url.Quotify(), destinationDirectory.Quotify(), "--progress", "--verbose");
 			monitor.Append(null, gitCommand);
-			monitor.Update(0.0, "Cloning...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Cloning..."));
 			GitRequestResult gitRequestResult = default(GitRequest).Command(gitCommand).ExecuteLong(delegate(string stdOutLine)
 			{
 				monitor.AppendOutputLine(stdOutLine);
@@ -23,7 +24,7 @@ namespace ForkPlus.Git.Commands
 			{
 				if (stdErrLine.Contains("bash: /dev/tty: No such device or address"))
 				{
-					monitor.AppendOutputLine("Cancel...");
+					monitor.AppendOutputLine(PreferencesLocalization.Current("Cancel..."));
 					Thread.Sleep(100);
 					monitor.Cancel();
 				}
@@ -42,7 +43,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (gitRequestResult.Success)
 			{
-				monitor.Success("Cloned");
+				monitor.Success(PreferencesLocalization.Current("Cloned"));
 				GitCommandResult<GitModule> gitCommandResult = new OpenGitRepositoryGitCommand().Execute(destinationDirectory);
 				if (!gitCommandResult.Succeeded)
 				{

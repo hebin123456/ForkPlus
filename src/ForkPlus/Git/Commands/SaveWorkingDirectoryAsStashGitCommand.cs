@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -27,7 +28,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult.Failure(gitCommandResult2.Error);
 				}
 			}
-			monitor.Update(0.0, "Stashing...");
+			monitor.Update(0.0, PreferencesLocalization.Current("Stashing..."));
 			string text = ((!string.IsNullOrEmpty(stashMessage)) ? stashMessage.Quotify() : $"Snapshot on '{sourceString}' {DateTime.Now}");
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("stash", "create", text).Execute(monitor);
 			if (!gitRequestResult.Success)

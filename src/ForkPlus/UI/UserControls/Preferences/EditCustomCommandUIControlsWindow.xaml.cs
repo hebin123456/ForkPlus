@@ -62,37 +62,37 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void AddGenericTextBoxMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.GenericTextBox("Text Box"));
+			AddControl(new CustomCommandUI.Control.GenericTextBox(PreferencesLocalization.Current("Text Box")));
 		}
 
 		private void AddPathTextBoxMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.PathTextBox("Path Text Box", CustomCommandUI.Control.PathTextBox.DialogType.SaveFile));
+			AddControl(new CustomCommandUI.Control.PathTextBox(PreferencesLocalization.Current("Path Text Box"), CustomCommandUI.Control.PathTextBox.DialogType.SaveFile));
 		}
 
 		private void AddLocalBranchSelectorMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.Dropdown("Local Branch", CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/heads/"));
+			AddControl(new CustomCommandUI.Control.Dropdown(PreferencesLocalization.Current("Local Branch"), CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/heads/"));
 		}
 
 		private void AddRemoteBranchSelectorMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.Dropdown("Remote Branch", CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/remotes/"));
+			AddControl(new CustomCommandUI.Control.Dropdown(PreferencesLocalization.Current("Remote Branch"), CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/remotes/"));
 		}
 
 		private void AddTagSelectorMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.Dropdown("Tag", CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/tags/"));
+			AddControl(new CustomCommandUI.Control.Dropdown(PreferencesLocalization.Current("Tag"), CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/tags/"));
 		}
 
 		private void AddReferenceSelectorMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.Dropdown("Reference", CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/"));
+			AddControl(new CustomCommandUI.Control.Dropdown(PreferencesLocalization.Current("Reference"), CustomCommandUI.Control.Dropdown.DropdownType.References, "refs/"));
 		}
 
 		private void AddCheckBoxMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			AddControl(new CustomCommandUI.Control.CheckBox("Check Box"));
+			AddControl(new CustomCommandUI.Control.CheckBox(PreferencesLocalization.Current("Check Box")));
 		}
 
 		private void AddControl(CustomCommandUI.Control control)
@@ -226,7 +226,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				case CustomCommandUI.Control.TextBoxType.Generic:
 				{
 					CustomCommandUI.Control.GenericTextBox genericTextBox = control as CustomCommandUI.Control.GenericTextBox;
-					TitleTextBox.Text = genericTextBox?.Title ?? "Text Box";
+					TitleTextBox.Text = genericTextBox?.Title ?? PreferencesLocalization.Current("Text Box");
 					PathTextBoxControlsContainer.Collapse();
 					GenericTextBoxControlsContainer.Show();
 					GenericTextBox.Text = genericTextBox?.Text ?? "";
@@ -236,7 +236,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				case CustomCommandUI.Control.TextBoxType.FilePath:
 				{
 					CustomCommandUI.Control.PathTextBox pathTextBox = control as CustomCommandUI.Control.PathTextBox;
-					TitleTextBox.Text = pathTextBox?.Title ?? "Path Text Box";
+					TitleTextBox.Text = pathTextBox?.Title ?? PreferencesLocalization.Current("Path Text Box");
 					GenericTextBoxControlsContainer.Collapse();
 					PathTextBoxControlsContainer.Show();
 					CustomCommandUI.Control.PathTextBox.DialogType dialogType = pathTextBox?.PathDialogType ?? CustomCommandUI.Control.PathTextBox.DialogType.SaveFile;
@@ -257,7 +257,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				TextBoxTypeTextBlock.Collapse();
 				TextBoxTypeComboBox.Collapse();
 				CustomCommandUI.Control.Dropdown dropdown = control as CustomCommandUI.Control.Dropdown;
-				TitleTextBox.Text = dropdown?.Title ?? "Reference";
+				TitleTextBox.Text = dropdown?.Title ?? PreferencesLocalization.Current("Reference");
 				DropdownFilterTextBox.Text = dropdown?.Filter ?? "";
 				break;
 			}
@@ -270,7 +270,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				TextBoxTypeTextBlock.Collapse();
 				TextBoxTypeComboBox.Collapse();
 				CustomCommandUI.Control.CheckBox checkBox = control as CustomCommandUI.Control.CheckBox;
-				TitleTextBox.Text = checkBox?.Title ?? "Check Box";
+				TitleTextBox.Text = checkBox?.Title ?? PreferencesLocalization.Current("Check Box");
 				CheckBoxDefaultValueCheckBox.IsChecked = checkBox?.DefaultValue ?? false;
 				CheckBoxCheckedValueTextBox.Text = checkBox?.CheckedValue ?? "";
 				CheckBoxUncheckedValueTextBox.Text = checkBox?.UncheckedValue ?? "";

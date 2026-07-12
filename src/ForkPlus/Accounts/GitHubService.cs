@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ForkPlus.Git;
+using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
@@ -317,7 +318,7 @@ namespace ForkPlus.Accounts
 					if (@string != null)
 					{
 						Log.Warn(@string);
-						return "GitHub Error: " + @string;
+						return PreferencesLocalization.FormatCurrent("GitHub Error: {0}", @string);
 					}
 				}
 				Log.Warn("Cannot parse Error json");
@@ -396,7 +397,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError("Slug in '" + remote.Url + "'"));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success((_gitHubEnterprise ? Connection.ServerUrl : "https://github.com") + "/" + slug + "/issues/new");
 		}
@@ -408,7 +409,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError("Slug in '" + remote.Url + "'"));
+					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest(GitHugSlug("/search/issues"));
 				SearchQuery query = SearchQueryParser.Parse(queryString, AllowedQueryParameters);
@@ -424,7 +425,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError("Slug in '" + remote.Url + "'"));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success((_gitHubEnterprise ? Connection.ServerUrl : "https://github.com") + "/" + slug + "/compare");
 		}
@@ -436,7 +437,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError("Slug in '" + remote.Url + "'"));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest(GitHugSlug("/search/issues"));
 				SearchQuery query = SearchQueryParser.Parse(queryString, AllowedQueryParameters);

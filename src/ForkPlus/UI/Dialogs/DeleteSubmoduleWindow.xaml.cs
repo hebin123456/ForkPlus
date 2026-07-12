@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			base.DialogTitle = string.Format(Translate("Are you sure you want to delete submodule {0}?"), submodule.FriendlyName);
 			base.DialogDescription = string.Format(Translate("Do you want to delete submodule {0}?"), submodule.Path);
-			base.SubmitButtonTitle = "Delete";
+			base.SubmitButtonTitle = Translate("Delete");
 		}
 
 		protected override void OnSubmit()

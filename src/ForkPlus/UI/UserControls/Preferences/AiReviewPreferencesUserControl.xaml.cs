@@ -126,7 +126,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		 {
 		  // Auto-detect name from first line of content
 		  string[] lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-		  name = lines.Length > 0 ? lines[0].Trim() : "Unnamed";
+		  name = lines.Length > 0 ? lines[0].Trim() : PreferencesLocalization.Current("Unnamed");
 		 }
 		 if (name.Length > 40) name = name.Substring(0, 40);
 

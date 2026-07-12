@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 using ForkPlus.Git;
+using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
@@ -198,7 +199,7 @@ namespace ForkPlus.Accounts
 					if (@string != null)
 					{
 						Log.Warn(@string);
-						return "BitBucket Error: " + @string;
+						return PreferencesLocalization.FormatCurrent("BitBucket Error: {0}", @string);
 					}
 				}
 				Log.Warn("Cannot parse Error json");
@@ -301,7 +302,7 @@ namespace ForkPlus.Accounts
 			string usernameHeader = GetUsernameHeader(httpRequestResult);
 			if (usernameHeader == null)
 			{
-				return ServiceResult<User>.Failure(new ServiceError.UnknownError("Token is not valid"));
+				return ServiceResult<User>.Failure(new ServiceError.UnknownError(PreferencesLocalization.Current("Token is not valid")));
 			}
 			usernameHeader = Uri.UnescapeDataString(usernameHeader);
 			usernameHeader = usernameHeader.Replace('@', '_');
@@ -375,12 +376,12 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError("Remote url '" + remote.Url + "'"));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Remote url '{0}'", remote.Url)));
 			}
 			string text = CreateBitbucketServerSlug(slug);
 			if (text == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError("Cannot create slug for '" + slug + "'"));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Cannot create slug for '{0}'", slug)));
 			}
 			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + text + "/pull-requests?create");
 		}
@@ -392,12 +393,12 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError("Slug in '" + remote.Url + "'"));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				string text = CreateBitbucketServerSlug(slug);
 				if (text == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError("Cannot create slug for '" + slug + "'"));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Cannot create slug for '{0}'", slug)));
 				}
 				ApiRequest apiRequest = new ApiRequest("/rest/api/1.0", text, "pull-requests");
 				SearchQuery query = SearchQueryParser.Parse(queryString, AllowedQueryParameters);

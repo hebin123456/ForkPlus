@@ -27,12 +27,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 				if (value is CustomCommandUI.Control.GenericTextBox genericTextBox)
 				{
 					Title = genericTextBox.Title;
-					Details = "Text Box";
+					Details = PreferencesLocalization.Translate("Text Box", ForkPlusSettings.Default.UiLanguage);
 				}
 				else if (value is CustomCommandUI.Control.PathTextBox pathTextBox)
 				{
 					Title = pathTextBox.Title;
-					Details = "Text Box";
+					Details = PreferencesLocalization.Translate("Text Box", ForkPlusSettings.Default.UiLanguage);
 				}
 				else if (value is CustomCommandUI.Control.Dropdown dropdown)
 				{
@@ -42,7 +42,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				else if (value is CustomCommandUI.Control.CheckBox checkBox)
 				{
 					Title = checkBox.Title;
-					Details = "Check Box";
+					Details = PreferencesLocalization.Translate("Check Box", ForkPlusSettings.Default.UiLanguage);
 				}
 			}
 		}

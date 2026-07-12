@@ -14,7 +14,7 @@ namespace ForkPlus.UI
 
 		public virtual string Tooltip { get; }
 
-		public string PinTooltip => PreferencesLocalization.Current("Pin '" + base.Title + "'");
+		public string PinTooltip => PreferencesLocalization.FormatCurrent("Pin '{0}'", base.Title);
 
 		public string FilterTooltip => PreferencesLocalization.Current("Show '" + base.Title + "' commits only");
 

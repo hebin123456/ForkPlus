@@ -251,7 +251,7 @@ namespace ForkPlus.UI.Dialogs
 									_fileChanges.AddRange(appliedChanges);
 									ShowDiffResults(appliedChanges);
 									AddStatusMessage(
-										PreferencesLocalization.FormatCurrent("✅ AI 修改了 {0} 个文件", appliedChanges.Count),
+										PreferencesLocalization.FormatCurrent("AI modified {0} files", appliedChanges.Count),
 										Brushes.Green);
 								}
 								else
@@ -837,7 +837,7 @@ Additionally, the user has defined the following coding standards / skills that 
 					base.Dispatcher.Async(delegate
 					{
 						AddStatusMessage(
-							PreferencesLocalization.FormatCurrent("⚠️ 安全限制: 拒绝修改目录外的文件 {0}", fileChange.FilePath),
+							PreferencesLocalization.FormatCurrent("Security limit: refused to modify file outside directory: {0}", fileChange.FilePath),
 							Brushes.OrangeRed);
 					});
 					continue;

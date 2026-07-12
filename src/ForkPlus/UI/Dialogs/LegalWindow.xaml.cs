@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -16,7 +17,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
-			base.CancelButtonTitle = "Close";
+			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			base.ShowSubmitButton = false;
 			LicencesTextBox.Text = GetLicences();
 		}

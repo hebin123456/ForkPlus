@@ -22,8 +22,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public void Initialize(ForkPlusDialogWindow parentWindow)
 		{
 			_parentWindow = parentWindow;
-			ExternalMergeToolsUserControl.Initialize(parentWindow, ExternalToolManager.RevealAvailableMergeTools(includeNonExistent: true), ExternalToolManager.MergeToolDefinitions, "Available variables: $LOCAL, $REMOTE, $BASE, $MERGED");
-			ExternalDiffToolsUserControl.Initialize(parentWindow, ExternalToolManager.RevealAvailableDiffTools(includeNonExistent: true), ExternalToolManager.DiffToolDefinitions, "Available variables: $LOCAL, $REMOTE");
+			ExternalMergeToolsUserControl.Initialize(parentWindow, ExternalToolManager.RevealAvailableMergeTools(includeNonExistent: true), ExternalToolManager.MergeToolDefinitions, PreferencesLocalization.Current("Available variables: $LOCAL, $REMOTE, $BASE, $MERGED"));
+			ExternalDiffToolsUserControl.Initialize(parentWindow, ExternalToolManager.RevealAvailableDiffTools(includeNonExistent: true), ExternalToolManager.DiffToolDefinitions, PreferencesLocalization.Current("Available variables: $LOCAL, $REMOTE"));
 			string[] array = new string[5]
 			{
 				ShellTool.DefaultType,

@@ -27,9 +27,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			InitializeComponent();
 			_sshKeyPath = sshKeyPath;
-			base.DialogTitle = "Passphrase for SSH key";
+			base.DialogTitle = Translate("Passphrase for SSH key");
 			base.DialogDescription = string.Format(Translate("Enter passphrase for SSH key '{0}'"), sshKeyName);
-			base.SubmitButtonTitle = "OK";
+			base.SubmitButtonTitle = Translate("OK");
 			PasswordBox.PasswordChanged += delegate
 			{
 				UpdateSubmitButton();

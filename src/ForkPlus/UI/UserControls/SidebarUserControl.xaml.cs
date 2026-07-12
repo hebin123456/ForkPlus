@@ -198,7 +198,7 @@ namespace ForkPlus.UI.UserControls
 		public void ApplyLocalization()
 		{
 			string language = ForkPlusSettings.Default.UiLanguage;
-			AiDevelopmentButton.ToolTip = Preferences.PreferencesLocalization.Translate("AI 辅助开发", language);
+			AiDevelopmentButton.ToolTip = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
 			RepositorySettingsDropdownButton.ToolTip = Preferences.PreferencesLocalization.Translate("Repository Settings", language);
 			FilterTextBox.Placeholder = Preferences.PreferencesLocalization.Translate("Filter", language);
 			AllCommitsTextBlock.Text = Preferences.PreferencesLocalization.Translate("All Commits", language);
@@ -468,10 +468,10 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				Preferences.PreferencesLocalization.Current("AI 开发功能需要先配置 API。请在 设置 → AI Review 中配置服务地址和 API Key。");
+				Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review.");
 				System.Windows.MessageBox.Show(
-					Preferences.PreferencesLocalization.Current("AI 开发功能需要先配置 API。请在 设置 → AI Review 中配置服务地址和 API Key。"),
-					Preferences.PreferencesLocalization.Current("配置提醒"),
+					Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review."),
+					Preferences.PreferencesLocalization.Current("Configuration Reminder"),
 					MessageBoxButton.OK,
 					MessageBoxImage.Information);
 				return;

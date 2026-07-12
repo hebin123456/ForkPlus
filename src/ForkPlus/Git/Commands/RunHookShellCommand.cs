@@ -2,6 +2,7 @@ using System;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Shell.Interaction;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -9,7 +10,7 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<string> Execute(GitModule gitModule, string hookName, JobMonitor monitor)
 		{
-			monitor.Update(monitor.TotalProgress, "Running...");
+			monitor.Update(monitor.TotalProgress, PreferencesLocalization.Current("Running..."));
 			GitRequestResult gitRequestResult;
 			try
 			{
@@ -28,21 +29,21 @@ namespace ForkPlus.Git.Commands
 			}
 			catch (Exception ex)
 			{
-				monitor.Fail("failed");
+				monitor.Fail(PreferencesLocalization.Current("failed"));
 				monitor.AppendOutputLine(ex.ToString());
 				return GitCommandResult<string>.Failure(new GitCommandError.UnknownException(ex));
 			}
 			if (monitor.IsCanceled)
 			{
-				monitor.Fail("Canceled");
+				monitor.Fail(PreferencesLocalization.Current("Canceled"));
 				return GitCommandResult<string>.Failure(new GitCommandError.Cancelled());
 			}
 			if (gitRequestResult.Success)
 			{
-				monitor.Success("Finished");
+				monitor.Success(PreferencesLocalization.Current("Finished"));
 				return GitCommandResult<string>.Success(gitRequestResult.Stdout);
 			}
-			monitor.Fail("Error");
+			monitor.Fail(PreferencesLocalization.Current("Error"));
 			return GitCommandResult<string>.Failure(new GitCommandError.GitError(gitRequestResult));
 		}
 	}

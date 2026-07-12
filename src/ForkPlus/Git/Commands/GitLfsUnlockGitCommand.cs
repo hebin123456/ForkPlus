@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -33,7 +34,7 @@ namespace ForkPlus.Git.Commands
 				ISpawnError error = executeWithCallbackResponse.Error;
 				if (error != null)
 				{
-					monitor.Fail("LFS unlock failed");
+					monitor.Fail(PreferencesLocalization.Current("LFS unlock failed"));
 					return GitCommandResult.Failure(error.ToGitCommandError());
 				}
 				if (!executeWithCallbackResponse.Result.Success)
@@ -48,12 +49,12 @@ namespace ForkPlus.Git.Commands
 			}
 			if (list.Count > 0)
 			{
-				monitor.Fail("LFS unlock failed");
+				monitor.Fail(PreferencesLocalization.Current("LFS unlock failed"));
 				return GitCommandResult.Failure(new GitCommandError.LfsFileIsLocked(new GitRequestResult(-1, "", outputHandler.Stderr()), list));
 			}
 			if (flag)
 			{
-				monitor.Fail("LFS unlock failed");
+				monitor.Fail(PreferencesLocalization.Current("LFS unlock failed"));
 				return GitCommandResult.Failure(new GitRequestResult(-1, "", outputHandler.Stderr()).ToGitCommandError());
 			}
 			string resultMessage = ((filePaths.Count == 1) ? ("Unlocked '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Unlocked {filePaths.Count} files");

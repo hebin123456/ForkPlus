@@ -291,7 +291,7 @@ namespace ForkPlus.UI.UserControls
 		private async Task ShowGitMmDetails(RepositoryManager.Repository repository)
 		{
 			FallbackUserControl.Hide();
-			RepositoryName.Text = "git mm: " + repository.Name();
+			RepositoryName.Text = PreferencesLocalization.FormatCurrent("git mm: {0}", repository.Name());
 			RepositoryPath.Text = repository.Path;
 			ChangedFilesTextBlock.Text = "";
 			CommitsTextBlock.Text = "";

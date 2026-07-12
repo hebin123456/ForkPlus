@@ -98,9 +98,9 @@ namespace ForkPlus.UI.Dialogs
 					InitializeComponent();
 					LocalBranch activeBranch = repositoryData.References.ActiveBranch;
 					LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
-					base.DialogTitle = "Finish Branch";
+					base.DialogTitle = Translate("Finish Branch");
 					base.DialogDescription = string.Format(Translate("Finish '{0}' and merge it into '{1}'"), activeBranch.Name, localBranch.Name);
-					base.SubmitButtonTitle = "Finish";
+					base.SubmitButtonTitle = Translate("Finish");
 					CurrentBranchGitPointView.Value = activeBranch;
 					MainBranchGitPointView.Value = localBranch;
 					UpdateSubmitButton();

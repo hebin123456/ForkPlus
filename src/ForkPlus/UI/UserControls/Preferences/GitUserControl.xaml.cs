@@ -126,12 +126,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 				{
 					if (!File.Exists(gitExecutablePath))
 					{
-						new ErrorWindow("Cannot find git instance at: '" + gitExecutablePath + "'").ShowDialog();
+						new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'", gitExecutablePath)).ShowDialog();
 						return false;
 					}
 					if (Path.GetFileName(gitExecutablePath) != "git.exe")
 					{
-						new ErrorWindow("Invalid git binary: '" + gitExecutablePath + "'").ShowDialog();
+						new ErrorWindow(PreferencesLocalization.FormatCurrent("Invalid git binary: '{0}'", gitExecutablePath)).ShowDialog();
 						return false;
 					}
 					string directoryName = Path.GetDirectoryName(gitExecutablePath);
@@ -139,12 +139,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 					{
 						if (!File.Exists(Path.Combine(directoryName, "bash.exe")))
 						{
-							new ErrorWindow("Cannot find git instance at: '" + gitExecutablePath + "'. Missing bash.exe").ShowDialog();
+							new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing bash.exe", gitExecutablePath)).ShowDialog();
 							return false;
 						}
 						if (!File.Exists(Path.Combine(directoryName, "sh.exe")))
 						{
-							new ErrorWindow("Cannot find git instance at: '" + gitExecutablePath + "'. Missing sh.exe").ShowDialog();
+							new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing sh.exe", gitExecutablePath)).ShowDialog();
 							return false;
 						}
 					}

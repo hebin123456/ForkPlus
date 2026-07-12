@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -49,12 +50,12 @@ namespace ForkPlus.Git.Commands
 				ISpawnError error = executeWithCallbackResponse.Error;
 				if (error != null)
 				{
-					monitor.Fail("discard failed");
+					monitor.Fail(PreferencesLocalization.Current("discard failed"));
 					return GitCommandResult.Failure(error.ToGitCommandError());
 				}
 				if (!executeWithCallbackResponse.Result.Success)
 				{
-					monitor.Fail("discard failed");
+					monitor.Fail(PreferencesLocalization.Current("discard failed"));
 					if (GitCommandError.RepositoryIsLocked.Test(processOutputHandler.Stderr()))
 					{
 						return GitCommandResult.Failure(new GitCommandError.RepositoryIsLocked(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
@@ -62,7 +63,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 				}
 			}
-			monitor.Success("discarded");
+			monitor.Success(PreferencesLocalization.Current("discarded"));
 			return GitCommandResult.Success();
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ForkPlus.Biturbo;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands.LeanBranching
 {
@@ -105,7 +106,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 				WriteSyncFile(gitModule, "nextStep", "1");
 				return GitCommandResult.Success();
 			}
-			monitor.AppendOutputLine("# Stash uncommitted changes:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("# Stash uncommitted changes:\n"));
 			GitCommandResult<bool> gitCommandResult = new SaveStashGitCommand().Execute(gitModule, $"Fork sync autostash {DateTime.Now}", stageNewFiles: true, monitor);
 			if (!gitCommandResult.Succeeded)
 			{
@@ -150,7 +151,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 			string text3 = ReadSyncFile(gitModule, "upstream");
 			if (text3 != null && Reference.Create(Sha.NullSha, isHead: true, text3, null, null, DateTimeHelper.UnixStartTime) is RemoteBranch remoteBranch)
 			{
-				monitor.AppendOutputLine("# Synchronize '" + localBranch.Name + "' with '" + remoteBranch.Name + "':\n");
+				monitor.AppendOutputLine(PreferencesLocalization.FormatCurrent("# Synchronize '{0}' with '{1}':\n", localBranch.Name, remoteBranch.Name));
 				bool rebaseMerges = localBranch.FullReference == text2;
 				GitCommandResult gitCommandResult = new RebaseBranchGitCommand().Execute(gitModule, text3, rebaseMerges, updateRefs: false, monitor);
 				if (!gitCommandResult.Succeeded)
@@ -223,7 +224,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 			{
 				return GitCommandResult.Failure(new GitCommandError.Bug("Invalid 'sync' content. Cannot read main branch"));
 			}
-			monitor.AppendOutputLine("# Synchronize '" + localBranch.Name + "' with '" + text2 + "':\n");
+			monitor.AppendOutputLine(PreferencesLocalization.FormatCurrent("# Synchronize '{0}' with '{1}':\n", localBranch.Name, text2));
 			GitCommandResult gitCommandResult = new RebaseBranchGitCommand().Execute(gitModule, text2, rebaseMerges: false, updateRefs: false, monitor);
 			if (!gitCommandResult.Succeeded)
 			{
@@ -290,7 +291,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 						return gitCommandResult3.ToGitCommandResult();
 					}
 					string text5 = GetNewRemotePosition(gitCommandResult3.Result, parentIndexes)?.ToString() ?? text2;
-					monitor.AppendOutputLine("# Move '" + remoteBranch.Name + "' to '" + text5 + "':\n");
+					monitor.AppendOutputLine(PreferencesLocalization.FormatCurrent("# Move '{0}' to '{1}':\n", remoteBranch.Name, text5));
 					GitCommandResult gitCommandResult4 = new PushGitCommand().Execute(gitModule, remoteBranch, text5, monitor);
 					if (!gitCommandResult4.Succeeded)
 					{
@@ -311,7 +312,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 				WriteSyncFile(gitModule, "nextStep", "5");
 				return GitCommandResult.Success();
 			}
-			monitor.AppendOutputLine("# Update submodules:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("# Update submodules:\n"));
 			GitCommandResult gitCommandResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			if (!gitCommandResult.Succeeded)
 			{
@@ -329,7 +330,7 @@ namespace ForkPlus.Git.Commands.LeanBranching
 				RemoveSyncDirectory(gitModule);
 				return GitCommandResult.Success();
 			}
-			monitor.AppendOutputLine("# Apply stashed changes:\n");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("# Apply stashed changes:\n"));
 			string text2;
 			try
 			{
