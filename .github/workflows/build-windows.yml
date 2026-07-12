@@ -1,0 +1,44 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ master, "trae/**" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore ForkPlus.sln
+
+      - name: Build (Release)
+        run: msbuild ForkPlus.sln /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ForkPlus-windows
+          path: src/ForkPlus/bin/Release/
+          if-no-files-found: error
+
+      - name: Release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            src/ForkPlus/bin/Release/ForkPlus.exe
+          generate_release_notes: true
