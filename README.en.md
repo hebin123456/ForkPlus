@@ -2,7 +2,7 @@
 
 An enhanced Git graphical tool based on Fork, with Rust-rewritten underlying capabilities, multi-language support, git mm and git repo workflows, optimized performance for large repositories, and numerous bug fixes.
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
 ## Key Features
 
@@ -51,8 +51,8 @@ ForkPlus/
 The project is configured with GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Pushing a `v*` tag automatically builds on Windows and publishes a complete runtime zip to GitHub Release.
 
 ```bash
-git tag v1.2.1
-git push origin v1.2.1
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, language files, and more—just unzip and run.
@@ -68,13 +68,14 @@ The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, 
 
 | Language Code | Display Name | Status |
 |---------------|-------------|--------|
-| `en` | English | Complete (source language) |
+| `en` | English | Source language |
 | `zh-Hans` | 简体中文 | Complete |
 | `zh-Hant` | 繁體中文 | Complete |
-| `ja-JP` | 日本語 | Basic coverage |
-| `ko-KR` | 한국어 | 기본 지원 |
-| `fr-FR` | Français | Couverture de base |
-| `de-DE` | Deutsch | Grundlegende Abdeckung |
+| `ja-JP` | 日本語 | Complete |
+| `ko-KR` | 한국어 | Complete |
+| `fr-FR` | Français | Complete |
+| `de-DE` | Deutsch | Complete |
+| `es-ES` | Español | Complete |
 
 ### Adding a New Language
 

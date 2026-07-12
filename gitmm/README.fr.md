@@ -2,6 +2,8 @@
 
 Ce document résume les commandes `git mm` utilisées par ForkPlus : `start`, `sync` et `upload`.
 
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
+
 ## `git mm start`
 
 `start` crée une nouvelle branche de développement à partir de la révision définie dans le manifeste.

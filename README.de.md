@@ -2,7 +2,7 @@
 
 Ein erweitertes grafisches Git-Werkzeug basierend auf Fork, mit in Rust geschriebenen zugrundeliegenden Fähigkeiten, Mehrsprachigkeitsunterstützung, git mm- und git repo-Workflows, optimierter Leistung für große Repositorys und zahlreichen Fehlerbehebungen.
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
 ## Hauptfunktionen
 
@@ -51,8 +51,8 @@ ForkPlus/
 Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Durch Pushen eines `v*`-Tags wird automatisch unter Windows kompiliert und ein vollständiges Laufzeit-Zip wird auf GitHub Release veröffentlicht.
 
 ```bash
-git tag v1.2.1
-git push origin v1.2.1
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 Das Kompilierungsartefakt enthält `ForkPlus.exe`, alle Abhängigkeits-DLLs, `biturbo.dll`, Sprachdateien und mehr — einfach entpacken und ausführen.
@@ -68,13 +68,14 @@ Das Kompilierungsartefakt enthält `ForkPlus.exe`, alle Abhängigkeits-DLLs, `bi
 
 | Sprachcode | Anzeigename | Status |
 |------------|-------------|--------|
-| `en` | English | Vollständig (Quellsprache) |
+| `en` | English | Quellsprache |
 | `zh-Hans` | 简体中文 | Vollständig |
 | `zh-Hant` | 繁體中文 | Vollständig |
-| `ja-JP` | 日本語 | Grundlegende Abdeckung |
-| `ko-KR` | 한국어 | 기본 지원 |
-| `fr-FR` | Français | Couverture de base |
-| `de-DE` | Deutsch | Grundlegende Abdeckung |
+| `ja-JP` | 日本語 | Vollständig |
+| `ko-KR` | 한국어 | Vollständig |
+| `fr-FR` | Français | Vollständig |
+| `de-DE` | Deutsch | Vollständig |
+| `es-ES` | Español | Vollständig |
 
 ### Hinzufügen einer neuen Sprache
 

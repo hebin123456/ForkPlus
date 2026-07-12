@@ -2,7 +2,7 @@
 
 Fork ベースの Git グラフィカルツール拡張版。Rust で基盤機能を書き直し、多言語サポート、git mm および git repo ワークフローを追加し、大規模リポジトリのパフォーマンスを最適化し、多くの不具合を修正しました。
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
 ## 主な特徴
 
@@ -51,8 +51,8 @@ ForkPlus/
 プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
 
 ```bash
-git tag v1.2.1
-git push origin v1.2.1
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 ビルド成果物には `ForkPlus.exe`、すべての依存 DLL、`biturbo.dll`、言語ファイルなどが含まれ、解凍するだけで実行できます。
@@ -68,13 +68,14 @@ git push origin v1.2.1
 
 | 言語コード | 表示名 | 状態 |
 |-----------|--------|------|
-| `en` | English | 完全（ソース言語） |
+| `en` | English | ソース言語 |
 | `zh-Hans` | 简体中文 | 完全 |
 | `zh-Hant` | 繁體中文 | 完全 |
-| `ja-JP` | 日本語 | 基本カバー |
-| `ko-KR` | 한국어 | 기본 지원 |
-| `fr-FR` | Français | Couverture de base |
-| `de-DE` | Deutsch | Grundlegende Abdeckung |
+| `ja-JP` | 日本語 | 完全 |
+| `ko-KR` | 한국어 | 完全 |
+| `fr-FR` | Français | 完全 |
+| `de-DE` | Deutsch | 完全 |
+| `es-ES` | Español | 完全 |
 
 ### 新しい言語の追加
 

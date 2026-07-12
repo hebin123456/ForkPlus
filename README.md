@@ -2,7 +2,7 @@
 
 一个基于 Fork 的 Git 图形化工具增强版，使用 Rust 重写了底层能力，新增多语言支持、git mm 和 git repo 工作流，优化了大数据量仓库性能，并修复了大量缺陷。
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
 ## 主要特性
 
@@ -51,8 +51,8 @@ ForkPlus/
 项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
 
 ```bash
-git tag v1.2.1
-git push origin v1.2.1
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 编译产物包含 `ForkPlus.exe`、所有依赖 dll、`biturbo.dll`、语言文件等，解压即可运行。
@@ -68,13 +68,14 @@ git push origin v1.2.1
 
 | 语言代码 | 显示名称 | 状态 |
 |---------|---------|------|
-| `en` | English | 完整（源语言） |
+| `en` | English | 源语言 |
 | `zh-Hans` | 简体中文 | 完整 |
 | `zh-Hant` | 繁體中文 | 完整 |
-| `ja-JP` | 日本語 | 基础覆盖 |
-| `ko-KR` | 한국어 | 기본 지원 |
-| `fr-FR` | Français | Couverture de base |
-| `de-DE` | Deutsch | Grundlegende Abdeckung |
+| `ja-JP` | 日本語 | 完整 |
+| `ko-KR` | 한국어 | 完整 |
+| `fr-FR` | Français | 完整 |
+| `de-DE` | Deutsch | 完整 |
+| `es-ES` | Español | 完整 |
 
 ### 添加新语言
 
