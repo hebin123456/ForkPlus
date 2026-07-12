@@ -34,9 +34,9 @@ namespace ForkPlus.UI.Dialogs
 			_src = revision.Sha;
 			_dst = dst;
 			InitializeComponent();
-			base.DialogTitle = "Create Patch";
-			base.DialogDescription = "Save commit as patch";
-			base.SubmitButtonTitle = "Save";
+			base.DialogTitle = Translate("Create Patch");
+			base.DialogDescription = Translate("Save commit as patch");
+			base.SubmitButtonTitle = Translate("Save");
 			RevisionsTextBlock.Text = Translate(dst.HasValue ? "Revisions:" : "Revision:");
 		}
 

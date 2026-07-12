@@ -40,9 +40,9 @@ namespace ForkPlus.UI.Dialogs
 			_submodulesToUpdate = submodulesToUpdate;
 			InitializeComponent();
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
-			base.DialogTitle = "Add Submodule";
-			base.DialogDescription = "Add new submodule repository reference";
-			base.SubmitButtonTitle = "Add Submodule";
+			base.DialogTitle = Translate("Add Submodule");
+			base.DialogDescription = Translate("Add new submodule repository reference");
+			base.SubmitButtonTitle = Translate("Add Submodule");
 			string text = TryGetClipboardRepositoryUrl();
 			if (!string.IsNullOrEmpty(text))
 			{

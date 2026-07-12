@@ -107,7 +107,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			else if (customCommandViewModel.Version > 2)
 			{
-				FallbackUserControl.FallbackMessage = "This custom  command was created in a newer version of Fork.\n Please check for updates in order to use it.";
+				FallbackUserControl.FallbackMessage = PreferencesLocalization.Current("This custom  command was created in a newer version of Fork.\n Please check for updates in order to use it.");
 				FallbackUserControl.Show();
 			}
 			else

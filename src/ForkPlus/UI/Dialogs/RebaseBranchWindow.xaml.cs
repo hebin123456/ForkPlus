@@ -28,9 +28,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			RebaseBranchWindow rebaseBranchWindow = this;
 			InitializeComponent();
-			base.DialogTitle = "Rebase";
-			base.DialogDescription = "Copy commits from one branch to another";
-			base.SubmitButtonTitle = "Rebase";
+			base.DialogTitle = PreferencesLocalization.Current("Rebase");
+			base.DialogDescription = PreferencesLocalization.Current("Copy commits from one branch to another");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Rebase");
 			_repositoryUserControl = repositoryUserControl;
 			_source = source;
 			_destination = destination;

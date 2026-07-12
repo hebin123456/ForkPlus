@@ -555,8 +555,8 @@ namespace ForkPlus.UI.Dialogs
 			if (historyEntries.Length > 2)
 			{
 				FallbackUserControl fallbackUserControl = new FallbackUserControl();
-				fallbackUserControl.FallbackTitle = "Select two commits to see difference between them";
-				fallbackUserControl.FallbackMessage = $"{historyEntries.Length} commits selected";
+				fallbackUserControl.FallbackTitle = Translate("Select two commits to see difference between them");
+				fallbackUserControl.FallbackMessage = string.Format(Translate("{0} commits selected"), historyEntries.Length);
 				FileDiffControl.ShowSubView(() => fallbackUserControl, delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 				{
 					h.Collapse();
@@ -640,7 +640,7 @@ namespace ForkPlus.UI.Dialogs
 		private void ShowErrorFallback(string errorString)
 		{
 			CodeEditorFallbackUserControl.Show();
-			CodeEditorFallbackUserControl.FallbackTitle = "Error";
+			CodeEditorFallbackUserControl.FallbackTitle = Translate("Error");
 			CodeEditorFallbackUserControl.FallbackMessage = errorString;
 		}
 

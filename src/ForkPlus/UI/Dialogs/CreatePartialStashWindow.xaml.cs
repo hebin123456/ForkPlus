@@ -23,9 +23,9 @@ namespace ForkPlus.UI.Dialogs
 		public CreatePartialStashWindow(GitModule gitModule, ChangedFile[] filesToStash, ChangedFile[] allChangedFiles)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Save stash";
-			base.DialogDescription = "Save your local modifications to a new stash. BOTH staged and unstaged changes will be stashed";
-			base.SubmitButtonTitle = "Save Stash";
+			base.DialogTitle = Translate("Save stash");
+			base.DialogDescription = Translate("Save your local modifications to a new stash. BOTH staged and unstaged changes will be stashed");
+			base.SubmitButtonTitle = Translate("Save Stash");
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			_gitModule = gitModule;

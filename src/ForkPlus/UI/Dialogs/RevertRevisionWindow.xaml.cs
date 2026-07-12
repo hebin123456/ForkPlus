@@ -46,9 +46,9 @@ namespace ForkPlus.UI.Dialogs
 			_revision = revision;
 			_revisionParents = revisionParents;
 			InitializeComponent();
-			base.DialogTitle = "Revert";
-			base.DialogDescription = "Revert changes of the individual commit";
-			base.SubmitButtonTitle = "Revert";
+			base.DialogTitle = Translate("Revert");
+			base.DialogDescription = Translate("Revert changes of the individual commit");
+			base.SubmitButtonTitle = Translate("Revert");
 			RevisionGitPointView.Value = revision;
 			CommitCheckBox.IsChecked = true;
 			if (MergeRevision)

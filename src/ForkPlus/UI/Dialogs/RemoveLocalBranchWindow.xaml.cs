@@ -92,10 +92,10 @@ namespace ForkPlus.UI.Dialogs
 			if (_branchesToRemove.Length == 1)
 			{
 				base.SizeToContent = SizeToContent.Height;
-				base.DialogTitle = "Delete Branch";
-				base.DialogDescription = "Delete local branch from your repository";
+				base.DialogTitle = Translate("Delete Branch");
+				base.DialogDescription = Translate("Delete local branch from your repository");
 				StartPointTextBlock.Text = Translate("Branch:");
-				base.SubmitButtonTitle = "Delete";
+				base.SubmitButtonTitle = Translate("Delete");
 				LocalBranch localBranch = branchesToRemove.FirstItem();
 				BranchesContainer.Collapse();
 				GitPointView.Show();
@@ -132,11 +132,11 @@ namespace ForkPlus.UI.Dialogs
 				base.Height = 270.0;
 				base.MinHeight = 270.0;
 				base.ResizeMode = ResizeMode.CanResizeWithGrip;
-				base.DialogTitle = "Delete Branches";
-				base.DialogDescription = "Delete local branches from your repository";
+				base.DialogTitle = Translate("Delete Branches");
+				base.DialogDescription = Translate("Delete local branches from your repository");
 				StartPointTextBlock.Text = Translate("Branches:");
 				DeleteRemoteBranchCheckBox.Content = Translate("Also delete corresponding remote branches");
-				base.SubmitButtonTitle = $"Delete {_branchesToRemove.Length} branches";
+				base.SubmitButtonTitle = PreferencesLocalization.FormatCurrent("Delete {0} branches", _branchesToRemove.Length);
 				GitPointView.Collapse();
 				DeleteRemoteBranchCheckBox.IsEnabled = AtLeastOneBranchHasUpstream(_branchesToRemove, _remoteBranches);
 				BranchesContainer.Show();

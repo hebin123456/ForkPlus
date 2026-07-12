@@ -34,20 +34,20 @@ namespace ForkPlus.UI.Dialogs
 				GitPointsContainer.Collapse();
 				GitPointView.Show();
 				GitPointView.Value = remoteBranches.FirstItem();
-				base.DialogTitle = "Delete Branch";
-				base.DialogDescription = "Delete branch from remote repository";
+				base.DialogTitle = PreferencesLocalization.Current("Delete Branch");
+				base.DialogDescription = PreferencesLocalization.Current("Delete branch from remote repository");
 				StartPointTextBlock.Text = PreferencesLocalization.Current("Branch:");
-				base.SubmitButtonTitle = "Delete";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Delete");
 			}
 			else
 			{
 				GitPointView.Collapse();
 				GitPointsContainer.Show();
 				GitPoints.ItemsSource = _remoteBranches;
-				base.DialogTitle = "Delete Branches";
-				base.DialogDescription = "Delete branches from remote repository";
+				base.DialogTitle = PreferencesLocalization.Current("Delete Branches");
+				base.DialogDescription = PreferencesLocalization.Current("Delete branches from remote repository");
 				StartPointTextBlock.Text = PreferencesLocalization.Current("Branches:");
-				base.SubmitButtonTitle = $"Delete {remoteBranches.Length} branches";
+				base.SubmitButtonTitle = PreferencesLocalization.FormatCurrent("Delete {0} branches", remoteBranches.Length);
 			}
 		}
 

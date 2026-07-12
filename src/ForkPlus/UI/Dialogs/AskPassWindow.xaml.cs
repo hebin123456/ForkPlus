@@ -67,7 +67,7 @@ namespace ForkPlus.UI.Dialogs
 				InputPasswordBox.Show();
 				InputPasswordBox.Focus();
 			}
-			base.SubmitButtonTitle = "OK";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("OK");
 		}
 
 		protected override void OnSubmit()

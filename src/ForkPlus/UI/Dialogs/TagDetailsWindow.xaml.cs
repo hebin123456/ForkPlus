@@ -6,6 +6,7 @@ using System.Windows.Markup;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -15,10 +16,10 @@ namespace ForkPlus.UI.Dialogs
 		public TagDetailsWindow(GitModule gitModule, Tag tag)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Tag Details";
+			base.DialogTitle = PreferencesLocalization.Current("Tag Details");
 			base.DialogDescription = "";
 			base.ShowSubmitButton = false;
-			base.CancelButtonTitle = "Close";
+			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			GitPointView.Value = tag;
 			GitCommandResult<AnnotatedTagDetails> gitCommandResult = new GetTagMessageGitCommand().Execute(gitModule, tag.TargetObjectSha.Value);
 			if (gitCommandResult.Succeeded)

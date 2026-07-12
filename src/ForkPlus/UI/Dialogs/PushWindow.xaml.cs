@@ -162,9 +162,9 @@ namespace ForkPlus.UI.Dialogs
 			_localBranchToSelect = localBranch;
 			_customRefspec = null;
 			InitializeComponent();
-			base.DialogTitle = "Push";
-			base.DialogDescription = "Push your local changes to remote repository";
-			base.SubmitButtonTitle = "Push";
+			base.DialogTitle = Translate("Push");
+			base.DialogDescription = Translate("Push your local changes to remote repository");
+			base.SubmitButtonTitle = Translate("Push");
 			AllTagsCheckBox.IsChecked = ForkPlusSettings.Default.Push_PushAllTags;
 			ForcePushWarningImage.ToolTip = Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions.");
 			Refresh();

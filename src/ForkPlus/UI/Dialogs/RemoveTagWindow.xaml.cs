@@ -34,22 +34,22 @@ namespace ForkPlus.UI.Dialogs
 				GitPointsContainer.Collapse();
 				GitPointView.Show();
 				GitPointView.Value = _tags.FirstItem();
-				base.DialogTitle = "Delete Tag";
-				base.DialogDescription = "Delete tag from your repository";
+				base.DialogTitle = PreferencesLocalization.Current("Delete Tag");
+				base.DialogDescription = PreferencesLocalization.Current("Delete tag from your repository");
 				StartPointTextBlock.Text = PreferencesLocalization.Current("Tag:");
 				DeleteFromRemotesCheckBox.Content = PreferencesLocalization.Current("Delete tag from remote repositories");
-				base.SubmitButtonTitle = "Delete";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Delete");
 			}
 			else
 			{
 				GitPointView.Collapse();
 				GitPointsContainer.Show();
 				GitPoints.ItemsSource = _tags;
-				base.DialogTitle = "Delete Tags";
-				base.DialogDescription = "Delete tags from your repository";
+				base.DialogTitle = PreferencesLocalization.Current("Delete Tags");
+				base.DialogDescription = PreferencesLocalization.Current("Delete tags from your repository");
 				StartPointTextBlock.Text = PreferencesLocalization.Current("Tags:");
 				DeleteFromRemotesCheckBox.Content = PreferencesLocalization.Current("Delete tags from remote repositories");
-				base.SubmitButtonTitle = $"Delete {_tags.Length} tags";
+				base.SubmitButtonTitle = PreferencesLocalization.FormatCurrent("Delete {0} tags", _tags.Length);
 			}
 		}
 

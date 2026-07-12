@@ -27,9 +27,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
-			base.DialogTitle = "Configure SSH Keys";
-			base.DialogDescription = "1. Select or generate a new SSH key which will identify your computer\n2. Copy the public key content to the account section on the website of your git provider";
-			base.SubmitButtonTitle = "OK";
+			base.DialogTitle = Translate("Configure SSH Keys");
+			base.DialogDescription = Translate("1. Select or generate a new SSH key which will identify your computer\n2. Copy the public key content to the account section on the website of your git provider");
+			base.SubmitButtonTitle = Translate("OK");
 			Refresh();
 			SshKeyListBox.SelectedIndex = 0;
 		}

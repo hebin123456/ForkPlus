@@ -46,8 +46,8 @@ namespace ForkPlus.UI.Dialogs
 			_revisions = revisions;
 			_firstRevisionParents = firstRevisionParents;
 			InitializeComponent();
-			base.DialogTitle = "Cherry Pick";
-			base.DialogDescription = "Apply changes of the individual commit";
+			base.DialogTitle = Translate("Cherry Pick");
+			base.DialogDescription = Translate("Apply changes of the individual commit");
 			AppendOriginShaCheckBox.IsChecked = ForkPlusSettings.Default.CherryPick_AppendOriginSha;
 			if (_revisions.SingleItem() != null)
 			{

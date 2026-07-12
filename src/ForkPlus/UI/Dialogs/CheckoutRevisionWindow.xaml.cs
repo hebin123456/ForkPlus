@@ -26,9 +26,9 @@ namespace ForkPlus.UI.Dialogs
 		public CheckoutRevisionWindow(RepositoryUserControl repositoryUserControl, IGitPoint gitPoint, Sha gitPointSha)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Checkout Commit";
-			base.DialogDescription = "Checkout a particular revision. Repository will be in detached HEAD state.";
-			base.SubmitButtonTitle = "Checkout Commit";
+			base.DialogTitle = Translate("Checkout Commit");
+			base.DialogDescription = Translate("Checkout a particular revision. Repository will be in detached HEAD state.");
+			base.SubmitButtonTitle = Translate("Checkout Commit");
 			_repositoryUserControl = repositoryUserControl;
 			_gitPoint = gitPoint;
 			_gitPointSha = gitPointSha;

@@ -33,9 +33,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitLfsPullWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Pull";
-			base.DialogDescription = "Download Git LFS objects for the currently checked out ref, and update the working directory with the downloaded content if required";
-			base.SubmitButtonTitle = "Pull";
+			base.DialogTitle = Translate("Pull");
+			base.DialogDescription = Translate("Download Git LFS objects for the currently checked out ref, and update the working directory with the downloaded content if required");
+			base.SubmitButtonTitle = Translate("Pull");
 			_repositoryUserControl = repositoryUserControl;
 			_gitModule = gitModule;
 			Refresh();

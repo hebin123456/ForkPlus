@@ -21,10 +21,10 @@ namespace ForkPlus.UI.Dialogs
 			Workspace[] all = ForkPlusSettings.Default.Workspaces.All;
 			_workspaceViewModels = new ObservableCollection<WorkspaceViewModel>(all.Map((Workspace x) => new WorkspaceViewModel(x)));
 			InitializeComponent();
-			base.DialogTitle = "Workspaces";
-			base.DialogDescription = "Use '/' as path separator to create folders";
+			base.DialogTitle = PreferencesLocalization.Current("Workspaces");
+			base.DialogDescription = PreferencesLocalization.Current("Use '/' as path separator to create folders");
 			base.ShowSubmitButton = false;
-			base.CancelButtonTitle = "Close";
+			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			WorkspacesListBox.ItemsSource = _workspaceViewModels;
 			WorkspacesListBox.SelectedIndex = 0;
 			UpdateDeleteButtonState();

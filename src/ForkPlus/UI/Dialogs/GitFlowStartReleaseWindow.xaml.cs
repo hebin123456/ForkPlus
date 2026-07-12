@@ -52,9 +52,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowStartReleaseWindow(GitModule gitModule)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Start Git Flow release";
-			base.DialogDescription = "Create a new release branch based on 'develop' and switch to it";
-			base.SubmitButtonTitle = "Start Release";
+			base.DialogTitle = PreferencesLocalization.Current("Start Git Flow release");
+			base.DialogDescription = PreferencesLocalization.Current("Create a new release branch based on 'develop' and switch to it");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Start Release");
 			_gitModule = gitModule;
 			Refresh();
 		}

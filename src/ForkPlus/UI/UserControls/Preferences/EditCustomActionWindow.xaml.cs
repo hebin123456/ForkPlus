@@ -58,9 +58,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public EditCustomActionWindow(CustomCommand customCommand, CustomCommandAction action, bool showCancel)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Edit Action";
-			base.DialogDescription = "Edit custom command action";
-			base.SubmitButtonTitle = "Save";
+			base.DialogTitle = Translate("Edit Action");
+		base.DialogDescription = Translate("Edit custom command action");
+		base.SubmitButtonTitle = Translate("Save");
 			ShScriptTextBox.FontFamily = FontConstants.MonospaceFontFamily;
 			_customCommand = customCommand;
 			_initialAction = action;

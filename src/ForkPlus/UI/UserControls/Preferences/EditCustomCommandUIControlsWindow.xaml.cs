@@ -26,7 +26,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			base.ShowHeader = false;
 			_stopComboBoxEvents = true;
 			InitializeComponent();
-			base.SubmitButtonTitle = "Save";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Save");
 			ObservableCollection<CustomCommandUIControlViewModel> observableCollection = new ObservableCollection<CustomCommandUIControlViewModel>();
 			for (int i = 0; i < controls.Length; i++)
 			{

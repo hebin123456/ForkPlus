@@ -55,9 +55,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowStartFeatureWindow(GitModule gitModule)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Start Git Flow feature";
-			base.DialogDescription = "Create a new feature branch based on 'develop' and switch to it";
-			base.SubmitButtonTitle = "Start Feature";
+			base.DialogTitle = PreferencesLocalization.Current("Start Git Flow feature");
+			base.DialogDescription = PreferencesLocalization.Current("Create a new feature branch based on 'develop' and switch to it");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Start Feature");
 			_gitModule = gitModule;
 			Refresh();
 		}

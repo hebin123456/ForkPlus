@@ -108,9 +108,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_account = account;
 			InitializeComponent();
-			base.DialogTitle = "Clone";
-			base.DialogDescription = "Clone a remote repository into a local folder";
-			base.SubmitButtonTitle = "Clone";
+			base.DialogTitle = Translate("Clone");
+			base.DialogDescription = Translate("Clone a remote repository into a local folder");
+			base.SubmitButtonTitle = Translate("Clone");
 			Refresh(url);
 			RefreshNetworkProtocolButton();
 			UpdateSubmitButton();

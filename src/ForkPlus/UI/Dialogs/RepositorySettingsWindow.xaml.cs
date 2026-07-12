@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowLogo = false;
 			InitializeComponent();
 			base.ShowCancelButton = false;
-			base.SubmitButtonTitle = "Close";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
 			base.SizeToContent = SizeToContent.WidthAndHeight;
 			Initialize();
 		}

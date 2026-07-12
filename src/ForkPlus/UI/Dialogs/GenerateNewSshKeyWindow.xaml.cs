@@ -55,9 +55,9 @@ namespace ForkPlus.UI.Dialogs
 		public GenerateNewSshKeyWindow()
 		{
 			InitializeComponent();
-			base.DialogTitle = "Generate new SSH Key";
-			base.DialogDescription = "Generate new ED25519 key";
-			base.SubmitButtonTitle = "Generate";
+			base.DialogTitle = Translate("Generate new SSH Key");
+			base.DialogDescription = Translate("Generate new ED25519 key");
+			base.SubmitButtonTitle = Translate("Generate");
 			_existingSshKeys = new GetLocalSshKeysCommand().Execute();
 		}
 

@@ -119,7 +119,7 @@ namespace ForkPlus.UI.Dialogs
 			VisualTreeAttachmentHelper.TrySetContent(base.Footer.CustomSection, _backupCurrentStateCheckBox, GetType().Name + ".Footer.CustomSection");
 			base.Footer.AlignStatusRight();
 			base.ShowCancelButton = true;
-			base.SubmitButtonTitle = "Rebase";
+			base.SubmitButtonTitle = Translate("Rebase");
 			SourceGitPointView.Value = _sourceBranch;
 			DestinationGitPointView.Value = _destination;
 			InteractiveRebaseComboBoxItemsSource = InteractiveRebaseComboBoxItems;
@@ -127,7 +127,7 @@ namespace ForkPlus.UI.Dialogs
 			RevisionListView.DataContext = this;
 			RevisionDetails.Initialize(repositoryUserControl, RevisionDetailsUserControlMode.InteractiveRebase);
 			RevisionListFallbackUserControl.Show();
-			RevisionListFallbackUserControl.FallbackMessage = "Loading...";
+			RevisionListFallbackUserControl.FallbackMessage = Translate("Loading...");
 			SetStatus(ForkPlusDialogStatus.InProgress, "");
 			_refreshRevisionDetails = new DelayedAction<string>(delegate(string shaString)
 			{

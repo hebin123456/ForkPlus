@@ -40,9 +40,9 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_patchContainsCommitHeader = PatchContainsCommitHeader(patchPath);
 			InitializeComponent();
-			base.DialogTitle = "Apply Patch";
-			base.DialogDescription = "Apply Patch";
-			base.SubmitButtonTitle = "Apply";
+			base.DialogTitle = Translate("Apply Patch");
+			base.DialogDescription = Translate("Apply Patch");
+			base.SubmitButtonTitle = Translate("Apply");
 			PathTextBox.Text = patchPath;
 			PathTextBox.SelectAll();
 			RefreshCreateCommitsCheckBoxVisibility();
@@ -56,9 +56,9 @@ namespace ForkPlus.UI.Dialogs
 			string @string = Encoding.UTF8.GetString(patchData);
 			_patchContainsCommitHeader = @string.StartsWith("From ");
 			InitializeComponent();
-			base.DialogTitle = "Apply Patch";
-			base.DialogDescription = "Apply patch from clipboard";
-			base.SubmitButtonTitle = "Apply";
+			base.DialogTitle = Translate("Apply Patch");
+			base.DialogDescription = Translate("Apply patch from clipboard");
+			base.SubmitButtonTitle = Translate("Apply");
 			LocationLabel.Collapse();
 			PathTextBox.Collapse();
 			BrowseButton.Collapse();

@@ -29,9 +29,9 @@ namespace ForkPlus.UI.Dialogs
 		public ErrorWindow()
 		{
 			InitializeComponent();
-			base.DialogTitle = "Git Error";
-			base.DialogDescription = "An unexpected error occured while performing the git request";
-			base.CancelButtonTitle = "Close";
+			base.DialogTitle = Translate("Git Error");
+			base.DialogDescription = Translate("An unexpected error occured while performing the git request");
+			base.CancelButtonTitle = Translate("Close");
 			base.ShowSubmitButton = false;
 			base.ShowWarningIcon = true;
 			MessageEditor.Options.EnableHyperlinks = true;

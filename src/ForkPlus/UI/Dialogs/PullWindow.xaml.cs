@@ -59,9 +59,9 @@ namespace ForkPlus.UI.Dialogs
 				_repositoryUserControl = repositoryUserControl;
 				_predefinedRemoteBranch = remoteBranch;
 				InitializeComponent();
-				base.DialogTitle = "Pull";
-				base.DialogDescription = "Pull remote branches and merge them into your local branch";
-				base.SubmitButtonTitle = "Pull";
+				base.DialogTitle = Translate("Pull");
+				base.DialogDescription = Translate("Pull remote branches and merge them into your local branch");
+				base.SubmitButtonTitle = Translate("Pull");
 				RebaseCheckBox.IsChecked = ForkPlusSettings.Default.Pull_Rebase;
 				StashAndReapplyCheckBox.IsChecked = ForkPlusSettings.Default.Pull_StashAndReapply;
 				LoadReferencesAndRefresh(repositoryData.Remotes.Items, repositoryData.References.RemoteBranches, repositoryData.References.ActiveBranch);

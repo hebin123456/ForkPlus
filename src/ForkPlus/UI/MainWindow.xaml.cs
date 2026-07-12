@@ -465,14 +465,31 @@ namespace ForkPlus.UI
 				Log.Info("Application Window Activated");
 				if (!RefreshActiveCommitViewStatus())
 				{
-					TabControl.SelectedTab?.Refresh();
-					RefreshRepositoriesStatus();
+					RepositoryUserControl activeRepositoryUserControl = TabManager.ActiveRepositoryUserControl;
+					string repositoryPath = activeRepositoryUserControl?.GitModule?.Path ?? "";
+					if (!ShouldSkipActivationRefresh(repositoryPath))
+					{
+						TabControl.SelectedTab?.Refresh();
+						RefreshRepositoriesStatus();
+					}
 				}
 			}
 			if (ShowNewYearNotification.NotificationRequired)
 			{
 				new ShowNewYearNotification().Execute();
 			}
+		}
+
+		private bool ShouldSkipActivationRefresh(string repositoryPath)
+		{
+			DateTime now = DateTime.UtcNow;
+			if (string.Equals(repositoryPath, _lastActivationStatusRefreshRepositoryPath, StringComparison.OrdinalIgnoreCase) && now - _lastActivationStatusRefreshTime < TimeSpan.FromSeconds(10.0))
+			{
+				return true;
+			}
+			_lastActivationStatusRefreshRepositoryPath = repositoryPath;
+			_lastActivationStatusRefreshTime = now;
+			return false;
 		}
 
 		private bool RefreshActiveCommitViewStatus()
@@ -483,13 +500,10 @@ namespace ForkPlus.UI
 				return false;
 			}
 			string repositoryPath = activeRepositoryUserControl.GitModule?.Path ?? "";
-			DateTime now = DateTime.UtcNow;
-			if (string.Equals(repositoryPath, _lastActivationStatusRefreshRepositoryPath, StringComparison.OrdinalIgnoreCase) && now - _lastActivationStatusRefreshTime < TimeSpan.FromSeconds(5.0))
+			if (ShouldSkipActivationRefresh(repositoryPath))
 			{
 				return true;
 			}
-			_lastActivationStatusRefreshRepositoryPath = repositoryPath;
-			_lastActivationStatusRefreshTime = now;
 			activeRepositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
 			return true;
 		}

@@ -181,20 +181,10 @@ namespace ForkPlus.UI.Controls
 				Diff diff2 = parsedDiffContent.Diff;
 				if (diff2 == null)
 				{
-					ShowSubView(delegate
+					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 					{
-						TextDiffControl textDiffControl4 = new TextDiffControl(Target);
-						if (SubControlMode)
-						{
-							textDiffControl4.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl4.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
-						}
-						textDiffControl4.PositionCache = _positionCache;
-						return textDiffControl4;
-					}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
-					{
-						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, DiffLocation.Revision);
-						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
+						h.Collapse();
+						c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
 					});
 				}
 				else if (diff2.Type == Diff.FileType.Text)

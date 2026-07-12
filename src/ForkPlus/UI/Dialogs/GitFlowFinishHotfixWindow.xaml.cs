@@ -28,9 +28,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowFinishHotfixWindow(GitModule gitModule, RepositoryData repositoryData, LocalBranch hotfixBranch)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Finish Git Flow hotfix";
-			base.DialogDescription = "Finish the hotfix and merge it into the develop and master branches";
-			base.SubmitButtonTitle = "Finish";
+			base.DialogTitle = PreferencesLocalization.Current("Finish Git Flow hotfix");
+			base.DialogDescription = PreferencesLocalization.Current("Finish the hotfix and merge it into the develop and master branches");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Finish");
 			_gitModule = gitModule;
 			_repositoryData = repositoryData;
 			_hotfixBranch = hotfixBranch;

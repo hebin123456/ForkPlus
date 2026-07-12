@@ -52,9 +52,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowStartHotfixWindow(GitModule gitModule)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Start Git Flow hotfix";
-			base.DialogDescription = "Create a new hotfix branch based on 'master' and switch to it";
-			base.SubmitButtonTitle = "Start Hotfix";
+			base.DialogTitle = PreferencesLocalization.Current("Start Git Flow hotfix");
+			base.DialogDescription = PreferencesLocalization.Current("Create a new hotfix branch based on 'master' and switch to it");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Start Hotfix");
 			_gitModule = gitModule;
 			Refresh();
 		}

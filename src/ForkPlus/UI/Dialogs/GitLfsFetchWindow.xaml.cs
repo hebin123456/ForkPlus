@@ -35,9 +35,9 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_gitModule = gitModule;
 			InitializeComponent();
-			base.DialogTitle = "Fetch";
-			base.DialogDescription = "Download Git LFS objects from the specified remotes";
-			base.SubmitButtonTitle = "Fetch";
+			base.DialogTitle = Translate("Fetch");
+			base.DialogDescription = Translate("Download Git LFS objects from the specified remotes");
+			base.SubmitButtonTitle = Translate("Fetch");
 			Refresh();
 		}
 

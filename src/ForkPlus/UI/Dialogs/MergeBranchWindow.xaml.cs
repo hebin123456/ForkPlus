@@ -72,9 +72,9 @@ namespace ForkPlus.UI.Dialogs
 			_source = source;
 			_destination = destination;
 			InitializeComponent();
-			base.DialogTitle = "Merge Branch";
-			base.DialogDescription = "Merge branch into another one";
-			base.SubmitButtonTitle = "Merge";
+			base.DialogTitle = PreferencesLocalization.Current("Merge Branch");
+			base.DialogDescription = PreferencesLocalization.Current("Merge branch into another one");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Merge");
 			SourceGitPointView.Value = source;
 			DestinationGitPointView.Value = destination;
 			MergeTypeComboBox.ItemsSource = _mergeOptionsComboBoxItems;

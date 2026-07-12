@@ -11,6 +11,7 @@ using System.Windows.Navigation;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -131,8 +132,8 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			_repositoryUserControl = repositoryUserControl;
 			_untrackedFiles = untrackedFiles;
-			base.DialogTitle = "Add .gitignore Template";
-			base.SubmitButtonTitle = "Add";
+			base.DialogTitle = PreferencesLocalization.Current("Add .gitignore Template");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Add");
 			base.DescriptionTextBlock.Inlines.Clear();
 			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
 			Hyperlink hyperlink = new Hyperlink(new Run(".gitignore"));

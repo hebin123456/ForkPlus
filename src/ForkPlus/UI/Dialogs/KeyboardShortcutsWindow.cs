@@ -114,9 +114,9 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ApplyDialogChrome()
 		{
-			base.DialogTitle = "Keyboard Shortcuts";
-			base.DialogDescription = "Available keyboard shortcuts";
-			base.SubmitButtonTitle = "Close";
+			base.DialogTitle = Translate("Keyboard Shortcuts");
+			base.DialogDescription = Translate("Available keyboard shortcuts");
+			base.SubmitButtonTitle = Translate("Close");
 			base.ShowCancelButton = false;
 		}
 

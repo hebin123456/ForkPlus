@@ -28,9 +28,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowFinishReleaseWindow(GitModule gitModule, RepositoryData repositoryData, LocalBranch releaseBranch)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Finish Git Flow release";
-			base.DialogDescription = "Finish the release and merge it into the develop and master branches";
-			base.SubmitButtonTitle = "Finish";
+			base.DialogTitle = PreferencesLocalization.Current("Finish Git Flow release");
+			base.DialogDescription = PreferencesLocalization.Current("Finish the release and merge it into the develop and master branches");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Finish");
 			_gitModule = gitModule;
 			_repositoryData = repositoryData;
 			_releaseBranch = releaseBranch;

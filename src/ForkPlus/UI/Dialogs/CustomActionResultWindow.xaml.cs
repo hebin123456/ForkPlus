@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -13,9 +14,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			InitializeComponent();
 			base.DialogTitle = customActionName ?? "";
-			base.DialogDescription = customActionName + " completed";
+			base.DialogDescription = PreferencesLocalization.FormatCurrent("{0} completed", customActionName);
 			OutputTextBox.Text = output;
-			base.CancelButtonTitle = "Close";
+			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			base.ShowSubmitButton = false;
 		}
 

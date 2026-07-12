@@ -19,9 +19,9 @@ namespace ForkPlus.UI.Dialogs
 		public SaveStashWindow(GitModule gitModule)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Save stash";
-			base.DialogDescription = "Save your local changes to a new stash";
-			base.SubmitButtonTitle = "Save Stash";
+			base.DialogTitle = Translate("Save stash");
+			base.DialogDescription = Translate("Save your local changes to a new stash");
+			base.SubmitButtonTitle = Translate("Save Stash");
 			_gitModule = gitModule;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			StageNewFilesCheckBox.IsChecked = ForkPlusSettings.Default.SaveStash_StageNewFiles;

@@ -41,7 +41,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
-			base.SubmitButtonTitle = "Sign In";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Sign In");
 			Account = account;
 			ServerTextBox.Text = account?.ServerUrl;
 			ServerTextBox.TextChanged += delegate

@@ -40,9 +40,9 @@ namespace ForkPlus.UI.Dialogs
 			_remoteToSelect = remote;
 			_tag = tag;
 			InitializeComponent();
-			base.DialogTitle = "Push Tag";
-			base.DialogDescription = "Push tag to remote repository";
-			base.SubmitButtonTitle = "Push";
+			base.DialogTitle = Translate("Push Tag");
+			base.DialogDescription = Translate("Push tag to remote repository");
+			base.SubmitButtonTitle = Translate("Push");
 			Refresh();
 			UpdateSubmitButton();
 		}

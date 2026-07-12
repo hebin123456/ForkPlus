@@ -398,9 +398,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (_remoteToEdit != null)
 			{
-				base.DialogTitle = "Edit Remote";
-				base.DialogDescription = "Edit URL of the remote repository";
-				base.SubmitButtonTitle = "Edit";
+				base.DialogTitle = PreferencesLocalization.Current("Edit Remote");
+				base.DialogDescription = PreferencesLocalization.Current("Edit URL of the remote repository");
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Edit");
 				RepositoryUrlTextBox.Text = _remoteToEdit.Url;
 				RemoteNameTextBox.Text = _remoteToEdit.Name;
 				RemoteNameTextBox.Icon = _remoteToEdit.Icon;
@@ -408,9 +408,9 @@ namespace ForkPlus.UI.Dialogs
 				RefreshAccountsComboBox();
 				return;
 			}
-			base.DialogTitle = "Add Remote";
-			base.DialogDescription = "Add new remote repository reference";
-			base.SubmitButtonTitle = "Add New Remote";
+			base.DialogTitle = PreferencesLocalization.Current("Add Remote");
+			base.DialogDescription = PreferencesLocalization.Current("Add new remote repository reference");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Add New Remote");
 			RemoteNameTextBox.Icon = Theme.RemoteIcon;
 			RemoteNameTextBox.Text = Consts.Git.DefaultRemoteName;
 			string text = ServiceLocator.Clipboard.GetText();

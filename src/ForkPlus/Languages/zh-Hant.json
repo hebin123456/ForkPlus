@@ -1596,6 +1596,7 @@
     "Cannot get diff:\n": "無法取得差異：\n",
     "Changes are too large (": "變更過大（",
     "Changes are too large to display": "變更過大，無法顯示",
+    "File has no changes": "檔案無修改",
     "Load Diff": "載入差異",
     "Select two commits to see difference between them": "選擇兩個提交以查看它們之間的差異",
     "Search SHA, branch, author or message": "搜尋 SHA、分支、作者或訊息",

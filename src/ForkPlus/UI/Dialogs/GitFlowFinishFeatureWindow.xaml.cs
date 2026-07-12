@@ -27,9 +27,9 @@ namespace ForkPlus.UI.Dialogs
 		public GitFlowFinishFeatureWindow(GitModule gitModule, RepositoryData repositoryData, LocalBranch featureBranch)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Finish Git Flow feature";
-			base.DialogDescription = "Finish the feature and merge it into the develop branch";
-			base.SubmitButtonTitle = "Finish";
+			base.DialogTitle = PreferencesLocalization.Current("Finish Git Flow feature");
+			base.DialogDescription = PreferencesLocalization.Current("Finish the feature and merge it into the develop branch");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Finish");
 			_gitModule = gitModule;
 			_repositoryData = repositoryData;
 			_featureBranch = featureBranch;

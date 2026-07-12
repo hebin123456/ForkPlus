@@ -22,9 +22,9 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_worktree = worktree;
 			InitializeComponent();
-			base.DialogTitle = "Are you sure you want to delete worktree " + worktree.FriendlyName + "?";
-			base.DialogDescription = "Do you want to delete worktree " + worktree.Path + "?";
-			base.SubmitButtonTitle = "Delete";
+			base.DialogTitle = PreferencesLocalization.FormatCurrent("Are you sure you want to delete worktree {0}?", worktree.FriendlyName);
+			base.DialogDescription = PreferencesLocalization.FormatCurrent("Do you want to delete worktree {0}?", worktree.Path);
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Delete");
 		}
 
 		protected override void OnSubmit()

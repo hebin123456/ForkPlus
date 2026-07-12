@@ -43,7 +43,7 @@ namespace ForkPlus.UI.Dialogs
 			_localBranches = localBranches;
 			_remote = remote;
 			InitializeComponent();
-			base.DialogTitle = "Push";
+			base.DialogTitle = Translate("Push");
 			base.DialogDescription = string.Format(Translate("Push {0} branches to remote repository"), _localBranches.Length);
 			base.SubmitButtonTitle = string.Format(Translate("Push {0} branches"), _localBranches.Length);
 			Refresh();

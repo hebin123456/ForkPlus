@@ -31,7 +31,15 @@ namespace ForkPlus.UI.UserControls
 
 		private const double SubrepoTabMinWidth = 140.0;
 
-		private static readonly TimeSpan RuntimeStateCacheTtl = TimeSpan.FromSeconds(10.0);
+		private static readonly TimeSpan RuntimeStateCacheTtl = TimeSpan.FromSeconds(60.0);
+
+		private static readonly TimeSpan DefaultBranchCacheTtl = TimeSpan.FromMinutes(30.0);
+
+		private static readonly Dictionary<string, Tuple<string, DateTime>> _defaultBranchCache = new Dictionary<string, Tuple<string, DateTime>>(StringComparer.OrdinalIgnoreCase);
+
+		private readonly DelayedAction<object> _saveSettingsAction;
+
+		private readonly DelayedAction<object> _updateTabWidthsAction;
 
 		private readonly JobQueue _jobQueue = new JobQueue();
 
@@ -121,9 +129,11 @@ namespace ForkPlus.UI.UserControls
 			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
 			SubreposTabControl.SelectionChanged += SubreposTabControl_SelectionChanged;
+			_saveSettingsAction = new DelayedAction<object>(delegate { SaveSettingsImmediate(); }, 1.0);
+			_updateTabWidthsAction = new DelayedAction<object>(delegate { UpdateSubrepoTabWidths(); }, 0.1);
 			SubreposTabControl.SizeChanged += delegate
 			{
-				UpdateSubrepoTabWidths();
+				_updateTabWidthsAction.InvokeWithDelay(null);
 			};
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RefreshCommandButtonTooltips();
@@ -856,6 +866,15 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void SaveSettings()
+		{
+			if (_restoringSettings)
+			{
+				return;
+			}
+			_saveSettingsAction.InvokeWithDelay(null);
+		}
+
+		private void SaveSettingsImmediate()
 		{
 			if (_restoringSettings)
 			{
@@ -1864,6 +1883,15 @@ namespace ForkPlus.UI.UserControls
 
 		private static string GetDefaultBranch(string path, JobMonitor monitor = null)
 		{
+			string normalizedPath = NormalizePath(path);
+			if (normalizedPath != null && _defaultBranchCache.TryGetValue(normalizedPath, out Tuple<string, DateTime> cached))
+			{
+				if (DateTime.UtcNow - cached.Item2 < DefaultBranchCacheTtl)
+				{
+					return cached.Item1;
+				}
+				_defaultBranchCache.Remove(normalizedPath);
+			}
 			GitRequestResult result = RunGit(path, new GitCommand("symbolic-ref", "--short", "refs/remotes/origin/HEAD"), monitor);
 			if (result.Success)
 			{
@@ -1871,10 +1899,14 @@ namespace ForkPlus.UI.UserControls
 				const string originPrefix = "origin/";
 				if (value.StartsWith(originPrefix, StringComparison.OrdinalIgnoreCase))
 				{
-					return value.Substring(originPrefix.Length);
+					value = value.Substring(originPrefix.Length);
 				}
 				if (!string.IsNullOrWhiteSpace(value))
 				{
+					if (normalizedPath != null)
+					{
+						_defaultBranchCache[normalizedPath] = Tuple.Create(value, DateTime.UtcNow);
+					}
 					return value;
 				}
 			}

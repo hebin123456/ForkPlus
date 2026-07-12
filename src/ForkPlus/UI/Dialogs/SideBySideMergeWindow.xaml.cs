@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowHeader = false;
 			base.ShowLogo = false;
 			InitializeComponent();
-			base.SubmitButtonTitle = "Resolve";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Resolve");
 			FileMergeControl.RepositoryUserControl = repositoryUserControl;
 			LocalMergeEditor.ViewMode = MergeConflictPart.Local;
 			RemoteMergeEditor.ViewMode = MergeConflictPart.Remote;

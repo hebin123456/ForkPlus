@@ -73,10 +73,10 @@ namespace ForkPlus.UI.Dialogs
 			};
 			CheckoutActionTypeComboBox.ItemsSource = _checkoutSyncOptionComboBoxItems;
 			CheckoutActionTypeComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_checkoutSyncOptionComboBoxItems, (CheckoutSyncOptionComboBoxItem x) => x.ActionType == CheckoutActionType.None);
-			base.DialogTitle = "Checkout Branch";
-			base.DialogDescription = "Switch to '" + localBranch.Name + "' branch";
+			base.DialogTitle = PreferencesLocalization.Current("Checkout Branch");
+			base.DialogDescription = PreferencesLocalization.FormatCurrent("Switch to '{0}' branch", localBranch.Name);
 			GitPointView.Value = localBranch;
-			base.SubmitButtonTitle = "Checkout";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout");
 		}
 
 		protected override void OnSubmit()
@@ -223,16 +223,16 @@ namespace ForkPlus.UI.Dialogs
 			switch (_actionType)
 			{
 			case CheckoutActionType.Rebase:
-				base.SubmitButtonTitle = "Checkout and Rebase";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout and Rebase");
 				break;
 			case CheckoutActionType.Merge:
-				base.SubmitButtonTitle = "Checkout and Merge";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout and Merge");
 				break;
 			case CheckoutActionType.Reset:
-				base.SubmitButtonTitle = "Checkout and Reset";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout and Reset");
 				break;
 			default:
-				base.SubmitButtonTitle = "Checkout";
+				base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout");
 				break;
 			}
 		}

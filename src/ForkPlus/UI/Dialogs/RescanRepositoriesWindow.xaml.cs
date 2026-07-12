@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -16,10 +17,10 @@ namespace ForkPlus.UI.Dialogs
 		public RescanRepositoriesWindow()
 		{
 			InitializeComponent();
-			base.DialogTitle = "Rescan repositories in source folder";
+			base.DialogTitle = PreferencesLocalization.Current("Rescan repositories in source folder");
 			string text = RepositoryManager.Instance.SourceDirs.Map((string x) => "'" + x + "'").Joined(", ");
-			base.DialogDescription = "Do you want to rescan repositories in '" + text + "'?";
-			base.SubmitButtonTitle = "Rescan";
+			base.DialogDescription = PreferencesLocalization.FormatCurrent("Do you want to rescan repositories in '{0}'?", text);
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Rescan");
 			ResetDeletedCheckbox.IsChecked = false;
 		}
 

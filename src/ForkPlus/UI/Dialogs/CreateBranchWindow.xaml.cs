@@ -58,8 +58,8 @@ namespace ForkPlus.UI.Dialogs
 		public CreateBranchWindow(RepositoryUserControl repositoryUserControl, RepositoryReferences refs, IGitPoint gitPoint)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Create Branch";
-			base.DialogDescription = "Use '/' as a path separator to create folders";
+			base.DialogTitle = Translate("Create Branch");
+			base.DialogDescription = Translate("Use '/' as a path separator to create folders");
 			_repositoryUserControl = repositoryUserControl;
 			_localBranches = refs.LocalBranches;
 			_gitPoint = gitPoint;

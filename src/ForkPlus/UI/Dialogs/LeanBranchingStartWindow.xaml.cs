@@ -56,8 +56,8 @@ namespace ForkPlus.UI.Dialogs
 		public LeanBranchingStartWindow(RepositoryUserControl repositoryUserControl, Branch mainBranch)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Start Branch";
-			base.DialogDescription = "Use '/' as a path separator to create folders";
+			base.DialogTitle = Translate("Start Branch");
+			base.DialogDescription = Translate("Use '/' as a path separator to create folders");
 			_repositoryUserControl = repositoryUserControl;
 			_repositoryReferences = repositoryUserControl.RepositoryData.References;
 			_localBranches = _repositoryReferences.LocalBranches;

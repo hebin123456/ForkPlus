@@ -29,18 +29,18 @@ namespace ForkPlus.UI.Dialogs
 				GitPointsContainer.Collapse();
 				GitPointView.Show();
 				GitPointView.Value = _stashes.FirstItem();
-				base.DialogTitle = "Delete Stash";
-				base.DialogDescription = "Delete stash from your repository";
+				base.DialogTitle = Translate("Delete Stash");
+				base.DialogDescription = Translate("Delete stash from your repository");
 				StartPointTextBlock.Text = Translate("Stash:");
-				base.SubmitButtonTitle = "Delete";
+				base.SubmitButtonTitle = Translate("Delete");
 			}
 			else
 			{
 				GitPointView.Collapse();
 				GitPointsContainer.Show();
 				GitPoints.ItemsSource = _stashes;
-				base.DialogTitle = "Delete Stashes";
-				base.DialogDescription = "Delete stashes from your repository";
+				base.DialogTitle = Translate("Delete Stashes");
+				base.DialogDescription = Translate("Delete stashes from your repository");
 				StartPointTextBlock.Text = Translate("Stashes:");
 				base.SubmitButtonTitle = string.Format(Translate("Delete {0} stashes"), _stashes.Length);
 			}

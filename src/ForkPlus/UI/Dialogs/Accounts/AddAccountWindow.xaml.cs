@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using ForkPlus.Git;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
@@ -58,7 +59,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
-			base.SubmitButtonTitle = "Log in";
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Log in");
 			ServicesListBox.ItemsSource = _servicesViewModels;
 		}
 

@@ -25,17 +25,17 @@ namespace ForkPlus.UI.UserControls.Preferences
 				_action = value;
 				if (Action is ProcessCustomCommandAction processCustomCommandAction)
 				{
-					Title = "Start Process";
+					Title = PreferencesLocalization.Current("Start Process");
 					Details = processCustomCommandAction.Path + " " + processCustomCommandAction.Parameters;
 				}
 				else if (Action is ShCustomCommandAction)
 				{
-					Title = "Bash Command";
-					Details = "Run bash Script";
+					Title = PreferencesLocalization.Current("Bash Command");
+					Details = PreferencesLocalization.Current("Run bash Script");
 				}
 				else if (Action is UrlCustomCommandAction urlCustomCommandAction)
 				{
-					Title = "Open Url";
+					Title = PreferencesLocalization.Current("Open Url");
 					Details = urlCustomCommandAction.Url;
 				}
 				else
@@ -44,8 +44,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 					{
 						throw new InvalidOperationException();
 					}
-					Title = "Cancel";
-					Details = "close dialog";
+					Title = PreferencesLocalization.Current("Cancel");
+					Details = PreferencesLocalization.Current("close dialog");
 				}
 				ToolTip = Title + "\n" + Details;
 				NotifyPropertyChanged("Title");

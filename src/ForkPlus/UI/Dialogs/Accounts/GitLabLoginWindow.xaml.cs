@@ -58,7 +58,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
-			base.SubmitButtonTitle = "Sign In";
+			base.SubmitButtonTitle = Translate("Sign In");
 			OpenPersonalAccessTokenConfigurationUrlButton.ToolTip = Translate("Required scopes: read_user, read_api, read_repository, write_repository");
 			Account = account;
 			if (!server)

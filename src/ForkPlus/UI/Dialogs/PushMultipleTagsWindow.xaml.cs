@@ -39,7 +39,7 @@ namespace ForkPlus.UI.Dialogs
 			_tags = tags;
 			_remoteToSelect = remote;
 			InitializeComponent();
-			base.DialogTitle = "Push";
+			base.DialogTitle = Translate("Push");
 			base.DialogDescription = string.Format(Translate("Push {0} tags to remote repository"), _tags.Length);
 			base.SubmitButtonTitle = string.Format(Translate("Push {0} tags"), _tags.Length);
 			Refresh();

@@ -20,9 +20,9 @@ namespace ForkPlus.UI.Dialogs
 		public SaveSnapshotWindow(RepositoryUserControl repositoryUserControl)
 		{
 			InitializeComponent();
-			base.DialogTitle = "Save snapshot";
-			base.DialogDescription = "Save your local changes to a new stash, but keep them in the working directory";
-			base.SubmitButtonTitle = "Save Snapshot";
+			base.DialogTitle = Translate("Save snapshot");
+			base.DialogDescription = Translate("Save your local changes to a new stash, but keep them in the working directory");
+			base.SubmitButtonTitle = Translate("Save Snapshot");
 			_repositoryUserControl = repositoryUserControl;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			StageNewFilesCheckBox.IsChecked = ForkPlusSettings.Default.SaveStash_StageNewFiles;
