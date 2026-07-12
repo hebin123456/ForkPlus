@@ -34,10 +34,16 @@ jobs:
           path: src/ForkPlus/bin/Release/net472/
           if-no-files-found: error
 
+      - name: Package release zip
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          Compress-Archive -Path src/ForkPlus/bin/Release/net472/* -DestinationPath ForkPlus-${{ github.ref_name }}-windows.zip -CompressionLevel Optimal
+
       - name: Release on tag
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            src/ForkPlus/bin/Release/net472/ForkPlus.exe
+            ForkPlus-${{ github.ref_name }}-windows.zip
           generate_release_notes: true
