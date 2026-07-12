@@ -1,42 +1,106 @@
 # ForkPlus
 
-一个名为ForkPlus的Git图形化工具, 用rust重写了Fork工具的底层能力, 增加语言包, 增加git mm和git repo支持, 优化大数据性能, 修复部分bug
+一个基于 Fork 的 Git 图形化工具增强版，使用 Rust 重写了底层能力，新增多语言支持、git mm 和 git repo 工作流，优化了大数据量仓库性能，并修复了大量缺陷。
 
-This workspace contains the ForkPlus WPF application project in a normal source layout.
+## 主要特性
 
-The normal entry point for day-to-day development is:
+- **多语言支持**：内置英语、简体中文、繁體中文、日本語，并支持通过 JSON 文件扩展更多语言
+- **git mm 工作流**：内置 `git mm` 子命令，提供精益分支（Lean Branching）工作流
+- **AI 辅助开发**：集成 AI 代码审查、自动生成提交信息、AI 辅助修改代码
+- **性能优化**：针对大型仓库的刷新、diff 渲染、子模块管理做了专项优化
+- **缺陷修复**：修复了原版 Fork 的多个问题（空修改、AI 排队生成失败等）
 
-- Solution: `ForkPlus.sln`
-- Project: `src/ForkPlus/ForkPlus.csproj`
+## 项目结构
 
-## Repository Layout
+```
+ForkPlus/
+├── src/
+│   ├── ForkPlus/              # 主 WPF 应用程序源码、XAML、资源
+│   │   ├── Languages/         # 多语言翻译文件（JSON）
+│   │   │   ├── zh-Hans.json   # 简体中文
+│   │   │   ├── zh-Hant.json   # 繁體中文
+│   │   │   ├── ja-JP.json     # 日本語
+│   │   │   └── README.md      # 语言文件格式说明
+│   │   └── ...
+│   ├── ForkPlus.AskPass/      # Git/SSH 密码输入辅助程序
+│   ├── ForkPlus.RI/           # 交互式 rebase 编辑器辅助程序
+│   ├── ForkPlus.Tests/        # xUnit 单元测试
+│   └── ForkPlus.AutomationTests/  # FlaUI UI 冒烟测试
+├── third_party/               # 随应用分发的运行时工具和原生二进制
+├── gitmm/                     # git mm 工作流参考文档
+└── .github/workflows/         # GitHub Actions CI 配置
+```
 
-- `src/ForkPlus`: main WPF application source, XAML, assets, and project file
-- `src/ForkPlus.AskPass`: Git/SSH askpass helper used by the main app
-- `src/ForkPlus.RI`: interactive rebase editor helper used by the main app
-- `src/ForkPlus.Tests`: xUnit unit tests for core non-UI logic
-- `src/ForkPlus.AutomationTests`: optional FlaUI smoke tests for the built WPF app
-- `third_party`: runtime tools and native binaries that are shipped with the app and are not managed by NuGet
-- `gitmm`: reference documentation for the bundled `git mm` workflows
+## 编译
 
-Regular third-party .NET libraries are referenced through `PackageReference` in `src/ForkPlus/ForkPlus.csproj`.
+### 环境要求
 
-## Build
+- Windows 10 或更高版本
+- Visual Studio 2019/2022，或 .NET SDK + MSBuild
+- .NET Framework 4.7.2 目标包
 
-- Open `ForkPlus.sln` in Visual Studio
-- Or run `dotnet build ForkPlus.sln`
-- Target framework: `.NET Framework 4.7.2`
+### 编译步骤
 
-## Tests
+- 用 Visual Studio 打开 `ForkPlus.sln`，选择 Release 配置编译
+- 或命令行执行：`msbuild ForkPlus.sln /p:Configuration=Release`
 
-- Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- UI smoke tests: set `FORKPLUS_AUTOMATION_EXE` to a built `ForkPlus.exe`, then run `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
-- Source coverage gate: `SourceFileCoverageManifestTests` fails when a production `.cs` file is not registered in the test manifest.
-- Class coverage gate: `ClassCoverageManifestTests` fails when a production class/struct/interface/enum is not registered with an automated case id.
-- Feature coverage gate: `FeatureCoverageManifestTests` fails when a feature area is missing an automated case id.
+### 持续集成
 
-The manifest gates are intentionally strict. They make missing coverage visible immediately, while individual feature cases can be improved from smoke coverage to behavior-focused tests over time.
+项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
 
-## Working Convention
+```bash
+git tag v1.2.1
+git push origin v1.2.1
+```
 
-If you are changing the application itself, stay inside `src/ForkPlus` unless you are intentionally updating runtime files under `third_party`.
+编译产物包含 `ForkPlus.exe`、所有依赖 dll、`biturbo.dll`、语言文件等，解压即可运行。
+
+## 测试
+
+- 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
+- UI 冒烟测试：设置 `FORKPLUS_AUTOMATION_EXE` 环境变量指向已编译的 `ForkPlus.exe`，然后运行 `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+
+## 多语言支持
+
+### 内置语言
+
+| 语言代码 | 显示名称 | 状态 |
+|---------|---------|------|
+| `en` | English | 完整（源语言） |
+| `zh-Hans` | 简体中文 | 完整 |
+| `zh-Hant` | 繁體中文 | 完整 |
+| `ja-JP` | 日本語 | 基础覆盖 |
+
+### 添加新语言
+
+在 `src/ForkPlus/Languages/` 目录下新建 `<语言代码>.json` 文件即可，无需修改代码。文件格式：
+
+```json
+{
+  "code": "ko",
+  "name": "한국어",
+  "translations": {
+    "Preferences": "환경설정",
+    "General": "일반",
+    "Commit": "커밋"
+  }
+}
+```
+
+详见 [src/ForkPlus/Languages/README.md](src/ForkPlus/Languages/README.md)。
+
+### 国际化 API
+
+代码中通过以下 API 实现国际化：
+
+- `PreferencesLocalization.Current("English text")` — 简单字符串翻译
+- `PreferencesLocalization.FormatCurrent("...{0}...", args)` — 带参数的字符串翻译
+- `PreferencesLocalization.Translate(text, language)` — 指定语言的翻译
+
+## 下载
+
+最新版本请前往 [Releases 页面](https://github.com/hebin123456/ForkPlus/releases) 下载。
+
+## 开发约定
+
+修改应用程序本身时，保持在 `src/ForkPlus` 目录内，除非有意更新 `third_party` 下的运行时文件。

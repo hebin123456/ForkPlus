@@ -20,6 +20,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public const string English = "en";
 		public const string SimplifiedChinese = "zh-Hans";
 		public const string TraditionalChinese = "zh-Hant";
+		public const string Japanese = "ja-JP";
 
 		private const string LanguagesDirectoryName = "Languages";
 
@@ -39,7 +40,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			{ English, "English" },
 			{ SimplifiedChinese, "简体中文" },
-			{ TraditionalChinese, "繁體中文" }
+			{ TraditionalChinese, "繁體中文" },
+			{ Japanese, "日本語" }
 		};
 
 		private static readonly Dictionary<string, LoadedLanguage> ExternalLanguages = LoadExternalLanguages();
@@ -166,6 +168,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (language == TraditionalChinese)
 			{
 				return 2;
+			}
+			if (language == Japanese)
+			{
+				return 3;
 			}
 			return 10;
 		}

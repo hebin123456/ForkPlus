@@ -151,6 +151,10 @@ namespace ForkPlus.Accounts.AiServices
 			{
 				return "Traditional Chinese";
 			}
+			if (string.Equals(language, "ja-JP", StringComparison.OrdinalIgnoreCase))
+			{
+				return "Japanese";
+			}
 			return "English";
 		}
 
