@@ -258,7 +258,18 @@ namespace ForkPlus.Accounts.AiServices
 				{
 					return LocalizeCancellationError(result);
 				}
-				if (IsQueuedWaitError(result.Error, out int queuedDelaySeconds))
+				int queuedDelaySeconds;
+				bool isQueuedWait = IsQueuedWaitError(result.Error, out queuedDelaySeconds);
+				if (!isQueuedWait)
+				{
+					string message = result.Error?.FriendlyMessage ?? "";
+					if (IsTransientServiceMessage(message))
+					{
+						isQueuedWait = true;
+						queuedDelaySeconds = 30;
+					}
+				}
+				if (isQueuedWait)
 				{
 					int remainingQueuedWaitSeconds = Math.Max(0, maxQueuedWaitSeconds - queuedWaitSeconds);
 					if (remainingQueuedWaitSeconds <= 0)
@@ -426,12 +437,26 @@ namespace ForkPlus.Accounts.AiServices
 				|| message.IndexOf("eta", StringComparison.OrdinalIgnoreCase) >= 0
 				|| message.IndexOf("estimated", StringComparison.OrdinalIgnoreCase) >= 0
 				|| message.IndexOf("pending", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("busy", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("overload", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("rate limit", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("too many requests", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("try again", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("temporarily unavailable", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("service unavailable", StringComparison.OrdinalIgnoreCase) >= 0
+				|| message.IndexOf("model is loading", StringComparison.OrdinalIgnoreCase) >= 0
 				|| message.Contains("排队")
 				|| message.Contains("隊列")
 				|| message.Contains("队列")
 				|| message.Contains("等待")
 				|| message.Contains("預計")
-				|| message.Contains("预计");
+				|| message.Contains("预计")
+				|| message.Contains("繁忙")
+				|| message.Contains("稍后")
+				|| message.Contains("稍後")
+				|| message.Contains("限流")
+				|| message.Contains("频率")
+				|| message.Contains("頻率");
 		}
 
 		private static int MaxQueuedWaitSeconds()

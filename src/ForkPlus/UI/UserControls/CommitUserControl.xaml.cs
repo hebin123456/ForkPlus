@@ -2048,11 +2048,16 @@ namespace ForkPlus.UI.UserControls
 							{
 								new ErrorWindow(RepositoryUserControl, patchResult.Error).ShowDialog();
 							});
+							return;
 						}
 						OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
 						ServiceResult<OpenAiResponse> response = openAiService.GenerateCommitMessage(patchResult.Result, GitModule, monitor);
 						base.Dispatcher.Async(delegate
 						{
+							if (monitor.IsCanceled)
+							{
+								return;
+							}
 							if (!response.Succeeded)
 							{
 								new ErrorWindow(response.Error.FriendlyMessage).ShowDialog();
