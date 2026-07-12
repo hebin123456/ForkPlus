@@ -20,10 +20,10 @@ jobs:
         uses: nuget/setup-nuget@v2
 
       - name: Restore NuGet packages
-        run: nuget restore ForkPlus.sln
+        run: msbuild src/ForkPlus/ForkPlus.csproj /t:Restore /p:Configuration=Release
 
       - name: Build (Release)
-        run: msbuild ForkPlus.sln /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
+        run: msbuild src/ForkPlus/ForkPlus.csproj /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
