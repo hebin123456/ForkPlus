@@ -212,9 +212,11 @@ namespace ForkPlus.Accounts
 		}
 
 		private void SendToastNotification(int newNotificationsCount)
-		{
-			SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\">New Notifications</text>\n        <text>You've got {newNotificationsCount} new notifications</text>\n    </binding>\n</visual>\n</toast>\n");
-		}
+	{
+		string title = PreferencesLocalization.Current("New Notifications");
+		string body = PreferencesLocalization.FormatCurrent("You've got {0} new notifications", newNotificationsCount);
+		SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\">{WebUtility.HtmlEncode(title)}</text>\n        <text>{WebUtility.HtmlEncode(body)}</text>\n    </binding>\n</visual>\n</toast>\n");
+	}
 
 		private void SendToastNotification(GitServiceNotification notification)
 		{

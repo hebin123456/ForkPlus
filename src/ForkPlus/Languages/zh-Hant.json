@@ -1839,6 +1839,14 @@
     "fatal: cannot hash {0}": "致命錯誤：無法計算 {0} 的雜湊值",
     "fatal: cannot hash": "致命錯誤：無法計算雜湊值",
     "error: open({0}): Permission denied": "錯誤：打開{0}時權限被拒絕",
-    "Allowed parameters:": "允許的參數："
+    "Allowed parameters:": "允許的參數：",
+    "New Notifications": "新通知",
+    "You've got {0} new notifications": "您有 {0} 則新通知",
+    "Currently Fork doesn't support 32-bit Windows": "目前 Fork 不支援 32 位元 Windows",
+    "Select skill file": "選擇技能檔案",
+    "Text files (*.md;*.txt)": "文字檔案 (*.md;*.txt)",
+    "All files (*.*)": "所有檔案 (*.*)",
+    "Failed to load file '{0}': {1}": "載入檔案 '{0}' 失敗：{1}",
+    "Move the '{0}' branch HEAD to the selected revision": "將 '{0}' 分支的 HEAD 移動到所選修訂"
   }
 }

@@ -154,8 +154,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 		 Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog
 		 {
-		  Title = "选择技能文件",
-		  Filter = "文本文件 (*.md;*.txt)|*.md;*.txt|所有文件 (*.*)|*.*",
+		  Title = PreferencesLocalization.Current("Select skill file"),
+		  Filter = PreferencesLocalization.Current("Text files (*.md;*.txt)") + "|*.md;*.txt|" + PreferencesLocalization.Current("All files (*.*)") + "|*.*",
 		  CheckFileExists = true,
 		  Multiselect = true
 		 };
@@ -184,7 +184,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		   }
 		   catch (Exception ex)
 		   {
-		    MessageBox.Show("加载文件 '" + fileName + "' 失败: " + ex.Message);
+		    MessageBox.Show(PreferencesLocalization.FormatCurrent("Failed to load file '{0}': {1}", fileName, ex.Message));
 		   }
 		  }
 			if (loadedCount > 0)

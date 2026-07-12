@@ -507,7 +507,7 @@ namespace ForkPlus
 			SubscribeToUserPreferences();
 			if (!Environment.Is64BitOperatingSystem)
 			{
-				MessageBox.Show("Currently Fork doesn't support 32-bit Windows");
+				MessageBox.Show(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Currently Fork doesn't support 32-bit Windows"));
 			}
 			else if (IsDebug || InitializeForkInstance())
 			{

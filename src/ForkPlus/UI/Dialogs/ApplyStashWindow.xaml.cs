@@ -25,9 +25,9 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_stash = stash;
 			GitPointView.Value = _stash;
-			base.DialogTitle = "Apply Stash";
-			base.DialogDescription = "Apply changes of the stash to your working directory";
-			base.SubmitButtonTitle = "Apply";
+			base.DialogTitle = Translate("Apply Stash");
+		base.DialogDescription = Translate("Apply changes of the stash to your working directory");
+		base.SubmitButtonTitle = Translate("Apply");
 			DeleteStashAfterApplyCheckBox.IsChecked = ForkPlusSettings.Default.ApplyStash_DeleteAfterApply;
 		}
 

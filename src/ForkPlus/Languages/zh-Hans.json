@@ -1839,6 +1839,14 @@
     "fatal: cannot hash {0}": "致命错误：无法计算 {0} 的哈希值",
     "fatal: cannot hash": "致命错误：无法计算哈希值",
     "error: open({0}): Permission denied": "错误：打开{0}时权限被拒绝",
-    "Allowed parameters:": "允许的参数："
+    "Allowed parameters:": "允许的参数：",
+    "New Notifications": "新通知",
+    "You've got {0} new notifications": "您有 {0} 条新通知",
+    "Currently Fork doesn't support 32-bit Windows": "目前 Fork 不支持 32 位 Windows",
+    "Select skill file": "选择技能文件",
+    "Text files (*.md;*.txt)": "文本文件 (*.md;*.txt)",
+    "All files (*.*)": "所有文件 (*.*)",
+    "Failed to load file '{0}': {1}": "加载文件 '{0}' 失败：{1}",
+    "Move the '{0}' branch HEAD to the selected revision": "将 '{0}' 分支的 HEAD 移动到所选修订"
   }
 }

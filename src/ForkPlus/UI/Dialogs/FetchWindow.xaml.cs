@@ -39,9 +39,9 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			_predefinedRemote = remote;
 			InitializeComponent();
-			base.DialogTitle = "Fetch";
-			base.DialogDescription = "Fetch latest changes from remote repository";
-			base.SubmitButtonTitle = "Fetch";
+			base.DialogTitle = Translate("Fetch");
+		base.DialogDescription = Translate("Fetch latest changes from remote repository");
+		base.SubmitButtonTitle = Translate("Fetch");
 			Remote[] array = MainWindow.ActiveRepositoryUserControl.RepositoryData.Remotes.Items.ToSortedArray(Remote.ComparerIgnoreCaseNumeric);
 			RemoteComboBox.ItemsSource = array;
 			RemoteComboBox.SelectedItem = array.FirstOrDefault((Remote x) => x.Name == _predefinedRemote?.Name) ?? array.FirstOrDefault((Remote x) => x.Name == Consts.Git.DefaultRemoteName) ?? array.FirstOrDefault();

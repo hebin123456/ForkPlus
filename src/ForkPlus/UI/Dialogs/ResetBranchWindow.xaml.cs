@@ -31,18 +31,18 @@ namespace ForkPlus.UI.Dialogs
 			_branch = activeBranch;
 			_destination = destination;
 			if (activeBranch != null)
-			{
-				base.DialogTitle = "Reset Current Branch to Revision";
-				base.DialogDescription = "Move the '" + activeBranch.Name + "' branch HEAD to the selected revision";
-				ActiveBranchGitPointView.Value = activeBranch;
-			}
-			else
-			{
-				base.DialogTitle = "Reset HEAD to Revision";
-				base.DialogDescription = "Move HEAD to the selected revision";
-				ActiveBranchGitPointView.Value = new SymbolicReference("HEAD");
-			}
-			base.SubmitButtonTitle = "Reset";
+		{
+			base.DialogTitle = PreferencesLocalization.Current("Reset Current Branch to Revision");
+			base.DialogDescription = PreferencesLocalization.FormatCurrent("Move the '{0}' branch HEAD to the selected revision", activeBranch.Name);
+			ActiveBranchGitPointView.Value = activeBranch;
+		}
+		else
+		{
+			base.DialogTitle = PreferencesLocalization.Current("Reset HEAD to Revision");
+			base.DialogDescription = PreferencesLocalization.Current("Move HEAD to the selected revision");
+			ActiveBranchGitPointView.Value = new SymbolicReference("HEAD");
+		}
+		base.SubmitButtonTitle = PreferencesLocalization.Current("Reset");
 			DestinationGitPointView.Value = _destination;
 		}
 
