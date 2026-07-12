@@ -18,11 +18,15 @@ Una versión mejorada de la herramienta gráfica de Git basada en Fork, reescrit
 ForkPlus/
 ├── src/
 │   ├── ForkPlus/              # Código fuente principal de la aplicación WPF, XAML, recursos
-│   │   ├── Languages/         # Archivos de traducción multilingüe (JSON)
-│   │   │   ├── zh-Hans.json   # 简体中文
-│   │   │   ├── zh-Hant.json   # 繁體中文
-│   │   │   ├── ja-JP.json     # 日本語
-│   │   │   └── README.md      # Descripción del formato de archivos de idioma
+│   │   ├── Languages/         # Archivos de traducción multilingües (JSON)
+│   │   │   ├── zh-Hans.json   # Chino simplificado
+│   │   │   ├── zh-Hant.json   # Chino tradicional
+│   │   │   ├── ja-JP.json     # Japonés
+│   │   │   ├── ko-KR.json     # Coreano
+│   │   │   ├── fr-FR.json     # Francés
+│   │   │   ├── de-DE.json     # Alemán
+│   │   │   ├── es-ES.json     # Español
+│   │   │   └── README.md      # Descripción del formato de archivo de idioma
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Programa auxiliar para entrada de contraseñas Git/SSH
 │   ├── ForkPlus.RI/           # Programa auxiliar para el editor de rebase interactivo
@@ -52,8 +56,8 @@ ForkPlus/
 El proyecto está configurado con GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)); al crear un tag que comience con `v*` se compila automáticamente en un entorno Windows y se publica un paquete zip completo del runtime en GitHub Release.
 
 ```bash
-git tag v1.2.4
-git push origin v1.2.4
+git tag v1.2.5
+git push origin v1.2.5
 ```
 
 El producto de compilación incluye `ForkPlus.exe`, todas las dll dependientes, `biturbo.dll`, los archivos de idioma, etc.; se puede ejecutar simplemente descomprimiéndolo.

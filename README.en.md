@@ -18,11 +18,15 @@ An enhanced Git graphical tool based on Fork, with Rust-rewritten underlying cap
 ForkPlus/
 ├── src/
 │   ├── ForkPlus/              # Main WPF application source, XAML, assets
-│   │   ├── Languages/         # Multi-language translation files (JSON)
+│   │   ├── Languages/         # Localization translation files (JSON)
 │   │   │   ├── zh-Hans.json   # Simplified Chinese
 │   │   │   ├── zh-Hant.json   # Traditional Chinese
 │   │   │   ├── ja-JP.json     # Japanese
-│   │   │   └── README.md      # Language file format docs
+│   │   │   ├── ko-KR.json     # Korean
+│   │   │   ├── fr-FR.json     # French
+│   │   │   ├── de-DE.json     # German
+│   │   │   ├── es-ES.json     # Spanish
+│   │   │   └── README.md      # Language file format description
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH askpass helper
 │   ├── ForkPlus.RI/           # Interactive rebase editor helper
@@ -52,8 +56,8 @@ ForkPlus/
 The project is configured with GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Pushing a `v*` tag automatically builds on Windows and publishes a complete runtime zip to GitHub Release.
 
 ```bash
-git tag v1.2.4
-git push origin v1.2.4
+git tag v1.2.5
+git push origin v1.2.5
 ```
 
 The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, language files, and more—just unzip and run.

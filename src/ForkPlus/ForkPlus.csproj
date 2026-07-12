@@ -40,6 +40,26 @@
       <Link>Docs\gitmm.en.md</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\gitmm\README.ja.md">
+      <Link>Docs\gitmm.ja.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.ko.md">
+      <Link>Docs\gitmm.ko.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.fr.md">
+      <Link>Docs\gitmm.fr.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.de.md">
+      <Link>Docs\gitmm.de.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.es.md">
+      <Link>Docs\gitmm.es.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="ForkPlus.Assets.Legal.txt" LogicalName="ForkPlus.Assets.Legal.txt" />
     <EmbeddedResource Include="ForkPlus.Assets.gitignore.txt" LogicalName="ForkPlus.Assets.gitignore.txt" />
     <EmbeddedResource Include="ForkPlus.Assets.md-ai-output.css" LogicalName="ForkPlus.Assets.md-ai-output.css" />

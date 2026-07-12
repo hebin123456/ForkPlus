@@ -22,7 +22,11 @@ ForkPlus/
 │   │   │   ├── zh-Hans.json   # Vereinfachtes Chinesisch
 │   │   │   ├── zh-Hant.json   # Traditionelles Chinesisch
 │   │   │   ├── ja-JP.json     # Japanisch
-│   │   │   └── README.md      # Dokumentation zum Sprachdateiformat
+│   │   │   ├── ko-KR.json     # Koreanisch
+│   │   │   ├── fr-FR.json     # Französisch
+│   │   │   ├── de-DE.json     # Deutsch
+│   │   │   ├── es-ES.json     # Spanisch
+│   │   │   └── README.md      # Beschreibung des Sprachdateiformats
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH-Askpass-Hilfsprogramm
 │   ├── ForkPlus.RI/           # Interaktiver Rebase-Editor-Hilfsprogramm
@@ -52,8 +56,8 @@ ForkPlus/
 Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Durch Pushen eines `v*`-Tags wird automatisch unter Windows kompiliert und ein vollständiges Laufzeit-Zip wird auf GitHub Release veröffentlicht.
 
 ```bash
-git tag v1.2.4
-git push origin v1.2.4
+git tag v1.2.5
+git push origin v1.2.5
 ```
 
 Das Kompilierungsartefakt enthält `ForkPlus.exe`, alle Abhängigkeits-DLLs, `biturbo.dll`, Sprachdateien und mehr — einfach entpacken und ausführen.

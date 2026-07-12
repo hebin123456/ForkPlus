@@ -22,6 +22,10 @@ ForkPlus/
 │   │   │   ├── zh-Hans.json   # 簡體中文
 │   │   │   ├── zh-Hant.json   # 繁體中文
 │   │   │   ├── ja-JP.json     # 日本語
+│   │   │   ├── ko-KR.json     # 한국어
+│   │   │   ├── fr-FR.json     # Français
+│   │   │   ├── de-DE.json     # Deutsch
+│   │   │   ├── es-ES.json     # Español
 │   │   │   └── README.md      # 語言檔案格式說明
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH 密碼輸入輔助程式
@@ -52,8 +56,8 @@ ForkPlus/
 專案配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 開頭的 tag 會自動在 Windows 環境編譯，並發布完整執行時 zip 包到 GitHub Release。
 
 ```bash
-git tag v1.2.4
-git push origin v1.2.4
+git tag v1.2.5
+git push origin v1.2.5
 ```
 
 編譯產物包含 `ForkPlus.exe`、所有依賴 dll、`biturbo.dll`、語言檔案等，解壓即可執行。

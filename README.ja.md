@@ -22,6 +22,10 @@ ForkPlus/
 │   │   │   ├── zh-Hans.json   # 簡体字中国語
 │   │   │   ├── zh-Hant.json   # 繁体字中国語
 │   │   │   ├── ja-JP.json     # 日本語
+│   │   │   ├── ko-KR.json     # 한국어
+│   │   │   ├── fr-FR.json     # フランス語
+│   │   │   ├── de-DE.json     # ドイツ語
+│   │   │   ├── es-ES.json     # スペイン語
 │   │   │   └── README.md      # 言語ファイル形式の説明
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH パスワード入力ヘルパー
@@ -52,8 +56,8 @@ ForkPlus/
 プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
 
 ```bash
-git tag v1.2.4
-git push origin v1.2.4
+git tag v1.2.5
+git push origin v1.2.5
 ```
 
 ビルド成果物には `ForkPlus.exe`、すべての依存 DLL、`biturbo.dll`、言語ファイルなどが含まれ、解凍するだけで実行できます。
