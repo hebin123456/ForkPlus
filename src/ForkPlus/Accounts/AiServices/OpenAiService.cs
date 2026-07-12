@@ -155,6 +155,18 @@ namespace ForkPlus.Accounts.AiServices
 			{
 				return "Japanese";
 			}
+			if (string.Equals(language, "ko-KR", StringComparison.OrdinalIgnoreCase))
+			{
+				return "Korean";
+			}
+			if (string.Equals(language, "fr-FR", StringComparison.OrdinalIgnoreCase))
+			{
+				return "French";
+			}
+			if (string.Equals(language, "de-DE", StringComparison.OrdinalIgnoreCase))
+			{
+				return "German";
+			}
 			return "English";
 		}
 

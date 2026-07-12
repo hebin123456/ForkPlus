@@ -2,7 +2,7 @@
 
 一個基於 Fork 的 Git 圖形化工具增強版，使用 Rust 重寫了底層能力，新增多語言支援、git mm 和 git repo 工作流，優化了大數據量倉庫效能，並修復了大量缺陷。
 
-[English](README.en.md) | [简体中文](README.md) | [日本語](README.ja.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
 
 ## 主要特性
 
@@ -72,6 +72,9 @@ git push origin v1.2.1
 | `zh-Hans` | 简体中文 | 完整 |
 | `zh-Hant` | 繁體中文 | 完整 |
 | `ja-JP` | 日本語 | 基礎覆蓋 |
+| `ko-KR` | 한국어 | 기본 지원 |
+| `fr-FR` | Français | Couverture de base |
+| `de-DE` | Deutsch | Grundlegende Abdeckung |
 
 ### 新增新語言
 

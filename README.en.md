@@ -2,7 +2,7 @@
 
 An enhanced Git graphical tool based on Fork, with Rust-rewritten underlying capabilities, multi-language support, git mm and git repo workflows, optimized performance for large repositories, and numerous bug fixes.
 
-[简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
 
 ## Key Features
 
@@ -72,6 +72,9 @@ The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, 
 | `zh-Hans` | 简体中文 | Complete |
 | `zh-Hant` | 繁體中文 | Complete |
 | `ja-JP` | 日本語 | Basic coverage |
+| `ko-KR` | 한국어 | 기본 지원 |
+| `fr-FR` | Français | Couverture de base |
+| `de-DE` | Deutsch | Grundlegende Abdeckung |
 
 ### Adding a New Language
 
