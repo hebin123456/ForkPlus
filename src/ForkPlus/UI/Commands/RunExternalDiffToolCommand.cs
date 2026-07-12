@@ -174,7 +174,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(externalDiffToolPath))
 			{
 				Log.Error("Cannot find external diff tool at '" + externalDiffToolPath + "'");
-				new ErrorWindow("Cannot find external diff tool at '" + externalDiffToolPath + "'").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find external diff tool at '{0}'", externalDiffToolPath)).ShowDialog();
 				return;
 			}
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("External diff"), delegate(JobMonitor monitor)

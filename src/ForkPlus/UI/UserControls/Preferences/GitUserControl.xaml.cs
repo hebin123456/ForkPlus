@@ -234,16 +234,23 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private async void SetGlobalUserIdentity()
 		{
-			string userName = UserNameTextBox.Text.Trim();
-			string email = EmailTextBox.Text.Trim();
-			GitCommandResult gitCommandResult = await Task.Run(delegate
+			try
 			{
-				GitCommandResult gitCommandResult2 = new SetGlobalUserIdentityGitCommand().Execute(new UserIdentity(userName, email));
-				return (!gitCommandResult2.Succeeded) ? gitCommandResult2 : GitCommandResult.Success();
-			});
-			if (!gitCommandResult.Succeeded)
+				string userName = UserNameTextBox.Text.Trim();
+				string email = EmailTextBox.Text.Trim();
+				GitCommandResult gitCommandResult = await Task.Run(delegate
+				{
+					GitCommandResult gitCommandResult2 = new SetGlobalUserIdentityGitCommand().Execute(new UserIdentity(userName, email));
+					return (!gitCommandResult2.Succeeded) ? gitCommandResult2 : GitCommandResult.Success();
+				});
+				if (!gitCommandResult.Succeeded)
+				{
+					new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
+				}
+			}
+			catch (Exception ex)
 			{
-				new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
+				Log.Error("SetGlobalUserIdentity failed", ex);
 			}
 		}
 

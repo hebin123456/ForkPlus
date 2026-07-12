@@ -54,8 +54,8 @@ namespace ForkPlus.Utils.Http
 		static Connection()
 		{
 			ClientHandler = new HttpClientHandler();
-			Client = new HttpClient(ClientHandler);
 			ClientHandler.UseCookies = false;
+			Client = new HttpClient(ClientHandler);
 		}
 
 		public Connection(string serverUrl, [Null] IRestServiceAuthentication authentication)
@@ -105,6 +105,9 @@ namespace ForkPlus.Utils.Http
 				Log.Warn($"{apiRequest.HttpMethod} {text} ({innerExceptionMessage})");
 				return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage));
 			}
+			// 确保请求和响应消息被释放，避免 socket/内存泄漏。
+			using (request)
+			{
 			request.Headers.Add("User-Agent", App.UserAgent);
 			if (jsonRequest)
 			{
@@ -137,6 +140,8 @@ namespace ForkPlus.Utils.Http
 				return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage2));
 			}
 			HttpResponseMessage result = task.Result;
+			using (result)
+			{
 			Log.Debug($"{stopwatch.ElapsedMilliseconds,7}ms: {apiRequest.HttpMethod} {text} ({(int)result.StatusCode})");
 			if (IsError(result.StatusCode))
 			{
@@ -168,6 +173,8 @@ namespace ForkPlus.Utils.Http
 			}
 			ClearCancellation(monitor, cancellationTokenSource);
 			return HttpRequestResult.Success(result.Headers, task2.Result);
+			}
+			}
 		}
 
 		[Null]
@@ -242,7 +249,7 @@ namespace ForkPlus.Utils.Http
 
 		private static bool IsJsonError(HttpResponseMessage response)
 		{
-			return response.Content.Headers.ContentType.MediaType == "application/json";
+			return response?.Content?.Headers?.ContentType?.MediaType == "application/json";
 		}
 
 		private static string GetInnerExceptionMessage(Exception ex)

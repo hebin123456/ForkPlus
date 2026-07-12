@@ -4,6 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Shell.Interaction;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -42,7 +43,7 @@ namespace ForkPlus.UI.CustomCommands
 			}
 			catch (Exception ex)
 			{
-				monitor.Fail("Failed");
+				monitor.Fail(PreferencesLocalization.Current("Failed"));
 				monitor.AppendOutputLine(ex.ToString());
 				return GitCommandResult<string>.Failure(new GitCommandError.UnknownException(ex));
 			}
@@ -55,7 +56,7 @@ namespace ForkPlus.UI.CustomCommands
 				monitor.Success("Finished");
 				return GitCommandResult<string>.Success(fullOutput.ToString());
 			}
-			monitor.Fail("Error");
+			monitor.Fail(PreferencesLocalization.Current("Error"));
 			return GitCommandResult<string>.Failure(new GitCommandError.GitError(gitRequestResult));
 		}
 

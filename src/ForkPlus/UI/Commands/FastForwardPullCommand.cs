@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Commands
 			if (remoteBranch == null)
 			{
 				string text = localBranch.UpstreamFullReference.Replace("refs/remotes/", "");
-				new ErrorWindow("Remote branch '" + text + "' doesn't exist. It might be removed, but '" + localBranch.Name + "' refers to it.").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Remote branch '{0}' doesn't exist. It might be removed, but '{1}' refers to it.", text, localBranch.Name)).ShowDialog();
 				return;
 			}
 			SubmodulesToUpdate submodulesToUpdate = repositoryUserControl.SubmodulesToUpdate();
@@ -70,12 +70,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult.Succeeded)
 			{
-				monitor.Fail("Pull failed");
+				monitor.Fail(PreferencesLocalization.Current("Pull failed"));
 				return gitCommandResult;
 			}
 			if (!gitCommandResult2.Succeeded)
 			{
-				monitor.Fail("Update submodules failed");
+				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
 				return gitCommandResult2;
 			}
 			monitor.Success("Everything is up to date");

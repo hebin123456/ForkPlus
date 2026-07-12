@@ -97,7 +97,7 @@ namespace ForkPlus.UI.Commands
 					monitor.Update(0.0, "Updating submodules...");
 					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
-				monitor.Fail("Pull failed");
+				monitor.Fail(PreferencesLocalization.Current("Pull failed"));
 				return gitCommandResult2;
 			}
 			GitCommandResult gitCommandResult3 = GitCommandResult.Success();
@@ -114,12 +114,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult3.Succeeded)
 			{
-				monitor.Fail("Apply stash failed");
+				monitor.Fail(PreferencesLocalization.Current("Apply stash failed"));
 				return gitCommandResult3;
 			}
 			if (!gitCommandResult4.Succeeded)
 			{
-				monitor.Fail("Update submodules failed");
+				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
 				return gitCommandResult4;
 			}
 			monitor.Success("Everything is up to date");

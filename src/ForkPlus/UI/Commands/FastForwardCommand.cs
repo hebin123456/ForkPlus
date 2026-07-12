@@ -79,12 +79,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult.Succeeded)
 			{
-				monitor.Fail("Fast forward failed");
+				monitor.Fail(PreferencesLocalization.Current("Fast forward failed"));
 				return gitCommandResult;
 			}
 			if (!gitCommandResult2.Succeeded)
 			{
-				monitor.Fail("Update submodules failed");
+				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
 				return gitCommandResult2;
 			}
 			monitor.Success("Everything is up to date");

@@ -6,6 +6,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -49,13 +50,13 @@ namespace ForkPlus.UI.CustomCommands
 			{
 				if (!File.Exists(stringToReplace))
 				{
-					new ErrorWindow("Can not find script path '" + stringToReplace + "'").ShowDialog();
+					new ErrorWindow(PreferencesLocalization.FormatCurrent("Can not find script path '{0}'", stringToReplace)).ShowDialog();
 					return;
 				}
 			}
 			catch
 			{
-				new ErrorWindow("Can not find script path '" + stringToReplace + "'").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Can not find script path '{0}'", stringToReplace)).ShowDialog();
 				return;
 			}
 			if (!WaitForExit)

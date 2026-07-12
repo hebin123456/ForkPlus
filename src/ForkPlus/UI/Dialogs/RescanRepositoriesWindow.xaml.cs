@@ -26,22 +26,29 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnSubmit()
 		{
-			_isCloseAllowed = false;
-			bool reset = ResetDeletedCheckbox.IsChecked.GetValueOrDefault();
-			DisableEditableControls();
-			SetStatus(ForkPlusDialogStatus.InProgress, "Scanning repositories...");
-			await Task.Run(delegate
+			try
 			{
-				new RescanUserRepositoriesCommand().Execute(reset);
-			});
-			if (reset)
-			{
-				ForkPlusSettings.Default.RepositoryManagerTreeViewExpandedItems = null;
+				_isCloseAllowed = false;
+				bool reset = ResetDeletedCheckbox.IsChecked.GetValueOrDefault();
+				DisableEditableControls();
+				SetStatus(ForkPlusDialogStatus.InProgress, "Scanning repositories...");
+				await Task.Run(delegate
+				{
+					new RescanUserRepositoriesCommand().Execute(reset);
+				});
+				if (reset)
+				{
+					ForkPlusSettings.Default.RepositoryManagerTreeViewExpandedItems = null;
+				}
+				_isCloseAllowed = true;
+				SetStatus(ForkPlusDialogStatus.Success, "Done");
+				await Task.Delay(1500);
+				CloseWithOk();
 			}
-			_isCloseAllowed = true;
-			SetStatus(ForkPlusDialogStatus.Success, "Done");
-			await Task.Delay(1500);
-			CloseWithOk();
+			catch (Exception ex)
+			{
+				Log.Error("OnSubmit failed", ex);
+			}
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

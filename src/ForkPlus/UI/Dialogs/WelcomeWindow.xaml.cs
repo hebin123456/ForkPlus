@@ -59,34 +59,41 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnSubmit()
 		{
-			string username = UserNameTextBox.Text.Trim();
-			string email = EmailNameTextBox.Text.Trim();
-			string text = DefaultCloneDirectoryTextBox.Text.Trim();
-			RepositoryManager.Instance.SetSourceDirs(new string[1] { text });
-			DisableEditableControls();
-			GitCommandResult gitCommandResult = await Task.Run(delegate
+			try
 			{
-				if (username != "" && email != "")
+				string username = UserNameTextBox.Text.Trim();
+				string email = EmailNameTextBox.Text.Trim();
+				string text = DefaultCloneDirectoryTextBox.Text.Trim();
+				RepositoryManager.Instance.SetSourceDirs(new string[1] { text });
+				DisableEditableControls();
+				GitCommandResult gitCommandResult = await Task.Run(delegate
 				{
-					GitCommandResult gitCommandResult2 = new SetGlobalUserIdentityGitCommand().Execute(new UserIdentity(username, email));
-					if (!gitCommandResult2.Succeeded)
+					if (username != "" && email != "")
 					{
-						return gitCommandResult2;
+						GitCommandResult gitCommandResult2 = new SetGlobalUserIdentityGitCommand().Execute(new UserIdentity(username, email));
+						if (!gitCommandResult2.Succeeded)
+						{
+							return gitCommandResult2;
+						}
 					}
+					new RescanUserRepositoriesCommand().Execute(reset: true);
+					return GitCommandResult.Success();
+				});
+				if (!gitCommandResult.Succeeded)
+				{
+					new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
+					Application.Current.Shutdown();
+					return;
 				}
-				new RescanUserRepositoriesCommand().Execute(reset: true);
-				return GitCommandResult.Success();
-			});
-			if (!gitCommandResult.Succeeded)
-			{
-				new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
-				Application.Current.Shutdown();
-				return;
+				ForkPlusSettings.Default.Guid = Guid.NewGuid().ToString();
+				ForkPlusSettings.Default.Save();
+				EnableEditableControls();
+				CloseWithOk();
 			}
-			ForkPlusSettings.Default.Guid = Guid.NewGuid().ToString();
-			ForkPlusSettings.Default.Save();
-			EnableEditableControls();
-			CloseWithOk();
+			catch (Exception ex)
+			{
+				Log.Error("OnSubmit failed", ex);
+			}
 		}
 
 		private void UserNameTextBox_TextChanged(object sender, TextChangedEventArgs e)

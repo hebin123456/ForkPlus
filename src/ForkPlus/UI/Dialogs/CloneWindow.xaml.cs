@@ -144,85 +144,99 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnSubmit()
 		{
-			string url = RepositoryUrlTextBox.Text.Trim();
-			string destinationDirectory = System.IO.Path.Combine(ParentDirectoryTextBox.Text.Trim(), RepositoryNameTextBox.Text.Trim());
-			bool recurseSubmodules = ForkPlusSettings.Default.UpdateSubmodulesOnCheckout;
-			RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
-			if (activeRepositoryUserControl != null)
+			try
 			{
-				string name = Translate("Cloning...");
-				string repositoryName = new GitUrl(url).RepositoryName;
-				if (repositoryName != null)
+				string url = RepositoryUrlTextBox.Text.Trim();
+				string destinationDirectory = System.IO.Path.Combine(ParentDirectoryTextBox.Text.Trim(), RepositoryNameTextBox.Text.Trim());
+				bool recurseSubmodules = ForkPlusSettings.Default.UpdateSubmodulesOnCheckout;
+				RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
+				if (activeRepositoryUserControl != null)
 				{
-					name = string.Format(Translate("Cloning {0}..."), repositoryName);
+					string name = Translate("Cloning...");
+					string repositoryName = new GitUrl(url).RepositoryName;
+					if (repositoryName != null)
+					{
+						name = string.Format(Translate("Cloning {0}..."), repositoryName);
+					}
+					activeRepositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+					{
+						RunClone(url, recurseSubmodules, destinationDirectory, monitor, foreground: false);
+					});
+					Close();
 				}
-				activeRepositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+				else
 				{
-					RunClone(url, recurseSubmodules, destinationDirectory, monitor, foreground: false);
-				});
-				Close();
+					DisableEditableControls();
+					SetStatus(ForkPlusDialogStatus.InProgress, Translate("Cloning..."));
+					await Task.Run(delegate
+					{
+						RunClone(url, recurseSubmodules, destinationDirectory, new JobMonitor(), foreground: true);
+					});
+					Close();
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				DisableEditableControls();
-				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Cloning..."));
-				await Task.Run(delegate
-				{
-					RunClone(url, recurseSubmodules, destinationDirectory, new JobMonitor(), foreground: true);
-				});
-				Close();
+				Log.Error("OnSubmit failed", ex);
 			}
 		}
 
 		private async void TestButton_Click(object sender, RoutedEventArgs e)
 		{
-			string newUrl = RepositoryUrlTextBox.Text.Trim();
-			DisableEditableControls();
-			StatusImage.Hide();
-			BusyIndicator.Show();
-			StatusTextBlock.Show();
-			StatusTextBlock.Text = Translate("Connecting...");
-			TestButton.Collapse();
-			await Task.Run(delegate
+			try
 			{
-				GitCommandResult result = new TestRemoteRepositoryConnectionGitCommand().Execute(newUrl, new JobMonitor());
-				base.Dispatcher.Invoke(delegate
+				string newUrl = RepositoryUrlTextBox.Text.Trim();
+				DisableEditableControls();
+				StatusImage.Hide();
+				BusyIndicator.Show();
+				StatusTextBlock.Show();
+				StatusTextBlock.Text = Translate("Connecting...");
+				TestButton.Collapse();
+				await Task.Run(delegate
 				{
-					EnableEditableControls();
-					BusyIndicator.Hide();
-					StatusImage.Show();
-					if (!result.Succeeded)
+					GitCommandResult result = new TestRemoteRepositoryConnectionGitCommand().Execute(newUrl, new JobMonitor());
+					base.Dispatcher.Invoke(delegate
 					{
-						StatusImage.Source = new BitmapImage(ForkPlusDialogWindow.WarningIcon);
-						if (result.Error is GitCommandError.CallbackUnknownError callbackUnknownError)
+						EnableEditableControls();
+						BusyIndicator.Hide();
+						StatusImage.Show();
+						if (!result.Succeeded)
 						{
-							if (callbackUnknownError.FullOutput.Contains("Permission denied (publickey)"))
+							StatusImage.Source = new BitmapImage(ForkPlusDialogWindow.WarningIcon);
+							if (result.Error is GitCommandError.CallbackUnknownError callbackUnknownError)
 							{
-								StatusTextBlock.Show();
-								StatusTextBlock.Text = Translate("Permission denied (publickey)");
-								ConfigureSSHKeyButton.Show();
-								TestButton.Collapse();
-							}
-							else if (callbackUnknownError.FullOutput.Contains("not found"))
-							{
-								StatusTextBlock.Show();
-								StatusTextBlock.Text = Translate("Repository not found");
-								TestButton.Collapse();
-							}
-							else
-							{
-								new ErrorWindow(null, result.Error).ShowDialog();
+								if (callbackUnknownError.FullOutput.Contains("Permission denied (publickey)"))
+								{
+									StatusTextBlock.Show();
+									StatusTextBlock.Text = Translate("Permission denied (publickey)");
+									ConfigureSSHKeyButton.Show();
+									TestButton.Collapse();
+								}
+								else if (callbackUnknownError.FullOutput.Contains("not found"))
+								{
+									StatusTextBlock.Show();
+									StatusTextBlock.Text = Translate("Repository not found");
+									TestButton.Collapse();
+								}
+								else
+								{
+									new ErrorWindow(null, result.Error).ShowDialog();
+								}
 							}
 						}
-					}
-					else
-					{
-						StatusImage.Source = new BitmapImage(ForkPlusDialogWindow.SuccessIcon);
-						StatusTextBlock.Show();
-						StatusTextBlock.Text = Translate("Connection succeeded");
-					}
+						else
+						{
+							StatusImage.Source = new BitmapImage(ForkPlusDialogWindow.SuccessIcon);
+							StatusTextBlock.Show();
+							StatusTextBlock.Text = Translate("Connection succeeded");
+						}
+					});
 				});
-			});
+			}
+			catch (Exception ex)
+			{
+				Log.Error("TestButton_Click failed", ex);
+			}
 		}
 
 		private void NetworkProtocolContextMenu_Opened(object sender, RoutedEventArgs e)

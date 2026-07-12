@@ -56,8 +56,8 @@ ForkPlus/
 プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
 
 ```bash
-git tag v1.2.5
-git push origin v1.2.5
+git tag v1.3.0
+git push origin v1.3.0
 ```
 
 ビルド成果物には `ForkPlus.exe`、すべての依存 DLL、`biturbo.dll`、言語ファイルなどが含まれ、解凍するだけで実行できます。
@@ -111,6 +111,8 @@ git push origin v1.2.5
 ## ダウンロード
 
 最新版は [Releases ページ](https://github.com/hebin123456/ForkPlus/releases) からダウンロードしてください。
+
+各バージョンの変更内容は [Release Notes](RELEASENOTES.md) を参照してください。
 
 ## 開発規約
 

@@ -63,18 +63,25 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnSubmit()
 		{
-			string keyName = KeyFileNameTextBox.Text;
-			string email = EmailTextBox.Text;
-			DisableEditableControls();
-			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Generating..."));
-			GitCommandResult gitCommandResult = await Task.Run(() => new GenerateSshKeyShellCommand().Execute(email, keyName));
-			SetStatus(ForkPlusDialogStatus.None, string.Empty);
-			EnableEditableControls();
-			if (gitCommandResult.Succeeded)
+			try
 			{
-				ResultKey = keyName;
+				string keyName = KeyFileNameTextBox.Text;
+				string email = EmailTextBox.Text;
+				DisableEditableControls();
+				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Generating..."));
+				GitCommandResult gitCommandResult = await Task.Run(() => new GenerateSshKeyShellCommand().Execute(email, keyName));
+				SetStatus(ForkPlusDialogStatus.None, string.Empty);
+				EnableEditableControls();
+				if (gitCommandResult.Succeeded)
+				{
+					ResultKey = keyName;
+				}
+				Close(gitCommandResult);
 			}
-			Close(gitCommandResult);
+			catch (Exception ex)
+			{
+				Log.Error("OnSubmit failed", ex);
+			}
 		}
 
 		private void KeyFileNameTextBox_TextChanged(object sender, TextChangedEventArgs e)

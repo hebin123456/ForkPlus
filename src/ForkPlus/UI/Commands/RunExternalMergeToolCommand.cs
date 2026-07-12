@@ -6,6 +6,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -43,7 +44,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(text))
 			{
 				Log.Error("Cannot find external merge tool at '" + text + "'");
-				new ErrorWindow("Cannot find external merge tool at '" + text + "'").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find external merge tool at '{0}'", text)).ShowDialog();
 				return;
 			}
 			string text2 = string.Join(" ", mergeTool.Arguments.Map((string x) => x.Replace("$LOCAL", local).Replace("$REMOTE", remote).Replace("$BASE", @base)

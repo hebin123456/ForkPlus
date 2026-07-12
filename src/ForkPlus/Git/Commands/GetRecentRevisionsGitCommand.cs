@@ -30,6 +30,14 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("log", "--no-show-signature", "--all", "-n 5", "--date-order", "--pretty=format:%H%n%an%n%ae%n%at%n%s", "--").Execute();
 			if (!gitRequestResult.Success)
 			{
+				// 空仓库（无 commit）时 git log 会失败，stderr 含 "does not have any commits" 或 "unknown revision"；
+				// 这类情况返回空数组，其他真实错误（unsafe repository、git 缺失等）记录日志便于排查。
+				string stderr = gitRequestResult.Stderr ?? "";
+				if (stderr.Contains("does not have any commits") || stderr.Contains("unknown revision") || stderr.Contains("bad revision"))
+				{
+					return GitCommandResult<RecentRevision[]>.Success(new RecentRevision[0]);
+				}
+				Log.Error("GetRecentRevisions failed: " + stderr);
 				return GitCommandResult<RecentRevision[]>.Success(new RecentRevision[0]);
 			}
 			string[] array = gitRequestResult.Stdout.Split(Consts.Chars.NewLine);

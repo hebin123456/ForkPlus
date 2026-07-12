@@ -177,12 +177,11 @@ namespace ForkPlus.Git.Commands
 				}
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute(silent: true);
-			string stderr = gitRequestResult.Stderr;
-			if (stderr != null && stderr.Contains("fatal:"))
-			{
-				Log.Error(gitRequestResult.Stderr);
-				return GitCommandResult<DiffContent>.Failure(new GitCommandError.GitError(gitRequestResult));
-			}
+		if (!gitRequestResult.Success)
+		{
+			Log.Error(gitRequestResult.Stderr);
+			return GitCommandResult<DiffContent>.Failure(new GitCommandError.GitError(gitRequestResult));
+		}
 			bool flag = changedFile.ChangeType == ChangeType.Unmerged;
 			if (flag && !resolvedConflict)
 			{

@@ -20,7 +20,7 @@ namespace ForkPlus.Git.Commands
 			{
 				gitCommand.Add("--force");
 			}
-			gitCommand.Add(branch.Name);
+			gitCommand.Add(branch.Name.Quotify());
 			monitor.Append(null, gitCommand);
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).ExecuteLong(delegate(string stdOutLine)
 			{

@@ -54,33 +54,40 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnSubmit()
 		{
-			string url = ManifestUrlTextBox.Text.Trim();
-			string parentDirectory = ParentDirectoryTextBox.Text.Trim();
-			string repositoryName = RepositoryNameTextBox.Text.Trim();
-			string destinationDirectory = System.IO.Path.Combine(parentDirectory, repositoryName);
-			string manifest = string.IsNullOrWhiteSpace(ManifestFileTextBox.Text) ? "dependency.xml" : ManifestFileTextBox.Text.Trim();
-			string branch = string.IsNullOrWhiteSpace(ManifestBranchTextBox.Text) ? "master" : ManifestBranchTextBox.Text.Trim();
-			string group = string.IsNullOrWhiteSpace(ManifestGroupTextBox.Text) ? "default" : ManifestGroupTextBox.Text.Trim();
-			if (!ValidateDestination(destinationDirectory))
+			try
 			{
-				return;
+				string url = ManifestUrlTextBox.Text.Trim();
+				string parentDirectory = ParentDirectoryTextBox.Text.Trim();
+				string repositoryName = RepositoryNameTextBox.Text.Trim();
+				string destinationDirectory = System.IO.Path.Combine(parentDirectory, repositoryName);
+				string manifest = string.IsNullOrWhiteSpace(ManifestFileTextBox.Text) ? "dependency.xml" : ManifestFileTextBox.Text.Trim();
+				string branch = string.IsNullOrWhiteSpace(ManifestBranchTextBox.Text) ? "master" : ManifestBranchTextBox.Text.Trim();
+				string group = string.IsNullOrWhiteSpace(ManifestGroupTextBox.Text) ? "default" : ManifestGroupTextBox.Text.Trim();
+				if (!ValidateDestination(destinationDirectory))
+				{
+					return;
+				}
+				SaveDefaults(url, manifest, branch, group);
+				DisableEditableControls();
+				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Initializing git mm repository..."));
+				GitRequestResult result = await Task.Run(delegate
+				{
+					return RunInit(destinationDirectory, url, manifest, branch, group);
+				});
+				SetStatus(ForkPlusDialogStatus.None, string.Empty);
+				EnableEditableControls();
+				if (!result.Success)
+				{
+					new MessageBoxWindow("git mm init failed", result.FullReadableOutput(), "Close", "Cancel", showCancelButton: false).ShowDialog();
+					return;
+				}
+				Application.Current.TabManager().OpenRepository(destinationDirectory);
+				Close();
 			}
-			SaveDefaults(url, manifest, branch, group);
-			DisableEditableControls();
-			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Initializing git mm repository..."));
-			GitRequestResult result = await Task.Run(delegate
+			catch (Exception ex)
 			{
-				return RunInit(destinationDirectory, url, manifest, branch, group);
-			});
-			SetStatus(ForkPlusDialogStatus.None, string.Empty);
-			EnableEditableControls();
-			if (!result.Success)
-			{
-				new MessageBoxWindow("git mm init failed", result.FullReadableOutput(), "Close", "Cancel", showCancelButton: false).ShowDialog();
-				return;
+				Log.Error("OnSubmit failed", ex);
 			}
-			Application.Current.TabManager().OpenRepository(destinationDirectory);
-			Close();
 		}
 
 		private bool ValidateDestination(string destinationDirectory)

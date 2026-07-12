@@ -17,21 +17,21 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, string remote, LocalBranch localBranch, [Null] RemoteBranch remoteBranch, [Null] string customRefspec, bool pushAllTags, bool force, bool track, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remote);
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remote.Quotify());
 			if (remoteBranch != null)
 			{
 			 string fullReference = localBranch.FullReference;
 			 string text = ((!(remoteBranch.Remote == remote)) ? ("refs/heads/" + localBranch.Name) : ("refs/heads/" + remoteBranch.ShortName));
-			 gitCommand.Add(fullReference + ":" + text);
+			 gitCommand.Add((fullReference + ":" + text).Quotify());
 			}
 			else if (customRefspec != null)
 			{
 			 string fullReference2 = localBranch.FullReference;
-			 gitCommand.Add(fullReference2 + ":" + customRefspec);
+			 gitCommand.Add((fullReference2 + ":" + customRefspec).Quotify());
 			}
 			else
 			{
-			 gitCommand.Add(localBranch.FullReference);
+			 gitCommand.Add(localBranch.FullReference.Quotify());
 			}
 			if (force)
 			{
@@ -102,8 +102,8 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, RemoteBranch remoteBranch, string destination, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remoteBranch.Remote);
-			gitCommand.Add(destination + ":refs/heads/" + remoteBranch.ShortName);
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remoteBranch.Remote.Quotify());
+			gitCommand.Add((destination + ":refs/heads/" + remoteBranch.ShortName).Quotify());
 			gitCommand.Add("--force-with-lease");
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");

@@ -109,7 +109,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(editorPath))
 			{
 				Log.Error("Cannot find external tool at '" + editorPath + "'");
-				new ErrorWindow("Cannot find external tool at '" + editorPath + "'").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find external tool at '{0}'", editorPath)).ShowDialog();
 				return;
 			}
 			string filePath = PathHelper.Normalize(gitModule.MakePath(path));

@@ -162,130 +162,137 @@ namespace ForkPlus.UI.UserControls
 
 		private async void UpdatePreview(RepositoryManager.Repository? repo)
 		{
-			UnsafeRepositoryFallbackUserControl.Hide();
-			if (repo.HasValue)
+			try
 			{
-				RepositoryManager.Repository repository = repo.GetValueOrDefault();
-				DirectoryFallbackUserControl.Hide();
-				if (_selectedRepository?.Path != repository.Path)
+				UnsafeRepositoryFallbackUserControl.Hide();
+				if (repo.HasValue)
 				{
-					return;
-				}
-				if (GitMmUserControl.IsGitMmWorkspace(repository.Path))
-				{
-					await ShowGitMmDetails(repository);
-					return;
-				}
-				GitCommandResult<GitModule> gitCommandResult = await Task.Run(() => new OpenGitRepositoryGitCommand().Execute(repository.Path));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				if (!gitCommandResult.Succeeded)
-				{
-					if (gitCommandResult.Error is GitCommandError.UnsafeRepository)
+					RepositoryManager.Repository repository = repo.GetValueOrDefault();
+					DirectoryFallbackUserControl.Hide();
+					if (_selectedRepository?.Path != repository.Path)
 					{
-						UnsafeRepositoryFallbackUserControl.Tag = gitCommandResult.Error;
-						UnsafeRepositoryFallbackUserControl.FallbackTitle = string.Format(Translate("{0} is located in directory owned by someone else"), repository.Name());
-						UnsafeRepositoryFallbackUserControl.FallbackMessage = string.Format(Translate("Is '{0}' location safe?"), repository.Path);
-						UnsafeRepositoryFallbackUserControl.Button1Title = string.Format(Translate("Mark {0} as safe"), repository.Name());
-						UnsafeRepositoryFallbackUserControl.Show();
+						return;
 					}
-					else
+					if (GitMmUserControl.IsGitMmWorkspace(repository.Path))
 					{
-						FallbackUserControl.Show();
+						await ShowGitMmDetails(repository);
+						return;
 					}
-					return;
-				}
-				FallbackUserControl.Hide();
-				GitModule gitModule = gitCommandResult.Result;
-				RepositoryName.Text = repository.Name();
-				RepositoryPath.Text = repository.Path;
-				GitCommandResult<int> changedFilesCountResult = await Task.Run(() => new GetChangedFilesCountGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				GitCommandResult<int> revisionsCountResult = await Task.Run(() => new GetRevisionCountGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				DateTime? initialRevisionDateResult = await Task.Run(() => new GetInitialRevisionDateGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				DateTime? dateTime = await Task.Run(() => new GetLastRevisionDateGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				if (changedFilesCountResult.Succeeded)
-				{
-					ChangedFilesTextBlock.Text = changedFilesCountResult.Result.ToString();
-				}
-				if (revisionsCountResult.Succeeded)
-				{
-					CommitsTextBlock.Text = revisionsCountResult.Result.ToString();
-				}
-				InitialCommitDateTextBlock.Text = ((!initialRevisionDateResult.HasValue) ? "" : DateTimeHelper.ToRelativeString(initialRevisionDateResult.Value));
-				LastCommitDateTextBlock.Text = ((!dateTime.HasValue) ? "" : DateTimeHelper.ToRelativeString(dateTime.Value));
-				GitCommandResult<RepositoryRemotes> gitCommandResult2 = await Task.Run(() => new GetRemotesGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				if (gitCommandResult2.Succeeded)
-				{
-					RemotesItemsControl.ItemsSource = gitCommandResult2.Result.Items.Map((Remote x) => new RemoteViewModel(x));
-				}
-				if (StatisticsTabItem.IsSelected)
-				{
-					StatisticsUserControl.ShowStatistics(gitModule);
-					return;
-				}
-				GitCommandResult<GetRecentReferencesGitCommand.RecentReferences> gitCommandResult3 = await Task.Run(() => new GetRecentReferencesGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				if (gitCommandResult3.Succeeded)
-				{
-					BranchesItemsControl.ItemsSource = gitCommandResult3.Result.RemoteBranches.Map((GetRecentReferencesGitCommand.RecentReference x) => new ReferenceViewModel(x));
-					TagsItemsControl.ItemsSource = gitCommandResult3.Result.Tags.Map((GetRecentReferencesGitCommand.RecentReference x) => new ReferenceViewModel(x));
-				}
-				GitCommandResult<GetRecentRevisionsGitCommand.RecentRevision[]> gitCommandResult4 = await Task.Run(() => new GetRecentRevisionsGitCommand().Execute(gitModule));
-				if (_selectedRepository?.Path != repository.Path)
-				{
-					return;
-				}
-				if (gitCommandResult4.Succeeded)
-				{
-					CommitsItemsControl.ItemsSource = gitCommandResult4.Result.Map((GetRecentRevisionsGitCommand.RecentRevision x) => new RevisionViewModel(x));
-				}
-				try
-				{
-					if (File.Exists(gitModule.MakePath("readme.md")))
+					GitCommandResult<GitModule> gitCommandResult = await Task.Run(() => new OpenGitRepositoryGitCommand().Execute(repository.Path));
+					if (_selectedRepository?.Path != repository.Path)
 					{
-						ReadmeContainer.Show();
-						ReadmeTextBox.Text = File.ReadAllText(gitModule.MakePath("readme.md"));
+						return;
 					}
-					else
+					if (!gitCommandResult.Succeeded)
+					{
+						if (gitCommandResult.Error is GitCommandError.UnsafeRepository)
+						{
+							UnsafeRepositoryFallbackUserControl.Tag = gitCommandResult.Error;
+							UnsafeRepositoryFallbackUserControl.FallbackTitle = string.Format(Translate("{0} is located in directory owned by someone else"), repository.Name());
+							UnsafeRepositoryFallbackUserControl.FallbackMessage = string.Format(Translate("Is '{0}' location safe?"), repository.Path);
+							UnsafeRepositoryFallbackUserControl.Button1Title = string.Format(Translate("Mark {0} as safe"), repository.Name());
+							UnsafeRepositoryFallbackUserControl.Show();
+						}
+						else
+						{
+							FallbackUserControl.Show();
+						}
+						return;
+					}
+					FallbackUserControl.Hide();
+					GitModule gitModule = gitCommandResult.Result;
+					RepositoryName.Text = repository.Name();
+					RepositoryPath.Text = repository.Path;
+					GitCommandResult<int> changedFilesCountResult = await Task.Run(() => new GetChangedFilesCountGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					GitCommandResult<int> revisionsCountResult = await Task.Run(() => new GetRevisionCountGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					DateTime? initialRevisionDateResult = await Task.Run(() => new GetInitialRevisionDateGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					DateTime? dateTime = await Task.Run(() => new GetLastRevisionDateGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					if (changedFilesCountResult.Succeeded)
+					{
+						ChangedFilesTextBlock.Text = changedFilesCountResult.Result.ToString();
+					}
+					if (revisionsCountResult.Succeeded)
+					{
+						CommitsTextBlock.Text = revisionsCountResult.Result.ToString();
+					}
+					InitialCommitDateTextBlock.Text = ((!initialRevisionDateResult.HasValue) ? "" : DateTimeHelper.ToRelativeString(initialRevisionDateResult.Value));
+					LastCommitDateTextBlock.Text = ((!dateTime.HasValue) ? "" : DateTimeHelper.ToRelativeString(dateTime.Value));
+					GitCommandResult<RepositoryRemotes> gitCommandResult2 = await Task.Run(() => new GetRemotesGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					if (gitCommandResult2.Succeeded)
+					{
+						RemotesItemsControl.ItemsSource = gitCommandResult2.Result.Items.Map((Remote x) => new RemoteViewModel(x));
+					}
+					if (StatisticsTabItem.IsSelected)
+					{
+						StatisticsUserControl.ShowStatistics(gitModule);
+						return;
+					}
+					GitCommandResult<GetRecentReferencesGitCommand.RecentReferences> gitCommandResult3 = await Task.Run(() => new GetRecentReferencesGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					if (gitCommandResult3.Succeeded)
+					{
+						BranchesItemsControl.ItemsSource = gitCommandResult3.Result.RemoteBranches.Map((GetRecentReferencesGitCommand.RecentReference x) => new ReferenceViewModel(x));
+						TagsItemsControl.ItemsSource = gitCommandResult3.Result.Tags.Map((GetRecentReferencesGitCommand.RecentReference x) => new ReferenceViewModel(x));
+					}
+					GitCommandResult<GetRecentRevisionsGitCommand.RecentRevision[]> gitCommandResult4 = await Task.Run(() => new GetRecentRevisionsGitCommand().Execute(gitModule));
+					if (_selectedRepository?.Path != repository.Path)
+					{
+						return;
+					}
+					if (gitCommandResult4.Succeeded)
+					{
+						CommitsItemsControl.ItemsSource = gitCommandResult4.Result.Map((GetRecentRevisionsGitCommand.RecentRevision x) => new RevisionViewModel(x));
+					}
+					try
+					{
+						if (File.Exists(gitModule.MakePath("readme.md")))
+						{
+							ReadmeContainer.Show();
+							ReadmeTextBox.Text = File.ReadAllText(gitModule.MakePath("readme.md"));
+						}
+						else
+						{
+							ReadmeContainer.Hide();
+							ReadmeTextBox.Text = "";
+						}
+						return;
+					}
+					catch
 					{
 						ReadmeContainer.Hide();
 						ReadmeTextBox.Text = "";
+						return;
 					}
-					return;
 				}
-				catch
-				{
-					ReadmeContainer.Hide();
-					ReadmeTextBox.Text = "";
-					return;
-				}
+				DirectoryFallbackUserControl.Show();
 			}
-			DirectoryFallbackUserControl.Show();
+			catch (Exception ex)
+			{
+				Log.Error("UpdatePreview failed", ex);
+			}
 		}
 
 		private async Task ShowGitMmDetails(RepositoryManager.Repository repository)

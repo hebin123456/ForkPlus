@@ -202,7 +202,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult gitCommandResult2 = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				if (!gitCommandResult2.Succeeded)
 				{
-					monitor.Fail("Updating submodules failed");
+					monitor.Fail(PreferencesLocalization.Current("Updating submodules failed"));
 					return gitCommandResult2;
 				}
 				monitor.Success("");

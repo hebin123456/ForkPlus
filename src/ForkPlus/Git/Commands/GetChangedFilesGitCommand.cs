@@ -120,19 +120,29 @@ namespace ForkPlus.Git.Commands
 					list.Add(new ChangedFile(filepath, StatusType.Added));
 					break;
 				case ChangeType.Copied:
+			{
+				if (i + 1 >= array.Length || string.IsNullOrEmpty(array[i + 1]))
 				{
-					string oldPath2 = array[i + 1];
-					list.Add(new ChangedFile(filepath, StatusType.Copied, StatusType.None, oldPath2));
-					i++;
+					Log.Warn("Truncated status output for copied file: '" + text + "'");
 					break;
 				}
-				case ChangeType.Renamed:
+				string oldPath2 = array[i + 1];
+				list.Add(new ChangedFile(filepath, StatusType.Copied, StatusType.None, oldPath2));
+				i++;
+				break;
+			}
+			case ChangeType.Renamed:
+			{
+				if (i + 1 >= array.Length || string.IsNullOrEmpty(array[i + 1]))
 				{
-					string oldPath = array[i + 1];
-					list.Add(new ChangedFile(filepath, StatusType.Renamed, StatusType.None, oldPath));
-					i++;
+					Log.Warn("Truncated status output for renamed file: '" + text + "'");
 					break;
 				}
+				string oldPath = array[i + 1];
+				list.Add(new ChangedFile(filepath, StatusType.Renamed, StatusType.None, oldPath));
+				i++;
+				break;
+			}
 				case ChangeType.TypeChanged:
 					list.Add(new ChangedFile(filepath, StatusType.TypeChanged));
 					break;
@@ -243,19 +253,29 @@ namespace ForkPlus.Git.Commands
 					list.Add(new ChangedFile(filepath, StatusType.Added));
 					break;
 				case ChangeType.Copied:
+			{
+				if (j + 1 >= array.Length || string.IsNullOrEmpty(array[j + 1]))
 				{
-					string oldPath2 = array[j + 1];
-					list.Add(new ChangedFile(filepath, StatusType.Copied, StatusType.None, oldPath2));
-					j++;
+					Log.Warn("Truncated status output for copied file: '" + text + "'");
 					break;
 				}
-				case ChangeType.Renamed:
+				string oldPath2 = array[j + 1];
+				list.Add(new ChangedFile(filepath, StatusType.Copied, StatusType.None, oldPath2));
+				j++;
+				break;
+			}
+			case ChangeType.Renamed:
+			{
+				if (j + 1 >= array.Length || string.IsNullOrEmpty(array[j + 1]))
 				{
-					string oldPath = array[j + 1];
-					list.Add(new ChangedFile(filepath, StatusType.Renamed, StatusType.None, oldPath));
-					j++;
+					Log.Warn("Truncated status output for renamed file: '" + text + "'");
 					break;
 				}
+				string oldPath = array[j + 1];
+				list.Add(new ChangedFile(filepath, StatusType.Renamed, StatusType.None, oldPath));
+				j++;
+				break;
+			}
 				default:
 					Log.Error("Unhandled staged case: '" + text + "'");
 					break;

@@ -123,9 +123,25 @@ namespace ForkPlus.UI.UserControls
 			RepositoryUserControl repositoryUserControl = RevisionDetailsUserControl.RepositoryUserControl;
 			FileContentControl.RepositoryUserControl = repositoryUserControl;
 			FileContentControl.Content = null;
-			GitCommandResult<FileTreeItem[]> gitCommandResult = new GetRevisionFileTreeGitCommand().Execute(gitModule, "", sha);
-			if (gitCommandResult.Succeeded)
+			Sha shaValue = sha;
+			// 异步执行 `git ls-tree` 避免阻塞 UI 线程，完成后回到 UI 线程构建树。
+			Task<GitCommandResult<FileTreeItem[]>> task = new Task<GitCommandResult<FileTreeItem[]>>(() => new GetRevisionFileTreeGitCommand().Execute(gitModule, "", shaValue));
+			task.ContinueWith(delegate(Task<GitCommandResult<FileTreeItem[]>> treeTask)
 			{
+				if (treeTask.IsFaulted || treeTask.IsCanceled)
+				{
+					return;
+				}
+				GitCommandResult<FileTreeItem[]> gitCommandResult = treeTask.Result;
+				if (!gitCommandResult.Succeeded)
+				{
+					return;
+				}
+				// 期间若已切换到其它 revision，丢弃本次结果。
+				if (!_sha.HasValue || _sha.GetValueOrDefault() != shaValue)
+				{
+					return;
+				}
 				RevisionFileTreeViewItem revisionFileTreeViewItem = new RevisionFileTreeViewItem(null, null);
 				FileTreeItem[] result = gitCommandResult.Result;
 				foreach (FileTreeItem fileTreeItem in result)
@@ -140,7 +156,8 @@ namespace ForkPlus.UI.UserControls
 					string[] pathComponents = text.Split('/');
 					Expand(pathComponents, FilesTreeView.RootItem.Children);
 				}
-			}
+			}, TaskScheduler.FromCurrentSynchronizationContext());
+			task.Start();
 		}
 
 		public void ShowRevisionDetails(string filePath)

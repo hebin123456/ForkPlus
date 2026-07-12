@@ -176,77 +176,84 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnInitialized(EventArgs e)
 		{
-			base.OnInitialized(e);
-			RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
-			if (repositoryData == null)
+			try
 			{
-				return;
-			}
-			ShowFileHistoryWindowCommand.Mode mode = _mode;
-			ShowFileHistoryWindowCommand.Mode.Hunk hunk = mode as ShowFileHistoryWindowCommand.Mode.Hunk;
-			if (hunk != null)
-			{
-				BusyIndicator.Show();
-				GitCommandResult<(RevisionWithFiles[], string[])> gitCommandResult = await Task.Run(() => new GetFileHistoryGitCommand().Execute(GitModule, hunk.Path, hunk.LineRange, _targetReference?.Sha));
-				BusyIndicator.Hide();
-				if (!gitCommandResult.Succeeded)
+				base.OnInitialized(e);
+				RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
+				if (repositoryData == null)
 				{
-					ShowErrorFallback(gitCommandResult.Error);
 					return;
 				}
-				_revisions = gitCommandResult.Result.Item1;
-				_patches = gitCommandResult.Result.Item2;
-				RevisionTimeLine.Revisions = gitCommandResult.Result.Item1;
-				CodeEditorFallbackUserControl.Hide();
-				ChangedFile changedFile = new ChangedFile(hunk.Path, StatusType.Modified);
-				RevisionWithFiles[] item = gitCommandResult.Result.Item1;
-				foreach (RevisionWithFiles revision in item)
+				ShowFileHistoryWindowCommand.Mode mode = _mode;
+				ShowFileHistoryWindowCommand.Mode.Hunk hunk = mode as ShowFileHistoryWindowCommand.Mode.Hunk;
+				if (hunk != null)
 				{
-					_root.Children.Add(new HistoryEntryViewModel(revision, changedFile));
-				}
-			}
-			else if (_mode is ShowFileHistoryWindowCommand.Mode.File || _mode is ShowFileHistoryWindowCommand.Mode.Directory)
-			{
-				BusyIndicator.Show();
-				GitCommandResult<RevisionWithFiles[]> gitCommandResult2 = await Task.Run(() => new GetFileHistoryGitCommand().Execute(GitModule, repositoryData.Submodules.Items, _mode.Path, _targetReference?.Sha));
-				BusyIndicator.Hide();
-				if (!gitCommandResult2.Succeeded)
-				{
-					ShowErrorFallback(gitCommandResult2.Error);
-					return;
-				}
-				_revisions = gitCommandResult2.Result;
-				RevisionTimeLine.Revisions = gitCommandResult2.Result;
-				CodeEditorFallbackUserControl.Hide();
-				RevisionWithFiles[] item = gitCommandResult2.Result;
-				foreach (RevisionWithFiles revisionWithFiles in item)
-				{
-					if (_mode is ShowFileHistoryWindowCommand.Mode.Directory)
+					BusyIndicator.Show();
+					GitCommandResult<(RevisionWithFiles[], string[])> gitCommandResult = await Task.Run(() => new GetFileHistoryGitCommand().Execute(GitModule, hunk.Path, hunk.LineRange, _targetReference?.Sha));
+					BusyIndicator.Hide();
+					if (!gitCommandResult.Succeeded)
 					{
-						FolderHistoryEntryViewModel folderHistoryEntryViewModel = new FolderHistoryEntryViewModel(revisionWithFiles, revisionWithFiles.ChangedFiles.FirstItem());
-						_root.Children.Add(folderHistoryEntryViewModel);
-						ChangedFile[] changedFiles = revisionWithFiles.ChangedFiles;
-						foreach (ChangedFile changedFile2 in changedFiles)
+						ShowErrorFallback(gitCommandResult.Error);
+						return;
+					}
+					_revisions = gitCommandResult.Result.Item1;
+					_patches = gitCommandResult.Result.Item2;
+					RevisionTimeLine.Revisions = gitCommandResult.Result.Item1;
+					CodeEditorFallbackUserControl.Hide();
+					ChangedFile changedFile = new ChangedFile(hunk.Path, StatusType.Modified);
+					RevisionWithFiles[] item = gitCommandResult.Result.Item1;
+					foreach (RevisionWithFiles revision in item)
+					{
+						_root.Children.Add(new HistoryEntryViewModel(revision, changedFile));
+					}
+				}
+				else if (_mode is ShowFileHistoryWindowCommand.Mode.File || _mode is ShowFileHistoryWindowCommand.Mode.Directory)
+				{
+					BusyIndicator.Show();
+					GitCommandResult<RevisionWithFiles[]> gitCommandResult2 = await Task.Run(() => new GetFileHistoryGitCommand().Execute(GitModule, repositoryData.Submodules.Items, _mode.Path, _targetReference?.Sha));
+					BusyIndicator.Hide();
+					if (!gitCommandResult2.Succeeded)
+					{
+						ShowErrorFallback(gitCommandResult2.Error);
+						return;
+					}
+					_revisions = gitCommandResult2.Result;
+					RevisionTimeLine.Revisions = gitCommandResult2.Result;
+					CodeEditorFallbackUserControl.Hide();
+					RevisionWithFiles[] item = gitCommandResult2.Result;
+					foreach (RevisionWithFiles revisionWithFiles in item)
+					{
+						if (_mode is ShowFileHistoryWindowCommand.Mode.Directory)
 						{
-							folderHistoryEntryViewModel.Children.Add(new SubItemFileHistoryEntryViewModel(revisionWithFiles, changedFile2));
+							FolderHistoryEntryViewModel folderHistoryEntryViewModel = new FolderHistoryEntryViewModel(revisionWithFiles, revisionWithFiles.ChangedFiles.FirstItem());
+							_root.Children.Add(folderHistoryEntryViewModel);
+							ChangedFile[] changedFiles = revisionWithFiles.ChangedFiles;
+							foreach (ChangedFile changedFile2 in changedFiles)
+							{
+								folderHistoryEntryViewModel.Children.Add(new SubItemFileHistoryEntryViewModel(revisionWithFiles, changedFile2));
+							}
+						}
+						else if (_mode is ShowFileHistoryWindowCommand.Mode.File)
+						{
+							_root.Children.Add(new HistoryEntryViewModel(revisionWithFiles, revisionWithFiles.ChangedFiles.FirstItem()));
 						}
 					}
-					else if (_mode is ShowFileHistoryWindowCommand.Mode.File)
+					if (_mode is ShowFileHistoryWindowCommand.Mode.Directory)
 					{
-						_root.Children.Add(new HistoryEntryViewModel(revisionWithFiles, revisionWithFiles.ChangedFiles.FirstItem()));
+						_root.ExpandAllChildren();
 					}
 				}
-				if (_mode is ShowFileHistoryWindowCommand.Mode.Directory)
+				TreeView.Focus();
+				HistoryEntryViewModel historyEntryViewModel = GetElementBySha(_revisionToSelect) ?? GetFirstItemToSelect();
+				if (historyEntryViewModel != null)
 				{
-					_root.ExpandAllChildren();
+					TreeView.SelectedItem = historyEntryViewModel;
+					TreeView.ScrollIntoView(historyEntryViewModel);
 				}
 			}
-			TreeView.Focus();
-			HistoryEntryViewModel historyEntryViewModel = GetElementBySha(_revisionToSelect) ?? GetFirstItemToSelect();
-			if (historyEntryViewModel != null)
+			catch (Exception ex)
 			{
-				TreeView.SelectedItem = historyEntryViewModel;
-				TreeView.ScrollIntoView(historyEntryViewModel);
+				Log.Error("OnInitialized failed", ex);
 			}
 		}
 

@@ -25,10 +25,10 @@ namespace ForkPlus.Git.Commands
 			{
 				gitCommand.Add("--rebase=false");
 			}
-			gitCommand.Add(remote);
+			gitCommand.Add(remote.Quotify());
 			if (remoteBranch != null)
 			{
-				gitCommand.Add(remoteBranch.ShortName);
+				gitCommand.Add(remoteBranch.ShortName.Quotify());
 			}
 			else
 			{

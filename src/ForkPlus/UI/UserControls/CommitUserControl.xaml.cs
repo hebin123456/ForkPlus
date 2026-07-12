@@ -1175,11 +1175,18 @@ namespace ForkPlus.UI.UserControls
 
 		private async void RefreshRepositoryStatusUi()
 		{
-			if (RepositoryUserControl.RepositoryStatus == null)
+			try
 			{
-				return;
+				if (RepositoryUserControl.RepositoryStatus == null)
+				{
+					return;
+				}
+				await RefreshRepositoryStatusUiAsync(showNestedWait: false);
 			}
-			await RefreshRepositoryStatusUiAsync(showNestedWait: false);
+			catch (Exception ex)
+			{
+				Log.Error("RefreshRepositoryStatusUi failed", ex);
+			}
 		}
 
 		private async Task RefreshRepositoryStatusUiAsync(bool showNestedWait)
@@ -1356,24 +1363,31 @@ namespace ForkPlus.UI.UserControls
 
 		private async void UpdateStagedDiffStats()
 		{
-			int requestId = ++_stagedDiffStatsRequestId;
-			bool amendMode = AmendMode;
-			if ((!amendMode && StageFileUserControl.StagedItemsCount == 0) || GitModule == null)
+			try
 			{
+				int requestId = ++_stagedDiffStatsRequestId;
+				bool amendMode = AmendMode;
+				if ((!amendMode && StageFileUserControl.StagedItemsCount == 0) || GitModule == null)
+				{
+					ClearStagedDiffStats();
+					return;
+				}
+				string repositoryPath = GitModule.Path;
 				ClearStagedDiffStats();
-				return;
+				(int added, int deleted)? stats = await Task.Run(() => GetStagedDiffStats(repositoryPath, amendMode));
+				if (requestId != _stagedDiffStatsRequestId)
+				{
+					return;
+				}
+				if (stats.HasValue)
+				{
+					StagedDiffAddedRun.Text = $"+{stats.Value.added}";
+					StagedDiffDeletedRun.Text = $"-{stats.Value.deleted}";
+				}
 			}
-			string repositoryPath = GitModule.Path;
-			ClearStagedDiffStats();
-			(int added, int deleted)? stats = await Task.Run(() => GetStagedDiffStats(repositoryPath, amendMode));
-			if (requestId != _stagedDiffStatsRequestId)
+			catch (Exception ex)
 			{
-				return;
-			}
-			if (stats.HasValue)
-			{
-				StagedDiffAddedRun.Text = $"+{stats.Value.added}";
-				StagedDiffDeletedRun.Text = $"-{stats.Value.deleted}";
+				Log.Error("UpdateStagedDiffStats failed", ex);
 			}
 		}
 

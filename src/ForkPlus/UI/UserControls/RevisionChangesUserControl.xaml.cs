@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,6 +21,8 @@ namespace ForkPlus.UI.UserControls
 	public partial class RevisionChangesUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
 		private ChangedFile[] _changedFiles = new ChangedFile[0];
+
+		private int _diffRequestId;
 
 		[Null]
 		private RevisionDiffTarget _target;
@@ -459,9 +462,39 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			GitModule gitModule = RevisionDetailsUserControl.GitModule;
-			GitCommandResult<DiffContent> gitCommandResult = new GetRevisionFileChangesGitCommand().Execute(gitModule, _target, changedFile, ForkPlusSettings.Default.DiffContextSize, gitModule.Settings.TabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, DiffShowEntireFile);
-			FileDiffControl.Content = gitCommandResult;
-			_diffPopupWindow?.UpdateDiff(gitCommandResult);
+			if (gitModule == null)
+			{
+				return;
+			}
+			RevisionDiffTarget target = _target;
+			if (target == null)
+			{
+				return;
+			}
+			int requestId = ++_diffRequestId;
+			int contextSize = ForkPlusSettings.Default.DiffContextSize;
+			int tabWidth = gitModule.Settings.TabWidth;
+			bool ignoreWhitespaces = ForkPlusSettings.Default.DiffIgnoreWhitespaces;
+			bool showEntireFile = DiffShowEntireFile;
+			ChangedFile capturedFile = changedFile;
+			// 异步执行 diff 计算，避免大文件 diff 阻塞 UI 线程。
+			Task<GitCommandResult<DiffContent>> task = new Task<GitCommandResult<DiffContent>>(() => new GetRevisionFileChangesGitCommand().Execute(gitModule, target, capturedFile, contextSize, tabWidth, ignoreWhitespaces, showEntireFile));
+			task.ContinueWith(delegate(Task<GitCommandResult<DiffContent>> diffTask)
+			{
+				if (diffTask.IsFaulted || diffTask.IsCanceled)
+				{
+					return;
+				}
+				// 期间若又切换了文件或 target，丢弃本次过期结果。
+				if (requestId != _diffRequestId)
+				{
+					return;
+				}
+				GitCommandResult<DiffContent> gitCommandResult = diffTask.Result;
+				FileDiffControl.Content = gitCommandResult;
+				_diffPopupWindow?.UpdateDiff(gitCommandResult);
+			}, TaskScheduler.FromCurrentSynchronizationContext());
+			task.Start();
 		}
 
 		private void UpdateFilter(string filterString)

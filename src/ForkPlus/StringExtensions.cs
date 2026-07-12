@@ -14,7 +14,7 @@ namespace ForkPlus
 
 		public static string Quotify(this string input)
 		{
-			return "\"" + input + "\"";
+			return "\"" + (input ?? "").Replace("\"", "\\\"") + "\"";
 		}
 
 		public static string EscapeSpaces(this string input)

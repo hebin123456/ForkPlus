@@ -56,8 +56,8 @@ ForkPlus/
 项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
 
 ```bash
-git tag v1.2.5
-git push origin v1.2.5
+git tag v1.3.0
+git push origin v1.3.0
 ```
 
 编译产物包含 `ForkPlus.exe`、所有依赖 dll、`biturbo.dll`、语言文件等，解压即可运行。
@@ -111,6 +111,8 @@ git push origin v1.2.5
 ## 下载
 
 最新版本请前往 [Releases 页面](https://github.com/hebin123456/ForkPlus/releases) 下载。
+
+各版本变更详情请查阅 [Release Notes](RELEASENOTES.md)。
 
 ## 开发约定
 

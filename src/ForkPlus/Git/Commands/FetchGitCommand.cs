@@ -26,7 +26,7 @@ namespace ForkPlus.Git.Commands
 			}
 			else
 			{
-				gitCommand.Add(remote.Name);
+				gitCommand.Add(remote.Name.Quotify());
 			}
 			if (allTags)
 			{

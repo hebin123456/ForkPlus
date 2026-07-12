@@ -326,12 +326,43 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshSubrepoSummary()
 		{
-			int hiddenCount = _workspace.Subrepos.Count - _workspace.Subrepos.Count(IsSubrepoVisible);
-			int loadedCount = _workspace.Subrepos.Count((GitMmSubrepoItem subrepo) => subrepo.RepositoryControl != null);
-			int conflictCount = _workspace.Subrepos.Count((GitMmSubrepoItem subrepo) => subrepo.HasConflicts);
-			int nonDefaultBranchCount = _workspace.Subrepos.Count((GitMmSubrepoItem subrepo) => subrepo.IsNonDefaultBranch);
-			int aheadCount = _workspace.Subrepos.Count((GitMmSubrepoItem subrepo) => subrepo.AheadCount > 0);
-			int behindCount = _workspace.Subrepos.Count((GitMmSubrepoItem subrepo) => subrepo.BehindCount > 0);
+			// 单次遍历累加所有计数器，避免 6 次 O(N) 遍历。
+			int totalCount = _workspace.Subrepos.Count;
+			int visibleCount = 0;
+			int loadedCount = 0;
+			int conflictCount = 0;
+			int nonDefaultBranchCount = 0;
+			int aheadCount = 0;
+			int behindCount = 0;
+			for (int i = 0; i < totalCount; i++)
+			{
+				GitMmSubrepoItem subrepo = _workspace.Subrepos[i];
+				if (IsSubrepoVisible(subrepo))
+				{
+					visibleCount++;
+				}
+				if (subrepo.RepositoryControl != null)
+				{
+					loadedCount++;
+				}
+				if (subrepo.HasConflicts)
+				{
+					conflictCount++;
+				}
+				if (subrepo.IsNonDefaultBranch)
+				{
+					nonDefaultBranchCount++;
+				}
+				if (subrepo.AheadCount > 0)
+				{
+					aheadCount++;
+				}
+				if (subrepo.BehindCount > 0)
+				{
+					behindCount++;
+				}
+			}
+			int hiddenCount = totalCount - visibleCount;
 			HashSet<string> visibleButtonKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			AddClearFilterSummaryButton(hiddenCount, visibleButtonKeys);
 			AddSummaryButton("Conflicts: {0}", conflictCount, "conflicts", visibleButtonKeys);
@@ -1695,23 +1726,38 @@ namespace ForkPlus.UI.UserControls
 				GitMmSubrepoRuntimeState[] states = new GitMmSubrepoRuntimeState[subrepos.Length];
 				try
 				{
-					for (int i = 0; i < subrepos.Length; i++)
+					int total = subrepos.Length;
+					if (total > 0)
 					{
-						if (monitor.IsCanceled)
+						int completed = 0;
+						object progressLock = new object();
+						// 并行查询各 subrepo 运行状态，最多 4 路并发，避免 50+ 仓库串行等待。
+						Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(4, total) }, (int i) =>
 						{
-							return;
-						}
-						monitor.Update(subrepos.Length == 0 ? 100.0 : i * 100.0 / subrepos.Length, PreferencesLocalization.FormatCurrent("Refreshing {0}", subrepos[i].DisplayName));
-						if (!force && subrepos[i].RuntimeStateUpdatedAtUtc.HasValue && DateTime.UtcNow - subrepos[i].RuntimeStateUpdatedAtUtc.Value < RuntimeStateCacheTtl)
-						{
-							continue;
-						}
-						states[i] = GetSubrepoRuntimeState(subrepos[i], monitor);
+							if (monitor.IsCanceled)
+							{
+								return;
+							}
+							if (!force && subrepos[i].RuntimeStateUpdatedAtUtc.HasValue && DateTime.UtcNow - subrepos[i].RuntimeStateUpdatedAtUtc.Value < RuntimeStateCacheTtl)
+							{
+								return;
+							}
+							states[i] = GetSubrepoRuntimeState(subrepos[i], monitor);
+							lock (progressLock)
+							{
+								completed++;
+								monitor.Update(completed * 100.0 / total, PreferencesLocalization.FormatCurrent("Refreshing {0}", subrepos[i].DisplayName));
+							}
+						});
 					}
 				}
 				finally
 				{
 					PerformanceTelemetry.Record("git mm status refresh", stopwatch.ElapsedMilliseconds, backgroundThread: true);
+				}
+				if (monitor.IsCanceled)
+				{
+					return;
 				}
 				monitor.Success(Translate("git mm status refresh finished"));
 				Dispatcher.Async(delegate
@@ -1759,27 +1805,28 @@ namespace ForkPlus.UI.UserControls
 		private static GitMmSubrepoRuntimeState GetSubrepoRuntimeState(GitMmSubrepoItem subrepo, JobMonitor monitor)
 		{
 			GitMmSubrepoRuntimeState state = new GitMmSubrepoRuntimeState();
-			GitRequestResult statusResult = RunGit(subrepo.Path, new GitCommand("status", "--porcelain"), monitor);
-			state.ConflictFilesCount = statusResult.Success ? CountConflicts(statusResult.Stdout) : 0;
-			state.HasConflicts = state.ConflictFilesCount > 0;
-			state.ChangedFilesCount = statusResult.Success ? CountVisibleLocalChanges(subrepo.Path, statusResult.Stdout, monitor) : 0;
-			state.HasLocalChanges = state.ChangedFilesCount > 0;
+			// 单次 `git status -b --porcelain` 同时获取 porcelain 文件状态、当前分支、ahead/behind，
+			// 替代原先的 status + branch --show-current + rev-list --left-right --count 三次调用。
+			GitRequestResult statusResult = RunGit(subrepo.Path, new GitCommand("status", "-b", "--porcelain"), monitor);
+			if (statusResult.Success)
+			{
+				ParseBranchHeader(statusResult.Stdout, out string currentBranch, out int ahead, out int behind, out string porcelainBody);
+				state.CurrentBranch = currentBranch;
+				state.AheadCount = ahead;
+				state.BehindCount = behind;
+				state.ConflictFilesCount = CountConflicts(porcelainBody);
+				state.HasConflicts = state.ConflictFilesCount > 0;
+				state.ChangedFilesCount = CountVisibleLocalChanges(subrepo.Path, porcelainBody, monitor);
+				state.HasLocalChanges = state.ChangedFilesCount > 0;
+			}
 			if (monitor.IsCanceled)
 			{
 				return state;
 			}
-			GitRequestResult branchResult = RunGit(subrepo.Path, new GitCommand("branch", "--show-current"), monitor);
-			state.CurrentBranch = branchResult.Success ? branchResult.Stdout.Trim() : "";
 			state.DefaultBranch = GetDefaultBranch(subrepo.Path, monitor);
 			state.IsNonDefaultBranch = !string.IsNullOrWhiteSpace(state.CurrentBranch)
 				&& !string.IsNullOrWhiteSpace(state.DefaultBranch)
 				&& !string.Equals(state.CurrentBranch, state.DefaultBranch, StringComparison.OrdinalIgnoreCase);
-			(int ahead, int behind)? aheadBehind = GetAheadBehind(subrepo.Path, monitor);
-			if (aheadBehind.HasValue)
-			{
-				state.AheadCount = aheadBehind.Value.ahead;
-				state.BehindCount = aheadBehind.Value.behind;
-			}
 			(int added, int deleted)? stagedStats = GetStagedDiffStats(subrepo.Path, monitor);
 			if (stagedStats.HasValue)
 			{
@@ -1787,6 +1834,75 @@ namespace ForkPlus.UI.UserControls
 				state.StagedDeleted = stagedStats.Value.deleted;
 			}
 			return state;
+		}
+
+		/// <summary>
+		/// 解析 `git status -b --porcelain` 输出：首行 `## ` 头部包含分支名与 ahead/behind，
+		/// 其余行是 porcelain 文件状态，拆分后分别供分支信息和冲突/改动计数使用。
+		/// </summary>
+		private static void ParseBranchHeader(string statusOutput, out string currentBranch, out int ahead, out int behind, out string porcelainBody)
+		{
+			currentBranch = "";
+			ahead = 0;
+			behind = 0;
+			if (string.IsNullOrEmpty(statusOutput))
+			{
+				porcelainBody = "";
+				return;
+			}
+			string normalized = statusOutput.Replace("\r\n", "\n").Replace('\r', '\n');
+			int firstNewline = normalized.IndexOf('\n');
+			string header = firstNewline < 0 ? normalized : normalized.Substring(0, firstNewline);
+			porcelainBody = firstNewline < 0 ? "" : normalized.Substring(firstNewline + 1);
+			if (!header.StartsWith("## "))
+			{
+				return;
+			}
+			string info = header.Substring(3);
+			if (info.StartsWith("HEAD") && info.Contains("(no branch)"))
+			{
+				currentBranch = "";
+			}
+			else if (info.StartsWith("No commits yet on "))
+			{
+				currentBranch = info.Substring("No commits yet on ".Length).Trim();
+			}
+			else
+			{
+				int branchEnd = info.Length;
+				int dotIdx = info.IndexOf("...");
+				int spaceIdx = info.IndexOf(' ');
+				if (dotIdx >= 0 && (spaceIdx < 0 || dotIdx < spaceIdx))
+				{
+					branchEnd = dotIdx;
+				}
+				else if (spaceIdx >= 0)
+				{
+					branchEnd = spaceIdx;
+				}
+				currentBranch = info.Substring(0, branchEnd);
+			}
+			int bracketIdx = info.IndexOf('[');
+			if (bracketIdx >= 0)
+			{
+				int closeIdx = info.IndexOf(']', bracketIdx);
+				if (closeIdx > bracketIdx)
+				{
+					string bracket = info.Substring(bracketIdx + 1, closeIdx - bracketIdx - 1);
+					foreach (string part in bracket.Split(','))
+					{
+						string trimmed = part.Trim();
+						if (trimmed.StartsWith("ahead ") && int.TryParse(trimmed.Substring(6), out int a))
+						{
+							ahead = a;
+						}
+						else if (trimmed.StartsWith("behind ") && int.TryParse(trimmed.Substring(7), out int b))
+						{
+							behind = b;
+						}
+					}
+				}
+			}
 		}
 
 		private static int CountVisibleLocalChanges(string path, string porcelainStatus, JobMonitor monitor)
@@ -1911,22 +2027,6 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			return "master";
-		}
-
-		[Null]
-		private static (int ahead, int behind)? GetAheadBehind(string path, JobMonitor monitor = null)
-		{
-			GitRequestResult result = RunGit(path, new GitCommand("rev-list", "--left-right", "--count", "@{upstream}...HEAD"), monitor);
-			if (!result.Success)
-			{
-				return null;
-			}
-			string[] parts = result.Stdout.Trim().Split(new char[2] { '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			if (parts.Length < 2 || !int.TryParse(parts[0], out int behind) || !int.TryParse(parts[1], out int ahead))
-			{
-				return null;
-			}
-			return (ahead, behind);
 		}
 
 		[Null]

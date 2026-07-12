@@ -56,8 +56,8 @@ ForkPlus/
 The project is configured with GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Pushing a `v*` tag automatically builds on Windows and publishes a complete runtime zip to GitHub Release.
 
 ```bash
-git tag v1.2.5
-git push origin v1.2.5
+git tag v1.3.0
+git push origin v1.3.0
 ```
 
 The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, language files, and more—just unzip and run.
@@ -111,6 +111,8 @@ The codebase uses the following APIs for internationalization:
 ## Download
 
 For the latest release, visit the [Releases page](https://github.com/hebin123456/ForkPlus/releases).
+
+For changes in each version, see the [Release Notes](RELEASENOTES.md).
 
 ## Development Convention
 

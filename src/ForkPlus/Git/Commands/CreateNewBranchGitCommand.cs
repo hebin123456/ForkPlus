@@ -14,7 +14,7 @@ namespace ForkPlus.Git.Commands
 			GitCommand gitCommand;
 			if (checkout)
 			{
-				gitCommand = new GitCommand(App.OverrideCredentialHelper, "checkout", "--no-track", "-b", branchName, gitPoint.ObjectName);
+				gitCommand = new GitCommand(App.OverrideCredentialHelper, "checkout", "--no-track", "-b", branchName.Quotify(), gitPoint.ObjectName.Quotify());
 				if (discard)
 				{
 					gitCommand.Add("--force");
@@ -22,7 +22,7 @@ namespace ForkPlus.Git.Commands
 			}
 			else
 			{
-				gitCommand = new GitCommand("branch", "--no-track", branchName, gitPoint.ObjectName);
+				gitCommand = new GitCommand("branch", "--no-track", branchName.Quotify(), gitPoint.ObjectName.Quotify());
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute(monitor);
 			if (!gitRequestResult.Success)

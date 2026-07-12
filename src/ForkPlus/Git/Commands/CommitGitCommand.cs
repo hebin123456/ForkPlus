@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 
@@ -12,7 +13,9 @@ namespace ForkPlus.Git.Commands
 			string text = gitModule.CommitMessagePath();
 			try
 			{
-				File.WriteAllText(text, message);
+				// git 默认按 UTF-8 读取 commit message 文件；显式写 UTF-8 无 BOM，
+				// 避免 .NET 默认编码（部分系统为 ANSI）导致非 ASCII commit 乱码。
+				File.WriteAllText(text, message, new UTF8Encoding(false));
 			}
 			catch (Exception ex)
 			{

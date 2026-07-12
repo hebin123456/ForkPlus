@@ -42,19 +42,26 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override async void OnInitialized(EventArgs e)
 		{
-			base.OnInitialized(e);
-			SetStatus(ForkPlusDialogStatus.InProgress, "Loading...");
-			GitCommandResult<GetRevisionsInRangeGitCommand.Result> gitCommandResult = await Task.Run(() => new GetRevisionsInRangeGitCommand().Execute(_gitModule, _src, _dst));
-			if (!gitCommandResult.Succeeded)
+			try
 			{
-				Close();
-				return;
+				base.OnInitialized(e);
+				SetStatus(ForkPlusDialogStatus.InProgress, "Loading...");
+				GitCommandResult<GetRevisionsInRangeGitCommand.Result> gitCommandResult = await Task.Run(() => new GetRevisionsInRangeGitCommand().Execute(_gitModule, _src, _dst));
+				if (!gitCommandResult.Succeeded)
+				{
+					Close();
+					return;
+				}
+				SetStatus(ForkPlusDialogStatus.None, string.Empty);
+				GetRevisionsInRangeGitCommand.Result result = gitCommandResult.Result;
+				RevisionsItemsControl.ItemsSource = result.Revisions;
+				_src = result.Src;
+				_dst = result.Dst;
 			}
-			SetStatus(ForkPlusDialogStatus.None, string.Empty);
-			GetRevisionsInRangeGitCommand.Result result = gitCommandResult.Result;
-			RevisionsItemsControl.ItemsSource = result.Revisions;
-			_src = result.Src;
-			_dst = result.Dst;
+			catch (Exception ex)
+			{
+				Log.Error("OnInitialized failed", ex);
+			}
 		}
 
 		protected override void OnSubmit()

@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -37,7 +38,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(text))
 			{
 				Log.Error("Cannot find " + editor.Name + " at '" + text + "'");
-				new ErrorWindow("Cannot find " + editor.Name + " at '" + text + "'").ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find {0} at '{1}'", editor.Name, text)).ShowDialog();
 				return;
 			}
 			Process process = new Process();
@@ -50,7 +51,7 @@ namespace ForkPlus.UI.Commands
 			catch (Exception ex)
 			{
 				Log.Error("Failed to start external project editor process", ex);
-				new ErrorWindow("Cannot run '" + text + " " + path + "'.\n" + ex.ToString()).ShowDialog();
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot run '{0} {1}'.\n{2}", text, path, ex.ToString())).ShowDialog();
 			}
 		}
 

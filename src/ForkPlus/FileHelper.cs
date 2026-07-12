@@ -85,21 +85,16 @@ namespace ForkPlus
 
 		public static void OpenInWindowsExplorer(string absolutePath)
 		{
-			Process process = new Process();
 			try
 			{
 				if (File.Exists(absolutePath))
 				{
 					string arguments = "/select, \"" + absolutePath + "\"";
-					ProcessStartInfo startInfo = new ProcessStartInfo("explorer.exe", arguments);
-					process.StartInfo = startInfo;
-					process.Start();
+					Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
 				}
 				else if (Directory.Exists(absolutePath))
 				{
-					ProcessStartInfo startInfo2 = new ProcessStartInfo("explorer.exe", absolutePath);
-					process.StartInfo = startInfo2;
-					process.Start();
+					Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
 				}
 			}
 			catch (Exception ex)
