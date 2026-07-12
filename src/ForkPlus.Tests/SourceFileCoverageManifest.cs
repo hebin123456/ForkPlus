@@ -4,7 +4,7 @@ namespace ForkPlus.Tests
 {
 	internal static class SourceFileCoverageManifest
 	{
-		public static readonly IReadOnlySet<string> Files = new HashSet<string>
+		public static readonly HashSet<string> Files = new HashSet<string>
 		{
 			"src/ForkPlus.AskPass/Program.cs",
 			"src/ForkPlus.RI/Program.cs",
