@@ -89,7 +89,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				return new GitInstanceItem(PreferencesLocalization.Current("Custom git-mm Instance..."), string.Empty, GitInstanceType.AddCustom);
 			}
 
-			private GitInstanceItem(string fileName, string path, GitInstanceType itemType)
+			internal GitInstanceItem(string fileName, string path, GitInstanceType itemType)
 			{
 				FileName = fileName;
 				GitPath = path;
