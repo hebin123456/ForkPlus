@@ -144,32 +144,57 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>
 		/// 打开 git mm 仓库时检测 git-mm 是否可用；缺失或版本过低才提示，其他场景不打扰。
+		/// 检测放到后台线程，弹窗延迟到 UI 线程异步执行，避免阻塞启动流程（RestoreSession）。
 		/// </summary>
 		private void WarnIfGitMmUnavailable()
 		{
-			try
+			Task.Run(() =>
 			{
-				string gitMmPath = App.GitMmPath;
-				if (string.IsNullOrWhiteSpace(gitMmPath))
+				bool missing = false;
+				bool unsupported = false;
+				string versionText = null;
+				try
 				{
-					new ErrorWindow(PreferencesLocalization.Current(
-						"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.")).ShowDialog();
-					return;
+					string gitMmPath = App.GitMmPath;
+					if (string.IsNullOrWhiteSpace(gitMmPath))
+					{
+						missing = true;
+					}
+					else
+					{
+						GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
+						if (result.Status == GitMmVersionStatus.Unsupported)
+						{
+							unsupported = true;
+							versionText = result.Version != null ? result.Version.ToString(3) : "?";
+						}
+					}
 				}
-				GitMmVersionCheckResult result = GitMmVersionChecker.Check(gitMmPath);
-				if (result.Status == GitMmVersionStatus.Unsupported)
+				catch (Exception ex)
 				{
-					string versionText = result.Version != null ? result.Version.ToString(3) : "?";
-					string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
-					new ErrorWindow(PreferencesLocalization.FormatCurrent(
-						"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
-						versionText, minText)).ShowDialog();
+					Log.Error("Failed to check git-mm version on open", ex);
 				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to check git-mm version on open", ex);
-			}
+				if (missing || unsupported)
+				{
+					Dispatcher.BeginInvoke(new Action(() =>
+					{
+						string msg;
+						if (missing)
+						{
+							msg = PreferencesLocalization.Current(
+								"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.");
+						}
+						else
+						{
+							string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
+							msg = PreferencesLocalization.FormatCurrent(
+								"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
+								versionText, minText);
+						}
+						new ErrorWindow(msg).ShowDialog();
+					}));
+				}
+			});
 		}
 
 		public static bool IsGitMmWorkspace(string path)

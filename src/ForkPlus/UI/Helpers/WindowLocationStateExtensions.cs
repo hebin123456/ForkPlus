@@ -181,11 +181,10 @@ namespace ForkPlus.UI.Helpers
 			{
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			}
+			// 始终用 Win32 placement.normalPosition（还原矩形），即使最小化也如此。
+			// 之前最小化时走特殊分支用 WPF 的 window.Left/Top/Width/Height，而这些值在最小化时是
+			// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-			if (placement.ShowCmd == 2)
-			{
-				return new WindowLocationState(window.Left, window.Top, window.Width, window.Height, WindowState.Minimized);
-			}
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
 			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, (WindowState)placement.ShowCmd);

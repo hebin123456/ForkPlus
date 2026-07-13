@@ -141,6 +141,12 @@ namespace ForkPlus
 		public static string BashPath => Path.Combine(Path.GetDirectoryName(GitPath), "bash.exe");
 
 		/// <summary>
+		/// PATH 查找 git-mm.exe 的缓存。PATH 在运行时通常不变，缓存避免每次访问 GitMmPath 都遍历 PATH。
+		/// </summary>
+		private static string _cachedGitMmFromPath;
+		private static bool _gitMmFromPathResolved;
+
+		/// <summary>
 		/// git-mm 可执行文件路径。优先使用用户在偏好设置中指定的路径；
 		/// 否则在 PATH 环境变量中查找 <c>git-mm.exe</c>；
 		/// 再否则在 git.exe 同目录查找。三者都找不到返回 null。
@@ -154,7 +160,13 @@ namespace ForkPlus
 			{
 				return saved;
 			}
-			string fromPath = FindExecutableInPath("git-mm.exe");
+			// PATH 遍历较慢（每个目录一次 File.Exists），缓存结果避免重复开销。
+			if (!_gitMmFromPathResolved)
+			{
+				_cachedGitMmFromPath = FindExecutableInPath("git-mm.exe");
+				_gitMmFromPathResolved = true;
+			}
+			string fromPath = _cachedGitMmFromPath;
 			if (fromPath != null)
 			{
 				return fromPath;
@@ -698,8 +710,10 @@ namespace ForkPlus
 
 		public static bool IsGitInstanceAvailable()
 		{
+			// 仅检查 git.exe 路径是否存在；版本检测由 WarnIfGitVersionUnsupported 统一完成，
+			// 避免每次启动重复启动 git version 子进程（原实现会执行 2 次子进程）。
 			string gitPath = GitPath;
-			return !string.IsNullOrWhiteSpace(gitPath) && File.Exists(gitPath) && new GetGitVersionGitCommand().Execute(gitPath).Succeeded;
+			return !string.IsNullOrWhiteSpace(gitPath) && File.Exists(gitPath);
 		}
 
 		/// <summary>

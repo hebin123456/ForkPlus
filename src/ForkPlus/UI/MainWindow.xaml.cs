@@ -180,6 +180,13 @@ namespace ForkPlus.UI
 			{
 				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, WindowState.Normal);
 			}
+			// 先同步 WPF 依赖属性到目标值，避免 WPF 在 Show 流程中用 XAML 默认值（Width=1000/Height=600）
+			// 覆盖 SetWindowPlacement 设置的 HWND 位置/尺寸，导致窗口位置/大小不恢复。
+			base.Left = windowLocationState.Left;
+			base.Top = windowLocationState.Top;
+			base.Width = windowLocationState.Width;
+			base.Height = windowLocationState.Height;
+			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
 			this.SetWindowLocationState(windowLocationState);
 			if (windowLocationState.WindowState == WindowState.Maximized)
 			{
@@ -245,6 +252,17 @@ namespace ForkPlus.UI
 		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
+			if (_startUpFinished)
+			{
+				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
+			}
+		}
+
+		protected override void OnStateChanged(EventArgs e)
+		{
+			base.OnStateChanged(e);
+			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 SizeChanged/LocationChanged，
+			// 此处补充保存，避免状态变更丢失。
 			if (_startUpFinished)
 			{
 				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
