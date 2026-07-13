@@ -35,19 +35,41 @@ jobs:
             Write-Host "Test assembly not found at $dll — skipping tests"
             exit 0
           }
-          # 优先用 setup-msbuild 自带的 VSTest（Windows runner 上可靠存在）
-          $vstest = "${{ env.VSTEST_PATH }}"
-          if (-not $vstest -or -not (Test-Path $vstest)) {
-            $candidates = @(
-              "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe",
-              "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe"
-            )
-            $vstest = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          }
+          # 用 NuGet 还原的 Microsoft.TestPlatform 中的 vstest.console.exe，
+          # 它会被 Test.Sdk 引用并放到测试项目的输出目录附近。优先用项目自带，
+          # 其次搜索 nuget 全局包目录。windows-latest 上 dotnet 也可用，但 net472
+          # 测试需要 Windows 测试宿主，vstest.console.exe 是最可靠的方式。
+          $candidates = @(
+            "src/ForkPlus.Tests/bin/Release/net472/vstest.console.exe",
+            "src/ForkPlus.Tests/bin/Release/net472/testhost.exe"
+          )
+          $vstest = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
           if (-not $vstest) {
-            Write-Host "vstest.console.exe not found — skipping tests"
-            exit 0
+            # 搜索 nuget 全局包目录里的 vstest.console.exe
+            $nugetRoot = "$env:USERPROFILE\.nuget\packages"
+            $vstest = Get-ChildItem -Path $nugetRoot -Recurse -Filter "vstest.console.exe" -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -match 'net472' } | Select-Object -First 1 -ExpandProperty FullName
           }
+
+          if (-not $vstest) {
+            # 最后回退到 VS 安装目录
+            $vsCandidates = @(
+              "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe",
+              "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\Extensions\TestPlatform\vstest.console.exe",
+              "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe",
+              "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe"
+            )
+            $vstest = $vsCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+
+          if (-not $vstest) {
+            # 用 dotnet test 作为最后手段（windows-latest 自带 dotnet）
+            Write-Host "vstest.console.exe not found, falling back to: dotnet test"
+            dotnet test $dll --no-build --framework net472
+            exit $LASTEXITCODE
+          }
+
           Write-Host "Using: $vstest"
           & $vstest $dll
           exit $LASTEXITCODE
