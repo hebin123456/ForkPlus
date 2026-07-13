@@ -27,7 +27,7 @@ jobs:
       - name: Build (Release)
         run: msbuild ForkPlus.sln /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
 
-      - name: Run smoke tests
+      - name: Run unit tests
         continue-on-error: true
         shell: pwsh
         run: |
@@ -38,11 +38,29 @@ jobs:
           }
           # 用 windows-latest 自带的 dotnet CLI 运行测试（net472 测试需要 Windows 测试宿主，
           # dotnet test 会自动处理）。--no-build 避免重复编译（上一步已构建）。
-          # 用 --filter 只跑冒烟用例，避免既有的覆盖率清单测试因 CI 工作目录与
-          # FindRepositoryRoot 的路径假设不符（src/src/ForkPlus）而失败。
+          # 用 --filter 选择性运行单元测试类，排除因 CI 工作目录与 FindRepositoryRoot
+          # 路径假设不符（src/src/ForkPlus）而失败的覆盖率清单测试，以及 Markdown 断言
+          # 依赖本地资源而失败的 GitMmReferenceWindowTests。
+          $testClasses = @(
+            'ShaTests','ShaCompareTests',
+            'WindowLocationStateMappingTests','WindowLocationStateCodecTests',
+            'StringExtensionsTests','FuzzySearchTests','LruCacheTests',
+            'DateTimeExtensionsTests','ArrayExtensionsTests','ArrayDiffTests',
+            'DictionaryExtensionsTests','IReadOnlyListExtensionsTests','IListExtensionsTests',
+            'RangeTests','RangeExtensionsTests',
+            'GitUrlTests','ChangeTypeHelperTests','StatusTypeHelperTests',
+            'RevisionParserTests','RevisionSearchQueryCoderTests','GitConfigTests',
+            'DiffStringHelperTests','UnifiedMergeTokenizerTests','UnifiedMergeParserTests',
+            'PathHelperTests',
+            'GitCommandTests','PipeStreamExtensionsTests','ChangedFilesDisplayNormalizerTests',
+            'AskPassParserTests','ReferenceNameValidatorTests',
+            'PerformanceTelemetryTests','GitStatusParsingTests',
+            'FeatureCoverageManifestTests','AssemblySmokeTests'
+          )
+          $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
           dotnet test $dll --no-build --framework net472 `
-            --filter "FullyQualifiedName~ShaTests|FullyQualifiedName~WindowLocationStateMappingTests|FullyQualifiedName~WindowLocationStateCodecTests" `
-            -- RunConfiguration.TestSessionTimeout=120000
+            --filter $filter `
+            -- RunConfiguration.TestSessionTimeout=300000
           exit $LASTEXITCODE
 
       - name: Upload artifact
