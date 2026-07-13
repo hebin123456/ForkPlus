@@ -49,14 +49,15 @@ namespace ForkPlus.Git.Commands
 				gitCommand.Add("HEAD^");
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute();
-			if (!gitRequestResult.Success)
-			{
-				return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
-			}
-			return GitCommandResult<string>.Success(gitRequestResult.Stdout);
+		// git diff 退出码 1 表示有差异，是正常的。
+		if (gitRequestResult.ExitCode >= 2)
+		{
+			return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
 		}
+		return GitCommandResult<string>.Success(gitRequestResult.Stdout);
+	}
 
-		public GitCommandResult<string> GetChangesAsBinaryPatch(GitModule gitModule, ChangedFile changedFile, bool amend)
+	public GitCommandResult<string> GetChangesAsBinaryPatch(GitModule gitModule, ChangedFile changedFile, bool amend)
 		{
 			string srcRevision = (amend ? "HEAD^" : null);
 			GitCommandResult<string> changesAsBinaryPatchInternal = GetChangesAsBinaryPatchInternal(gitModule, changedFile, amend, srcRevision);
@@ -93,12 +94,13 @@ namespace ForkPlus.Git.Commands
 				gitCommand.Add(changedFile.OldPath.Quotify());
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute(silent: true);
-			if (!gitRequestResult.Success)
-			{
-				return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
-			}
-			return GitCommandResult<string>.Success(gitRequestResult.Stdout);
+		// git diff 退出码 1 表示有差异，是正常的。
+		if (gitRequestResult.ExitCode >= 2)
+		{
+			return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
 		}
+		return GitCommandResult<string>.Success(gitRequestResult.Stdout);
+	}
 
 		public GitCommandResult<DiffContent> Execute(GitModule gitModule, ChangedFile changedFile, [Null] WorkingDirectoryRevisionDiffTarget revisionTarget, int contextSize, int tabWidth, bool ignoreWhitespaces, bool showEntireFile, bool loadLargeUntrackedFiles, bool resolvedConflict)
 		{
@@ -177,7 +179,9 @@ namespace ForkPlus.Git.Commands
 				}
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute(silent: true);
-		if (!gitRequestResult.Success)
+		// git diff 退出码：0=无差异，1=有差异（正常），2+=错误。
+		// 之前用 !Success（即 ExitCode!=0）会误把有差异的 diff 当失败，导致新文件 diff 头部被当作错误文本显示。
+		if (gitRequestResult.ExitCode >= 2)
 		{
 			Log.Error(gitRequestResult.Stderr);
 			return GitCommandResult<DiffContent>.Failure(new GitCommandError.GitError(gitRequestResult));

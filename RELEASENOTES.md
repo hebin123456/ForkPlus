@@ -2,6 +2,15 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.3.2
+
+### Bug 修复
+
+- **修复新文件详情页显示原始 diff 头部的 bug**：`git diff` 退出码 1（有差异）被误判为失败，导致 diff 头部文本（`diff --git ... new file mode ... index ...`）被当作错误信息显示。改为 `ExitCode >= 2` 才判定为真实错误。
+  - `GetWorkingDirectoryFileChangesGitCommand`：3 处 diff 命令（ExecuteInternal / GetStagedPatch / GetChangesAsBinaryPatchInternal）
+  - `GetRevisionFileChangesGitCommand`：1 处 diff 命令（ExecuteInternal）
+- **修复 `PatchParser.Parse` 返回 null 导致 NRE**：当 Biturbo 原生 tokenizer 失败时，之前返回 null 导致所有调用方访问 `.Succeeded` 抛 `NullReferenceException`。改为返回 `Failure`。
+
 ## v1.3.1
 
 ### git mm 版本检测（按需提示）

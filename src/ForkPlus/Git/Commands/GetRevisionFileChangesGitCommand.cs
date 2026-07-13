@@ -101,10 +101,11 @@ namespace ForkPlus.Git.Commands
 				gitCommand.Add(changedFile.OldPath.Quotify());
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute();
-			if (!gitRequestResult.Success)
-			{
-				return GitCommandResult<DiffContent>.Failure(gitRequestResult.ToGitCommandError());
-			}
+		// git diff 退出码 1 表示有差异，是正常的。
+		if (gitRequestResult.ExitCode >= 2)
+		{
+			return GitCommandResult<DiffContent>.Failure(gitRequestResult.ToGitCommandError());
+		}
 			GitCommandResult<Patch> gitCommandResult = new PatchParser().Parse(gitRequestResult.Stdout);
 			if (!gitCommandResult.Succeeded)
 			{

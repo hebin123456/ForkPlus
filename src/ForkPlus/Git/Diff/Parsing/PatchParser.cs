@@ -14,10 +14,11 @@ namespace ForkPlus.Git.Diff.Parsing
 			byte[] bytes2 = Encoding.UTF8.GetBytes(srcPrefix);
 			byte[] bytes3 = Encoding.UTF8.GetBytes(dstPrefix);
 			GitCommandResult<Token[]> gitCommandResult = ReadTokens(bytes, bytes2, bytes3);
-			if (!gitCommandResult.Succeeded)
-			{
-				return null;
-			}
+		if (!gitCommandResult.Succeeded)
+		{
+		// 之前返回 null 导致调用方访问 .Succeeded 时抛 NRE。
+		return GitCommandResult<Patch>.Failure(gitCommandResult.Error ?? new GitCommandError.ParseError("Failed to tokenize diff"));
+		}
 			Token[] result = gitCommandResult.Result;
 			List<Diff> list = new List<Diff>();
 			for (int i = 0; i < result.Length; i++)
