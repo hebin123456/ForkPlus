@@ -144,16 +144,52 @@ namespace ForkPlus.UI.Dialogs
 		private Remote SelectedRemote => (RemotesComboBox.SelectedItem as RemoteItem)?.Remote;
 
 		protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
+			if (!(LocalBranchesComboBox.SelectedItem is LocalBranch) || SelectedRemote == null)
 			{
-				if (!(LocalBranchesComboBox.SelectedItem is LocalBranch) || SelectedRemote == null)
-				{
-					return false;
-				}
-				return base.IsSubmitAllowed;
+				return false;
 			}
+			return base.IsSubmitAllowed;
 		}
+	}
+
+	protected override string GetCommandPreview()
+	{
+		Remote remote = SelectedRemote;
+		if (remote == null || !(LocalBranchesComboBox.SelectedItem is LocalBranch localBranch))
+		{
+			return null;
+		}
+		RemoteBranch remoteBranch = (RemoteBranchesComboBox.SelectedItem as RemoteBranchItem)?.RemoteBranch;
+		bool pushAllTags = AllTagsCheckBox.IsChecked.GetValueOrDefault();
+		bool force = ForcePushCheckBox.IsChecked.GetValueOrDefault();
+		bool track = false;
+		if (localBranch.UpstreamFullReference == null)
+		{
+			track = CreateTrackingReferenceCheckBox.IsChecked.GetValueOrDefault(true);
+		}
+		System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push" };
+		if (force) { parts.Add("--force-with-lease"); }
+		if (pushAllTags) { parts.Add("--tags"); }
+		if (track) { parts.Add("--set-upstream"); }
+		parts.Add(remote.Name);
+		if (remoteBranch != null)
+		{
+			string dst = (remoteBranch.Remote == remote.Name) ? ("refs/heads/" + remoteBranch.ShortName) : ("refs/heads/" + localBranch.Name);
+			parts.Add(localBranch.FullReference + ":" + dst);
+		}
+		else if (_customRefspec != null)
+		{
+			parts.Add(localBranch.FullReference + ":" + _customRefspec);
+		}
+		else
+		{
+			parts.Add(localBranch.FullReference);
+		}
+		return string.Join(" ", parts);
+	}
 
 		public PushWindow(RepositoryUserControl repositoryUserControl, [Null] Remote remote = null, [Null] LocalBranch localBranch = null)
 		{
@@ -217,140 +253,149 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void ForcePushCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		if (ForcePushCheckBox.IsChecked.GetValueOrDefault())
 		{
-			if (ForcePushCheckBox.IsChecked.GetValueOrDefault())
-			{
-				ForcePushWarningImage.Show();
-			}
-			else
-			{
-				ForcePushWarningImage.Hide();
-			}
+			ForcePushWarningImage.Show();
 		}
-
-		private void LocalBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		else
 		{
-			if (!(LocalBranchesComboBox.SelectedItem is LocalBranch localBranch))
-			{
-				return;
-			}
-			_customRefspec = null;
-			if (localBranch.UpstreamFullReference != null)
-			{
-				CreateTrackingReferenceCheckBox.IsChecked = false;
-				CreateTrackingReferenceCheckBox.Collapse();
-			}
-			else
-			{
-				CreateTrackingReferenceCheckBox.IsChecked = true;
-				CreateTrackingReferenceCheckBox.Show();
-			}
-			if (!_stopRefresh)
-			{
-				RemoteBranch upstream = FindUpstream(_allRemoteBranches, localBranch);
-				string recentRemote = _repositoryUserControl.GitModule.Settings.RecentRemote;
-				Remote remote = IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == upstream?.Remote) ?? IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == recentRemote) ?? IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == Consts.Git.DefaultRemoteName) ?? _remotes.FirstItem();
-				if (remote != null)
-				{
-					_stopRefresh = true;
-					SelectRemote(remote);
-					_stopRefresh = false;
-				}
-				RefreshRemoteBranches();
-				UpdateSubmitButton();
-			}
+			ForcePushWarningImage.Hide();
 		}
+		RefreshCommandPreview();
+	}
 
-		private void RemotesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	private void CheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
+
+	private void LocalBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (!(LocalBranchesComboBox.SelectedItem is LocalBranch localBranch))
 		{
-			if (_stopRefresh)
+			return;
+		}
+		_customRefspec = null;
+		if (localBranch.UpstreamFullReference != null)
+		{
+			CreateTrackingReferenceCheckBox.IsChecked = false;
+			CreateTrackingReferenceCheckBox.Collapse();
+		}
+		else
+		{
+			CreateTrackingReferenceCheckBox.IsChecked = true;
+			CreateTrackingReferenceCheckBox.Show();
+		}
+		if (!_stopRefresh)
+		{
+			RemoteBranch upstream = FindUpstream(_allRemoteBranches, localBranch);
+			string recentRemote = _repositoryUserControl.GitModule.Settings.RecentRemote;
+			Remote remote = IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == upstream?.Remote) ?? IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == recentRemote) ?? IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == Consts.Git.DefaultRemoteName) ?? _remotes.FirstItem();
+			if (remote != null)
 			{
-				return;
-			}
-			_customRefspec = null;
-			RemoteItem selectedItem = ((e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as RemoteItem) : null);
-			if (!(RemotesComboBox.SelectedItem is RemoteItem remoteItem))
-			{
-				return;
-			}
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			if (gitModule == null)
-			{
-				return;
-			}
-			if (remoteItem.ItemType == RemoteItemType.AddExistingRemote)
-			{
-				EditRemoteWindow editRemoteWindow = new EditRemoteWindow(_repositoryUserControl, gitModule);
-				editRemoteWindow.Owner = this;
-				if (editRemoteWindow.ShowDialog().GetValueOrDefault())
-				{
-					if (!editRemoteWindow.GitResult.Succeeded)
-					{
-						new ErrorWindow(_repositoryUserControl, editRemoteWindow.GitResult.Error).ShowDialog();
-					}
-					_repositoryUserControl.Invalidate(SubDomain.Remotes | SubDomain.References);
-					GitCommandResult<GitConfig> gitCommandResult = new GetGitConfigGitCommand().Execute(gitModule);
-					if (!gitCommandResult.Succeeded)
-					{
-						Log.Error(gitCommandResult.Error.FriendlyDescription);
-					}
-					else
-					{
-						GitConfig result = gitCommandResult.Result;
-						GitCommandResult<RepositoryRemotes> gitCommandResult2 = new GetRemotesGitCommand().Execute(result);
-						if (!gitCommandResult2.Succeeded)
-						{
-							Log.Error(gitCommandResult2.Error.FriendlyDescription);
-						}
-						else
-						{
-							_remotes = gitCommandResult2.Result.Items;
-							RefreshRemotes();
-							SelectRemote(_remotes.FirstItem());
-						}
-					}
-				}
-				else
-				{
-					RemotesComboBox.SelectedItem = selectedItem;
-				}
+				_stopRefresh = true;
+				SelectRemote(remote);
+				_stopRefresh = false;
 			}
 			RefreshRemoteBranches();
 			UpdateSubmitButton();
 		}
+		RefreshCommandPreview();
+	}
 
-		private void RemoteBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	private void RemotesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (_stopRefresh)
 		{
-			RemoteBranchItem selectedItem = ((e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as RemoteBranchItem) : null);
-			if (!(RemoteBranchesComboBox.SelectedItem is RemoteBranchItem remoteBranchItem))
+			return;
+		}
+		_customRefspec = null;
+		RemoteItem selectedItem = ((e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as RemoteItem) : null);
+		if (!(RemotesComboBox.SelectedItem is RemoteItem remoteItem))
+		{
+			return;
+		}
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		if (gitModule == null)
+		{
+			return;
+		}
+		if (remoteItem.ItemType == RemoteItemType.AddExistingRemote)
+		{
+			EditRemoteWindow editRemoteWindow = new EditRemoteWindow(_repositoryUserControl, gitModule);
+			editRemoteWindow.Owner = this;
+			if (editRemoteWindow.ShowDialog().GetValueOrDefault())
 			{
-				return;
-			}
-			Remote selectedRemote = SelectedRemote;
-			if (selectedRemote == null)
-			{
-				return;
-			}
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			if (remoteBranchItem.ItemType == RemoteBranchItemType.AddCustom && LocalBranchesComboBox.SelectedItem is LocalBranch localBranch)
-			{
-				string localBranchName = gitModule.Settings.PushLastCustomRefspec ?? localBranch.Name;
-				AddCustomRefspecWindow addCustomRefspecWindow = new AddCustomRefspecWindow(selectedRemote.Name, localBranchName);
-				addCustomRefspecWindow.Owner = this;
-				if (addCustomRefspecWindow.ShowDialog().GetValueOrDefault())
+				if (!editRemoteWindow.GitResult.Succeeded)
 				{
-					_customRefspec = addCustomRefspecWindow.OutRefspec;
-					gitModule.Settings.PushLastCustomRefspec = addCustomRefspecWindow.OutRefspec;
-					gitModule.Settings.Save();
-					RefreshRemoteBranches();
+					new ErrorWindow(_repositoryUserControl, editRemoteWindow.GitResult.Error).ShowDialog();
+				}
+				_repositoryUserControl.Invalidate(SubDomain.Remotes | SubDomain.References);
+				GitCommandResult<GitConfig> gitCommandResult = new GetGitConfigGitCommand().Execute(gitModule);
+				if (!gitCommandResult.Succeeded)
+				{
+					Log.Error(gitCommandResult.Error.FriendlyDescription);
 				}
 				else
 				{
-					RemoteBranchesComboBox.SelectedItem = selectedItem;
+					GitConfig result = gitCommandResult.Result;
+					GitCommandResult<RepositoryRemotes> gitCommandResult2 = new GetRemotesGitCommand().Execute(result);
+					if (!gitCommandResult2.Succeeded)
+					{
+						Log.Error(gitCommandResult2.Error.FriendlyDescription);
+					}
+					else
+					{
+						_remotes = gitCommandResult2.Result.Items;
+						RefreshRemotes();
+						SelectRemote(_remotes.FirstItem());
+					}
 				}
 			}
-			UpdateSubmitButton();
+			else
+			{
+				RemotesComboBox.SelectedItem = selectedItem;
+			}
 		}
+		RefreshRemoteBranches();
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
+
+	private void RemoteBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		RemoteBranchItem selectedItem = ((e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as RemoteBranchItem) : null);
+		if (!(RemoteBranchesComboBox.SelectedItem is RemoteBranchItem remoteBranchItem))
+		{
+			return;
+		}
+		Remote selectedRemote = SelectedRemote;
+		if (selectedRemote == null)
+		{
+			return;
+		}
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		if (remoteBranchItem.ItemType == RemoteBranchItemType.AddCustom && LocalBranchesComboBox.SelectedItem is LocalBranch localBranch)
+		{
+			string localBranchName = gitModule.Settings.PushLastCustomRefspec ?? localBranch.Name;
+			AddCustomRefspecWindow addCustomRefspecWindow = new AddCustomRefspecWindow(selectedRemote.Name, localBranchName);
+			addCustomRefspecWindow.Owner = this;
+			if (addCustomRefspecWindow.ShowDialog().GetValueOrDefault())
+			{
+				_customRefspec = addCustomRefspecWindow.OutRefspec;
+				gitModule.Settings.PushLastCustomRefspec = addCustomRefspecWindow.OutRefspec;
+				gitModule.Settings.Save();
+				RefreshRemoteBranches();
+			}
+			else
+			{
+				RemoteBranchesComboBox.SelectedItem = selectedItem;
+			}
+		}
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void RefreshRemoteBranches()
 		{

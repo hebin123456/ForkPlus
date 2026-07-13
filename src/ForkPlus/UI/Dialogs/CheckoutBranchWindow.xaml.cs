@@ -23,6 +23,27 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RemoteBranch _fastForwardTo;
 
+		protected override string GetCommandPreview()
+		{
+			LocalBranch branch = _branch;
+			if (branch == null)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "checkout" };
+			if (DiscardRadioButton.IsChecked.GetValueOrDefault())
+			{
+				parts.Add("--force");
+			}
+			parts.Add(branch.Name);
+			string command = string.Join(" ", parts);
+			if (_repositoryUserControl != null && _repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
+			{
+				command = "git stash\n" + command;
+			}
+			return command;
+		}
+
 		public CheckoutBranchWindow(RepositoryUserControl repositoryUserControl, LocalBranch branch, RemoteBranch fastForwardTo)
 		{
 			InitializeComponent();
@@ -168,6 +189,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DiscardWarningImage.Hide();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void OnShiftKeyDown()

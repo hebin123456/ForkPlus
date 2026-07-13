@@ -33,6 +33,31 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			bool fetchAllRemotes = FetchAllRemotesCheckBox.IsChecked.GetValueOrDefault();
+			bool allTags = ForkPlusSettings.Default.FetchAllTags;
+			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "fetch" };
+			if (fetchAllRemotes)
+			{
+				parts.Add("--all");
+			}
+			else
+			{
+				Remote remote = RemoteComboBox.SelectedItem as Remote;
+				if (remote == null)
+				{
+					return null;
+				}
+				parts.Add(remote.Name);
+			}
+			if (allTags)
+			{
+				parts.Add("--tags");
+			}
+			return string.Join(" ", parts);
+		}
+
 		public FetchWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remote)
 		{
 			_repositoryUserControl = repositoryUserControl;
@@ -76,11 +101,13 @@ namespace ForkPlus.UI.Dialogs
 		private void RemotesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void FetchAllRemotesCheckBox_Checked(object sender, RoutedEventArgs e)
 		{
 			RemoteComboBox.IsEnabled = !FetchAllRemotesCheckBox.IsChecked.GetValueOrDefault();
+			RefreshCommandPreview();
 		}
 
 		private static string Translate(string text)

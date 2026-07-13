@@ -48,6 +48,37 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string tagName = TagNameTextBox.Text;
+			if (string.IsNullOrWhiteSpace(tagName))
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "tag", "-a" };
+			string message = TagMessageTextBox.Text;
+			if (!string.IsNullOrEmpty(message))
+			{
+				parts.Add("-m");
+				parts.Add(message.Contains(" ") ? "\"" + message + "\"" : message);
+			}
+			parts.Add(tagName);
+			string commit = _gitPoint?.FriendlyName;
+			if (!string.IsNullOrEmpty(commit))
+			{
+				parts.Add(commit);
+			}
+			string command = string.Join(" ", parts);
+			if (PushCheckBox.IsChecked.GetValueOrDefault() && _remotes != null)
+			{
+				foreach (Remote remote in _remotes)
+				{
+					command += "\ngit push " + remote.Name + " refs/tags/" + tagName;
+				}
+			}
+			return command;
+		}
+
 		public CreateTagWindow(GitModule gitModule, RepositoryReferences refs, Remote[] remotes, IGitPoint startPoint)
 		{
 			InitializeComponent();
@@ -93,11 +124,18 @@ namespace ForkPlus.UI.Dialogs
 		private void TagNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
+		}
+
+		private void TagMessageTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 		private void PushCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
 			RefreshButtonTitle();
+			RefreshCommandPreview();
 		}
 
 		private GitCommandResult PerformCreateTag(string tagName, string tagMessage, bool push, JobMonitor monitor)

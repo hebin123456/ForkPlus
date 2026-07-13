@@ -94,6 +94,27 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			if (_destination == null)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "rebase" };
+			bool updateRefs = _rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault();
+			bool autostash = AutostashCheckBox.IsChecked.GetValueOrDefault();
+			if (updateRefs)
+			{
+				parts.Add("--update-refs");
+			}
+			if (autostash)
+			{
+				parts.Add("--autostash");
+			}
+			parts.Add(_destination.ObjectName);
+			return string.Join(" ", parts);
+		}
+
 		protected override void OnSubmit()
 		{
 			GitModule gitModule = _repositoryUserControl.GitModule;
@@ -260,6 +281,12 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdateRefsCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
 			RefreshBranchesListVisibility();
+			RefreshCommandPreview();
+		}
+
+		private void AutostashCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 		private void RefreshBranchesListVisibility()

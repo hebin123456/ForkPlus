@@ -22,9 +22,9 @@
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Message:" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
-      <controls:PlaceholderTextBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
+      <controls:PlaceholderTextBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TextChanged="StashMessageTextBox_TextChanged" x:Name="StashMessageTextBox" />
       <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Vertical" Margin="8,6,0,4">
-        <CheckBox Content="Stage new files" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StageNewFilesCheckBox" />
+        <CheckBox Content="Stage new files" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="StageNewFilesCheckBox" />
         <TextBlock Margin="22,0,0,0" Text="By default stash ignores new files until you stage them" FontSize="12" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
       </StackPanel>
     </Grid>

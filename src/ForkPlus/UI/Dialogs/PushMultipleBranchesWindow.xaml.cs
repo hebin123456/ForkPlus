@@ -37,6 +37,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Remote _remote;
 
+		protected override string GetCommandPreview()
+		{
+			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push", _remote.Name };
+			foreach (LocalBranch localBranch in _localBranches)
+			{
+				parts.Add(localBranch.Name);
+			}
+			return string.Join(" ", parts);
+		}
+
 		public PushMultipleBranchesWindow(RepositoryUserControl repositoryUserControl, LocalBranch[] localBranches, Remote remote)
 		{
 			_repositoryUserControl = repositoryUserControl;

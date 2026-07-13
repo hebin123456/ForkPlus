@@ -22,6 +22,38 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RepositoryRemotes _remotes;
 
+		protected override string GetCommandPreview()
+		{
+			if (_tags == null || _tags.Length == 0)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "tag", "-d" };
+			foreach (Tag t in _tags)
+			{
+				parts.Add(t.Name);
+			}
+			string command = string.Join(" ", parts);
+			if (DeleteFromRemotesCheckBox.IsChecked.GetValueOrDefault() && _remotes != null)
+			{
+				foreach (Remote remote in _remotes.Items)
+				{
+					var pushParts = new System.Collections.Generic.List<string> { "git", "push", remote.Name, "--delete" };
+					foreach (Tag t in _tags)
+					{
+						pushParts.Add(t.Name);
+					}
+					command += "\n" + string.Join(" ", pushParts);
+				}
+			}
+			return command;
+		}
+
+		private void DeleteFromRemotesCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
 		public RemoveTagWindow(RepositoryUserControl repositoryUserControl, Tag[] tags, RepositoryReferences references)
 		{
 			InitializeComponent();

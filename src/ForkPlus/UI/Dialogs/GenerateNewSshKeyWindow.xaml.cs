@@ -61,6 +61,23 @@ namespace ForkPlus.UI.Dialogs
 			_existingSshKeys = new GetLocalSshKeysCommand().Execute();
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string keyName = KeyFileNameTextBox.Text;
+			string email = EmailTextBox.Text;
+			if (string.IsNullOrEmpty(keyName) || string.IsNullOrEmpty(email))
+			{
+				return null;
+			}
+			string sshDir = SystemEnvironment.LocalSSHDirectory;
+			string path = (sshDir != null) ? Path.Combine(sshDir, keyName) : keyName;
+			if (path.IndexOf(' ') >= 0)
+			{
+				path = "\"" + path + "\"";
+			}
+			return "ssh-keygen -t ed25519 -C \"" + email + "\" -f " + path;
+		}
+
 		protected override async void OnSubmit()
 		{
 			try
@@ -87,11 +104,13 @@ namespace ForkPlus.UI.Dialogs
 		private void KeyFileNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void EmailTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private static string Translate(string text)

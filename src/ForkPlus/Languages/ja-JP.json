@@ -788,6 +788,7 @@
     "Get user": "ユーザーを取得",
     "GetConflictDetails": "競合詳細を取得",
     "Git": "Git",
+    "Git Command Preview": "Git コマンドプレビュー",
     "Git Error": "Git エラー",
     "Git Flow": "Git Flow",
     "Git Flow: Finish Feature...": "Git Flow: フィーチャーを完了...",

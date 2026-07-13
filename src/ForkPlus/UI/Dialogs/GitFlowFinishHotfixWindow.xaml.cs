@@ -37,14 +37,24 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch) || _gitFlowSettings == null)
 		{
-			if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
-			{
-				return;
-			}
-			string hotfix = localBranch.Name.Remove(0, _gitFlowSettings.HotfixPrefix.Length);
-			string tagMessage = TagMessageTextBox.Text;
+			return null;
+		}
+		string hotfix = localBranch.Name.Remove(0, _gitFlowSettings.HotfixPrefix.Length);
+		return "git flow hotfix finish " + hotfix;
+	}
+
+	protected override void OnSubmit()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
+		{
+			return;
+		}
+		string hotfix = localBranch.Name.Remove(0, _gitFlowSettings.HotfixPrefix.Length);
+		string tagMessage = TagMessageTextBox.Text;
 			bool deleteBranches = DeleteBranchesCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.GitFlowFinishHotfix_DeleteBranches = deleteBranches;
 			DisableEditableControls();
@@ -66,7 +76,18 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.ItemsSource = _allHotfixBranches;
 			BranchesComboBox.SelectedItem = _allHotfixBranches.FirstItem((LocalBranch x) => x.Name == _hotfixBranch.Name);
 			DeleteBranchesCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishHotfix_DeleteBranches;
-		}
+		RefreshCommandPreview();
+	}
+
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
+
+	private void CheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
 
 	}
 }

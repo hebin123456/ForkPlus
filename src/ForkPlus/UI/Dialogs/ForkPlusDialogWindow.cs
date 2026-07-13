@@ -41,6 +41,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool? _pendingShowCancelButton;
 
+		private TextBlock _commandPreviewLabel;
+
+		private TextBlock _commandPreviewTextBlock;
+
+		private bool _commandPreviewInitialized;
+
 		public bool IsOperationInProgress { get; private set; }
 
 		protected new bool ShowHeader { get; set; } = true;
@@ -337,6 +343,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (ShowFooter)
 			{
+				AddCommandPreview();
 				AddFooter();
 				UpdateSubmitButton();
 			}
@@ -388,7 +395,87 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void AddFooter()
+		/// <summary>
+	/// 子类重写以提供命令预览文本。返回 null 或空字符串则不显示预览区域。
+	/// </summary>
+	protected virtual string GetCommandPreview()
+	{
+		return null;
+	}
+
+	/// <summary>
+	/// 刷新命令预览区域。子类在控件事件（TextChanged/SelectionChanged/Checked 等）中调用。
+	/// </summary>
+	protected void RefreshCommandPreview()
+	{
+		if (!_commandPreviewInitialized || _commandPreviewTextBlock == null)
+		{
+			return;
+		}
+		string text = GetCommandPreview();
+		if (string.IsNullOrWhiteSpace(text))
+		{
+			_commandPreviewLabel.Visibility = Visibility.Collapsed;
+			_commandPreviewTextBlock.Visibility = Visibility.Collapsed;
+			_commandPreviewTextBlock.Text = "";
+		}
+		else
+		{
+			_commandPreviewLabel.Visibility = Visibility.Visible;
+			_commandPreviewTextBlock.Visibility = Visibility.Visible;
+			_commandPreviewTextBlock.Text = text;
+		}
+	}
+
+	private void AddCommandPreview()
+	{
+		if (_commandPreviewInitialized)
+		{
+			return;
+		}
+		Grid grid = base.Content as Grid;
+		if (grid == null)
+		{
+			return;
+		}
+		_commandPreviewInitialized = true;
+		// 在 footer 行之前插入新行用于命令预览
+		int previewRow = grid.RowDefinitions.Count;
+		RowDefinition rowDefinition = new RowDefinition
+		{
+			Height = GridLength.Auto
+		};
+		grid.RowDefinitions.Add(rowDefinition);
+		_commandPreviewLabel = new TextBlock
+		{
+			Text = PreferencesLocalization.Current("Git Command Preview"),
+			FontSize = 13.0,
+			FontWeight = FontWeights.Medium,
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Right,
+			Margin = new Thickness(0.0, 12.0, 8.0, 0.0),
+			Visibility = Visibility.Collapsed
+		};
+		_commandPreviewLabel.SetValue(Grid.RowProperty, previewRow);
+		_commandPreviewLabel.SetValue(Grid.ColumnProperty, 0);
+		grid.Children.Add(_commandPreviewLabel);
+		_commandPreviewTextBlock = new TextBlock
+		{
+			FontFamily = new FontFamily("Consolas"),
+			FontSize = 12.0,
+			TextWrapping = TextWrapping.Wrap,
+			Foreground = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush),
+			Margin = new Thickness(8.0, 12.0, 0.0, 0.0),
+			Visibility = Visibility.Collapsed
+		};
+		_commandPreviewTextBlock.SetValue(Grid.RowProperty, previewRow);
+		_commandPreviewTextBlock.SetValue(Grid.ColumnProperty, 1);
+		grid.Children.Add(_commandPreviewTextBlock);
+		// 初始刷新
+		RefreshCommandPreview();
+	}
+
+	private void AddFooter()
 		{
 			Grid grid = base.Content as Grid;
 			if (grid == null)
@@ -396,11 +483,28 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			ForkPlusDialogFooter forkDialogFooter = new ForkPlusDialogFooter();
-			if (grid.RowDefinitions.Count <= 0)
+		if (grid.RowDefinitions.Count <= 0)
+		{
+			grid.RowDefinitions.Add(new RowDefinition());
+		}
+		// 若最后一行已被命令预览占用（AddCommandPreview 先于 AddFooter 执行），则新增一行放 footer
+		int footerRow = grid.RowDefinitions.Count - 1;
+		bool lastRowOccupied = false;
+		foreach (UIElement child in grid.Children)
+		{
+			int row = (int)child.GetValue(Grid.RowProperty);
+			if (row == footerRow)
 			{
-				grid.RowDefinitions.Add(new RowDefinition());
+				lastRowOccupied = true;
+				break;
 			}
-			forkDialogFooter.SetValue(Grid.RowProperty, grid.RowDefinitions.Count - 1);
+		}
+		if (lastRowOccupied)
+		{
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			footerRow = grid.RowDefinitions.Count - 1;
+		}
+		forkDialogFooter.SetValue(Grid.RowProperty, footerRow);
 			forkDialogFooter.SetValue(Grid.ColumnProperty, 0);
 			forkDialogFooter.SetValue(Grid.ColumnSpanProperty, 2);
 			grid.Children.Add(forkDialogFooter);

@@ -62,8 +62,8 @@
       </ComboBox>
       <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
       <controls:GitPointView Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase instead of merge" ToolTip="--rebase" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RebaseCheckBox" />
-      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Stash and reapply local changes" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashAndReapplyCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase instead of merge" ToolTip="--rebase" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Stash and reapply local changes" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="StashAndReapplyCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

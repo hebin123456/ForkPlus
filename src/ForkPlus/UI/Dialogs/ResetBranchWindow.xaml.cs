@@ -24,6 +24,27 @@ namespace ForkPlus.UI.Dialogs
 
 		private BranchResetType _resetType = BranchResetType.Mixed;
 
+		protected override string GetCommandPreview()
+		{
+			string flag = _resetType switch
+			{
+				BranchResetType.Soft => "--soft",
+				BranchResetType.Mixed => "--mixed",
+				BranchResetType.Hard => "--hard",
+				_ => null
+			};
+			if (flag == null)
+			{
+				return null;
+			}
+			string sha = _destination?.Sha?.ToAbbreviatedString();
+			if (string.IsNullOrEmpty(sha))
+			{
+				return null;
+			}
+			return "git reset " + flag + " " + sha;
+		}
+
 		public ResetBranchWindow(RepositoryUserControl repositoryUserControl, [Null] LocalBranch activeBranch, Revision destination)
 		{
 			InitializeComponent();
@@ -114,6 +135,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			ComboBoxItem comboBoxItem = e.AddedItems[0] as ComboBoxItem;
 			_resetType = (BranchResetType)comboBoxItem.Tag;
+			RefreshCommandPreview();
 		}
 
 		public static string GetResetTypeName(BranchResetType resetType)

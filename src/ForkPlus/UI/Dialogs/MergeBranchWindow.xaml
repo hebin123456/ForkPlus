@@ -48,7 +48,7 @@
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
-      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource MergeComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="MergeTypeComboBox">
+      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource MergeComboBoxItemStyle}" SelectionChanged="MergeTypeComboBox_SelectionChanged" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <DockPanel HorizontalAlignment="Stretch">

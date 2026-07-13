@@ -36,14 +36,34 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch) || _gitFlowSettings == null)
 		{
-			if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
-			{
-				return;
-			}
-			string feature = localBranch.Name.Remove(0, _gitFlowSettings.FeaturePrefix.Length);
-			bool deleteBranches = DeleteBranchesCheckBox.IsChecked.GetValueOrDefault();
+			return null;
+		}
+		string feature = localBranch.Name.Remove(0, _gitFlowSettings.FeaturePrefix.Length);
+		System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "flow", "feature", "finish" };
+		if (RebaseInsteadOfMergeCheckBox.IsChecked.GetValueOrDefault())
+		{
+			parts.Add("-r");
+		}
+		if (NoFastForwardCheckBox.IsChecked.GetValueOrDefault())
+		{
+			parts.Add("--no-ff");
+		}
+		parts.Add(feature);
+		return string.Join(" ", parts);
+	}
+
+	protected override void OnSubmit()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
+		{
+			return;
+		}
+		string feature = localBranch.Name.Remove(0, _gitFlowSettings.FeaturePrefix.Length);
+		bool deleteBranches = DeleteBranchesCheckBox.IsChecked.GetValueOrDefault();
 			bool rebase = RebaseInsteadOfMergeCheckBox.IsChecked.GetValueOrDefault();
 			bool noFastForward = NoFastForwardCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.GitFlowFinishFeature_DeleteBranches = deleteBranches;
@@ -68,9 +88,20 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.ItemsSource = _allFeatureBranches;
 			BranchesComboBox.SelectedItem = _allFeatureBranches.FirstItem((LocalBranch x) => x.Name == _featureBranch.Name);
 			DeleteBranchesCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishFeature_DeleteBranches;
-			RebaseInsteadOfMergeCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishFeature_Rebase;
-			NoFastForwardCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishFeature_NoFastForward;
-		}
+		RebaseInsteadOfMergeCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishFeature_Rebase;
+		NoFastForwardCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishFeature_NoFastForward;
+		RefreshCommandPreview();
+	}
+
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
+
+	private void CheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
 
 	}
 }

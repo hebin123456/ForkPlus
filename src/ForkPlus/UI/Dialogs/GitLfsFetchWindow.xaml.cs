@@ -62,6 +62,16 @@ namespace ForkPlus.UI.Dialogs
 			}
 			Remote selectedItem = remote ?? IReadOnlyListExtensions.FirstItem(array, (Remote x) => x.Name == Consts.Git.DefaultRemoteName) ?? array.FirstItem();
 			RemotesComboBox.SelectedItem = selectedItem;
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			if (!(RemotesComboBox.SelectedItem is Remote remote))
+			{
+				return null;
+			}
+			return "git lfs fetch " + remote.Name;
 		}
 
 		protected override void OnSubmit()
@@ -85,6 +95,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RemotesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private static string Translate(string text)

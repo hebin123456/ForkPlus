@@ -114,6 +114,30 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string newName = RemoteNameTextBox.Text.Trim();
+			string newUrl = RepositoryUrlTextBox.Text.Trim();
+			if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(newUrl))
+			{
+				return null;
+			}
+			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
+			if (_remoteToEdit == null)
+			{
+				return "git remote add " + Quote(newName) + " " + Quote(newUrl);
+			}
+			if (_remoteToEdit.Url != newUrl)
+			{
+				return "git remote set-url " + Quote(newName) + " " + Quote(newUrl);
+			}
+			if (_remoteToEdit.Name != newName)
+			{
+				return "git remote rename " + Quote(_remoteToEdit.Name) + " " + Quote(newName);
+			}
+			return null;
+		}
+
 		public EditRemoteWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remoteToEdit = null)
 		{
 			_repositoryUserControl = repositoryUserControl;
@@ -231,6 +255,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			UpdateSubmitButton();
 			HideStatusControls();
+			RefreshCommandPreview();
 		}
 
 		private void RepositoryUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -243,6 +268,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				RefreshAccountsComboBox();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void AccountsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

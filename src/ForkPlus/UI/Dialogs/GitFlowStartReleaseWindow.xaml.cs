@@ -59,15 +59,30 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		string releaseName = ReleaseNameTextBox.Text;
+		if (string.IsNullOrWhiteSpace(releaseName))
 		{
-			object selectedItem = BranchesComboBox.SelectedItem;
-			LocalBranch startPoint = selectedItem as LocalBranch;
-			if (startPoint == null)
-			{
-				return;
-			}
-			string releaseName = ReleaseNameTextBox.Text;
+			return null;
+		}
+		LocalBranch baseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+		if (baseBranch == null)
+		{
+			return null;
+		}
+		return "git flow release start " + releaseName + " " + baseBranch.Name;
+	}
+
+	protected override void OnSubmit()
+	{
+		object selectedItem = BranchesComboBox.SelectedItem;
+		LocalBranch startPoint = selectedItem as LocalBranch;
+		if (startPoint == null)
+		{
+			return;
+		}
+		string releaseName = ReleaseNameTextBox.Text;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, "Starting '" + _gitFlowSettings.ReleasePrefix + releaseName + "'...");
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Start '{0}'", _gitFlowSettings.ReleasePrefix + releaseName), delegate(JobMonitor monitor)
@@ -81,14 +96,16 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void ReleaseName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void Refresh()
 		{
@@ -98,7 +115,8 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.ItemsSource = _localBranches;
 			BranchesComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.Name == _gitFlowSettings.DevelopBranch) ?? IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.IsActive);
 			ReleasePrefixTextBlock.Text = _gitFlowSettings.ReleasePrefix;
-		}
+		RefreshCommandPreview();
+	}
 
 	}
 }

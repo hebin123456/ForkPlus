@@ -110,8 +110,8 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Create tracking reference" IsChecked="True" ToolTip="-u" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CreateTrackingReferenceCheckBox" />
-      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Push all tags" IsChecked="True" ToolTip="--tags" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AllTagsCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Create tracking reference" IsChecked="True" ToolTip="-u" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="CreateTrackingReferenceCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Push all tags" IsChecked="True" ToolTip="--tags" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="AllTagsCheckBox" />
       <Image Grid.Column="0" Grid.Row="5" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ForcePushWarningImage" />
       <CheckBox Grid.Column="1" Grid.Row="5" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force push" ToolTip="--force-with-lease" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="ForcePushCheckBox_Changed" Unchecked="ForcePushCheckBox_Changed" x:Name="ForcePushCheckBox" />
     </Grid>

@@ -76,16 +76,43 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = PreferencesLocalization.Current("Checkout Branch");
 			base.DialogDescription = PreferencesLocalization.FormatCurrent("Switch to '{0}' branch", localBranch.Name);
 			GitPointView.Value = localBranch;
-			base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout");
-		}
+		base.SubmitButtonTitle = PreferencesLocalization.Current("Checkout");
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_localBranch == null || string.IsNullOrEmpty(_localBranch.Name))
 		{
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			if (gitModule == null)
+			return null;
+		}
+		System.Collections.Generic.List<string> lines = new System.Collections.Generic.List<string>();
+		lines.Add("git checkout " + _localBranch.Name);
+		if (_remoteBranch != null && !string.IsNullOrEmpty(_remoteBranch.Name))
+		{
+			switch (_actionType)
 			{
-				return;
+			case CheckoutActionType.Rebase:
+				lines.Add("git rebase " + _remoteBranch.Name);
+				break;
+			case CheckoutActionType.Merge:
+				lines.Add("git merge " + _remoteBranch.Name);
+				break;
+			case CheckoutActionType.Reset:
+				lines.Add("git reset --hard " + _remoteBranch.Name);
+				break;
 			}
+		}
+		return string.Join("\n", lines);
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		if (gitModule == null)
+		{
+			return;
+		}
 			RepositoryStatus repositoryStatus = _repositoryUserControl.RepositoryStatus;
 			if (repositoryStatus == null)
 			{
@@ -210,13 +237,14 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void CheckoutActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (e.AddedItems[0] is CheckoutSyncOptionComboBoxItem { ActionType: { } actionType })
 		{
-			if (e.AddedItems[0] is CheckoutSyncOptionComboBoxItem { ActionType: { } actionType })
-			{
-				_actionType = actionType;
-				RefreshTitle();
-			}
+			_actionType = actionType;
+			RefreshTitle();
 		}
+		RefreshCommandPreview();
+	}
 
 		private void RefreshTitle()
 		{

@@ -77,6 +77,30 @@ namespace ForkPlus.UI.Dialogs
 			UpdateSubmitButton();
 		}
 
+		protected override string GetCommandPreview()
+		{
+			if (_revision == null)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "revert" };
+			bool commit = CommitCheckBox.IsChecked.GetValueOrDefault();
+			if (!commit)
+			{
+				parts.Add("--no-commit");
+			}
+			if (MergeRevision)
+			{
+				int parentNumber = RevisionParentComboBox.SelectedIndex + 1;
+				if (parentNumber > 0)
+				{
+					parts.Add("-m " + parentNumber.ToString());
+				}
+			}
+			parts.Add(_revision.Sha.ToAbbreviatedString());
+			return string.Join(" ", parts);
+		}
+
 		protected override void OnSubmit()
 		{
 			GitModule gitModule = _repositoryUserControl.GitModule;
@@ -126,6 +150,16 @@ namespace ForkPlus.UI.Dialogs
 		private static string Translate(string text)
 		{
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+		}
+
+		private void CommitCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
+		private void RevisionParentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 	}

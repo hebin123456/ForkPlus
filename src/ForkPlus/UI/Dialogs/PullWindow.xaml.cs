@@ -51,6 +51,33 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			Remote remote = RemotesComboBox.SelectedItem as Remote;
+			if (remote == null)
+			{
+				return null;
+			}
+			RemoteBranch remoteBranch = RemoteBranchesComboBox.SelectedItem as RemoteBranch;
+			bool rebase = RebaseCheckBox.IsChecked.GetValueOrDefault();
+			bool allTags = ForkPlusSettings.Default.FetchAllTags;
+			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "pull" };
+			parts.Add(remote.Name);
+			if (remoteBranch != null)
+			{
+				parts.Add(remoteBranch.ShortName);
+			}
+			if (rebase)
+			{
+				parts.Add("--rebase");
+			}
+			if (allTags)
+			{
+				parts.Add("--tags");
+			}
+			return string.Join(" ", parts);
+		}
+
 		public PullWindow(RepositoryUserControl repositoryUserControl, RemoteBranch remoteBranch)
 		{
 			RepositoryData repositoryData = MainWindow.ActiveRepositoryUserControl.RepositoryData;
@@ -117,11 +144,18 @@ namespace ForkPlus.UI.Dialogs
 		{
 			UpdateRemoteBranchesCombobox();
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void RemoteBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
+		}
+
+		private void CheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 		private static GitCommandResult PerformPull(GitModule gitModule, string remote, [Null] RemoteBranch remoteBranch, bool rebase, bool allTags, bool stashAndReapply, bool workingDirectoryIsDirty, SubmodulesToUpdate submodulesToUpdate, JobMonitor monitor)

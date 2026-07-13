@@ -788,6 +788,7 @@
     "Get user": "사용자 가져오기",
     "GetConflictDetails": "충돌 세부정보 가져오기",
     "Git": "Git",
+    "Git Command Preview": "Git 명령 미리보기",
     "Git Error": "Git 오류",
     "Git Flow": "Git Flow",
     "Git Flow: Finish Feature...": "Git Flow: 기능 완료...",

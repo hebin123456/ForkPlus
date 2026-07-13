@@ -788,6 +788,7 @@
     "Get user": "Obtener usuario",
     "GetConflictDetails": "Obtener detalles de conflicto",
     "Git": "Git",
+    "Git Command Preview": "Vista previa comando Git",
     "Git Error": "Error de Git",
     "Git Flow": "Git Flow",
     "Git Flow: Finish Feature...": "Git Flow: Finalizar feature...",

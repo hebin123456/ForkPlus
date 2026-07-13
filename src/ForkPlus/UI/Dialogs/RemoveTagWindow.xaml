@@ -38,7 +38,7 @@
           </ItemsControl>
         </ScrollViewer>
       </Border>
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DeleteFromRemotesCheckBox" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="DeleteFromRemotesCheckBox_Changed" Unchecked="DeleteFromRemotesCheckBox_Changed" x:Name="DeleteFromRemotesCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

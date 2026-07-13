@@ -34,6 +34,23 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string url = RepositoryUrlTextBox.Text.Trim();
+			string path = PathTextBox.Text.Trim();
+			if (string.IsNullOrWhiteSpace(path))
+			{
+				return null;
+			}
+			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
+			string normalizedPath = PathHelper.NormalizeUnix(path);
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				return "git submodule add " + Quote(normalizedPath);
+			}
+			return "git submodule add " + Quote(url) + " " + Quote(normalizedPath);
+		}
+
 		public AddSubmoduleWindow(GitModule gitModule, SubmodulesToUpdate submodulesToUpdate)
 		{
 			_gitModule = gitModule;
@@ -121,11 +138,13 @@ namespace ForkPlus.UI.Dialogs
 				_repositoryPathValid = false;
 			}
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void RepositoryUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private static string TryGetClipboardRepositoryUrl()

@@ -43,10 +43,33 @@ namespace ForkPlus.UI.Dialogs
 				base.DialogDescription = Translate("Delete stashes from your repository");
 				StartPointTextBlock.Text = Translate("Stashes:");
 				base.SubmitButtonTitle = string.Format(Translate("Delete {0} stashes"), _stashes.Length);
-			}
 		}
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+	protected override string GetCommandPreview()
+	{
+		if (_stashes == null || _stashes.Length == 0)
+		{
+			return null;
+		}
+		System.Collections.Generic.List<string> lines = new System.Collections.Generic.List<string>(_stashes.Length);
+		foreach (StashRevision stash in _stashes)
+		{
+			if (stash == null || string.IsNullOrEmpty(stash.ReflogName))
+			{
+				continue;
+			}
+			lines.Add("git stash drop " + stash.ReflogName);
+		}
+		if (lines.Count == 0)
+		{
+			return null;
+		}
+		return string.Join("\n", lines);
+	}
+
+	protected override void OnSubmit()
 		{
 			DisableEditableControls();
 			GitModule gitModule = _repositoryUserControl.GitModule;

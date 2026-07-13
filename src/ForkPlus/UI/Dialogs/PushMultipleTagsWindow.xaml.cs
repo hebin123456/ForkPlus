@@ -33,6 +33,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			Remote remote = RemotesComboBox.SelectedItem as Remote;
+			if (remote == null)
+			{
+				return null;
+			}
+			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push", remote.Name };
+			foreach (Tag tag in _tags)
+			{
+				parts.Add(tag.FullReference);
+			}
+			return string.Join(" ", parts);
+		}
+
 		public PushMultipleTagsWindow(RepositoryUserControl repositoryUserControl, Tag[] tags, Remote remote)
 		{
 			_repositoryUserControl = repositoryUserControl;
@@ -79,6 +94,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RemotesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void Refresh()

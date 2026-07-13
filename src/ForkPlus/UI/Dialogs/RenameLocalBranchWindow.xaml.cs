@@ -63,6 +63,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string newName = BranchNameTextBox.Text;
+			if (string.IsNullOrWhiteSpace(newName))
+			{
+				return null;
+			}
+			string command = "git branch -m " + _localBranch.Name + " " + newName;
+			if (RenameRemoteBranchCheckbox.IsChecked.GetValueOrDefault() && _remoteBranch != null)
+			{
+				command += "\ngit push " + _remoteBranch.Remote + " " + newName + " :" + _remoteBranch.ShortName;
+			}
+			return command;
+		}
+
 		public RenameLocalBranchWindow(GitModule gitModule, RepositoryReferences references, LocalBranch localBranch, [Null] string newName)
 		{
 			_gitModule = gitModule;
@@ -187,11 +202,13 @@ namespace ForkPlus.UI.Dialogs
 		private void BranchName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void RenameRemoteBranchCheckbox_Changed(object sender, RoutedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private static string UpstreamRemote(LocalBranch localBranch)

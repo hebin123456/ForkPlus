@@ -53,16 +53,53 @@ namespace ForkPlus.UI.Dialogs
 			{
 				StashMessageTextBox.Focus();
 			});
-		}
+		RefreshCommandPreview();
+	}
 
 		private void FileCheckBox_Changed(object sender, RoutedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+	private void StashMessage_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
+
+		protected override string GetCommandPreview()
+	{
+		List<string> files = new List<string>();
+		foreach (PartialStashFileViewModel item in (IEnumerable)PartialStashListBox.Items)
 		{
-			List<ChangedFile> filesToStash = new List<ChangedFile>();
+			if (item.Selected)
+			{
+				files.Add(item.FilePath);
+			}
+		}
+		if (files.Count == 0)
+		{
+			return null;
+		}
+		List<string> parts = new List<string> { "git", "stash", "push" };
+		string stashMessage = StashMessageTextBox.Text;
+		if (!string.IsNullOrWhiteSpace(stashMessage))
+		{
+			string quoted = stashMessage.IndexOf(' ') >= 0 ? ("\"" + stashMessage + "\"") : stashMessage;
+			parts.Add("-m");
+			parts.Add(quoted);
+		}
+		parts.Add("--");
+		foreach (string f in files)
+		{
+			parts.Add(f.IndexOf(' ') >= 0 ? ("\"" + f + "\"") : f);
+		}
+		return string.Join(" ", parts);
+	}
+
+	protected override void OnSubmit()
+	{
+		List<ChangedFile> filesToStash = new List<ChangedFile>();
 			foreach (PartialStashFileViewModel item in (IEnumerable)PartialStashListBox.Items)
 			{
 				if (item.Selected)

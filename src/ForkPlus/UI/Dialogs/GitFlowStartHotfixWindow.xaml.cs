@@ -59,15 +59,30 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		string hotfixName = HotfixNameTextBox.Text;
+		if (string.IsNullOrWhiteSpace(hotfixName))
 		{
-			object selectedItem = BranchesComboBox.SelectedItem;
-			LocalBranch startPoint = selectedItem as LocalBranch;
-			if (startPoint == null)
-			{
-				return;
-			}
-			string hotfixName = HotfixNameTextBox.Text;
+			return null;
+		}
+		LocalBranch baseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+		if (baseBranch == null)
+		{
+			return null;
+		}
+		return "git flow hotfix start " + hotfixName + " " + baseBranch.Name;
+	}
+
+	protected override void OnSubmit()
+	{
+		object selectedItem = BranchesComboBox.SelectedItem;
+		LocalBranch startPoint = selectedItem as LocalBranch;
+		if (startPoint == null)
+		{
+			return;
+		}
+		string hotfixName = HotfixNameTextBox.Text;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, "Starting '" + _gitFlowSettings.HotfixPrefix + hotfixName + "'...");
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Start '{0}'", _gitFlowSettings.HotfixPrefix + hotfixName), delegate(JobMonitor monitor)
@@ -81,14 +96,16 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void HotfixName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void Refresh()
 		{
@@ -98,7 +115,8 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.ItemsSource = _localBranches;
 			BranchesComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.Name == _gitFlowSettings.MasterBranch) ?? IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.IsActive);
 			HotfixPrefixTextBlock.Text = _gitFlowSettings.HotfixPrefix;
-		}
+		RefreshCommandPreview();
+	}
 
 	}
 }

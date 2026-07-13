@@ -80,6 +80,27 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			RemoteBranchItem selectedItem = RemoteBranchesComboBox.SelectedItem as RemoteBranchItem;
+			if (selectedItem == null)
+			{
+				return null;
+			}
+			string localName = _localBranch.Name;
+			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
+			if (selectedItem.ItemType == RemoteBranchItemType.NoTracking)
+			{
+				return "git branch --unset-upstream " + Quote(localName);
+			}
+			RemoteBranch remoteBranch = selectedItem.RemoteBranch;
+			if (remoteBranch == null)
+			{
+				return null;
+			}
+			return "git branch --set-upstream-to=" + remoteBranch.Remote + "/" + remoteBranch.ShortName + " " + Quote(localName);
+		}
+
 		public ChangeRemoteTrackingWindow(GitModule gitModule, LocalBranch localBranch, RepositoryReferences references)
 		{
 			_gitModule = gitModule;
@@ -114,6 +135,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RemoteBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void Refresh()

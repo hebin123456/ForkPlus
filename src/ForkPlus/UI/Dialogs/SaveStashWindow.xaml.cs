@@ -16,6 +16,23 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private GitModule _gitModule;
 
+		protected override string GetCommandPreview()
+		{
+			bool stageNewFiles = StageNewFilesCheckBox.IsChecked.GetValueOrDefault();
+			string stashMessage = StashMessageTextBox.Text;
+			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "stash", "push" };
+			if (!string.IsNullOrWhiteSpace(stashMessage))
+			{
+				parts.Add("-m");
+				parts.Add("\"" + stashMessage + "\"");
+			}
+			if (stageNewFiles)
+			{
+				parts.Add("--include-untracked");
+			}
+			return string.Join(" ", parts);
+		}
+
 		public SaveStashWindow(GitModule gitModule)
 		{
 			InitializeComponent();
@@ -43,6 +60,16 @@ namespace ForkPlus.UI.Dialogs
 					Close(GitCommandResult.Failure(result.Error));
 				});
 			}, JobFlags.SaveToLog);
+		}
+
+		private void StashMessageTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
+		private void CheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 		private static string Translate(string text)

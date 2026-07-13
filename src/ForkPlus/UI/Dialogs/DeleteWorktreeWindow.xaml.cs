@@ -25,15 +25,27 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = PreferencesLocalization.FormatCurrent("Are you sure you want to delete worktree {0}?", worktree.FriendlyName);
 			base.DialogDescription = PreferencesLocalization.FormatCurrent("Do you want to delete worktree {0}?", worktree.Path);
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Delete");
-		}
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_worktree == null || string.IsNullOrEmpty(_worktree.Path))
 		{
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			if (gitModule == null)
-			{
-				return;
-			}
+			return null;
+		}
+		string path = _worktree.Path;
+		string quotedPath = path.IndexOf(' ') >= 0 ? ("\"" + path + "\"") : path;
+		return "git worktree remove " + quotedPath;
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		if (gitModule == null)
+		{
+			return;
+		}
 			Worktree worktree = _worktree;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Deleting worktree..."));

@@ -22,7 +22,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Commit to apply:" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Parent to skip:" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionParentTextBlock" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,8,0,0" HorizontalContentAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionParentComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,8,0,0" HorizontalContentAlignment="Stretch" SelectionChanged="RevisionParentComboBox_SelectionChanged" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionParentComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <controls:BindableGitPointView>
@@ -33,7 +33,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip="--no-commit (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip="--no-commit (when unchecked)" Checked="CommitCheckBox_Changed" Unchecked="CommitCheckBox_Changed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

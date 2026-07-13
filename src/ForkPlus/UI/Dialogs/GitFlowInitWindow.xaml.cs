@@ -98,14 +98,24 @@ namespace ForkPlus.UI.Dialogs
 			FeaturePrefixTextBox.Text = "feature/";
 			ReleasePrefixTextBox.Text = "release/";
 			HotfixPrefixTextBox.Text = "hotfix/";
-		}
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (string.IsNullOrEmpty(MasterBranchTextBox.Text) || string.IsNullOrEmpty(DevelopBranchTextBox.Text))
 		{
-			if (!IsSubmitAllowed)
-			{
-				return;
-			}
+			return null;
+		}
+		return "git flow init";
+	}
+
+	protected override void OnSubmit()
+	{
+		if (!IsSubmitAllowed)
+		{
+			return;
+		}
 			GitFlowSettings gitFlowSettings = new GitFlowSettings(MasterBranchTextBox.Text, DevelopBranchTextBox.Text, FeaturePrefixTextBox.Text, ReleasePrefixTextBox.Text, HotfixPrefixTextBox.Text, VersionTagPrefixTextBox.Text);
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Initializing Git Flow..."));
@@ -122,37 +132,44 @@ namespace ForkPlus.UI.Dialogs
 		private void MasterBranchTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void DevelopBranchTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void FeatureName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void FeaturePrefixTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void ReleasePrefixTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void HotfixPrefixTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		private void VersionTagPrefixTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
-		}
+		RefreshCommandPreview();
+	}
 
 		[Null]
 		private string MainBranch()

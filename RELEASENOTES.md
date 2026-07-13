@@ -2,6 +2,17 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.4.0
+
+### 新功能：Git 命令预览
+
+- 在所有对话框窗口（push/pull/fetch/stash/branch/tag/rebase/merge/cherry-pick/reset/clone/remote/submodule/worktree/gitflow/lfs 等 45 个窗口）底部添加 git 命令预览区域
+- 用户在窗口中修改任何选项时，命令预览实时更新
+- 预览区域显示完整的 git 命令（含参数），用 Consolas 等宽字体显示
+- 关键参数未选择时预览区域自动隐藏
+- 实现方式：在 `ForkPlusDialogWindow` 基类中添加公共命令预览基础设施（`GetCommandPreview` 虚方法 + `RefreshCommandPreview` 方法），各子窗口重写 `GetCommandPreview` 返回命令字符串
+- 7 种语言 JSON 文件新增 "Git Command Preview" key
+
 ## v1.3.4
 
 ### Bug 修复：所有 push 操作报 "src refspec xxx does not match any"

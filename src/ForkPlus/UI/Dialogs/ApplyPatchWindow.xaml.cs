@@ -44,10 +44,11 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Apply Patch");
 			base.SubmitButtonTitle = Translate("Apply");
 			PathTextBox.Text = patchPath;
-			PathTextBox.SelectAll();
-			RefreshCreateCommitsCheckBoxVisibility();
-			TestForConflicts();
-		}
+		PathTextBox.SelectAll();
+		RefreshCreateCommitsCheckBoxVisibility();
+		TestForConflicts();
+		RefreshCommandPreview();
+	}
 
 		public ApplyPatchWindow(RepositoryUserControl repositoryUserControl, byte[] patchData)
 		{
@@ -60,16 +61,34 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Apply patch from clipboard");
 			base.SubmitButtonTitle = Translate("Apply");
 			LocationLabel.Collapse();
-			PathTextBox.Collapse();
-			BrowseButton.Collapse();
-			RefreshCreateCommitsCheckBoxVisibility();
-			TestForConflicts();
-		}
+		PathTextBox.Collapse();
+		BrowseButton.Collapse();
+		RefreshCreateCommitsCheckBoxVisibility();
+		TestForConflicts();
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		bool createCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
+		string command = createCommits ? "git am" : "git apply";
+		if (_patchData != null)
 		{
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			bool createCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
+			return command;
+		}
+		string filePath = PathTextBox.Text.Trim();
+		if (string.IsNullOrEmpty(filePath))
+		{
+			return null;
+		}
+		string quotedPath = filePath.IndexOf(' ') >= 0 ? ("\"" + filePath + "\"") : filePath;
+		return command + " " + quotedPath;
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		bool createCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Applying patch..."));
 			if (_patchData != null)
@@ -112,12 +131,18 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			_patchContainsCommitHeader = PatchContainsCommitHeader(PathTextBox.Text.Trim());
-			RefreshCreateCommitsCheckBoxVisibility();
-			UpdateSubmitButton();
-			TestForConflicts();
-		}
+	{
+		_patchContainsCommitHeader = PatchContainsCommitHeader(PathTextBox.Text.Trim());
+		RefreshCreateCommitsCheckBoxVisibility();
+		UpdateSubmitButton();
+		TestForConflicts();
+		RefreshCommandPreview();
+	}
+
+	private void CreateCommitsCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
 
 		private void TestForConflicts()
 		{

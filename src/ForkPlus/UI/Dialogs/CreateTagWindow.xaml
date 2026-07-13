@@ -25,7 +25,7 @@
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Tag Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:ReferenceTextBox TextChanged="TagNameTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" VerticalAlignment="Center" Placeholder="Enter tag name" Icon="{DynamicResource TagIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagNameTextBox" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Message:" FontSize="13" VerticalAlignment="Top" Margin="0,7,0,0" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter tag message (optional)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagMessageTextBox" />
+      <controls:PlaceholderTextBox TextChanged="TagMessageTextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter tag message (optional)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagMessageTextBox" />
       <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="PushCheckBox_Changed" Unchecked="PushCheckBox_Changed" x:Name="PushCheckBox" />
     </Grid>
   </Grid>

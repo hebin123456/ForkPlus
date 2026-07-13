@@ -26,6 +26,13 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = Translate("Delete");
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string path = _submodule.Path;
+			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
+			return "git submodule deinit -f " + Quote(path) + " && git rm -f " + Quote(path);
+		}
+
 		protected override void OnSubmit()
 		{
 			DisableEditableControls();

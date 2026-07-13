@@ -45,7 +45,7 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <controls:PlaceholderTextBox Grid.Row="1" Margin="0,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
+      <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Row="1" Margin="0,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

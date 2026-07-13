@@ -29,14 +29,25 @@ namespace ForkPlus.UI.Dialogs
 		base.DialogDescription = Translate("Apply changes of the stash to your working directory");
 		base.SubmitButtonTitle = Translate("Apply");
 			DeleteStashAfterApplyCheckBox.IsChecked = ForkPlusSettings.Default.ApplyStash_DeleteAfterApply;
-		}
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_stash == null || string.IsNullOrEmpty(_stash.ReflogName))
 		{
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			StashRevision stash = _stash;
-			bool deleteAfterApply = DeleteStashAfterApplyCheckBox.IsChecked.GetValueOrDefault();
-			ForkPlusSettings.Default.ApplyStash_DeleteAfterApply = deleteAfterApply;
+			return null;
+		}
+		bool deleteAfterApply = DeleteStashAfterApplyCheckBox.IsChecked.GetValueOrDefault();
+		return "git stash " + (deleteAfterApply ? "pop" : "apply") + " " + _stash.ReflogName;
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		StashRevision stash = _stash;
+		bool deleteAfterApply = DeleteStashAfterApplyCheckBox.IsChecked.GetValueOrDefault();
+		ForkPlusSettings.Default.ApplyStash_DeleteAfterApply = deleteAfterApply;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, "Applying stash...");
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Apply stash '{0}'"), stash.ReflogName), delegate(JobMonitor monitor)
@@ -50,16 +61,17 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void DeleteStashAfterApplyCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		if (DeleteStashAfterApplyCheckBox.IsChecked.GetValueOrDefault())
 		{
-			if (DeleteStashAfterApplyCheckBox.IsChecked.GetValueOrDefault())
-			{
-				DeleteStashWarningImage.Show();
-			}
-			else
-			{
-				DeleteStashWarningImage.Hide();
-			}
+			DeleteStashWarningImage.Show();
 		}
+		else
+		{
+			DeleteStashWarningImage.Hide();
+		}
+		RefreshCommandPreview();
+	}
 
 		private static string Translate(string text)
 		{

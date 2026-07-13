@@ -102,6 +102,29 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string url = RepositoryUrlTextBox.Text.Trim();
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				return null;
+			}
+			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
+			List<string> parts = new List<string> { "git", "clone" };
+			if (ForkPlusSettings.Default.UpdateSubmodulesOnCheckout)
+			{
+				parts.Add("--recurse-submodules");
+			}
+			parts.Add(Quote(url));
+			string parentDir = ParentDirectoryTextBox.Text.Trim();
+			string repoName = RepositoryNameTextBox.Text.Trim();
+			if (!string.IsNullOrWhiteSpace(parentDir) && !string.IsNullOrWhiteSpace(repoName))
+			{
+				parts.Add(Quote(System.IO.Path.Combine(parentDir, repoName)));
+			}
+			return string.Join(" ", parts);
+		}
+
 		private AccountItem[] AccountItems { get; set; }
 
 		public CloneWindow([Null] string url, [Null] Account account)
@@ -348,6 +371,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				RefreshAccountsComboBox();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void AccountsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -366,11 +390,13 @@ namespace ForkPlus.UI.Dialogs
 		private void ParentDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void RepositoryNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void BrowseButton_Click(object sender, RoutedEventArgs e)

@@ -37,14 +37,24 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch) || _gitFlowSettings == null)
 		{
-			if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
-			{
-				return;
-			}
-			string release = localBranch.Name.Remove(0, _gitFlowSettings.ReleasePrefix.Length);
-			string tagMessage = TagMessageTextBox.Text;
+			return null;
+		}
+		string release = localBranch.Name.Remove(0, _gitFlowSettings.ReleasePrefix.Length);
+		return "git flow release finish " + release;
+	}
+
+	protected override void OnSubmit()
+	{
+		if (!(BranchesComboBox.SelectedItem is LocalBranch localBranch))
+		{
+			return;
+		}
+		string release = localBranch.Name.Remove(0, _gitFlowSettings.ReleasePrefix.Length);
+		string tagMessage = TagMessageTextBox.Text;
 			bool deleteBranches = DeleteBranchesCheckBox.IsChecked.GetValueOrDefault();
 			bool noBackmerge = !BackMergeMasterCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.GitFlowFinishRelease_DeleteBranches = deleteBranches;
@@ -68,8 +78,19 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.ItemsSource = _allReleaseBranches;
 			BranchesComboBox.SelectedItem = _allReleaseBranches.FirstItem((LocalBranch x) => x.Name == _releaseBranch.Name);
 			DeleteBranchesCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishRelease_DeleteBranches;
-			BackMergeMasterCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishRelease_BackMergeMaster;
-		}
+		BackMergeMasterCheckBox.IsChecked = ForkPlusSettings.Default.GitFlowFinishRelease_BackMergeMaster;
+		RefreshCommandPreview();
+	}
+
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
+
+	private void CheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		RefreshCommandPreview();
+	}
 
 	}
 }

@@ -55,6 +55,38 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			string branchName = BranchNameTextBox.Text;
+			if (string.IsNullOrWhiteSpace(branchName))
+			{
+				return null;
+			}
+			bool checkout = CheckoutAfterCreateCheckBox.IsChecked.GetValueOrDefault();
+			var parts = new System.Collections.Generic.List<string> { "git" };
+			if (checkout)
+			{
+				parts.Add("checkout");
+				parts.Add("-b");
+			}
+			else
+			{
+				parts.Add("branch");
+			}
+			parts.Add(branchName);
+			string startPoint = _gitPoint?.FriendlyName;
+			if (!string.IsNullOrEmpty(startPoint))
+			{
+				parts.Add(startPoint);
+			}
+			string command = string.Join(" ", parts);
+			if (checkout && _workingDirectoryIsDirty && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
+			{
+				command = "git stash\n" + command;
+			}
+			return command;
+		}
+
 		public CreateBranchWindow(RepositoryUserControl repositoryUserControl, RepositoryReferences refs, IGitPoint gitPoint)
 		{
 			InitializeComponent();
@@ -206,12 +238,14 @@ namespace ForkPlus.UI.Dialogs
 		private void BranchName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void CheckoutAfterCreateCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
 			RefreshUncommittedChangesOptionsVisibility();
 			UpdateSubmitButtonTitle();
+			RefreshCommandPreview();
 		}
 
 		private void LocalChangesOption_Changed(object sender, RoutedEventArgs e)
@@ -224,6 +258,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DiscardWarningImage.Hide();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void OnShiftKeyDown()

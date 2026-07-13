@@ -44,15 +44,31 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Update stash message");
 			base.SubmitButtonTitle = Translate("Rename");
 			StashNameTextBox.Text = stash.Message;
-			StashNameTextBox.SelectAll();
-			UpdateSubmitButton();
-		}
+		StashNameTextBox.SelectAll();
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_stash == null || string.IsNullOrEmpty(_stash.ReflogName))
 		{
-			GitModule gitModule = _repositoryUserControl.GitModule;
-			StashRevision stash = _stash;
-			string newMessage = StashNameTextBox.Text;
+			return null;
+		}
+		string newMessage = StashNameTextBox.Text;
+		if (string.IsNullOrWhiteSpace(newMessage))
+		{
+			return null;
+		}
+		string quotedMessage = newMessage.IndexOf(' ') >= 0 ? ("\"" + newMessage + "\"") : newMessage;
+		return "git stash rename " + _stash.ReflogName + " " + quotedMessage;
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		StashRevision stash = _stash;
+		string newMessage = StashNameTextBox.Text;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Updating message..."));
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Rename stash '{0}'"), _stash.Message), delegate(JobMonitor monitor)
@@ -67,9 +83,10 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void StashName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private static string Translate(string text)
 		{

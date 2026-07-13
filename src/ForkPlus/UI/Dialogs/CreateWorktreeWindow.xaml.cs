@@ -79,16 +79,29 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlus.Git.Reference[] references = _repositoryReferences.Items.CompactMap((ForkPlus.Git.Reference x) => x as LocalBranch);
 			branchNameTextBox.SetAutocompleteProvider(new ReferenceNameAutocompleteProvider(references));
 			RefreshPath();
-			UpdateSubmitButton();
-			base.Loaded += delegate
-			{
-				BranchNameTextBox.Focus();
-			};
-		}
-
-		protected override void OnSubmit()
+		UpdateSubmitButton();
+		base.Loaded += delegate
 		{
-			object selectedItem = LocalBranchesComboBox.SelectedItem;
+			BranchNameTextBox.Focus();
+		};
+		RefreshCommandPreview();
+	}
+
+		protected override string GetCommandPreview()
+	{
+		string branchName = BranchNameTextBox.Text;
+		string worktreePath = PathTextBox.Text.Trim();
+		if (string.IsNullOrEmpty(branchName) || string.IsNullOrEmpty(worktreePath))
+		{
+			return null;
+		}
+		string quotedPath = worktreePath.IndexOf(' ') >= 0 ? ("\"" + worktreePath + "\"") : worktreePath;
+		return "git worktree add " + quotedPath + " " + branchName;
+	}
+
+	protected override void OnSubmit()
+	{
+		object selectedItem = LocalBranchesComboBox.SelectedItem;
 			LocalBranch selectedBranch = selectedItem as LocalBranch;
 			if (selectedBranch == null)
 			{
@@ -149,15 +162,17 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void BranchName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			RefreshPath();
-			UpdateSubmitButton();
-		}
+	{
+		RefreshPath();
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void BrowseButton_Click(object sender, RoutedEventArgs e)
 		{

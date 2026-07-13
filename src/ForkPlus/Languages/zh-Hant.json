@@ -788,6 +788,7 @@
     "Get user": "取得使用者",
     "GetConflictDetails": "取得衝突詳細資料",
     "Git": "Git",
+    "Git Command Preview": "Git 命令預覽",
     "Git Error": "Git 錯誤",
     "Git Flow": "Git Flow",
     "Git Flow: Finish Feature...": "Git Flow：完成功能...",

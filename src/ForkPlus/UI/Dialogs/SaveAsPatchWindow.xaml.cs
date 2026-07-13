@@ -55,8 +55,9 @@ namespace ForkPlus.UI.Dialogs
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
 				GetRevisionsInRangeGitCommand.Result result = gitCommandResult.Result;
 				RevisionsItemsControl.ItemsSource = result.Revisions;
-				_src = result.Src;
-				_dst = result.Dst;
+			_src = result.Src;
+			_dst = result.Dst;
+			RefreshCommandPreview();
 			}
 			catch (Exception ex)
 			{
@@ -64,9 +65,25 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_src == Sha.Zero)
 		{
-			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? RepositoryManager.Instance.DefaultSourceDir();
+			return null;
+		}
+		string range = _dst.HasValue ? (_src.ToAbbreviatedString() + ".." + _dst.Value.ToAbbreviatedString()) : _src.ToAbbreviatedString();
+		string outputDir = ForkPlusSettings.Default.RecentPatchDirectory;
+		if (!string.IsNullOrEmpty(outputDir))
+		{
+			string quotedDir = outputDir.IndexOf(' ') >= 0 ? ("\"" + outputDir + "\"") : outputDir;
+			return "git format-patch " + range + " -o " + quotedDir;
+		}
+		return "git format-patch " + range;
+	}
+
+	protected override void OnSubmit()
+	{
+		string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? RepositoryManager.Instance.DefaultSourceDir();
 			string repositoryName = _gitModule.RepositoryName;
 			string text = (_dst.HasValue ? (repositoryName + "-" + _src.ToAbbreviatedString() + "-" + _dst.Value.ToAbbreviatedString() + Consts.Git.PatchFileExtension) : (repositoryName + "-" + _src.ToAbbreviatedString() + "-" + _revision.Message));
 			text = CutInvalidCharacters(text);

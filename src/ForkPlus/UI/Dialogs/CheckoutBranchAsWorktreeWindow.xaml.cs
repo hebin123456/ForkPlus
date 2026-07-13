@@ -55,14 +55,30 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Checkout branch in separate worktree");
 			base.SubmitButtonTitle = Translate("Create");
 			GitPointView.Value = branch;
-			RefreshPath();
-			UpdateSubmitButton();
-		}
+		RefreshPath();
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		if (_branch == null || string.IsNullOrEmpty(_branch.Name))
 		{
-			GitModule gitModule = _gitModule;
-			string worktreePath = PathHelper.NormalizeUnix(PathTextBox.Text.Trim());
+			return null;
+		}
+		string worktreePath = PathTextBox.Text.Trim();
+		if (string.IsNullOrEmpty(worktreePath))
+		{
+			return null;
+		}
+		string quotedPath = worktreePath.IndexOf(' ') >= 0 ? ("\"" + worktreePath + "\"") : worktreePath;
+		return "git worktree add " + quotedPath + " " + _branch.Name;
+	}
+
+	protected override void OnSubmit()
+	{
+		GitModule gitModule = _gitModule;
+		string worktreePath = PathHelper.NormalizeUnix(PathTextBox.Text.Trim());
 			SubmodulesToUpdate submodulesToUpdate = _repositoryUserControl.SubmodulesToUpdate();
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Creating worktree..."));
@@ -116,20 +132,22 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void BrowseButton_Click(object sender, RoutedEventArgs e)
+	{
+		string initialDirectory = (Directory.Exists(_worktreesContainerPath) ? _worktreesContainerPath : Path.GetDirectoryName(_worktreesContainerPath));
+		if (OpenDialog.SelectDirectory(this, "Select location", initialDirectory, out var directoryPath))
 		{
-			string initialDirectory = (Directory.Exists(_worktreesContainerPath) ? _worktreesContainerPath : Path.GetDirectoryName(_worktreesContainerPath));
-			if (OpenDialog.SelectDirectory(this, "Select location", initialDirectory, out var directoryPath))
-			{
-				_worktreesContainerPath = directoryPath;
-				RefreshPath();
-				UpdateSubmitButton();
-			}
-		}
-
-		private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
+			_worktreesContainerPath = directoryPath;
+			RefreshPath();
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
+	}
+
+	private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void RefreshPath()
 		{

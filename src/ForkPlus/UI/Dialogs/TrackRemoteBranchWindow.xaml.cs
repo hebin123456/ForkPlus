@@ -24,6 +24,34 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RemoteBranch _remoteBranch;
 
+		protected override string GetCommandPreview()
+		{
+			string localName = LocalBranchNameTextBox.Text;
+			if (string.IsNullOrWhiteSpace(localName))
+			{
+				return null;
+			}
+			RemoteBranch remoteBranch = _remoteBranch;
+			if (remoteBranch == null)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "checkout" };
+			if (DiscardRadioButton.IsChecked.GetValueOrDefault())
+			{
+				parts.Add("--force");
+			}
+			parts.Add("-b");
+			parts.Add(localName);
+			parts.Add(remoteBranch.Name);
+			string command = string.Join(" ", parts);
+			if (_repositoryUserControl != null && _repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
+			{
+				command = "git stash\n" + command;
+			}
+			return command;
+		}
+
 		protected override bool IsSubmitAllowed
 		{
 			get
@@ -174,6 +202,7 @@ namespace ForkPlus.UI.Dialogs
 		private void LocalBranchName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void LocalChangesOption_Changed(object sender, RoutedEventArgs e)
@@ -186,6 +215,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DiscardWarningImage.Hide();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void OnShiftKeyDown()

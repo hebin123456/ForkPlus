@@ -97,6 +97,41 @@ namespace ForkPlus.UI.Dialogs
 		private void CommitCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
 			RefreshAppendOriginShaCheckBox();
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			if (_revisions == null || _revisions.Length == 0)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "cherry-pick" };
+			bool commit = CommitCheckBox.IsChecked.GetValueOrDefault();
+			bool appendOriginSha = AppendOriginShaCheckBox.IsChecked.GetValueOrDefault();
+			if (!commit)
+			{
+				parts.Add("--no-commit");
+			}
+			if (appendOriginSha)
+			{
+				parts.Add("-x");
+			}
+			if (MergeRevision)
+			{
+				int parentNumber = RevisionParentComboBox.SelectedIndex + 1;
+				if (parentNumber > 0)
+				{
+					parts.Add("-m " + parentNumber.ToString());
+				}
+			}
+			Sha[] shas = _revisions.Map((Revision x) => x.Sha);
+			Array.Reverse(shas);
+			foreach (Sha sha in shas)
+			{
+				parts.Add(sha.ToAbbreviatedString());
+			}
+			return string.Join(" ", parts);
 		}
 
 		protected override void OnSubmit()
@@ -162,6 +197,16 @@ namespace ForkPlus.UI.Dialogs
 		private static string Translate(string text)
 		{
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+		}
+
+		private void AppendOriginShaCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
+		private void RevisionParentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 	}

@@ -94,6 +94,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override string GetCommandPreview()
+		{
+			if (_source == null || !(MergeTypeComboBox.SelectedItem is MergeOptionComboBoxItem selected))
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "merge" };
+			if (!string.IsNullOrEmpty(selected.Command))
+			{
+				parts.Add(selected.Command);
+			}
+			parts.Add(_source.Name);
+			return string.Join(" ", parts);
+		}
+
 		protected override void OnSubmit()
 		{
 			GitModule gitModule = _repositoryUserControl.GitModule;
@@ -161,6 +176,11 @@ namespace ForkPlus.UI.Dialogs
 					}
 				});
 			}, JobFlags.SaveToLog);
+		}
+
+		private void MergeTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 	}

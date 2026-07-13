@@ -80,6 +80,33 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Worktree? _worktreeToRemove;
 
+		protected override string GetCommandPreview()
+		{
+			if (_branchesToRemove == null || _branchesToRemove.Length == 0)
+			{
+				return null;
+			}
+			var parts = new List<string> { "git", "branch", "-d" };
+			foreach (LocalBranch b in _branchesToRemove)
+			{
+				parts.Add(b.Name);
+			}
+			string command = string.Join(" ", parts);
+			if (DeleteRemoteBranchCheckBox.IsChecked.GetValueOrDefault())
+			{
+				foreach (LocalBranch b in _branchesToRemove)
+				{
+					RemoteBranch upstream = FindUpstream(b, _remoteBranches);
+					Remote remote = GetRemote(upstream, _remotes);
+					if (upstream != null && remote != null)
+					{
+						command += "\ngit push " + remote.Name + " --delete " + upstream.ShortName;
+					}
+				}
+			}
+			return command;
+		}
+
 		public RemoveLocalBranchWindow(RepositoryUserControl repositoryUserControl, RepositoryReferences references, LocalBranch[] branchesToRemove, RepositoryRemotes remotes, Worktree? worktreeToRemove = null)
 		{
 			InitializeComponent();
@@ -276,6 +303,7 @@ namespace ForkPlus.UI.Dialogs
 				RefreshBranchesUpstreamVisibility(showUpstream: false);
 				WarningImage.Collapse();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void DeleteWorktreeCheckBox_Changed(object sender, RoutedEventArgs e)
@@ -288,6 +316,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				WorktreeWarningImage.Collapse();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void RefreshBranchesUpstreamVisibility(bool showUpstream)

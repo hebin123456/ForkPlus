@@ -44,7 +44,7 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AutostashCheckBox" />
+      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" Checked="AutostashCheckBox_Changed" Unchecked="AutostashCheckBox_Changed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AutostashCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

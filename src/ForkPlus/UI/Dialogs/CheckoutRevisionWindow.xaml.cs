@@ -23,6 +23,26 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Sha _gitPointSha;
 
+		protected override string GetCommandPreview()
+		{
+			if (_gitPointSha == null)
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "checkout" };
+			if (DiscardRadioButton.IsChecked.GetValueOrDefault())
+			{
+				parts.Add("--force");
+			}
+			parts.Add(_gitPointSha.ToAbbreviatedString());
+			string command = string.Join(" ", parts);
+			if (_repositoryUserControl != null && _repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
+			{
+				command = "git stash\n" + command;
+			}
+			return command;
+		}
+
 		public CheckoutRevisionWindow(RepositoryUserControl repositoryUserControl, IGitPoint gitPoint, Sha gitPointSha)
 		{
 			InitializeComponent();
@@ -154,6 +174,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DiscardWarningImage.Hide();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void OnShiftKeyDown()

@@ -62,15 +62,30 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 		}
 
-		protected override void OnSubmit()
+		protected override string GetCommandPreview()
+	{
+		string featureName = FeatureNameTextBox.Text;
+		if (string.IsNullOrWhiteSpace(featureName))
 		{
-			object selectedItem = BranchesComboBox.SelectedItem;
-			LocalBranch startPoint = selectedItem as LocalBranch;
-			if (startPoint == null)
-			{
-				return;
-			}
-			string featureName = FeatureNameTextBox.Text;
+			return null;
+		}
+		LocalBranch baseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+		if (baseBranch == null)
+		{
+			return null;
+		}
+		return "git flow feature start " + featureName + " " + baseBranch.Name;
+	}
+
+	protected override void OnSubmit()
+	{
+		object selectedItem = BranchesComboBox.SelectedItem;
+		LocalBranch startPoint = selectedItem as LocalBranch;
+		if (startPoint == null)
+		{
+			return;
+		}
+		string featureName = FeatureNameTextBox.Text;
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, "Starting '" + _gitFlowSettings.FeaturePrefix + featureName + "'...");
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Start '{0}'", _gitFlowSettings.FeaturePrefix + featureName), delegate(JobMonitor monitor)
@@ -92,14 +107,16 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void FeatureName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
-		private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			UpdateSubmitButton();
-		}
+	private void BranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		UpdateSubmitButton();
+		RefreshCommandPreview();
+	}
 
 		private void Refresh()
 		{
@@ -110,11 +127,12 @@ namespace ForkPlus.UI.Dialogs
 			BranchesComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.Name == _gitFlowSettings.DevelopBranch) ?? IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.IsActive);
 			FeaturePrefixTextBlock.Text = _gitFlowSettings.FeaturePrefix;
 			if (UnfinishedBranchName != null)
-			{
-				FeatureNameTextBox.Text = UnfinishedBranchName;
-				FeatureNameTextBox.SelectAll();
-			}
+		{
+			FeatureNameTextBox.Text = UnfinishedBranchName;
+			FeatureNameTextBox.SelectAll();
 		}
+		RefreshCommandPreview();
+	}
 
 		private void SaveUnfinishedBranchName()
 		{
