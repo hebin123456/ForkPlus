@@ -2,6 +2,31 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.3.3
+
+### 性能优化：启动速度
+
+- **合并重复的 git version 子进程**：`IsGitInstanceAvailable()` 移除子进程调用，仅 `File.Exists` 检查；版本检测统一由 `WarnIfGitVersionUnsupported` 完成。原实现启动时执行 2 次 `git version` 子进程，现仅 1 次。
+- **缓存 `App.GitMmPath` 的 PATH 遍历结果**：`FindExecutableInPath("git-mm.exe")` 结果缓存到静态字段，避免每次访问 `App.GitMmPath` 都遍历整个 PATH。
+- **git-mm 检测改为后台线程 + 异步弹窗**：`WarnIfGitMmUnavailable` 整体放到 `Task.Run`，`ErrorWindow.ShowDialog` 用 `Dispatcher.BeginInvoke` 延迟到 UI 线程异步弹出。原实现同步弹模态对话框会阻塞 `RestoreSession`。
+
+### Bug 修复：窗口状态恢复
+
+- **修复窗口位置/大小/状态不按上次保存恢复**：
+  - `OnSourceInitialized`：先设置 WPF 依赖属性 `Left/Top/Width/Height`，再调 `SetWindowPlacement`。原实现只调 Win32，WPF 在 `Show()` 流程中用 XAML 默认值（`Width=1000/Height=600`）覆盖了恢复的位置/尺寸。
+  - 统一 `GetWindowLocationState`：删除最小化时的特殊分支（用 WPF `window.Left/Top`，最小化时是系统幽灵值 -32000），改为始终用 `placement.normalPosition`（还原矩形）。
+  - 新增 `OnStateChanged`：纯状态切换（最大化↔正常不伴随尺寸变化）现在也会保存状态。
+
+### 国际化补全
+
+- 补全 18 个未本地化的命令 Title（菜单/右键菜单显示英文）：
+  - Remote：`Edit Remote...`、`Add New Remote...`
+  - Branch：`Start Branch...`、`Finish Branch...`、`Rebase Branch`、`Interactive Rebase Branch`、`Checkout Branch as Worktree...`
+  - Tag：`Push Tag...`、`Push Tags...`、`Show Annotated Tag Details...`（同时修正拼写：`Annoted` → `Annotated`）
+  - Worktree：`Open Worktree In New Tab`
+  - 其他：`Switch orientation`（修正大小写与已有 key 对齐）、`Fast-Forward Pull`、`Activate Search Navigator`、`Stage/Unstage File`、`Ai Result...`、`Send Crash Report`、`Merge...`（修正尾随空格与已有 key 对齐）
+- 7 种语言（zh-Hans/zh-Hant/ja-JP/ko-KR/fr-FR/de-DE/es-ES）各新增 16 个 key
+
 ## v1.3.2
 
 ### Bug 修复

@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Commands
 {
 	public class ShowTagDetailsWindowCommand : IUICommand, IForkPlusCommand, IPaletteCommand
 	{
-		public string Title => "Show Annoted Tag Details...";
+		public string Title => "Show Annotated Tag Details...";
 
 		public KeyGesture Shortcut { get; }
 

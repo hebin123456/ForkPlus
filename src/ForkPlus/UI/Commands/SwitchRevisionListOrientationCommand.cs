@@ -6,7 +6,7 @@ namespace ForkPlus.UI.Commands
 {
 	public class SwitchRevisionListOrientationCommand : IUICommand, IForkPlusCommand
 	{
-		public string Title => "Switch Orientation";
+		public string Title => "Switch orientation";
 
 		public KeyGesture Shortcut => null;
 

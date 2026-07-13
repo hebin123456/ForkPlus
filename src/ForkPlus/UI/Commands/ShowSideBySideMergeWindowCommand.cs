@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Commands
 {
 	public class ShowSideBySideMergeWindowCommand : IUICommand, IForkPlusCommand
 	{
-		public string Title => "Merge... ";
+		public string Title => "Merge...";
 
 		public KeyGesture Shortcut { get; }
 
