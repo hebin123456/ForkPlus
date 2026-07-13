@@ -37,7 +37,11 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return null;
 			}
-			string sha = _destination?.Sha?.ToAbbreviatedString();
+			if (_destination == null)
+			{
+				return null;
+			}
+			string sha = _destination.Sha.ToAbbreviatedString();
 			if (string.IsNullOrEmpty(sha))
 			{
 				return null;
