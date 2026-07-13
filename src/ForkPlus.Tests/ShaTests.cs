@@ -27,8 +27,10 @@ namespace ForkPlus.Tests
 		[Fact]
 		public void Zero_EqualsItself()
 		{
+#pragma warning disable CS1718 // 故意自比较，验证 == 的自反性
 			Assert.True(Sha.Zero == Sha.Zero);
 			Assert.False(Sha.Zero != Sha.Zero);
+#pragma warning restore CS1718
 			Assert.True(Sha.Zero.Equals(Sha.Zero));
 			Assert.True(Sha.Zero.Equals((object)Sha.Zero));
 		}
