@@ -63,6 +63,33 @@ jobs:
             -- RunConfiguration.TestSessionTimeout=300000
           exit $LASTEXITCODE
 
+      - name: Run system tests (ST)
+        continue-on-error: true
+        shell: pwsh
+        env:
+          FORKPLUS_AUTOMATION_EXE: ${{ github.workspace }}\src\ForkPlus\bin\Release\net472\ForkPlus.exe
+        run: |
+          $exe = $env:FORKPLUS_AUTOMATION_EXE
+          if (-not (Test-Path $exe)) {
+            Write-Host "ForkPlus.exe not found at $exe — skipping system tests"
+            exit 0
+          }
+          # 系统测试（ST）通过 FlaUI UIA3 驱动 ForkPlus.exe 进行端到端验证。
+          # 需要先构建 AutomationTests 项目，然后用 vstest/dotnet test 运行。
+          # windows-latest 自带 Git for Windows（C:\Program Files\Git），AutomationTestBase
+          # 会自动设置 forkgitinstance 环境变量跳过 ConfigureGitInstanceWindow，
+          # 并预写 settings.json 跳过 WelcomeWindow。
+          $stCsproj = "src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj"
+          dotnet build $stCsproj -c Release --framework net472
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "System test build failed — skipping ST run"
+            exit 0
+          }
+          $stDll = "src/ForkPlus.AutomationTests/bin/Release/net472/ForkPlus.AutomationTests.dll"
+          dotnet test $stDll --no-build --framework net472 `
+            -- RunConfiguration.TestSessionTimeout=600000
+          exit $LASTEXITCODE
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
