@@ -187,7 +187,7 @@ namespace ForkPlus.UI.Helpers
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
-			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, (WindowState)placement.ShowCmd);
+			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
 		}
 
 		public static WindowLocationState GetWindowLocationStateX(this Window window)
@@ -199,7 +199,7 @@ namespace ForkPlus.UI.Helpers
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
-			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, (WindowState)placement.ShowCmd);
+			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
 		}
 
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
@@ -302,6 +302,21 @@ namespace ForkPlus.UI.Helpers
 				WindowState.Minimized => 2,
 				WindowState.Maximized => 3,
 				_ => 1,
+			};
+		}
+
+		// Win32 ShowCmd 与 WPF WindowState 的枚举值不同，不能直接强转：
+		//   SW_NORMAL=1, SW_SHOWMINIMIZED=2, SW_SHOWMAXIMIZED=3
+		//   WindowState.Normal=0, Minimized=1, Maximized=2
+		// 之前用 (WindowState)placement.ShowCmd 导致最大化被存成值 3（无效），
+		// 恢复时既不匹配 Minimized 也不匹配 Maximized，最大化状态丢失。
+		private static WindowState FromShowCmd(int showCmd)
+		{
+			return showCmd switch
+			{
+				2 => WindowState.Minimized,
+				3 => WindowState.Maximized,
+				_ => WindowState.Normal,
 			};
 		}
 
