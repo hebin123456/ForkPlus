@@ -27,6 +27,22 @@ jobs:
       - name: Build (Release)
         run: msbuild ForkPlus.sln /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
 
+      - name: Run smoke tests
+        shell: pwsh
+        run: |
+          $vstest = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\Common7\IDE\Extensions\TestPlatform\vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $vstest) {
+            $vstest = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.testplatform.testhost\*\tools\net472\vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          $dll = "src/ForkPlus.Tests/bin/Release/net472/ForkPlus.Tests.dll"
+          if (Test-Path $dll) {
+            Write-Host "Running smoke tests: $dll"
+            & $vstest.FullName $dll
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } else {
+            Write-Host "Test assembly not found at $dll — skipping tests"
+          }
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

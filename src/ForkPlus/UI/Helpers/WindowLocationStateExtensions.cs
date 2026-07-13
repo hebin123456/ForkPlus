@@ -295,7 +295,9 @@ namespace ForkPlus.UI.Helpers
 			return result;
 		}
 
-		private static int ToShowCmd(WindowState windowState)
+		// 改为 internal 以便冒烟测试直接覆盖。Win32 ShowCmd 与 WPF WindowState 的枚举值
+		// 不能直接强转（见 FromShowCmd 注释），这是历史上窗口最大化状态丢失的根因，必须有测试守卫。
+		internal static int ToShowCmd(WindowState windowState)
 		{
 			return windowState switch
 			{
@@ -310,7 +312,7 @@ namespace ForkPlus.UI.Helpers
 		//   WindowState.Normal=0, Minimized=1, Maximized=2
 		// 之前用 (WindowState)placement.ShowCmd 导致最大化被存成值 3（无效），
 		// 恢复时既不匹配 Minimized 也不匹配 Maximized，最大化状态丢失。
-		private static WindowState FromShowCmd(int showCmd)
+		internal static WindowState FromShowCmd(int showCmd)
 		{
 			return showCmd switch
 			{
