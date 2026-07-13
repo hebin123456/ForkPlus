@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		if (_worktree == null || string.IsNullOrEmpty(_worktree.Path))
+		if (string.IsNullOrEmpty(_worktree.Path))
 		{
 			return null;
 		}

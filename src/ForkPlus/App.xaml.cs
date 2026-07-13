@@ -153,36 +153,47 @@ namespace ForkPlus
 		/// </summary>
 		public static string GitMmPath => ResolveGitMmPath();
 
-		private static string ResolveGitMmPath()
+	/// <summary>
+	/// 仅从 PATH 查找的 git-mm.exe 路径（带缓存）。供偏好设置 UI 列出候选时使用，
+	/// 避免直接调用 FindExecutableInPath 绕过缓存导致每次刷新都遍历 PATH。
+	/// </summary>
+	public static string GitMmPathFromPath
+	{
+		get
 		{
-			string saved = ForkPlusSettings.Default.GitMmInstancePath;
-			if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved))
-			{
-				return saved;
-			}
-			// PATH 遍历较慢（每个目录一次 File.Exists），缓存结果避免重复开销。
 			if (!_gitMmFromPathResolved)
 			{
 				_cachedGitMmFromPath = FindExecutableInPath("git-mm.exe");
 				_gitMmFromPathResolved = true;
 			}
-			string fromPath = _cachedGitMmFromPath;
-			if (fromPath != null)
+			return _cachedGitMmFromPath;
+		}
+	}
+
+	private static string ResolveGitMmPath()
+	{
+		string saved = ForkPlusSettings.Default.GitMmInstancePath;
+		if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved))
+		{
+			return saved;
+		}
+		string fromPath = GitMmPathFromPath;
+		if (fromPath != null)
+		{
+			return fromPath;
+		}
+		try
+		{
+			string gitDir = Path.GetDirectoryName(GitPath);
+			if (gitDir != null)
 			{
-				return fromPath;
-			}
-			try
-			{
-				string gitDir = Path.GetDirectoryName(GitPath);
-				if (gitDir != null)
+				string sibling = Path.Combine(gitDir, "git-mm.exe");
+				if (File.Exists(sibling))
 				{
-					string sibling = Path.Combine(gitDir, "git-mm.exe");
-					if (File.Exists(sibling))
-					{
-						return sibling;
-					}
+					return sibling;
 				}
 			}
+		}
 			catch (Exception ex)
 			{
 				Log.Error("Failed to resolve git-mm path from git directory", ex);

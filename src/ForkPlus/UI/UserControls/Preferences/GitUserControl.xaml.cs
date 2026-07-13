@@ -177,7 +177,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private DelayedAction<UserIdentity> _updateAvatarAction;
 
-		private ForkPlusDialogWindow _parentWindow;
+	private ForkPlusDialogWindow _parentWindow;
+
+	private bool _isRefreshingGitMm;
 
 		public GitUserControl()
 		{
@@ -382,14 +384,17 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 
 		/// <summary>
-		/// 填充 git-mm 实例下拉框。候选项：PATH 中发现的 git-mm.exe、用户已保存的自定义路径、
-		/// 以及"添加自定义..."入口。未找到任何 git-mm.exe 时仍展示"添加自定义..."以便用户手动指定。
-		/// </summary>
-		private void RefreshGitMmInstanceComboBox()
+	/// 填充 git-mm 实例下拉框。候选项：PATH 中发现的 git-mm.exe、用户已保存的自定义路径、
+	/// 以及"添加自定义..."入口。未找到任何 git-mm.exe 时仍展示"添加自定义..."以便用户手动指定。
+	/// </summary>
+	private void RefreshGitMmInstanceComboBox()
+	{
+		_isRefreshingGitMm = true;
+		try
 		{
 			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
-			// 1. PATH 中查找的 git-mm.exe
-			string pathCandidate = App.FindExecutableInPath("git-mm.exe");
+			// 1. PATH 中查找的 git-mm.exe（走缓存）
+			string pathCandidate = App.GitMmPathFromPath;
 			if (!string.IsNullOrWhiteSpace(pathCandidate))
 			{
 				string version = GitMmVersionText(pathCandidate);
@@ -417,25 +422,28 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			// 3. 用户已保存的自定义路径（若不在上述候选中）
 			string savedPath = ForkPlusSettings.Default.GitMmInstancePath;
-			GitInstanceItem customItem = null;
 			if (!string.IsNullOrWhiteSpace(savedPath) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, savedPath, StringComparison.OrdinalIgnoreCase)))
 			{
 				if (File.Exists(savedPath))
 				{
 					string version = GitMmVersionText(savedPath);
 					string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + savedPath;
-					customItem = new GitInstanceItem(label, savedPath, GitInstanceType.Custom);
-					list.Add(customItem);
+					list.Add(new GitInstanceItem(label, savedPath, GitInstanceType.Custom));
 				}
 			}
 			list.Add(GitInstanceItem.CreateSeparator());
 			list.Add(GitInstanceItem.CreateAddCustomGitMmInstance());
 			GitMmInstanceComboBox.ItemsSource = list.ToArray();
-			// 选中当前生效的路径
+			// 选中当前生效的路径；未找到时不选中任何项（不 fallback 到 AddCustom，避免在构造期间弹出文件对话框）
 			string current = App.GitMmPath;
 			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
-			GitMmInstanceComboBox.SelectedItem = match ?? list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType == GitInstanceType.AddCustom);
+			GitMmInstanceComboBox.SelectedItem = match;
 		}
+		finally
+		{
+			_isRefreshingGitMm = false;
+		}
+	}
 
 		private static string GitMmVersionText(string path)
 		{
@@ -444,39 +452,43 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 
 		private void GitMmInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		// 刷新期间程序化设置 SelectedItem 会触发 SelectionChanged，跳过避免副作用（弹文件对话框/写磁盘）
+		if (_isRefreshingGitMm)
 		{
-			GitInstanceItem previous = (e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as GitInstanceItem) : null;
-			if (!(GitMmInstanceComboBox.SelectedItem is GitInstanceItem item))
-			{
-				return;
-			}
-			switch (item.GitInstanceType)
-			{
-			case GitInstanceType.System:
-			case GitInstanceType.Local:
-			case GitInstanceType.Custom:
-				ForkPlusSettings.Default.GitMmInstancePath = item.GitPath;
-				ForkPlusSettings.Default.Save();
-				break;
-			case GitInstanceType.AddCustom:
-			{
-				string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
-				if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-mm instance"), initialDirectory, out var filePath))
-				{
-					string normalized = PathHelper.Normalize(filePath);
-					ForkPlusSettings.Default.GitMmInstancePath = normalized;
-					ForkPlusSettings.Default.Save();
-					RefreshGitMmInstanceComboBox();
-				}
-				else
-				{
-					GitMmInstanceComboBox.SelectedItem = previous;
-				}
-				break;
-			}
-			}
-			Log.Info("git-mm Location: " + (App.GitMmPath ?? "(none)"));
+			return;
 		}
+		GitInstanceItem previous = (e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as GitInstanceItem) : null;
+		if (!(GitMmInstanceComboBox.SelectedItem is GitInstanceItem item))
+		{
+			return;
+		}
+		switch (item.GitInstanceType)
+		{
+		case GitInstanceType.System:
+		case GitInstanceType.Local:
+		case GitInstanceType.Custom:
+			ForkPlusSettings.Default.GitMmInstancePath = item.GitPath;
+			break;
+		case GitInstanceType.AddCustom:
+		{
+			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-mm instance"), initialDirectory, out var filePath))
+			{
+				string normalized = PathHelper.Normalize(filePath);
+				ForkPlusSettings.Default.GitMmInstancePath = normalized;
+				ForkPlusSettings.Default.Save();
+				RefreshGitMmInstanceComboBox();
+			}
+			else
+			{
+				GitMmInstanceComboBox.SelectedItem = previous;
+			}
+			break;
+		}
+		}
+		Log.Info("git-mm Location: " + (App.GitMmPath ?? "(none)"));
+	}
 
 	}
 }

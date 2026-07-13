@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 		{
-			if (_gitPointSha == null)
+			if (_gitPointSha == Sha.Zero || string.IsNullOrEmpty(_gitPointSha.ToString()))
 			{
 				return null;
 			}

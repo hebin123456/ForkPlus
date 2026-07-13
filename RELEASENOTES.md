@@ -13,6 +13,19 @@
 - 实现方式：在 `ForkPlusDialogWindow` 基类中添加公共命令预览基础设施（`GetCommandPreview` 虚方法 + `RefreshCommandPreview` 方法），各子窗口重写 `GetCommandPreview` 返回命令字符串
 - 7 种语言 JSON 文件新增 "Git Command Preview" key
 
+### Bug 修复：CI 构建失败
+
+- **DeleteWorktreeWindow**：`GetCommandPreview` 中 `Worktree`（struct）与 null 比较导致 CS0019 编译错误。移除多余的 null 检查。
+- **CheckoutRevisionWindow**：`GetCommandPreview` 中 `Sha`（struct）与 null 比较导致 CS8073 警告。改为与 `Sha.Zero` 比较。
+
+### Bug 修复：打开偏好设置异常（git mm 相关）
+
+- **根因**：`RefreshGitMmInstanceComboBox` 未找到 git-mm 时将 `SelectedItem` fallback 到 AddCustom 项，触发 `SelectionChanged` 在 `PreferencesWindow` 构造期间弹出文件选择对话框。
+- **修复**：未找到 git-mm 时 `SelectedItem` 设为 null（不选中任何项），不 fallback 到 AddCustom。
+- **修复**：`GitMmInstanceComboBox_SelectionChanged` 添加 `_isRefreshingGitMm` 守卫标志，刷新期间跳过副作用逻辑（弹文件对话框/写磁盘）。
+- **优化**：`SelectionChanged` 中选择 System/Local/Custom 时移除 `Save()` 调用（仅赋值不立即写磁盘，避免每次打开偏好设置都触发磁盘写入）。
+- **优化**：`RefreshGitMmInstanceComboBox` 使用 `App.GitMmPathFromPath`（带缓存的 PATH 查找），避免直接调 `FindExecutableInPath` 绕过缓存导致重复遍历 PATH。
+
 ## v1.3.4
 
 ### Bug 修复：所有 push 操作报 "src refspec xxx does not match any"
