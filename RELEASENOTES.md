@@ -2,6 +2,15 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.3.4
+
+### Bug 修复：所有 push 操作报 "src refspec xxx does not match any"
+
+- **根因**：`PushGitCommand` 走 `ExecuteWithCallbackBt`（argv 数组传参，每个参数独立，不做 shell 解析），但代码仍用 `Quotify()` 给 `remote` 和 refspec 包裹双引号。导致 git.exe 收到字面量 `"origin"`（含双引号）作为 remote 名，找不到该 remote，refspec 解析失败，报 `src refspec "refs/heads/xxx" does not match any`。
+- **修复**：移除 `PushGitCommand` 中 5 处 `Quotify()` 调用（主重载 4 处 + LeanBranching 重载 2 处），与同走 `ExecuteWithCallbackBt` 的 `PushTagGitCommand`/`PushMultipleBranchesGitCommand`/`PushMultipleTagsGitCommand` 保持一致（它们本来就不用 Quotify）。
+- **影响范围**：所有走 `PushGitCommand` 的 push 操作（PushWindow 推送分支、QuickPush、CreatePullRequest、LeanBranching Step3）。
+- **说明**：`Quotify` 仅适用于 `ExecuteWithCallback`（无 Bt 后缀，走 `ProcessStartInfo.Arguments` 拼接，CreateProcess 解析需要双引号）路径。`ExecuteWithCallbackBt`（Bt 后缀，走原生 argv 数组）路径不应使用 Quotify。
+
 ## v1.3.3
 
 ### 性能优化：启动速度

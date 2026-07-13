@@ -17,21 +17,24 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, string remote, LocalBranch localBranch, [Null] RemoteBranch remoteBranch, [Null] string customRefspec, bool pushAllTags, bool force, bool track, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remote.Quotify());
+			// 注意：本命令走 ExecuteWithCallbackBt（argv 数组传参，每个参数独立），
+			// 不能用 Quotify——双引号会成为参数字面量的一部分，导致 git 收到 "origin" 而非 origin，
+			// 报 "src refspec xxx does not match any"。与 PushTagGitCommand/PushMultipleBranchesGitCommand 保持一致。
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remote);
 			if (remoteBranch != null)
 			{
 			 string fullReference = localBranch.FullReference;
 			 string text = ((!(remoteBranch.Remote == remote)) ? ("refs/heads/" + localBranch.Name) : ("refs/heads/" + remoteBranch.ShortName));
-			 gitCommand.Add((fullReference + ":" + text).Quotify());
+			 gitCommand.Add(fullReference + ":" + text);
 			}
 			else if (customRefspec != null)
 			{
 			 string fullReference2 = localBranch.FullReference;
-			 gitCommand.Add((fullReference2 + ":" + customRefspec).Quotify());
+			 gitCommand.Add(fullReference2 + ":" + customRefspec);
 			}
 			else
 			{
-			 gitCommand.Add(localBranch.FullReference.Quotify());
+			 gitCommand.Add(localBranch.FullReference);
 			}
 			if (force)
 			{
@@ -102,8 +105,9 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult Execute(GitModule gitModule, RemoteBranch remoteBranch, string destination, JobMonitor monitor)
 		{
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remoteBranch.Remote.Quotify());
-			gitCommand.Add((destination + ":refs/heads/" + remoteBranch.ShortName).Quotify());
+			// 同上：ExecuteWithCallbackBt 走 argv 数组，不用 Quotify。
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", remoteBranch.Remote);
+			gitCommand.Add(destination + ":refs/heads/" + remoteBranch.ShortName);
 			gitCommand.Add("--force-with-lease");
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
