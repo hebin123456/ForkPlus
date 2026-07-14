@@ -95,6 +95,9 @@ namespace ForkPlus.UI.Dialogs
 			PushCheckBox.Content = Translate((remotes.Length > 1) ? "Push to all remotes" : "Push");
 			PushCheckBox.IsChecked = ForkPlusSettings.Default.CreateTag_Push;
 			RefreshButtonTitle();
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 TagNameTextBox 等控件尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
 		}
 
 		protected override void OnSubmit()
