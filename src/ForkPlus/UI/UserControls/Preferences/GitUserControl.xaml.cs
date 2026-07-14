@@ -447,11 +447,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private static string GitMmVersionText(string path)
 		{
-			// 版本判断会同步启动 git-mm.exe --version 子进程阻塞 UI 线程，
-			// 导致偏好设置窗口打开很慢（最多串行启动 3 个子进程）。
-			// 此处短路返回 null，调用方已对 null 做优雅降级（显示 "unknown - <path>"）。
-			// 同时修复了版本输出含内嵌换行导致下拉框每项显示两行的问题。
-			return null;
+			GitCommandResult<string> result = new GetGitMmVersionShellCommand().Execute(path);
+			return result.Succeeded ? result.Result : null;
 		}
 
 		private void GitMmInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
