@@ -2027,19 +2027,25 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Generate commit message"), delegate(JobMonitor monitor)
 					{
 						GitCommandResult<string> response2 = new GenerateCommitMessageShellCommand().Execute(aiAgent, GitModule.Path, amend, monitor);
-						base.Dispatcher.Async(delegate
+					base.Dispatcher.Async(delegate
+					{
+						// Claude/AiAgent 的输出是缓冲到进程结束才一次性返回，期间用户可能已点取消。
+						// 此处必须复查 IsCanceled，否则取消后已返回内容仍会被写入 commit 信息（与 OpenAI 路径一致）。
+						if (monitor.IsCanceled)
 						{
-							if (!response2.Succeeded)
-							{
-								new ErrorWindow(response2.Error.FriendlyDescription).ShowDialog();
-							}
-							else
-							{
-								FullCommitMessage = response2.Result;
-								UpdateCommitButtonState();
-								RefreshDescriptionFieldHeight();
-							}
-						});
+							return;
+						}
+						if (!response2.Succeeded)
+						{
+							new ErrorWindow(response2.Error.FriendlyDescription).ShowDialog();
+						}
+						else
+						{
+							FullCommitMessage = response2.Result;
+							UpdateCommitButtonState();
+							RefreshDescriptionFieldHeight();
+						}
+					});
 					});
 				};
 				contextMenu.Items.Add(menuItem);
@@ -2100,17 +2106,21 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Run prepare-commit-msg hook"), delegate(JobMonitor monitor)
 					{
 						GitCommandResult<string> messageResult = new RunHookShellCommand().Execute(GitModule, PrepareCommitMsgHook, monitor);
-						base.Dispatcher.Async(delegate
+					base.Dispatcher.Async(delegate
+					{
+						if (monitor.IsCanceled)
 						{
-							if (!messageResult.Succeeded)
-							{
-								new ErrorWindow(RepositoryUserControl, messageResult.Error).ShowDialog();
-							}
-							else
-							{
-								FullCommitMessage = messageResult.Result.TrimEnd(Consts.Chars.NewLines);
-							}
-						});
+							return;
+						}
+						if (!messageResult.Succeeded)
+						{
+							new ErrorWindow(RepositoryUserControl, messageResult.Error).ShowDialog();
+						}
+						else
+						{
+							FullCommitMessage = messageResult.Result.TrimEnd(Consts.Chars.NewLines);
+						}
+					});
 					});
 				};
 				contextMenu.Items.Add(menuItem3);

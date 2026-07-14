@@ -274,6 +274,8 @@
     "Cannot find shellToolPath at '{0}'": "找不到 shellToolPath，路径：'{0}'",
     "Cannot find {0} at '{1}'": "找不到 {0}，路径：'{1}'",
     "Cannot get diff:\n": "无法获取差异：\n",
+    "Cannot parse revision": "无法解析版本",
+    "Cannot parse revision details": "无法解析版本详情",
     "Cannot run '{0} {1}'.\n{2}": "无法运行 '{0} {1}'。\n{2}",
     "Cannot save authentication": "无法保存认证信息",
     "Cannot sync: You have unstaged changes. Please commit or stash them.": "无法同步：存在未暂存变更。请提交或贮藏这些变更。",

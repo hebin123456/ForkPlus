@@ -274,6 +274,8 @@
     "Cannot find shellToolPath at '{0}'": "'{0}'에서 shellToolPath를 찾을 수 없습니다",
     "Cannot find {0} at '{1}'": "'{1}'에서 {0}을(를) 찾을 수 없습니다",
     "Cannot get diff:\n": "diff를 가져올 수 없습니다:\n",
+    "Cannot parse revision": "리비전을 파싱할 수 없습니다",
+    "Cannot parse revision details": "리비전 상세 정보를 파싱할 수 없습니다",
     "Cannot run '{0} {1}'.\n{2}": "'{0} {1}'을(를) 실행할 수 없습니다.\n{2}",
     "Cannot save authentication": "인증 정보를 저장할 수 없습니다",
     "Cannot sync: You have unstaged changes. Please commit or stash them.": "동기화할 수 없습니다: 스테이지되지 않은 변경사항이 있습니다. 커밋하거나 스태시하세요.",

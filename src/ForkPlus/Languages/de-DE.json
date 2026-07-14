@@ -274,6 +274,8 @@
     "Cannot find shellToolPath at '{0}'": "shellToolPath nicht gefunden bei '{0}'",
     "Cannot find {0} at '{1}'": "{0} nicht gefunden bei '{1}'",
     "Cannot get diff:\n": "Diff kann nicht abgerufen werden:\n",
+    "Cannot parse revision": "Revision konnte nicht geparst werden",
+    "Cannot parse revision details": "Revisionsdetails konnten nicht geparst werden",
     "Cannot run '{0} {1}'.\n{2}": "'{0} {1}' kann nicht ausgeführt werden.\n{2}",
     "Cannot save authentication": "Authentifizierung kann nicht gespeichert werden",
     "Cannot sync: You have unstaged changes. Please commit or stash them.": "Synchronisation nicht möglich: Es gibt nicht vorgemerkte Änderungen. Bitte committen oder stashen Sie diese.",

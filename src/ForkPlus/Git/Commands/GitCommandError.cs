@@ -380,7 +380,8 @@ namespace ForkPlus.Git.Commands
 		{
 			public string ErrorMessage { get; }
 
-			public override string FriendlyDescription => ErrorMessage;
+			// 走国际化翻译。未命中的 key 会原样返回，所以带运行时数据的拼接串也安全。
+			public override string FriendlyDescription => PreferencesLocalization.Translate(ErrorMessage, ForkPlusSettings.Default.UiLanguage);
 
 			public ParseError(string stderr)
 			{

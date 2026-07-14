@@ -274,6 +274,8 @@
     "Cannot find shellToolPath at '{0}'": "shellToolPath introuvable à '{0}'",
     "Cannot find {0} at '{1}'": "{0} introuvable à '{1}'",
     "Cannot get diff:\n": "Impossible d'obtenir le diff :\n",
+    "Cannot parse revision": "Impossible d'analyser la révision",
+    "Cannot parse revision details": "Impossible d'analyser les détails de la révision",
     "Cannot run '{0} {1}'.\n{2}": "Impossible d'exécuter '{0} {1}'.\n{2}",
     "Cannot save authentication": "Impossible d'enregistrer l'authentification",
     "Cannot sync: You have unstaged changes. Please commit or stash them.": "Synchronisation impossible : vous avez des modifications non indexées. Veuillez les valider ou les remiser.",
