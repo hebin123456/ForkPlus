@@ -86,7 +86,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return null;
 			}
-			var parts = new List<string> { "git", "branch", "-d" };
+			// 与 RemoveLocalBranchGitCommand 实际执行的 --delete --force 一致。
+			var parts = new List<string> { "git", "branch", "-D" };
 			foreach (LocalBranch b in _branchesToRemove)
 			{
 				parts.Add(b.Name);
@@ -178,6 +179,9 @@ namespace ForkPlus.UI.Dialogs
 				_branchesSource = list.ToArray();
 				BranchesItemsControl.ItemsSource = list;
 			}
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _branchesToRemove 尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
 		}
 
 		protected override void OnSubmit()

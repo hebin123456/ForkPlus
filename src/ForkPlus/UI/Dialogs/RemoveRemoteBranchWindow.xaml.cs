@@ -49,6 +49,24 @@ namespace ForkPlus.UI.Dialogs
 				StartPointTextBlock.Text = PreferencesLocalization.Current("Branches:");
 				base.SubmitButtonTitle = PreferencesLocalization.FormatCurrent("Delete {0} branches", remoteBranches.Length);
 			}
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _remoteBranches 尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			if (_remoteBranches == null || _remoteBranches.Length == 0)
+			{
+				return null;
+			}
+			// 与 RemoveRemoteBranchGitCommand 实际执行的 git push <remote> --delete refs/heads/<branch> 一致。
+			var lines = new System.Collections.Generic.List<string>(_remoteBranches.Length);
+			foreach (RemoteBranch b in _remoteBranches)
+			{
+				lines.Add("git push " + b.Remote + " --delete refs/heads/" + b.ShortName);
+			}
+			return string.Join("\n", lines);
 		}
 
 		protected override void OnSubmit()
