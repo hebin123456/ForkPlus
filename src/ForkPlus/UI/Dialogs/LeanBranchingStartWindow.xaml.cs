@@ -122,7 +122,7 @@ namespace ForkPlus.UI.Dialogs
 				return null;
 			}
 			var parts = new System.Collections.Generic.List<string> { "git", "checkout", "-b", branchName };
-			string startPoint = _mainBranch?.FriendlyName;
+			string startPoint = _mainBranch?.Name;
 			if (!string.IsNullOrEmpty(startPoint))
 			{
 				parts.Add(startPoint);
