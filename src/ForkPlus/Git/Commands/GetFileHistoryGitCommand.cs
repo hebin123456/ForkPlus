@@ -8,7 +8,7 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<RevisionWithFiles[]> Execute(GitModule gitModule, Submodule[] submodules, string filePath, Sha? parentSha)
 		{
-			GitCommand gitCommand = new GitCommand("-c", "core.quotePath=false", "log", "--no-show-signature", "--oneline", "--name-status", "--follow", "--pretty=format:" + RevisionParser.Format);
+			GitCommand gitCommand = new GitCommand("-c", "core.quotePath=false", "log", "--no-show-signature", "--name-status", "--follow", "--pretty=format:" + RevisionParser.Format);
 			if (parentSha.HasValue)
 			{
 				gitCommand.Add(parentSha.Value.ToString());
@@ -20,7 +20,9 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult<RevisionWithFiles[]>.Failure(new GitCommandError.GitError(gitRequestResult.Stderr));
 			}
-			string[] array = gitRequestResult.Stdout.Split(Consts.Chars.NewLine);
+			// Windows 上 git 输出使用 \r\n 行尾，需统一为 \n，否则 Sha.TryParse 会因行尾残留 \r
+			// 而失败（40 字符 sha 变成 41 字符），导致 "Cannot parse revision" 错误。
+			string[] array = gitRequestResult.Stdout.Replace("\r\n", "\n").Split(Consts.Chars.NewLine);
 			List<RevisionWithFiles> list = new List<RevisionWithFiles>(array.Length / 6);
 			for (int i = 0; i < array.Length; i++)
 			{
@@ -48,7 +50,9 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult<(RevisionWithFiles[], string[])>.Failure(gitRequestResult.ToGitCommandError());
 			}
-			string stdout = gitRequestResult.Stdout;
+			// Windows 上 git 输出使用 \r\n 行尾，需统一为 \n，否则 IndexOf 查找标记
+			// （如 "--ForkRevisionHeaderStart--\n"）会失败，导致解析不出任何 revision。
+			string stdout = gitRequestResult.Stdout.Replace("\r\n", "\n");
 			List<RevisionWithFiles> list = new List<RevisionWithFiles>(4);
 			List<string> list2 = new List<string>(4);
 			int num = stdout.IndexOf("--ForkRevisionHeaderStart--\n", StringComparison.Ordinal);
