@@ -359,6 +359,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			RepositoryReferences references = repositoryData.References;
 			LocalBranch activeBranch = references.ActiveBranch;
+			string language = ForkPlusSettings.Default.UiLanguage;
 			contextMenu.Items.Add(MainWindow.Commands.ShowCreateBranchWindow.CreateMenuItem(delegate
 			{
 				RepositoryUserControl.Commands.ShowCreateBranchWindow.Execute(repositoryUserControl, null);
@@ -370,7 +371,7 @@ namespace ForkPlus.UI.UserControls
 			if (repositoryData.GitFlowSettings != null)
 			{
 				contextMenu.Items.Add(new Separator());
-				contextMenu.Items.Add(new HeaderMenuItem("Git Flow"));
+				contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Git Flow", language)));
 				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowStartFeatureWindow.CreateMenuItem(delegate
 				{
 					RepositoryUserControl.Commands.ShowGitFlowStartFeatureWindow.Execute(repositoryUserControl, gitModule);
@@ -386,7 +387,7 @@ namespace ForkPlus.UI.UserControls
 				LocalBranch localBranch = activeBranch;
 				if (localBranch != null && localBranch.IsFeatureBranch(repositoryData.GitFlowSettings))
 				{
-					contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishFeatureWindow.CreateMenuItem("Finish '" + activeBranch.Name + "'...", delegate
+					contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishFeatureWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Finish '{0}'...", language), activeBranch.Name), delegate
 					{
 						RepositoryUserControl.Commands.ShowGitFlowFinishFeatureWindow.Execute(repositoryUserControl, gitModule, repositoryData, activeBranch);
 					}));
@@ -396,7 +397,7 @@ namespace ForkPlus.UI.UserControls
 					LocalBranch localBranch2 = activeBranch;
 					if (localBranch2 != null && localBranch2.IsReleaseBranch(repositoryData.GitFlowSettings))
 					{
-						contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishReleaseWindow.CreateMenuItem("Finish '" + activeBranch.Name + "'...", delegate
+						contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishReleaseWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Finish '{0}'...", language), activeBranch.Name), delegate
 						{
 							RepositoryUserControl.Commands.ShowGitFlowFinishReleaseWindow.Execute(repositoryUserControl, gitModule, repositoryData, activeBranch);
 						}));
@@ -406,7 +407,7 @@ namespace ForkPlus.UI.UserControls
 						LocalBranch localBranch3 = activeBranch;
 						if (localBranch3 != null && localBranch3.IsHotfixBranch(repositoryData.GitFlowSettings))
 						{
-							contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishHotfixWindow.CreateMenuItem("Finish '" + activeBranch.Name + "'...", delegate
+							contextMenu.Items.Add(RepositoryUserControl.Commands.ShowGitFlowFinishHotfixWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Finish '{0}'...", language), activeBranch.Name), delegate
 							{
 								RepositoryUserControl.Commands.ShowGitFlowFinishHotfixWindow.Execute(repositoryUserControl, gitModule, repositoryData, activeBranch);
 							}));
@@ -433,16 +434,16 @@ namespace ForkPlus.UI.UserControls
 			if (mainBranch != null)
 			{
 				contextMenu.Items.Add(new Separator());
-				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem("Start Branch on '" + mainBranch.Name + "'...", delegate
+				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Start Branch on '{0}'...", language), mainBranch.Name), delegate
 				{
 					RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.Execute(repositoryUserControl, mainBranch);
 				}));
-				string header = ((activeBranch == null) ? ("Sync (Rebase on '" + localBranch4.Name + "')") : ((activeBranch != localBranch4) ? ("Sync '" + activeBranch.Name + "' (Rebase on '" + mainBranch.Name + "')") : ("Sync '" + activeBranch.Name + "' (Rebase on '" + remoteBranch.Name + "')")));
+				string header = ((activeBranch == null) ? string.Format(Preferences.PreferencesLocalization.Translate("Sync (Rebase on '{0}')", language), localBranch4.Name) : ((activeBranch != localBranch4) ? string.Format(Preferences.PreferencesLocalization.Translate("Sync '{0}' (Rebase on '{1}')", language), activeBranch.Name, mainBranch.Name) : string.Format(Preferences.PreferencesLocalization.Translate("Sync '{0}' (Rebase on '{1}')", language), activeBranch.Name, remoteBranch.Name)));
 				contextMenu.Items.Add(RepositoryUserControl.Commands.LeanBranchingSync.CreateMenuItem(header, delegate
 				{
 					RepositoryUserControl.Commands.LeanBranchingSync.Execute(repositoryUserControl);
 				}, activeBranch != null));
-				string header2 = ((activeBranch == null || activeBranch == mainBranch) ? ("Finish (Merge into '" + localBranch4.Name + "')...") : ("Finish '" + activeBranch.Name + "' (Merge into '" + localBranch4.Name + "')..."));
+				string header2 = ((activeBranch == null || activeBranch == mainBranch) ? string.Format(Preferences.PreferencesLocalization.Translate("Finish (Merge into '{0}')...", language), localBranch4.Name) : string.Format(Preferences.PreferencesLocalization.Translate("Finish '{0}' (Merge into '{1}')...", language), activeBranch.Name, localBranch4.Name));
 				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingFinishWindow.CreateMenuItem(header2, delegate
 				{
 					RepositoryUserControl.Commands.ShowLeanBranchingFinishWindow.Execute(repositoryUserControl);
