@@ -525,5 +525,13 @@ namespace ForkPlus.Git.Commands
 		}
 
 		public abstract string FriendlyDescription { get; }
+
+		// 重写 ToString 返回友好描述，避免未重写 ToString 的子类（如 ParseError）
+		// 在被隐式转为字符串时显示类型全名（如 "ForkPlus.Git.Commands.GitCommandError+ParseError"）。
+		// GitError 已自行重写 ToString 返回 FullOutput，不受影响。
+		public override string ToString()
+		{
+			return FriendlyDescription;
+		}
 	}
 }
