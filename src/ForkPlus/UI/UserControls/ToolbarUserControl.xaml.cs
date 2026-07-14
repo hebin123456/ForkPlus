@@ -434,6 +434,7 @@ namespace ForkPlus.UI.UserControls
 			if (mainBranch != null)
 			{
 				contextMenu.Items.Add(new Separator());
+				contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Lean Branching", language)));
 				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Start Branch on '{0}'...", language), mainBranch.Name), delegate
 				{
 					RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.Execute(repositoryUserControl, mainBranch);
