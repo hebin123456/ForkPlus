@@ -784,6 +784,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					base.GitResult = todoListResult.ToGitCommandResult();
 					Close();
+					return;
 				}
 				SetStatus(ForkPlusDialogStatus.None, "");
 				RevisionListFallbackUserControl.Hide();

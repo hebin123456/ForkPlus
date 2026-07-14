@@ -24,13 +24,28 @@ namespace ForkPlus.Git.Commands
 				{
 					return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
 				}
-				return GitCommandResult<string>.Success(gitRequestResult.Stdout.Trim());
+				return GitCommandResult<string>.Success(GetFirstLine(gitRequestResult.Stdout));
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Failed to get git-mm version for '" + path + "'", ex);
 				return GitCommandResult<string>.Failure(ex);
 			}
+		}
+
+		/// <summary>
+		/// 取版本输出的首行，去除内嵌换行符（含 Windows \r\n）。
+		/// git-mm --version 可能输出多行（版本号 + build info），内嵌换行会导致下拉框每项显示两行。
+		/// </summary>
+		private static string GetFirstLine(string output)
+		{
+			if (string.IsNullOrEmpty(output))
+			{
+				return "";
+			}
+			string normalized = output.Replace("\r\n", "\n");
+			int newlineIndex = normalized.IndexOf('\n');
+			return (newlineIndex >= 0 ? normalized.Substring(0, newlineIndex) : normalized).Trim();
 		}
 	}
 }

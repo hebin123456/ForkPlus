@@ -156,12 +156,27 @@ namespace ForkPlus.UI.UserControls
 					string[] pathComponents = text.Split('/');
 					Expand(pathComponents, FilesTreeView.RootItem.Children);
 				}
+				// 若有待展开的文件路径（来自 ShowRevisionDetails），现在 RootItem 已就绪，执行展开。
+				if (_pendingFilePath != null)
+				{
+					string[] pathComponents = _pendingFilePath.Split('/');
+					Expand(pathComponents, FilesTreeView.RootItem.Children);
+					_pendingFilePath = null;
+				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 			task.Start();
 		}
 
+		private string _pendingFilePath;
+
 		public void ShowRevisionDetails(string filePath)
 		{
+			// RootItem 可能尚未就绪（Refresh 是异步的），保存路径等异步回调完成后展开。
+			if (FilesTreeView.RootItem == null)
+			{
+				_pendingFilePath = filePath;
+				return;
+			}
 			string[] pathComponents = filePath.Split('/');
 			Expand(pathComponents, FilesTreeView.RootItem.Children);
 		}
