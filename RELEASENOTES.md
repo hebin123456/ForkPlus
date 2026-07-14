@@ -2,6 +2,21 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.4.7
+
+### AI 辅助开发增强
+
+- **AI 开发窗口改用流式输出**：`AiDevelopmentWindow` 此前用非流式 `OpenAiRequest`，用户需等整段响应才看到内容。改用 `OpenAiRequestStreamingWithRetry`（v1.4.6 为检视路径引入的 SSE 流式 API），新增 `onChunk` 回调参数，AI 生成的文本逐 chunk 实时追加到聊天气泡。与检视路径对齐，解决"卡一段时间无输出"的体验问题。
+- **AI 开发新增"撤销 AI 修改"按钮**：AI 修改文件后，diff 结果头部显示"Undo AI Changes"按钮。点击后用 `beforeContents` / `_fileChanges` 回写文件原内容（恢复被删文件、删除新建文件、还原修改内容），复用已有的路径安全检查（`IsPathInAllowedDirectories`）。此前 AI 改坏文件需手动 `git checkout`。
+
+### 国际化补全
+
+- **AiDevelopmentWindow 中文字面量国际化**：约 24 个中文状态消息/标签（发送模式、排队中、正在请求 AI、AI 请求失败/出错、文件变更、新建/删除/修改、AI 响应、撤销相关等）补齐 7 种语言翻译 key。此前这些中文字符串作为 key 传给 `Current()` 但语言文件无对应条目，非中文用户看到的仍是中文。
+
+### CI 质量治理
+
+- **移除 CI 的 `continue-on-error: true`**：`build-windows.yml` 中单元测试和系统测试步骤此前设为 `continue-on-error: true`，测试失败不阻断 CI 构建。移除后测试失败将真正阻断构建，让测试发挥应有作用。
+
 ## v1.4.6
 
 ### 国际化补全
