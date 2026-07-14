@@ -35,6 +35,21 @@ namespace ForkPlus.UI.Dialogs
 			PreviewLabelTextBlock.Text = Translate("0 files match");
 			PatternTextBox.Text = _initialPattern;
 			_updatePreviewAction.InvokeNow(_initialPattern);
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 PatternTextBox 尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			// 与 AddGitLfsTrackPatternGitCommand 对应：git lfs track <pattern>...（每行一个 pattern）
+			string text = PatternTextBox.Text;
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				return null;
+			}
+			string[] patterns = text.Trim().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+			return "git lfs track " + string.Join(" ", patterns);
 		}
 
 		protected override void OnSubmit()
@@ -48,6 +63,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_updatePreviewAction.InvokeWithDelay(PatternTextBox.Text);
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void UpdatePreview(string pattern)

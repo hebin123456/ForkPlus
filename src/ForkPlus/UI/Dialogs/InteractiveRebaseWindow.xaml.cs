@@ -157,7 +157,20 @@ namespace ForkPlus.UI.Dialogs
 					interactiveRebaseWindow.Close(rebaseResult);
 				});
 			});
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _destination 尚未就绪，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
 		}
+
+	protected override string GetCommandPreview()
+	{
+		// 与 RebaseInteractiveGitCommand 对应：git rebase -i <destination>
+		if (_destination == null)
+		{
+			return null;
+		}
+		return "git rebase -i " + _destination.FriendlyName;
+	}
 
 		public void Dispose()
 		{

@@ -108,6 +108,31 @@ namespace ForkPlus.UI.Dialogs
 					OnShiftKeyUp();
 				}
 			};
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 BranchNameTextBox 等控件尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			// LeanBranchingStartWindow 固定 checkout=true，对应 git checkout -b <branch> <mainBranch>
+			string branchName = BranchNameTextBox.Text;
+			if (string.IsNullOrWhiteSpace(branchName))
+			{
+				return null;
+			}
+			var parts = new System.Collections.Generic.List<string> { "git", "checkout", "-b", branchName };
+			string startPoint = _mainBranch?.FriendlyName;
+			if (!string.IsNullOrEmpty(startPoint))
+			{
+				parts.Add(startPoint);
+			}
+			string command = string.Join(" ", parts);
+			if (_repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
+			{
+				command = "git stash\n" + command;
+			}
+			return command;
 		}
 
 		protected override void OnSubmit()
@@ -191,6 +216,7 @@ namespace ForkPlus.UI.Dialogs
 		private void BranchName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void LocalChangesOption_Changed(object sender, RoutedEventArgs e)
@@ -203,6 +229,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DiscardWarningImage.Hide();
 			}
+			RefreshCommandPreview();
 		}
 
 		private void OnShiftKeyDown()

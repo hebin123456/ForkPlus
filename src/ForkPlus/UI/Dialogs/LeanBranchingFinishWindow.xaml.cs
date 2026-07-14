@@ -102,10 +102,43 @@ namespace ForkPlus.UI.Dialogs
 					base.DialogDescription = string.Format(Translate("Finish '{0}' and merge it into '{1}'"), activeBranch.Name, localBranch.Name);
 					base.SubmitButtonTitle = Translate("Finish");
 					CurrentBranchGitPointView.Value = activeBranch;
-					MainBranchGitPointView.Value = localBranch;
-					UpdateSubmitButton();
-				}
+				MainBranchGitPointView.Value = localBranch;
+				UpdateSubmitButton();
+				// InitializeComponent 期间 AddCommandPreview 已执行，但此时仓库状态尚未读取，
+				// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+				RefreshCommandPreview();
 			}
+		}
+
+		protected override string GetCommandPreview()
+		{
+			// LeanBranchingFinishWindow：把当前分支收尾合并回 main。
+			// 命令序列：可选 git fetch（main 落后 remote 时）→ git checkout main → git merge <feature>
+			GitModule gitModule = _repositoryUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return null;
+			}
+			RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
+			if (repositoryData == null)
+			{
+				return null;
+			}
+			LocalBranch localMain = repositoryData.References.LocalMain(gitModule);
+			LocalBranch activeBranch = repositoryData.References.ActiveBranch;
+			if (localMain == null || activeBranch == null)
+			{
+				return null;
+			}
+			var lines = new System.Collections.Generic.List<string>();
+			RemoteBranch remoteMain = repositoryData.References.Upstream(localMain);
+			if (remoteMain != null)
+			{
+				lines.Add("git fetch " + remoteMain.Remote + " " + remoteMain.ShortName);
+			}
+			lines.Add("git checkout " + localMain.Name);
+			lines.Add("git merge " + activeBranch.Name);
+			return string.Join("\n", lines);
 		}
 
 		protected override void OnSubmit()

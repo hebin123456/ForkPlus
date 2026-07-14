@@ -36,6 +36,20 @@ namespace ForkPlus.UI.Dialogs
 			PreviewLabelTextBlock.Text = Translate("0 files match");
 			PatternTextBox.Text = _initialPattern;
 			_updatePreviewAction.InvokeNow(_initialPattern);
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 PatternTextBox 尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			// 与 IgnoreFilesGitCommand 对应：把 pattern 写入 .gitignore，并对已跟踪文件执行 git rm --cached
+			string text = PatternTextBox.Text;
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				return null;
+			}
+			return "# .gitignore\ngit rm --cached -r .";
 		}
 
 		protected override void OnSubmit()
@@ -57,6 +71,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_updatePreviewAction.InvokeWithDelay(PatternTextBox.Text);
 			UpdateSubmitButton();
+			RefreshCommandPreview();
 		}
 
 		private void UpdatePreview(string pattern)

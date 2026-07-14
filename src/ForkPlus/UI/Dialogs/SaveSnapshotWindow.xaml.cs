@@ -26,6 +26,26 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			StageNewFilesCheckBox.IsChecked = ForkPlusSettings.Default.SaveStash_StageNewFiles;
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时控件尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
+		}
+
+		protected override string GetCommandPreview()
+		{
+			// 与 SaveWorkingDirectoryAsStashGitCommand 对应：git stash push [--include-untracked] [-m "<msg>"]
+			var parts = new System.Collections.Generic.List<string> { "git", "stash", "push" };
+			if (StageNewFilesCheckBox.IsChecked.GetValueOrDefault())
+			{
+				parts.Add("--include-untracked");
+			}
+			string message = StashMessageTextBox.Text;
+			if (!string.IsNullOrWhiteSpace(message))
+			{
+				parts.Add("-m");
+				parts.Add(message.Contains(" ") ? "\"" + message + "\"" : message);
+			}
+			return string.Join(" ", parts);
 		}
 
 		protected override void OnSubmit()
@@ -60,6 +80,16 @@ namespace ForkPlus.UI.Dialogs
 		private static string Translate(string text)
 		{
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+		}
+
+		private void StashMessageTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
+		private void StageNewFilesCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
 		}
 
 	}
