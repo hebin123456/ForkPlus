@@ -92,6 +92,9 @@ namespace ForkPlus.UI.Dialogs
 					rebaseBranchWindow.Close(GitCommandResult.Failure(new GitCommandError.GenericError("Cannot get destination sha for rebase")));
 				});
 			}
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _destination 及复选框状态尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
 		}
 
 		protected override string GetCommandPreview()
