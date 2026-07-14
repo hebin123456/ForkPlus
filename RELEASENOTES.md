@@ -2,6 +2,80 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.4.5
+
+### 国际化补全
+
+- **工具栏下拉菜单国际化**：`ToolbarUserControl` 中 Appearance（主题/语言/提交列表布局）、Stash（Recent Stashes / Save Snapshot...）、Workspaces 三个下拉菜单的硬编码英文文案改为 `PreferencesLocalization.Translate`。复用语言文件中已有的 10 个翻译 key（Theme / Light / Dark / Language / Commit List Layout / Horizontal / Vertical / Recent Stashes / Save Snapshot... / Workspaces），无需新增语言条目；foreach 循环变量重命名避免遮蔽外层 `language`。
+
+### AI 检视：流式输出 + 超时处理
+
+- **OpenAI HTTP 路径改用 SSE 流式输出**：`stream:true` + `HttpCompletionOption.ResponseHeadersRead` 立即返回响应头，逐行读取 `data:` 事件，每个 chunk 实时 `monitor.Append` 追加到检视窗口。解决此前整读模式下长输出"卡一段时间无任何输出"的体验问题。
+  - 新增 `Connection.RequestStream`：流式 HTTP 请求，每收到一行重置空闲计时器（idle timeout），只有真正卡住才超时，避免长输出被误判超时。
+  - 新增 `OpenAiService.OpenAiRequestStreamingWithRetry` / `OpenAiRequestStreaming` / `ParseSseLine` / `CreateChatStreamRequest`，与原非流式路径结构对称（queued wait / retry / cancel 检查）。SSE 行解析跳过空行、`:` 注释/keepalive、`[DONE]` 终止标记。
+  - `GenerateCommitMessage` / `CodeReview` / `CodeReviewFiles` 改用流式版本，移除成功后整段 `AppendOutputLine`（流式已逐 chunk 追加）。
+- **Claude CLI 路径新增超时处理**：`GenerateCommitMessageShellCommand` / `MakeCodeReviewShellCommand` 此前无超时，`claude.exe` 卡住时无限等待。新增 `System.Threading.Timer`，超时后调 `monitor.Cancel()` 杀进程并 `monitor.Fail` 提示"AI request timed out or was canceled."。复用 `AiReviewTimeoutSeconds` 设置（默认 300s，最小 10s），`finally` 中释放 Timer。
+
+## v1.4.4
+
+### 命令预览收尾——补全剩余弹窗
+
+补全 6 个执行 git 命令但缺命令预览的弹窗（与 v1.4.0 引入的命令预览机制对齐，均为 `GetCommandPreview` 重写 + 构造函数末尾 `RefreshCommandPreview` 补刷）：
+
+- **LeanBranchingStartWindow**：`git checkout -b <branch> <mainBranch>`（+可选 `git stash`）
+- **LeanBranchingFinishWindow**：`git fetch` → `git checkout main` → `git merge <feature>`
+- **InteractiveRebaseWindow**：`git rebase -i <destination>`
+- **SaveSnapshotWindow**：`git stash push [--include-untracked] [-m "<msg>"]`（补 XAML 事件绑定）
+- **GitLfsTrackWindow**：`git lfs track <patterns>`
+- **AddGitIgnorePatternWindow**：`# .gitignore` + `git rm --cached -r .`
+
+### Bug 修复
+
+- **LeanBranchingStartWindow**：`FriendlyName` 改为 `Name`，规避 `Branch` 显式接口实现导致取到 `IFriendlyNamed.Name` 而非显示名的问题。
+- **LeanBranchingFinishWindow**：修正构造函数括号结构（CS1513 编译错误）。
+- `SideBySideMergeWindow`（全屏冲突解决器）与 `WelcomeWindow`（首次启动向导）不补——前者无合适 UI 位置且命令依赖运行时合并状态，后者非常规 git 操作弹窗。
+
+## v1.4.3
+
+### Bug 修复
+
+- **新建分支/新建标签弹窗显示 git 命令预览**：`CreateBranchWindow` 与 `CreateTagWindow` 已实现 `GetCommandPreview` 重写及控件事件刷新，但构造函数末尾缺少 `RefreshCommandPreview()` 补刷（与重置/变基/删除分支弹窗同款 bug），`InitializeComponent` 期间控件未赋值导致首次预览被折叠。两处构造函数末尾各补刷一次。
+- **删除分支弹窗显示 git 命令预览**：
+  - `RemoveLocalBranchWindow`：构造函数末尾补刷 `RefreshCommandPreview()`；`GetCommandPreview` 的 `-d` 改为 `-D` 与实际 `RemoveLocalBranchGitCommand` 的 `--delete --force` 一致。
+  - `RemoveRemoteBranchWindow`：新增 `GetCommandPreview()` 重写（`git push <remote> --delete refs/heads/<branch>`），构造函数末尾补刷。
+- **"Cannot parse revision" 国际化 + AI 生成提交信息取消后仍写入**：
+  - `ParseError.FriendlyDescription` 走 `PreferencesLocalization.Translate`，`"Cannot parse revision"` / `"Cannot parse revision details"` 在 7 个语言文件补齐翻译。
+  - AI 生成提交信息（AiAgent/Claude 路径）Dispatcher 回调补 `monitor.IsCanceled` 检查：Claude 输出缓冲到进程结束才返回，期间用户点取消后，已返回内容仍被写入 commit 信息文本框。与 OpenAI 路径对齐。
+  - `prepare-commit-msg` hook 回调同样补 `monitor.IsCanceled` 检查（同类缺陷）。
+
+## v1.4.2
+
+### Bug 修复
+
+- **git mm 下拉框两行 / 交互式变基闪退 / "在文件树中显示"闪退**：
+  - git mm 下拉框两行：`GetGitMmVersionShellCommand` 取版本输出首行，去除内嵌换行（版本号 + build info 多行输出污染下拉框 label）。
+  - 交互式变基弹窗闪退：`PrepareTodoListForRebase` 中 `Close()` 后补 `return`，避免 `todoListResult.Result` 为 null 时 `.Reverse()` 抛 NRE，经 `Dispatcher.Invoke` 传播到 IPC 后台线程导致进程崩溃。
+  - 右键"在文件树中显示"闪退：`RevisionFileTreeUserControl.Refresh` 异步设置 `RootItem`，`ShowRevisionDetails` 同步访问 null。新增 `_pendingFilePath` 延迟展开模式，`RootItem` 就绪后再展开。
+- **追溯/历史弹窗显示 "Cannot parse revision"（Windows `\r\n` 问题）**：Windows 上 git 输出使用 `\r\n` 行尾，而 `GetFileHistoryGitCommand` 用 `Split('\n')` 分割后每行末尾残留 `\r`。`Sha.TryParse` 要求恰好 40 字符，`"sha\r"` 变成 41 字符导致解析失败。修复：在 split/搜索前将 `\r\n` 统一替换为 `\n`。同时移除冗余的 `--oneline` 选项。
+- **变基弹窗默认不显示 git 命令预览**：与 `ResetBranchWindow` 同样的时序问题——`InitializeComponent` 期间 `AddCommandPreview` 已执行，但此时 `_destination` 及复选框状态尚未赋值，导致 `GetCommandPreview` 返回 null 折叠了预览区。修复：构造函数末尾补刷一次 `RefreshCommandPreview`。
+- **重置分支弹窗默认不显示 git 命令预览**：同款时序问题。修复：在构造函数末尾（`_destination` 赋值后）补刷一次 `RefreshCommandPreview`，使默认 Mixed 重置命令正常显示。
+- **追溯/历史弹窗显示类型名而非错误描述**：`BlameWindow` 和 `FileHistoryWindow` 的 `ShowErrorFallback` 调用 `error.ToString()`，而 `ParseError` 等子类未重写 `ToString`，默认返回类型全名。修复：在基类 `GitCommandError` 重写 `ToString` 返回 `FriendlyDescription`，所有未自行重写 `ToString` 的子类都受益。
+
+## v1.4.1
+
+### 新功能
+
+- **git 命令预览复制按钮**：git 命令预览右侧新增复制图标按钮（矢量 Path 绘制），ToolTip 复用 "Copy to clipboard" 国际化文案，点击复制预览命令到剪贴板。
+
+### 国际化
+
+- **git-mm Instance 标签国际化**：7 个语言文件补齐 `"git-mm Instance:"` 翻译 key。
+- **远端右键菜单 Edit/Delete 'xxx' 国际化**：`SidebarUserControl` 中远端仓库右键菜单的 `"Edit 'xxx'..."` 和 `"Delete 'xxx'..."` 此前是硬编码英文字符串拼接，改为 `PreferencesLocalization.FormatCurrent`，并补齐 7 个语言文件的 `"Edit '{0}'..."` 翻译 key（`"Delete '{0}'..."` 已存在）。
+
+### Bug 修复
+
+- **偏好设置打开卡顿（误判与 revert）**：曾尝试取消偏好设置中 git mm 版本判断（`GitMmVersionText` 短路返回 null）以消除同步启动 `git-mm.exe --version` 子进程阻塞 UI 线程导致的卡顿；经确认卡顿非版本判断导致，已 revert 恢复 `GitMmVersionText` 原始实现。同时修复了版本输出含内嵌换行导致下拉框每项显示两行的问题。
+
 ## v1.4.0
 
 ### 新功能：Git 命令预览

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using ForkPlus.Accounts;
@@ -66,7 +67,7 @@ namespace ForkPlus.Accounts.AiServices
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
@@ -74,16 +75,15 @@ namespace ForkPlus.Accounts.AiServices
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
 			string message = serviceResult.Result.Message;
-			monitor.AppendOutputLine(message);
+			// 流式输出已将内容逐 chunk 追加到 monitor，此处无需再 AppendOutputLine(message)
 			if (!MatchesCommitMessageRegex(message, commitMessageRegex, out string regexError) && !string.IsNullOrWhiteSpace(commitMessageRegex))
 			{
 				monitor.AppendOutputLine(regexError);
 				monitor.AppendOutputLine(PreferencesLocalization.Current("Regenerating commit message with configured regex..."));
-				ServiceResult<OpenAiResponse> retryResult = OpenAiRequestWithRetry(CreateRegexRetryPrompt(message, commitMessageRegex, responseLanguage), monitor);
+				ServiceResult<OpenAiResponse> retryResult = OpenAiRequestStreamingWithRetry(CreateRegexRetryPrompt(message, commitMessageRegex, responseLanguage), monitor);
 				if (retryResult.Succeeded)
 				{
 					message = retryResult.Result.Message;
-					monitor.AppendOutputLine(message);
 				}
 				if (!MatchesCommitMessageRegex(message, commitMessageRegex, out regexError))
 				{
@@ -181,14 +181,14 @@ namespace ForkPlus.Accounts.AiServices
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.AppendOutputLine(serviceResult.Result.Message);
+			// 流式输出已将内容逐 chunk 追加到 monitor，此处无需再 AppendOutputLine
 			monitor.Success(PreferencesLocalization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
@@ -200,14 +200,14 @@ namespace ForkPlus.Accounts.AiServices
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestWithRetry(text, monitor);
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.AppendOutputLine(serviceResult.Result.Message);
+			// 流式输出已将内容逐 chunk 追加到 monitor，此处无需再 AppendOutputLine
 			monitor.Success(PreferencesLocalization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
@@ -252,6 +252,134 @@ namespace ForkPlus.Accounts.AiServices
 			jObject3.Add("model", _model);
 			jObject3.Add("messages", new JArray(jObject, jObject2));
 			jObject3.Add("stream", false);
+			apiRequest.SetJson(jObject3);
+			return apiRequest;
+		}
+
+		// 流式版本：开启 SSE 流式输出，AI 生成的文本逐 chunk 到达，立即追加到 monitor 输出。
+		// 解决"卡一段时间然后没输出"的问题——用户能看到内容逐步出现，且连接因持续收到数据不会超时。
+		private ServiceResult<OpenAiResponse> OpenAiRequestStreamingWithRetry(string message, JobMonitor monitor)
+		{
+			int retryCount = Math.Max(0, ForkPlusSettings.Default.AiReviewRetryCount);
+			int normalRetryAttempt = 0;
+			int queuedWaitSeconds = 0;
+			int maxQueuedWaitSeconds = MaxQueuedWaitSeconds();
+			ServiceResult<OpenAiResponse> result = null;
+			while (true)
+			{
+				if (monitor?.IsCanceled == true)
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+				result = OpenAiRequestStreaming(message, monitor);
+				if (monitor?.IsCanceled == true)
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+				if (result.Succeeded || !ShouldRetry(result.Error))
+				{
+					return LocalizeCancellationError(result);
+				}
+				int queuedDelaySeconds;
+				bool isQueuedWait = IsQueuedWaitError(result.Error, out queuedDelaySeconds);
+				if (!isQueuedWait)
+				{
+					string msg = result.Error?.FriendlyMessage ?? "";
+					if (IsTransientServiceMessage(msg))
+					{
+						isQueuedWait = true;
+						queuedDelaySeconds = 30;
+					}
+				}
+				if (isQueuedWait)
+				{
+					int remainingQueuedWaitSeconds = Math.Max(0, maxQueuedWaitSeconds - queuedWaitSeconds);
+					if (remainingQueuedWaitSeconds <= 0)
+					{
+						break;
+					}
+					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
+					queuedWaitSeconds += waitSeconds;
+					monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					if (!WaitBeforeRetry(waitSeconds, monitor))
+					{
+						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+					}
+					continue;
+				}
+				if (normalRetryAttempt >= retryCount)
+				{
+					break;
+				}
+				normalRetryAttempt++;
+				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
+				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				if (!WaitBeforeRetry(delaySeconds, monitor))
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+			}
+			return LocalizeCancellationError(result);
+		}
+
+		private ServiceResult<OpenAiResponse> OpenAiRequestStreaming(string message, JobMonitor monitor)
+		{
+			ApiRequest request = CreateChatStreamRequest(message);
+			StringBuilder content = new StringBuilder();
+			Connection.HttpRequestResult httpResult = Connection.RequestStream(request, true, monitor, delegate(string line)
+			{
+				ParseSseLine(line, content, monitor);
+			});
+			if (!httpResult.Succeeded)
+			{
+				return ServiceResult<OpenAiResponse>.Failure(httpResult.Error);
+			}
+			char[] trimChars = "```".ToCharArray();
+			string trimmed = content.ToString().TrimStart(trimChars).TrimEnd(trimChars).Trim();
+			return ServiceResult<OpenAiResponse>.Success(new OpenAiResponse(trimmed));
+		}
+
+		private static void ParseSseLine(string line, StringBuilder content, JobMonitor monitor)
+		{
+			// SSE 格式：每行以 "data: " 开头，内容是 JSON chunk；空行是事件分隔；":" 开头是注释/keepalive。
+			if (string.IsNullOrEmpty(line) || line.StartsWith(":") || !line.StartsWith("data:"))
+			{
+				return;
+			}
+			string data = line.Substring(5).Trim();
+			if (data == "[DONE]")
+			{
+				return;
+			}
+			try
+			{
+				JObject chunk = JObject.Parse(data);
+				string delta = chunk["choices"]?[0]?["delta"]?["content"]?.Value<string>();
+				if (!string.IsNullOrEmpty(delta))
+				{
+					content.Append(delta);
+					monitor?.Append(delta);
+				}
+			}
+			catch
+			{
+				// 忽略部分行/keepalive 的 JSON 解析错误
+			}
+		}
+
+		private ApiRequest CreateChatStreamRequest(string message)
+		{
+			ApiRequest apiRequest = new ApiRequest(HttpMethod.Post, "/v1/chat/completions");
+			JObject jObject = new JObject();
+			jObject.Add("role", "system");
+			jObject.Add("content", "You are a helpful assistant.");
+			JObject jObject2 = new JObject();
+			jObject2.Add("role", "user");
+			jObject2.Add("content", message);
+			JObject jObject3 = new JObject();
+			jObject3.Add("model", _model);
+			jObject3.Add("messages", new JArray(jObject, jObject2));
+			jObject3.Add("stream", true);
 			apiRequest.SetJson(jObject3);
 			return apiRequest;
 		}

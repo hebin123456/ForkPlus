@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -177,8 +178,145 @@ namespace ForkPlus.Utils.Http
 			}
 		}
 
+		public HttpRequestResult RequestStream(ApiRequest apiRequest, bool jsonRequest, JobMonitor monitor, Action<string> onLine)
+		{
+			Stopwatch stopwatch = Stopwatch.StartNew();
+			string text = ServerUrl + apiRequest.Slug;
+			HttpRequestMessage request;
+			try
+			{
+				request = new HttpRequestMessage
+				{
+					RequestUri = new Uri(text),
+					Method = apiRequest.HttpMethod
+				};
+				if (apiRequest.HttpMethod == HttpMethod.Post)
+				{
+					if (apiRequest.Json != null)
+					{
+						request.Content = new StringContent(apiRequest.Json.ToString(), Encoding.UTF8, "application/json");
+					}
+					else if (apiRequest.Parameters != null)
+					{
+						request.Content = new FormUrlEncodedContent(apiRequest.Parameters);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				string innerExceptionMessage = GetInnerExceptionMessage(ex);
+				Log.Warn($"{apiRequest.HttpMethod} {text} ({innerExceptionMessage})");
+				return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage));
+			}
+			using (request)
+			{
+				request.Headers.Add("User-Agent", App.UserAgent);
+				if (jsonRequest)
+				{
+					request.Headers.Add("Accept", "application/json; charset=utf-8");
+				}
+				if (Authentication != null && !Authentication.Authorize(request))
+				{
+					return HttpRequestResult.Failure(new ServiceError.AuthorizationLoadingError());
+				}
+				CancellationTokenSource cancellationTokenSource = _timeoutSeconds > 0 ? new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds)) : null;
+				monitor?.SetCancellationAction(delegate
+				{
+					cancellationTokenSource?.Cancel();
+				});
+				// HttpCompletionOption.ResponseHeadersRead：立即返回响应头，响应体后续按流读取。
+				// 这是 SSE 流式输出的关键——不等整个响应体到达就开始逐行读取。
+				Task<HttpResponseMessage> task = cancellationTokenSource != null ? Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationTokenSource.Token) : Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+				try
+				{
+					HttpRequestResult waitResult = WaitForCompletion(task, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+					if (waitResult != null)
+					{
+						return waitResult;
+					}
+				}
+				catch (Exception ex2)
+				{
+					monitor?.SetCancellationAction(null);
+					cancellationTokenSource?.Dispose();
+					string innerExceptionMessage2 = GetInnerExceptionMessage(ex2);
+					Log.Warn($"{apiRequest.HttpMethod} {text} ({innerExceptionMessage2})");
+					return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage2));
+				}
+				HttpResponseMessage result = task.Result;
+				using (result)
+				{
+					Log.Debug($"{stopwatch.ElapsedMilliseconds,7}ms: {apiRequest.HttpMethod} {text} ({(int)result.StatusCode})");
+					if (IsError(result.StatusCode))
+					{
+						Log.Warn($"{(int)result.StatusCode} {result.ReasonPhrase}");
+						if (result.StatusCode == HttpStatusCode.NotFound)
+						{
+							ClearCancellation(monitor, cancellationTokenSource);
+							return HttpRequestResult.Failure(new ServiceError.NotFound(text));
+						}
+						if (IsJsonError(result))
+						{
+							Task<string> errorContentTask = result.Content.ReadAsStringAsync();
+							HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+							if (errorBodyWaitResult != null)
+							{
+								return errorBodyWaitResult;
+							}
+							ClearCancellation(monitor, cancellationTokenSource);
+							return DeserializeJsonError(errorContentTask.Result);
+						}
+						ClearCancellation(monitor, cancellationTokenSource);
+						return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
+					}
+					// 流式读取响应体：逐行读取 SSE 事件，空闲超时（idleStopwatch）在每收到一行后重置。
+					// 这样只要 AI 持续输出 chunk 就不会超时，只有真正卡住（无数据到达）才触发超时。
+					StringBuilder fullBody = new StringBuilder();
+					Stopwatch idleStopwatch = Stopwatch.StartNew();
+					try
+					{
+						Task<Stream> streamTask = result.Content.ReadAsStreamAsync();
+						HttpRequestResult streamWaitResult = WaitForCompletion(streamTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+						if (streamWaitResult != null)
+						{
+							return streamWaitResult;
+						}
+						Stream responseStream = streamTask.Result;
+						StreamReader reader = new StreamReader(responseStream);
+						while (true)
+						{
+							Task<string> lineTask = reader.ReadLineAsync();
+							HttpRequestResult lineWaitResult = WaitForCompletion(lineTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text, idleStopwatch);
+							if (lineWaitResult != null)
+							{
+								return lineWaitResult;
+							}
+							string line = lineTask.Result;
+							if (line == null)
+							{
+								break;
+							}
+							// 收到数据，重置空闲计时器
+							idleStopwatch.Restart();
+							onLine?.Invoke(line);
+							fullBody.AppendLine(line);
+						}
+					}
+					catch (Exception ex3)
+					{
+						string innerExceptionMessage3 = GetInnerExceptionMessage(ex3);
+						Log.Warn($"{apiRequest.HttpMethod} {text} ({innerExceptionMessage3})");
+						ClearCancellation(monitor, cancellationTokenSource);
+						return HttpRequestResult.Failure(new ServiceError.UnknownError(innerExceptionMessage3));
+					}
+					ClearCancellation(monitor, cancellationTokenSource);
+					return HttpRequestResult.Success(result.Headers, fullBody.ToString());
+				}
+			}
+		}
+
 		[Null]
-		private HttpRequestResult WaitForCompletion(Task task, [Null] CancellationTokenSource cancellationTokenSource, [Null] JobMonitor monitor, Stopwatch stopwatch, HttpMethod method, string url)
+		private HttpRequestResult WaitForCompletion(Task task, [Null] CancellationTokenSource cancellationTokenSource, [Null] JobMonitor monitor, Stopwatch stopwatch, HttpMethod method, string url, [Null] Stopwatch idleStopwatch = null)
 		{
 			while (true)
 			{
@@ -206,7 +344,8 @@ namespace ForkPlus.Utils.Http
 					cancellationTokenSource?.Dispose();
 					return HttpRequestResult.Failure(new ServiceError.Cancelled());
 				}
-				if (cancellationTokenSource?.IsCancellationRequested == true || (_timeoutSeconds > 0 && stopwatch.Elapsed >= TimeSpan.FromSeconds(_timeoutSeconds)))
+				Stopwatch timeoutStopwatch = idleStopwatch ?? stopwatch;
+				if (cancellationTokenSource?.IsCancellationRequested == true || (_timeoutSeconds > 0 && timeoutStopwatch.Elapsed >= TimeSpan.FromSeconds(_timeoutSeconds)))
 				{
 					cancellationTokenSource?.Cancel();
 					Log.Warn($"{method} {url} (timeout after {_timeoutSeconds}s)");

@@ -237,16 +237,17 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeAppearanceToolBarButtonContextMenu()
 		{
+			string language = ForkPlusSettings.Default.UiLanguage;
 			ContextMenu contextMenu = AppearanceToolbarDropdownButton.ContextMenu;
 			contextMenu.Items.Clear();
-			contextMenu.Items.Add(new HeaderMenuItem("Theme"));
-			MenuItem menuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem("Light", delegate
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Theme", language)));
+			MenuItem menuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Light", language), delegate
 			{
 				MainWindow.Commands.SwitchApplicationTheme.Execute(ThemeType.Light);
 			});
 			menuItem.IsChecked = ForkPlusSettings.Default.Theme == ThemeType.Light;
 			contextMenu.Items.Add(menuItem);
-			MenuItem menuItem2 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem("Dark", delegate
+			MenuItem menuItem2 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Dark", language), delegate
 			{
 				MainWindow.Commands.SwitchApplicationTheme.Execute(ThemeType.Dark);
 			});
@@ -257,26 +258,26 @@ namespace ForkPlus.UI.UserControls
 
 				Margin = new Thickness(-30.0, 0.0, 0.0, 0.0)
 			});
-			contextMenu.Items.Add(new HeaderMenuItem("Language"));
-			foreach (Preferences.PreferencesLocalization.LanguageOption language in Preferences.PreferencesLocalization.GetLanguages())
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Language", language)));
+			foreach (Preferences.PreferencesLocalization.LanguageOption languageOption in Preferences.PreferencesLocalization.GetLanguages())
 			{
-				AddLanguageMenuItem(contextMenu.Items, language.Code, language.DisplayName);
+				AddLanguageMenuItem(contextMenu.Items, languageOption.Code, languageOption.DisplayName);
 			}
 			contextMenu.Items.Add(new Separator
 			{
 				Margin = new Thickness(-30.0, 0.0, 0.0, 0.0)
 			});
-			contextMenu.Items.Add(new HeaderMenuItem("Commit List Layout"));
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Commit List Layout", language)));
 			ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
 			bool isEnabled = _mainWindow?.TabManager.ActiveRepositoryUserControl != null;
-			MenuItem menuItem3 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem("Horizontal", delegate
+			MenuItem menuItem3 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Horizontal", language), delegate
 			{
 				MainWindow.Commands.SwitchRevisionListOrientation.Execute(RevisionListOrientation.Horizontal);
 			});
 			menuItem3.IsChecked = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Horizontal;
 			menuItem3.IsEnabled = isEnabled;
 			contextMenu.Items.Add(menuItem3);
-			MenuItem menuItem4 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem("Vertical", delegate
+			MenuItem menuItem4 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Vertical", language), delegate
 			{
 				MainWindow.Commands.SwitchRevisionListOrientation.Execute(RevisionListOrientation.Vertical);
 			});
@@ -302,9 +303,10 @@ namespace ForkPlus.UI.UserControls
 
 		private void StashToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)
 		{
+			string language = ForkPlusSettings.Default.UiLanguage;
 			ContextMenu contextMenu = sender as ContextMenu;
 			contextMenu.Items.Clear();
-			contextMenu.Items.Add(new HeaderMenuItem("Recent Stashes"));
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Recent Stashes", language)));
 			RepositoryUserControl repositoryUserControl = _mainWindow?.TabManager.ActiveRepositoryUserControl;
 			if (repositoryUserControl == null)
 			{
@@ -331,7 +333,7 @@ namespace ForkPlus.UI.UserControls
 				contextMenu.Items.Add(newItem);
 			}
 			contextMenu.Items.Add(new Separator());
-			MenuItem newItem2 = RepositoryUserControl.Commands.ShowSaveSnapshotWindow.CreateMenuItem("Save Snapshot...", delegate
+			MenuItem newItem2 = RepositoryUserControl.Commands.ShowSaveSnapshotWindow.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Save Snapshot...", language), delegate
 			{
 				RepositoryUserControl.Commands.ShowSaveSnapshotWindow.Execute(repositoryUserControl, gitModule);
 			});
@@ -575,9 +577,10 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeWorkspacesToolbarDropdownButtonContextMenu()
 		{
+			string language = ForkPlusSettings.Default.UiLanguage;
 			ContextMenu contextMenu = WorkspacesToolbarDropdownButton.ContextMenu;
 			contextMenu.Items.Clear();
-			contextMenu.Items.Add(new HeaderMenuItem("Workspaces"));
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Workspaces", language)));
 			ForkPlusSettings.WorkspacesSettings workspaces = ForkPlusSettings.Default.Workspaces;
 			Workspace activeWorkspace = workspaces.ActiveWorkspace;
 			Workspace[] all = workspaces.All;

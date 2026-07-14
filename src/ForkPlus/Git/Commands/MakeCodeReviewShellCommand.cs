@@ -1,5 +1,8 @@
+using System;
+using System.Threading;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -24,8 +27,35 @@ namespace ForkPlus.Git.Commands
 			}
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			monitor.Update(monitor.TotalProgress, PreferencesLocalization.FormatCurrent("Reviewing with {0}...", aiAgent.Name));
-			ExecuteWithCallbackResponse executeWithCallbackResponse = default(GitRequest).CurrentDir(currentDir).Path(aiAgent.Path).Command(text)
-				.ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
+			// Claude CLI 路径此前无超时，claude.exe 卡住时会无限等待。
+			// 复用 OpenAI 路径的 AiReviewTimeoutSeconds 设置，超时后取消（杀死进程）。
+			int timeoutSeconds = Math.Max(0, ForkPlusSettings.Default.AiReviewTimeoutSeconds);
+			bool timedOut = false;
+			Timer timeoutTimer = null;
+			if (timeoutSeconds > 0)
+			{
+				timeoutTimer = new Timer(delegate
+				{
+					timedOut = true;
+					monitor.Cancel();
+				}, null, timeoutSeconds * 1000, Timeout.Infinite);
+			}
+			ExecuteWithCallbackResponse executeWithCallbackResponse;
+			try
+			{
+				executeWithCallbackResponse = default(GitRequest).CurrentDir(currentDir).Path(aiAgent.Path).Command(text)
+					.ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
+			}
+			finally
+			{
+				timeoutTimer?.Dispose();
+			}
+			if (timedOut)
+			{
+				string timeoutMsg = PreferencesLocalization.Current("AI request timed out or was canceled.");
+				monitor.Fail(timeoutMsg);
+				return GitCommandResult<string>.Failure(new GitCommandError.GenericError(timeoutMsg));
+			}
 			if (monitor.IsCanceled)
 			{
 				return GitCommandResult<string>.Failure(new GitCommandError.Cancelled());
