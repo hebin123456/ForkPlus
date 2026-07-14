@@ -102,11 +102,12 @@ namespace ForkPlus.UI.Dialogs
 					base.DialogDescription = string.Format(Translate("Finish '{0}' and merge it into '{1}'"), activeBranch.Name, localBranch.Name);
 					base.SubmitButtonTitle = Translate("Finish");
 					CurrentBranchGitPointView.Value = activeBranch;
-				MainBranchGitPointView.Value = localBranch;
-				UpdateSubmitButton();
-				// InitializeComponent 期间 AddCommandPreview 已执行，但此时仓库状态尚未读取，
-				// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
-				RefreshCommandPreview();
+					MainBranchGitPointView.Value = localBranch;
+					UpdateSubmitButton();
+					// InitializeComponent 期间 AddCommandPreview 已执行，但此时仓库状态尚未读取，
+					// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+					RefreshCommandPreview();
+				}
 			}
 		}
 
