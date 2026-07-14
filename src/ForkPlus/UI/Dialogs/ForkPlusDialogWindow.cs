@@ -446,6 +446,17 @@ namespace ForkPlus.UI.Dialogs
 			Height = GridLength.Auto
 		};
 		grid.RowDefinitions.Add(rowDefinition);
+		// 命令预览放在内容列（Column 1），与上方内容区使用一致的两列布局
+		// （Auto 标签列 + * 输入列），使预览标签和文本与对话框内容对齐。
+		// 此前 label 放在 Column 0（80px logo 列）导致与内容标签错位。
+		Grid previewGrid = new Grid
+		{
+			Margin = new Thickness(0.0, 10.0, 0.0, 0.0)
+		};
+		previewGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+		previewGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+		previewGrid.SetValue(Grid.RowProperty, previewRow);
+		previewGrid.SetValue(Grid.ColumnProperty, 1);
 		_commandPreviewLabel = new TextBlock
 		{
 			Text = PreferencesLocalization.Current("Git Command Preview"),
@@ -453,24 +464,23 @@ namespace ForkPlus.UI.Dialogs
 			FontWeight = FontWeights.Medium,
 			VerticalAlignment = VerticalAlignment.Top,
 			HorizontalAlignment = HorizontalAlignment.Right,
-			Margin = new Thickness(0.0, 12.0, 8.0, 0.0),
+			Margin = new Thickness(0.0, 4.0, 8.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
-		_commandPreviewLabel.SetValue(Grid.RowProperty, previewRow);
 		_commandPreviewLabel.SetValue(Grid.ColumnProperty, 0);
-		grid.Children.Add(_commandPreviewLabel);
+		previewGrid.Children.Add(_commandPreviewLabel);
 		_commandPreviewTextBlock = new TextBlock
 		{
 			FontFamily = new FontFamily("Consolas"),
 			FontSize = 12.0,
 			TextWrapping = TextWrapping.Wrap,
 			Foreground = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush),
-			Margin = new Thickness(8.0, 12.0, 0.0, 0.0),
+			Margin = new Thickness(8.0, 4.0, 0.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
-		_commandPreviewTextBlock.SetValue(Grid.RowProperty, previewRow);
 		_commandPreviewTextBlock.SetValue(Grid.ColumnProperty, 1);
-		grid.Children.Add(_commandPreviewTextBlock);
+		previewGrid.Children.Add(_commandPreviewTextBlock);
+		grid.Children.Add(previewGrid);
 		// 初始刷新
 		RefreshCommandPreview();
 	}
