@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls;
@@ -43,9 +44,11 @@ namespace ForkPlus.UI.Dialogs
 
 		private TextBlock _commandPreviewLabel;
 
-		private TextBlock _commandPreviewTextBlock;
+	private TextBlock _commandPreviewTextBlock;
 
-		private bool _commandPreviewInitialized;
+	private Button _commandPreviewCopyButton;
+
+	private bool _commandPreviewInitialized;
 
 		public bool IsOperationInProgress { get; private set; }
 
@@ -418,12 +421,20 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewLabel.Visibility = Visibility.Collapsed;
 			_commandPreviewTextBlock.Visibility = Visibility.Collapsed;
 			_commandPreviewTextBlock.Text = "";
+			if (_commandPreviewCopyButton != null)
+			{
+				_commandPreviewCopyButton.Visibility = Visibility.Collapsed;
+			}
 		}
 		else
 		{
 			_commandPreviewLabel.Visibility = Visibility.Visible;
 			_commandPreviewTextBlock.Visibility = Visibility.Visible;
 			_commandPreviewTextBlock.Text = text;
+			if (_commandPreviewCopyButton != null)
+			{
+				_commandPreviewCopyButton.Visibility = Visibility.Visible;
+			}
 		}
 	}
 
@@ -455,6 +466,7 @@ namespace ForkPlus.UI.Dialogs
 		};
 		previewGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 		previewGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+		previewGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 		previewGrid.SetValue(Grid.RowProperty, previewRow);
 		previewGrid.SetValue(Grid.ColumnProperty, 1);
 		_commandPreviewLabel = new TextBlock
@@ -480,6 +492,39 @@ namespace ForkPlus.UI.Dialogs
 		};
 		_commandPreviewTextBlock.SetValue(Grid.ColumnProperty, 1);
 		previewGrid.Children.Add(_commandPreviewTextBlock);
+		// 复制按钮：点击复制预览命令到剪贴板，ToolTip 国际化
+		_commandPreviewCopyButton = new Button
+		{
+			ToolTip = PreferencesLocalization.Current("Copy to clipboard"),
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left,
+			Margin = new Thickness(4.0, 2.0, 0.0, 0.0),
+			Padding = new Thickness(2.0),
+			Background = Brushes.Transparent,
+			BorderThickness = new Thickness(0.0),
+			Cursor = Cursors.Hand,
+			Visibility = Visibility.Collapsed
+		};
+		_commandPreviewCopyButton.SetValue(Grid.ColumnProperty, 2);
+		// 用矢量 Path 绘制复制图标（两个重叠的圆角矩形），无需新增图片资源
+		_commandPreviewCopyButton.Content = new Image
+		{
+			Source = new DrawingImage(new GeometryDrawing
+			{
+				Geometry = Geometry.Parse("M4,2 L12,2 L12,14 L4,14 Z M6,4 L6,12 L10,12 L10,4 Z M2,4 L2,16 L14,16 L14,14 L13,14 L13,15 L3,15 L3,5 L4,5 L4,4 Z"),
+				Brush = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush) ?? Brushes.Gray
+			}),
+			Width = 14.0,
+			Height = 14.0
+		};
+		_commandPreviewCopyButton.Click += delegate
+		{
+			if (_commandPreviewTextBlock != null && !string.IsNullOrWhiteSpace(_commandPreviewTextBlock.Text))
+			{
+				ServiceLocator.Clipboard.SetText(_commandPreviewTextBlock.Text);
+			}
+		};
+		previewGrid.Children.Add(_commandPreviewCopyButton);
 		grid.Children.Add(previewGrid);
 		// 初始刷新
 		RefreshCommandPreview();

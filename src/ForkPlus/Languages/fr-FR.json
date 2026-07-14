@@ -799,6 +799,7 @@
     "Git Flow: Start Hotfix...": "Git Flow : Démarrer le correctif...",
     "Git Flow: Start Release...": "Git Flow : Démarrer la version...",
     "Git Instance:": "Instance Git :",
+    "git-mm Instance:": "Instance git-mm :",
     "Git LFS": "Git LFS",
     "Git LFS: Fetch...": "Git LFS : Récupérer...",
     "Git LFS: Lock": "Git LFS : Verrouiller",

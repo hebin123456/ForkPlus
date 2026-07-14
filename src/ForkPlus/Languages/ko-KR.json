@@ -799,6 +799,7 @@
     "Git Flow: Start Hotfix...": "Git Flow: 핫픽스 시작...",
     "Git Flow: Start Release...": "Git Flow: 릴리스 시작...",
     "Git Instance:": "Git 인스턴스:",
+    "git-mm Instance:": "git-mm 인스턴스:",
     "Git LFS": "Git LFS",
     "Git LFS: Fetch...": "Git LFS: 페치...",
     "Git LFS: Lock": "Git LFS: 잠금",

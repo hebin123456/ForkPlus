@@ -799,6 +799,7 @@
     "Git Flow: Start Hotfix...": "Git Flow：開始 Hotfix...",
     "Git Flow: Start Release...": "Git Flow：開始發行...",
     "Git Instance:": "Git 執行個體：",
+    "git-mm Instance:": "git-mm 執行個體：",
     "Git LFS": "Git LFS",
     "Git LFS: Fetch...": "Git LFS：擷取...",
     "Git LFS: Lock": "Git LFS：鎖定",

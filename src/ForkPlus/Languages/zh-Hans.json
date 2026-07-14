@@ -799,6 +799,7 @@
     "Git Flow: Start Hotfix...": "Git Flow：开始热修复...",
     "Git Flow: Start Release...": "Git Flow：开始发布...",
     "Git Instance:": "Git 实例：",
+    "git-mm Instance:": "git-mm 实例：",
     "Git LFS": "Git LFS",
     "Git LFS: Fetch...": "Git LFS：获取...",
     "Git LFS: Lock": "Git LFS：锁定",
