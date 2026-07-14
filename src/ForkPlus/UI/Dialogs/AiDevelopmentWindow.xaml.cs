@@ -1104,9 +1104,9 @@ Additionally, the user has defined the following coding standards / skills that 
 				FontSize = 12,
 				Padding = new Thickness(8, 2, 8, 2),
 				Margin = new Thickness(8, 0, 0, 0),
-				DockPanel.Dock = Dock.Right,
 				VerticalAlignment = VerticalAlignment.Center
 			};
+			DockPanel.SetDock(undoButton, Dock.Right);
 			undoButton.Click += UndoButton_Click;
 			headerRow.Children.Add(undoButton);
 			TextBlock diffHeader = new TextBlock
