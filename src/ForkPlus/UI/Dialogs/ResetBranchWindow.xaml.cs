@@ -69,6 +69,9 @@ namespace ForkPlus.UI.Dialogs
 		}
 		base.SubmitButtonTitle = PreferencesLocalization.Current("Reset");
 			DestinationGitPointView.Value = _destination;
+			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _destination 尚未赋值，
+			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
+			RefreshCommandPreview();
 		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
