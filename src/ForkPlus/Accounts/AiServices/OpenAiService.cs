@@ -258,7 +258,7 @@ namespace ForkPlus.Accounts.AiServices
 
 		// 流式版本：开启 SSE 流式输出，AI 生成的文本逐 chunk 到达，立即追加到 monitor 输出。
 		// 解决"卡一段时间然后没输出"的问题——用户能看到内容逐步出现，且连接因持续收到数据不会超时。
-		private ServiceResult<OpenAiResponse> OpenAiRequestStreamingWithRetry(string message, JobMonitor monitor)
+		public ServiceResult<OpenAiResponse> OpenAiRequestStreamingWithRetry(string message, JobMonitor monitor, Action<string> onChunk = null)
 		{
 			int retryCount = Math.Max(0, ForkPlusSettings.Default.AiReviewRetryCount);
 			int normalRetryAttempt = 0;
@@ -271,7 +271,7 @@ namespace ForkPlus.Accounts.AiServices
 				{
 					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
 				}
-				result = OpenAiRequestStreaming(message, monitor);
+				result = OpenAiRequestStreaming(message, monitor, onChunk);
 				if (monitor?.IsCanceled == true)
 				{
 					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -322,13 +322,13 @@ namespace ForkPlus.Accounts.AiServices
 			return LocalizeCancellationError(result);
 		}
 
-		private ServiceResult<OpenAiResponse> OpenAiRequestStreaming(string message, JobMonitor monitor)
+		private ServiceResult<OpenAiResponse> OpenAiRequestStreaming(string message, JobMonitor monitor, Action<string> onChunk)
 		{
 			ApiRequest request = CreateChatStreamRequest(message);
 			StringBuilder content = new StringBuilder();
 			Connection.HttpRequestResult httpResult = Connection.RequestStream(request, true, monitor, delegate(string line)
 			{
-				ParseSseLine(line, content, monitor);
+				ParseSseLine(line, content, monitor, onChunk);
 			});
 			if (!httpResult.Succeeded)
 			{
@@ -339,7 +339,7 @@ namespace ForkPlus.Accounts.AiServices
 			return ServiceResult<OpenAiResponse>.Success(new OpenAiResponse(trimmed));
 		}
 
-		private static void ParseSseLine(string line, StringBuilder content, JobMonitor monitor)
+		private static void ParseSseLine(string line, StringBuilder content, JobMonitor monitor, Action<string> onChunk)
 		{
 			// SSE 格式：每行以 "data: " 开头，内容是 JSON chunk；空行是事件分隔；":" 开头是注释/keepalive。
 			if (string.IsNullOrEmpty(line) || line.StartsWith(":") || !line.StartsWith("data:"))
@@ -359,6 +359,7 @@ namespace ForkPlus.Accounts.AiServices
 				{
 					content.Append(delta);
 					monitor?.Append(delta);
+					onChunk?.Invoke(delta);
 				}
 			}
 			catch

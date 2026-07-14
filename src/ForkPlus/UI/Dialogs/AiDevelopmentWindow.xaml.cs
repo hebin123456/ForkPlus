@@ -30,6 +30,9 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly List<AiFileChange> _fileChanges = new List<AiFileChange>();
 
+		// 撤销支持：记录上一次 AI 修改前的文件内容
+		private Dictionary<string, string> _lastBeforeContents = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
 		private readonly DispatcherTimer _statusTimer;
 
 		private List<AiSkillEntry> _skillEntries;
@@ -199,8 +202,15 @@ namespace ForkPlus.UI.Dialogs
 			// Start timer to track job status (Pending → Running)
 			_statusTimer.Start();
 
-			// Save current file state for diff later
+			// Save current file state for diff later and undo support
 			Dictionary<string, string> beforeContents = GetCurrentFileContents();
+
+			// Create streaming response bubble (will be populated chunk by chunk)
+			TextBox streamingBox = null;
+			base.Dispatcher.Async(delegate
+			{
+				streamingBox = CreateStreamingResponseBubble();
+			});
 
 			_activeJob = _repositoryUserControl.JobQueue.Add(
 				PreferencesLocalization.Current("AI 开发"),
@@ -215,7 +225,19 @@ namespace ForkPlus.UI.Dialogs
 							AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
 						});
 
-						ServiceResult<OpenAiResponse> result = aiService.OpenAiRequest(prompt);
+						// 流式输出：onChunk 回调实时追加到聊天气泡，用户能逐字看到 AI 生成内容
+						ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(prompt, monitor, delegate(string delta)
+						{
+							TextBox captured = streamingBox;
+							if (captured != null)
+							{
+								base.Dispatcher.Async(delegate
+								{
+									captured.AppendText(delta);
+									ScrollToEnd();
+								});
+							}
+						});
 						if (monitor.IsCanceled)
 						{
 							FinishRequest();
@@ -233,7 +255,6 @@ namespace ForkPlus.UI.Dialogs
 						}
 
 						string aiResponse = result.Result.Message;
-						monitor.AppendOutputLine(aiResponse);
 
 						// Parse AI response for file changes
 						ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
@@ -247,8 +268,11 @@ namespace ForkPlus.UI.Dialogs
 
 								if (appliedChanges.Count > 0)
 								{
+									// 有文件变更：移除流式气泡，显示 diff 结果（含撤销按钮）
+									RemoveStreamingResponseBubble(streamingBox);
 									_fileChanges.Clear();
 									_fileChanges.AddRange(appliedChanges);
+									_lastBeforeContents = beforeContents;
 									ShowDiffResults(appliedChanges);
 									AddStatusMessage(
 										PreferencesLocalization.FormatCurrent("AI modified {0} files", appliedChanges.Count),
@@ -256,8 +280,8 @@ namespace ForkPlus.UI.Dialogs
 								}
 								else
 								{
-									// No file changes, show the AI response text
-									AddAiResponseMessage(aiResponse);
+									// 无文件变更：流式气泡即为最终响应，保留
+									FinalizeStreamingResponseBubble(streamingBox);
 								}
 
 								// Refresh repository status to clear stale entries
@@ -371,6 +395,127 @@ namespace ForkPlus.UI.Dialogs
 
 			MessagePanel.Children.Add(userBorder);
 			ScrollToEnd();
+		}
+
+		/// <summary>
+		/// 创建流式响应气泡，AI 生成内容逐 chunk 追加到其中的 TextBox。
+		/// </summary>
+		private TextBox CreateStreamingResponseBubble()
+		{
+			Border aiBorder = new Border
+			{
+				Background = new SolidColorBrush(Color.FromArgb(15, 0, 0, 0)),
+				CornerRadius = new CornerRadius(6),
+				Padding = new Thickness(10, 6, 10, 6),
+				Margin = new Thickness(0, 4, 0, 4),
+				MaxWidth = 700
+			};
+
+			TextBlock header = new TextBlock
+			{
+				Text = PreferencesLocalization.Current("🤖 AI 响应"),
+				FontSize = 11,
+				FontWeight = FontWeights.SemiBold,
+				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+				Margin = new Thickness(0, 0, 0, 4)
+			};
+
+			TextBox content = new TextBox
+			{
+				FontSize = 13,
+				TextWrapping = TextWrapping.Wrap,
+				Foreground = Brushes.Black,
+				IsReadOnly = true,
+				BorderThickness = new Thickness(0),
+				Background = Brushes.Transparent,
+				Padding = new Thickness(0),
+				IsTabStop = false
+			};
+
+			StackPanel innerPanel = new StackPanel();
+			innerPanel.Children.Add(header);
+			innerPanel.Children.Add(content);
+			aiBorder.Child = innerPanel;
+
+			MessagePanel.Children.Add(aiBorder);
+			ScrollToEnd();
+			return content;
+		}
+
+		/// <summary>有文件变更时移除流式气泡（改用 diff 展示）。</summary>
+		private void RemoveStreamingResponseBubble(TextBox streamingBox)
+		{
+			if (streamingBox?.Parent is StackPanel panel && panel.Parent is Border border)
+			{
+				MessagePanel.Children.Remove(border);
+			}
+		}
+
+		/// <summary>无文件变更时保留流式气泡作为最终响应。</summary>
+		private void FinalizeStreamingResponseBubble(TextBox streamingBox)
+		{
+			// 气泡已在消息面板中，无需额外操作
+		}
+
+		/// <summary>
+		/// 撤销上一次 AI 修改：用 _lastBeforeContents / _fileChanges 回写文件原内容。
+		/// </summary>
+		private void UndoAiChanges()
+		{
+			if (_fileChanges == null || _fileChanges.Count == 0)
+			{
+				AddStatusMessage(PreferencesLocalization.Current("No AI changes to revert"), Brushes.Gray);
+				return;
+			}
+			try
+			{
+				List<string> allowedDirectories = GetAllowedDirectories();
+				foreach (AiFileChange change in _fileChanges)
+				{
+					string fullPath = System.IO.Path.Combine(_gitModule.Path, change.FilePath);
+					string resolvedPath = Path.GetFullPath(fullPath);
+					if (!IsPathInAllowedDirectories(resolvedPath, allowedDirectories))
+					{
+						continue;
+					}
+					if (change.IsDelete)
+					{
+						// 恢复被删除的文件
+						if (!File.Exists(resolvedPath) && change.OldContent != null)
+						{
+							string dir = System.IO.Path.GetDirectoryName(resolvedPath);
+							if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+							File.WriteAllText(resolvedPath, change.OldContent, Encoding.UTF8);
+						}
+					}
+					else if (change.IsNewFile)
+					{
+						// 删除新建的文件
+						if (File.Exists(resolvedPath)) File.Delete(resolvedPath);
+					}
+					else
+					{
+						// 恢复修改前的内容
+						if (File.Exists(resolvedPath) && change.OldContent != null)
+						{
+							File.WriteAllText(resolvedPath, change.OldContent, Encoding.UTF8);
+						}
+					}
+				}
+				AddStatusMessage(PreferencesLocalization.Current("AI changes reverted"), Brushes.Green);
+				_fileChanges.Clear();
+				_lastBeforeContents.Clear();
+				RefreshRepositoryStatus();
+			}
+			catch (Exception ex)
+			{
+				AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求出错: {0}", ex.Message), Brushes.Red);
+			}
+		}
+
+		private void UndoButton_Click(object sender, RoutedEventArgs e)
+		{
+			UndoAiChanges();
 		}
 
 		private void AddAiResponseMessage(string response)
@@ -951,15 +1096,28 @@ Additionally, the user has defined the following coding standards / skills that 
 
 			StackPanel diffs = new StackPanel();
 
-			// Header
+			// Header row: title + undo button
+			DockPanel headerRow = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
+			Button undoButton = new Button
+			{
+				Content = PreferencesLocalization.Current("Undo AI Changes"),
+				FontSize = 12,
+				Padding = new Thickness(8, 2, 8, 2),
+				Margin = new Thickness(8, 0, 0, 0),
+				DockPanel.Dock = Dock.Right,
+				VerticalAlignment = VerticalAlignment.Center
+			};
+			undoButton.Click += UndoButton_Click;
+			headerRow.Children.Add(undoButton);
 			TextBlock diffHeader = new TextBlock
 			{
 				Text = PreferencesLocalization.FormatCurrent("📝 文件变更 ({0} 个文件)", changes.Count),
 				FontSize = 13,
 				FontWeight = FontWeights.SemiBold,
-				Margin = new Thickness(0, 0, 0, 6)
+				VerticalAlignment = VerticalAlignment.Center
 			};
-			diffs.Children.Add(diffHeader);
+			headerRow.Children.Add(diffHeader);
+			diffs.Children.Add(headerRow);
 
 			foreach (AiFileChange change in changes)
 			{
