@@ -17,8 +17,10 @@ namespace ForkPlus.AutomationTests
 			using (var app = LaunchApp())
 			{
 				Assert.NotNull(app.Window);
-				// 主窗口不应处于最小化状态。
-				Assert.NotEqual(WindowVisualState.Minimized, app.Window.VisualState);
+				// 主窗口不应处于最小化状态（最小化时尺寸会很小）。
+				var bounds = app.Window.BoundingRectangle;
+				Assert.True(bounds.Width > 50, $"主窗口宽度过小（{bounds.Width}），可能被最小化。");
+				Assert.True(bounds.Height > 50, $"主窗口高度过小（{bounds.Height}），可能被最小化。");
 			}
 		}
 
