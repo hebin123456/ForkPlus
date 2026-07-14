@@ -624,6 +624,7 @@
     "Edit Custom Command UI Controls": "编辑自定义命令界面控件",
     "Edit Remote": "编辑远端",
     "Edit Remote...": "编辑远端...",
+    "Edit '{0}'...": "编辑 '{0}'...",
     "Edit URL of the remote repository": "编辑远端仓库 URL",
     "Edit custom command action": "编辑自定义命令动作",
     "Edit the commit message": "编辑提交消息",

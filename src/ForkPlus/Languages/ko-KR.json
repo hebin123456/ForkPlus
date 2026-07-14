@@ -624,6 +624,7 @@
     "Edit Custom Command UI Controls": "사용자 정의 명령 UI 컨트롤 편집",
     "Edit Remote": "리모트 편집",
     "Edit Remote...": "원격 편집...",
+    "Edit '{0}'...": "'{0}' 편집...",
     "Edit URL of the remote repository": "리모트 저장소 URL 편집",
     "Edit custom command action": "사용자 정의 명령 동작 편집",
     "Edit the commit message": "커밋 메시지 편집",

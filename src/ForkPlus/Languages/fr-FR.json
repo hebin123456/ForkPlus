@@ -624,6 +624,7 @@
     "Edit Custom Command UI Controls": "Modifier les contrôles d'interface de commande personnalisée",
     "Edit Remote": "Modifier le distant",
     "Edit Remote...": "Modifier distant...",
+    "Edit '{0}'...": "Modifier '{0}'...",
     "Edit URL of the remote repository": "Modifier l'URL du dépôt distant",
     "Edit custom command action": "Modifier l'action de commande personnalisée",
     "Edit the commit message": "Modifier le message de commit",

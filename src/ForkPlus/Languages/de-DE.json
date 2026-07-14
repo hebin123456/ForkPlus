@@ -624,6 +624,7 @@
     "Edit Custom Command UI Controls": "Steuerelemente für benutzerdefinierten Befehl bearbeiten",
     "Edit Remote": "Remote bearbeiten",
     "Edit Remote...": "Remote bearbeiten...",
+    "Edit '{0}'...": "'{0}' bearbeiten...",
     "Edit URL of the remote repository": "URL des Remote-Repositorys bearbeiten",
     "Edit custom command action": "Benutzerdefinierte Befehlsaktion bearbeiten",
     "Edit the commit message": "Commit-Nachricht bearbeiten",

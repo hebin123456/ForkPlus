@@ -624,6 +624,7 @@
     "Edit Custom Command UI Controls": "カスタムコマンド UI コントロールを編集",
     "Edit Remote": "リモートを編集",
     "Edit Remote...": "リモートを編集...",
+    "Edit '{0}'...": "'{0}' を編集...",
     "Edit URL of the remote repository": "リモートリポジトリの URL を編集",
     "Edit custom command action": "カスタムコマンドアクションを編集",
     "Edit the commit message": "コミットメッセージを編集",

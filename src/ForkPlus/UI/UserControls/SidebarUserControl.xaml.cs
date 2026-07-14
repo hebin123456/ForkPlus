@@ -863,11 +863,11 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.ShowFetchWindow.Execute(repositoryUserControl, gitModule, remote);
 			}));
 			list.Add(new Separator());
-			list.Add(RepositoryUserControl.Commands.ShowEditRemoteWindow.CreateMenuItem("Edit '" + remote.Name + "'...", delegate
+			list.Add(RepositoryUserControl.Commands.ShowEditRemoteWindow.CreateMenuItem(PreferencesLocalization.FormatCurrent("Edit '{0}'...", remote.Name), delegate
 			{
 				RepositoryUserControl.Commands.ShowEditRemoteWindow.Execute(repositoryUserControl, gitModule, remote);
 			}));
-			list.Add(RepositoryUserControl.Commands.ShowRemoveRemoteWindow.CreateMenuItem("Delete '" + remote.Name + "'...", delegate
+			list.Add(RepositoryUserControl.Commands.ShowRemoveRemoteWindow.CreateMenuItem(PreferencesLocalization.FormatCurrent("Delete '{0}'...", remote.Name), delegate
 			{
 				RepositoryUserControl.Commands.ShowRemoveRemoteWindow.Execute(repositoryUserControl, gitModule, remote);
 			}));
