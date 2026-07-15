@@ -7,16 +7,31 @@
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
     <Grid.Children>
+      <!-- 标题栏：标题 + 模型下拉 + Stop + Retry -->
       <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="10,0,10,6" LastChildFill="True">
         <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry AI Review" Click="RetryButton_Click" x:Name="RetryButton" />
+        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip="Stop the current AI task and abort its request" Click="StopButton_Click" x:Name="StopButton" Visibility="Collapsed" />
+        <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="320" Margin="6,0,6,0" SelectionChanged="ModelComboBox_SelectionChanged">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
         <TextBlock FontSize="16" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
       </DockPanel>
       <Separator HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0" VerticalAlignment="Bottom" />
-      <userControls:RevisionDetailsUserControl Grid.Row="1" Grid.Column="0" x:Name="RevisionDetails" />
-      <Grid Grid.Row="1" Grid.Column="0" Visibility="Collapsed" x:Name="FileReviewGrid">
+      <!-- 状态栏：进度条 + 状态文字（排队/请求中/收集 diff/生成中/完成） -->
+      <DockPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="10,4,10,6" LastChildFill="True">
+        <ProgressBar DockPanel.Dock="Left" Width="120" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" x:Name="StatusProgressBar" />
+        <TextBlock FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
+      </DockPanel>
+      <userControls:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" x:Name="RevisionDetails" />
+      <Grid Grid.Row="2" Grid.Column="0" Visibility="Collapsed" x:Name="FileReviewGrid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="320" MinWidth="160" />
           <ColumnDefinition Width="5" />
@@ -30,7 +45,7 @@
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{DynamicResource VerticalGridSplitter}" x:Name="FileReviewGridSplitter" />
         <controls:CommitFileDiffControl Grid.Column="2" x:Name="FileReviewDiffControl" />
       </Grid>
-      <Grid Grid.Row="1" Grid.Column="2">
+      <Grid Grid.Row="2" Grid.Column="2">
         <Grid.Children>
           <wv2:WebView2 x:Name="AiResponseWebView" />
           <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
@@ -48,7 +63,7 @@
           </userControls:FallbackUserControl>
         </Grid.Children>
       </Grid>
-      <GridSplitter Grid.Row="1" Grid.Column="1" x:Name="GridSplitter">
+      <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="GridSplitter">
         <GridSplitter.Style>
           <DynamicResource ResourceKey="VerticalGridSplitter" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
         </GridSplitter.Style>

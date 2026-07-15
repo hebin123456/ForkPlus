@@ -81,6 +81,22 @@ namespace ForkPlus.UI.Dialogs
 
 		private static string _cachedCss;
 
+		// 模型列表是否已后台加载完成
+		private bool _modelListLoaded;
+
+		// 流式输出的实时 Markdown 缓冲（边收边渲染到 WebView）
+		private StringBuilder _streamingMarkdown;
+
+		// 保护 _streamingMarkdown 的并发追加（chunk 来自后台 job 线程，渲染来自 UI 线程）
+		private readonly object _streamingLock = new object();
+
+		// 流式预览渲染节流：避免每个 chunk 都触发一次 markdown→html→NavigateToString 造成卡顿
+		private DateTime _lastStreamingRenderUtc = DateTime.MinValue;
+		private const int StreamingRenderIntervalMs = 400;
+
+		// 流式是否处于活动状态（完成/取消/出错后置 false，阻止已排队的渲染任务再写入 WebView）
+		private bool _streamingActive;
+
 		public AiCodeReviewWindow()
 		{
 			base.ShowInTaskbar = true;
@@ -151,6 +167,8 @@ namespace ForkPlus.UI.Dialogs
 				aiCodeReviewWindow.SaveFileReviewTreeColumnWidth();
 			};
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 初始化模型下拉选择（后台拉取模型列表）
+			InitializeModelComboBox();
 		}
 
 		public void ApplyLocalization()
@@ -158,6 +176,8 @@ namespace ForkPlus.UI.Dialogs
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RetryButton.Content = PreferencesLocalization.Current("Retry");
 			RetryButton.ToolTip = PreferencesLocalization.Current("Retry AI Review");
+			StopButton.Content = PreferencesLocalization.Current("Stop");
+			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task and abort its request");
 			ApplyTargetTitleLocalization();
 			RevisionDetails.ApplyLocalization();
 			if (FileReviewDiffControl is ILocalizableControl localizableDiffControl)
@@ -368,6 +388,8 @@ namespace ForkPlus.UI.Dialogs
 			BusyIndicator.Show();
 			RetryButton.IsEnabled = false;
 			AiResponseFallback.Collapse();
+			StopButton.Visibility = Visibility.Visible;
+			StatusProgressBar.Visibility = Visibility.Visible;
 			if (replaceAll)
 			{
 				AiResponseWebView.Collapse();
@@ -376,11 +398,21 @@ namespace ForkPlus.UI.Dialogs
 				_aiReviewHtml = "";
 				_aiReviewStatusMessage = null;
 				_fileReviewHtmlCache.Clear();
+				lock (_streamingLock)
+				{
+					_streamingMarkdown = new StringBuilder();
+				}
 			}
 			else if (target is AiCodeReviewTarget.Files files)
 			{
 				_aiReviewStatusMessage = PreferencesLocalization.FormatCurrent("Retrying AI review for {0} files...", ReviewableFiles(files.ChangedFiles).Length);
 			}
+			// 重置节流计时，使首个 chunk 立即渲染；初始状态提示“排队中”
+			_lastStreamingRenderUtc = DateTime.MinValue;
+			_streamingActive = true;
+			StatusTextBlock.Text = PreferencesLocalization.Current("Queued...");
+			StatusProgressBar.Visibility = Visibility.Visible;
+			StopButton.Visibility = Visibility.Visible;
 		}
 
 		private void ReviewWithOpenAi(GitModule gitModule, AiCodeReviewTarget target, bool replaceAll)
@@ -408,6 +440,12 @@ namespace ForkPlus.UI.Dialogs
 			}
 			_aiReviewJob = _repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("AI Code Review"), delegate(JobMonitor monitor)
 			{
+				// 订阅进度回调：monitor.Update 触发时把阶段文字（排队/请求中/生成中等）同步到状态栏
+				monitor.SetProgressAction(delegate
+				{
+					UpdateStatus(monitor.ProgressMessage);
+				});
+				UpdateStatus(PreferencesLocalization.Current("Collecting diff..."));
 				GitCommandResult<string> patchResult = new GetRangePatchGitCommand().Execute(gitModule, src, dst);
 				if (monitor.IsCanceled)
 				{
@@ -421,7 +459,11 @@ namespace ForkPlus.UI.Dialogs
 						{
 							return;
 						}
+						StopStreamingRender();
 						BusyIndicator.Collapse();
+						StatusProgressBar.Visibility = Visibility.Collapsed;
+						StopButton.Visibility = Visibility.Collapsed;
+						StatusTextBlock.Text = "";
 						RetryButton.IsEnabled = true;
 						AiResponseWebView.Collapse();
 						AiResponseFallback.Show();
@@ -433,7 +475,7 @@ namespace ForkPlus.UI.Dialogs
 				else
 				{
 					OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
-					ServiceResult<OpenAiResponse> codeReviewResult = openAiService.CodeReview(patchResult.Result, monitor);
+					ServiceResult<OpenAiResponse> codeReviewResult = openAiService.CodeReview(patchResult.Result, monitor, OnStreamingChunk);
 					if (monitor.IsCanceled)
 					{
 						return;
@@ -481,6 +523,12 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_aiReviewJob = _repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("AI Code Review"), delegate(JobMonitor monitor)
 			{
+				// 订阅进度回调：monitor.Update 触发时把阶段文字（排队/请求中/生成中等）同步到状态栏
+				monitor.SetProgressAction(delegate
+				{
+					UpdateStatus(monitor.ProgressMessage);
+				});
+				UpdateStatus(PreferencesLocalization.Current("Collecting diff..."));
 				GitCommandResult<string> contextResult = BuildFileReviewContext(gitModule, target, monitor);
 				if (monitor.IsCanceled)
 				{
@@ -500,7 +548,7 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 				OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
-				ServiceResult<OpenAiResponse> codeReviewResult = openAiService.CodeReviewFiles(contextResult.Result, monitor);
+				ServiceResult<OpenAiResponse> codeReviewResult = openAiService.CodeReviewFiles(contextResult.Result, monitor, OnStreamingChunk);
 				if (monitor.IsCanceled)
 				{
 					return;
@@ -892,6 +940,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ApplyAiReviewResult(AiCodeReviewTarget target, string displayMarkdown, string rawMarkdown, string html, bool replaceAll)
 		{
+			// 检视成功完成：停止流式预览并清除状态栏（进度条/Stop 按钮/状态文字）
+			ClearStatus();
 			List<AiReviewSuggestion> newSuggestions = ExtractSuggestions(rawMarkdown);
 			if (!replaceAll && target is AiCodeReviewTarget.Files files)
 			{
@@ -1032,12 +1082,261 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ShowError(string error)
 		{
+			StopStreamingRender();
 			BusyIndicator.Collapse();
+			StatusProgressBar.Visibility = Visibility.Collapsed;
+			StopButton.Visibility = Visibility.Collapsed;
+			StatusTextBlock.Text = "";
 			RetryButton.IsEnabled = true;
 			AiResponseWebView.Collapse();
 			AiResponseFallback.Show();
 			AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
 			AiResponseFallback.FallbackMessage = error;
+		}
+
+		/// <summary>更新状态栏文字 + 显示进度条（用于排队/请求中/收集 diff/生成中等阶段提示）。</summary>
+		private void UpdateStatus(string message)
+		{
+			base.Dispatcher.Async(delegate
+			{
+				if (_isClosed)
+				{
+					return;
+				}
+				StatusTextBlock.Text = message ?? "";
+				StatusProgressBar.Visibility = Visibility.Visible;
+				BusyIndicator.Show();
+				StopButton.Visibility = Visibility.Visible;
+			});
+		}
+
+		/// <summary>清除状态栏 + 隐藏进度条（用于完成/取消/出错）。</summary>
+		private void ClearStatus()
+		{
+			StopStreamingRender();
+			base.Dispatcher.Async(delegate
+			{
+				if (_isClosed)
+				{
+					return;
+				}
+				StatusTextBlock.Text = "";
+				StatusProgressBar.Visibility = Visibility.Collapsed;
+				BusyIndicator.Collapse();
+				StopButton.Visibility = Visibility.Collapsed;
+			});
+		}
+
+		/// <summary>Stop 按钮：取消当前 AI 检视任务。</summary>
+		private void StopButton_Click(object sender, RoutedEventArgs e)
+		{
+			_aiReviewJob?.Monitor.Cancel();
+			ClearStatus();
+			StatusTextBlock.Text = PreferencesLocalization.Current("Stopped");
+			RetryButton.IsEnabled = true;
+		}
+
+		/// <summary>
+		/// 流式 chunk 回调（由后台 job 线程在 SSE 解析时调用）：
+		/// 追加到 _streamingMarkdown，并在 UI 线程节流触发实时预览渲染。
+		/// </summary>
+		private void OnStreamingChunk(string chunk)
+		{
+			if (string.IsNullOrEmpty(chunk))
+			{
+				return;
+			}
+			lock (_streamingLock)
+			{
+				if (_streamingMarkdown == null)
+				{
+					_streamingMarkdown = new StringBuilder();
+				}
+				_streamingMarkdown.Append(chunk);
+			}
+			int lengthSoFar;
+			lock (_streamingLock)
+			{
+				lengthSoFar = _streamingMarkdown.Length;
+			}
+			base.Dispatcher.Async(delegate
+			{
+				TryRenderStreamingPreview(lengthSoFar);
+			});
+		}
+
+		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入 WebView。</summary>
+		private void TryRenderStreamingPreview(int lengthSoFar)
+		{
+			if (_isClosed || !_streamingActive)
+			{
+				return;
+			}
+			if (AiResponseWebView?.CoreWebView2 == null)
+			{
+				return;
+			}
+			// 节流：首个 chunk 立即渲染；之后每隔 StreamingRenderIntervalMs 渲染一次
+			DateTime now = DateTime.UtcNow;
+			if (now - _lastStreamingRenderUtc < TimeSpan.FromMilliseconds(StreamingRenderIntervalMs))
+			{
+				return;
+			}
+			_lastStreamingRenderUtc = now;
+			// 在状态栏展示已接收字数，让用户感知进度（替代一直转圈圈）
+			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
+			StatusProgressBar.Visibility = Visibility.Visible;
+			string md;
+			lock (_streamingLock)
+			{
+				md = _streamingMarkdown?.ToString() ?? "";
+			}
+			if (string.IsNullOrEmpty(md))
+			{
+				return;
+			}
+			// markdown→html 在 UI 线程完成（与最终 ApplyAiReviewResult 的转换串行，避免 native Bt 库并发问题；
+			// 检视响应体量有限，转换很快，节流后不会造成可感知卡顿）
+			string body;
+			try
+			{
+				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(md);
+				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(md);
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Streaming markdown render failed: " + ex.Message);
+				body = WebUtility.HtmlEncode(md);
+			}
+			if (_isClosed || !_streamingActive)
+			{
+				return;
+			}
+			string css = GetCss();
+			string html = "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + body + "\n</body>\n</html>";
+			try
+			{
+				AiResponseWebView.NavigateToString(html);
+				AiResponseWebView.Show();
+				BusyIndicator.Collapse();
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Streaming WebView navigate failed: " + ex.Message);
+			}
+		}
+
+		/// <summary>停止流式预览渲染（完成/取消/出错时调用，阻止已排队的渲染任务写入 WebView）。</summary>
+		private void StopStreamingRender()
+		{
+			_streamingActive = false;
+		}
+
+		/// <summary>初始化模型下拉选择：先用当前选中模型占位，后台拉取完整列表。</summary>
+		private void InitializeModelComboBox()
+		{
+			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
+			if (!string.IsNullOrWhiteSpace(currentModel))
+			{
+				ModelComboBox.Items.Add(currentModel);
+				ModelComboBox.SelectedIndex = 0;
+			}
+			else
+			{
+				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
+				ModelComboBox.SelectedIndex = 0;
+			}
+			// 后台拉取模型列表（不阻塞 UI 线程）
+			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
+			{
+				List<string> models = null;
+				try
+				{
+					if (OpenAiService.IsAiReviewConfigured())
+					{
+						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+						ServiceResult<string[]> result = aiService.ListModels();
+						if (result.Succeeded && result.Result != null)
+						{
+							models = new List<string>(result.Result);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Failed to load AI model list: " + ex.Message);
+				}
+				if (models == null || models.Count == 0)
+				{
+					return;
+				}
+				base.Dispatcher.Async(delegate
+				{
+					try
+					{
+						if (_modelListLoaded)
+						{
+							return;
+						}
+						_modelListLoaded = true;
+						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
+						ModelComboBox.Items.Clear();
+						foreach (string m in models)
+						{
+							if (!string.IsNullOrWhiteSpace(m))
+							{
+								ModelComboBox.Items.Add(m);
+							}
+						}
+						int idx = -1;
+						for (int i = 0; i < ModelComboBox.Items.Count; i++)
+						{
+							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
+							{
+								idx = i;
+								break;
+							}
+						}
+						if (idx >= 0)
+						{
+							ModelComboBox.SelectedIndex = idx;
+						}
+						else if (!string.IsNullOrWhiteSpace(selected))
+						{
+							ModelComboBox.Items.Insert(0, selected);
+							ModelComboBox.SelectedIndex = 0;
+						}
+						else if (ModelComboBox.Items.Count > 0)
+						{
+							ModelComboBox.SelectedIndex = 0;
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to populate model combo box: " + ex.Message);
+					}
+				});
+			});
+		}
+
+		/// <summary>切换模型时保存到设置。</summary>
+		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (ModelComboBox.SelectedItem == null)
+			{
+				return;
+			}
+			string selected = (string)ModelComboBox.SelectedItem;
+			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
+			{
+				return;
+			}
+			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
+			{
+				return;
+			}
+			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
+			ForkPlusSettings.Default.Save();
 		}
 
 		private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)

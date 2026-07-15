@@ -1981,6 +1981,12 @@
     "Stop the current AI task and abort its request": "Aktuelle KI-Aufgabe stoppen und ihre Anfrage abbrechen",
     "⏹ 已停止当前任务": "⏹ Aktuelle Aufgabe gestoppt",
     "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ Aktuelle Aufgabe gestoppt ({0} Anfragen in Warteschlange ebenfalls gelöscht)",
-    "⏹ 已清除 {0} 个排队请求": "⏹ {0} Anfragen in Warteschlange gelöscht"
+    "⏹ 已清除 {0} 个排队请求": "⏹ {0} Anfragen in Warteschlange gelöscht",
+    "Stopped": "Gestoppt",
+    "Queued...": "In Warteschlange...",
+    "Collecting diff...": "Diff wird gesammelt...",
+    "Generating... ({0} chars)": "Wird generiert... ({0} Zeichen empfangen)",
+    "Queued. Waiting {0} before checking again...": "In Warteschlange. Warte {0} vor erneuter Prüfung...",
+    "Retrying in {0}s ({1}/{2})...": "Erneuter Versuch in {0}s ({1}/{2})..."
   }
 }

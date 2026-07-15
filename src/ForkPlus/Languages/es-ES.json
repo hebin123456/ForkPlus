@@ -1981,6 +1981,12 @@
     "Stop the current AI task and abort its request": "Detener la tarea de IA actual y abortar su solicitud",
     "⏹ 已停止当前任务": "⏹ Tarea actual detenida",
     "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ Tarea actual detenida ({0} solicitudes en cola también eliminadas)",
-    "⏹ 已清除 {0} 个排队请求": "⏹ {0} solicitudes en cola eliminadas"
+    "⏹ 已清除 {0} 个排队请求": "⏹ {0} solicitudes en cola eliminadas",
+    "Stopped": "Detenido",
+    "Queued...": "En cola...",
+    "Collecting diff...": "Recopilando diff...",
+    "Generating... ({0} chars)": "Generando... ({0} caracteres recibidos)",
+    "Queued. Waiting {0} before checking again...": "En cola. Esperando {0} antes de comprobar de nuevo...",
+    "Retrying in {0}s ({1}/{2})...": "Reintentando en {0}s ({1}/{2})..."
   }
 }

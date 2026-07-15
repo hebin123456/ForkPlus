@@ -2,6 +2,24 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.6
+
+### 修复：git mm 视图子仓变更不显示
+
+- **问题**：git mm 视图下子仓明明有变更（`git status` 能看到、其他 git 工具也能看到），但 ForkPlus 一直显示不出变更。
+- **根因**：`GitMmUserControl.GetSubrepoRuntimeState` 用裸 `git status -b --porcelain` 检测子仓状态，缺少 `--no-optional-locks`、未关闭 `core.fsmonitor`/`core.untrackedCache`，与主仓脏检查 `IsRepositoryDirtyGitCommand` 的命令参数不一致，存在锁竞争和 fsmonitor 误判；且失败时静默吞掉错误，无法定位。
+- **修复**：子仓本质上是普通单仓，按单仓对待——子仓状态检测命令对齐 `IsRepositoryDirtyGitCommand` 的参数（`-c core.fsmonitor=false -c core.untrackedCache=false -c core.checkStat=default --no-optional-locks status -b --porcelain --untracked-files=no`），规避锁竞争和 fsmonitor 误判；失败时打印日志（path/exitCode/stderr），便于定位 `safe.directory`/dubious ownership 等问题—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
+
+### 重构：AI 代码检视页面（模型选择 / 进度状态 / 流式实时输出 / Stop）
+
+- **问题**：AI 代码检视页面一直只有一个转圈圈，不知道当前进度（排队？请求中？生成中？）；页面缺少模型切换入口；返回信息/请求信息/排队信息没有地方承载。
+- **模型下拉选择**：标题栏新增模型下拉框，复用 AI 辅助开发的模型加载逻辑（后台异步从 `/v1/models` 拉取，加载前先显示当前选中模型避免下拉为空），切换模型即时保存到 `AiReviewSelectedModel`—— [AiCodeReviewWindow.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml) / [AiCodeReviewWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml.cs)
+- **状态栏（进度承载）**：标题栏下方新增状态栏（进度条 + 状态文字），承载排队/请求/生成等阶段信息。通过订阅 `JobMonitor.SetProgressAction`，把 `monitor.Update` 的阶段文字（"排队中..."/"正在收集差异..."/"使用 {model} 检视中..."/"排队中。{0} 后再次检查..."/"{0} 秒后重试（{1}/{2}）..."/"生成中...（已接收 N 字）"）实时同步到状态栏，替代之前一直转圈圈无任何反馈的体验。
+- **流式实时输出**：`OpenAiService.CodeReview`/`CodeReviewFiles` 新增 `onChunk` 参数并透传给 `OpenAiRequestStreamingWithRetry`；AiCodeReviewWindow 传入 `OnStreamingChunk` 回调，把 SSE 流式 chunk 边收边追加到缓冲，节流（400ms）后转 Markdown→HTML 实时写入 WebView，用户能逐段看到 AI 生成内容，而不是等几十秒后一次性出现。markdown→html 转换放到线程池，避免阻塞 UI。
+- **Stop 按钮**：标题栏新增 Stop 按钮，处理中可点击取消当前 AI 检视任务（`JobMonitor.Cancel()` 中断流式 SSE 请求），完成/取消/出错时自动隐藏。
+- **排队/重试状态外显**：`OpenAiRequestStreamingWithRetry` 的排队等待和重试等待新增 `monitor.Update` 调用（之前只 `AppendOutputLine` 写到 job 输出，不触发进度回调），使排队/重试信息能显示在检视窗口状态栏。
+- **新增 i18n key**（7 种语言）：`Stopped`、`Queued...`、`Collecting diff...`、`Generating... ({0} chars)`、`Queued. Waiting {0} before checking again...`、`Retrying in {0}s ({1}/{2})...`。
+
 ## v1.5.5
 
 ### 修复：git 命令预览过长挤掉确认按钮

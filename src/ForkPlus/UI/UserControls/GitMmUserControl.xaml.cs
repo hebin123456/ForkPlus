@@ -1863,7 +1863,14 @@ namespace ForkPlus.UI.UserControls
 			GitMmSubrepoRuntimeState state = new GitMmSubrepoRuntimeState();
 			// 单次 `git status -b --porcelain` 同时获取 porcelain 文件状态、当前分支、ahead/behind，
 			// 替代原先的 status + branch --show-current + rev-list --left-right --count 三次调用。
-			GitRequestResult statusResult = RunGit(subrepo.Path, new GitCommand("status", "-b", "--porcelain"), monitor);
+			// 对齐 IsRepositoryDirtyGitCommand 的命令参数（关闭 fsmonitor/untrackedCache + --no-optional-locks），
+			// 规避锁竞争和 fsmonitor 误判；加 --untracked-files=no 与单仓脏检查一致。
+			// 子仓本质上是普通单仓，按单仓对待。
+			GitRequestResult statusResult = RunGit(subrepo.Path, new GitCommand(
+				"-c", "core.fsmonitor=false",
+				"-c", "core.untrackedCache=false",
+				"-c", "core.checkStat=default",
+				"--no-optional-locks", "status", "-b", "--porcelain", "--untracked-files=no"), monitor);
 			if (statusResult.Success)
 			{
 				ParseBranchHeader(statusResult.Stdout, out string currentBranch, out int ahead, out int behind, out string porcelainBody);
@@ -1874,6 +1881,11 @@ namespace ForkPlus.UI.UserControls
 				state.HasConflicts = state.ConflictFilesCount > 0;
 				state.ChangedFilesCount = CountVisibleLocalChanges(subrepo.Path, porcelainBody, monitor);
 				state.HasLocalChanges = state.ChangedFilesCount > 0;
+			}
+			else
+			{
+				// 失败时打印日志，便于定位 safe.directory/dubious ownership 等问题
+				Log.Warn($"git mm subrepo status failed: path={subrepo.Path}, exitCode={statusResult.ExitCode}, stderr={statusResult.Stderr}");
 			}
 			if (monitor.IsCanceled)
 			{

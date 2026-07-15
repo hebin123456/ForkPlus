@@ -175,14 +175,14 @@ namespace ForkPlus.Accounts.AiServices
 			return "English";
 		}
 
-		public ServiceResult<OpenAiResponse> CodeReview(string patchString, JobMonitor monitor)
+		public ServiceResult<OpenAiResponse> CodeReview(string patchString, JobMonitor monitor, Action<string> onChunk = null)
 		{
 			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing with {0}...", _model));
 			string text = "\nMake code review for changes.\nDo not thank.\n\nBelow is the git diff:\n\n```\n" + patchString + "\n```\n";
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
@@ -194,14 +194,14 @@ namespace ForkPlus.Accounts.AiServices
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
-		public ServiceResult<OpenAiResponse> CodeReviewFiles(string reviewContext, JobMonitor monitor)
+		public ServiceResult<OpenAiResponse> CodeReviewFiles(string reviewContext, JobMonitor monitor, Action<string> onChunk = null)
 		{
 			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing files with {0}...", _model));
 			string text = "\nReview the following file changes.\nUse concise Chinese by default unless the code/comment language clearly suggests another language.\nReturn actionable findings only.\nGroup findings by file. Start each file section with exactly `## File: relative/path`, using the same relative path from the review context.\nFor every issue, include file path and line number in the format `path:line` when possible.\nIf a finding has a safe concrete fix, also include it in one fenced JSON block named `forkplus-ai-suggestions` with this shape:\n\n```forkplus-ai-suggestions\n[\n  {\n    \"file\": \"relative/path\",\n    \"line\": 12,\n    \"comment\": \"why this should change\",\n    \"oldText\": \"exact text to replace\",\n    \"newText\": \"replacement text\"\n  }\n]\n```\n\nOnly include suggestions when `oldText` is an exact contiguous snippet from the full file content. Do not invent fixes for uncertain findings.\nIf there are no issues for a file, omit that file section. If there are no issues in all files, say clearly that no obvious issues were found.\n\nThe review context includes both full file content and diff.\n\n" + reviewContext;
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
@@ -301,7 +301,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -314,6 +315,7 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
+				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{
@@ -370,7 +372,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -383,6 +386,7 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
+				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{
@@ -567,7 +571,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<T>.Failure(new ServiceError.Cancelled());
@@ -580,6 +585,7 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
+				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{

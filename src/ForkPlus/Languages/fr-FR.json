@@ -1981,6 +1981,12 @@
     "Stop the current AI task and abort its request": "Arrêter la tâche IA actuelle et abandonner sa requête",
     "⏹ 已停止当前任务": "⏹ Tâche actuelle arrêtée",
     "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ Tâche actuelle arrêtée ({0} requêtes en file également effacées)",
-    "⏹ 已清除 {0} 个排队请求": "⏹ {0} requêtes en file effacées"
+    "⏹ 已清除 {0} 个排队请求": "⏹ {0} requêtes en file effacées",
+    "Stopped": "Arrêté",
+    "Queued...": "En file d'attente...",
+    "Collecting diff...": "Collecte du diff...",
+    "Generating... ({0} chars)": "Génération... ({0} caractères reçus)",
+    "Queued. Waiting {0} before checking again...": "En file d'attente. Attente de {0} avant de revérifier...",
+    "Retrying in {0}s ({1}/{2})...": "Nouvelle tentative dans {0}s ({1}/{2})..."
   }
 }
