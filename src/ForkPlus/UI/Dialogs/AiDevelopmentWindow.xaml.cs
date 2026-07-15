@@ -48,6 +48,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_gitModule = gitModule;
 			base.Title = PreferencesLocalization.Current("AI-Assisted Development");
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			InputTextBox.TextChanged += InputTextBox_TextChanged;
 			InputTextBox.PreviewKeyDown += InputTextBox_PreviewKeyDown;
 			Loaded += AiDevelopmentWindow_Loaded;
@@ -137,7 +138,7 @@ namespace ForkPlus.UI.Dialogs
 			bool isEnter = ForkPlusSettings.Default.AiDevSendMode == "Enter";
 			SendModeEnter.IsChecked = isEnter;
 			SendModeCtrlEnter.IsChecked = !isEnter;
-			SendButton.Content = PreferencesLocalization.Current(isEnter ? "发送 (Enter)" : "发送 (Ctrl+Enter)");
+			SendButton.Content = PreferencesLocalization.Current(isEnter ? "Send (Enter)" : "Send (Ctrl+Enter)");
 		}
 
 		private void StatusTimer_Tick(object sender, EventArgs e)

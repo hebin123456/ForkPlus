@@ -1933,12 +1933,6 @@
     "{0}/{1} shown": "{0}/{1} affiché",
     "{0}s": "{0}s",
     "🧑 我的需求": "🧑 Ma demande",
-    "AI 辅助开发": "Développement assisté par IA",
-    "请输入您的开发需求...": "Saisissez vos besoins de développement...",
-    "Enter 发送": "Entrée pour envoyer",
-    "Ctrl+Enter 发送": "Ctrl+Entrée pour envoyer",
-    "发送 (Enter)": "Envoyer (Enter)",
-    "发送 (Ctrl+Enter)": "Envoyer (Ctrl+Enter)",
     "排队中...": "Dans la file d'attente...",
     "AI 正在生成代码...": "L'IA génère du code...",
     "正在请求 AI ({0})...": "Requête à l'IA ({0})...",
@@ -1956,6 +1950,11 @@
     "Security limit: refused to modify file outside directory: {0}": "Limite de sécurité : refus de modifier un fichier hors du répertoire : {0}",
     "Undo AI Changes": "Annuler les modifications de l'IA",
     "AI changes reverted": "Modifications de l'IA annulées",
-    "No AI changes to revert": "Aucune modification de l'IA à annuler"
+    "No AI changes to revert": "Aucune modification de l'IA à annuler",
+    "Enter your development requirement...": "Saisissez vos besoins de développement...",
+    "Send (Enter)": "Envoyer (Enter)",
+    "Send (Ctrl+Enter)": "Envoyer (Ctrl+Enter)",
+    "Send on Enter": "Entrée pour envoyer",
+    "Send on Ctrl+Enter": "Ctrl+Entrée pour envoyer"
   }
 }

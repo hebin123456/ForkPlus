@@ -1933,12 +1933,6 @@
     "{0}/{1} shown": "已展示 {0}/{1}",
     "{0}s": "{0} 秒",
     "🧑 我的需求": "🧑 我的需求",
-    "AI 辅助开发": "AI 辅助开发",
-    "请输入您的开发需求...": "请输入您的开发需求...",
-    "Enter 发送": "Enter 发送",
-    "Ctrl+Enter 发送": "Ctrl+Enter 发送",
-    "发送 (Enter)": "发送 (Enter)",
-    "发送 (Ctrl+Enter)": "发送 (Ctrl+Enter)",
     "排队中...": "排队中...",
     "AI 正在生成代码...": "AI 正在生成代码...",
     "正在请求 AI ({0})...": "正在请求 AI ({0})...",
@@ -1956,6 +1950,11 @@
     "Security limit: refused to modify file outside directory: {0}": "安全限制：拒绝修改目录外的文件: {0}",
     "Undo AI Changes": "撤销 AI 修改",
     "AI changes reverted": "AI 修改已撤销",
-    "No AI changes to revert": "没有可撤销的 AI 修改"
+    "No AI changes to revert": "没有可撤销的 AI 修改",
+    "Enter your development requirement...": "请输入您的开发需求...",
+    "Send (Enter)": "发送 (Enter)",
+    "Send (Ctrl+Enter)": "发送 (Ctrl+Enter)",
+    "Send on Enter": "Enter 发送",
+    "Send on Ctrl+Enter": "Ctrl+Enter 发送"
   }
 }

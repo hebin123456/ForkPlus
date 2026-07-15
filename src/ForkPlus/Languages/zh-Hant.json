@@ -1933,12 +1933,6 @@
     "{0}/{1} shown": "已展示 {0}/{1}",
     "{0}s": "{0} 秒",
     "🧑 我的需求": "🧑 我的需求",
-    "AI 辅助开发": "AI 輔助開發",
-    "请输入您的开发需求...": "請輸入您的開發需求...",
-    "Enter 发送": "Enter 傳送",
-    "Ctrl+Enter 发送": "Ctrl+Enter 傳送",
-    "发送 (Enter)": "傳送 (Enter)",
-    "发送 (Ctrl+Enter)": "傳送 (Ctrl+Enter)",
     "排队中...": "排隊中...",
     "AI 正在生成代码...": "AI 正在產生程式碼...",
     "正在请求 AI ({0})...": "正在請求 AI ({0})...",
@@ -1956,6 +1950,11 @@
     "Security limit: refused to modify file outside directory: {0}": "安全限制：拒絕修改目錄外的檔案: {0}",
     "Undo AI Changes": "復原 AI 修改",
     "AI changes reverted": "AI 修改已復原",
-    "No AI changes to revert": "沒有可復原的 AI 修改"
+    "No AI changes to revert": "沒有可復原的 AI 修改",
+    "Enter your development requirement...": "請輸入您的開發需求...",
+    "Send (Enter)": "傳送 (Enter)",
+    "Send (Ctrl+Enter)": "傳送 (Ctrl+Enter)",
+    "Send on Enter": "Enter 傳送",
+    "Send on Ctrl+Enter": "Ctrl+Enter 傳送"
   }
 }

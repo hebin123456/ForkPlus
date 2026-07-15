@@ -7,7 +7,7 @@
     </Grid.RowDefinitions>
     <!-- Title bar -->
     <DockPanel Grid.Row="0" Margin="10,6,10,4" LastChildFill="True">
-      <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI 辅助开发" />
+      <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI-Assisted Development" />
     </DockPanel>
     <Separator Grid.Row="0" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Bottom" />
     <!-- Main content area: message list + diff display -->
@@ -29,13 +29,13 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="请输入您的开发需求..." />
-        <Button Grid.Column="1" x:Name="SendButton" Content="发送 (Enter)" FontSize="13" Padding="10,4" Margin="0,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
+        <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
+        <Button Grid.Column="1" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="0,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
         <controls:DropDownButton Grid.Column="2" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu x:Name="SendModeContextMenu">
-              <MenuItem x:Name="SendModeEnter" Header="Enter 发送" IsCheckable="True" Click="SendModeMenuItem_Click" />
-              <MenuItem x:Name="SendModeCtrlEnter" Header="Ctrl+Enter 发送" IsCheckable="True" Click="SendModeMenuItem_Click" />
+              <MenuItem x:Name="SendModeEnter" Header="Send on Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />
+              <MenuItem x:Name="SendModeCtrlEnter" Header="Send on Ctrl+Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />
             </ContextMenu>
           </controls:DropDownButton.ContextMenu>
           <TextBlock Text="▼" FontSize="8" />
