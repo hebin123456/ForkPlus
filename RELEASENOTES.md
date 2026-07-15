@@ -2,6 +2,14 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.8
+
+### 修复：变更数量大时暂存区/未暂存区被强制平铺（改回树状）
+
+- **问题**：当暂存区或未暂存区的变更文件数达到 5000 时，列表会从用户选择的「树状」自动降级为「平铺」，即使设置了 Tree 模式也不按目录层级显示。这是一个古早的性能优化，但用户认为这是回归，希望变更多时也保持树状。
+- **根因**：`FileListUserControl.GetEffectiveMode` 在 `mode == Tree && source.Length >= 5000` 时把模式替换为 `List`。
+- **修复**：移除该降级逻辑——三个调用点（`SetItemSource`/`SetItemSourceAsync`/`RebuildItems`）直接用用户选择的 `Mode`，变更多时仍按树状构建。保留大列表（≥5000）的后台线程构建（`Task.Run`）和跳过选中项恢复，避免 UI 冻结——这部分是纯性能优化，不影响显示形态。常量 `LargeFileListUiDegradeThreshold` 更名为 `LargeFileListBackgroundBuildThreshold` 以反映其当前职责—— [FileListUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/FileListUserControl.xaml.cs)
+
 ## v1.5.7
 
 ### 修复：git mm 子仓变更仍不显示（v1.5.6 修复无效）

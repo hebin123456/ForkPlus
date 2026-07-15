@@ -48,7 +48,9 @@ namespace ForkPlus.UI.UserControls
 
 		private const int BulkRebuildChangeThreshold = 256;
 
-		private const int LargeFileListUiDegradeThreshold = 5000;
+		// 变更文件数达到此阈值时，重建走后台线程构建（Task.Run）并跳过选中项恢复，
+		// 避免 UI 冻结。注意：不再据此把 Tree 降级为 List——变更多时也应保持树状显示。
+		private const int LargeFileListBackgroundBuildThreshold = 5000;
 
 		private static readonly BitmapImage FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
 
@@ -254,7 +256,7 @@ namespace ForkPlus.UI.UserControls
 				ChangedFile[] item2 = tuple.Item2;
 				_rawChangedFiles = source;
 				bool shouldRebuild = forceRefresh || item.Length + item2.Length > BulkRebuildChangeThreshold;
-				bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListUiDegradeThreshold;
+				bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListBackgroundBuildThreshold;
 				if (!shouldRebuild)
 				{
 					ApplyAddedEntries(Mode, item2);
@@ -285,7 +287,7 @@ namespace ForkPlus.UI.UserControls
 			ChangedFile[] item2 = tuple.Item2;
 			_rawChangedFiles = source;
 			bool shouldRebuild = forceRefresh || item.Length + item2.Length > BulkRebuildChangeThreshold;
-			bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListUiDegradeThreshold;
+			bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListBackgroundBuildThreshold;
 			if (!shouldRebuild)
 			{
 				using (TreeView.LockUpdates())
@@ -303,13 +305,14 @@ namespace ForkPlus.UI.UserControls
 			FileListItem rootItem;
 			if (isLargeRebuild)
 			{
-				FileListMode mode = GetEffectiveMode(source, Mode);
+				// 大列表仍走后台线程构建以避免 UI 冻结，但不再把 Tree 降级为 List——
+				// 变更多时也应保持树状显示（用户明确要求“改回树状”）。
 				Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
-				rootItem = await Task.Run(() => BuildRootItem(source, mode, fileIcons));
+				rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons));
 			}
 			else
 			{
-				rootItem = BuildRootItem(source, GetEffectiveMode(source, Mode), CreateFileIconCache(source), FolderIcon);
+				rootItem = BuildRootItem(source, Mode, CreateFileIconCache(source), FolderIcon);
 			}
 			using (TreeView.LockUpdates())
 			{
@@ -329,16 +332,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RebuildItems(ChangedFile[] source)
 		{
-			TreeView.RootItem = BuildRootItem(source, GetEffectiveMode(source, Mode), CreateFileIconCache(source), FolderIcon);
-		}
-
-		private static FileListMode GetEffectiveMode(ChangedFile[] source, FileListMode mode)
-		{
-			if (mode == FileListMode.Tree && source.Length >= LargeFileListUiDegradeThreshold)
-			{
-				return FileListMode.List;
-			}
-			return mode;
+			TreeView.RootItem = BuildRootItem(source, Mode, CreateFileIconCache(source), FolderIcon);
 		}
 
 		private void RefilterIfNeeded()
