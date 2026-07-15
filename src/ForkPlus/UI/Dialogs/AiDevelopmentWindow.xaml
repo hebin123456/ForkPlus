@@ -30,8 +30,15 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <!-- Progress bar -->
-      <ProgressBar Grid.Row="0" x:Name="ProgressBar" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" Margin="0,0,0,4" />
+      <!-- Progress bar + Stop button: 处理中显示，点击 Stop 取消当前任务及后台 HTTP 请求 -->
+      <Grid Grid.Row="0" Margin="0,0,0,4">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <ProgressBar Grid.Column="0" x:Name="ProgressBar" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" />
+        <Button Grid.Column="1" x:Name="StopButton" Content="Stop" FontSize="11" Padding="8,1" Margin="6,0,0,0" Visibility="Collapsed" Click="StopButton_Click" MinHeight="22" ToolTip="Stop the current AI task and abort its request" />
+      </Grid>
       <!-- Input area -->
       <Grid Grid.Row="1">
         <Grid.ColumnDefinitions>

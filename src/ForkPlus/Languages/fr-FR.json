@@ -1976,6 +1976,11 @@
     "Send on Ctrl+Enter": "Ctrl+Entrée pour envoyer",
     "Select model...": "Sélectionner le modèle...",
     "Model switched to: {0}": "Modèle changé : {0}",
-    "Send (queued: {0})": "Envoyer (file : {0})"
+    "Send (queued: {0})": "Envoyer (file : {0})",
+    "Stop": "Arrêter",
+    "Stop the current AI task and abort its request": "Arrêter la tâche IA actuelle et abandonner sa requête",
+    "⏹ 已停止当前任务": "⏹ Tâche actuelle arrêtée",
+    "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ Tâche actuelle arrêtée ({0} requêtes en file également effacées)",
+    "⏹ 已清除 {0} 个排队请求": "⏹ {0} requêtes en file effacées"
   }
 }

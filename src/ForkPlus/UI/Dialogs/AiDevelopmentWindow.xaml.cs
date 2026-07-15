@@ -380,6 +380,7 @@ namespace ForkPlus.UI.Dialogs
 			// 任务2：不再禁用输入框和发送按钮——用户可以在 AI 处理期间继续输入并排队新需求，
 			// 无需等待当前请求回复完成。SendButton 的启用状态仅由输入框文本决定（见 UpdateSendButton）。
 			ProgressBar.Visibility = Visibility.Visible;
+			StopButton.Visibility = Visibility.Visible;
 			UpdateQueueIndicator();
 			AddStatusMessage(PreferencesLocalization.Current("排队中..."), Brushes.Gray);
 
@@ -427,10 +428,12 @@ namespace ForkPlus.UI.Dialogs
 							}
 						});
 						if (monitor.IsCanceled)
-						{
-							FinishRequest();
-							return;
-						}
+					{
+						// 取消可能由 Stop 按钮触发，此时位于后台线程；
+						// FinishRequest 会操作 UI 元素，需切回 UI 线程执行。
+						base.Dispatcher.Async(delegate { FinishRequest(); });
+						return;
+					}
 
 						if (!result.Succeeded)
 						{
@@ -537,9 +540,45 @@ namespace ForkPlus.UI.Dialogs
 			else
 			{
 				_isProcessing = false;
+				StopButton.Visibility = Visibility.Collapsed;
 				UpdateQueueIndicator();
 				UpdateSendButton();
 				InputTextBox.Focus();
+			}
+		}
+
+		/// <summary>
+		/// 停止当前 AI 任务及其后台 HTTP 请求，并清空待处理队列。
+		/// 通过 JobMonitor.Cancel() 触发已注册的取消回调（CancellationTokenSource.Cancel），
+		/// 中断正在进行的流式 HTTP 请求；OpenAiRequestStreamingWithRetry 的重试循环检测到
+		/// IsCanceled 后立即返回 Cancelled 错误，ProcessRequest 随后调用 FinishRequest 收尾。
+		/// </summary>
+		private void StopButton_Click(object sender, RoutedEventArgs e)
+		{
+			// 先清空待处理队列，避免取消当前后队列中的下一个又被自动启动
+			int cleared = _pendingRequests.Count;
+			_pendingRequests.Clear();
+
+			Job activeJob = _activeJob;
+			if (activeJob != null && activeJob.Monitor != null && !activeJob.Monitor.IsCanceled)
+			{
+				activeJob.Monitor.Cancel();
+				AddStatusMessage(
+					PreferencesLocalization.FormatCurrent("⏹ 已停止当前任务" + (cleared > 0 ? "（同时清除 {0} 个排队请求）" : ""), cleared),
+					Brushes.OrangeRed);
+			}
+			else if (cleared > 0)
+			{
+				AddStatusMessage(
+					PreferencesLocalization.FormatCurrent("⏹ 已清除 {0} 个排队请求", cleared),
+					Brushes.OrangeRed);
+				_isProcessing = false;
+				StopButton.Visibility = Visibility.Collapsed;
+				ProgressBar.Visibility = Visibility.Collapsed;
+				_statusTimer.Stop();
+				_activeJob = null;
+				UpdateQueueIndicator();
+				UpdateSendButton();
 			}
 		}
 

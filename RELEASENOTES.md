@@ -4,14 +4,15 @@
 
 ## v1.5.3
 
-### 优化：AI 辅助开发体验（模型选择 / 需求队列 / 排队处理 / 上下文压缩 / commit 即时写入）
+### 优化：AI 辅助开发体验（模型选择 / 需求队列 / 排队处理 / 上下文压缩 / commit 即时写入 / 停止任务）
 
 - **模型下拉选择**：AI 辅助开发弹窗右上角新增模型下拉框，自动从 `/v1/models` 拉取可用模型列表（后台异步加载，不阻塞 UI）。用户可随时切换模型，选中项即时保存到 `AiReviewSelectedModel` 设置。加载前先显示当前模型避免下拉为空。
 - **需求队列不阻塞输入**：之前 AI 处理期间输入框和发送按钮被禁用，用户必须等 AI 回复完才能继续说话。现在处理期间输入框始终可用，新输入的需求自动入队，发送按钮显示当前队列数量（如"发送 (队列: 2)"），当前请求完成后自动按顺序处理队列中的下一个。
+- **停止任务**：AI 处理期间进度条旁新增"Stop"按钮，点击可停止当前 AI 任务及其后台 HTTP 请求（通过 `JobMonitor.Cancel()` 触发已注册的取消回调，中断流式 SSE 请求），同时清空待处理队列。取消路径改为切回 UI 线程执行收尾，避免跨线程操作 UI 元素。
 - **正确处理排队场景**：修复 AI 服务排队时显示"远程服务返回了错误响应"的问题。根因是 `ServiceError.RemoteServiceJsonError.FriendlyMessage` 返回通用文本，不含排队关键字，导致 `ShouldRetry` 无法识别排队场景而直接放弃。修复：`DecodeJsonError` 中 `DecodeServiceError` 无法解析时用原始 JSON 文本作为错误消息；`MaxQueuedWaitSeconds` 从 `TimeoutSeconds`(默认 300s) 增大到 `max(TimeoutSeconds, 1800)`(30 分钟)，给排队足够等待时间。
 - **上下文超长自动压缩**：之前历史消息超过 20 条时简单丢弃最早的，丢失上下文。现在发送前估算 token 数（约每 4 字符 1 token），超过 6000 时自动将早期对话通过 AI 生成摘要（保留关键文件路径、变更、需求、决策），替换为单条 system 摘要消息 + 最近 6 条原始消息。摘要失败时退回到简单截断。压缩过程复用流式+重试机制，享受排队/重试处理。
 - **AI commit 消息即时写入**：修复 AI 生成 commit 消息时不即时写入、需等很久的问题。`GenerateCommitMessage` 新增 `onChunk` 参数，流式 chunk 实时追加到 commit 框（`FullCommitMessage`），用户无需等待整个请求完成。请求完成后用最终完整消息覆盖（可能经过 regex retry 修正）。同时受益于排队场景修复，commit 生成遇到排队也会继续等待而非报错。
-- **新增 i18n key**（7 种语言）：`Select model...`、`Model switched to: {0}`、`Send (queued: {0})`。
+- **新增 i18n key**（7 种语言）：`Select model...`、`Model switched to: {0}`、`Send (queued: {0})`、`Stop`、`Stop the current AI task and abort its request`、停止任务相关的状态消息。
 
 ## v1.5.2
 

@@ -1976,6 +1976,11 @@
     "Send on Ctrl+Enter": "Ctrl+Enter 傳送",
     "Select model...": "選擇模型...",
     "Model switched to: {0}": "已切換模型: {0}",
-    "Send (queued: {0})": "傳送 (佇列: {0})"
+    "Send (queued: {0})": "傳送 (佇列: {0})",
+    "Stop": "停止",
+    "Stop the current AI task and abort its request": "停止目前 AI 任務並中止其請求",
+    "⏹ 已停止当前任务": "⏹ 已停止目前任務",
+    "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ 已停止目前任務（同時清除 {0} 個排隊請求）",
+    "⏹ 已清除 {0} 个排队请求": "⏹ 已清除 {0} 個排隊請求"
   }
 }

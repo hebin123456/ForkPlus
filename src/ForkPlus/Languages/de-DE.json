@@ -1976,6 +1976,11 @@
     "Send on Ctrl+Enter": "Strg+Enter zum Senden",
     "Select model...": "Modell auswählen...",
     "Model switched to: {0}": "Modell gewechselt: {0}",
-    "Send (queued: {0})": "Senden (Warteschlange: {0})"
+    "Send (queued: {0})": "Senden (Warteschlange: {0})",
+    "Stop": "Stopp",
+    "Stop the current AI task and abort its request": "Aktuelle KI-Aufgabe stoppen und ihre Anfrage abbrechen",
+    "⏹ 已停止当前任务": "⏹ Aktuelle Aufgabe gestoppt",
+    "⏹ 已停止当前任务（同时清除 {0} 个排队请求）": "⏹ Aktuelle Aufgabe gestoppt ({0} Anfragen in Warteschlange ebenfalls gelöscht)",
+    "⏹ 已清除 {0} 个排队请求": "⏹ {0} Anfragen in Warteschlange gelöscht"
   }
 }
