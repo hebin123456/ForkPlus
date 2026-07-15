@@ -42,6 +42,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _isProcessing;
 
+		// 多轮对话记忆：按顺序存储历史 user/assistant 消息（不含 system prompt）
+		private readonly List<JObject> _conversationHistory = new List<JObject>();
+
+		// 单轮对话最大保留条数（防止 token 超限），超出时丢弃最早的
+		private const int MaxHistoryMessages = 20;
+
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
 			InitializeComponent();
@@ -59,6 +65,14 @@ namespace ForkPlus.UI.Dialogs
 			_statusTimer.Tick += StatusTimer_Tick;
 			_skillEntries = new List<AiSkillEntry>();
 			LoadSkillList();
+			// 显示当前 AI 模型
+			string model = ForkPlusSettings.Default.AiReviewSelectedModel;
+			if (!string.IsNullOrEmpty(model))
+			{
+				ModelInfoTextBlock.Text = PreferencesLocalization.FormatCurrent("Model: {0}", model);
+			}
+			// 显示欢迎信息
+			ShowWelcomeMessage();
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -77,7 +91,50 @@ namespace ForkPlus.UI.Dialogs
 		private void AiDevelopmentWindow_Loaded(object sender, RoutedEventArgs e)
 		{
 			ApplySendMode();
+			UpdateHintText();
 			InputTextBox.Focus();
+		}
+
+		/// <summary>更新底部操作提示。</summary>
+		private void UpdateHintText()
+		{
+			bool sendOnEnter = ForkPlusSettings.Default.AiDevSendMode == "Enter";
+			HintTextBlock.Text = sendOnEnter
+				? PreferencesLocalization.Current("Press Enter to send, Shift+Enter for new line. The AI remembers previous conversation in this session.")
+				: PreferencesLocalization.Current("Press Ctrl+Enter to send, Enter for new line. The AI remembers previous conversation in this session.");
+		}
+
+		/// <summary>显示欢迎信息（空对话状态）。</summary>
+		private void ShowWelcomeMessage()
+		{
+			Border welcomeBorder = new Border
+			{
+				Background = new SolidColorBrush(Color.FromArgb(10, 0, 120, 215)),
+				CornerRadius = new CornerRadius(8),
+				Padding = new Thickness(16, 12, 16, 12),
+				Margin = new Thickness(0, 4, 0, 8),
+				HorizontalAlignment = HorizontalAlignment.Stretch
+			};
+			StackPanel panel = new StackPanel();
+			TextBlock title = new TextBlock
+			{
+				Text = "✦ " + PreferencesLocalization.Current("AI-Assisted Development"),
+				FontSize = 15,
+				FontWeight = FontWeights.SemiBold,
+				Margin = new Thickness(0, 0, 0, 6)
+			};
+			TextBlock desc = new TextBlock
+			{
+				Text = PreferencesLocalization.Current("Describe your development requirement below. The AI will analyze your codebase and generate file changes. You can have a continuous conversation - the AI remembers previous context in this session."),
+				FontSize = 12,
+				TextWrapping = TextWrapping.Wrap,
+				Foreground = (Brush)FindResource("SecondaryLabelBrush"),
+				Margin = new Thickness(0, 0, 0, 4)
+			};
+			panel.Children.Add(title);
+			panel.Children.Add(desc);
+			welcomeBorder.Child = panel;
+			MessagePanel.Children.Add(welcomeBorder);
 		}
 
 		private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -139,6 +196,7 @@ namespace ForkPlus.UI.Dialogs
 			SendModeEnter.IsChecked = isEnter;
 			SendModeCtrlEnter.IsChecked = !isEnter;
 			SendButton.Content = PreferencesLocalization.Current(isEnter ? "Send (Enter)" : "Send (Ctrl+Enter)");
+			UpdateHintText();
 		}
 
 		private void StatusTimer_Tick(object sender, EventArgs e)
@@ -218,16 +276,18 @@ namespace ForkPlus.UI.Dialogs
 				delegate (JobMonitor monitor)
 				{
 					try
+				{
+					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+					string systemPrompt = BuildSystemPrompt();
+					// 多轮对话：携带历史上下文 + 当前需求
+					List<JObject> historySnapshot = new List<JObject>(_conversationHistory);
+					base.Dispatcher.Async(delegate
 					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						string prompt = BuildDevelopmentPrompt(requirement);
-						base.Dispatcher.Async(delegate
-						{
-							AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
-						});
+						AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
+					});
 
-						// 流式输出：onChunk 回调实时追加到聊天气泡，用户能逐字看到 AI 生成内容
-						ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(prompt, monitor, delegate(string delta)
+					// 流式输出：onChunk 回调实时追加到聊天气泡，用户能逐字看到 AI 生成内容
+					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(historySnapshot, systemPrompt, requirement, monitor, delegate(string delta)
 						{
 							TextBox captured = streamingBox;
 							if (captured != null)
@@ -257,8 +317,23 @@ namespace ForkPlus.UI.Dialogs
 
 						string aiResponse = result.Result.Message;
 
-						// Parse AI response for file changes
-						ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
+					// 记录本轮对话到历史（user 需求 + assistant 响应），实现多轮记忆
+					JObject histUser = new JObject();
+					histUser["role"] = "user";
+					histUser["content"] = requirement;
+					JObject histAssistant = new JObject();
+					histAssistant["role"] = "assistant";
+					histAssistant["content"] = aiResponse;
+					_conversationHistory.Add(histUser);
+					_conversationHistory.Add(histAssistant);
+					// 超出上限时丢弃最早的消息（保留最近 MaxHistoryMessages 条）
+					while (_conversationHistory.Count > MaxHistoryMessages)
+					{
+						_conversationHistory.RemoveAt(0);
+					}
+
+					// Parse AI response for file changes
+					ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
 
 						base.Dispatcher.Async(delegate
 						{
@@ -519,6 +594,22 @@ namespace ForkPlus.UI.Dialogs
 			UndoAiChanges();
 		}
 
+		/// <summary>清空对话历史和界面消息，重新开始。</summary>
+		private void ClearConversation()
+		{
+			_conversationHistory.Clear();
+			_fileChanges.Clear();
+			_lastBeforeContents.Clear();
+			MessagePanel.Children.Clear();
+			ShowWelcomeMessage();
+			AddStatusMessage(PreferencesLocalization.Current("Conversation cleared."), Brushes.Gray);
+		}
+
+		private void ClearConversationButton_Click(object sender, RoutedEventArgs e)
+		{
+			ClearConversation();
+		}
+
 		private void AddAiResponseMessage(string response)
 		{
 			Border aiBorder = new Border
@@ -621,17 +712,17 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private string BuildDevelopmentPrompt(string requirement)
+		/// <summary>
+		/// 构建系统提示（固定指令部分，不含用户需求）。
+		/// 多轮对话中 system 消息只发一次，用户需求作为独立的 user 消息发送。
+		/// </summary>
+		private string BuildSystemPrompt()
 		{
 			string repoPath = _gitModule?.Path ?? "";
-			string prompt = $@"You are an AI coding assistant integrated into ForkPlus, a Git client. 
-The user has the following development requirement:
-
-{requirement}
-
+			string prompt = $@"You are an AI coding assistant integrated into ForkPlus, a Git client.
 Current repository path: {repoPath}
 
-Please analyze the requirement and generate necessary code changes.
+Analyze the user's requirement and generate necessary code changes.
 Respond with structured file changes in the following format for each file you want to modify:
 
 ===FILE: relative/file/path===
@@ -647,12 +738,14 @@ DELETE
 
 Only include files that actually need to change. Do NOT include files that are not related to the requirement.
 Always provide complete file contents, never just diffs or partial snippets.
-Make sure the code compiles and follows the project's existing patterns and conventions.";
+Make sure the code compiles and follows the project's existing patterns and conventions.
+
+You have memory of the previous conversation in this session. When the user refers to previous changes or asks follow-up questions, use the conversation context to provide relevant responses.";
 
 			// Append loaded skills
 			if (_skillEntries.Count > 0)
 			{
-				prompt += $@"
+				prompt += @"
 
 Additionally, the user has defined the following coding standards / skills that you MUST follow:";
 				foreach (var entry in _skillEntries)

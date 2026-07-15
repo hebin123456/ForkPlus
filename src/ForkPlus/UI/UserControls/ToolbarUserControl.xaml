@@ -211,6 +211,12 @@
               <Image.VerticalAlignment>Center</Image.VerticalAlignment>
             </Image>
           </ToolbarButton>
+          <ToolbarButton Margin="0,3,0,3" p:DockPanel.Dock="Right" Title="AI-Assisted Development" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="AiDevelopmentToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <TextBlock Text="✦" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+          </ToolbarButton>
           <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="4,3,4,3" Title="Open in" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="OpenInDropDownButton">
             <ToolbarDropDownButton.Style>
               <DynamicResource ResourceKey="ToolbarDropdownButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />

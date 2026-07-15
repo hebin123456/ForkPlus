@@ -322,9 +322,96 @@ namespace ForkPlus.Accounts.AiServices
 			return LocalizeCancellationError(result);
 		}
 
+		/// <summary>
+		/// 多轮对话流式请求（带重试）：携带历史消息上下文，实现 AI 对话记忆。
+		/// historyMessages 为之前的 user/assistant 消息（不含 system），systemPrompt 为系统提示，
+		/// currentUserMessage 为本次用户输入。
+		/// </summary>
+		public ServiceResult<OpenAiResponse> OpenAiRequestStreamingWithRetry(IList<JObject> historyMessages, string systemPrompt, string currentUserMessage, JobMonitor monitor, Action<string> onChunk = null)
+		{
+			int retryCount = Math.Max(0, ForkPlusSettings.Default.AiReviewRetryCount);
+			int normalRetryAttempt = 0;
+			int queuedWaitSeconds = 0;
+			int maxQueuedWaitSeconds = MaxQueuedWaitSeconds();
+			ServiceResult<OpenAiResponse> result = null;
+			while (true)
+			{
+				if (monitor?.IsCanceled == true)
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+				result = OpenAiRequestStreaming(historyMessages, systemPrompt, currentUserMessage, monitor, onChunk);
+				if (monitor?.IsCanceled == true)
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+				if (result.Succeeded || !ShouldRetry(result.Error))
+				{
+					return LocalizeCancellationError(result);
+				}
+				int queuedDelaySeconds;
+				bool isQueuedWait = IsQueuedWaitError(result.Error, out queuedDelaySeconds);
+				if (!isQueuedWait)
+				{
+					string msg = result.Error?.FriendlyMessage ?? "";
+					if (IsTransientServiceMessage(msg))
+					{
+						isQueuedWait = true;
+						queuedDelaySeconds = 30;
+					}
+				}
+				if (isQueuedWait)
+				{
+					int remainingQueuedWaitSeconds = maxQueuedWaitSeconds - queuedWaitSeconds;
+					if (remainingQueuedWaitSeconds <= 0)
+					{
+						break;
+					}
+					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
+					queuedWaitSeconds += waitSeconds;
+					monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					if (!WaitBeforeRetry(waitSeconds, monitor))
+					{
+						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+					}
+					continue;
+				}
+				if (normalRetryAttempt >= retryCount)
+				{
+					break;
+				}
+				normalRetryAttempt++;
+				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
+				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				if (!WaitBeforeRetry(delaySeconds, monitor))
+				{
+					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
+				}
+			}
+			return LocalizeCancellationError(result);
+		}
+
 		private ServiceResult<OpenAiResponse> OpenAiRequestStreaming(string message, JobMonitor monitor, Action<string> onChunk)
 		{
 			ApiRequest request = CreateChatStreamRequest(message);
+			StringBuilder content = new StringBuilder();
+			Connection.HttpRequestResult httpResult = Connection.RequestStream(request, true, monitor, delegate(string line)
+			{
+				ParseSseLine(line, content, monitor, onChunk);
+			});
+			if (!httpResult.Succeeded)
+			{
+				return ServiceResult<OpenAiResponse>.Failure(httpResult.Error);
+			}
+			char[] trimChars = "```".ToCharArray();
+			string trimmed = content.ToString().TrimStart(trimChars).TrimEnd(trimChars).Trim();
+			return ServiceResult<OpenAiResponse>.Success(new OpenAiResponse(trimmed));
+		}
+
+		/// <summary>多轮对话流式请求：携带历史消息上下文。</summary>
+		private ServiceResult<OpenAiResponse> OpenAiRequestStreaming(IList<JObject> historyMessages, string systemPrompt, string currentUserMessage, JobMonitor monitor, Action<string> onChunk)
+		{
+			ApiRequest request = CreateChatStreamRequest(historyMessages, systemPrompt, currentUserMessage);
 			StringBuilder content = new StringBuilder();
 			Connection.HttpRequestResult httpResult = Connection.RequestStream(request, true, monitor, delegate(string line)
 			{
@@ -382,6 +469,39 @@ namespace ForkPlus.Accounts.AiServices
 			jObject3.Add("messages", new JArray(jObject, jObject2));
 			jObject3.Add("stream", true);
 			apiRequest.SetJson(jObject3);
+			return apiRequest;
+		}
+
+		/// <summary>
+		/// 构造多轮对话流式请求：system + 历史消息（user/assistant 交替）。
+		/// 用于 AI 辅助开发窗口的多轮上下文记忆。
+		/// </summary>
+		private ApiRequest CreateChatStreamRequest(IList<JObject> historyMessages, string systemPrompt, string currentUserMessage)
+		{
+			ApiRequest apiRequest = new ApiRequest(HttpMethod.Post, "/v1/chat/completions");
+			JArray messages = new JArray();
+			JObject systemMsg = new JObject();
+			systemMsg.Add("role", "system");
+			systemMsg.Add("content", systemPrompt ?? "You are a helpful assistant.");
+			messages.Add(systemMsg);
+			// 追加历史对话（保持顺序，user/assistant 交替）
+			if (historyMessages != null)
+			{
+				foreach (JObject msg in historyMessages)
+				{
+					messages.Add(msg);
+				}
+			}
+			// 追加当前用户消息
+			JObject userMsg = new JObject();
+			userMsg.Add("role", "user");
+			userMsg.Add("content", currentUserMessage);
+			messages.Add(userMsg);
+			JObject body = new JObject();
+			body.Add("model", _model);
+			body.Add("messages", messages);
+			body.Add("stream", true);
+			apiRequest.SetJson(body);
 			return apiRequest;
 		}
 

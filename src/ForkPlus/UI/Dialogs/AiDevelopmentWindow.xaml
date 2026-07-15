@@ -2,21 +2,24 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <!-- Title bar -->
-    <DockPanel Grid.Row="0" Margin="10,6,10,4" LastChildFill="True">
+    <DockPanel Grid.Row="0" Margin="12,8,12,4" LastChildFill="True">
       <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI-Assisted Development" />
+      <TextBlock DockPanel.Dock="Right" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ModelInfoTextBlock" Margin="8,0,0,0" />
     </DockPanel>
-    <Separator Grid.Row="0" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Bottom" />
-    <!-- Main content area: message list + diff display -->
-    <ScrollViewer Grid.Row="1" x:Name="MainScrollViewer" Margin="4,4,8,0" VerticalScrollBarVisibility="Auto">
+    <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0" />
+    <!-- Main content area: message list -->
+    <ScrollViewer Grid.Row="2" x:Name="MainScrollViewer" Margin="4,4,8,0" VerticalScrollBarVisibility="Auto">
       <StackPanel x:Name="MessagePanel" Margin="8,4,8,8" />
     </ScrollViewer>
     <!-- Bottom area: progress + input -->
-    <Grid Grid.Row="2" Margin="8,4,12,10">
+    <Grid Grid.Row="3" Margin="8,4,12,10">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
@@ -28,10 +31,12 @@
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
-        <Button Grid.Column="1" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="0,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
-        <controls:DropDownButton Grid.Column="2" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+        <Button Grid.Column="1" x:Name="ClearConversationButton" Content="Clear" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" Click="ClearConversationButton_Click" MinHeight="28" ToolTip="Clear conversation history" />
+        <Button Grid.Column="2" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
+        <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu x:Name="SendModeContextMenu">
               <MenuItem x:Name="SendModeEnter" Header="Send on Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />
@@ -41,6 +46,8 @@
           <TextBlock Text="▼" FontSize="8" />
         </controls:DropDownButton>
       </Grid>
+      <!-- Hint text -->
+      <TextBlock Grid.Row="2" x:Name="HintTextBlock" FontSize="11" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
     </Grid>
   </Grid>
 </ui:CustomWindow>

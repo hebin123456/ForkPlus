@@ -198,7 +198,6 @@ namespace ForkPlus.UI.UserControls
 		public void ApplyLocalization()
 		{
 			string language = ForkPlusSettings.Default.UiLanguage;
-			AiDevelopmentButton.ToolTip = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
 			RepositorySettingsDropdownButton.ToolTip = Preferences.PreferencesLocalization.Translate("Repository Settings", language);
 			FilterTextBox.Placeholder = Preferences.PreferencesLocalization.Translate("Filter", language);
 			AllCommitsTextBlock.Text = Preferences.PreferencesLocalization.Translate("All Commits", language);
@@ -457,27 +456,6 @@ namespace ForkPlus.UI.UserControls
 			{
 				RepositoryUserControl.Commands.ShowRepositorySettingsWindow.Execute(gitModule, _repositoryData);
 			}));
-		}
-
-		private void AiDevelopmentButton_Click(object sender, RoutedEventArgs e)
-		{
-			GitModule gitModule = RepositoryUserControl?.GitModule;
-			if (gitModule == null)
-			{
-				return;
-			}
-			if (!OpenAiService.IsAiReviewConfigured())
-			{
-				Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review.");
-				System.Windows.MessageBox.Show(
-					Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review."),
-					Preferences.PreferencesLocalization.Current("Configuration Reminder"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Information);
-				return;
-			}
-			AiDevelopmentWindow window = new AiDevelopmentWindow(RepositoryUserControl, gitModule);
-			window.Show();
 		}
 
 		private void RenameRepository(string newName)

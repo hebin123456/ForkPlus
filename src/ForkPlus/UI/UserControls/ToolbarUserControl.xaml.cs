@@ -99,6 +99,30 @@ namespace ForkPlus.UI.UserControls
 					MainWindow.Commands.OpenRepositoryInShellTool.Execute(repositoryUserControl.GitModule);
 				}
 			};
+			AiDevelopmentToolbarButton.Click += delegate
+			{
+				RepositoryUserControl repositoryUserControl = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+				if (repositoryUserControl == null)
+				{
+					return;
+				}
+				ForkPlus.Git.GitModule gitModule = repositoryUserControl.GitModule;
+				if (gitModule == null)
+				{
+					return;
+				}
+				if (!ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured())
+				{
+					System.Windows.MessageBox.Show(
+						Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review."),
+						Preferences.PreferencesLocalization.Current("Configuration Reminder"),
+						System.Windows.MessageBoxButton.OK,
+						System.Windows.MessageBoxImage.Information);
+					return;
+				}
+				ForkPlus.UI.Dialogs.AiDevelopmentWindow window = new ForkPlus.UI.Dialogs.AiDevelopmentWindow(repositoryUserControl, gitModule);
+				window.Show();
+			};
 			BranchToolbarButton.Click += delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl = _mainWindow.TabManager.ActiveRepositoryUserControl;
@@ -150,6 +174,7 @@ namespace ForkPlus.UI.UserControls
 			AppearanceToolbarDropdownButton.Title = Preferences.PreferencesLocalization.Translate("Appearance", language);
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
+			AiDevelopmentToolbarButton.Title = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
 			FetchToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language);
 			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language);
 			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language);
@@ -218,6 +243,7 @@ namespace ForkPlus.UI.UserControls
 			BranchToolbarDropdownButton.IsEnabled = isEnabled;
 			OpenInDropDownButton.IsEnabled = isEnabled;
 			OpenInConsoleToolbarButton.IsEnabled = isEnabled;
+			AiDevelopmentToolbarButton.IsEnabled = isEnabled;
 			if (repositoryUserControl != null)
 			{
 				RepositoryData repositoryData = repositoryUserControl.RepositoryData;
