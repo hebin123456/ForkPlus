@@ -275,6 +275,8 @@ namespace ForkPlus.UI
 		private static IEnumerable<Control> CreateAboutMenuItems()
 		{
 			MainWindowCommands commands = MainWindow.Commands;
+			yield return commands.UpdateApplication.CreateMenuItem(delegate { commands.UpdateApplication.Execute(); });
+			yield return new Separator();
 			yield return commands.OpenKeyboardShortcuts.CreateMenuItem(delegate { commands.OpenKeyboardShortcuts.Execute(); });
 			yield return commands.ShowPerformanceDiagnosticsWindow.CreateMenuItem(delegate { commands.ShowPerformanceDiagnosticsWindow.Execute(); });
 			yield return new Separator();

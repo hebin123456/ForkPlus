@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.0
+
+### 自动检测更新
+
+- **启动后自动检测新版本**：启动后延迟 30 秒首次自检，之后每小时 tick 一次，仅当距上次检测达到设定间隔（默认 24 小时，下限 12 小时）时才实际请求 GitHub Releases API（`repos/hebin123456/ForkPlus/releases/latest`）。自动检测失败静默，不打扰用户。
+- **帮助菜单主动检测**：帮助菜单新增"Check for Updates..."菜单项，不受节流限制，随时可点。无更新提示"已是最新版本"，检测失败提示检查网络。
+- **新版本提示窗口**：发现新版本时弹出提示窗口，显示新版本号、当前版本号、Release Notes（更新内容），提供"Download"（跳转下载地址）、"Later"（稍后）两个按钮，以及"Don't remind me for this version"勾选框（按版本号跳过，新版本会重新提醒）。
+- **新增设置项**：`CheckForUpdatesAutomatically`（自动检测开关，默认开）、`UpdateCheckIntervalHours`（检测间隔小时数，默认 24）、`SkippedUpdateVersion`（已跳过的版本号）；复用已存在的 `LastUpdateCheck` 做节流时间戳。
+- **国际化**：新增 8 个 i18n key（Check for Updates.../Update Available/Release Notes/Download/Don't remind me for this version/You are using the latest version./Update check failed...），7 种语言补齐翻译。
+
 ## v1.4.7
 
 ### AI 辅助开发增强

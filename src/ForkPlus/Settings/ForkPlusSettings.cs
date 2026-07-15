@@ -1074,6 +1074,12 @@ namespace ForkPlus.Settings
 
 		private DateTime _lastUpdateCheck;
 
+		private bool _checkForUpdatesAutomatically;
+
+		private int _updateCheckIntervalHours;
+
+		private string _skippedUpdateVersion;
+
 		private string _gitInstancePath;
 
 		private string _gitMmInstancePath;
@@ -2321,6 +2327,42 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		public bool CheckForUpdatesAutomatically
+		{
+			get
+			{
+				return _checkForUpdatesAutomatically;
+			}
+			set
+			{
+				_checkForUpdatesAutomatically = value;
+			}
+		}
+
+		public int UpdateCheckIntervalHours
+		{
+			get
+			{
+				return _updateCheckIntervalHours;
+			}
+			set
+			{
+				_updateCheckIntervalHours = value;
+			}
+		}
+
+		public string SkippedUpdateVersion
+		{
+			get
+			{
+				return _skippedUpdateVersion;
+			}
+			set
+			{
+				_skippedUpdateVersion = value;
+			}
+		}
+
 		public string GitInstancePath
 		{
 			get
@@ -2607,6 +2649,9 @@ namespace ForkPlus.Settings
 			RevisionListOrientation revisionListOrientation = (RevisionListOrientation)(json["RevisionListOrientation"]?.Value<int>() ?? 1);
 			MergerLayoutOrientation mergerLayoutOrientation = (MergerLayoutOrientation)(json["MergerLayoutOrientation"]?.Value<int>() ?? 0);
 			DateTime lastUpdateCheck = json["LastUpdateCheck"]?.Value<DateTime>() ?? DateTime.Today.AddMonths(-1);
+			bool checkForUpdatesAutomatically = json["CheckForUpdatesAutomatically"]?.Value<bool>() ?? true;
+			int updateCheckIntervalHours = json["UpdateCheckIntervalHours"]?.Value<int>() ?? 24;
+			string skippedUpdateVersion = json["SkippedUpdateVersion"]?.Value<string>() ?? "";
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
@@ -2719,6 +2764,9 @@ namespace ForkPlus.Settings
 				RevisionListOrientation = revisionListOrientation,
 				MergerLayoutOrientation = mergerLayoutOrientation,
 				LastUpdateCheck = lastUpdateCheck,
+				CheckForUpdatesAutomatically = checkForUpdatesAutomatically,
+				UpdateCheckIntervalHours = updateCheckIntervalHours,
+				SkippedUpdateVersion = skippedUpdateVersion,
 				GitInstancePath = gitInstancePath,
 				GitMmInstancePath = gitMmInstancePath,
 				VerboseGitOutput = verboseGitOutput,
@@ -3213,6 +3261,18 @@ namespace ForkPlus.Settings
 				{
 					"LastUpdateCheck",
 					new JValue(target.LastUpdateCheck)
+				},
+				{
+					"CheckForUpdatesAutomatically",
+					new JValue(target.CheckForUpdatesAutomatically)
+				},
+				{
+					"UpdateCheckIntervalHours",
+					new JValue(target.UpdateCheckIntervalHours)
+				},
+				{
+					"SkippedUpdateVersion",
+					new JValue(target.SkippedUpdateVersion)
 				},
 				{
 					"GitInstancePath",

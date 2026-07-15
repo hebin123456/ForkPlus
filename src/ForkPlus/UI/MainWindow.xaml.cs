@@ -44,6 +44,8 @@ namespace ForkPlus.UI
 
 		private readonly AutomaticBackgroundFetchManager _automaticBackgroundFetchManager = new AutomaticBackgroundFetchManager();
 
+		private readonly UpdateCheckManager _updateCheckManager = new UpdateCheckManager();
+
 		private readonly RepositoryStatusManager _repositoryStatusManager = new RepositoryStatusManager();
 
 		private bool _preventRefreshAfterChildDialogClose;
@@ -296,8 +298,15 @@ namespace ForkPlus.UI
 			Toolbar.RefreshWorkspacesButton();
 			RefreshTitle();
 			RefreshRepositoriesStatus();
+			_updateCheckManager.Start();
 			App.CliArguments.RunCommand();
 			base.Dispatcher.Async(StartupTimeReporter.UIReady);
+		}
+
+		/// <summary>手动触发更新检测（由帮助菜单"Check for Updates..."调用）。</summary>
+		public void CheckForUpdates()
+		{
+			_updateCheckManager.CheckNow();
 		}
 
 		private void InitializeKeyBindings()

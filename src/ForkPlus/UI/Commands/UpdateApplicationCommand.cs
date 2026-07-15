@@ -5,7 +5,7 @@ namespace ForkPlus.UI.Commands
 {
 	public class UpdateApplicationCommand : IUICommand, IForkPlusCommand
 	{
-		public string Title => string.Empty;
+		public string Title { get; } = "Check for Updates...";
 
 		public KeyGesture Shortcut { get; }
 
@@ -13,10 +13,12 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
+			MainWindow.Instance?.CheckForUpdates();
 		}
 
 		public Task ExecuteAsync(bool silent)
 		{
+			Execute();
 			return Task.CompletedTask;
 		}
 	}
