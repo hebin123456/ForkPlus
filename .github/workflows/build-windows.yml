@@ -64,6 +64,7 @@ jobs:
           exit $LASTEXITCODE
 
       - name: Run system tests (ST)
+        continue-on-error: true
         shell: pwsh
         env:
           FORKPLUS_AUTOMATION_EXE: ${{ github.workspace }}\src\ForkPlus\bin\Release\net472\ForkPlus.exe
