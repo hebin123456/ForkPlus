@@ -1973,6 +1973,9 @@
     "Send (Enter)": "Envoyer (Enter)",
     "Send (Ctrl+Enter)": "Envoyer (Ctrl+Enter)",
     "Send on Enter": "Entrée pour envoyer",
-    "Send on Ctrl+Enter": "Ctrl+Entrée pour envoyer"
+    "Send on Ctrl+Enter": "Ctrl+Entrée pour envoyer",
+    "Select model...": "Sélectionner le modèle...",
+    "Model switched to: {0}": "Modèle changé : {0}",
+    "Send (queued: {0})": "Envoyer (file : {0})"
   }
 }

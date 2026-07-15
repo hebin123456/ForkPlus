@@ -45,8 +45,14 @@ namespace ForkPlus.UI.Dialogs
 		// 多轮对话记忆：按顺序存储历史 user/assistant 消息（不含 system prompt）
 		private readonly List<JObject> _conversationHistory = new List<JObject>();
 
-		// 单轮对话最大保留条数（防止 token 超限），超出时丢弃最早的
+		// 单轮对话最大保留条数（防止 token 超限），超出时触发自动压缩
 		private const int MaxHistoryMessages = 20;
+
+		// 上下文压缩：估算 token 上限（超过则压缩早期对话），保留最近的消息条数
+		private const int MaxContextTokenEstimate = 6000;
+		private const int KeepRecentMessagesOnCompress = 6;
+		private bool _isCompressingContext;
+		private bool _modelListLoaded;
 
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
@@ -65,14 +71,130 @@ namespace ForkPlus.UI.Dialogs
 			_statusTimer.Tick += StatusTimer_Tick;
 			_skillEntries = new List<AiSkillEntry>();
 			LoadSkillList();
-			// 显示当前 AI 模型
-			string model = ForkPlusSettings.Default.AiReviewSelectedModel;
-			if (!string.IsNullOrEmpty(model))
-			{
-				ModelInfoTextBlock.Text = PreferencesLocalization.FormatCurrent("Model: {0}", model);
-			}
+			// 初始化模型下拉：先显示当前选中模型，再后台拉取完整模型列表
+			InitializeModelComboBox();
 			// 显示欢迎信息
 			ShowWelcomeMessage();
+		}
+
+		/// <summary>
+		/// 初始化右上角模型下拉框：
+		/// 1. 先用当前选中模型作为唯一项，避免下拉为空；
+		/// 2. 后台异步调用 /v1/models 拉取完整列表，替换填充。
+		/// </summary>
+		private void InitializeModelComboBox()
+		{
+			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
+			if (!string.IsNullOrWhiteSpace(currentModel))
+			{
+				ModelComboBox.Items.Add(currentModel);
+				ModelComboBox.SelectedIndex = 0;
+			}
+			else
+			{
+				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
+				ModelComboBox.SelectedIndex = 0;
+			}
+
+			// 后台拉取模型列表（不阻塞 UI 线程）
+			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
+			{
+				List<string> models = null;
+				try
+				{
+					if (OpenAiService.IsAiReviewConfigured())
+					{
+						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+						ServiceResult<string[]> result = aiService.ListModels();
+						if (result.Succeeded && result.Result != null)
+						{
+							models = new List<string>(result.Result);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Failed to load AI model list: " + ex.Message);
+				}
+
+				if (models == null || models.Count == 0)
+				{
+					return;
+				}
+
+				// 回到 UI 线程更新下拉框
+				base.Dispatcher.Async(delegate
+				{
+					try
+					{
+						if (_modelListLoaded)
+						{
+							return;
+						}
+						_modelListLoaded = true;
+						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
+						ModelComboBox.Items.Clear();
+						foreach (string m in models)
+						{
+							if (!string.IsNullOrWhiteSpace(m))
+							{
+								ModelComboBox.Items.Add(m);
+							}
+						}
+						// 选中当前模型；若列表中不包含，插入到首位并选中
+						int idx = -1;
+						for (int i = 0; i < ModelComboBox.Items.Count; i++)
+						{
+							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
+							{
+								idx = i;
+								break;
+							}
+						}
+						if (idx >= 0)
+						{
+							ModelComboBox.SelectedIndex = idx;
+						}
+						else if (!string.IsNullOrWhiteSpace(selected))
+						{
+							ModelComboBox.Items.Insert(0, selected);
+							ModelComboBox.SelectedIndex = 0;
+						}
+						else if (ModelComboBox.Items.Count > 0)
+						{
+							ModelComboBox.SelectedIndex = 0;
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to populate model combo box: " + ex.Message);
+					}
+				});
+			});
+		}
+
+		/// <summary>切换模型时保存到设置，并提示用户。</summary>
+		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			// 首次初始化时也会触发，此时 _modelListLoaded 可能尚未完成；仅在有有效选中项时保存
+			if (ModelComboBox.SelectedItem == null)
+			{
+				return;
+			}
+			string selected = (string)ModelComboBox.SelectedItem;
+			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
+			{
+				return;
+			}
+			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
+			{
+				return;
+			}
+			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
+			ForkPlusSettings.Default.Save();
+			AddStatusMessage(
+				PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected),
+				Brushes.Gray);
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -239,8 +361,10 @@ namespace ForkPlus.UI.Dialogs
 
 			if (_isProcessing)
 			{
-				// Queue the request if one is already in progress
+				// 任务2：当前有请求在处理——将新请求入队，用户可继续输入下一个需求，
+				// 无需等待 AI 回复。队列会在当前请求完成后自动按顺序处理。
 				_pendingRequests.Enqueue(requirement);
+				UpdateQueueIndicator();
 				AddStatusMessage(
 					PreferencesLocalization.FormatCurrent("⏳ 已加入队列 (队列中有 {0} 个待处理请求)", _pendingRequests.Count),
 					Brushes.Gray);
@@ -253,9 +377,10 @@ namespace ForkPlus.UI.Dialogs
 		private void ProcessRequest(string requirement)
 		{
 			_isProcessing = true;
-			InputTextBox.IsEnabled = false;
-			SendButton.IsEnabled = false;
+			// 任务2：不再禁用输入框和发送按钮——用户可以在 AI 处理期间继续输入并排队新需求，
+			// 无需等待当前请求回复完成。SendButton 的启用状态仅由输入框文本决定（见 UpdateSendButton）。
 			ProgressBar.Visibility = Visibility.Visible;
+			UpdateQueueIndicator();
 			AddStatusMessage(PreferencesLocalization.Current("排队中..."), Brushes.Gray);
 
 			// Start timer to track job status (Pending → Running)
@@ -279,6 +404,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
 					string systemPrompt = BuildSystemPrompt();
+					// 任务4：发送前若上下文超长，自动压缩早期对话为摘要，避免 token 超限。
+					CompressHistoryIfNeeded(monitor);
 					// 多轮对话：携带历史上下文 + 当前需求
 					List<JObject> historySnapshot = new List<JObject>(_conversationHistory);
 					base.Dispatcher.Async(delegate
@@ -326,7 +453,9 @@ namespace ForkPlus.UI.Dialogs
 					histAssistant["content"] = aiResponse;
 					_conversationHistory.Add(histUser);
 					_conversationHistory.Add(histAssistant);
-					// 超出上限时丢弃最早的消息（保留最近 MaxHistoryMessages 条）
+					// 超出条数上限时丢弃最早的消息（保留最近 MaxHistoryMessages 条）。
+					// 注意：token 级别的压缩由 CompressHistoryIfNeeded 在下次发送前处理，
+					// 这里只做条数兜底，防止单条消息极多时列表无限增长。
 					while (_conversationHistory.Count > MaxHistoryMessages)
 					{
 						_conversationHistory.RemoveAt(0);
@@ -396,6 +525,7 @@ namespace ForkPlus.UI.Dialogs
 			if (_pendingRequests.Count > 0)
 			{
 				string next = _pendingRequests.Dequeue();
+				UpdateQueueIndicator();
 				if (_pendingRequests.Count > 0)
 				{
 					AddStatusMessage(
@@ -407,9 +537,27 @@ namespace ForkPlus.UI.Dialogs
 			else
 			{
 				_isProcessing = false;
-				InputTextBox.IsEnabled = true;
+				UpdateQueueIndicator();
 				UpdateSendButton();
 				InputTextBox.Focus();
+			}
+		}
+
+		/// <summary>
+		/// 任务2：更新队列指示器。当有请求正在处理或在队列中等待时，
+		/// 在发送按钮上显示待处理数量，让用户知道新输入的请求已入队。
+		/// </summary>
+		private void UpdateQueueIndicator()
+		{
+			int pending = _pendingRequests.Count;
+			if (_isProcessing && pending > 0)
+			{
+				SendButton.Content = PreferencesLocalization.FormatCurrent("Send (queued: {0})", pending);
+			}
+			else
+			{
+				bool isEnter = ForkPlusSettings.Default.AiDevSendMode == "Enter";
+				SendButton.Content = PreferencesLocalization.Current(isEnter ? "Send (Enter)" : "Send (Ctrl+Enter)");
 			}
 		}
 
@@ -608,6 +756,135 @@ namespace ForkPlus.UI.Dialogs
 		private void ClearConversationButton_Click(object sender, RoutedEventArgs e)
 		{
 			ClearConversation();
+		}
+
+		/// <summary>
+		/// 任务4：估算当前对话历史的 token 数（粗略：每 4 个字符约 1 个 token）。
+		/// </summary>
+		private int EstimateHistoryTokens()
+		{
+			int totalChars = 0;
+			foreach (JObject msg in _conversationHistory)
+			{
+				string content = msg["content"]?.Value<string>() ?? "";
+				totalChars += content.Length;
+				// role 字段也占少量 token
+				totalChars += (msg["role"]?.Value<string>() ?? "").Length + 4;
+			}
+			return totalChars / 4;
+		}
+
+		/// <summary>
+		/// 任务4：若上下文超长，自动压缩早期对话为摘要。
+		/// 策略：当估算 token 数超过 MaxContextTokenEstimate 时，保留最近 KeepRecentMessagesOnCompress 条消息，
+		/// 将更早的消息通过 AI 生成摘要，替换为单条 system 摘要消息。
+		/// 摘要失败时退回到简单截断（丢弃早期消息）。
+		/// 此方法在后台线程（Job 内）调用，调用方已持有 monitor。
+		/// </summary>
+		private void CompressHistoryIfNeeded(JobMonitor monitor)
+		{
+			if (_isCompressingContext)
+			{
+				return;
+			}
+			int estimatedTokens = EstimateHistoryTokens();
+			if (estimatedTokens <= MaxContextTokenEstimate)
+			{
+				return;
+			}
+			// 历史条数过少时不压缩（避免无意义摘要把仅有的几条消息也吞掉）
+			if (_conversationHistory.Count <= KeepRecentMessagesOnCompress + 2)
+			{
+				return;
+			}
+
+			_isCompressingContext = true;
+			try
+			{
+				int splitIndex = _conversationHistory.Count - KeepRecentMessagesOnCompress;
+				List<JObject> toSummarize = new List<JObject>();
+				for (int i = 0; i < splitIndex; i++)
+				{
+					toSummarize.Add(_conversationHistory[i]);
+				}
+				List<JObject> toKeep = new List<JObject>();
+				for (int i = splitIndex; i < _conversationHistory.Count; i++)
+				{
+					toKeep.Add(_conversationHistory[i]);
+				}
+
+				// 构造待摘要的对话文本
+				StringBuilder convoText = new StringBuilder();
+				foreach (JObject msg in toSummarize)
+				{
+					string role = msg["role"]?.Value<string>() ?? "user";
+					string content = msg["content"]?.Value<string>() ?? "";
+					// 限制单条长度，避免摘要请求本身过长
+					if (content.Length > 2000)
+					{
+						content = content.Substring(0, 2000) + "...[truncated]";
+					}
+					convoText.AppendLine("[" + role + "]: " + content);
+					convoText.AppendLine("---");
+				}
+
+				string summaryPrompt = "Summarize the following conversation between a user and an AI coding assistant in under 300 tokens. "
+					+ "Preserve: key file paths mentioned, code changes made (new/modified/deleted files), the user's main requirements, and any important decisions or constraints. "
+					+ "Be concise and factual. Do not include code snippets.\n\nConversation:\n" + convoText.ToString();
+
+				base.Dispatcher.Async(delegate
+				{
+					AddStatusMessage(
+						PreferencesLocalization.FormatCurrent("📦 上下文较长 ({0} tokens)，正在自动压缩早期对话...", estimatedTokens),
+						Brushes.Gray);
+				});
+
+				OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+				// 复用流式+重试请求：享受排队/重试机制；onChunk 不需要（我们只取最终结果）
+				ServiceResult<OpenAiResponse> summaryResult = aiService.OpenAiRequestStreamingWithRetry(summaryPrompt, monitor, null);
+
+				_conversationHistory.Clear();
+				if (summaryResult.Succeeded && !string.IsNullOrWhiteSpace(summaryResult.Result?.Message))
+				{
+					string summary = summaryResult.Result.Message;
+					JObject summaryMsg = new JObject();
+					summaryMsg["role"] = "system";
+					summaryMsg["content"] = "[Previous conversation summary]: " + summary;
+					_conversationHistory.Add(summaryMsg);
+					foreach (JObject msg in toKeep)
+					{
+						_conversationHistory.Add(msg);
+					}
+					base.Dispatcher.Async(delegate
+					{
+						AddStatusMessage(
+							PreferencesLocalization.FormatCurrent("✅ 上下文已压缩（{0} 条早期对话 → 摘要 + 最近 {1} 条）", toSummarize.Count, toKeep.Count),
+							Brushes.Gray);
+					});
+				}
+				else
+				{
+					// 摘要失败：退回到简单截断，保留最近的消息
+					foreach (JObject msg in toKeep)
+					{
+						_conversationHistory.Add(msg);
+					}
+					base.Dispatcher.Async(delegate
+					{
+						AddStatusMessage(
+							PreferencesLocalization.Current("⚠️ 上下文过长，已截断早期对话（摘要生成失败）"),
+							Brushes.OrangeRed);
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to compress conversation history: " + ex.Message);
+			}
+			finally
+			{
+				_isCompressingContext = false;
+			}
 		}
 
 		private void AddAiResponseMessage(string response)

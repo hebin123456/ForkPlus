@@ -50,7 +50,7 @@ namespace ForkPlus.Accounts.AiServices
 			return OpenAiRequest("This is a test request. Please answer in one word whether it was successful.");
 		}
 
-		public ServiceResult<OpenAiResponse> GenerateCommitMessage(string patchString, GitModule gitModule, JobMonitor monitor)
+		public ServiceResult<OpenAiResponse> GenerateCommitMessage(string patchString, GitModule gitModule, JobMonitor monitor, Action<string> onChunk = null)
 		{
 			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
 			int pageGuideLinePosition = ForkPlusSettings.Default.PageGuideLinePosition;
@@ -67,7 +67,8 @@ namespace ForkPlus.Accounts.AiServices
 			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
 			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
-			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor);
+			// onChunk 回调：流式 chunk 实时通知调用方（用于即时写入 commit 框）
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
 				monitor.Fail(serviceResult.Error.FriendlyMessage);
@@ -730,7 +731,10 @@ namespace ForkPlus.Accounts.AiServices
 
 		private static int MaxQueuedWaitSeconds()
 		{
-			return Math.Max(1, ForkPlusSettings.Default.AiReviewTimeoutSeconds);
+			// 排队最大等待时间独立于请求超时：排队可能持续较久（高峰期），
+			// 用 TimeoutSeconds（默认300s）会过早放弃。这里取 TimeoutSeconds 与 1800s(30分钟) 的较大值，
+			// 确保排队场景有足够时间等待，而不是快速失败返回错误。
+			return Math.Max(ForkPlusSettings.Default.AiReviewTimeoutSeconds, 1800);
 		}
 
 		private static string FormatRetryDelay(int seconds)
@@ -841,6 +845,15 @@ namespace ForkPlus.Accounts.AiServices
 			if (text != null)
 			{
 				return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(text));
+			}
+			// DecodeServiceError 无法解析时，用原始 JSON 文本作为错误消息，
+			// 而非通用的"远程服务返回了错误响应"——后者不含排队/瞬时错误关键字，
+			// 会导致 ShouldRetry 无法识别排队场景而直接放弃重试。
+			string rawJson = jsonError.Json?.ToString(Newtonsoft.Json.Formatting.None) ?? "";
+			if (!string.IsNullOrWhiteSpace(rawJson))
+			{
+				return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(
+					PreferencesLocalization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000))));
 			}
 			return base.DecodeJsonError<T>(jsonError);
 		}

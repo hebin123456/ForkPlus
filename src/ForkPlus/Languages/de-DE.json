@@ -1973,6 +1973,9 @@
     "Send (Enter)": "Senden (Enter)",
     "Send (Ctrl+Enter)": "Senden (Ctrl+Enter)",
     "Send on Enter": "Enter zum Senden",
-    "Send on Ctrl+Enter": "Strg+Enter zum Senden"
+    "Send on Ctrl+Enter": "Strg+Enter zum Senden",
+    "Select model...": "Modell auswählen...",
+    "Model switched to: {0}": "Modell gewechselt: {0}",
+    "Send (queued: {0})": "Senden (Warteschlange: {0})"
   }
 }

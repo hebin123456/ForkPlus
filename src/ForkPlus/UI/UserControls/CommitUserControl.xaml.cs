@@ -2071,24 +2071,36 @@ namespace ForkPlus.UI.UserControls
 							return;
 						}
 						OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<OpenAiResponse> response = openAiService.GenerateCommitMessage(patchResult.Result, GitModule, monitor);
+					// 流式 onChunk 回调：AI 生成的每个 chunk 实时追加到 commit 框，
+					// 用户无需等待整个请求完成才能看到内容。
+					System.Text.StringBuilder liveCommitMsg = new System.Text.StringBuilder();
+					ServiceResult<OpenAiResponse> response = openAiService.GenerateCommitMessage(patchResult.Result, GitModule, monitor, delegate(string chunk)
+					{
+						liveCommitMsg.Append(chunk);
+						string snapshot = liveCommitMsg.ToString();
 						base.Dispatcher.Async(delegate
 						{
-							if (monitor.IsCanceled)
-							{
-								return;
-							}
-							if (!response.Succeeded)
-							{
-								new ErrorWindow(response.Error.FriendlyMessage).ShowDialog();
-							}
-							else
-							{
-								FullCommitMessage = response.Result.Message;
-								UpdateCommitButtonState();
-								RefreshDescriptionFieldHeight();
-							}
+							FullCommitMessage = snapshot;
 						});
+					});
+					base.Dispatcher.Async(delegate
+					{
+						if (monitor.IsCanceled)
+						{
+							return;
+						}
+						if (!response.Succeeded)
+						{
+							new ErrorWindow(response.Error.FriendlyMessage).ShowDialog();
+						}
+						else
+						{
+							// 用最终完整消息覆盖（可能经过 regex retry 修正）
+							FullCommitMessage = response.Result.Message;
+							UpdateCommitButtonState();
+							RefreshDescriptionFieldHeight();
+						}
+					});
 					});
 				};
 				contextMenu.Items.Add(menuItem2);

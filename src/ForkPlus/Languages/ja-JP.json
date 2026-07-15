@@ -1972,7 +1972,10 @@
     "Enter your development requirement...": "開発要件を入力してください...",
     "Send (Enter)": "送信 (Enter)",
     "Send (Ctrl+Enter)": "送信 (Ctrl+Enter)",
-    "Send on Enter": "Enter で送信",
-    "Send on Ctrl+Enter": "Ctrl+Enter で送信"
+    "Send on Enter": "Enter 送信",
+    "Send on Ctrl+Enter": "Ctrl+Enter 送信",
+    "Select model...": "モデルを選択...",
+    "Model switched to: {0}": "モデルを切り替えました: {0}",
+    "Send (queued: {0})": "送信 (キュー: {0})"
   }
 }

@@ -1973,6 +1973,9 @@
     "Send (Enter)": "전송 (Enter)",
     "Send (Ctrl+Enter)": "전송 (Ctrl+Enter)",
     "Send on Enter": "Enter 전송",
-    "Send on Ctrl+Enter": "Ctrl+Enter 전송"
+    "Send on Ctrl+Enter": "Ctrl+Enter 전송",
+    "Select model...": "모델 선택...",
+    "Model switched to: {0}": "모델 전환됨: {0}",
+    "Send (queued: {0})": "전송 (대기열: {0})"
   }
 }

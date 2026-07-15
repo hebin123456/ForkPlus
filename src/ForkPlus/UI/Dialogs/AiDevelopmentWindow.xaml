@@ -9,7 +9,14 @@
     <!-- Title bar -->
     <DockPanel Grid.Row="0" Margin="12,8,12,4" LastChildFill="True">
       <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI-Assisted Development" />
-      <TextBlock DockPanel.Dock="Right" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ModelInfoTextBlock" Margin="8,0,0,0" />
+      <!-- 右上角模型下拉选择：从 /v1/models 拉取列表，选中项保存到 AiReviewSelectedModel -->
+      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="320" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" ToolTip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
     </DockPanel>
     <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0" />
     <!-- Main content area: message list -->

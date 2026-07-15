@@ -1973,6 +1973,9 @@
     "Send (Enter)": "发送 (Enter)",
     "Send (Ctrl+Enter)": "发送 (Ctrl+Enter)",
     "Send on Enter": "Enter 发送",
-    "Send on Ctrl+Enter": "Ctrl+Enter 发送"
+    "Send on Ctrl+Enter": "Ctrl+Enter 发送",
+    "Select model...": "选择模型...",
+    "Model switched to: {0}": "已切换模型: {0}",
+    "Send (queued: {0})": "发送 (队列: {0})"
   }
 }
