@@ -214,7 +214,10 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (CommandPreviewTextBlock != null)
 			{
-				CommandPreviewTextBlock.Text = GitMmCommandPreviewHelper.Format(CreateArgs());
+				string cmd = GitMmCommandPreviewHelper.Format(CreateArgs());
+				CommandPreviewTextBlock.Text = cmd;
+				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
+				CommandPreviewTextBlock.ToolTip = cmd;
 			}
 		}
 

@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.5
+
+### 修复：git 命令预览过长挤掉确认按钮
+
+- **问题**：对话框（Push/Pull/Fetch/Merge 等）的 git 命令预览区使用了 `TextWrapping.Wrap` 但没有 `MaxHeight`/`ScrollViewer`/`TextTrimming`。长命令换行多行后，预览行 Auto 高度无限增长，`SizeToContent=Height` 让窗口长高，但 WPF 把窗口钳制到屏幕高度，底部 Footer（确认/取消按钮）被裁出可视区且无法滚动回去，用户点不到确认按钮。
+- **修复**：给命令预览 TextBlock 外层包 `ScrollViewer`（`MaxHeight=120`、`VerticalScrollBarVisibility=Auto`），限制预览区最大高度，超出部分在滚动条内查看；同时设置 `ToolTip` 为完整命令文本，鼠标悬停即可查看完整命令。
+- **覆盖范围**：
+  - 基类 `ForkPlusDialogWindow`（覆盖所有继承它的对话框：Push/Pull/Fetch/Merge/Checkout/Stash/Revert 等）—— [ForkPlusDialogWindow.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkPlusDialogWindow.cs)
+  - GitMm 三个窗口的内联预览（Start/Upload/Sync）+ InitGitMmRepositoryWindow—— 同步包 `ScrollViewer` + 设置 `ToolTip`
+
 ## v1.5.4
 
 ### 修复：AI 排队场景返回错误码（影响 AI 辅助开发 + AI 代码检视 + commit 消息生成）
