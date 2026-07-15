@@ -866,7 +866,7 @@ namespace ForkPlus.UI.Dialogs
 			WebView2 webView = new WebView2
 			{
 				MinHeight = 20,
-				DefaultBackgroundColor = Colors.Transparent
+				DefaultBackgroundColor = System.Drawing.Color.Transparent
 			};
 
 			StackPanel innerPanel = new StackPanel();
@@ -1159,7 +1159,7 @@ namespace ForkPlus.UI.Dialogs
 			WebView2 webView = new WebView2
 			{
 				MinHeight = 20,
-				DefaultBackgroundColor = Colors.Transparent
+				DefaultBackgroundColor = System.Drawing.Color.Transparent
 			};
 
 			StackPanel innerPanel = new StackPanel();

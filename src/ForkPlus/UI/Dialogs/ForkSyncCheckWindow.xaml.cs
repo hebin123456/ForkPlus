@@ -100,8 +100,9 @@ namespace ForkPlus.UI.Dialogs
 			}
 
 			// 对于需要同步的状态，点击主按钮打开 Pull 窗口让用户拉取 upstream 并解决冲突
-			_repositoryUserControl?.Commands?.ShowPullWindow?.Execute(_repositoryUserControl, null);
-			base.OnSubmit();
+		// Commands 是 RepositoryUserControl 的静态属性，须用类型名访问（不能用实例引用）
+		RepositoryUserControl.Commands?.ShowPullWindow?.Execute(_repositoryUserControl, null);
+		base.OnSubmit();
 		}
 	}
 }
