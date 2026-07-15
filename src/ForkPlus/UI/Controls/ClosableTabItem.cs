@@ -369,8 +369,25 @@ namespace ForkPlus.UI.Controls
 					contextMenu.Items.Add(CreateRepositoryColorsMenuItem(repository.GetValueOrDefault()));
 				}
 			}
+			// 若该仓是某个 git mm 工作区的子仓，提供“打开 git mm 仓”快捷入口
+			if (Mode == TabItemMode.Repository && !string.IsNullOrWhiteSpace(managedRepositoryPath))
+			{
+				string gitMmWorkspacePath = MainWindow.Instance?.TabManager?.FindGitMmWorkspacePathForSubrepo(managedRepositoryPath);
+				if (!string.IsNullOrWhiteSpace(gitMmWorkspacePath))
+				{
+					contextMenu.Items.Add(new Separator());
+					MenuItem openGitMmItem = new MenuItem();
+					openGitMmItem.Header = PreferencesLocalization.MenuHeader("Open git mm Repository");
+					string workspacePathCaptured = gitMmWorkspacePath;
+					openGitMmItem.Click += delegate
+					{
+						MainWindow.Instance?.TabManager?.OpenRepository(workspacePathCaptured);
+					};
+					contextMenu.Items.Add(openGitMmItem);
+				}
+			}
 			return contextMenu;
-		}
+	}
 
 		private static string GetCurrentRepositoryName(string repositoryPath, string fallbackName)
 		{

@@ -1987,6 +1987,7 @@
     "Collecting diff...": "차이 수집 중...",
     "Generating... ({0} chars)": "생성 중... ({0}자 수신됨)",
     "Queued. Waiting {0} before checking again...": "대기 중. {0} 후 다시 확인합니다...",
-    "Retrying in {0}s ({1}/{2})...": "{0}초 후 재시도합니다 ({1}/{2})..."
+    "Retrying in {0}s ({1}/{2})...": "{0}초 후 재시도합니다 ({1}/{2})...",
+    "Open git mm Repository": "git mm 저장소 열기"
   }
 }

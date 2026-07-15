@@ -193,6 +193,31 @@ namespace ForkPlus
 			return true;
 		}
 
+		/// <summary>
+		/// 查找指定子仓路径所属的 git mm 工作区：先在已打开的 git mm 页签中查找
+		/// （ContainsSubrepoPath），未命中再向上查找 .repo/.mm 工作区根
+		/// （即便 git mm 页签尚未打开也能识别）。用于在子仓页签右键菜单提供
+		/// “打开 git mm 仓”快捷入口。返回所属工作区路径；未找到返回 null。
+		/// </summary>
+		[Null]
+		public string FindGitMmWorkspacePathForSubrepo(string subrepoPath)
+		{
+			if (string.IsNullOrWhiteSpace(subrepoPath))
+			{
+				return null;
+			}
+			foreach (ClosableTabItem item in (IEnumerable)_tabControl.Items)
+			{
+				GitMmUserControl gitMmUserControl = item.GitMmUserControl;
+				if (gitMmUserControl != null && gitMmUserControl.ContainsSubrepoPath(subrepoPath))
+				{
+					return gitMmUserControl.WorkspacePath;
+				}
+			}
+			// 未在已打开的 git mm 页签中找到时，向上查找 .repo/.mm 工作区根
+			return GitMmUserControl.FindAncestorGitMmWorkspace(subrepoPath);
+		}
+
 		public void OpenRepositories(string[] repositoryPaths)
 		{
 			ClosableTabItem closableTabItem = null;

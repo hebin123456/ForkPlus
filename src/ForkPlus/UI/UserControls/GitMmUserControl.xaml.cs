@@ -207,6 +207,42 @@ namespace ForkPlus.UI.UserControls
 				|| Directory.Exists(System.IO.Path.Combine(path, ".mm"));
 		}
 
+		/// <summary>
+		/// 从指定路径向上查找最近的 git mm 工作区根（含 .repo 或 .mm 目录）。
+		/// 用于在子仓页签右键菜单识别所属工作区，即便 git mm 页签尚未打开也能快捷打开。
+		/// 路径自身不算（子仓本身不含 .repo/.mm），从其父目录开始向上查。
+		/// </summary>
+		[Null]
+		public static string FindAncestorGitMmWorkspace(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+			{
+				return null;
+			}
+			try
+			{
+				string current = System.IO.Path.GetFullPath(path).TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+				while (!string.IsNullOrEmpty(current))
+				{
+					if (IsGitMmWorkspace(current))
+					{
+						return current;
+					}
+					string parent = System.IO.Path.GetDirectoryName(current);
+					if (parent == null || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+					{
+						break;
+					}
+					current = parent;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("FindAncestorGitMmWorkspace failed", ex);
+			}
+			return null;
+		}
+
 		public static int CountSubrepos(string workspacePath)
 		{
 			return ScanSubrepos(workspacePath, SubrepoScanDepth).Count;
@@ -1863,14 +1899,15 @@ namespace ForkPlus.UI.UserControls
 			GitMmSubrepoRuntimeState state = new GitMmSubrepoRuntimeState();
 			// 单次 `git status -b --porcelain` 同时获取 porcelain 文件状态、当前分支、ahead/behind，
 			// 替代原先的 status + branch --show-current + rev-list --left-right --count 三次调用。
-			// 对齐 IsRepositoryDirtyGitCommand 的命令参数（关闭 fsmonitor/untrackedCache + --no-optional-locks），
-			// 规避锁竞争和 fsmonitor 误判；加 --untracked-files=no 与单仓脏检查一致。
-			// 子仓本质上是普通单仓，按单仓对待。
+			// 子仓本质上是普通单仓，按单仓对待——命令完全对齐单仓 GetChangedFilesGitCommand：
+			// 关闭 fsmonitor/untrackedCache + --no-optional-locks 规避锁竞争和 fsmonitor 误判；
+			// -z 用 NUL 分隔以正确处理含空格/特殊字符的文件名；
+			// --untracked-files=all 包含 untracked 文件，与单仓变更列表一致（“单仓有啥就显示啥”）。
 			GitRequestResult statusResult = RunGit(subrepo.Path, new GitCommand(
 				"-c", "core.fsmonitor=false",
 				"-c", "core.untrackedCache=false",
 				"-c", "core.checkStat=default",
-				"--no-optional-locks", "status", "-b", "--porcelain", "--untracked-files=no"), monitor);
+				"--no-optional-locks", "status", "-b", "--porcelain", "-z", "--untracked-files=all"), monitor);
 			if (statusResult.Success)
 			{
 				ParseBranchHeader(statusResult.Stdout, out string currentBranch, out int ahead, out int behind, out string porcelainBody);
@@ -1905,8 +1942,8 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		/// <summary>
-		/// 解析 `git status -b --porcelain` 输出：首行 `## ` 头部包含分支名与 ahead/behind，
-		/// 其余行是 porcelain 文件状态，拆分后分别供分支信息和冲突/改动计数使用。
+		/// 解析 `git status -b --porcelain -z` 输出：第一段（NUL 之前）`## ` 头部包含分支名与 ahead/behind，
+		/// 其余 NUL 分隔的段是 porcelain 文件状态，拆分后分别供分支信息和冲突/改动计数使用。
 		/// </summary>
 		private static void ParseBranchHeader(string statusOutput, out string currentBranch, out int ahead, out int behind, out string porcelainBody)
 		{
@@ -1918,10 +1955,9 @@ namespace ForkPlus.UI.UserControls
 				porcelainBody = "";
 				return;
 			}
-			string normalized = statusOutput.Replace("\r\n", "\n").Replace('\r', '\n');
-			int firstNewline = normalized.IndexOf('\n');
-			string header = firstNewline < 0 ? normalized : normalized.Substring(0, firstNewline);
-			porcelainBody = firstNewline < 0 ? "" : normalized.Substring(firstNewline + 1);
+			int firstNul = statusOutput.IndexOf('\0');
+			string header = firstNul < 0 ? statusOutput : statusOutput.Substring(0, firstNul);
+			porcelainBody = firstNul < 0 ? "" : statusOutput.Substring(firstNul + 1);
 			if (!header.StartsWith("## "))
 			{
 				return;
@@ -1995,7 +2031,12 @@ namespace ForkPlus.UI.UserControls
 				string fullSubmodulePath = System.IO.Path.Combine(path, submodulePath);
 				if (IsGitWorkTree(fullSubmodulePath))
 				{
-					GitRequestResult submoduleStatusResult = RunGit(fullSubmodulePath, new GitCommand("status", "--porcelain"), monitor);
+					// 子模块同样按单仓对待：-z + --untracked-files=all，与 GetChangedFilesGitCommand 一致。
+					GitRequestResult submoduleStatusResult = RunGit(fullSubmodulePath, new GitCommand(
+						"-c", "core.fsmonitor=false",
+						"-c", "core.untrackedCache=false",
+						"-c", "core.checkStat=default",
+						"--no-optional-locks", "status", "--porcelain", "-z", "--untracked-files=all"), monitor);
 					if (submoduleStatusResult.Success)
 					{
 						count += CountVisibleLocalChanges(fullSubmodulePath, submoduleStatusResult.Stdout, visitedPaths, depth + 1, monitor);
@@ -2008,9 +2049,10 @@ namespace ForkPlus.UI.UserControls
 		private static int CountPorcelainChangedFiles(string porcelainStatus)
 		{
 			int count = 0;
-			foreach (string line in porcelainStatus.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+			// -z 输出以 NUL 分隔每条 porcelain 记录（含分支头之后的文件状态段）。
+			foreach (string entry in porcelainStatus.Split('\0'))
 			{
-				if (line.Length >= 3)
+				if (entry.Length >= 3)
 				{
 					count++;
 				}
@@ -2042,13 +2084,13 @@ namespace ForkPlus.UI.UserControls
 		private static int CountConflicts(string porcelainStatus)
 		{
 			int count = 0;
-			foreach (string line in porcelainStatus.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+			foreach (string entry in porcelainStatus.Split('\0'))
 			{
-				if (line.Length < 2)
+				if (entry.Length < 2)
 				{
 					continue;
 				}
-				string code = line.Substring(0, 2);
+				string code = entry.Substring(0, 2);
 				if (code.IndexOf('U') >= 0 || code == "AA" || code == "DD")
 				{
 					count++;

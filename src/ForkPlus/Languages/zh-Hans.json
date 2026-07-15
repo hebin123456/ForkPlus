@@ -1987,6 +1987,7 @@
     "Collecting diff...": "正在收集差异...",
     "Generating... ({0} chars)": "生成中...（已接收 {0} 字）",
     "Queued. Waiting {0} before checking again...": "排队中。{0} 后再次检查...",
-    "Retrying in {0}s ({1}/{2})...": "{0} 秒后重试（{1}/{2}）..."
+    "Retrying in {0}s ({1}/{2})...": "{0} 秒后重试（{1}/{2}）...",
+    "Open git mm Repository": "打开 git mm 仓"
   }
 }

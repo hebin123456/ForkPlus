@@ -2,6 +2,21 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.7
+
+### 修复：git mm 子仓变更仍不显示（v1.5.6 修复无效）
+
+- **问题**：v1.5.6 把子仓状态命令对齐到了单仓**脏检查** `IsRepositoryDirtyGitCommand`（`--untracked-files=no`，排除 untracked）。当子仓的变更全部是 untracked 文件时，计数为 0，于是“啥都没有”。
+- **根因**：单仓**变更列表** `GetChangedFilesGitCommand` 实际用的是 `--untracked-files=all`（含 untracked），与脏检查的 `--untracked-files=no` 是两回事。v1.5.6 误把脏检查参数当成了变更列表参数。
+- **修复**：子仓本质上是普通单仓，“单仓有啥就显示啥，别区分”——子仓状态检测命令完全对齐单仓 `GetChangedFilesGitCommand`：`-c core.fsmonitor=false -c core.untrackedCache=false -c core.checkStat=default --no-optional-locks status -b --porcelain -z --untracked-files=all`，含 untracked 文件；递归子模块的状态命令同步对齐。同时把 `ParseBranchHeader`/`CountPorcelainChangedFiles`/`CountConflicts` 的解析从按 `\n` 分隔改为按 NUL 分隔，匹配 `-z` 输出—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
+
+### 易用性：子仓页签右键“打开 git mm 仓”快捷入口
+
+- **需求**：单仓方式打开的某个仓，如果它其实是某个 git mm 工作区的子仓，希望在它的页签右键菜单加一个“打开 git mm 仓”按钮，可快捷跳转到对应的 git mm 页签。
+- **实现**：
+  - `ClosableTabItem.GetContextMenu` 对 `TabItemMode.Repository` 页签，先在已打开的 git mm 页签中查找所属工作区（`TabManager.FindGitMmWorkspacePathForSubrepo` → `GitMmUserControl.ContainsSubrepoPath`），找不到再向上查找 `.repo`/`.mm` 工作区根（`GitMmUserControl.FindAncestorGitMmWorkspace`，即便 git mm 页签未打开也能识别）；命中则追加“打开 git mm 仓”菜单项，点击调 `TabManager.OpenRepository(workspacePath)` 激活/创建对应 git mm 页签—— [ClosableTabItem.cs](file:///workspace/src/ForkPlus/UI/Controls/ClosableTabItem.cs) / [TabManager.cs](file:///workspace/src/ForkPlus/TabManager.cs)
+- **新增 i18n key**（7 种语言）：`Open git mm Repository`。
+
 ## v1.5.6
 
 ### 修复：git mm 视图子仓变更不显示
