@@ -1,5 +1,6 @@
 using ForkPlus;
 using ForkPlus.Accounts.AiServices;
+using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -7,12 +8,17 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -53,6 +59,22 @@ namespace ForkPlus.UI.Dialogs
 		private const int KeepRecentMessagesOnCompress = 6;
 		private bool _isCompressingContext;
 		private bool _modelListLoaded;
+
+		// 流式输出的实时 Markdown 缓冲（边收边渲染到 WebView）
+		private StringBuilder _streamingMarkdown;
+
+		// 保护 _streamingMarkdown 的并发追加（chunk 来自后台 job 线程，渲染来自 UI 线程）
+		private readonly object _streamingLock = new object();
+
+		// 流式预览渲染节流：避免每个 chunk 都触发一次 markdown→html→NavigateToString 造成卡顿
+		private DateTime _lastStreamingRenderUtc = DateTime.MinValue;
+		private const int StreamingRenderIntervalMs = 400;
+
+		// 当前流式响应的 WebView2（onChunk 追加到 _streamingMarkdown 后节流渲染到这里）
+		private WebView2 _streamingWebView;
+
+		// CSS 缓存（从嵌入资源 md-ai-output.css 读取，与 AiCodeReviewWindow 共用样式）
+		private static string _cachedCss;
 
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
@@ -243,6 +265,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = "✦ " + PreferencesLocalization.Current("AI-Assisted Development"),
 				FontSize = 15,
 				FontWeight = FontWeights.SemiBold,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				Margin = new Thickness(0, 0, 0, 6)
 			};
 			TextBlock desc = new TextBlock
@@ -391,10 +414,10 @@ namespace ForkPlus.UI.Dialogs
 			Dictionary<string, string> beforeContents = GetCurrentFileContents();
 
 			// Create streaming response bubble (will be populated chunk by chunk)
-			TextBox streamingBox = null;
+			WebView2 streamingWebView = null;
 			base.Dispatcher.Async(delegate
 			{
-				streamingBox = CreateStreamingResponseBubble();
+				streamingWebView = CreateStreamingResponseBubble();
 			});
 
 			_activeJob = _repositoryUserControl.JobQueue.Add(
@@ -414,18 +437,25 @@ namespace ForkPlus.UI.Dialogs
 						AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
 					});
 
-					// 流式输出：onChunk 回调实时追加到聊天气泡，用户能逐字看到 AI 生成内容
+					// 流式输出：onChunk 回调实时追加到 _streamingMarkdown，节流渲染到 WebView2
 					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(historySnapshot, systemPrompt, requirement, monitor, delegate(string delta)
 						{
-							TextBox captured = streamingBox;
-							if (captured != null)
+							if (string.IsNullOrEmpty(delta))
 							{
-								base.Dispatcher.Async(delegate
-								{
-									captured.AppendText(delta);
-									ScrollToEnd();
-								});
+								return;
 							}
+							lock (_streamingLock)
+							{
+								if (_streamingMarkdown == null)
+								{
+									_streamingMarkdown = new StringBuilder();
+								}
+								_streamingMarkdown.Append(delta);
+							}
+							base.Dispatcher.Async(delegate
+							{
+								TryRenderStreamingPreview();
+							});
 						});
 						if (monitor.IsCanceled)
 					{
@@ -477,7 +507,7 @@ namespace ForkPlus.UI.Dialogs
 								if (appliedChanges.Count > 0)
 								{
 									// 有文件变更：移除流式气泡，显示 diff 结果（含撤销按钮）
-									RemoveStreamingResponseBubble(streamingBox);
+									RemoveStreamingResponseBubble(streamingWebView);
 									_fileChanges.Clear();
 									_fileChanges.AddRange(appliedChanges);
 									_lastBeforeContents = beforeContents;
@@ -489,7 +519,7 @@ namespace ForkPlus.UI.Dialogs
 								else
 								{
 									// 无文件变更：流式气泡即为最终响应，保留
-									FinalizeStreamingResponseBubble(streamingBox);
+									FinalizeStreamingResponseBubble(streamingWebView);
 								}
 
 								// Refresh repository status to clear stale entries
@@ -617,6 +647,152 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		/// <summary>读取嵌入资源 md-ai-output.css（与 AiCodeReviewWindow 共用样式），带缓存。</summary>
+		private static string GetCss()
+		{
+			if (_cachedCss != null)
+			{
+				return _cachedCss;
+			}
+			try
+			{
+				Assembly executingAssembly = Assembly.GetExecutingAssembly();
+				string name = "ForkPlus.Assets.md-ai-output.css";
+				using Stream stream = executingAssembly.GetManifestResourceStream(name);
+				using StreamReader streamReader = new StreamReader(stream);
+				_cachedCss = streamReader.ReadToEnd();
+				return _cachedCss;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to read CSS resource", ex);
+				return string.Empty;
+			}
+		}
+
+		/// <summary>调 native Biturbo 库把 Markdown 转为 HTML（与 AiCodeReviewWindow 共用底层 bt_md_to_html）。</summary>
+		private static GitCommandResult<string> ConvertMarkdownToHtml(string markdown)
+		{
+			return BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
+			{
+				return Bt.bt_md_to_html(markdown, ref x);
+			}, delegate(ref BtMdToHtmlResult x)
+			{
+				return GitCommandResult<string>.Success(x.html.GetUtf8String());
+			}, delegate(ref BtMdToHtmlResult x)
+			{
+				Bt.bt_release_md_to_html(ref x);
+			});
+		}
+
+		/// <summary>把 Markdown 文本转为完整 HTML 文档（含 CSS），用于 NavigateToString。</summary>
+		private static string BuildHtmlDocument(string bodyHtml)
+		{
+			string css = GetCss();
+			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + bodyHtml + "\n</body>\n</html>";
+		}
+
+		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。</summary>
+		private void RenderMarkdownToWebView(WebView2 webView, string markdown)
+		{
+			if (webView?.CoreWebView2 == null || string.IsNullOrEmpty(markdown))
+			{
+				return;
+			}
+			string body;
+			try
+			{
+				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(markdown);
+				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(markdown);
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("AI message markdown render failed: " + ex.Message);
+				body = WebUtility.HtmlEncode(markdown);
+			}
+			try
+			{
+				webView.NavigateToString(BuildHtmlDocument(body));
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("AI message WebView navigate failed: " + ex.Message);
+			}
+		}
+
+		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入流式 WebView。</summary>
+		private void TryRenderStreamingPreview()
+		{
+			if (_streamingWebView?.CoreWebView2 == null)
+			{
+				return;
+			}
+			DateTime now = DateTime.UtcNow;
+			if (now - _lastStreamingRenderUtc < TimeSpan.FromMilliseconds(StreamingRenderIntervalMs))
+			{
+				return;
+			}
+			_lastStreamingRenderUtc = now;
+			string md;
+			lock (_streamingLock)
+			{
+				md = _streamingMarkdown?.ToString() ?? "";
+			}
+			if (string.IsNullOrEmpty(md))
+			{
+				return;
+			}
+			RenderMarkdownToWebView(_streamingWebView, md);
+			ScrollToEnd();
+		}
+
+		/// <summary>异步初始化 WebView2：创建环境、禁用右键菜单、导航完成后自动测量内容高度并调整控件高度。</summary>
+		private async Task InitializeAiMessageWebViewAsync(WebView2 webView)
+		{
+			try
+			{
+				await webView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
+				webView.CoreWebView2.Profile.PreferredColorScheme =
+					ForkPlusSettings.Default.Theme != ThemeType.Dark
+						? CoreWebView2PreferredColorScheme.Light
+						: CoreWebView2PreferredColorScheme.Dark;
+				webView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
+				{
+					e.Handled = true;
+				};
+				// 自动高度：导航完成后用 JS 测量内容高度，调整 WebView2 的 Height 使其完整显示
+				webView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
+				{
+					if (!e.IsSuccess)
+					{
+						return;
+					}
+					webView.CoreWebView2.ExecuteScriptAsync("document.documentElement.scrollHeight").ContinueWith(delegate(Task<string> t)
+					{
+						try
+						{
+							string result = t.Result;
+							if (double.TryParse(result, out double h))
+							{
+								base.Dispatcher.Async(delegate
+								{
+									webView.Height = Math.Max(h, 20);
+									ScrollToEnd();
+								});
+							}
+						}
+						catch
+						{
+						}
+					});
+				};
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to init AI message WebView2: " + ex.Message);
+			}
+		}
+
 		private void AddUserMessage(string message)
 		{
 			Border userBorder = new Border
@@ -634,6 +810,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("🧑 我的需求"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
 				Margin = new Thickness(0, 0, 0, 2)
 			};
@@ -642,6 +819,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = message,
 				FontSize = 13,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				TextWrapping = TextWrapping.Wrap,
 				Foreground = Brushes.Black,
 				IsReadOnly = true,
@@ -661,9 +839,10 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		/// <summary>
-		/// 创建流式响应气泡，AI 生成内容逐 chunk 追加到其中的 TextBox。
+		/// 创建流式响应气泡，AI 生成内容逐 chunk 追加到 _streamingMarkdown，
+		/// 节流渲染到 WebView2（Markdown→HTML），支持代码块/列表/表格/emoji 彩色显示。
 		/// </summary>
-		private TextBox CreateStreamingResponseBubble()
+		private WebView2 CreateStreamingResponseBubble()
 		{
 			Border aiBorder = new Border
 			{
@@ -679,45 +858,70 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("🤖 AI 响应"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
-			TextBox content = new TextBox
+			WebView2 webView = new WebView2
 			{
-				FontSize = 13,
-				TextWrapping = TextWrapping.Wrap,
-				Foreground = Brushes.Black,
-				IsReadOnly = true,
-				BorderThickness = new Thickness(0),
-				Background = Brushes.Transparent,
-				Padding = new Thickness(0),
-				IsTabStop = false
+				MinHeight = 20,
+				DefaultBackgroundColor = Colors.Transparent
 			};
 
 			StackPanel innerPanel = new StackPanel();
 			innerPanel.Children.Add(header);
-			innerPanel.Children.Add(content);
+			innerPanel.Children.Add(webView);
 			aiBorder.Child = innerPanel;
 
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
-			return content;
+
+			// 重置流式状态
+			lock (_streamingLock)
+			{
+				_streamingMarkdown = null;
+			}
+			_lastStreamingRenderUtc = DateTime.MinValue;
+			_streamingWebView = webView;
+
+			// 异步初始化 WebView2（环境/主题/右键菜单/自动高度），fire-and-forget
+			_ = InitializeAiMessageWebViewAsync(webView);
+
+			return webView;
 		}
 
 		/// <summary>有文件变更时移除流式气泡（改用 diff 展示）。</summary>
-		private void RemoveStreamingResponseBubble(TextBox streamingBox)
+		private void RemoveStreamingResponseBubble(WebView2 streamingWebView)
 		{
-			if (streamingBox?.Parent is StackPanel panel && panel.Parent is Border border)
+			if (streamingWebView?.Parent is StackPanel panel && panel.Parent is Border border)
 			{
 				MessagePanel.Children.Remove(border);
 			}
+			if (_streamingWebView == streamingWebView)
+			{
+				_streamingWebView = null;
+			}
 		}
 
-		/// <summary>无文件变更时保留流式气泡作为最终响应。</summary>
-		private void FinalizeStreamingResponseBubble(TextBox streamingBox)
+		/// <summary>无文件变更时保留流式气泡作为最终响应，做一次最终渲染确保完整内容显示。</summary>
+		private void FinalizeStreamingResponseBubble(WebView2 streamingWebView)
 		{
-			// 气泡已在消息面板中，无需额外操作
+			// 最终渲染（无节流），确保流式结束后完整 Markdown 已渲染
+			string md;
+			lock (_streamingLock)
+			{
+				md = _streamingMarkdown?.ToString() ?? "";
+			}
+			if (!string.IsNullOrEmpty(md) && streamingWebView?.CoreWebView2 != null)
+			{
+				RenderMarkdownToWebView(streamingWebView, md);
+				ScrollToEnd();
+			}
+			if (_streamingWebView == streamingWebView)
+			{
+				_streamingWebView = null;
+			}
 		}
 
 		/// <summary>
@@ -787,6 +991,11 @@ namespace ForkPlus.UI.Dialogs
 			_conversationHistory.Clear();
 			_fileChanges.Clear();
 			_lastBeforeContents.Clear();
+			_streamingWebView = null;
+			lock (_streamingLock)
+			{
+				_streamingMarkdown = null;
+			}
 			MessagePanel.Children.Clear();
 			ShowWelcomeMessage();
 			AddStatusMessage(PreferencesLocalization.Current("Conversation cleared."), Brushes.Gray);
@@ -942,30 +1151,31 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("🤖 AI 响应"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
-			TextBox content = new TextBox
+			WebView2 webView = new WebView2
 			{
-				Text = response,
-				FontSize = 13,
-				TextWrapping = TextWrapping.Wrap,
-				Foreground = Brushes.Black,
-				IsReadOnly = true,
-				BorderThickness = new Thickness(0),
-				Background = Brushes.Transparent,
-				Padding = new Thickness(0),
-				IsTabStop = false
+				MinHeight = 20,
+				DefaultBackgroundColor = Colors.Transparent
 			};
 
 			StackPanel innerPanel = new StackPanel();
 			innerPanel.Children.Add(header);
-			innerPanel.Children.Add(content);
+			innerPanel.Children.Add(webView);
 			aiBorder.Child = innerPanel;
 
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
+
+			// 初始化 WebView2 后渲染 Markdown（非流式一次性渲染）
+			base.Dispatcher.Async(async delegate
+			{
+				await InitializeAiMessageWebViewAsync(webView);
+				RenderMarkdownToWebView(webView, response);
+			});
 		}
 
 		private void AddStatusMessage(string message, Brush foreground)
@@ -974,6 +1184,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = message,
 				FontSize = 12,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				TextWrapping = TextWrapping.Wrap,
 				Foreground = foreground,
 				Margin = new Thickness(0, 2, 0, 2)
@@ -1524,6 +1735,7 @@ Additionally, the user has defined the following coding standards / skills that 
 				Text = PreferencesLocalization.FormatCurrent("📝 文件变更 ({0} 个文件)", changes.Count),
 				FontSize = 13,
 				FontWeight = FontWeights.SemiBold,
+				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				VerticalAlignment = VerticalAlignment.Center
 			};
 			headerRow.Children.Add(diffHeader);
@@ -1541,6 +1753,7 @@ Additionally, the user has defined the following coding standards / skills that 
 							: PreferencesLocalization.FormatCurrent("✏️ 修改: {0}", change.FilePath),
 					FontSize = 13,
 					FontWeight = FontWeights.Medium,
+					FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 					Margin = new Thickness(0, 6, 0, 2),
 					Foreground = change.IsNewFile ? Brushes.Green : change.IsDelete ? Brushes.Red : Brushes.DodgerBlue
 				};

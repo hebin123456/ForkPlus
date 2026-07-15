@@ -93,6 +93,9 @@
       <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip="Switch orientation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
         <Image Source="{DynamicResource HorizontalMergerIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LayoutOrientationToggleButtonImage" />
       </ToggleButton>
+      <Button Margin="6,0,0,0" Padding="8,0" Height="22" FontSize="12" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts" x:Name="AiResolveButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <TextBlock Text="🤖 AI Resolve" FontFamily="Segoe UI, Segoe UI Emoji" />
+      </Button>
     </DockPanel>
   </Grid>
 </local:ForkPlusDialogWindow>

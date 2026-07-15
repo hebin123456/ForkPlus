@@ -1013,15 +1013,24 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 				else
+			{
+				list.Add(RepositoryUserControl.Commands.ShowPushBranchWindow.CreateMenuItem("Push '" + branch.Name + "' to 'origin'...", delegate
 				{
-					list.Add(RepositoryUserControl.Commands.ShowPushBranchWindow.CreateMenuItem("Push '" + branch.Name + "' to 'origin'...", delegate
-					{
-						RepositoryUserControl.Commands.ShowPushBranchWindow.Execute(repositoryUserControl, null, branch);
-					}, isEnabled: false));
-				}
-				list.Add(new Separator());
-				if (activeBranch != null && activeBranch != branch)
+					RepositoryUserControl.Commands.ShowPushBranchWindow.Execute(repositoryUserControl, null, branch);
+				}, isEnabled: false));
+			}
+			// Fork 工作流同步冲突预检：仅在配置了 upstream（或非 origin）远端时启用
+			bool hasForkUpstream = CheckForkSyncCommand.FindUpstreamRemote(remotes) != null;
+			list.Add(RepositoryUserControl.Commands.CheckForkSync.CreateMenuItem(
+				"Check Fork Sync Status...",
+				delegate
 				{
+					RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch);
+				},
+				isEnabled: hasForkUpstream));
+			list.Add(new Separator());
+			if (activeBranch != null && activeBranch != branch)
+			{
 					list.Add(RepositoryUserControl.Commands.ShowMergeBranchWindow.CreateMenuItem("Merge into '" + activeBranch.Name + "'...", delegate
 					{
 						RepositoryUserControl.Commands.ShowMergeBranchWindow.Execute(repositoryUserControl, branch, activeBranch);

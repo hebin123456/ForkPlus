@@ -3,11 +3,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Media;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
+using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Merge;
@@ -20,6 +22,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Merge;
 using ForkPlus.UI.UserControls;
+using ForkPlus.Utils.Http;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 using ForkPlus.UI.Helpers;
@@ -58,6 +61,9 @@ namespace ForkPlus.UI.Dialogs
 		private MergeCodeEditor _lastUpdatedEditor;
 
 		private bool _refreshInProgress;
+
+		// AI 解决冲突进行中标志，避免重复触发
+		private bool _aiResolving;
 
 		protected override bool IsSubmitAllowed
 		{
@@ -231,6 +237,232 @@ namespace ForkPlus.UI.Dialogs
 		{
 			ForkPlusSettings.Default.Save();
 			base.OnClosed(e);
+		}
+
+		/// <summary>
+		/// AI 解决合并冲突：读取磁盘上带冲突标记的原始文件内容，发送给 AI，
+		/// AI 返回去冲突标记的合并文本，用户确认后通过 ResolveMergeConflictGitCommand 写回。
+		/// </summary>
+		private async void AiResolveButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (_aiResolving)
+			{
+				return;
+			}
+			if (_mergeMode != MergeMode.Text || _mergeConflict == null)
+			{
+				return;
+			}
+			if (!OpenAiService.IsAiReviewConfigured())
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+
+			string filePath;
+			try
+			{
+				filePath = _gitModule.MakePath(_changedFile.Path);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to resolve file path: " + ex.Message);
+				return;
+			}
+
+			string conflictedContent;
+			try
+			{
+				conflictedContent = File.ReadAllText(filePath);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to read conflict file: " + ex.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				return;
+			}
+
+			if (string.IsNullOrEmpty(conflictedContent)
+				|| !conflictedContent.Contains("<<<<<<<") || !conflictedContent.Contains(">>>>>>>"))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("No conflict markers found in the file."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Information);
+				return;
+			}
+
+			_aiResolving = true;
+			AiResolveButton.IsEnabled = false;
+			string originalToolTip = AiResolveButton.ToolTip?.ToString();
+			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
+
+			string fileName = Path.GetFileName(_changedFile.Path);
+			string prompt = BuildAiResolvePrompt(fileName, conflictedContent);
+
+			StringBuilder responseBuilder = new StringBuilder();
+			Exception requestError = null;
+			bool canceled = false;
+
+			await Task.Run(delegate
+			{
+				try
+				{
+					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+					JobMonitor monitor = new JobMonitor();
+					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
+						prompt,
+						monitor,
+						delegate(string delta)
+						{
+							if (string.IsNullOrEmpty(delta))
+							{
+								return;
+							}
+							lock (responseBuilder)
+							{
+								responseBuilder.Append(delta);
+							}
+						});
+					if (monitor.IsCanceled)
+					{
+						canceled = true;
+						return;
+					}
+					if (!result.Succeeded)
+					{
+						requestError = new Exception(result.Error?.FriendlyMessage ?? "Unknown error");
+					}
+				}
+				catch (Exception ex)
+				{
+					requestError = ex;
+				}
+			}).ConfigureAwait(true);
+
+			AiResolveButton.IsEnabled = true;
+			AiResolveButton.ToolTip = originalToolTip ?? "Use AI to resolve all conflicts";
+			_aiResolving = false;
+
+			if (canceled)
+			{
+				return;
+			}
+			if (requestError != null)
+			{
+				Log.Error("AI Resolve failed: " + requestError.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				return;
+			}
+
+			string resolved;
+			lock (responseBuilder)
+			{
+				resolved = responseBuilder.ToString();
+			}
+			resolved = StripCodeFences(resolved);
+			if (string.IsNullOrWhiteSpace(resolved))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI returned empty content. Aborting."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+
+			// 残留冲突标记检测：若 AI 输出仍包含冲突标记，说明没解决干净，提示用户
+			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI output still contains conflict markers. Please review and try again, or resolve manually."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+
+			MessageBoxResult confirm = MessageBox.Show(
+				PreferencesLocalization.Current("AI resolved all conflicts. Apply the resolved content and close?"),
+				PreferencesLocalization.Current("AI Resolve"),
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Question);
+			if (confirm != MessageBoxResult.Yes)
+			{
+				return;
+			}
+
+			try
+			{
+				GitCommandResult gitResult = new ResolveMergeConflictGitCommand().Execute(_gitModule, _changedFile, resolved);
+				Close(gitResult);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to write back: " + ex.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+			}
+		}
+
+		/// <summary>构造 AI 解决冲突的 prompt：要求 AI 合并两侧变更、保留非冲突上下文、不输出解释。</summary>
+		private static string BuildAiResolvePrompt(string fileName, string conflictedContent)
+		{
+			return "You are an expert at resolving Git merge conflicts.\n"
+				+ "The file below contains conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).\n"
+				+ "Resolve ALL conflicts intelligently:\n"
+				+ "- Combine changes from both sides when they don't overlap.\n"
+				+ "- When both sides modify the same region, merge them preserving intent; prefer keeping both sets of changes if compatible.\n"
+				+ "- Keep the non-conflicting context intact.\n"
+				+ "- Preserve the file's overall structure, imports, and syntax.\n"
+				+ "Return ONLY the final merged file content with NO conflict markers, NO explanations, NO markdown code fences, NO surrounding prose.\n"
+				+ "Do not wrap the output in ``` code blocks.\n\n"
+				+ "File: " + fileName + "\n\n"
+				+ conflictedContent;
+		}
+
+		/// <summary>剥离 AI 输出可能包含的 markdown 代码围栏（```lang ... ```）。</summary>
+		private static string StripCodeFences(string text)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return text;
+			}
+			string trimmed = text.Trim();
+			if (trimmed.StartsWith("```"))
+			{
+				int firstNewLine = trimmed.IndexOf('\n');
+				if (firstNewLine >= 0)
+				{
+					trimmed = trimmed.Substring(firstNewLine + 1);
+				}
+				else
+				{
+					trimmed = trimmed.Substring(3);
+				}
+				if (trimmed.EndsWith("```"))
+				{
+					trimmed = trimmed.Substring(0, trimmed.Length - 3);
+				}
+				return trimmed;
+			}
+			return text;
 		}
 
 		private void RefreshCodeEditorFontSize(double codeEditorFontSize)
@@ -483,6 +715,8 @@ namespace ForkPlus.UI.Dialogs
 			AllLocalCheckBox.Disable();
 			ResolvedTextBlock.Collapse();
 			LayoutOrientationToggleButton.Collapse();
+			// AI 解决按钮默认隐藏，仅在 Text 模式下显示
+			AiResolveButton.Collapse();
 			GitCommandResult<DiffContent> gitCommandResult = new GetWorkingDirectoryFileChangesGitCommand().Execute(_gitModule, _changedFile, null, 3, _gitModule.Settings.TabWidth, ignoreWhitespaces: false, showEntireFile: true, loadLargeUntrackedFiles: false, resolvedConflict: false);
 			if (!gitCommandResult.Succeeded)
 			{
@@ -504,6 +738,11 @@ namespace ForkPlus.UI.Dialogs
 					NextPrevMergeButtonsContainer.Show();
 					ResolvedTextBlock.Show();
 					LayoutOrientationToggleButton.Show();
+					// 仅在 Text 模式且 AI 已配置时显示 AI 解决按钮
+					if (OpenAiService.IsAiReviewConfigured())
+					{
+						AiResolveButton.Show();
+					}
 					MergerLayoutOrientation mergerLayoutOrientation = ForkPlusSettings.Default.MergerLayoutOrientation;
 					LayoutOrientationToggleButton.IsChecked = mergerLayoutOrientation == MergerLayoutOrientation.Vertical;
 					UpdateLayoutOrientation(mergerLayoutOrientation);

@@ -41,6 +41,9 @@ namespace ForkPlus.UI.UserControls
 
 		private readonly CommitMessageAutocompleteProvider _commitMessageAutocompleteProvider = new CommitMessageAutocompleteProvider();
 
+		// Gitmoji 自动补全：commit subject 输入 ":" 触发 emoji 选择器
+		private readonly GitmojiAutocompleteProvider _gitmojiAutocompleteProvider = new GitmojiAutocompleteProvider();
+
 		private readonly DelayedAction<ChangedFileArgs> _updateDiffAction;
 
 		private DiffPopupWindow _diffPopupWindow;
@@ -118,7 +121,11 @@ namespace ForkPlus.UI.UserControls
 				string text = value ?? string.Empty;
 				SplitCommitMessageForFields(text, out var subject, out var description);
 				CommitDescriptionTextBox.DisableUpdates = true;
+				// 同步关闭 subject 框的自动补全：避免 AI 生成 / 最近消息回填等场景下
+				// 若 subject 恰好包含 ":" 触发 Gitmoji 选择器弹出
+				CommitSubjectTextBox.DisableUpdates = true;
 				CommitSubjectTextBox.Text = subject;
+				CommitSubjectTextBox.DisableUpdates = false;
 				CommitDescriptionTextBox.Text = description;
 				CommitDescriptionTextBox.DisableUpdates = false;
 			}
@@ -229,6 +236,8 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			PreferencesLocalization.ApplyCurrent(this);
 			CommitDescriptionTextBox.SetAutocompleteProvider(_commitMessageAutocompleteProvider);
+			// 为 commit subject 输入框注册 Gitmoji 自动补全（输入 ":" 触发 emoji 选择器）
+			CommitSubjectTextBox.SetAutocompleteProvider(_gitmojiAutocompleteProvider);
 			RefreshSubjectLengthLimitToolTip();
 			base.Loaded += delegate
 			{
@@ -2171,7 +2180,10 @@ namespace ForkPlus.UI.UserControls
 		{
 			SplitCommitMessageForFields(fullMessage, out var subject, out var description);
 			CommitDescriptionTextBox.DisableUpdates = true;
+			// 同步关闭 subject 框的自动补全：最近消息回填时若 subject 含 ":" 会误触发 Gitmoji 选择器
+			CommitSubjectTextBox.DisableUpdates = true;
 			CommitSubjectTextBox.Text = subject;
+			CommitSubjectTextBox.DisableUpdates = false;
 			CommitDescriptionTextBox.Text = description;
 			CommitDescriptionTextBox.DisableUpdates = false;
 			RefreshDescriptionFieldHeight();

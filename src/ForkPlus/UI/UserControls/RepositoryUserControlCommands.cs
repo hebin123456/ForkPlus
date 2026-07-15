@@ -56,6 +56,8 @@ namespace ForkPlus.UI.UserControls
 
 		private FastForwardPullCommand _fastForwardPull;
 
+		private CheckForkSyncCommand _checkForkSync;
+
 		private UpdateTrackingReferenceCommand _updateTrackingReference;
 
 		private ShowChangeTrackingReferenceWindowCommand _showChangeTrackingReferenceWindow;
@@ -239,6 +241,8 @@ namespace ForkPlus.UI.UserControls
 		public FastForwardCommand FastForward => CommandContainer.Lazy(ref _fastForward);
 
 		public FastForwardPullCommand FastForwardPull => CommandContainer.Lazy(ref _fastForwardPull);
+
+		public CheckForkSyncCommand CheckForkSync => CommandContainer.Lazy(ref _checkForkSync);
 
 		public UpdateTrackingReferenceCommand UpdateTrackingReference => CommandContainer.Lazy(ref _updateTrackingReference);
 

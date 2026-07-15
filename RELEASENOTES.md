@@ -2,6 +2,29 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.6.0
+
+### 新功能：AI 解决合并冲突
+
+- **需求**：合并冲突解决窗口（Side-by-Side Merge）逐个冲突块手动解决比较繁琐，希望让 AI 一键解决全部冲突。
+- **实现**：在文本合并模式的工具栏新增「🤖 AI Resolve」按钮。点击后读取磁盘上带冲突标记的原始文件内容，构造 prompt（要求 AI 合并两侧变更、保留非冲突上下文、不输出解释/代码围栏），通过 `OpenAiService.CreateFromAiReviewSettings().OpenAiRequestStreamingWithRetry` 流式请求；收到完整响应后剥离可能的 markdown 代码围栏，检测是否残留冲突标记（若仍含 `<<<<<<<`/`=======`/`>>>>>>>` 则提示用户检查），最后经用户确认后通过 `ResolveMergeConflictGitCommand`（`File.WriteAllText` + `git add`）写回并关闭窗口。处理中按钮禁用并显示「AI is resolving conflicts...」状态。仅在配置了 AI 检视且当前为文本合并模式时显示该按钮—— [SideBySideMergeWindow.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/SideBySideMergeWindow.xaml) / [SideBySideMergeWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/SideBySideMergeWindow.xaml.cs)
+
+### 新功能：Fork 工作流同步冲突预检
+
+- **需求**：fork 工作流下（upstream 主仓 + origin fork 仓），push 前想先知道本地分支与 upstream 目标分支是否会冲突——没冲突就懒得多 pull 一次，有冲突则必须先拉取解决才能继续。
+- **实现**：分支右键菜单新增「Check Fork Sync Status...」（仅当存在 upstream/非 origin 远端时启用）。后台三步检测：①`FetchGitCommand` 拉 upstream（`noPrompt`）；②`git rev-parse --verify` 确认 upstream 远端分支存在；③`git merge-base` 求共同祖先，若祖先 == upstream HEAD 则「SafeToPush」；否则用 legacy 3-arg `git merge-tree`（`merge-base upstream local`）预演合并，扫描 `+>>>>>>>`/`+<<<<<<<` 标记区分「ShouldSyncNoConflict」和「MustSyncWithConflict」。结果用三态对话框展示（绿勾/黄叹/红叉），需要同步时主按钮一键打开 Pull 窗口拉取并解决—— [CheckForkSyncStatusGitCommand.cs](file:///workspace/src/ForkPlus/Git/Commands/CheckForkSyncStatusGitCommand.cs) / [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs) / [CheckForkSyncCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/CheckForkSyncCommand.cs) / [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs)
+
+### 新功能：Commit 面板 Gitmoji
+
+- **需求**：commit subject 输入 `:` 时希望弹出 gitmoji emoji 选择器（如 `:bug:` → 🐛），方便给提交加上语义化 emoji 前缀。
+- **实现**：复用已有的 `AutoCompleteTextBox` 补全体系（`CommitSubjectTextBox` 已内置 Popup+ListBox 浮层）。新增 `GitmojiAutocompleteProvider`（`IAutoCompleteProvider`）：从光标向前找 `:`（中途遇空白则不触发），取 `:` 后的 prefix 与 ~70 项标准 Gitmoji 短名匹配，返回 `GitmojiAutoCompleteSuggestion`（选中后插入「emoji + 空格」）。配套 `GitmojiAutoCompleteSuggestion` 子类携带 `GitmojiEntry`，在 [Listview.xaml](file:///workspace/src/ForkPlus/Theme/Styles/Listview.xaml) 中新增隐式 DataTemplate（emoji + 短名 + 描述三列，emoji 用 `Segoe UI Emoji` 彩色字体）。在 `CommitUserControl` 构造函数中注册 provider；`FullCommitMessage` setter 和 `SetRecentCommitMessage` 加 `DisableUpdates` 保护，避免 AI 生成/最近消息回填等程序化写入 subject 时误触发选择器—— [GitmojiData.cs](file:///workspace/src/ForkPlus/UI/Controls/GitmojiData.cs) / [GitmojiAutocompleteProvider.cs](file:///workspace/src/ForkPlus/UI/Controls/GitmojiAutocompleteProvider.cs) / [GitmojiAutoCompleteSuggestion.cs](file:///workspace/src/ForkPlus/UI/Controls/GitmojiAutoCompleteSuggestion.cs) / [CommitUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/CommitUserControl.xaml.cs)
+
+### 优化：AI 辅助开发对话 Markdown 渲染 + Emoji 彩色显示
+
+- **问题**：AI 辅助开发对话窗口的 AI 回复原先用纯 TextBox 显示，Markdown 格式（代码块/列表/表格等）以原始文本呈现，可读性差；且 emoji 显示为方框/黑白线条，观感不佳。
+- **实现**：AI 回复改用 WebView2 渲染。通过 native Biturbo 库 `Bt.bt_md_to_html` 把 Markdown 转 HTML 后 `NavigateToString` 写入 WebView2（与 AiCodeReviewWindow 共用底层转换）。流式响应边收边追加到 Markdown 缓冲，节流后实时渲染，用户能逐段看到生成内容。WebView2 导航完成后用 JS 测量 `document.documentElement.scrollHeight` 自动调整控件高度以完整显示。WebView2 原生支持彩色 emoji，配合 `Segoe UI, Segoe UI Emoji` 字体回退，emoji 显示为彩色。同时按主题（亮/暗）设置 `PreferredColorScheme`，禁用右键菜单—— [AiDevelopmentWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.xaml.cs)
+- **新增 i18n key**（7 种语言）：AI 解决冲突相关（`AI Resolve`、`AI is not configured...`、`Failed to read conflict file: {0}`、`No conflict markers found in the file.`、`AI is resolving conflicts...`、`Use AI to resolve all conflicts`、`AI resolve failed: {0}`、`AI returned empty content. Aborting.`、`AI output still contains conflict markers...`、`AI resolved all conflicts. Apply the resolved content and close?`、`Failed to apply resolved content: {0}`）；Fork 同步预检相关（`Check Fork Sync...`、`Check Fork Sync Status...`、`Fork Sync Status`、`No remotes configured...`、`No 'upstream' remote found...`、`No active branch to check.`、`Checking fork sync: {0}/{1}`、`Safe to push`、`'{0}' is up-to-date with {1}...`、`Recommended to sync`、`{0} has new commits that are not in '{1}'...`、`Pull from upstream`、`Skip and push later`、`Conflicts detected`、`{0} has new commits that would conflict with '{1}'...`、`Pull and resolve`、`Upstream branch not found`、`No remote branch '{0}' found on the upstream remote...`、`Unable to determine sync status`、`Could not determine whether '{0}' would conflict with {1}...`）。
+
 ## v1.5.8
 
 ### 修复：变更数量大时暂存区/未暂存区被强制平铺（改回树状）

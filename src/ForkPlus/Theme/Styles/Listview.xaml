@@ -653,6 +653,25 @@
                   </TextBlock>
                 </DockPanel>
               </DataTemplate>
+              <DataTemplate DataType="{x:Type controls:GitmojiAutoCompleteSuggestion}" x:Key="{DataTemplateKey {x:Type controls:GitmojiAutoCompleteSuggestion}}">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Emoji" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13" FontFamily="Consolas" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.ShortName" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Description" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+              </DataTemplate>
             </ResourceDictionary>
           </ControlTemplate.Resources>
           <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
