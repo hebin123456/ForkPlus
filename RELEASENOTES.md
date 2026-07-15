@@ -16,6 +16,7 @@
 ### CI 质量治理
 
 - **移除 CI 的 `continue-on-error: true`**：`build-windows.yml` 中单元测试和系统测试步骤此前设为 `continue-on-error: true`，测试失败不阻断 CI 构建。移除后测试失败将真正阻断构建，让测试发挥应有作用。
+- **修复 `PathHelper.GetParent` 空路径崩溃**：此前 `Path.GetDirectoryName("")` 在 .NET Framework 上抛 `ArgumentException`，导致 `PathHelperTests.GetParent_ReturnsNullForNullOrEmptyPath` 一直失败（被 continue-on-error 掩盖）。改为对 null/空/非法路径返回 null，与 null 输入行为一致。此问题自 v1.4.5 起存在。
 
 ## v1.4.6
 

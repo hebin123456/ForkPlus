@@ -27,7 +27,19 @@ namespace ForkPlus
 		[Null]
 		public static string GetParent([Null] string path)
 		{
-			return Path.GetDirectoryName(path);
+			if (string.IsNullOrEmpty(path))
+			{
+				return null;
+			}
+			try
+			{
+				return Path.GetDirectoryName(path);
+			}
+			catch (ArgumentException)
+			{
+				// 非法路径形式（如空字符串、非法字符）返回 null，与 null 输入一致
+				return null;
+			}
 		}
 
 		public static string GetReadableFileName(string filepath)
