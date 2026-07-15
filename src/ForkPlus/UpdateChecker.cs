@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
@@ -44,18 +46,36 @@ namespace ForkPlus
 		/// <summary>
 		/// 查询 GitHub 最新 Release 并与当前版本比较。
 		/// 失败时 HasUpdate=false 且 ErrorMessage 非空（不抛异常）。
+		/// cancellationToken 可用于中止 HTTP 请求。
 		/// </summary>
-		public UpdateInfo CheckLatestRelease()
+		public UpdateInfo CheckLatestRelease(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			UpdateInfo info = new UpdateInfo
 			{
 				CurrentVersion = App.Version
 			};
+			if (cancellationToken.IsCancellationRequested)
+			{
+				info.ErrorMessage = "Cancelled";
+				return info;
+			}
 			try
 			{
 				Connection connection = new Connection(GitHubApiBase, null, _timeoutSeconds);
 				ApiRequest request = new ApiRequest(LatestReleasePath);
-				Connection.HttpRequestResult result = connection.Request(request, jsonRequest: true);
+				// 用 JobMonitor 承接取消，关窗时 Cancel() 会中止 HTTP 请求
+				JobMonitor monitor = new JobMonitor();
+				CancellationTokenRegistration reg = cancellationToken.Register(delegate
+				{
+					monitor.Cancel();
+				});
+				Connection.HttpRequestResult result = connection.Request(request, jsonRequest: true, monitor);
+				reg.Dispose();
+				if (cancellationToken.IsCancellationRequested)
+				{
+					info.ErrorMessage = "Cancelled";
+					return info;
+				}
 				if (!result.Succeeded)
 				{
 					info.ErrorMessage = result.Error?.FriendlyMessage ?? "Request failed";
@@ -85,6 +105,10 @@ namespace ForkPlus
 					info.DownloadUrl = info.ReleaseUrl;
 				}
 				info.HasUpdate = IsNewerVersion(info.LatestVersion, info.CurrentVersion);
+			}
+			catch (OperationCanceledException)
+			{
+				info.ErrorMessage = "Cancelled";
 			}
 			catch (Exception ex)
 			{

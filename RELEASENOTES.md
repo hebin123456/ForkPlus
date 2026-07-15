@@ -6,11 +6,12 @@
 
 ### 修复：检查更新按钮无反应
 
-- **手动检测始终提示**：帮助菜单"Check for Updates..."点击后无论结果如何都弹窗提示——有更新弹出更新窗口，已是最新提示"已是最新版本"，检测失败提示具体错误。此前手动检测在"无更新"时静默无反应。
-- **失败原因可见**：`UpdateInfo` 新增 `ErrorMessage` 字段，`UpdateChecker` 在限流/网络失败/异常响应时记录具体错误信息（如 GitHub API 限流消息），弹窗显示"检测更新失败：{具体原因}"，便于排查。
-- **弹窗可靠性**：`UpdateCheckManager` 的三个提示方法从 `Dispatcher.Async`（BeginInvoke 异步）改为 `Dispatcher.Invoke`（同步），并加 try-catch，确保弹窗一定显示且不会被异常吞掉。外层 `Task.Run` 也加 try-catch 防止 `MarkChecked`/`Save` 失败导致整个回调静默崩溃。
-- **手动检测不受"跳过版本"限制**：手动点击时即使该版本被标记"不再提醒"仍会弹出更新窗口（用户主动查询应看到结果）。
-- **新增 i18n key**：`Update check failed: {0}`（7 种语言补齐），用于带具体错误信息的失败提示。
+- **改为"先弹窗后检测"交互**：点击帮助菜单"Check for Updates..."后立即弹出检查窗口（显示进度条+"正在检查更新..."），在窗口内执行检测，避免点击后无反馈。检测完成后窗内直接显示结果——有更新（版本号+Release Notes+下载/不再提醒）、已是最新、或失败原因。关闭窗口通过 `CancellationToken` 立即中止 HTTP 请求。
+- **新增 UpdateCheckWindow**：独立的检查更新对话框，`Loaded` 时启动后台 `Task.Run` 检测，`OnCancel`/`OnClosed` 触发 `CancellationTokenSource.Cancel()` 停止检测。复用 `UpdateChecker.CheckLatestRelease(CancellationToken)`，通过 `JobMonitor` 承接取消以中止底层 HTTP。
+- **UpdateChecker 支持取消**：`CheckLatestRelease` 新增 `CancellationToken` 参数，用 `JobMonitor` 承接取消信号，关窗时能真正中止进行中的 HTTP 请求而非等其自然完成。
+- **失败原因可见**：`UpdateInfo` 新增 `ErrorMessage` 字段，限流/网络失败/异常响应时记录具体原因（如 GitHub API 限流消息），窗内显示"检测更新失败：{具体原因}"。
+- **自动检测保持静默**：后台自动检测（30s 首检 + 24h 节流）仅在有更新且未被跳过时弹 `UpdateAvailableWindow`，失败静默不打扰用户。
+- **新增 i18n key**：`Checking for updates...`、`Update check failed: {0}`（7 种语言补齐）。
 
 ## v1.5.0
 
