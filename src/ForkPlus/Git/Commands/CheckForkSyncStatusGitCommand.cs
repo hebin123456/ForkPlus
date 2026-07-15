@@ -1,4 +1,5 @@
 using ForkPlus.Git.Interaction;
+using ForkPlus.Jobs;
 
 namespace ForkPlus.Git.Commands
 {
