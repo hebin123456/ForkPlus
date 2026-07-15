@@ -2,6 +2,17 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.5.4
+
+### 修复：AI 排队场景返回错误码（影响 AI 辅助开发 + AI 代码检视 + commit 消息生成）
+
+v1.5.3 对排队场景的修复只对非流式路径生效，流式路径（AI 辅助开发、代码检视、commit 消息生成均走此路径）仍会直接返回错误码。本次彻底修复。
+
+- **根因**：流式路径 `OpenAiRequestStreaming` 在请求失败时直接透传 `Connection.RequestStream` 返回的 `RemoteServiceJsonError`，绕过了 `RestClientBase.Decode` → `OpenAiService.DecodeJsonError` 解码链。`RemoteServiceJsonError.FriendlyMessage` 是通用文案"远程服务返回了错误响应。"，不含排队关键字，导致 `ShouldRetry` 无法识别排队/限流场景（429/503 + JSON 错误体），一次请求就失败。
+- **修复 1 - 流式路径错误解码**（[OpenAiService.cs](file:///workspace/src/ForkPlus/Accounts/AiServices/OpenAiService.cs)）：新增 `DecodeStreamError` 方法，在两个流式重载（单轮 + 多轮对话）中将 `RemoteServiceJsonError` 经 `DecodeJsonError` 解码为 `RemoteServiceError`（`FriendlyMessage` 为真实错误文本），使 `ShouldRetry`/`IsQueuedWaitError`/`IsTransientServiceMessage` 能从真实文本识别排队关键字。
+- **修复 2 - 注入 HTTP 状态码**（[Connection.cs](file:///workspace/src/ForkPlus/Utils/Http/Connection.cs)）：`DeserializeJsonError` 新增 `statusCode` 参数，将 HTTP 状态码注入错误 JSON（字段 `__http_status_code__`）。`DecodeServiceError` 提取该状态码并以前缀 `[HTTP 429]` 形式附加到错误文本，确保即使消息本身不含排队关键字（如 "internal error"），`ShouldRetry` 仍能通过状态码数字识别排队/限流并触发重试。同时修复了 `RemoteServiceJsonError` 丢失 HTTP 状态码信息的固有问题（此前仅保留 JSON 体）。
+- **影响范围**：修复同时覆盖 AI 辅助开发对话、AI 代码检视（分支评审/SHA 区间评审/文件评审）、AI 生成 commit 消息——三者均走 `OpenAiRequestStreamingWithRetry` 流式路径，共享同一套排队/重试逻辑。
+
 ## v1.5.3
 
 ### 优化：AI 辅助开发体验（模型选择 / 需求队列 / 排队处理 / 上下文压缩 / commit 即时写入 / 停止任务）

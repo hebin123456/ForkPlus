@@ -402,7 +402,7 @@ namespace ForkPlus.Accounts.AiServices
 			});
 			if (!httpResult.Succeeded)
 			{
-				return ServiceResult<OpenAiResponse>.Failure(httpResult.Error);
+				return ServiceResult<OpenAiResponse>.Failure(DecodeStreamError(httpResult.Error));
 			}
 			char[] trimChars = "```".ToCharArray();
 			string trimmed = content.ToString().TrimStart(trimChars).TrimEnd(trimChars).Trim();
@@ -420,11 +420,30 @@ namespace ForkPlus.Accounts.AiServices
 			});
 			if (!httpResult.Succeeded)
 			{
-				return ServiceResult<OpenAiResponse>.Failure(httpResult.Error);
+				return ServiceResult<OpenAiResponse>.Failure(DecodeStreamError(httpResult.Error));
 			}
 			char[] trimChars = "```".ToCharArray();
 			string trimmed = content.ToString().TrimStart(trimChars).TrimEnd(trimChars).Trim();
 			return ServiceResult<OpenAiResponse>.Success(new OpenAiResponse(trimmed));
+		}
+
+		/// <summary>
+		/// 流式路径错误解码：将 RemoteServiceJsonError（含完整错误 JSON，但 FriendlyMessage 为通用文案）
+		/// 转换为 RemoteServiceError（FriendlyMessage 为真实错误文本）。
+		/// 这样 ShouldRetry / IsQueuedWaitError / IsTransientServiceMessage 能从真实文本中识别排队关键字。
+		/// 非流式路径经 RestClientBase.Decode → DecodeJsonError 已做此处理，流式路径此前绕过了该链。
+		/// </summary>
+		private ServiceError DecodeStreamError(ServiceError error)
+		{
+			if (error is ServiceError.RemoteServiceJsonError jsonError)
+			{
+				ServiceResult<OpenAiResponse> decoded = DecodeJsonError<OpenAiResponse>(jsonError);
+				if (decoded.Error != null)
+				{
+					return decoded.Error;
+				}
+			}
+			return error;
 		}
 
 		private static void ParseSseLine(string line, StringBuilder content, JobMonitor monitor, Action<string> onChunk)
@@ -866,6 +885,13 @@ namespace ForkPlus.Accounts.AiServices
 				string text = DecodeServiceErrorToken(json);
 				if (!string.IsNullOrWhiteSpace(text))
 				{
+					// 附加 HTTP 状态码（由 Connection.DeserializeJsonError 注入），让 ShouldRetry 能
+					// 通过状态码数字（429/503 等）识别排队/限流场景——仅靠消息文本可能不含这些关键字。
+					int? statusCode = ExtractHttpStatusCode(json);
+					if (statusCode.HasValue && statusCode.Value >= 300)
+					{
+						text = $"[HTTP {statusCode.Value}] {text}";
+					}
 					Log.Warn(text);
 					return text;
 				}
@@ -874,6 +900,20 @@ namespace ForkPlus.Accounts.AiServices
 				return PreferencesLocalization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000));
 			}
 			Log.Warn("Cannot parse Error json");
+			return null;
+		}
+
+		/// <summary>提取 Connection.DeserializeJsonError 注入的 HTTP 状态码（若无返回 null）。</summary>
+		private static int? ExtractHttpStatusCode(JContainer json)
+		{
+			if (json is JObject obj)
+			{
+				JToken token = obj["__http_status_code__"];
+				if (token != null && token.Type == JTokenType.Integer)
+				{
+					return token.Value<int>();
+				}
+			}
 			return null;
 		}
 

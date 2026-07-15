@@ -153,18 +153,18 @@ namespace ForkPlus.Utils.Http
 					return HttpRequestResult.Failure(new ServiceError.NotFound(text));
 				}
 				if (IsJsonError(result))
-				{
-					Task<string> errorContentTask = result.Content.ReadAsStringAsync();
-					HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
-					if (errorBodyWaitResult != null)
 					{
-						return errorBodyWaitResult;
+						Task<string> errorContentTask = result.Content.ReadAsStringAsync();
+						HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+						if (errorBodyWaitResult != null)
+						{
+							return errorBodyWaitResult;
+						}
+						ClearCancellation(monitor, cancellationTokenSource);
+						return DeserializeJsonError(errorContentTask.Result, result.StatusCode);
 					}
 					ClearCancellation(monitor, cancellationTokenSource);
-					return DeserializeJsonError(errorContentTask.Result);
-				}
-				ClearCancellation(monitor, cancellationTokenSource);
-				return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
+					return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
 			}
 			Task<string> task2 = result.Content.ReadAsStringAsync();
 			HttpRequestResult bodyWaitResult = WaitForCompletion(task2, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
@@ -256,22 +256,22 @@ namespace ForkPlus.Utils.Http
 							return HttpRequestResult.Failure(new ServiceError.NotFound(text));
 						}
 						if (IsJsonError(result))
+					{
+						Task<string> errorContentTask = result.Content.ReadAsStringAsync();
+						HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
+						if (errorBodyWaitResult != null)
 						{
-							Task<string> errorContentTask = result.Content.ReadAsStringAsync();
-							HttpRequestResult errorBodyWaitResult = WaitForCompletion(errorContentTask, cancellationTokenSource, monitor, stopwatch, apiRequest.HttpMethod, text);
-							if (errorBodyWaitResult != null)
-							{
-								return errorBodyWaitResult;
-							}
-							ClearCancellation(monitor, cancellationTokenSource);
-							return DeserializeJsonError(errorContentTask.Result);
+							return errorBodyWaitResult;
 						}
 						ClearCancellation(monitor, cancellationTokenSource);
-						return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
+						return DeserializeJsonError(errorContentTask.Result, result.StatusCode);
 					}
-					// 流式读取响应体：逐行读取 SSE 事件，空闲超时（idleStopwatch）在每收到一行后重置。
-					// 这样只要 AI 持续输出 chunk 就不会超时，只有真正卡住（无数据到达）才触发超时。
-					StringBuilder fullBody = new StringBuilder();
+					ClearCancellation(monitor, cancellationTokenSource);
+					return HttpRequestResult.Failure(new ServiceError.HttpError(result.StatusCode));
+				}
+				// 流式读取响应体：逐行读取 SSE 事件，空闲超时（idleStopwatch）在每收到一行后重置。
+				// 这样只要 AI 持续输出 chunk 就不会超时，只有真正卡住（无数据到达）才触发超时。
+				StringBuilder fullBody = new StringBuilder();
 					Stopwatch idleStopwatch = Stopwatch.StartNew();
 					try
 					{
@@ -375,7 +375,7 @@ namespace ForkPlus.Utils.Http
 			cancellationTokenSource?.Dispose();
 		}
 
-		private static HttpRequestResult DeserializeJsonError(string result)
+		private static HttpRequestResult DeserializeJsonError(string result, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			if (!(JsonConvert.DeserializeObject(result) is JContainer json))
 			{
@@ -383,6 +383,14 @@ namespace ForkPlus.Utils.Http
 				return HttpRequestResult.Failure(new ServiceError.JsonParseError());
 			}
 			Log.Warn(result);
+			// 注入 HTTP 状态码到 JSON 根对象，供下游 DecodeServiceError 提取。
+			// 排队/限流场景常用 429/503 状态码 + JSON 错误体，但 RemoteServiceJsonError.FriendlyMessage
+			// 为通用文案不含状态码，导致 ShouldRetry 无法识别。注入后 DecodeServiceError 能取到状态码数字，
+			// ShouldRetry 的 message.Contains("429"/"503"...) 即可命中触发重试。
+			if (json is JObject jobj && (int)statusCode >= 300)
+			{
+				jobj["__http_status_code__"] = (int)statusCode;
+			}
 			return HttpRequestResult.Failure(new ServiceError.RemoteServiceJsonError(json));
 		}
 
