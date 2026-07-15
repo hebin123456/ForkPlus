@@ -1705,6 +1705,7 @@
     "Update Submodule": "サブモジュールを更新",
     "Update Submodules": "サブモジュールを更新",
     "Update check failed. Please check your network connection.": "更新の確認に失敗しました。ネットワーク接続を確認してください。",
+    "Update check failed: {0}": "更新確認に失敗しました：{0}",
     "Update dependent branches": "依存ブランチを更新",
     "Update manifest": "マニフェストを更新",
     "Update stash message": "スタッシュメッセージを更新",

@@ -1705,6 +1705,7 @@
     "Update Submodule": "Mettre à jour le sous-module",
     "Update Submodules": "Mettre à jour les sous-modules",
     "Update check failed. Please check your network connection.": "La vérification des mises à jour a échoué. Veuillez vérifier votre connexion réseau.",
+    "Update check failed: {0}": "Échec de la vérification des mises à jour : {0}",
     "Update dependent branches": "Mettre à jour les branches dépendantes",
     "Update manifest": "Mettre à jour le manifeste",
     "Update stash message": "Mettre à jour le message de remisage",

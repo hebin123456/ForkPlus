@@ -1705,6 +1705,7 @@
     "Update Submodule": "更新子模組",
     "Update Submodules": "更新子模組",
     "Update check failed. Please check your network connection.": "檢測更新失敗，請檢查網路連線。",
+    "Update check failed: {0}": "檢測更新失敗：{0}",
     "Update dependent branches": "更新相依分支",
     "Update manifest": "更新清單",
     "Update stash message": "更新貯藏訊息",

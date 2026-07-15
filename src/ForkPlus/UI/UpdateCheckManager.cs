@@ -59,17 +59,32 @@ namespace ForkPlus.UI
 		{
 			Task.Run(delegate
 			{
-				UpdateInfo info = _checker.CheckLatestRelease();
-				UpdateChecker.MarkChecked();
-				if (info.HasUpdate && !UpdateChecker.IsVersionSkipped(info.LatestVersion))
+				UpdateInfo info = null;
+				try
 				{
-					ShowUpdateAvailable(info);
+					info = _checker.CheckLatestRelease();
+					UpdateChecker.MarkChecked();
 				}
-				else if (manual)
+				catch (Exception ex)
 				{
-					if (string.IsNullOrEmpty(info.LatestVersion))
+					info = new UpdateInfo { ErrorMessage = ex.Message };
+					Log.Warn("Update check outer exception: " + ex.Message);
+				}
+				// 有更新：自动和手动都提示（手动不受"跳过版本"限制）
+				if (info.HasUpdate)
+				{
+					if (manual || !UpdateChecker.IsVersionSkipped(info.LatestVersion))
 					{
-						ShowCheckFailed();
+						ShowUpdateAvailable(info);
+					}
+					return;
+				}
+				// 无更新：仅手动时提示
+				if (manual)
+				{
+					if (!string.IsNullOrEmpty(info.ErrorMessage))
+					{
+						ShowCheckFailed(info.ErrorMessage);
 					}
 					else
 					{
@@ -86,10 +101,17 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			instance.Dispatcher.Async(delegate
+			try
 			{
-				new UpdateAvailableWindow(info).ShowDialog();
-			});
+				instance.Dispatcher.Invoke(delegate
+				{
+					new UpdateAvailableWindow(info).ShowDialog();
+				});
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("ShowUpdateAvailable failed: " + ex.Message);
+			}
 		}
 
 		private static void ShowLatestVersion()
@@ -99,31 +121,45 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			instance.Dispatcher.Async(delegate
+			try
 			{
-				new MessageBoxWindow(
-					PreferencesLocalization.Current("Update Available"),
-					PreferencesLocalization.Current("You are using the latest version."),
-					PreferencesLocalization.Current("OK"),
-					showCancelButton: false).ShowDialog();
-			});
+				instance.Dispatcher.Invoke(delegate
+				{
+					new MessageBoxWindow(
+						PreferencesLocalization.Current("Update Available"),
+						PreferencesLocalization.Current("You are using the latest version."),
+						PreferencesLocalization.Current("OK"),
+						showCancelButton: false).ShowDialog();
+				});
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("ShowLatestVersion failed: " + ex.Message);
+			}
 		}
 
-		private static void ShowCheckFailed()
+		private static void ShowCheckFailed(string error)
 		{
 			MainWindow instance = MainWindow.Instance;
 			if (instance == null)
 			{
 				return;
 			}
-			instance.Dispatcher.Async(delegate
+			try
 			{
-				new MessageBoxWindow(
-					PreferencesLocalization.Current("Update Available"),
-					PreferencesLocalization.Current("Update check failed. Please check your network connection."),
-					PreferencesLocalization.Current("OK"),
-					showCancelButton: false).ShowDialog();
-			});
+				instance.Dispatcher.Invoke(delegate
+				{
+					new MessageBoxWindow(
+						PreferencesLocalization.Current("Update Available"),
+						PreferencesLocalization.FormatCurrent("Update check failed: {0}", error),
+						PreferencesLocalization.Current("OK"),
+						showCancelButton: false).ShowDialog();
+				});
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("ShowCheckFailed failed: " + ex.Message);
+			}
 		}
 	}
 }

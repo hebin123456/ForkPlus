@@ -20,6 +20,9 @@ namespace ForkPlus
 		public string ReleaseUrl { get; set; } = "";
 
 		public string DownloadUrl { get; set; } = "";
+
+		/// <summary>检测失败时的错误信息（非空表示检测失败）。</summary>
+		public string ErrorMessage { get; set; } = "";
 	}
 
 	/// <summary>
@@ -40,7 +43,7 @@ namespace ForkPlus
 
 		/// <summary>
 		/// 查询 GitHub 最新 Release 并与当前版本比较。
-		/// 失败时返回 HasUpdate=false 的空信息（不抛异常）。
+		/// 失败时 HasUpdate=false 且 ErrorMessage 非空（不抛异常）。
 		/// </summary>
 		public UpdateInfo CheckLatestRelease()
 		{
@@ -55,11 +58,19 @@ namespace ForkPlus
 				Connection.HttpRequestResult result = connection.Request(request, jsonRequest: true);
 				if (!result.Succeeded)
 				{
-					Log.Warn("Update check failed: " + result.Error?.FriendlyMessage);
+					info.ErrorMessage = result.Error?.FriendlyMessage ?? "Request failed";
+					Log.Warn("Update check failed: " + info.ErrorMessage);
 					return info;
 				}
 				JObject json = JObject.Parse(result.Result);
 				string tagName = json["tag_name"]?.Value<string>() ?? "";
+				if (string.IsNullOrEmpty(tagName))
+				{
+					// 限流或异常响应（无 tag_name）
+					info.ErrorMessage = json["message"]?.Value<string>() ?? "Invalid response";
+					Log.Warn("Update check invalid response: " + info.ErrorMessage);
+					return info;
+				}
 				info.LatestVersion = NormalizeVersion(tagName);
 				info.ReleaseName = json["name"]?.Value<string>() ?? "";
 				info.ReleaseNotes = json["body"]?.Value<string>() ?? "";
@@ -77,6 +88,7 @@ namespace ForkPlus
 			}
 			catch (Exception ex)
 			{
+				info.ErrorMessage = ex.Message;
 				Log.Warn("Update check exception: " + ex.Message);
 			}
 			return info;

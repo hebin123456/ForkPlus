@@ -1705,6 +1705,7 @@
     "Update Submodule": "서브모듈 업데이트",
     "Update Submodules": "서브모듈 업데이트",
     "Update check failed. Please check your network connection.": "업데이트 확인에 실패했습니다. 네트워크 연결을 확인해 주세요.",
+    "Update check failed: {0}": "업데이트 확인 실패: {0}",
     "Update dependent branches": "종속 브랜치 업데이트",
     "Update manifest": "매니페스트 업데이트",
     "Update stash message": "스태시 메시지 업데이트",
