@@ -1,8 +1,8 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
-using ForkPlus.Jobs;
 using ForkPlus.Settings;
-using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
 namespace ForkPlus
@@ -29,12 +29,11 @@ namespace ForkPlus
 
 	/// <summary>
 	/// 通过 GitHub Releases API 检测新版本。
+	/// 使用独立的 HttpClient（UseProxy=false 直连），避免系统代理导致的 504 网关超时。
 	/// </summary>
 	public class UpdateChecker
 	{
-		private const string GitHubApiBase = "https://api.github.com";
-
-		private const string LatestReleasePath = "repos/hebin123456/ForkPlus/releases/latest";
+		private const string LatestReleaseUrl = "https://api.github.com/repos/hebin123456/ForkPlus/releases/latest";
 
 		private readonly int _timeoutSeconds;
 
@@ -61,50 +60,46 @@ namespace ForkPlus
 			}
 			try
 			{
-				Connection connection = new Connection(GitHubApiBase, null, _timeoutSeconds);
-				ApiRequest request = new ApiRequest(LatestReleasePath);
-				// 用 JobMonitor 承接取消，关窗时 Cancel() 会中止 HTTP 请求
-				JobMonitor monitor = new JobMonitor();
-				CancellationTokenRegistration reg = cancellationToken.Register(delegate
+				// 独立的 HttpClientHandler：UseProxy=false 绕过系统代理直连 GitHub，
+				// 避免用户代理（clash/v2ray 等）对 api.github.com 不通时返回 504。
+				HttpClientHandler handler = new HttpClientHandler { UseProxy = false };
+				using (HttpClient client = new HttpClient(handler))
 				{
-					monitor.Cancel();
-				});
-				Connection.HttpRequestResult result = connection.Request(request, jsonRequest: true, monitor);
-				reg.Dispose();
-				if (cancellationToken.IsCancellationRequested)
-				{
-					info.ErrorMessage = "Cancelled";
-					return info;
+					client.Timeout = TimeSpan.FromSeconds(_timeoutSeconds);
+					client.DefaultRequestHeaders.UserAgent.ParseAdd(App.UserAgent);
+					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+					HttpResponseMessage response = client.GetAsync(LatestReleaseUrl, cancellationToken).GetAwaiter().GetResult();
+					if (!response.IsSuccessStatusCode)
+					{
+						info.ErrorMessage = ((int)response.StatusCode).ToString() + " " + response.ReasonPhrase;
+						Log.Warn("Update check HTTP error: " + info.ErrorMessage);
+						return info;
+					}
+					string body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					JObject json = JObject.Parse(body);
+					string tagName = json["tag_name"]?.Value<string>() ?? "";
+					if (string.IsNullOrEmpty(tagName))
+					{
+						// 限流或异常响应（无 tag_name）
+						info.ErrorMessage = json["message"]?.Value<string>() ?? "Invalid response";
+						Log.Warn("Update check invalid response: " + info.ErrorMessage);
+						return info;
+					}
+					info.LatestVersion = NormalizeVersion(tagName);
+					info.ReleaseName = json["name"]?.Value<string>() ?? "";
+					info.ReleaseNotes = json["body"]?.Value<string>() ?? "";
+					info.ReleaseUrl = json["html_url"]?.Value<string>() ?? "";
+					JArray assets = json["assets"] as JArray;
+					if (assets != null && assets.Count > 0)
+					{
+						info.DownloadUrl = assets[0]["browser_download_url"]?.Value<string>() ?? info.ReleaseUrl;
+					}
+					else
+					{
+						info.DownloadUrl = info.ReleaseUrl;
+					}
+					info.HasUpdate = IsNewerVersion(info.LatestVersion, info.CurrentVersion);
 				}
-				if (!result.Succeeded)
-				{
-					info.ErrorMessage = result.Error?.FriendlyMessage ?? "Request failed";
-					Log.Warn("Update check failed: " + info.ErrorMessage);
-					return info;
-				}
-				JObject json = JObject.Parse(result.Result);
-				string tagName = json["tag_name"]?.Value<string>() ?? "";
-				if (string.IsNullOrEmpty(tagName))
-				{
-					// 限流或异常响应（无 tag_name）
-					info.ErrorMessage = json["message"]?.Value<string>() ?? "Invalid response";
-					Log.Warn("Update check invalid response: " + info.ErrorMessage);
-					return info;
-				}
-				info.LatestVersion = NormalizeVersion(tagName);
-				info.ReleaseName = json["name"]?.Value<string>() ?? "";
-				info.ReleaseNotes = json["body"]?.Value<string>() ?? "";
-				info.ReleaseUrl = json["html_url"]?.Value<string>() ?? "";
-				JArray assets = json["assets"] as JArray;
-				if (assets != null && assets.Count > 0)
-				{
-					info.DownloadUrl = assets[0]["browser_download_url"]?.Value<string>() ?? info.ReleaseUrl;
-				}
-				else
-				{
-					info.DownloadUrl = info.ReleaseUrl;
-				}
-				info.HasUpdate = IsNewerVersion(info.LatestVersion, info.CurrentVersion);
 			}
 			catch (OperationCanceledException)
 			{

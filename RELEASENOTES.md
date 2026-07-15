@@ -4,14 +4,16 @@
 
 ## v1.5.1
 
-### 修复：检查更新按钮无反应
+### 修复：检查更新按钮无反应 + 504 网关超时
 
 - **改为"先弹窗后检测"交互**：点击帮助菜单"Check for Updates..."后立即弹出检查窗口（显示进度条+"正在检查更新..."），在窗口内执行检测，避免点击后无反馈。检测完成后窗内直接显示结果——有更新（版本号+Release Notes+下载/不再提醒）、已是最新、或失败原因。关闭窗口通过 `CancellationToken` 立即中止 HTTP 请求。
-- **新增 UpdateCheckWindow**：独立的检查更新对话框，`Loaded` 时启动后台 `Task.Run` 检测，`OnCancel`/`OnClosed` 触发 `CancellationTokenSource.Cancel()` 停止检测。复用 `UpdateChecker.CheckLatestRelease(CancellationToken)`，通过 `JobMonitor` 承接取消以中止底层 HTTP。
-- **UpdateChecker 支持取消**：`CheckLatestRelease` 新增 `CancellationToken` 参数，用 `JobMonitor` 承接取消信号，关窗时能真正中止进行中的 HTTP 请求而非等其自然完成。
-- **失败原因可见**：`UpdateInfo` 新增 `ErrorMessage` 字段，限流/网络失败/异常响应时记录具体原因（如 GitHub API 限流消息），窗内显示"检测更新失败：{具体原因}"。
+- **修复 504 网关超时**：`UpdateChecker` 不再复用项目共享的 `Connection`（其 `HttpClientHandler` 默认走系统代理），改用独立的 `HttpClient` 并设置 `UseProxy=false` 直连 GitHub API，避免用户系统代理（clash/v2ray 等）对 `api.github.com` 不通时返回 504 Gateway Timeout。用户能正常访问 GitHub 但检查更新报 504 的问题得到解决。
+- **修复窗口标题**：检查更新窗口标题从"发现更新"改为"检查更新"（新 i18n key `Check for Updates`），与功能语义一致。
+- **新增 UpdateCheckWindow**：独立的检查更新对话框，`Loaded` 时启动后台 `Task.Run` 检测，`OnCancel`/`OnClosed` 触发 `CancellationTokenSource.Cancel()` 停止检测。
+- **UpdateChecker 支持取消**：`CheckLatestRelease` 新增 `CancellationToken` 参数，关窗时能中止进行中的 HTTP 请求。
+- **失败原因可见**：`UpdateInfo` 新增 `ErrorMessage` 字段，限流/网络失败/异常响应时记录具体原因，窗内显示"检测更新失败：{具体原因}"。
 - **自动检测保持静默**：后台自动检测（30s 首检 + 24h 节流）仅在有更新且未被跳过时弹 `UpdateAvailableWindow`，失败静默不打扰用户。
-- **新增 i18n key**：`Checking for updates...`、`Update check failed: {0}`（7 种语言补齐）。
+- **新增 i18n key**：`Check for Updates`、`Checking for updates...`、`Update check failed: {0}`（7 种语言补齐）。
 
 ## v1.5.0
 

@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Dialogs
 		public UpdateCheckWindow()
 		{
 			InitializeComponent();
-			DialogTitle = PreferencesLocalization.Current("Update Available");
+			DialogTitle = PreferencesLocalization.Current("Check for Updates");
 			DialogDescription = PreferencesLocalization.Current("Checking for updates...");
 			SubmitButtonTitle = PreferencesLocalization.Current("Download");
 			CancelButtonTitle = PreferencesLocalization.Current("Close");
