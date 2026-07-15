@@ -105,7 +105,9 @@
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="7" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <TextBlock Grid.Column="1" Grid.Row="7" Margin="8,8,0,0" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
+      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
+        <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
+      </ScrollViewer>
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

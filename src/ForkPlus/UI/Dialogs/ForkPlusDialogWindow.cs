@@ -46,6 +46,9 @@ namespace ForkPlus.UI.Dialogs
 
 	private TextBlock _commandPreviewTextBlock;
 
+	// 预览文本外层 ScrollViewer：限制 MaxHeight 防止长命令撑高窗口挤掉确认按钮
+	private ScrollViewer _commandPreviewScrollViewer;
+
 	private Button _commandPreviewCopyButton;
 
 	private bool _commandPreviewInitialized;
@@ -421,6 +424,12 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewLabel.Visibility = Visibility.Collapsed;
 			_commandPreviewTextBlock.Visibility = Visibility.Collapsed;
 			_commandPreviewTextBlock.Text = "";
+			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
+			_commandPreviewTextBlock.ToolTip = null;
+			if (_commandPreviewScrollViewer != null)
+			{
+				_commandPreviewScrollViewer.Visibility = Visibility.Collapsed;
+			}
 			if (_commandPreviewCopyButton != null)
 			{
 				_commandPreviewCopyButton.Visibility = Visibility.Collapsed;
@@ -431,6 +440,12 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewLabel.Visibility = Visibility.Visible;
 			_commandPreviewTextBlock.Visibility = Visibility.Visible;
 			_commandPreviewTextBlock.Text = text;
+			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
+			_commandPreviewTextBlock.ToolTip = text;
+			if (_commandPreviewScrollViewer != null)
+			{
+				_commandPreviewScrollViewer.Visibility = Visibility.Visible;
+			}
 			if (_commandPreviewCopyButton != null)
 			{
 				_commandPreviewCopyButton.Visibility = Visibility.Visible;
@@ -490,8 +505,20 @@ namespace ForkPlus.UI.Dialogs
 			Margin = new Thickness(8.0, 4.0, 0.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
-		_commandPreviewTextBlock.SetValue(Grid.ColumnProperty, 1);
-		previewGrid.Children.Add(_commandPreviewTextBlock);
+		// 限制命令预览最大高度：长命令换行多时不再无限撑高窗口把确认按钮挤出可视区。
+		// 超出部分在 ScrollViewer 内滚动查看；同时悬停 ToolTip 显示完整命令文本。
+		ScrollViewer previewScrollViewer = new ScrollViewer
+		{
+			VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+			MaxHeight = 120.0,
+			Margin = new Thickness(0.0, 0.0, 0.0, 0.0),
+			Visibility = Visibility.Collapsed
+		};
+		previewScrollViewer.SetValue(Grid.ColumnProperty, 1);
+		previewScrollViewer.Content = _commandPreviewTextBlock;
+		_commandPreviewScrollViewer = previewScrollViewer;
+		previewGrid.Children.Add(previewScrollViewer);
 		// 复制按钮：点击复制预览命令到剪贴板，ToolTip 国际化
 		_commandPreviewCopyButton = new Button
 		{
