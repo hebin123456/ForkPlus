@@ -1,13 +1,19 @@
 <dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ForkSyncCheckWindow">
   <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
-    <Image Grid.Column="0" x:Name="StatusIcon" Width="36" Height="36" VerticalAlignment="Top" Margin="0,2,14,0" />
-    <StackPanel Grid.Column="1" Margin="0,4,0,0">
-      <TextBlock x:Name="StatusText" FontSize="14" TextWrapping="Wrap" FontWeight="Medium" Margin="0,0,0,8" />
-      <TextBlock x:Name="DetailText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="0,4,0,0" />
-    </StackPanel>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,4,0,0">
+      <Image x:Name="StatusIcon" DockPanel.Dock="Left" Width="36" Height="36" VerticalAlignment="Top" Margin="0,2,14,0" />
+      <StackPanel>
+        <TextBlock x:Name="StatusText" FontSize="14" TextWrapping="Wrap" FontWeight="Medium" Margin="0,0,0,8" />
+        <TextBlock x:Name="DetailText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="0,4,0,0" />
+      </StackPanel>
+    </DockPanel>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

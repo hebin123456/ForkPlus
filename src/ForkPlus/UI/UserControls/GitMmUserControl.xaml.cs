@@ -1146,9 +1146,20 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			CancelStatusRefresh();
 			if (SubreposTabControl.SelectedItem is TabItem tabItem && tabItem.Tag is GitMmSubrepoItem subrepo)
 			{
+				// 仅在真正切换子仓 tab 时取消运行态刷新。
+				// SelectionChanged 是冒泡路由事件，内部 RepositoryUserControl 的列表/下拉框选中变化
+				// 也会冒泡到这里；若无条件调用 CancelStatusRefresh() 会自增 _runtimeStateRequestId，
+				// 导致正在后台运行的 RefreshSubrepoRuntimeState 的 Dispatcher 回调命中守卫
+				// (requestId != _runtimeStateRequestId) 而整体 return，刚拉取的 states 被丢弃，
+				// GitMmSubrepoItem 保持新建时的默认值 (HasLocalChanges=false / ChangedFilesCount=0)，
+				// 表现为"切换标签后变更数据清零"。
+				bool subrepoChanged = !ReferenceEquals(_workspace.SelectedSubrepo, subrepo);
+				if (subrepoChanged)
+				{
+					CancelStatusRefresh();
+				}
 				_workspace.SelectedSubrepo = subrepo;
 				EnsureSubrepoContent(tabItem, subrepo);
 				NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);

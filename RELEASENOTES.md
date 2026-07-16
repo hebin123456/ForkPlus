@@ -14,11 +14,11 @@
 - **问题**：手动检查更新，当已是最新版本时只显示"您使用的是最新版本。"，不显示当前版本号，用户无法确认当前版本。
 - **修复**：文案改为"您使用的是最新版本 (v{0})。"，`FormatCurrent` 填入 `info.CurrentVersion`。i18n key 从 `"You are using the latest version."` 变更为 `"You are using the latest version (v{0})."`，7 种语言同步更新—— [UpdateCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/UpdateCheckWindow.xaml.cs)
 
-### 修复：git mm 子仓不显示本地变更
+### 修复：git mm 子仓不显示本地变更 / 切换标签后变更数据清零
 
-- **问题**：git mm 视图下子仓明明有本地变更（单仓方式打开能看到），但子仓 tab header 上不显示变更图标（ChangesIcon）。
-- **根因**：`CountVisibleLocalChanges` 在计算子仓变更计数时，除了当前仓的 porcelain 计数外，还递归扫描嵌套子模块（`GetSubmodulePaths` 读 `.gitmodules` → `IsGitWorkTree` 检查 → 嵌套 `RunGit` 执行 status）。这套递归逻辑在某些子仓环境下（如 `.gitmodules` 配置异常、子模块路径不是有效 worktree）可能抛异常，导致 `GetSubrepoRuntimeState` 异常退出，`states[i]` 保持 null，UI 项不更新——表现为"没有变更"。
-- **修复**：去掉递归子模块扫描逻辑，`CountVisibleLocalChanges` 直接返回 `CountPorcelainChangedFiles(porcelainStatus)`，完全对齐单仓 `GetChangedFilesGitCommand` 的行为（单仓视图中子模块只算一个变更条目，不展开其内部文件）。同步删除不再使用的 `GetSubmodulePaths` 方法和递归重载—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
+- **问题**：git mm 视图下子仓的本地变更数据"只有第一次能显示出来"，切换子仓 tab 或切换主仓库 tab 后变更数据全部清零。
+- **根因**：`SubreposTabControl_SelectionChanged` 在判断"是否真正切换了子仓 tab"之前就无条件调用 `CancelStatusRefresh()`。而 `SelectionChanged` 是 WPF 冒泡路由事件——内部 `RepositoryUserControl` 的列表/下拉框选中变化也会冒泡到这个 handler。`CancelStatusRefresh()` 会自增 `_runtimeStateRequestId`，导致正在后台运行的 `RefreshSubrepoRuntimeState` 的 Dispatcher 回调命中守卫（`requestId != _runtimeStateRequestId`）而整体 `return`，刚拉取的 `states[]` 被丢弃，`GitMmSubrepoItem` 保持新建时的默认值（`HasLocalChanges=false` / `ChangedFilesCount=0`），表现为"变更数据清零"。首次能显示是因为首次刷新完成前没有触发任何 `SelectionChanged`；一旦触发（切 tab 或内部列表刷新），结果被丢弃，而切换 tab 的路径不会再触发 `RefreshSubrepoRuntimeState`，零值长期停留。
+- **修复**：将 `CancelStatusRefresh()` 移入"确认选中了不同子仓"的分支内，仅当 `SubreposTabControl.SelectedItem` 确实切换到不同 `GitMmSubrepoItem` 时才取消运行态刷新。冒泡上来的内部选择器事件不再干扰后台刷新。同时简化 `CountVisibleLocalChanges`（去掉递归子模块扫描，直接返回 porcelain 计数，对齐单仓行为）—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
 
 ## v1.6.0
 
