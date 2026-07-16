@@ -132,7 +132,6 @@
       <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
         <StackPanel.Children>
           <CheckBox HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DisableSyntaxHighlightingCheckBox_Changed" Unchecked="DisableSyntaxHighlightingCheckBox_Changed" x:Name="DisableSyntaxHighlightingCheckBox">Disable syntax highlighting</CheckBox>
-          <CheckBox Margin="0,6,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DiffWordLevelHighlightCheckBox_Changed" Unchecked="DiffWordLevelHighlightCheckBox_Changed" x:Name="DiffWordLevelHighlightCheckBox">Diff word level highlight</CheckBox>
         </StackPanel.Children>
       </StackPanel>
       <Separator Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />

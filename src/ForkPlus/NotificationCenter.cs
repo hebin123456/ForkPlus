@@ -89,8 +89,6 @@ namespace ForkPlus
 
 		public event EventHandler<EventArgs<bool>> DisableSyntaxHighlightingChanged;
 
-		public event EventHandler<EventArgs<bool>> DiffWordLevelHighlightChanged;
-
 		public event EventHandler ReferenceSortOrderChanged;
 
 		public void RaiseMainWindowInitializedChanged(object sender)
@@ -246,11 +244,6 @@ namespace ForkPlus
 		public void RaiseDisableSyntaxHighlightingChanged(object sender, bool newValue)
 		{
 			this.DisableSyntaxHighlightingChanged?.Invoke(this, new EventArgs<bool>(newValue));
-		}
-
-		public void RaiseDiffWordLevelHighlightChanged(object sender, bool newValue)
-		{
-			this.DiffWordLevelHighlightChanged?.Invoke(this, new EventArgs<bool>(newValue));
 		}
 
 		public void RaiseReferenceSortOrderChanged(object sender)

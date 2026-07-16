@@ -988,8 +988,6 @@ namespace ForkPlus.Settings
 
 		private bool _disableSyntaxHighlighting;
 
-		private bool _diffWordLevelHighlight;
-
 		private int _maxCommitCount;
 
 		private int _layoutScaling;
@@ -1821,18 +1819,6 @@ namespace ForkPlus.Settings
 			}
 		}
 
-		public bool DiffWordLevelHighlight
-		{
-			get
-			{
-				return _diffWordLevelHighlight;
-			}
-			set
-			{
-				_diffWordLevelHighlight = value;
-			}
-		}
-
 		public int MaxCommitCount
 		{
 			get
@@ -2621,7 +2607,6 @@ namespace ForkPlus.Settings
 			bool pushAutomaticallyOnCommit = json["PushAutomaticallyOnCommit"]?.Value<bool>() ?? false;
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
-			bool diffWordLevelHighlight = json["DiffWordLevelHighlight"]?.Value<bool>() ?? true;
 			int maxCommitCount = json["MaxCommitCount"]?.Value<int>() ?? 50000;
 			int layoutScaling = json["LayoutScaling"]?.Value<int>() ?? 100;
 			MergeType mergeType = (MergeType)(json["MergeType"]?.Value<int>() ?? 0);
@@ -2737,7 +2722,6 @@ namespace ForkPlus.Settings
 				PushAutomaticallyOnCommit = pushAutomaticallyOnCommit,
 				CompactBranchLabels = compactBranchLabels,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
-				DiffWordLevelHighlight = diffWordLevelHighlight,
 				MaxCommitCount = maxCommitCount,
 				LayoutScaling = layoutScaling,
 				MergeType = mergeType,
@@ -3113,10 +3097,6 @@ namespace ForkPlus.Settings
 				{
 				"DisableSyntaxHighlighting",
 				new JValue(target.DisableSyntaxHighlighting)
-			},
-			{
-				"DiffWordLevelHighlight",
-				new JValue(target.DiffWordLevelHighlight)
 			},
 			{
 				"MaxCommitCount",

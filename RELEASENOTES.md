@@ -4,31 +4,19 @@
 
 ## v1.6.3
 
-### 新增：行内词级差异高亮
-
-- **需求**：diff 视图里同一行内只改了几个词时，原有"整行红/绿"高亮太粗，看不出具体改了哪些词。希望像 GitHub/GitLab 那样做行内词级差异高亮——只把真正变化的词用更深的红/绿叠层标出来。
-- **实现**：
-  - **词级 LCS diff**：`PatchHighlighter.HighlightDifference` 在 `ForkPlusSettings.Default.DiffWordLevelHighlight` 为 true 时走新路径——提取行文本（跳过 `VisualLine.Range` 首字符 `+`/`-`/` ` 前缀和尾部 `\n`），按 `[A-Za-z0-9_]` 连续段切分为词 token、其它字符各自单独成 token，对两侧 token 序列做经典 LCS DP，回溯标出非 LCS 的 token，连续的非 LCS token 合并成一个 `Range`，分别 Add 到 `extraRemoveRegions`/`extraAddRegions`—— [PatchHighlighter.cs](file:///workspace/src/ForkPlus/Git/Diff/Presentation/PatchHighlighter.cs)
-  - **下游零改动**：`HighlightingScheme.ExtraRemoveRegions`/`ExtraAddRegions` 本就是 `Range[]`，`DiffBackgroundColorizer.Draw` 的 `ExactAdd`/`ExactRemove` 分支按 segment 精确绘制几何（`BackgroundGeometryBuilder.AddSegment`），天然支持一行内多段叠层
-  - **安全护栏**：行长度 < 3 或 token 数 > 500 时跳过词级 diff（避免 O(n*m) 在超长单行上炸），整行退回原有红/绿底色
-  - **原字符级 prefix/suffix 路径保留**：作为 `DiffWordLevelHighlight=false` 时的 fallback（保留 `CommonLength` 方法），用户可在偏好里关掉词级模式回到旧行为
-- **设置项**：新增 `DiffWordLevelHighlight` bool 属性（默认 true），完整复用 `DisableSyntaxHighlighting` 模式——`ForkPlusSettings` 字段+属性+JSON `Decode`/`Encode` 序列化、`NotificationCenter.DiffWordLevelHighlightChanged` 事件+`Raise` 方法、`GeneralUserControl` 偏好页复选框（与"Disable syntax highlighting"同列垂直堆叠，风格一致）。7 语言 i18n key `"Diff word level highlight"` 同步—— [ForkPlusSettings.cs](file:///workspace/src/ForkPlus/Settings/ForkPlusSettings.cs)、[NotificationCenter.cs](file:///workspace/src/ForkPlus/NotificationCenter.cs)、[GeneralUserControl.xaml](file:///workspace/src/ForkPlus/UI/UserControls/Preferences/GeneralUserControl.xaml)
-- **已知限制**：偏好里切换复选框后，已打开的 diff 不会立即重算 scheme（HighlightingScheme 在 VisualPatch 构建时一次性预算），切到另一个提交/文件再切回即可看到效果。这是 split 模式与 side-by-side 模式统一的简单策略，避免为 side-by-side 引入跨 DiffCodeEditor 协调。
-
 ### 新增：贡献热力图（GitHub 风格 53 周 × 7 天）
 
 - **需求**：统计面板希望加一张 GitHub 个人主页那种"提交热力图"，一眼看出近一年的提交活跃度分布。
 - **实现**：
-  - **数据源**：`GetRepositoryStatsGitCommand.Execute` 在原有按月/按周/按小时聚合的循环里，顺手按 `authorDate.Date` 聚合一份 `Dictionary<DateTime,int> CommitsByDate`，零额外 git 调用—— [GetRepositoryStatsGitCommand.cs](file:///workspace/src/ForkPlus/Git/Commands/GetRepositoryStatsGitCommand.cs)
-  - **数据结构**：`RepositoryStats` 新增 `public Dictionary<DateTime,int> CommitsByDate { get; }` 字段，构造函数同步加参数—— [RepositoryStats.cs](file:///workspace/src/ForkPlus/Git/Commands/RepositoryStats.cs)
+  - **数据源**：`GetRepositoryStatsGitCommand.Execute` 在原有按月/按周/按小时聚合的循环里，顺手按 `authorDate.Date` 聚合一份 `Dictionary<DateTime, DayContributionInfo> CommitsByDate`，零额外 git 调用—— [GetRepositoryStatsGitCommand.cs](file:///workspace/src/ForkPlus/Git/Commands/GetRepositoryStatsGitCommand.cs)
+  - **数据结构**：`RepositoryStats` 新增 `public Dictionary<DateTime, DayContributionInfo> CommitsByDate { get; }` 字段，构造函数同步加参数。`DayContributionInfo` 持有 `Commits` 和 `CommitsByAuthor`（按作者统计当天提交数），`AddCommit` 返回新实例（immutable 风格），`GetTopAuthors(limit)` 按提交数降序、名字升序取前 N 个—— [RepositoryStats.cs](file:///workspace/src/ForkPlus/Git/Commands/RepositoryStats.cs)
   - **自定义 WPF 控件**：新建 `ContributionHeatmap : Grid`——53 列 × 7 行 Grid，每格一个 `Border`（11×11，圆角 2px，间距 3px）。最近一周在右侧，超出今天的格子不绘制。色阶 5 级（按当仓库最大日提交数 quartile 分桶：0 / (0,25%] / (25%,50%] / (50%,75%] / (75%,100%]），light 主题用 GitHub 经典 `#ebedf0/#9be9a8/#40c463/#30a14e/#216e39`，dark 主题用 `#161b22/#033a16/#196f1a/#2ea043/#3fd95e`。订阅 `ApplicationThemeChanged` 事件，主题切换时重建格子刷新色阶—— [ContributionHeatmap.cs](file:///workspace/src/ForkPlus/UI/Controls/ContributionHeatmap.cs)
   - **依赖属性绑定**：`CommitsByDateProperty` DP，setter 触发 `RebuildCells` 重绘
   - **布局接入**：`StatisticsUserControl.xaml` 的 `StatsContainer` Grid 行数从 4 加到 6，在 Row2（LinePlot）后插入 Row3"Contributions"标题 + Row4 热力图，原 Row3 的 Grid 顺移到 Row5。`UpdatePlots` 末尾追加 `Heatmap.CommitsByDate = stat.CommitsByDate`—— [StatisticsUserControl.xaml](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml)、[StatisticsUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs)
-  - **tooltip 增强**：每格 tooltip 两行——
+  - **tooltip**：每格 tooltip 两行——
     - 第一行：`string.Format(Translate("{0} contributions on {1}"), commits, date.ToString("yyyy-MM-dd ddd", CurrentCulture))`，日期带星期缩写（按系统 culture 显示）
     - 第二行：`string.Format(Translate("Authors: {0}"), string.Join(", ", top3) + ", +N more" if any)`，列出当天按提交数排序的前 3 个作者，超出部分显示"+N more"
     - commits==0 或无作者时只显示第一行
-  - **数据结构升级**：为支持 tooltip 第二行，`CommitsByDate` 类型从 `Dictionary<DateTime,int>` 升级为 `Dictionary<DateTime, DayContributionInfo>`。`DayContributionInfo` 持有 `Commits` 和 `CommitsByAuthor`（按作者统计当天提交数），在原有 `git log` 循环里同步累加（零额外 git 调用）。`AddCommit` 返回新实例（immutable 风格，避免共享 mutable 状态），`GetTopAuthors(limit)` 按提交数降序、名字升序取前 N 个—— [RepositoryStats.cs](file:///workspace/src/ForkPlus/Git/Commands/RepositoryStats.cs)
   - **i18n**：3 个新 key 同步到 7 语言——`"{0} contributions on {1}"`、`"Authors: {0}"`、`"+{0} more"`
 
 ## v1.6.2

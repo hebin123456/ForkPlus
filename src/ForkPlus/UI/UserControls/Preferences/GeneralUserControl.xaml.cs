@@ -52,7 +52,6 @@ namespace ForkPlus.UI.UserControls.Preferences
 			UpdateRepoStatusAutomaticallyCheckBox.IsChecked = ForkPlusSettings.Default.AutomaticStatusUpdateInterval > 0;
 			UpdateSubmodulesAutomaticallyCheckBox.IsChecked = ForkPlusSettings.Default.UpdateSubmodulesOnCheckout;
 			DisableSyntaxHighlightingCheckBox.IsChecked = ForkPlusSettings.Default.DisableSyntaxHighlighting;
-			DiffWordLevelHighlightCheckBox.IsChecked = ForkPlusSettings.Default.DiffWordLevelHighlight;
 			SpaceCharacterComboBox.ItemsSource = Consts.Git.References.SpaceCharacterReplacements;
 			SpaceCharacterComboBox.SelectedValue = ForkPlusSettings.Default.ReferenceSpaceCharacterReplacement;
 			PushAutomaticallyOnCommitCheckBox.IsChecked = ForkPlusSettings.Default.PushAutomaticallyOnCommit;
@@ -281,16 +280,6 @@ namespace ForkPlus.UI.UserControls.Preferences
 				bool valueOrDefault = DisableSyntaxHighlightingCheckBox.IsChecked.GetValueOrDefault();
 				ForkPlusSettings.Default.DisableSyntaxHighlighting = valueOrDefault;
 				NotificationCenter.Current.RaiseDisableSyntaxHighlightingChanged(this, valueOrDefault);
-			}
-		}
-
-		private void DiffWordLevelHighlightCheckBox_Changed(object sender, RoutedEventArgs e)
-		{
-			if (_initialized)
-			{
-				bool valueOrDefault = DiffWordLevelHighlightCheckBox.IsChecked.GetValueOrDefault(true);
-				ForkPlusSettings.Default.DiffWordLevelHighlight = valueOrDefault;
-				NotificationCenter.Current.RaiseDiffWordLevelHighlightChanged(this, valueOrDefault);
 			}
 		}
 
