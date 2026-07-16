@@ -2009,41 +2009,12 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		// 子仓本质上是普通单仓，按单仓对待：直接用 porcelain 输出计数当前仓的变更文件数，
+		// 不递归展开嵌套子模块的内部变更（与单仓 GetChangedFilesGitCommand 行为一致——
+		// 单仓视图中子模块只算一个变更条目，不展开其内部文件）。
 		private static int CountVisibleLocalChanges(string path, string porcelainStatus, JobMonitor monitor)
 		{
-			return CountVisibleLocalChanges(path, porcelainStatus, new HashSet<string>(StringComparer.OrdinalIgnoreCase), depth: 0, monitor);
-		}
-
-		private static int CountVisibleLocalChanges(string path, string porcelainStatus, HashSet<string> visitedPaths, int depth, JobMonitor monitor)
-		{
-			if (depth > SubrepoScanDepth || monitor.IsCanceled)
-			{
-				return 0;
-			}
-			string normalizedPath = NormalizePath(path);
-			if (normalizedPath == null || !visitedPaths.Add(normalizedPath))
-			{
-				return 0;
-			}
-			int count = CountPorcelainChangedFiles(porcelainStatus);
-			foreach (string submodulePath in GetSubmodulePaths(path, monitor))
-			{
-				string fullSubmodulePath = System.IO.Path.Combine(path, submodulePath);
-				if (IsGitWorkTree(fullSubmodulePath))
-				{
-					// 子模块同样按单仓对待：-z + --untracked-files=all，与 GetChangedFilesGitCommand 一致。
-					GitRequestResult submoduleStatusResult = RunGit(fullSubmodulePath, new GitCommand(
-						"-c", "core.fsmonitor=false",
-						"-c", "core.untrackedCache=false",
-						"-c", "core.checkStat=default",
-						"--no-optional-locks", "status", "--porcelain", "-z", "--untracked-files=all"), monitor);
-					if (submoduleStatusResult.Success)
-					{
-						count += CountVisibleLocalChanges(fullSubmodulePath, submoduleStatusResult.Stdout, visitedPaths, depth + 1, monitor);
-					}
-				}
-			}
-			return count;
+			return CountPorcelainChangedFiles(porcelainStatus);
 		}
 
 		private static int CountPorcelainChangedFiles(string porcelainStatus)
@@ -2058,27 +2029,6 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			return count;
-		}
-
-		private static IEnumerable<string> GetSubmodulePaths(string path, JobMonitor monitor)
-		{
-			if (monitor.IsCanceled)
-			{
-				yield break;
-			}
-			GitRequestResult result = RunGit(path, new GitCommand("config", "--file", ".gitmodules", "--get-regexp", "path"), monitor);
-			if (!result.Success)
-			{
-				yield break;
-			}
-			foreach (string line in result.Stdout.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
-			{
-				string[] parts = line.Split(new char[2] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
-				if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[1]))
-				{
-					yield return parts[1].Trim();
-				}
-			}
 		}
 
 		private static int CountConflicts(string porcelainStatus)

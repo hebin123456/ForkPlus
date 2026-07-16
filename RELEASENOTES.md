@@ -2,6 +2,24 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.6.1
+
+### 修复：Fork 同步状态弹窗布局拥挤
+
+- **问题**：Fork 工作流同步冲突预检结果弹窗（ForkSyncCheckWindow）的图标和文字挤在一起，左侧 80px 空列占位但图标被塞进右侧 DockPanel，视觉拥挤。
+- **修复**：Grid 改为 `Auto + *` 双列布局，图标放第一列（36×36，右上对齐，右间距 14px），文字放第二列 StackPanel（标题 + 详情两行，行间距 8px）—— [ForkSyncCheckWindow.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml)
+
+### 修复：检查更新"已是最新版本"未显示版本号
+
+- **问题**：手动检查更新，当已是最新版本时只显示"您使用的是最新版本。"，不显示当前版本号，用户无法确认当前版本。
+- **修复**：文案改为"您使用的是最新版本 (v{0})。"，`FormatCurrent` 填入 `info.CurrentVersion`。i18n key 从 `"You are using the latest version."` 变更为 `"You are using the latest version (v{0})."`，7 种语言同步更新—— [UpdateCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/UpdateCheckWindow.xaml.cs)
+
+### 修复：git mm 子仓不显示本地变更
+
+- **问题**：git mm 视图下子仓明明有本地变更（单仓方式打开能看到），但子仓 tab header 上不显示变更图标（ChangesIcon）。
+- **根因**：`CountVisibleLocalChanges` 在计算子仓变更计数时，除了当前仓的 porcelain 计数外，还递归扫描嵌套子模块（`GetSubmodulePaths` 读 `.gitmodules` → `IsGitWorkTree` 检查 → 嵌套 `RunGit` 执行 status）。这套递归逻辑在某些子仓环境下（如 `.gitmodules` 配置异常、子模块路径不是有效 worktree）可能抛异常，导致 `GetSubrepoRuntimeState` 异常退出，`states[i]` 保持 null，UI 项不更新——表现为"没有变更"。
+- **修复**：去掉递归子模块扫描逻辑，`CountVisibleLocalChanges` 直接返回 `CountPorcelainChangedFiles(porcelainStatus)`，完全对齐单仓 `GetChangedFilesGitCommand` 的行为（单仓视图中子模块只算一个变更条目，不展开其内部文件）。同步删除不再使用的 `GetSubmodulePaths` 方法和递归重载—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
+
 ## v1.6.0
 
 ### 新功能：AI 解决合并冲突
