@@ -1348,6 +1348,20 @@ namespace ForkPlus.UI.UserControls
 					branchItem.Visibility = Visibility.Collapsed;
 				}
 			}
+			// 过滤改变子项可见性后，WPF 菜单的焦点管理可能把键盘焦点抢到第一个可见 MenuItem，
+			// 导致搜索框失焦、无法继续输入。过滤完成后立即把焦点夺回搜索框。
+			// 用 Keyboard.Focus（比 Control.Focus 更可靠）并配合 Dispatcher.BeginInvoke 确保在
+			// 菜单焦点逻辑之后执行。
+			groupItem.Dispatcher.BeginInvoke(new Action(delegate
+			{
+				if (searchBox.IsVisible && !searchBox.IsKeyboardFocused)
+				{
+					Keyboard.Focus(searchBox);
+					searchBox.Focus();
+					// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
+					searchBox.CaretIndex = searchBox.Text.Length;
+				}
+			}), System.Windows.Threading.DispatcherPriority.Background);
 		}
 
 		/// <summary>在 MenuItem 的子菜单 Popup 视觉树里按名字查找模板部件。</summary>
