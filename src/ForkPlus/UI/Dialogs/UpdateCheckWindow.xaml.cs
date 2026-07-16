@@ -98,8 +98,9 @@ namespace ForkPlus.UI.Dialogs
 			}
 			else
 			{
-				// 已是最新
-				VersionInfoTextBlock.Text = PreferencesLocalization.Current("You are using the latest version.");
+				// 已是最新（附当前版本号）
+			VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent(
+				"You are using the latest version (v{0}).", info.CurrentVersion);
 				ReleaseNotesLabel.Visibility = Visibility.Collapsed;
 				ReleaseNotesTextBox.Visibility = Visibility.Collapsed;
 				SkipVersionCheckBox.Visibility = Visibility.Collapsed;

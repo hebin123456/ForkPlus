@@ -1840,7 +1840,7 @@
     "Writing objects": "オブジェクトを書き込み中",
     "Yes": "はい",
     "You are already logged in to {0} as {1}": "{0} に {1} として既にログインしています",
-    "You are using the latest version.": "最新バージョンを使用しています。",
+    "You are using the latest version (v{0}).": "最新バージョンを使用しています (v{0})。",
     "You can always log back in at any time": "いつでも再度ログインできます",
     "You can stage the file now.": "ファイルをステージできます。",
     "You can't undo this action": "この操作は元に戻せません",

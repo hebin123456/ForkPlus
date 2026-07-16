@@ -1840,7 +1840,7 @@
     "Writing objects": "正在写入对象",
     "Yes": "是",
     "You are already logged in to {0} as {1}": "你已作为 {1} 登录到 {0}",
-    "You are using the latest version.": "您使用的是最新版本。",
+    "You are using the latest version (v{0}).": "您使用的是最新版本 (v{0})。",
     "You can always log back in at any time": "你随时可以重新登录",
     "You can stage the file now.": "现在可以暂存该文件。",
     "You can't undo this action": "此操作无法撤销",

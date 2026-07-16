@@ -1840,7 +1840,7 @@
     "Writing objects": "Escribiendo objetos",
     "Yes": "Sí",
     "You are already logged in to {0} as {1}": "Ya has iniciado sesión en {0} como {1}",
-    "You are using the latest version.": "Estás usando la última versión.",
+    "You are using the latest version (v{0}).": "Estás usando la última versión (v{0}).",
     "You can always log back in at any time": "Puedes iniciar sesión de nuevo en cualquier momento",
     "You can stage the file now.": "Puedes preparar el archivo ahora.",
     "You can't undo this action": "No puedes deshacer esta acción",
