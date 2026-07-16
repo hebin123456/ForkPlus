@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.6.2
+
+### 优化：跟踪右键改为二级菜单 + 分支级搜索框（跟踪和检查远端同步状态通用）
+
+- **需求**：① "跟踪"右键原来把所有远端分支平铺在一个菜单里（仅 < 150 个时），分支多了不好找；② 希望改成和"检查远端同步状态"一样的二级菜单（按远端分组）；③ 分支那一级最上面加搜索框，搜索框置顶不受上下滚动影响，跟踪和检查远端同步状态都要。
+- **实现**：
+  - **跟踪改为二级菜单**：`CreateLocalBranchContextMenuItems` 中"Tracking"菜单项重构为二级结构——顶层放"Remove tracking reference"+ Separator，然后按远端名分组列出远端分支（`repositoryData.References.RemoteBranches` 按 Remote 分组），与"检查远端同步状态"风格一致。移除原来的 `< 150` 分支限制（搜索框解决了查找问题）—— [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs)
+  - **可搜索子菜单模板**：`Menu.xaml` 新增 `SearchableSubmenuHeaderTemplateKey` ControlTemplate 和 `SearchableSubmenuMenuItem` Style——Popup 内容改为 `Grid(Rows: Auto, *)`，第 0 行是置顶搜索框（`PlaceholderTextBox` + `SearchPanelPlaceholderTextBox` 样式 + `SearchOnIcon` 图标，不随列表滚动），第 1 行是原有 `ScrollViewer`+`ItemsPresenter`（可滚动）。搜索框样式复用侧边栏过滤框同款 `SearchPanelPlaceholderTextBox`，风格一致—— [Menu.xaml](file:///workspace/src/ForkPlus/Theme/Styles/Menu.xaml)
+  - **分支级搜索框**：新增 `CreateSearchableRemoteGroupMenuItem` 辅助方法，创建带搜索框的远端分组子菜单；子菜单打开时通过 `SubmenuOpened` 事件在视觉树里找到 `PART_SearchBox`，订阅 `TextChanged` 按分支名（`Header`）不区分大小写过滤，隐藏不匹配项（`Visibility=Collapsed`），并自动聚焦搜索框。跟踪和检查远端同步状态的远端分组都复用此方法—— [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs)
+
 ## v1.6.1
 
 ### 修复：远端同步状态弹窗布局拥挤

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Media;
 using System.Windows.Navigation;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
@@ -1028,31 +1029,15 @@ namespace ForkPlus.UI.UserControls
 			RemoteBranch[] allRemoteBranches = repositoryData.References.RemoteBranches;
 			if (allRemoteBranches != null && allRemoteBranches.Length > 0)
 			{
-				// 按远端名分组，每组下挂该远端的分支，与 Tracking 菜单风格一致
+				// 按远端名分组，每组用可搜索子菜单（置顶搜索框 + 可滚动分支列表）
 				IEnumerable<IGrouping<string, RemoteBranch>> grouped = allRemoteBranches.GroupBy((RemoteBranch rb) => rb.Remote ?? "").OrderBy((IGrouping<string, RemoteBranch> g) => g.Key);
 				foreach (IGrouping<string, RemoteBranch> group in grouped)
 				{
-					MenuItem remoteGroupItem = new MenuItem
+					MenuItem remoteGroupItem = CreateSearchableRemoteGroupMenuItem(group.Key, group, delegate(RemoteBranch rb)
 					{
-						Header = group.Key
-					};
-					foreach (RemoteBranch rb in group.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
-					{
-						RemoteBranch currentRemoteBranch = rb;
-						MenuItem branchItem = new MenuItem
-						{
-							Header = currentRemoteBranch.ShortName
-						};
-						branchItem.Click += delegate
-						{
-							RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch, currentRemoteBranch);
-						};
-						remoteGroupItem.Items.Add(branchItem);
-					}
-					if (remoteGroupItem.Items.Count > 0)
-					{
-						checkRemoteSyncMenuItem.Items.Add(remoteGroupItem);
-					}
+						RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch, rb);
+					}, isCheckedPredicate: null);
+					checkRemoteSyncMenuItem.Items.Add(remoteGroupItem);
 				}
 			}
 			// 没有远端分支时禁用整项
@@ -1092,49 +1077,41 @@ namespace ForkPlus.UI.UserControls
 					list.Add(CreateLocalBranchGitFlowMenuItem(repositoryUserControl, gitModule, repositoryData, repositoryData.GitFlowSettings, branch));
 					list.Add(new Separator());
 				}
-				if (repositoryData.References.RemoteBranches.Length < 150)
+				// 跟踪：改为二级菜单（和检查远端同步状态一致），按远端名分组列出远端分支，每组带搜索框。
+			MenuItem trackingMenuItem = new MenuItem
+			{
+				Header = Preferences.PreferencesLocalization.MenuHeader("Tracking")
+			};
+			RemoteBranch[] trackingRemoteBranches = repositoryData.References.RemoteBranches;
+			if (trackingRemoteBranches != null && trackingRemoteBranches.Length > 0)
+			{
+				// "Remove tracking reference" 放在二级菜单顶层（不属于某个远端分组）
+				if (!string.IsNullOrWhiteSpace(branch.UpstreamFullReference))
 				{
-					MenuItem menuItem = new MenuItem
+					MenuItem removeTrackingItem = RepositoryUserControl.Commands.UpdateTrackingReference.CreateMenuItem("Remove tracking reference", delegate
 					{
-						Header = Preferences.PreferencesLocalization.MenuHeader("Tracking")
-					};
-					if (!string.IsNullOrWhiteSpace(branch.UpstreamFullReference))
-					{
-						menuItem.Items.Add(RepositoryUserControl.Commands.UpdateTrackingReference.CreateMenuItem("Remove tracking reference", delegate
-						{
-							RepositoryUserControl.Commands.UpdateTrackingReference.Execute(repositoryUserControl, gitModule, branch, null);
-						}));
-						if (menuItem.Items.Count > 0)
-						{
-							menuItem.Items.Add(new Separator());
-						}
-					}
-					RemoteBranch[] remoteBranches = repositoryData.References.RemoteBranches;
-					foreach (RemoteBranch remoteBranch in remoteBranches)
-					{
-						RemoteBranch currentRemoteBranch = remoteBranch;
-						bool isChecked = currentRemoteBranch.FullReference == branch.UpstreamFullReference;
-						MenuItem menuItem2 = RepositoryUserControl.Commands.UpdateTrackingReference.CreateMenuItem(currentRemoteBranch.Name, delegate
-						{
-							RepositoryUserControl.Commands.UpdateTrackingReference.Execute(repositoryUserControl, gitModule, branch, currentRemoteBranch);
-						});
-						menuItem2.IsChecked = isChecked;
-						menuItem.Items.Add(menuItem2);
-					}
-					if (menuItem.Items.Count == 0)
-					{
-						menuItem.IsEnabled = false;
-					}
-					list.Add(menuItem);
+						RepositoryUserControl.Commands.UpdateTrackingReference.Execute(repositoryUserControl, gitModule, branch, null);
+					});
+					trackingMenuItem.Items.Add(removeTrackingItem);
+					trackingMenuItem.Items.Add(new Separator());
 				}
-				else
+				// 按远端名分组，每组用可搜索子菜单
+				IEnumerable<IGrouping<string, RemoteBranch>> trackingGrouped = trackingRemoteBranches.GroupBy((RemoteBranch rb) => rb.Remote ?? "").OrderBy((IGrouping<string, RemoteBranch> g) => g.Key);
+				foreach (IGrouping<string, RemoteBranch> group in trackingGrouped)
 				{
-					list.Add(RepositoryUserControl.Commands.ShowChangeTrackingReferenceWindow.CreateMenuItem(delegate
+					MenuItem remoteGroupItem = CreateSearchableRemoteGroupMenuItem(group.Key, group, delegate(RemoteBranch rb)
 					{
-						RepositoryUserControl.Commands.ShowChangeTrackingReferenceWindow.Execute(repositoryUserControl, gitModule, branch, repositoryData);
-					}));
+						RepositoryUserControl.Commands.UpdateTrackingReference.Execute(repositoryUserControl, gitModule, branch, rb);
+					}, isCheckedPredicate: (RemoteBranch rb) => rb.FullReference == branch.UpstreamFullReference);
+					trackingMenuItem.Items.Add(remoteGroupItem);
 				}
-				list.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateMenuItem("Rename '" + branch.Name + "'...", delegate
+			}
+			if (trackingMenuItem.Items.Count == 0)
+			{
+				trackingMenuItem.IsEnabled = false;
+			}
+			list.Add(trackingMenuItem);
+			list.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateMenuItem("Rename '" + branch.Name + "'...", delegate
 				{
 					RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.Execute(repositoryUserControl, gitModule, repositoryData.References, branch);
 				}));
@@ -1272,6 +1249,136 @@ namespace ForkPlus.UI.UserControls
 				RepositoryUserControl.Commands.ShowGitFlowStartHotfixWindow.Execute(repositoryUserControl, gitModule);
 			}));
 			return menuItem;
+		}
+
+		/// <summary>
+		/// 创建一个可搜索的远端分组子菜单：Popup 顶部置顶搜索框（不随列表滚动），下方是该远端的分支列表。
+		/// 用于"跟踪"和"检查远端同步状态"二级菜单的远端分组项。
+		/// </summary>
+		/// <param name="remoteName">远端名（作为分组 Header）。</param>
+		/// <param name="remoteBranches">该远端下的远端分支集合。</param>
+		/// <param name="onBranchSelected">用户选定某个远端分支时的回调。</param>
+		/// <param name="isCheckedPredicate">可选，判断某个远端分支是否应显示勾选状态（如当前 tracking 的分支）。</param>
+		private static MenuItem CreateSearchableRemoteGroupMenuItem(
+			string remoteName,
+			IEnumerable<RemoteBranch> remoteBranches,
+			Action<RemoteBranch> onBranchSelected,
+			Func<RemoteBranch, bool> isCheckedPredicate)
+		{
+			MenuItem groupItem = new MenuItem
+			{
+				Header = remoteName
+			};
+			// 应用可搜索子菜单模板（置顶搜索框 + 可滚动分支列表）
+			Style searchableStyle = (Style)Application.Current.TryFindResource("SearchableSubmenuMenuItem");
+			if (searchableStyle != null)
+			{
+				groupItem.Style = searchableStyle;
+			}
+			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
+			{
+				RemoteBranch currentRemoteBranch = rb;
+				MenuItem branchItem = new MenuItem
+				{
+					Header = currentRemoteBranch.ShortName
+				};
+				if (isCheckedPredicate != null && isCheckedPredicate(currentRemoteBranch))
+				{
+					branchItem.IsChecked = true;
+				}
+				branchItem.Click += delegate
+				{
+					onBranchSelected?.Invoke(currentRemoteBranch);
+				};
+				groupItem.Items.Add(branchItem);
+			}
+			// 子菜单打开时，找到模板里的 PART_SearchBox，订阅文本变化做分支过滤
+			groupItem.SubmenuOpened += delegate
+			{
+				PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
+				if (searchBox == null)
+				{
+					return;
+				}
+				// 清空上次打开残留的搜索文本
+				searchBox.Text = string.Empty;
+				searchBox.TextChanged -= SearchBox_TextChanged;
+				searchBox.TextChanged += SearchBox_TextChanged;
+				// 把分支项缓存到 Tag，供过滤回调使用
+				searchBox.Tag = groupItem;
+				// 自动聚焦搜索框
+				searchBox.Focus();
+			};
+			return groupItem;
+		}
+
+		/// <summary>搜索框文本变化：隐藏不匹配的分支项（MenuItem.Header 含搜索文本即匹配，不区分大小写）。</summary>
+		private static void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			PlaceholderTextBox searchBox = sender as PlaceholderTextBox;
+			if (searchBox == null)
+			{
+				return;
+			}
+			MenuItem groupItem = searchBox.Tag as MenuItem;
+			if (groupItem == null)
+			{
+				return;
+			}
+			string filter = (searchBox.Text ?? string.Empty).Trim();
+			foreach (object item in groupItem.Items)
+			{
+				MenuItem branchItem = item as MenuItem;
+				if (branchItem == null)
+				{
+					continue;
+				}
+				string header = branchItem.Header as string;
+				if (string.IsNullOrEmpty(filter) || (header != null && header.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0))
+				{
+					branchItem.Visibility = Visibility.Visible;
+				}
+				else
+				{
+					branchItem.Visibility = Visibility.Collapsed;
+				}
+			}
+		}
+
+		/// <summary>在 MenuItem 的子菜单 Popup 视觉树里按名字查找模板部件。</summary>
+		[Null]
+		private static T FindTemplatePart<T>(MenuItem menuItem, string name) where T : FrameworkElement
+		{
+			if (menuItem == null)
+			{
+				return null;
+			}
+			// 子菜单 Popup 打开后，模板部件在 menuItem 的子 visual tree 里
+			return FindVisualDescendantByName<T>(menuItem, name);
+		}
+
+		[Null]
+		private static T FindVisualDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
+		{
+			if (root == null)
+			{
+				return null;
+			}
+			int count = VisualTreeHelper.GetChildrenCount(root);
+			for (int i = 0; i < count; i++)
+			{
+				DependencyObject child = VisualTreeHelper.GetChild(root, i);
+				if (child is T typed && typed.Name == name)
+				{
+					return typed;
+				}
+				T found = FindVisualDescendantByName<T>(child, name);
+				if (found != null)
+				{
+					return found;
+				}
+			}
+			return null;
 		}
 
 		private IEnumerable<Control> CreateRemoteBranchContextMenuItems(RepositoryUserControl repositoryUserControl, GitModule gitModule, RepositoryData repositoryData, RemoteBranch[] branches, [Null] LocalBranch activeBranch, SidebarItem sidebarItem, CommitGraphCache commitGraphCache)
