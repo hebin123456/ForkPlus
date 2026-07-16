@@ -55,7 +55,7 @@ namespace ForkPlus.Git.Commands
 		{
 			dictionary3[k] = 0;
 		}
-		Dictionary<DateTime, int> dictionary4 = new Dictionary<DateTime, int>();
+		Dictionary<DateTime, DayContributionInfo> dictionary4 = new Dictionary<DateTime, DayContributionInfo>();
 		HashSet<string> hashSet = new HashSet<string>();
 		foreach (Revision item in list)
 		{
@@ -67,8 +67,8 @@ namespace ForkPlus.Git.Commands
 			dictionary2[authorDate.ToUniversalTime().DayOfWeek]++;
 			dictionary3[authorDate.Hour]++;
 			DateTime day = authorDate.Date;
-			dictionary4.TryGetValue(day, out var dayCount);
-			dictionary4[day] = dayCount + 1;
+			DayContributionInfo existing = dictionary4.TryGetValue(day, out var info) ? info : new DayContributionInfo();
+			dictionary4[day] = existing.AddCommit(item.Author.Name);
 		}
 			DateTime dateTime = TrimTime(list[list.Count - 1].AuthorDate);
 			DateTime dateTime2 = TrimTime(list[0].AuthorDate);

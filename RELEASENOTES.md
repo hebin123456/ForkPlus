@@ -24,7 +24,12 @@
   - **自定义 WPF 控件**：新建 `ContributionHeatmap : Grid`——53 列 × 7 行 Grid，每格一个 `Border`（11×11，圆角 2px，间距 3px）。最近一周在右侧，超出今天的格子不绘制。色阶 5 级（按当仓库最大日提交数 quartile 分桶：0 / (0,25%] / (25%,50%] / (50%,75%] / (75%,100%]），light 主题用 GitHub 经典 `#ebedf0/#9be9a8/#40c463/#30a14e/#216e39`，dark 主题用 `#161b22/#033a16/#196f1a/#2ea043/#3fd95e`。订阅 `ApplicationThemeChanged` 事件，主题切换时重建格子刷新色阶—— [ContributionHeatmap.cs](file:///workspace/src/ForkPlus/UI/Controls/ContributionHeatmap.cs)
   - **依赖属性绑定**：`CommitsByDateProperty` DP，setter 触发 `RebuildCells` 重绘
   - **布局接入**：`StatisticsUserControl.xaml` 的 `StatsContainer` Grid 行数从 4 加到 6，在 Row2（LinePlot）后插入 Row3"Contributions"标题 + Row4 热力图，原 Row3 的 Grid 顺移到 Row5。`UpdatePlots` 末尾追加 `Heatmap.CommitsByDate = stat.CommitsByDate`—— [StatisticsUserControl.xaml](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml)、[StatisticsUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs)
-  - **tooltip i18n**：每格 tooltip 用 `string.Format(Translate("{0} contributions on {1}"), commits, date.ToString("yyyy-MM-dd"))`，7 语言同步加 key
+  - **tooltip 增强**：每格 tooltip 两行——
+    - 第一行：`string.Format(Translate("{0} contributions on {1}"), commits, date.ToString("yyyy-MM-dd ddd", CurrentCulture))`，日期带星期缩写（按系统 culture 显示）
+    - 第二行：`string.Format(Translate("Authors: {0}"), string.Join(", ", top3) + ", +N more" if any)`，列出当天按提交数排序的前 3 个作者，超出部分显示"+N more"
+    - commits==0 或无作者时只显示第一行
+  - **数据结构升级**：为支持 tooltip 第二行，`CommitsByDate` 类型从 `Dictionary<DateTime,int>` 升级为 `Dictionary<DateTime, DayContributionInfo>`。`DayContributionInfo` 持有 `Commits` 和 `CommitsByAuthor`（按作者统计当天提交数），在原有 `git log` 循环里同步累加（零额外 git 调用）。`AddCommit` 返回新实例（immutable 风格，避免共享 mutable 状态），`GetTopAuthors(limit)` 按提交数降序、名字升序取前 N 个—— [RepositoryStats.cs](file:///workspace/src/ForkPlus/Git/Commands/RepositoryStats.cs)
+  - **i18n**：3 个新 key 同步到 7 语言——`"{0} contributions on {1}"`、`"Authors: {0}"`、`"+{0} more"`
 
 ## v1.6.2
 

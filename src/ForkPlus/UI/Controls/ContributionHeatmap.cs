@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -14,14 +17,14 @@ namespace ForkPlus.UI.Controls
 	public class ContributionHeatmap : Grid
 	{
 		public static readonly DependencyProperty CommitsByDateProperty = DependencyProperty.Register(
-			"CommitsByDate", typeof(Dictionary<DateTime, int>), typeof(ContributionHeatmap),
+			"CommitsByDate", typeof(Dictionary<DateTime, DayContributionInfo>), typeof(ContributionHeatmap),
 			new PropertyMetadata(null, OnCommitsByDateChanged));
 
-		public Dictionary<DateTime, int> CommitsByDate
+		public Dictionary<DateTime, DayContributionInfo> CommitsByDate
 		{
 			get
 			{
-				return (Dictionary<DateTime, int>)GetValue(CommitsByDateProperty);
+				return (Dictionary<DateTime, DayContributionInfo>)GetValue(CommitsByDateProperty);
 			}
 			set
 			{
@@ -36,6 +39,8 @@ namespace ForkPlus.UI.Controls
 		private const double CellSize = 11.0;
 
 		private const double CellGap = 3.0;
+
+		private const int MaxAuthorsShown = 3;
 
 		public ContributionHeatmap()
 		{
@@ -69,7 +74,7 @@ namespace ForkPlus.UI.Controls
 		private void RebuildCells()
 		{
 			Children.Clear();
-			Dictionary<DateTime, int> data = CommitsByDate;
+			Dictionary<DateTime, DayContributionInfo> data = CommitsByDate;
 			if (data == null)
 			{
 				return;
@@ -79,15 +84,17 @@ namespace ForkPlus.UI.Controls
 			DateTime lastSunday = today.AddDays(-todayDow);
 			DateTime startDate = lastSunday.AddDays(-(WeeksCount - 1) * 7);
 			int maxCommits = 0;
-			foreach (KeyValuePair<DateTime, int> kvp in data)
+			foreach (KeyValuePair<DateTime, DayContributionInfo> kvp in data)
 			{
-				if (kvp.Value > maxCommits)
+				if (kvp.Value.Commits > maxCommits)
 				{
-					maxCommits = kvp.Value;
+					maxCommits = kvp.Value.Commits;
 				}
 			}
 			Brush[] palette = GetPalette();
 			string tooltipFormat = PreferencesLocalization.Translate("{0} contributions on {1}", ForkPlusSettings.Default.UiLanguage);
+			string authorsFormat = PreferencesLocalization.Translate("Authors: {0}", ForkPlusSettings.Default.UiLanguage);
+			string moreFormat = PreferencesLocalization.Translate("+{0} more", ForkPlusSettings.Default.UiLanguage);
 			for (int week = 0; week < WeeksCount; week++)
 			{
 				for (int dow = 0; dow < DayCount; dow++)
@@ -97,7 +104,8 @@ namespace ForkPlus.UI.Controls
 					{
 						continue;
 					}
-					int commits = (data.TryGetValue(date, out var c) ? c : 0);
+					DayContributionInfo info = data.TryGetValue(date, out var c) ? c : null;
+					int commits = info?.Commits ?? 0;
 					int level = GetLevel(commits, maxCommits);
 					Border border = new Border
 					{
@@ -105,7 +113,7 @@ namespace ForkPlus.UI.Controls
 						Height = CellSize,
 						Background = palette[level],
 						CornerRadius = new CornerRadius(2),
-						ToolTip = string.Format(tooltipFormat, commits, date.ToString("yyyy-MM-dd")),
+						ToolTip = BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info),
 						HorizontalAlignment = HorizontalAlignment.Left,
 						VerticalAlignment = VerticalAlignment.Top
 					};
@@ -114,6 +122,30 @@ namespace ForkPlus.UI.Controls
 					Children.Add(border);
 				}
 			}
+		}
+
+		private static string BuildTooltip(string line1Format, string authorsFormat, string moreFormat, DateTime date, int commits, DayContributionInfo info)
+		{
+			string dateStr = date.ToString("yyyy-MM-dd ddd", CultureInfo.CurrentCulture);
+			string line1 = string.Format(line1Format, commits, dateStr);
+			if (commits <= 0 || info == null || info.AuthorCount == 0)
+			{
+				return line1;
+			}
+			List<string> top = info.GetTopAuthors(MaxAuthorsShown);
+			if (top.Count == 0)
+			{
+				return line1;
+			}
+			int remaining = info.AuthorCount - top.Count;
+			StringBuilder sb = new StringBuilder();
+			sb.Append(string.Join(", ", top));
+			if (remaining > 0)
+			{
+				sb.Append(", ").Append(string.Format(moreFormat, remaining));
+			}
+			string line2 = string.Format(authorsFormat, sb.ToString());
+			return line1 + Environment.NewLine + line2;
 		}
 
 		private static int GetLevel(int commits, int maxCommits)

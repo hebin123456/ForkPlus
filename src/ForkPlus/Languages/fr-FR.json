@@ -1988,6 +1988,8 @@
     "{0} commits...": "{0} commits...",
     "{0} completed": "{0} terminé",
     "{0} contributions on {1}": "{0} contributions le {1}",
+    "+{0} more": "+{0} de plus",
+    "Authors: {0}": "Auteurs : {0}",
     "{0} file...": "{0} fichier...",
     "{0} files": "{0} fichiers",
     "{0} files - {1} Review": "{0} fichiers - Revue {1}",
