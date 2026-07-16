@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Commands
 	/// </summary>
 	public class CheckForkSyncCommand : IUICommand, IForkPlusCommand
 	{
-		public string Title => "Check Fork Sync...";
+		public string Title => "Check Remote Sync...";
 
 		public KeyGesture Shortcut => null;
 
@@ -29,7 +29,7 @@ namespace ForkPlus.UI.Commands
 			{
 				System.Windows.MessageBox.Show(
 					PreferencesLocalization.Current("No remotes configured. Please add an upstream remote first."),
-					PreferencesLocalization.Current("Fork Sync Status"),
+					PreferencesLocalization.Current("Remote Sync Status"),
 					System.Windows.MessageBoxButton.OK,
 					System.Windows.MessageBoxImage.Warning);
 				return;
@@ -41,7 +41,7 @@ namespace ForkPlus.UI.Commands
 			{
 				System.Windows.MessageBox.Show(
 					PreferencesLocalization.Current("No 'upstream' remote found. Please add a remote named 'upstream' pointing to the main repository."),
-					PreferencesLocalization.Current("Fork Sync Status"),
+					PreferencesLocalization.Current("Remote Sync Status"),
 					System.Windows.MessageBoxButton.OK,
 					System.Windows.MessageBoxImage.Warning);
 				return;
@@ -55,7 +55,7 @@ namespace ForkPlus.UI.Commands
 			{
 				System.Windows.MessageBox.Show(
 					PreferencesLocalization.Current("No active branch to check."),
-					PreferencesLocalization.Current("Fork Sync Status"),
+					PreferencesLocalization.Current("Remote Sync Status"),
 					System.Windows.MessageBoxButton.OK,
 					System.Windows.MessageBoxImage.Warning);
 				return;
@@ -67,7 +67,7 @@ namespace ForkPlus.UI.Commands
 			LocalBranch capturedBranch = localBranch;
 
 			repositoryUserControl.JobQueue.Add(
-				PreferencesLocalization.FormatCurrent("Checking fork sync: {0}/{1}", capturedUpstream.Name, branchName),
+				PreferencesLocalization.FormatCurrent("Checking remote sync: {0}/{1}", capturedUpstream.Name, branchName),
 				delegate(JobMonitor monitor)
 				{
 					GitCommandResult<ForkSyncStatus> result = new CheckForkSyncStatusGitCommand().Execute(

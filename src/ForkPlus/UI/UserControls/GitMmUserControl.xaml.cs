@@ -51,9 +51,6 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusy;
 
-		// RebuildSubrepoTabs 期间为 true，防止 SelectionChanged 在 tab 重建时误触 CancelStatusRefresh
-		private bool _isRebuildingTabs;
-
 		private GridLength _expandedCommandOutputHeight = new GridLength(150.0);
 
 		private Point _tabDragStartPoint;
@@ -395,7 +392,9 @@ namespace ForkPlus.UI.UserControls
 					}
 					_submoduleSubrepoPaths = submodulePaths;
 					_workspace.PreferredSubrepoPath = selectedSubrepoPath;
+					List<GitMmSubrepoItem> oldSubrepos = _workspace.Subrepos;
 					_workspace.Subrepos = CreateSubrepoItems(paths, _workspace.Path);
+					MigrateRuntimeState(oldSubrepos, _workspace.Subrepos);
 					EnsureVisibleSubrepos();
 					RebuildSubrepoTabs();
 					RefreshSubreposTitle();
@@ -734,7 +733,9 @@ namespace ForkPlus.UI.UserControls
 						{
 							_submoduleSubrepoPaths = submodulePaths;
 							_workspace.PreferredSubrepoPath = _workspace.SelectedSubrepo?.Path ?? _workspace.PreferredSubrepoPath;
+							List<GitMmSubrepoItem> oldSubrepos = _workspace.Subrepos;
 							_workspace.Subrepos = CreateSubrepoItems(paths, _workspace.Path);
+							MigrateRuntimeState(oldSubrepos, _workspace.Subrepos);
 							EnsureVisibleSubrepos();
 							RebuildSubrepoTabs();
 							RefreshSubreposTitle();
@@ -1151,18 +1152,11 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (SubreposTabControl.SelectedItem is TabItem tabItem && tabItem.Tag is GitMmSubrepoItem subrepo)
 			{
-				// 仅在真正切换子仓 tab 时取消运行态刷新。
-				// SelectionChanged 是冒泡路由事件，内部 RepositoryUserControl 的列表/下拉框选中变化
-				// 也会冒泡到这里；若无条件调用 CancelStatusRefresh() 会自增 _runtimeStateRequestId，
-				// 导致正在后台运行的 RefreshSubrepoRuntimeState 的 Dispatcher 回调命中守卫
-				// (requestId != _runtimeStateRequestId) 而整体 return，刚拉取的 states 被丢弃，
-				// GitMmSubrepoItem 保持新建时的默认值 (HasLocalChanges=false / ChangedFilesCount=0)，
-				// 表现为"切换标签后变更数据清零"。
-				bool subrepoChanged = !ReferenceEquals(_workspace.SelectedSubrepo, subrepo);
-				if (subrepoChanged && !_isRebuildingTabs)
-				{
-					CancelStatusRefresh();
-				}
+				// 不调用 CancelStatusRefresh()。
+				// RefreshSubrepoRuntimeState 刷新的是所有子仓的 runtime state（tab header 变更数字），
+				// 切 tab 不应取消这个全局刷新——否则正在进行的刷新结果会被 _runtimeStateRequestId 守卫丢弃，
+				// 导致实例替换后的新 GitMmSubrepoItem 永远停在默认值 0（"变更数量从有到无"）。
+				// 新的 RefreshSubrepoRuntimeState 启动时会自动取消旧的（入口调 CancelStatusRefresh）。
 				_workspace.SelectedSubrepo = subrepo;
 				EnsureSubrepoContent(tabItem, subrepo);
 				NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);
@@ -1170,19 +1164,6 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void RebuildSubrepoTabs()
-		{
-			_isRebuildingTabs = true;
-			try
-			{
-				RebuildSubrepoTabsCore();
-			}
-			finally
-			{
-				_isRebuildingTabs = false;
-			}
-		}
-
-		private void RebuildSubrepoTabsCore()
 		{
 			SubreposTabControl.Items.Clear();
 			TabItem tabToSelect = null;
@@ -2267,6 +2248,48 @@ namespace ForkPlus.UI.UserControls
 				items.Add(new GitMmSubrepoItem(path, workspacePath, _submoduleSubrepoPaths.Contains(NormalizePath(path))));
 			}
 			return items;
+		}
+
+		/// <summary>
+		/// 子仓重扫后 Subrepos 会被替换为全新 GitMmSubrepoItem 实例（全 0 默认值）。
+		/// 此方法按 Path 把旧实例的运行态数据（变更计数、分支、ahead/behind、RuntimeStateUpdatedAtUtc 等）
+		/// 迁移到新实例，避免在补救刷新完成前 UI 短暂显示"无变更"（"变更数量从有到无"的根因之一）。
+		/// </summary>
+		private static void MigrateRuntimeState(List<GitMmSubrepoItem> oldSubrepos, List<GitMmSubrepoItem> newSubrepos)
+		{
+			if (oldSubrepos == null || newSubrepos == null || oldSubrepos.Count == 0)
+			{
+				return;
+			}
+			Dictionary<string, GitMmSubrepoItem> oldByPath = new Dictionary<string, GitMmSubrepoItem>(StringComparer.OrdinalIgnoreCase);
+			foreach (GitMmSubrepoItem old in oldSubrepos)
+			{
+				string key = NormalizePath(old.Path);
+				if (!string.IsNullOrEmpty(key))
+				{
+					oldByPath[key] = old;
+				}
+			}
+			foreach (GitMmSubrepoItem n in newSubrepos)
+			{
+				string key = NormalizePath(n.Path);
+				if (key == null || !oldByPath.TryGetValue(key, out GitMmSubrepoItem old) || old == null)
+				{
+					continue;
+				}
+				n.HasLocalChanges = old.HasLocalChanges;
+				n.ChangedFilesCount = old.ChangedFilesCount;
+				n.HasConflicts = old.HasConflicts;
+				n.ConflictFilesCount = old.ConflictFilesCount;
+				n.IsNonDefaultBranch = old.IsNonDefaultBranch;
+				n.CurrentBranch = old.CurrentBranch;
+				n.DefaultBranch = old.DefaultBranch;
+				n.AheadCount = old.AheadCount;
+				n.BehindCount = old.BehindCount;
+				n.StagedAdded = old.StagedAdded;
+				n.StagedDeleted = old.StagedDeleted;
+				n.RuntimeStateUpdatedAtUtc = old.RuntimeStateUpdatedAtUtc;
+			}
 		}
 
 		private List<string> ApplySavedSubrepoOrder(IEnumerable<string> paths, string workspacePath)

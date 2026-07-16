@@ -1022,7 +1022,7 @@ namespace ForkPlus.UI.UserControls
 			// Fork 工作流同步冲突预检：仅在配置了 upstream（或非 origin）远端时启用
 			bool hasForkUpstream = CheckForkSyncCommand.FindUpstreamRemote(remotes) != null;
 			list.Add(RepositoryUserControl.Commands.CheckForkSync.CreateMenuItem(
-				"Check Fork Sync Status...",
+				"Check Remote Sync Status...",
 				delegate
 				{
 					RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch);

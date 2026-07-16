@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Dialogs
 			_branchName = branchName;
 			_status = status;
 			InitializeComponent();
-			DialogTitle = PreferencesLocalization.Current("Fork Sync Status");
+			DialogTitle = PreferencesLocalization.Current("Remote Sync Status");
 			DialogDescription = string.Empty;
 			ConfigureForStatus();
 		}

@@ -4,9 +4,9 @@
 
 ## v1.6.1
 
-### 修复：Fork 同步状态弹窗布局拥挤
+### 修复：远端同步状态弹窗布局拥挤
 
-- **问题**：Fork 工作流同步冲突预检结果弹窗（ForkSyncCheckWindow）的图标和文字挤在一起，左侧 80px 空列占位但图标被塞进右侧 DockPanel，视觉拥挤。
+- **问题**：远端同步冲突预检结果弹窗（ForkSyncCheckWindow）的图标和文字挤在一起，左侧 80px 空列占位但图标被塞进右侧 DockPanel，视觉拥挤。
 - **修复**：Grid 改为 `Auto + *` 双列布局，图标放第一列（36×36，右上对齐，右间距 14px），文字放第二列 StackPanel（标题 + 详情两行，行间距 8px）—— [ForkSyncCheckWindow.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml)
 
 ### 修复：检查更新"已是最新版本"未显示版本号
@@ -14,26 +14,31 @@
 - **问题**：手动检查更新，当已是最新版本时只显示"您使用的是最新版本。"，不显示当前版本号，用户无法确认当前版本。
 - **修复**：文案改为"您使用的是最新版本 (v{0})。"，`FormatCurrent` 填入 `info.CurrentVersion`。i18n key 从 `"You are using the latest version."` 变更为 `"You are using the latest version (v{0})."`，7 种语言同步更新—— [UpdateCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/UpdateCheckWindow.xaml.cs)
 
-### 修复：git mm 子仓不显示本地变更 / 切标签后清零 / 显示后过一会儿又刷没
+### 修复：git mm 子仓变更数量"从有到无"（彻底修复）
 
-- **问题（三轮迭代）**：① 子仓不显示本地变更（v1.5.6/1.5.7 已修过命令参数和 untracked，仍无效）；② 切子仓 tab 或主仓库 tab 后变更数据清零；③ 子仓变更数字（如"本地变更(100)"）能短暂显示，但过一会儿又被刷成 0。
-- **根因 1（切标签清零）**：`SubreposTabControl_SelectionChanged` 在判断"是否真正切换了子仓 tab"之前就无条件调用 `CancelStatusRefresh()`。而 `SelectionChanged` 是 WPF 冒泡路由事件——内部 `RepositoryUserControl` 的列表/下拉框选中变化也会冒泡到这个 handler。`CancelStatusRefresh()` 会自增 `_runtimeStateRequestId`，导致正在后台运行的 `RefreshSubrepoRuntimeState` 的 Dispatcher 回调命中守卫（`requestId != _runtimeStateRequestId`）而整体 `return`，刚拉取的 `states[]` 被丢弃，`GitMmSubrepoItem` 保持新建时的默认值（`HasLocalChanges=false` / `ChangedFilesCount=0`），表现为"变更数据清零"。
-- **根因 2（过一会儿刷没）**：`RebuildSubrepoTabs` 本身在结尾会执行 `SubreposTabControl.SelectedItem = tabToSelect`，这会同步触发 `SelectionChanged`。即便根因 1 已修，重建期间（例如 `TryApplySummaryFilterMode` 自触发 `RebuildSubrepoTabs`、过滤按钮切换、tab 宽度自适应等场景）仍会再次误触 `CancelStatusRefresh()`，使 in-flight 刷新结果被丢弃，已有的正确数字被随后回到回调的"丢弃分支"清回默认值。另一条路径：`GetSubrepoRuntimeState` 在 `git status` 失败（如锁竞争、fsmonitor 抖动、safe.directory 间歇问题）时返回了全 0 的默认 state，会覆盖掉已有的正确数字。
-- **修复 1**：将 `CancelStatusRefresh()` 移入"确认选中了不同子仓"的分支内，仅当 `SubreposTabControl.SelectedItem` 确实切换到不同 `GitMmSubrepoItem` 时才取消运行态刷新。冒泡上来的内部选择器事件不再干扰后台刷新。
-- **修复 2**：新增 `_isRebuildingTabs` 标志，`RebuildSubrepoTabs` 用 `try/finally` 包裹设置标志；`SelectionChanged` handler 增加 `&& !_isRebuildingTabs` 条件——重建期间不取消后台刷新，in-flight 的 `states[]` 能正常落地，不会被"重建自触发的 SelectionChanged"丢弃。
-- **修复 3**：`GetSubrepoRuntimeState` 在 `git status` 失败时返回 `null`（标记为 `[Null]`），回调中对 `states[i] == null` 的项 `continue` 跳过——失败不再用 0 覆盖已有正确值，下次刷新成功时再更新。
-- **附**：简化 `CountVisibleLocalChanges`（去掉递归子模块扫描，直接返回 porcelain 计数，对齐单仓行为）—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
+- **问题**：git mm 视图下子仓变更数字（如"本地变更(100)"）短暂显示后变成 0，且不恢复。右键"作为独立仓库打开"后独立标签页有数据，证明 `git status` 本身没问题，问题在 git mm 视图内部的刷新/实例管理流程。
+- **根因 A（实例替换清零）**：`RefreshSubrepos`（首次扫描）和 `RunGitMm` sync 分支（每次 sync 后重扫）会把 `_workspace.Subrepos` 整体替换为全新 `GitMmSubrepoItem` 实例——新实例所有计数字段默认 0、`RuntimeStateUpdatedAtUtc=null`。紧接着 `RebuildSubrepoTabs` 把 tab 重建到新实例，UI 立刻显示 0。TTL 缓存按实例缓存，新实例 `HasValue=false` 导致缓存失效。
+- **根因 B（补救刷新被丢弃）**：替换实例后调用的 `RefreshSubrepoRuntimeState` 是唯一恢复数据的机会，但 `SubreposTabControl_SelectionChanged` 在切 tab 时调用 `CancelStatusRefresh()` → 自增 `_runtimeStateRequestId` → 回调命中守卫 `requestId != _runtimeStateRequestId` 整体 return → 新实例永久停在 0。`RefreshSubrepoRuntimeState` 刷新的是所有子仓的全局状态，切 tab 不应取消它。
+- **修复 A（迁移运行态）**：新增 `MigrateRuntimeState` 方法，在 `RefreshSubrepos` 和 `RunGitMm` sync 分支替换 `Subrepos` 后，按 Path 把旧实例的运行态数据（`ChangedFilesCount`/`HasLocalChanges`/`RuntimeStateUpdatedAtUtc` 等）迁移到新实例——即使补救刷新被丢弃，新实例也带着旧数据，UI 不显示 0。
+- **修复 B（切 tab 不取消全局刷新）**：`SelectionChanged` handler 移除 `CancelStatusRefresh()` 调用。`RefreshSubrepoRuntimeState` 入口仍调 `CancelStatusRefresh` 取消旧刷新，新旧请求去重由 `_runtimeStateRequestId` 守卫保证，切 tab 不再干扰在途的全局刷新。
+- **修复 C（失败不覆盖）**：`GetSubrepoRuntimeState` 在 `git status` 失败时返回 `null`，回调对 `states[i] == null` 的项跳过——失败不用 0 覆盖已有正确值。
+- **附**：移除前轮的 `_isRebuildingTabs` 标志和 `RebuildSubrepoTabs` try/finally 包裹（已被修复 B 取代，不再需要）—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
 
-### 修复：Fork 同步状态弹窗显示 `[Dialog Description]` 占位符
+### 修复：远端同步状态弹窗显示 `[Dialog Description]` 占位符
 
-- **问题**：ForkSyncCheckWindow 布局修复后，标题栏下方多出一行 `[Dialog Description]` 文字。
+- **问题**：远端同步状态弹窗（ForkSyncCheckWindow）布局修复后，标题栏下方多出一行 `[Dialog Description]` 文字。
 - **根因**：`ForkPlusDialogWindow` 基类在 `InitializeDialogChrome` 中会自动渲染 `DialogDescription` 文本块；子类只设置了 `DialogTitle` 未设置 `DialogDescription`，TextBlock 未被赋值，XAML 模板里的占位符文本 `[Dialog Description]` 暴露出来。并非 `ToString` 未实现，而是基类占位符未被覆盖。
-- **修复**：构造函数中显式设置 `DialogDescription = string.Empty;`，让基类占位符被空字符串覆盖，TextBlock 不渲染任何文字—— [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs)
+- **修复**：构造函数中显式设置 `DialogDescription = string.Empty;`，让基类占位符被空字符串覆盖—— [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs)
+
+### 优化：将"检查 Fork 同步状态"统一改为"检查远端同步状态"
+
+- **需求**：该功能检测的是本地分支与 upstream 远端分支的同步状态，不限于 fork 工作流，"Fork 同步"表述有误导性，改为"远端同步"更准确。
+- **实现**：4 个 i18n key 重命名（`Check Fork Sync Status...` → `Check Remote Sync Status...`、`Check Fork Sync...` → `Check Remote Sync...`、`Checking fork sync: {0}/{1}` → `Checking remote sync: {0}/{1}`、`Fork Sync Status` → `Remote Sync Status`），7 种语言同步更新值。代码中 7 处引用（`CheckForkSyncCommand.cs` 5 处、`SidebarUserControl.xaml.cs` 1 处、`ForkSyncCheckWindow.xaml.cs` 1 处）同步改 key 名。类名/枚举名（`CheckForkSyncCommand`、`ForkSyncStatus` 等）保持不变—— [CheckForkSyncCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/CheckForkSyncCommand.cs) / [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs) / [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs)
 
 ### 新功能：git mm 子仓右键"作为独立仓库打开"
 
-- **需求**：git mm 视图下，子仓 tab 上的右键菜单希望能加一个"作为独立仓库打开"选项，点击后用单仓方式新开一个 tab，方便单独操作某个子仓（不依赖整个 git mm 工作区）。
-- **实现**：`CreateSubrepoTabContextMenu` 在原 Rename/Hide/Colors 菜单项之前新增 `Open as Standalone Repository` 菜单项，点击调用 `MainWindow.Instance?.TabManager?.OpenRepository(subrepo.Path)` 在主窗口新开一个独立仓库 tab（复用 v1.5.7 已有的 `TabManager.OpenRepository(string path)` 路径，与单仓"打开仓库"完全一致）—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs) / [TabManager.cs](file:///workspace/src/ForkPlus/TabManager.cs)
+- **需求**：git mm 视图下，子仓 tab 上的右键菜单加一个"作为独立仓库打开"选项，点击后用单仓方式新开一个 tab，方便单独操作某个子仓。
+- **实现**：`CreateSubrepoTabContextMenu` 新增 `Open as Standalone Repository` 菜单项，点击调用 `MainWindow.Instance?.TabManager?.OpenRepository(subrepo.Path)` 在主窗口新开一个独立仓库 tab—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
 - **新增 i18n key**（7 种语言）：`Open as Standalone Repository`。
 
 ## v1.6.0
