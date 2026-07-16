@@ -129,7 +129,12 @@
           <TextBox Width="30" Margin="10,4,0,0" HorizontalAlignment="Left" TextAlignment="Left" TextChanged="CodeEditorFontSizeTextBox_TextChanged" x:Name="CodeEditorFontSizeTextBox" />
         </StackPanel.Children>
       </StackPanel>
-      <CheckBox Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DisableSyntaxHighlightingCheckBox_Changed" Unchecked="DisableSyntaxHighlightingCheckBox_Changed" x:Name="DisableSyntaxHighlightingCheckBox">Disable syntax highlighting</CheckBox>
+      <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <StackPanel.Children>
+          <CheckBox HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DisableSyntaxHighlightingCheckBox_Changed" Unchecked="DisableSyntaxHighlightingCheckBox_Changed" x:Name="DisableSyntaxHighlightingCheckBox">Disable syntax highlighting</CheckBox>
+          <CheckBox Margin="0,6,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DiffWordLevelHighlightCheckBox_Changed" Unchecked="DiffWordLevelHighlightCheckBox_Changed" x:Name="DiffWordLevelHighlightCheckBox">Diff word level highlight</CheckBox>
+        </StackPanel.Children>
+      </StackPanel>
       <Separator Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />
       <TextBlock Grid.Row="9" Grid.Column="0" Text="Sort commits:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,0" Orientation="Horizontal">

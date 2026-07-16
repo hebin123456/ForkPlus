@@ -27,11 +27,15 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <controls:DateRangeButton Grid.Row="0" Margin="0,10,0,10" HorizontalAlignment="Left" x:Name="DateRangeButton" />
       <TextBlock Grid.Row="1" Text="Commits per month" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
       <oxy:PlotView Grid.Row="2" Height="350" Margin="4,10,0,0" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="LinePlot" />
-      <Grid Grid.Row="3">
+      <TextBlock Grid.Row="3" Text="Contributions" Margin="10,20,0,0" FontSize="16" FontWeight="Medium" />
+      <controls:ContributionHeatmap Grid.Row="4" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="Heatmap" />
+      <Grid Grid.Row="5">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />

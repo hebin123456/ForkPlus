@@ -51,21 +51,25 @@ namespace ForkPlus.Git.Commands
 				dictionary2[(DayOfWeek)j] = 0;
 			}
 			Dictionary<int, int> dictionary3 = new Dictionary<int, int>(24);
-			for (int k = 0; k < 24; k++)
-			{
-				dictionary3[k] = 0;
-			}
-			HashSet<string> hashSet = new HashSet<string>();
-			foreach (Revision item in list)
-			{
-				DateTime authorDate = item.AuthorDate;
-				hashSet.Add(item.Author.Name);
-				string key = Key(item.Author.Name, authorDate);
-				dictionary.TryGetValue(key, out var value);
-				dictionary[key] = value + 1;
-				dictionary2[authorDate.ToUniversalTime().DayOfWeek]++;
-				dictionary3[authorDate.Hour]++;
-			}
+		for (int k = 0; k < 24; k++)
+		{
+			dictionary3[k] = 0;
+		}
+		Dictionary<DateTime, int> dictionary4 = new Dictionary<DateTime, int>();
+		HashSet<string> hashSet = new HashSet<string>();
+		foreach (Revision item in list)
+		{
+			DateTime authorDate = item.AuthorDate;
+			hashSet.Add(item.Author.Name);
+			string key = Key(item.Author.Name, authorDate);
+			dictionary.TryGetValue(key, out var value);
+			dictionary[key] = value + 1;
+			dictionary2[authorDate.ToUniversalTime().DayOfWeek]++;
+			dictionary3[authorDate.Hour]++;
+			DateTime day = authorDate.Date;
+			dictionary4.TryGetValue(day, out var dayCount);
+			dictionary4[day] = dayCount + 1;
+		}
 			DateTime dateTime = TrimTime(list[list.Count - 1].AuthorDate);
 			DateTime dateTime2 = TrimTime(list[0].AuthorDate);
 			List<AuthorStats> list2 = new List<AuthorStats>(1024);
@@ -88,7 +92,7 @@ namespace ForkPlus.Git.Commands
 				list2.Add(new AuthorStats(item2, num, list3.ToArray()));
 			}
 			list2.Sort(new AuthorStatsComparer());
-			return GitCommandResult<RepositoryStats>.Success(new RepositoryStats(dateTime, dateTime2, list2.ToArray(), dictionary2, dictionary3));
+			return GitCommandResult<RepositoryStats>.Success(new RepositoryStats(dateTime, dateTime2, list2.ToArray(), dictionary2, dictionary3, dictionary4));
 		}
 
 		private static DateTime TrimTime(DateTime dateTime)

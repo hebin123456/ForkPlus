@@ -397,6 +397,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			PiePlot.InvalidatePlot();
 			UpdateCommitsPerWeekDayPlot(stat.CommitsByDayOfWeek);
 			UpdateCommitsPerDayHourPlot(stat.CommitsByHourOfDay);
+			Heatmap.CommitsByDate = stat.CommitsByDate;
 		}
 
 		private void UpdateCommitsPerWeekDayPlot(Dictionary<DayOfWeek, int> commitsPerWeekDay)
