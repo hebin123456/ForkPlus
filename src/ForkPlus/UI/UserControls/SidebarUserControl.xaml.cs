@@ -1292,22 +1292,27 @@ namespace ForkPlus.UI.UserControls
 				};
 				groupItem.Items.Add(branchItem);
 			}
-			// 子菜单打开时，找到模板里的 PART_SearchBox，订阅文本变化做分支过滤
+			// 子菜单打开时，找到模板里的 PART_SearchBox，订阅文本变化做分支过滤。
+			// Popup 内容在独立视觉树，且 SubmenuOpened 触发时模板可能尚未完全生成，
+			// 因此用 Dispatcher.BeginInvoke 延迟到下一轮渲染后再查找部件。
 			groupItem.SubmenuOpened += delegate
 			{
-				PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
-				if (searchBox == null)
+				groupItem.Dispatcher.BeginInvoke(new Action(delegate
 				{
-					return;
-				}
-				// 清空上次打开残留的搜索文本
-				searchBox.Text = string.Empty;
-				searchBox.TextChanged -= SearchBox_TextChanged;
-				searchBox.TextChanged += SearchBox_TextChanged;
-				// 把分支项缓存到 Tag，供过滤回调使用
-				searchBox.Tag = groupItem;
-				// 自动聚焦搜索框
-				searchBox.Focus();
+					PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
+					if (searchBox == null)
+					{
+						return;
+					}
+					// 清空上次打开残留的搜索文本
+					searchBox.Text = string.Empty;
+					searchBox.TextChanged -= SearchBox_TextChanged;
+					searchBox.TextChanged += SearchBox_TextChanged;
+					// 把分支项缓存到 Tag，供过滤回调使用
+					searchBox.Tag = groupItem;
+					// 自动聚焦搜索框
+					searchBox.Focus();
+				}));
 			};
 			return groupItem;
 		}
@@ -1346,6 +1351,11 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		/// <summary>在 MenuItem 的子菜单 Popup 视觉树里按名字查找模板部件。</summary>
+		/// <remarks>
+		/// WPF 的 Popup 内容位于独立视觉树（不挂在 MenuItem 的视觉子树里），因此不能直接从
+		/// menuItem 往下遍历。先在 menuItem 模板树里找到 PART_Popup（Popup 元素本身在视觉树里），
+		/// 再从 popup.Child 往下遍历找到目标部件。
+		/// </remarks>
 		[Null]
 		private static T FindTemplatePart<T>(MenuItem menuItem, string name) where T : FrameworkElement
 		{
@@ -1353,10 +1363,21 @@ namespace ForkPlus.UI.UserControls
 			{
 				return null;
 			}
-			// 子菜单 Popup 打开后，模板部件在 menuItem 的子 visual tree 里
-			return FindVisualDescendantByName<T>(menuItem, name);
+			// 先找 PART_Popup：它本身在 menuItem 的模板视觉树里
+			Popup popup = FindVisualDescendantByName<Popup>(menuItem, "PART_Popup");
+			if (popup == null || popup.Child == null)
+			{
+				return null;
+			}
+			// Popup 的 Child 是独立视觉树的根（MenuShadowBorderStyle Border），从这里往下找目标部件
+			if (popup.Child is T direct && direct.Name == name)
+			{
+				return direct;
+			}
+			return FindVisualDescendantByName<T>(popup.Child, name);
 		}
 
+		/// <summary>递归在视觉树里按名字查找指定类型的后代。</summary>
 		[Null]
 		private static T FindVisualDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
 		{
