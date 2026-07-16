@@ -24,6 +24,12 @@
 - **修复 C（失败不覆盖）**：`GetSubrepoRuntimeState` 在 `git status` 失败时返回 `null`，回调对 `states[i] == null` 的项跳过——失败不用 0 覆盖已有正确值。
 - **附**：移除前轮的 `_isRebuildingTabs` 标志和 `RebuildSubrepoTabs` try/finally 包裹（已被修复 B 取代，不再需要）—— [GitMmUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs)
 
+### 修复：git mm 子仓视图左侧树/未暂存区为空（子仓自己的变更被误过滤）
+
+- **问题**：git mm 视图下点击子仓 tab，左侧"本地变更"/"所有提交"为空，下方未暂存区也无任何文件；但右键"作为独立仓库打开"后独立标签页一切正常。
+- **根因**：`RepositoryUserControl.NormalizeChangedFilesForDisplay` 无脑取全局 `ActiveGitMmUserControl` 做子仓入口过滤，没判断"当前 RepositoryUserControl 自身是不是该工作区的子仓"。`ChangedFilesDisplayNormalizer.NormalizeForDisplay` 在 `gitMmUserControl` 非空时对每个变更文件调 `IsGitMmManagedSubrepoChange`，其 fallback 分支用 `ContainsSubrepoPath`（前缀匹配）判断文件绝对路径——子仓自己的文件路径必然以子仓路径为前缀，于是被全部误判为"git mm 管理的子仓变更"而过滤掉。`CommitUserControl.FilterGitMmManagedSubmoduleChanges` 也调同一方法，导致未暂存区同样为空。"作为独立仓库打开"路径 `ActiveGitMmUserControl` 为 null，命中 `NormalizeForDisplay` 的 early-return 不过滤，所以有数据——这正是两条路径表现不同的核心。
+- **修复**：`NormalizeChangedFilesForDisplay` 增加短路——仅当当前 `RepositoryUserControl.GitModule.Path` 等于 `gitMmUserControl.WorkspacePath`（即当前是工作区根/主仓视图）时才走过滤；子仓自身的视图直接返回原始 `changedFiles`，不过滤。这样主仓视图仍隐藏子仓入口变更（原有行为），子仓视图正常显示自身变更—— [RepositoryUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/RepositoryUserControl.xaml.cs)
+
 ### 修复：远端同步状态弹窗显示 `[Dialog Description]` 占位符
 
 - **问题**：远端同步状态弹窗（ForkSyncCheckWindow）布局修复后，标题栏下方多出一行 `[Dialog Description]` 文字。

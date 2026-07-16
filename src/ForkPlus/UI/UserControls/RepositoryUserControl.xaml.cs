@@ -253,6 +253,17 @@ namespace ForkPlus.UI.UserControls
 		public ChangedFile[] NormalizeChangedFilesForDisplay(ChangedFile[] changedFiles)
 		{
 			GitMmUserControl gitMmUserControl = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+			// 仅当当前 RepositoryUserControl 是 git mm 工作区根（主仓）时才过滤子仓入口变更。
+			// 子仓 tab 内嵌的 RepositoryUserControl 自身展示的是子仓内部文件，
+			// 若此时也走过滤，ContainsSubrepoPath 的前缀匹配会把子仓自己的变更文件全部误判为
+			// "git mm 管理的子仓变更"而过滤掉，导致子仓视图本地变更/未暂存区为空。
+			// "作为独立仓库打开"走 TabManager.OpenRepository，ActiveGitMmUserControl 为 null 不触发过滤，
+			// 这正是两条路径表现不同的根因。
+			if (gitMmUserControl != null && GitModule != null
+				&& !GitMmUserControl.IsSamePath(GitModule.Path, gitMmUserControl.WorkspacePath))
+			{
+				return changedFiles ?? new ChangedFile[0];
+			}
 			return ChangedFilesDisplayNormalizer.NormalizeForDisplay(GitModule, changedFiles, gitMmUserControl);
 		}
 
