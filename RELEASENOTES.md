@@ -2,6 +2,30 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.6.4
+
+### 修复：仓库树图点击崩溃
+
+- **现象**：在 Repository Overview 窗口（`Repository Treemap`）点击某文件夹后，应用可能整体崩溃。
+- **根因**：`RepositoryOverviewWindow` 的 `Treemap.SelectionChanged` 委托无 try/catch；点击后调用 native `bt_get_revision_headers` 返回的 header 数量与传入的 SHA 数量不一致时（悬挂对象 / shallow clone / biturbo 缓存与仓库状态不同步），第 117 行 `gitCommandResult.Result[i]` 抛 `IndexOutOfRangeException`，未捕获异常冒到 WPF Dispatcher 导致应用级崩溃—— [RepositoryOverviewWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.xaml.cs)
+- **修复**：
+  - 在 `gitCommandResult.Succeeded` 后追加 `gitCommandResult.Result != null && gitCommandResult.Result.Length == shas.Length` 校验，不匹配时跳过提交列表更新并记录日志，避免越界
+  - 整个 `SelectionChanged` 委托包 try/catch，兜底记录日志，保持窗口可用
+  - 新增 i18n key `"Revision header count mismatch"` 用于错误日志
+
+### 增强：贡献热力图加图例与统计摘要
+
+- **需求**：v1.6.3 的贡献热力图只有 5 级色阶格子，缺少色阶说明与汇总指标，信息密度不足。希望像 GitHub 个人主页那样在热力图下方加一行图例 + 统计摘要。
+- **实现**：
+  - **重构 `ContributionHeatmap` 控件布局**：外层 Grid 改为两行——Row0 是热力图子 Grid（53×7），Row1 是水平 StackPanel（左侧图例 + 右侧摘要）—— [ContributionHeatmap.cs](file:///workspace/src/ForkPlus/UI/Controls/ContributionHeatmap.cs)
+  - **图例**：`Less` + 5 个 10×10 色块（与热力图同色阶，主题切换时同步刷新）+ `More`，色块颜色在 `RebuildCells` 末尾随 palette 一起刷新
+  - **统计摘要**：单行 TextBlock，三段用 `·` 分隔——
+    - `Total: {0}` — 当前数据范围内总提交数
+    - `Longest streak: {0} days` — 最长连续提交天数（按日期升序遍历，gap == 1 天且当天有提交则累计）
+    - `Most active: {0} ({1})` — 提交数最多的那天（YYYY-MM-DD）及其提交数
+    - 任意指标为 0 时省略对应段（如无提交时只显示 Total: 0）
+  - **i18n**：5 个新 key 同步到 7 语言——`Less`、`More`、`Total: {0}`、`Longest streak: {0} days`、`Most active: {0} ({1})`
+
 ## v1.6.3
 
 ### 新增：贡献热力图（GitHub 风格 53 周 × 7 天）

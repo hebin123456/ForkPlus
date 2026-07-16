@@ -93,50 +93,65 @@ namespace ForkPlus.UI.Dialogs
 			Treemap.Delegate = this;
 			Treemap.SelectionChanged += delegate
 			{
-				if (repositoryOverviewWindow._dataSource != null)
+				try
 				{
-					Treemap.IndexPath selectedIndexPath = repositoryOverviewWindow.Treemap.SelectedIndexPath;
-					if (selectedIndexPath != null)
+					if (repositoryOverviewWindow._dataSource != null)
 					{
-						if (repositoryOverviewWindow._dataSource is CommitsCountDataSource dataSource)
+						Treemap.IndexPath selectedIndexPath = repositoryOverviewWindow.Treemap.SelectedIndexPath;
+						if (selectedIndexPath != null)
 						{
-							string text = dataSource.GetPath(selectedIndexPath).TrimEnd('/');
-							string text2 = text;
-							string text3 = "";
-							Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
-							GitCommandResult<RevisionHeader[]> gitCommandResult = new GetRevisionHeadersGitCommand().Execute(repositoryOverviewWindow._gitModule, shas);
-							if (!gitCommandResult.Succeeded)
+							if (repositoryOverviewWindow._dataSource is CommitsCountDataSource dataSource)
 							{
-								Log.Error(gitCommandResult.Error.FriendlyDescription);
-							}
-							else
-							{
-								Revision[] array = new Revision[shas.Length];
-								for (int i = 0; i < shas.Length; i++)
+								string text = dataSource.GetPath(selectedIndexPath).TrimEnd('/');
+								string text2 = text;
+								string text3 = "";
+								Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
+								GitCommandResult<RevisionHeader[]> gitCommandResult = new GetRevisionHeadersGitCommand().Execute(repositoryOverviewWindow._gitModule, shas);
+								if (!gitCommandResult.Succeeded)
 								{
-									array[i] = new Revision(shas[i], gitCommandResult.Result[i]);
+									Log.Error(gitCommandResult.Error.FriendlyDescription);
 								}
-								repositoryOverviewWindow.CommitsUserControl.UpdateData(text, array);
+								else if (gitCommandResult.Result != null && gitCommandResult.Result.Length == shas.Length)
+								{
+									Revision[] array = new Revision[shas.Length];
+									for (int i = 0; i < shas.Length; i++)
+									{
+										array[i] = new Revision(shas[i], gitCommandResult.Result[i]);
+									}
+									repositoryOverviewWindow.CommitsUserControl.UpdateData(text, array);
+								}
+								else
+								{
+									// native 返回的 header 数与 SHA 数不匹配（悬挂对象/shallow clone/缓存不一致），
+									// 跳过提交列表更新，避免 IndexOutOfRangeException 崩溃。
+									Log.Error(Translate("Revision header count mismatch"));
+								}
+								(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
+								repositoryOverviewWindow.AuthorsUserControl.UpdateData(authorStats, repositoryOverviewWindow._repositoryOverviewData.UserIdentities);
+								int num = text.LastIndexOf("/");
+								if (num != -1)
+								{
+									text2 = text.Substring(num + 1);
+									text3 = text.Substring(0, num);
+								}
+								repositoryOverviewWindow.SelectedFileNameTextBlock.Text = text2;
+								repositoryOverviewWindow.SelectedFileIcon.Source = IconTools.GetImageSourceForPath(text2);
+								repositoryOverviewWindow.SelectedFilePathTextBlock.Text = text3;
 							}
-							(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
-							repositoryOverviewWindow.AuthorsUserControl.UpdateData(authorStats, repositoryOverviewWindow._repositoryOverviewData.UserIdentities);
-							int num = text.LastIndexOf("/");
-							if (num != -1)
-							{
-								text2 = text.Substring(num + 1);
-								text3 = text.Substring(0, num);
-							}
-							repositoryOverviewWindow.SelectedFileNameTextBlock.Text = text2;
-							repositoryOverviewWindow.SelectedFileIcon.Source = IconTools.GetImageSourceForPath(text2);
-							repositoryOverviewWindow.SelectedFilePathTextBlock.Text = text3;
+						}
+						else
+						{
+							repositoryOverviewWindow.SelectedFileNameTextBlock.Text = "";
+							repositoryOverviewWindow.SelectedFileIcon.Source = null;
+							repositoryOverviewWindow.SelectedFilePathTextBlock.Text = "/";
 						}
 					}
-					else
-					{
-						repositoryOverviewWindow.SelectedFileNameTextBlock.Text = "";
-						repositoryOverviewWindow.SelectedFileIcon.Source = null;
-						repositoryOverviewWindow.SelectedFilePathTextBlock.Text = "/";
-					}
+				}
+				catch (Exception ex)
+				{
+					// 仓库树图点击链路涉及 native 调用与大量索引操作，任何未捕获异常都会冒到 Dispatcher
+					// 导致应用级崩溃。这里兜底记录日志，保持窗口可用。
+					Log.Error(ex.ToString());
 				}
 			};
 			DateRangeButton.DateRangeChanged += delegate
