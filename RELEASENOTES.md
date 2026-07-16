@@ -6,12 +6,14 @@
 
 ### 修复：仓库树图点击崩溃
 
-- **现象**：在 Repository Overview 窗口（`Repository Treemap`）点击某文件夹后，应用可能整体崩溃。
-- **根因**：`RepositoryOverviewWindow` 的 `Treemap.SelectionChanged` 委托无 try/catch；点击后调用 native `bt_get_revision_headers` 返回的 header 数量与传入的 SHA 数量不一致时（悬挂对象 / shallow clone / biturbo 缓存与仓库状态不同步），第 117 行 `gitCommandResult.Result[i]` 抛 `IndexOutOfRangeException`，未捕获异常冒到 WPF Dispatcher 导致应用级崩溃—— [RepositoryOverviewWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.xaml.cs)
+- **现象**：在 Repository Overview 窗口（`Repository Treemap`）点击某文件夹后，应用可能整体崩溃；或在打开窗口"正在加载"完成后过一会儿崩溃。
+- **根因 1（点击阶段）**：`RepositoryOverviewWindow` 的 `Treemap.SelectionChanged` 委托无 try/catch；点击后调用 native `bt_get_revision_headers` 返回的 header 数量与传入的 SHA 数量不一致时（悬挂对象 / shallow clone / biturbo 缓存与仓库状态不同步），`gitCommandResult.Result[i]` 抛 `IndexOutOfRangeException`，未捕获异常冒到 WPF Dispatcher 导致应用级崩溃—— [RepositoryOverviewWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.xaml.cs)
+- **根因 2（渲染阶段）**：`Treemap.CalculateLayout` 调用 biturbo 三方件 native `Bt.bt_layout_treemap` 计算布局，失败时直接 `throw new Exception`。该 throw 发生在 `OnRender` 渲染期间（`RefreshData` 设置 `DataSource` → 触发 `InvalidateVisual` → `OnRender` → `CalculateLayout`），异常冒到 WPF 渲染线程导致应用崩溃。这是"加载完成后过一会儿崩溃"的真正原因—— [Treemap.cs](file:///workspace/src/ForkPlus/UI/Controls/Treemap.cs)
 - **修复**：
-  - 在 `gitCommandResult.Succeeded` 后追加 `gitCommandResult.Result != null && gitCommandResult.Result.Length == shas.Length` 校验，不匹配时跳过提交列表更新并记录日志，避免越界
-  - 整个 `SelectionChanged` 委托包 try/catch，兜底记录日志，保持窗口可用
+  - **根因 1**：在 `gitCommandResult.Succeeded` 后追加 `Result.Length == shas.Length` 校验，不匹配时跳过提交列表更新并记录日志；整个 `SelectionChanged` 委托包 try/catch 兜底
+  - **根因 2**：`CalculateLayout` 里 native `bt_layout_treemap` 失败时不抛异常，改为返回空 `LayoutItem[]` + 记录日志；`RecalculateLayoutIfNeeded` 与 `OnRender` 均包 try/catch 兜底，确保渲染期间任何异常都不会冒到 WPF 渲染线程
   - 新增 i18n key `"Revision header count mismatch"` 用于错误日志
+- **三方件说明**：根因 2 的触发条件是 biturbo 三方件（`biturbo.dll`）的 native `bt_layout_treemap` 返回失败，可能因仓库文件数过多、值异常或 native 内部 bug。本次修复让 managed 层在 native 失败时降级为空白显示而非崩溃，但 native 失败的根因仍在 biturbo 三方件侧。
 
 ### 增强：贡献热力图加图例与统计摘要
 

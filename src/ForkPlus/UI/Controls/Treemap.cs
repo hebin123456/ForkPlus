@@ -8,6 +8,7 @@ using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.Helpers;
+using ForkPlus;
 
 namespace ForkPlus.UI.Controls
 {
@@ -221,13 +222,21 @@ namespace ForkPlus.UI.Controls
 		protected override void OnRender(DrawingContext ctx)
 		{
 			base.OnRender(ctx);
-			RecalculateLayoutIfNeeded();
-			if (DataSource != null)
+			try
 			{
-				Benchmarker benchmarker = new Benchmarker("DrawInRect");
-				object rootItems = DataSource.GetRootItems();
-				DrawInRect(ctx, rootItems, _layout, HoverIndexPath, SelectedIndexPath);
-				benchmarker.LogElapsed();
+				RecalculateLayoutIfNeeded();
+				if (DataSource != null)
+				{
+					Benchmarker benchmarker = new Benchmarker("DrawInRect");
+					object rootItems = DataSource.GetRootItems();
+					DrawInRect(ctx, rootItems, _layout, HoverIndexPath, SelectedIndexPath);
+					benchmarker.LogElapsed();
+				}
+			}
+			catch (Exception ex)
+			{
+				// 渲染期间任何异常（含 native biturbo 调用失败）都不应冒到 WPF 渲染线程导致应用崩溃。
+				Log.Error("Treemap OnRender failed", ex);
 			}
 		}
 
@@ -304,13 +313,22 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_needRecalculateLayout)
 			{
-				if (DataSource != null)
+				try
 				{
-					object rootItems = DataSource.GetRootItems();
-					_layout = CalculateLayout(_bounds, rootItems, OpenIndexPath);
+					if (DataSource != null)
+					{
+						object rootItems = DataSource.GetRootItems();
+						_layout = CalculateLayout(_bounds, rootItems, OpenIndexPath);
+					}
+					else
+					{
+						_layout = new LayoutItem[0];
+					}
 				}
-				else
+				catch (Exception ex)
 				{
+					// biturbo native 布局计算或数据访问失败时，退回空布局，避免崩溃。
+					Log.Error("Treemap layout calculation failed", ex);
 					_layout = new LayoutItem[0];
 				}
 			}
@@ -360,11 +378,15 @@ namespace ForkPlus.UI.Controls
 				{
 					Bt.bt_release_layout_treemap(ref x);
 				});
-				if (!gitCommandResult.Succeeded)
-				{
-					throw new Exception(gitCommandResult.Error.FriendlyDescription);
-				}
-				source = gitCommandResult.Result;
+			if (!gitCommandResult.Succeeded)
+			{
+				// biturbo native 布局计算失败（可能因仓库文件数过多、值异常或 native 内部 bug）。
+				// 不抛异常——抛在 OnRender 期间会冒到 WPF 渲染线程导致应用整体崩溃。
+				// 返回空布局，Treemap 显示空白，并记录错误日志便于诊断。
+				Log.Error("bt_layout_treemap failed: " + gitCommandResult.Error.FriendlyDescription);
+				return new LayoutItem[0];
+			}
+			source = gitCommandResult.Result;
 			}
 			return source.Map(delegate((int, Rect) x)
 			{
