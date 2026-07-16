@@ -1019,15 +1019,48 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowPushBranchWindow.Execute(repositoryUserControl, null, branch);
 				}, isEnabled: false));
 			}
-			// Fork 工作流同步冲突预检：仅在配置了 upstream（或非 origin）远端时启用
-			bool hasForkUpstream = CheckForkSyncCommand.FindUpstreamRemote(remotes) != null;
-			list.Add(RepositoryUserControl.Commands.CheckForkSync.CreateMenuItem(
-				"Check Remote Sync Status...",
-				delegate
+			// 远端同步冲突预检：二级菜单列出所有远端分支，选定后立即弹框检测。
+			// 不再默认用本地分支名去 upstream 找（远端不一定有同名分支），而是让用户显式选择远端分支。
+			MenuItem checkRemoteSyncMenuItem = new MenuItem
+			{
+				Header = Preferences.PreferencesLocalization.MenuHeader("Check Remote Sync Status...")
+			};
+			RemoteBranch[] allRemoteBranches = repositoryData.References.RemoteBranches;
+			if (allRemoteBranches != null && allRemoteBranches.Length > 0)
+			{
+				// 按远端名分组，每组下挂该远端的分支，与 Tracking 菜单风格一致
+				IEnumerable<IGrouping<string, RemoteBranch>> grouped = allRemoteBranches.GroupBy((RemoteBranch rb) => rb.Remote ?? "").OrderBy((IGrouping<string, RemoteBranch> g) => g.Key);
+				foreach (IGrouping<string, RemoteBranch> group in grouped)
 				{
-					RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch);
-				},
-				isEnabled: hasForkUpstream));
+					MenuItem remoteGroupItem = new MenuItem
+					{
+						Header = group.Key
+					};
+					foreach (RemoteBranch rb in group.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
+					{
+						RemoteBranch currentRemoteBranch = rb;
+						MenuItem branchItem = new MenuItem
+						{
+							Header = currentRemoteBranch.ShortName
+						};
+						branchItem.Click += delegate
+						{
+							RepositoryUserControl.Commands.CheckForkSync.Execute(repositoryUserControl, branch, currentRemoteBranch);
+						};
+						remoteGroupItem.Items.Add(branchItem);
+					}
+					if (remoteGroupItem.Items.Count > 0)
+					{
+						checkRemoteSyncMenuItem.Items.Add(remoteGroupItem);
+					}
+				}
+			}
+			// 没有远端分支时禁用整项
+			if (checkRemoteSyncMenuItem.Items.Count == 0)
+			{
+				checkRemoteSyncMenuItem.IsEnabled = false;
+			}
+			list.Add(checkRemoteSyncMenuItem);
 			list.Add(new Separator());
 			if (activeBranch != null && activeBranch != branch)
 			{

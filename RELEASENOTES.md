@@ -41,6 +41,14 @@
 - **需求**：该功能检测的是本地分支与 upstream 远端分支的同步状态，不限于 fork 工作流，"Fork 同步"表述有误导性，改为"远端同步"更准确。
 - **实现**：4 个 i18n key 重命名（`Check Fork Sync Status...` → `Check Remote Sync Status...`、`Check Fork Sync...` → `Check Remote Sync...`、`Checking fork sync: {0}/{1}` → `Checking remote sync: {0}/{1}`、`Fork Sync Status` → `Remote Sync Status`），7 种语言同步更新值。代码中 7 处引用（`CheckForkSyncCommand.cs` 5 处、`SidebarUserControl.xaml.cs` 1 处、`ForkSyncCheckWindow.xaml.cs` 1 处）同步改 key 名。类名/枚举名（`CheckForkSyncCommand`、`ForkSyncStatus` 等）保持不变—— [CheckForkSyncCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/CheckForkSyncCommand.cs) / [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs) / [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs)
 
+### 优化：远端同步状态改为二级菜单选择远端分支 + 立即弹框显示检测中
+
+- **需求**：① 原实现默认用本地分支名去 upstream 远端找分支，但远端不一定有同名分支，经常找不到；② 整个检测在后台跑完才弹窗，用户点击后以为没反应；③ 提示文案"你可以直接推送到 fork 仓"措辞有误导性。
+- **实现**：
+  - **二级菜单**：分支右键菜单的"检查远端同步状态"改为二级菜单，按远端名分组列出所有远端分支（`repositoryData.References.RemoteBranches`，与"Tracking"菜单风格一致），用户显式选择目标远端分支后触发检测，不再默认用本地分支名—— [SidebarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/SidebarUserControl.xaml.cs)
+  - **立即弹框**：`CheckForkSyncCommand.Execute` 新增接受 `RemoteBranch` 参数的重载；选定后立即弹出 `ForkSyncCheckWindow`（status 传 null 进入"检测中"状态），后台 JobQueue 跑 fetch + merge-tree 检测，完成后通过 `Dispatcher.Async` 回调调 `UpdateResult` 刷新三态结果。检测中提交按钮由 `IsSubmitAllowed` 守卫自动禁用—— [CheckForkSyncCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/CheckForkSyncCommand.cs) / [ForkSyncCheckWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.xaml.cs)
+  - **文案修正**：去掉提示中"push to your fork"的 "fork" 措辞，改为通用的"push"（`You can push without syncing.` / `...before pushing.`），2 个 i18n key 重命名，7 种语言同步更新；新增 `Checking... Please wait.` i18n key（7 种语言）
+
 ### 新功能：git mm 子仓右键"作为独立仓库打开"
 
 - **需求**：git mm 视图下，子仓 tab 上的右键菜单加一个"作为独立仓库打开"选项，点击后用单仓方式新开一个 tab，方便单独操作某个子仓。
