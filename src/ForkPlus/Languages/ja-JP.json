@@ -1144,6 +1144,7 @@
     "Open Worktree In New Tab": "ワークツリーを新しいタブで開く",
     "Open a repository first": "まずリポジトリを開いてください",
     "Open a repository to start": "開始するにはリポジトリを開いてください",
+    "Open as Standalone Repository": "スタンドアロンリポジトリとして開く",
     "Open directory": "ディレクトリを開く",
     "Open file": "ファイルを開く",
     "Open git mm": "git mm を開く",

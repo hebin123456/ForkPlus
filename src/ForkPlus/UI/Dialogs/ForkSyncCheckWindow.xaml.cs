@@ -32,6 +32,7 @@ namespace ForkPlus.UI.Dialogs
 			_status = status;
 			InitializeComponent();
 			DialogTitle = PreferencesLocalization.Current("Fork Sync Status");
+			DialogDescription = string.Empty;
 			ConfigureForStatus();
 		}
 

@@ -51,6 +51,9 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusy;
 
+		// RebuildSubrepoTabs 期间为 true，防止 SelectionChanged 在 tab 重建时误触 CancelStatusRefresh
+		private bool _isRebuildingTabs;
+
 		private GridLength _expandedCommandOutputHeight = new GridLength(150.0);
 
 		private Point _tabDragStartPoint;
@@ -1156,7 +1159,7 @@ namespace ForkPlus.UI.UserControls
 				// GitMmSubrepoItem 保持新建时的默认值 (HasLocalChanges=false / ChangedFilesCount=0)，
 				// 表现为"切换标签后变更数据清零"。
 				bool subrepoChanged = !ReferenceEquals(_workspace.SelectedSubrepo, subrepo);
-				if (subrepoChanged)
+				if (subrepoChanged && !_isRebuildingTabs)
 				{
 					CancelStatusRefresh();
 				}
@@ -1167,6 +1170,19 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void RebuildSubrepoTabs()
+		{
+			_isRebuildingTabs = true;
+			try
+			{
+				RebuildSubrepoTabsCore();
+			}
+			finally
+			{
+				_isRebuildingTabs = false;
+			}
+		}
+
+		private void RebuildSubrepoTabsCore()
 		{
 			SubreposTabControl.Items.Clear();
 			TabItem tabToSelect = null;
@@ -1701,6 +1717,16 @@ namespace ForkPlus.UI.UserControls
 		private ContextMenu CreateSubrepoTabContextMenu(GitMmSubrepoItem subrepo)
 		{
 			ContextMenu contextMenu = new ContextMenu();
+			MenuItem openStandaloneMenuItem = new MenuItem
+			{
+				Header = PreferencesLocalization.MenuHeader("Open as Standalone Repository")
+			};
+			openStandaloneMenuItem.Click += delegate
+			{
+				MainWindow.Instance?.TabManager?.OpenRepository(subrepo.Path);
+			};
+			contextMenu.Items.Add(openStandaloneMenuItem);
+			contextMenu.Items.Add(new Separator());
 			MenuItem renameMenuItem = new MenuItem
 			{
 				Header = PreferencesLocalization.MenuHeader("Rename")
@@ -1919,22 +1945,20 @@ namespace ForkPlus.UI.UserControls
 				"-c", "core.untrackedCache=false",
 				"-c", "core.checkStat=default",
 				"--no-optional-locks", "status", "-b", "--porcelain", "-z", "--untracked-files=all"), monitor);
-			if (statusResult.Success)
+			if (!statusResult.Success)
 			{
-				ParseBranchHeader(statusResult.Stdout, out string currentBranch, out int ahead, out int behind, out string porcelainBody);
-				state.CurrentBranch = currentBranch;
-				state.AheadCount = ahead;
-				state.BehindCount = behind;
-				state.ConflictFilesCount = CountConflicts(porcelainBody);
-				state.HasConflicts = state.ConflictFilesCount > 0;
-				state.ChangedFilesCount = CountVisibleLocalChanges(subrepo.Path, porcelainBody, monitor);
-				state.HasLocalChanges = state.ChangedFilesCount > 0;
-			}
-			else
-			{
-				// 失败时打印日志，便于定位 safe.directory/dubious ownership 等问题
+				// 失败时返回 null，回调中 states[i]==null 会被跳过，保留已有的正确值不被 0 覆盖。
 				Log.Warn($"git mm subrepo status failed: path={subrepo.Path}, exitCode={statusResult.ExitCode}, stderr={statusResult.Stderr}");
+				return null;
 			}
+			ParseBranchHeader(statusResult.Stdout, out string currentBranch, out int ahead, out int behind, out string porcelainBody);
+			state.CurrentBranch = currentBranch;
+			state.AheadCount = ahead;
+			state.BehindCount = behind;
+			state.ConflictFilesCount = CountConflicts(porcelainBody);
+			state.HasConflicts = state.ConflictFilesCount > 0;
+			state.ChangedFilesCount = CountVisibleLocalChanges(subrepo.Path, porcelainBody, monitor);
+			state.HasLocalChanges = state.ChangedFilesCount > 0;
 			if (monitor.IsCanceled)
 			{
 				return state;

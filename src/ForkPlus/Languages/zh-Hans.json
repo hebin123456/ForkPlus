@@ -1144,6 +1144,7 @@
     "Open Worktree In New Tab": "在新标签页打开工作树",
     "Open a repository first": "请先打开仓库",
     "Open a repository to start": "打开一个仓库以开始",
+    "Open as Standalone Repository": "作为独立仓库打开",
     "Open directory": "打开目录",
     "Open file": "打开文件",
     "Open git mm": "打开 git mm",
