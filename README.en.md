@@ -11,7 +11,7 @@ A high-performance Git GUI client with a Rust-rewritten underlying engine, featu
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows
 - **AI-assisted development**: Integrated AI code review, automatic commit message generation, and AI-assisted code modification
 - **Performance optimizations**: Targeted improvements for large repository refresh, diff rendering, and submodule management
-- **Bug fixes**: Resolved multiple issues from the original Fork (empty modifications, AI queue generation failures, etc.)
+- **Code statistics**: Integrates tokei (Rust, 200+ languages) for line-of-code stats per language (files, code, comments, blanks) with pie-chart visualization, supporting Workspace/branch/tag ref switching
 
 ## Repository Layout
 

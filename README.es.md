@@ -11,7 +11,7 @@ Un cliente GUI Git de alto rendimiento con motor subyacente reescrito en Rust, q
 - **Flujo de trabajo git mm**: integra el subcomando `git mm`, que proporciona el flujo de trabajo Lean Branching
 - **Desarrollo asistido por IA**: integra revisión de código con IA, generación automática de mensajes de commit y modificación de código asistida por IA
 - **Optimización del rendimiento**: optimización específica para la actualización, renderizado de diff y gestión de submódulos en repositorios grandes
-- **Corrección de defectos**: corrige múltiples problemas de la versión original de Fork (modificaciones vacías, fallos en la generación encolada de IA, etc.)
+- **Estadísticas de código**: Integra tokei (Rust, 200+ lenguajes) para estadísticas de líneas de código por lenguaje (archivos, comentarios, líneas en blanco) con visualización en gráfico circular, soporta cambio de ref Workspace/rama/tag
 
 ## Estructura del proyecto
 

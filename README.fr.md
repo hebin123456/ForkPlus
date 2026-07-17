@@ -11,7 +11,7 @@ Un client GUI Git hautes performances avec un moteur sous-jacent réécrit en Ru
 - **Flux de travail git mm** : Sous-commande `git mm` intégrée fournissant des flux de travail Lean Branching
 - **Développement assisté par IA** : Revue de code par IA, génération automatique de messages de commit et modification de code assistée par IA
 - **Optimisations des performances** : Améliorations ciblées pour l'actualisation des grands dépôts, le rendu des diffs et la gestion des sous-modules
-- **Corrections de bugs** : Résolution de plusieurs problèmes de l'original Fork (modifications vides, échecs de génération de file d'attente IA, etc.)
+- **Statistiques de code** : Intègre tokei (Rust, 200+ langages) pour compter les lignes de code par langage (fichiers, commentaires, lignes vides) avec visualisation en camembert, support du changement de ref Workspace/branche/tag
 
 ## Structure du dépôt
 

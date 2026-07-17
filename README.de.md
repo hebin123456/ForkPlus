@@ -11,7 +11,7 @@ Ein hochperformanter grafischer Git-Client mit in Rust geschriebenem Basis-Engin
 - **git mm-Workflow**: Mitgelieferte `git mm`-Unterbefehle bereitstellen Lean Branching-Workflows
 - **KI-gestützte Entwicklung**: Integrierte KI-Codeüberprüfung, automatische Commit-Nachrichten-Generierung und KI-gestützte Codeänderung
 - **Leistungsoptimierungen**: Gezielte Verbesserungen für Aktualisierung großer Repositorys, Diff-Rendering und Submodul-Verwaltung
-- **Fehlerbehebungen**: Behebung mehrerer Probleme des ursprünglichen Fork (leere Änderungen, KI-Warteschlangen-Generierungsfehler usw.)
+- **Code-Statistiken**: Integriert tokei (Rust, 200+ Sprachen) für zeilenbasierte Code-Statistiken pro Sprache (Dateien, Kommentare, Leerzeilen) mit Tortendiagramm-Visualisierung, unterstützt Workspace/Branch/Tag-Ref-Wechsel
 
 ## Repository-Struktur
 
