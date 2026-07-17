@@ -12,6 +12,7 @@ namespace ForkPlus.UI
 		Dracula = 4,
 		GitHubLight = 5,
 		GitHubDark = 6,
-		Monokai = 7
+		Monokai = 7,
+		Purple = 8
 	}
 }

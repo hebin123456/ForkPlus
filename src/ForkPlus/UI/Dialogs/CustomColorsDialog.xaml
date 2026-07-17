@@ -3,11 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     Title="Custom Colors"
-    Width="520" Height="640"
+    Width="600" Height="680"
     WindowStartupLocation="CenterOwner"
     ResizeMode="CanResize"
-    MinWidth="420" MinHeight="480">
-  <Grid Margin="16,12,16,16">
+    MinWidth="520" MinHeight="540">
+  <Grid Margin="20,16,20,20">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
@@ -15,20 +15,20 @@
     </Grid.RowDefinitions>
 
     <!-- 标题区 -->
-    <TextBlock Grid.Row="0" x:Name="HeaderTextBlock" Margin="0,0,0,8"
+    <TextBlock Grid.Row="0" x:Name="HeaderTextBlock" Margin="0,0,0,12"
                FontSize="14" FontWeight="SemiBold"
                Foreground="{DynamicResource ForegroundBrush}" />
 
     <!-- 颜色列表 -->
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,8">
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
       <ItemsControl x:Name="ColorListControl">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid Margin="0,3">
+            <Grid Margin="0,4" Height="28">
               <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="180" />
-                <ColumnDefinition Width="32" />
-                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="44" />
+                <ColumnDefinition Width="100" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
               <!-- 颜色名 -->
@@ -36,10 +36,11 @@
                          VerticalAlignment="Center"
                          Foreground="{DynamicResource ForegroundBrush}"
                          TextTrimming="CharacterEllipsis" />
-              <!-- 颜色预览（点击弹出颜色选择 Popup） -->
-              <Border Grid.Column="1" Width="24" Height="20"
+              <!-- 颜色预览（点击弹出颜色选择器） -->
+              <Border Grid.Column="1" Width="32" Height="22"
                       BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                      Margin="4,0,8,0" Cursor="Hand"
+                      HorizontalAlignment="Left"
+                      Cursor="Hand"
                       MouseLeftButtonUp="ColorPreview_Click"
                       Tag="{Binding}"
                       ToolTip="{Binding Key}">
@@ -47,14 +48,16 @@
               </Border>
               <!-- hex 输入 -->
               <TextBox Grid.Column="2" Text="{Binding HexValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                       Margin="0,0,8,0" VerticalAlignment="Center"
+                       Margin="8,0,0,0" VerticalAlignment="Center"
                        Tag="{Binding}" />
               <!-- 重置按钮 -->
-              <Button Grid.Column="3" Content="Reset" Padding="8,2"
+              <Button Grid.Column="3" x:Name="ResetItemBtn" Content="{Binding ResetLabel}" Padding="12,2"
+                      Margin="8,0,0,0"
                       Click="ResetItem_Click"
                       Tag="{Binding}"
                       IsEnabled="{Binding IsCustomized}"
-                      VerticalAlignment="Center" />
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Left" />
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
@@ -63,49 +66,136 @@
 
     <!-- 底部按钮 -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-      <Button x:Name="ResetAllButton" Content="Reset All" Padding="16,4" Margin="0,0,8,0"
+      <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4" Margin="0,0,12,0"
               Click="ResetAll_Click" />
-      <Button x:Name="OkButton" Content="OK" Padding="24,4" Margin="0,0,8,0"
+      <Button x:Name="OkButton" Content="OK" Padding="28,4" Margin="0,0,12,0"
               Click="Ok_Click" IsDefault="True" />
-      <Button x:Name="CancelButton" Content="Cancel" Padding="16,4"
+      <Button x:Name="CancelButton" Content="Cancel" Padding="20,4"
               Click="Cancel_Click" IsCancel="True" />
     </StackPanel>
 
-    <!-- 颜色选择 Popup（放在 Grid 内，通过 IsOpen 控制） -->
+    <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
     <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3"
            Placement="Mouse" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
       <Border Background="{DynamicResource BackgroundBrush}"
               BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-              Padding="12" Width="210">
+              Padding="16" Width="340">
         <StackPanel>
-          <TextBlock x:Name="PopupTitleText" Text="Color Picker" FontWeight="SemiBold" Margin="0,0,0,8"
+          <TextBlock x:Name="PopupTitleText" Text="Color Picker" FontWeight="SemiBold" Margin="0,0,0,12"
                      Foreground="{DynamicResource ForegroundBrush}" />
+
+          <!-- HSV 2D 调色盘 + 色相条 -->
+          <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+            <!-- 饱和度 x 明度 2D 方块 -->
+            <Canvas Grid.Column="0" x:Name="HsvCanvas" Width="240" Height="160"
+                    ClipToBounds="True"
+                    MouseLeftButtonDown="HsvCanvas_MouseDown"
+                    MouseLeftButtonUp="HsvCanvas_MouseUp"
+                    MouseMove="HsvCanvas_MouseMove"
+                    Cursor="Cross">
+              <!-- 背景纯色（当前色相，动态替换） -->
+              <Rectangle x:Name="HsvBaseRect" Width="240" Height="160" Fill="Red" />
+              <!-- 白色横向渐变（饱和度 0→100%） -->
+              <Rectangle x:Name="HsvSatRect" Width="240" Height="160">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Offset="0" Color="White" />
+                    <GradientStop Offset="1" Color="Transparent" />
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+              <!-- 黑色纵向渐变（明度 100→0%） -->
+              <Rectangle x:Name="HsvValRect" Width="240" Height="160">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Offset="0" Color="Transparent" />
+                    <GradientStop Offset="1" Color="Black" />
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+              <!-- 选中指示器 -->
+              <Ellipse x:Name="HsvIndicator" Width="10" Height="10"
+                       Stroke="White" StrokeThickness="1.5"
+                       Margin="-5,-5,0,0" />
+            </Canvas>
+            <!-- 色相条（垂直彩虹） -->
+            <Canvas Grid.Column="1" x:Name="HueCanvas" Width="20" Height="160"
+                    Margin="0,0,0,0" ClipToBounds="True"
+                    MouseLeftButtonDown="HueCanvas_MouseDown"
+                    MouseLeftButtonUp="HueCanvas_MouseUp"
+                    MouseMove="HueCanvas_MouseMove"
+                    Cursor="Cross">
+              <Rectangle Width="20" Height="160">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Offset="0.000" Color="Red" />
+                    <GradientStop Offset="0.167" Color="Yellow" />
+                    <GradientStop Offset="0.333" Color="Lime" />
+                    <GradientStop Offset="0.500" Color="Cyan" />
+                    <GradientStop Offset="0.667" Color="Blue" />
+                    <GradientStop Offset="0.833" Color="Magenta" />
+                    <GradientStop Offset="1.000" Color="Red" />
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+              <Line x:Name="HueIndicator" X1="0" Y1="0" X2="20" Y2="0"
+                    Stroke="White" StrokeThickness="2" />
+            </Canvas>
+          </Grid>
+
           <!-- 预设色板 -->
-          <WrapPanel x:Name="SwatchPanel" Margin="0,0,0,8" />
+          <TextBlock x:Name="SwatchLabelText" Text="Presets" FontSize="11"
+                     Foreground="{DynamicResource ForegroundBrush.Gray}" Margin="0,0,0,4" />
+          <WrapPanel x:Name="SwatchPanel" Margin="0,0,0,12" />
+
           <!-- RGB 滑块 -->
-          <TextBlock Text="R" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
-          <Slider x:Name="RSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
-                  ValueChanged="RgbSlider_ValueChanged" />
-          <TextBlock Text="G" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
-          <Slider x:Name="GSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
-                  ValueChanged="RgbSlider_ValueChanged" />
-          <TextBlock Text="B" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
-          <Slider x:Name="BSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
-                  ValueChanged="RgbSlider_ValueChanged" />
-          <!-- 预览 + hex -->
-          <Grid Margin="0,8,0,0">
+          <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="16" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="R" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="RSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                    ValueChanged="RgbSlider_ValueChanged" Margin="4,0,0,0" />
+          </Grid>
+          <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="16" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="G" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="GSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                    ValueChanged="RgbSlider_ValueChanged" Margin="4,0,0,0" />
+          </Grid>
+          <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="16" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="B" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="BSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                    ValueChanged="RgbSlider_ValueChanged" Margin="4,0,0,0" />
+          </Grid>
+
+          <!-- hex 预览 + 输入 -->
+          <Grid Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="40" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Rectangle x:Name="PopupPreviewRect" Width="32" Height="24"
+            <Rectangle x:Name="PopupPreviewRect" Width="36" Height="24"
                        Stroke="{DynamicResource BorderBrush}" StrokeThickness="1" />
             <TextBox Grid.Column="1" x:Name="PopupHexBox" Margin="8,0,0,0"
                      VerticalAlignment="Center" TextChanged="PopupHex_TextChanged" />
           </Grid>
-          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button Content="OK" Padding="16,2" Margin="0,0,8,0" Click="PopupOk_Click" />
-            <Button Content="Cancel" Padding="12,2" Click="PopupCancel_Click" />
+
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="PopupOkButton" Content="OK" Padding="20,2" Margin="0,0,8,0" Click="PopupOk_Click" />
+            <Button x:Name="PopupCancelButton" Content="Cancel" Padding="16,2" Click="PopupCancel_Click" />
           </StackPanel>
         </StackPanel>
       </Border>
