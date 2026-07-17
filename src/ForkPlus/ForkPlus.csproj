@@ -99,9 +99,11 @@
   </Target>
 
   <!-- tokei.exe（代码行数统计，MIT 协议）从上游 tokei 仓库最新 release 拉取。
-       只拉 Windows x86_64 二进制（重命名为 tokei.exe）；缺失时下载；已存在则跳过。-->
+       只拉 Windows x86_64 二进制（重命名为 tokei.exe）；缺失时下载；已存在则跳过。
+       CI 环境下 github.com → objects.githubusercontent.com 的 302 重定向偶发"连接被关闭"，
+       故用 5 次重试 + 指数退避（5/10/15/20s），失败时清理半下载文件避免下次误判已存在。-->
   <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri 'https://github.com/XAMPPRocky/tokei/releases/latest/download/tokei-x86_64-pc-windows-msvc.exe' -OutFile '..\..\third_party\tokei.exe'; Write-Host 'Restored tokei.exe from Tokei latest release'&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $uri='https://github.com/XAMPPRocky/tokei/releases/latest/download/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $ok=$false; for($i=1; $i -le 5; $i++){ try { Invoke-WebRequest -Uri $uri -OutFile $out -UseBasicParsing -MaximumRedirection 10; $ok=$true; break } catch { Write-Host ('Attempt '+$i+' failed: '+$_.Exception.Message); if(Test-Path $out){ Remove-Item $out -Force }; if($i -lt 5){ Start-Sleep -Seconds (5*$i) } } }; if(-not $ok){ throw 'tokei.exe download failed after 5 attempts' }; Write-Host 'Restored tokei.exe from Tokei latest release'&quot;" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
