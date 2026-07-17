@@ -59,9 +59,11 @@ namespace ForkPlus.Git.Commands
 				return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError("canceled"));
 			}
 
-			if (string.IsNullOrEmpty(refSpec))
+			if (string.IsNullOrEmpty(refSpec) || IsCurrentWorktreeRef(gitModule, refSpec))
 			{
-				// snapshot 模式：直接在工作区目录跑 tokei
+				// snapshot 模式：直接在工作区目录跑 tokei。
+				// 当 refSpec 就是当前工作区检出的分支/tag/sha 时也走此路径——
+				// git archive 当前 HEAD 检出的 ref 会失败（worktree 占用），直接统计工作区即可。
 				monitor?.Update(0, "Running tokei on workspace...");
 				return RunTokei(tokeiExe, gitModule.Path, null, refSpec);
 			}
@@ -145,6 +147,68 @@ namespace ForkPlus.Git.Commands
 			{
 				process?.Dispose();
 			}
+		}
+
+		/// <summary>判断 refSpec 是否指向当前工作区 HEAD（当前检出的分支/tag/sha）。
+		/// git archive 当前 HEAD 检出的 ref 会失败（worktree 占用），此时应直接统计工作区。
+		/// 比较：① refSpec == 当前分支名（symbolic-ref --short HEAD）
+		///       ② refSpec == HEAD 的完整 sha（rev-parse HEAD），覆盖 detached HEAD + sha 输入。
+		///       ③ refSpec == HEAD（字面量）。
+		/// 任何 git 调用失败均返回 false（保守起见走 archive 路径，让 archive 自己报错）。</summary>
+		private bool IsCurrentWorktreeRef(GitModule gitModule, string refSpec)
+		{
+			if (string.IsNullOrEmpty(refSpec))
+			{
+				return true;
+			}
+			if (refSpec == "HEAD")
+			{
+				return true;
+			}
+			try
+			{
+				// 当前分支名（detached HEAD 时为空）
+				GitRequestResult branchResult = new GitRequest(gitModule)
+					.Command("symbolic-ref", "--quiet", "--short", "HEAD").Execute(silent: true);
+				if (branchResult.Success && branchResult.ExitCode == 0)
+				{
+					string currentBranch = (branchResult.Stdout ?? "").Trim();
+					if (!string.IsNullOrEmpty(currentBranch) &&
+						string.Equals(currentBranch, refSpec, StringComparison.Ordinal))
+					{
+						return true;
+					}
+				}
+				// HEAD 的完整 sha，覆盖 detached HEAD + sha 输入
+				GitRequestResult headShaResult = new GitRequest(gitModule)
+					.Command("rev-parse", "HEAD").Execute(silent: true);
+				if (headShaResult.Success && headShaResult.ExitCode == 0)
+				{
+					string headSha = (headShaResult.Stdout ?? "").Trim();
+					if (!string.IsNullOrEmpty(headSha) &&
+						string.Equals(headSha, refSpec, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+					// 也比较 refSpec 解析出的 sha（refSpec 可能是短 sha / refs/heads/x 等）
+					GitRequestResult refShaResult = new GitRequest(gitModule)
+						.Command("rev-parse", refSpec).Execute(silent: true);
+					if (refShaResult.Success && refShaResult.ExitCode == 0)
+					{
+						string refSha = (refShaResult.Stdout ?? "").Trim();
+						if (!string.IsNullOrEmpty(refSha) &&
+							string.Equals(headSha, refSha, StringComparison.OrdinalIgnoreCase))
+						{
+							return true;
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("IsCurrentWorktreeRef check failed", ex);
+			}
+			return false;
 		}
 
 		/// <summary>git archive --format=tar -o &lt;tarFile&gt; &lt;refSpec&gt; 然后 tar -xf 解压。
