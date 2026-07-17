@@ -313,21 +313,14 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private string _currentCodeLinesRef;
 
-		/// <summary>防止 CodeLinesRefComboBox 初始化 SelectionChanged 事件触发查询。</summary>
-		private bool _isCodeLinesRefComboBoxInitializing;
+		/// <summary>防止 Ref 列表初始化 SelectionChanged 事件触发查询。</summary>
+		private bool _isCodeLinesRefInitializing;
 
-		/// <summary>Ref 下拉的全部项（Workspace + 本地分支 + tag）。用于支持搜索过滤。</summary>
+		/// <summary>Ref 下拉的全部项（Workspace + 本地分支 + tag），用于 Popup 内 ListBox 绑定 + 搜索过滤。</summary>
 		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _codeLineRefs;
 
-		/// <summary>Ref 下拉的当前搜索过滤文本（忽略大小写）。空表示不过滤。</summary>
-		[Null]
-		private string _codeLineFilterText;
-
-		/// <summary>编辑文本框搜索逻辑是否已挂接，避免 ComboBox.Loaded 重复触发时重复挂接。</summary>
-		private bool _codeLineSearchWired;
-
-		/// <summary>程序设置编辑文本框 Text 时跳过搜索过滤，避免选中项回填触发误过滤。</summary>
-		private bool _codeLineSuppressTextChanged;
+		/// <summary>Ref 下拉的当前过滤视图（搜索框输入时刷新，Workspace 项始终保留）。</summary>
+		private System.Windows.Data.ListCollectionView _codeLineRefsView;
 
 		private bool _isCalendarUpdatingInProgress;
 
@@ -365,8 +358,6 @@ namespace ForkPlus.UI.UserControls
 			StatsContainer.Collapse();
 			FallbackUserControl.FallbackTitle = Translate("Generating statistics...");
 			FallbackUserControl.Show();
-			// Editable ComboBox 的内部编辑文本框在模板应用后才能拿到，Loaded 时挂接搜索过滤
-			CodeLinesRefComboBox.Loaded += CodeLinesRefComboBox_Loaded;
 		}
 
 		public void ApplyLocalization()
@@ -377,11 +368,55 @@ namespace ForkPlus.UI.UserControls
 
 		public void ShowStatistics(GitModule gitModule)
 		{
+			ShowStatistics(gitModule, null, false);
+		}
+
+		/// <param name="initialRef">初始统计的 refSpec（分支/tag/sha）。null 或空 = Workspace snapshot。</param>
+		/// <param name="scrollToCodeLines">是否在显示后滚动到代码行数统计区域（Row 6）。</param>
+		public void ShowStatistics(GitModule gitModule, [Null] string initialRef, bool scrollToCodeLines)
+		{
 			_gitModule = gitModule;
 			UpdatePreview(gitModule, null);
-			// 初始化代码行数 ref 下拉并触发首次 snapshot 查询
+			// 初始化代码行数 ref 下拉并触发首次查询（按 initialRef 选择初始项）
 			InitializeCodeLinesRefComboBox(gitModule);
-			RefreshCodeLines(null);
+			SelectCodeLineRef(initialRef);
+			RefreshCodeLines(_currentCodeLinesRef);
+			if (scrollToCodeLines)
+			{
+				// 延迟到布局完成后再滚动，确保 BringIntoView 能算出正确位置
+				Dispatcher.BeginInvoke(new Action(() => CodeLinesSection.BringIntoView()),
+					System.Windows.Threading.DispatcherPriority.Loaded);
+			}
+		}
+
+		/// <summary>在 _codeLineRefs 中找到 RefSpec == refSpec 的项并选中；找不到则回退到 Workspace（第一项）。</summary>
+		private void SelectCodeLineRef([Null] string refSpec)
+		{
+			if (_codeLineRefs == null || _codeLineRefs.Count == 0)
+			{
+				return;
+			}
+			CodeLineRefItem target = null;
+			if (!string.IsNullOrEmpty(refSpec))
+			{
+				foreach (CodeLineRefItem item in _codeLineRefs)
+				{
+					if (item.RefSpec == refSpec)
+					{
+						target = item;
+						break;
+					}
+				}
+			}
+			if (target == null)
+			{
+				target = _codeLineRefs[0]; // Workspace
+			}
+			_isCodeLinesRefInitializing = true;
+			CodeLinesRefListBox.SelectedItem = target;
+			UpdateCodeLinesRefButton(target);
+			_currentCodeLinesRef = target.RefSpec;
+			_isCodeLinesRefInitializing = false;
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
@@ -522,11 +557,11 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		// ===================== 代码行数统计（tokei）=====================
 
 		/// <summary>初始化 ref 下拉：Workspace（工作区）+ 本地分支 + tag。
-		/// 走 git for-each-ref 一次性拿全，避免阻塞 UI。用 ObservableCollection + CollectionView
-		/// 支持搜索过滤（分支/tag 多时在下拉里输入片段即可过滤）。</summary>
+		/// 走 git for-each-ref 一次性拿全，避免阻塞 UI。用 ObservableCollection + ListCollectionView
+		/// 绑定到 Popup 内的 ListBox，搜索框在 Popup 顶部置顶、列表可独立滚动。</summary>
 		private void InitializeCodeLinesRefComboBox(GitModule gitModule)
 		{
-			_isCodeLinesRefComboBoxInitializing = true;
+			_isCodeLinesRefInitializing = true;
 			_codeLineRefs = new System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem>();
 			// 第一项固定为"Workspace"（snapshot 模式）
 			_codeLineRefs.Add(new CodeLineRefItem(Translate("Workspace"), null));
@@ -551,20 +586,23 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to list refs for CodeLines combo", ex);
+				Log.Error("Failed to list refs for CodeLines popup", ex);
 			}
-			CodeLinesRefComboBox.ItemsSource = _codeLineRefs;
-			// CollectionView 过滤：Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本
-			System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Filter =
-				obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
-			CodeLinesRefComboBox.SelectedIndex = 0;
-			_isCodeLinesRefComboBoxInitializing = false;
+			_codeLineRefsView = (System.Windows.Data.ListCollectionView)
+				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs);
+			// Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本（忽略大小写）
+			_codeLineRefsView.Filter = obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
+			CodeLinesRefListBox.ItemsSource = _codeLineRefsView;
+			// 按钮默认显示第一项（Workspace）
+			UpdateCodeLinesRefButton(_codeLineRefs[0]);
+			_isCodeLinesRefInitializing = false;
 		}
 
 		/// <summary>Ref 下拉过滤谓词。Workspace 项始终显示；其余项按 Display 包含搜索文本（忽略大小写）。</summary>
 		private bool FilterCodeLineRefItem(CodeLineRefItem item)
 		{
-			if (string.IsNullOrEmpty(_codeLineFilterText))
+			string filter = CodeLinesRefSearchBox?.Text;
+			if (string.IsNullOrEmpty(filter))
 			{
 				return true;
 			}
@@ -573,98 +611,75 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				return true;
 			}
-			return item.Display != null && item.Display.IndexOf(_codeLineFilterText, StringComparison.OrdinalIgnoreCase) >= 0;
+			return item.Display != null && item.Display.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
-		/// <summary>ComboBox 模板应用后挂接内部编辑文本框的 TextChanged 做实时过滤。</summary>
-		private void CodeLinesRefComboBox_Loaded(object sender, RoutedEventArgs e)
+		/// <summary>点按钮打开/关闭 Popup。</summary>
+		private void CodeLinesRefButton_Click(object sender, RoutedEventArgs e)
 		{
-			WireCodeLineSearch();
+			CodeLinesRefPopup.IsOpen = !CodeLinesRefPopup.IsOpen;
 		}
 
-		private void WireCodeLineSearch()
+		/// <summary>Popup 打开：清空搜索、刷新列表、聚焦搜索框并全选，方便直接输入覆盖搜索。</summary>
+		private void CodeLinesRefPopup_Opened(object sender, EventArgs e)
 		{
-			if (_codeLineSearchWired)
+			if (CodeLinesRefSearchBox.Text.Length > 0)
+			{
+				CodeLinesRefSearchBox.Text = "";
+			}
+			else if (_codeLineRefsView != null)
+			{
+				_codeLineRefsView.Refresh();
+			}
+			CodeLinesRefSearchBox.Dispatcher.BeginInvoke(new Action(() =>
+			{
+				CodeLinesRefSearchBox.Focus();
+				CodeLinesRefSearchBox.SelectAll();
+			}));
+		}
+
+		/// <summary>Popup 关闭：清空搜索框文本，避免下次打开还带着旧过滤。</summary>
+		private void CodeLinesRefPopup_Closed(object sender, EventArgs e)
+		{
+			if (CodeLinesRefSearchBox.Text.Length > 0)
+			{
+				CodeLinesRefSearchBox.Text = "";
+			}
+		}
+
+		/// <summary>搜索框文本变化：刷新 CollectionView 重新过滤。</summary>
+		private void CodeLinesRefSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			_codeLineRefsView?.Refresh();
+		}
+
+		/// <summary>Popup 内 ListBox 选中项变化：更新按钮显示、关闭 Popup、触发 tokei 查询。</summary>
+		private void CodeLinesRefListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (_isCodeLinesRefInitializing || _gitModule == null)
 			{
 				return;
 			}
-			CodeLinesRefComboBox.ApplyTemplate();
-			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
-			if (editBox == null)
-			{
-				return;
-			}
-			editBox.TextChanged += CodeLineRefEditBox_TextChanged;
-			_codeLineSearchWired = true;
-		}
-
-		private void CodeLineRefEditBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			if (_codeLineSuppressTextChanged || _codeLineRefs == null)
-			{
-				return;
-			}
-			var editBox = sender as TextBox;
-			_codeLineFilterText = editBox?.Text ?? "";
-			System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
-		}
-
-		/// <summary>打开下拉时清空过滤显示全部，并全选文本框让输入直接覆盖搜索。</summary>
-		private void CodeLinesRefComboBox_DropDownOpened(object sender, EventArgs e)
-		{
-			if (_codeLineRefs != null && !string.IsNullOrEmpty(_codeLineFilterText))
-			{
-				_codeLineSuppressTextChanged = true;
-				_codeLineFilterText = "";
-				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
-				_codeLineSuppressTextChanged = false;
-			}
-			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
-			if (editBox != null)
-			{
-				editBox.Dispatcher.BeginInvoke(new Action(editBox.SelectAll));
-			}
-		}
-
-		/// <summary>关闭下拉时若用户输入了搜索文本但未点选新项，恢复文本框为当前选中项的显示文本。</summary>
-		private void CodeLinesRefComboBox_DropDownClosed(object sender, EventArgs e)
-		{
-			if (_codeLineRefs == null)
-			{
-				return;
-			}
-			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
+			CodeLineRefItem item = CodeLinesRefListBox.SelectedItem as CodeLineRefItem;
 			if (item == null)
 			{
 				return;
 			}
-			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
-			if (editBox != null && editBox.Text != item.Display)
-			{
-				_codeLineSuppressTextChanged = true;
-				editBox.Text = item.Display;
-				_codeLineFilterText = "";
-				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
-				_codeLineSuppressTextChanged = false;
-			}
+			UpdateCodeLinesRefButton(item);
+			CodeLinesRefPopup.IsOpen = false;
+			RefreshCodeLines(item.RefSpec);
 		}
 
-		/// <summary>ComboBox 选 ref 时触发。重新跑 tokei。</summary>
-		private void CodeLinesRefComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		/// <summary>更新按钮显示当前选中 ref 的 Display 文本。</summary>
+		private void UpdateCodeLinesRefButton(CodeLineRefItem item)
 		{
-			if (_isCodeLinesRefComboBoxInitializing || _gitModule == null)
-			{
-				return;
-			}
-			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
-			RefreshCodeLines(item?.RefSpec);
+			CodeLinesRefButtonText.Text = item?.Display ?? "";
 		}
 
 		/// <summary>Refresh 按钮点击。用当前选中的 ref 重跑。</summary>
 		private void CodeLinesRefreshButton_Click(object sender, RoutedEventArgs e)
 		{
-			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
-			RefreshCodeLines(item?.RefSpec);
+			RefreshCodeLines(_currentCodeLinesRef);
 		}
 
 		/// <summary>异步跑 tokei 拿代码行数统计，更新饼图 + 列表 + 摘要。
@@ -680,7 +695,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			CodeLinesError.Visibility = Visibility.Collapsed;
 			CodeLinesSummary.Text = Translate("Counting code lines...") + (string.IsNullOrEmpty(refSpec) ? "" : " (" + refSpec + ")");
 			CodeLinesRefreshButton.IsEnabled = false;
-			CodeLinesRefComboBox.IsEnabled = false;
+			CodeLinesRefButton.IsEnabled = false;
 
 			// 复制一份避免闭包捕获到后续变化的 refSpec
 			string refSpecCopy = refSpec;
@@ -696,7 +711,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 						return;
 					}
 					CodeLinesRefreshButton.IsEnabled = true;
-					CodeLinesRefComboBox.IsEnabled = true;
+					CodeLinesRefButton.IsEnabled = true;
 					if (!result.Succeeded)
 					{
 						ShowCodeLinesError(result.Error?.FriendlyDescription ?? "Failed");

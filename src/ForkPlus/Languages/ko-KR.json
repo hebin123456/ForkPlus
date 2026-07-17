@@ -2037,6 +2037,7 @@
     "Blanks": "빈 줄",
     "Other": "기타",
     "Counting code lines...": "코드 줄 수를 계산하는 중...",
-    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} 파일 · {2} 코드 · {3} 주석 · {4} 빈 줄"
+    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} 파일 · {2} 코드 · {3} 주석 · {4} 빈 줄",
+    "Code statistics...": "코드 통계..."
   }
 }

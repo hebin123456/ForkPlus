@@ -2037,6 +2037,7 @@
     "Blanks": "Líneas en blanco",
     "Other": "Otros",
     "Counting code lines...": "Contando líneas de código...",
-    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} archivos · {2} código · {3} comentarios · {4} líneas en blanco"
+    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} archivos · {2} código · {3} comentarios · {4} líneas en blanco",
+    "Code statistics...": "Estadísticas de código..."
   }
 }

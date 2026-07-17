@@ -1128,18 +1128,25 @@ namespace ForkPlus.UI.UserControls
 						if (remoteMain != null)
 						{
 							list.Add(new Separator());
-							list.Add(RevisionListViewUserControl.CreateBranchAiCodeReviewMenuItem(repositoryUserControl, gitModule, branch, remoteMain, commitGraphCache));
-						}
+						list.Add(RevisionListViewUserControl.CreateBranchAiCodeReviewMenuItem(repositoryUserControl, gitModule, branch, remoteMain, commitGraphCache));
 					}
 				}
-				list.Add(new Separator());
-				list.Add(RepositoryUserControl.Commands.CopyReferenceName.CreateMenuItem("Copy Branch Name", delegate
-				{
-					RepositoryUserControl.Commands.CopyReferenceName.Execute(branch);
-				}));
-				list.AddRange(GetReferenceCustomCommands(repositoryUserControl, gitModule, _repositoryData, branch));
 			}
-			else if (branches.Length > 1)
+			list.Add(new Separator());
+			list.Add(RepositoryUserControl.Commands.ShowRepositoryStatisticsWindow.CreateMenuItem(
+				PreferencesLocalization.Current("Code statistics..."), delegate
+			{
+				// 以分支名作为初始 refSpec 打开统计窗口，并滚动到代码行数统计区域
+				RepositoryUserControl.Commands.ShowRepositoryStatisticsWindow.Execute(gitModule, branch.Name, true);
+			}));
+			list.Add(new Separator());
+			list.Add(RepositoryUserControl.Commands.CopyReferenceName.CreateMenuItem("Copy Branch Name", delegate
+			{
+				RepositoryUserControl.Commands.CopyReferenceName.Execute(branch);
+			}));
+			list.AddRange(GetReferenceCustomCommands(repositoryUserControl, gitModule, _repositoryData, branch));
+		}
+		else if (branches.Length > 1)
 			{
 				RemoteBranch[] remoteBranches = repositoryData.References.RemoteBranches;
 				list.Add(RepositoryUserControl.Commands.FastForward.CreateMenuItem($"Fast-Forward {branches.Length} branches to their upstreams", delegate

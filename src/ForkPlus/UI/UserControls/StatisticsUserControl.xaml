@@ -83,7 +83,7 @@
         </StackPanel>
       </Grid>
       <!-- Row 6: 代码行数统计（tokei）—— 标题行 + 模式切换 + 摘要 + 饼图 + 列表 -->
-      <StackPanel Grid.Row="6" Margin="0,30,0,0">
+      <StackPanel Grid.Row="6" Margin="0,30,0,0" x:Name="CodeLinesSection">
         <Grid Margin="10,0,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -92,7 +92,26 @@
           <TextBlock Grid.Column="0" Text="Code lines" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
             <TextBlock Text="Ref:" VerticalAlignment="Center" Margin="0,0,6,0" />
-            <ComboBox Width="220" Margin="0,0,8,0" x:Name="CodeLinesRefComboBox" IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False" SelectionChanged="CodeLinesRefComboBox_SelectionChanged" DropDownOpened="CodeLinesRefComboBox_DropDownOpened" DropDownClosed="CodeLinesRefComboBox_DropDownClosed" />
+            <Grid Width="220" Margin="0,0,8,0">
+              <Button HorizontalAlignment="Stretch" x:Name="CodeLinesRefButton" Click="CodeLinesRefButton_Click">
+                <DockPanel LastChildFill="True">
+                  <Path DockPanel.Dock="Right" Data="M9.041,1.657L5,5.698 0.959,1.657 1.638,0.98 5,4.342 8.362,0.98 9.041,1.657z" Fill="{DynamicResource ComboBox.Static.Glyph}" HorizontalAlignment="Center" Margin="6,0,4,0" VerticalAlignment="Center" />
+                  <TextBlock x:Name="CodeLinesRefButtonText" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                </DockPanel>
+              </Button>
+              <Popup StaysOpen="False" Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
+                <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1" CornerRadius="6" Padding="2" MinWidth="220" MaxHeight="400">
+                  <Grid>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <controls:PlaceholderTextBox Grid.Row="0" Margin="4,4,4,2" Style="{DynamicResource SearchPanelPlaceholderTextBox}" Placeholder="{DynamicResource Search}" controls:PlaceholderTextBox.Icon="{DynamicResource SearchOnIcon}" x:Name="CodeLinesRefSearchBox" TextChanged="CodeLinesRefSearchBox_TextChanged" />
+                    <ListBox Grid.Row="1" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" x:Name="CodeLinesRefListBox" SelectionChanged="CodeLinesRefListBox_SelectionChanged" />
+                  </Grid>
+                </Border>
+              </Popup>
+            </Grid>
             <Button Content="Refresh" Padding="10,2" x:Name="CodeLinesRefreshButton" Click="CodeLinesRefreshButton_Click" />
           </StackPanel>
         </Grid>

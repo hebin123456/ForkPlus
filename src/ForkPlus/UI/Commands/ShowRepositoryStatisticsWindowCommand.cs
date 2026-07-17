@@ -30,5 +30,12 @@ namespace ForkPlus.UI.Commands
 		{
 			new RepositoryStatisticsWindow(gitModule).ShowDialog();
 		}
+
+		/// <param name="initialRef">初始统计的 refSpec（分支/tag/sha）。null/空 = Workspace snapshot。</param>
+		/// <param name="scrollToCodeLines">显示后是否滚动到代码行数统计区域。</param>
+		public void Execute(GitModule gitModule, [Null] string initialRef, bool scrollToCodeLines)
+		{
+			new RepositoryStatisticsWindow(gitModule, initialRef, scrollToCodeLines).ShowDialog();
+		}
 	}
 }

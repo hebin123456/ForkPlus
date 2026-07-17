@@ -2037,6 +2037,7 @@
     "Blanks": "空行",
     "Other": "其他",
     "Counting code lines...": "正在統計程式碼行數...",
-    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}：{1} 個檔案 · {2} 行程式碼 · {3} 行註解 · {4} 行空行"
+    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}：{1} 個檔案 · {2} 行程式碼 · {3} 行註解 · {4} 行空行",
+    "Code statistics...": "程式碼統計..."
   }
 }

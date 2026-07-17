@@ -2037,6 +2037,7 @@
     "Blanks": "Leerzeilen",
     "Other": "Sonstige",
     "Counting code lines...": "Codezeilen werden gezählt...",
-    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} Dateien · {2} Code · {3} Kommentare · {4} Leerzeilen"
+    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} Dateien · {2} Code · {3} Kommentare · {4} Leerzeilen",
+    "Code statistics...": "Code-Statistik..."
   }
 }
