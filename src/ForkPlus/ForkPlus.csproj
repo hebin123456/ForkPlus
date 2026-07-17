@@ -88,12 +88,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\third_party\biturbo.dll" Link="biturbo.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
