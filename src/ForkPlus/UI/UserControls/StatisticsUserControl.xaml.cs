@@ -316,6 +316,10 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>防止 Ref 列表初始化 SelectionChanged 事件触发查询。</summary>
 		private bool _isCodeLinesRefInitializing;
 
+		/// <summary>待执行的"滚动到代码行数统计区域"请求。由 ShowStatistics(scrollToCodeLines=true) 置位，
+		/// 在 UpdatePreview 异步统计完成、StatsContainer.Show() 后消费，确保布局已完成 BringIntoView 才有效。</summary>
+		private bool _pendingScrollToCodeLines;
+
 		/// <summary>Ref 下拉的全部项（Workspace + 本地分支 + tag），用于 Popup 内 ListBox 绑定 + 搜索过滤。</summary>
 		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _codeLineRefs;
 
@@ -376,17 +380,14 @@ namespace ForkPlus.UI.UserControls
 		public void ShowStatistics(GitModule gitModule, [Null] string initialRef, bool scrollToCodeLines)
 		{
 			_gitModule = gitModule;
+			// 记录待滚动请求，等 UpdatePreview 异步统计完成、StatsContainer 显示后再执行 BringIntoView，
+			// 否则 StatsContainer 还在 Collapsed 状态，CodeLinesSection 实际高度为 0，滚动无效。
+			_pendingScrollToCodeLines = scrollToCodeLines;
 			UpdatePreview(gitModule, null);
 			// 初始化代码行数 ref 下拉并触发首次查询（按 initialRef 选择初始项）
 			InitializeCodeLinesRefComboBox(gitModule);
 			SelectCodeLineRef(initialRef);
 			RefreshCodeLines(_currentCodeLinesRef);
-			if (scrollToCodeLines)
-			{
-				// 延迟到布局完成后再滚动，确保 BringIntoView 能算出正确位置
-				Dispatcher.BeginInvoke(new Action(() => CodeLinesSection.BringIntoView()),
-					System.Windows.Threading.DispatcherPriority.Loaded);
-			}
 		}
 
 		/// <summary>在 _codeLineRefs 中找到 RefSpec == refSpec 的项并选中；找不到则回退到 Workspace（第一项）。</summary>
@@ -465,6 +466,14 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 							DateRangeButton.DateRange = new CalendarDateRange(_stats.Start, _stats.End);
 							_isCalendarUpdatingInProgress = false;
 							UpdatePlots(_stats);
+							// 消费待滚动请求：此时 StatsContainer 已 Show，UpdatePlots 已渲染各图表，
+							// 延迟到 Render 优先级确保 WPF 完成布局测量后再 BringIntoView。
+							if (_pendingScrollToCodeLines)
+							{
+								_pendingScrollToCodeLines = false;
+								Dispatcher.BeginInvoke(new Action(() => CodeLinesSection.BringIntoView()),
+									System.Windows.Threading.DispatcherPriority.Render);
+							}
 						}
 					}
 				});

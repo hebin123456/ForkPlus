@@ -72,9 +72,13 @@ namespace ForkPlus.Git.Commands
 			try
 			{
 				tempDir = CreateTempDirectory();
-				if (!ExportRefToTarAndExtract(gitModule, refSpec, tempDir, monitor))
+				string archiveError;
+				if (!ExportRefToTarAndExtract(gitModule, refSpec, tempDir, monitor, out archiveError))
 				{
-					return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError("git archive failed for ref: " + refSpec));
+					// 区分 ref 不存在 vs archive 其他错误，给出更友好的提示
+					string detail = string.IsNullOrEmpty(archiveError) ? "" : " (" + archiveError.Trim() + ")";
+					return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError(
+						"git archive failed for ref: " + refSpec + detail));
 				}
 				if (monitor != null && monitor.IsCanceled)
 				{
@@ -143,13 +147,11 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		/// <summary>git archive --format=tar --prefix= &lt;refSpec&gt; 输出到 stdout，
-		/// 管道给 tar 解压到 tempDir。Windows 上 git 自带 tar（git-for-windows 内置 bsdtar），
-		/// 但更稳妥是用 .NET 4.5 不带原生 tar。这里改用 powershell 的 tar.exe（Windows 10+ 自带）。
-		/// 简单稳妥的做法：git archive --format=tar -o &lt;tempFile&gt; &lt;refSpec&gt; 然后
-		/// tar -xf &lt;tempFile&gt; -C &lt;tempDir&gt;。</summary>
-		private bool ExportRefToTarAndExtract(GitModule gitModule, string refSpec, string tempDir, [Null] JobMonitor monitor)
+		/// <summary>git archive --format=tar -o &lt;tarFile&gt; &lt;refSpec&gt; 然后 tar -xf 解压。
+		/// 失败时通过 errorMessage 输出诊断信息（优先用 git rev-parse 区分 ref 不存在 vs 其他错误）。</summary>
+		private bool ExportRefToTarAndExtract(GitModule gitModule, string refSpec, string tempDir, [Null] JobMonitor monitor, out string errorMessage)
 		{
+			errorMessage = null;
 			string tarFile = Path.Combine(tempDir, "..", "tokei_export_" + Guid.NewGuid().ToString("N") + ".tar");
 			tarFile = Path.GetFullPath(tarFile);
 			try
@@ -158,20 +160,33 @@ namespace ForkPlus.Git.Commands
 				GitRequestResult archiveResult = new GitRequest(gitModule).Command("archive", "--format=tar", "-o", tarFile, refSpec).Execute(monitor, silent: true);
 				if (!archiveResult.Success || archiveResult.ExitCode != 0)
 				{
-					Log.Warn("git archive failed: " + archiveResult.Stderr);
+					string stderr = archiveResult.Stderr ?? "";
+					Log.Warn("git archive failed: " + stderr);
+					// 用 git rev-parse 验证 ref 是否可解析，区分"ref 不存在"和"archive 其他错误"
+					// （如 worktree 状态异常、ref 只在远端未本地化等）
+					GitRequestResult revParseResult = new GitRequest(gitModule)
+						.Command("rev-parse", "--verify", refSpec + "^{commit}").Execute(silent: true);
+					if (!revParseResult.Success || revParseResult.ExitCode != 0)
+					{
+						errorMessage = "ref '" + refSpec + "' does not resolve to a commit";
+					}
+					else
+					{
+						errorMessage = string.IsNullOrEmpty(stderr) ? "git archive exited " + archiveResult.ExitCode : stderr;
+					}
 					return false;
 				}
 				if (monitor != null && monitor.IsCanceled)
 				{
+					errorMessage = "canceled";
 					return false;
 				}
 
 				// 2. tar -xf <tarFile> -C <tempDir>
 				// Windows 10 1803+ 自带 tar.exe（bsdtar）；CI 的 windows-latest 也有。
-				// 在 PATH 找不到 tar.exe 时退化用 powershell Expand-Archive（要求 .zip 格式，
-				// 所以这种退化路径不可行）。这里直接调 tar.exe，找不到就报错让用户感知。
-				if (!ExtractTar(tarFile, tempDir))
+				if (!ExtractTar(tarFile, tempDir, out string extractError))
 				{
+					errorMessage = "tar extract failed: " + extractError;
 					return false;
 				}
 				return true;
@@ -183,8 +198,9 @@ namespace ForkPlus.Git.Commands
 		}
 
 		/// <summary>用系统 tar.exe 解压。Windows 10 1803+ / Windows 11 / CI windows-latest 都自带。</summary>
-		private bool ExtractTar(string tarFile, string destDir)
+		private bool ExtractTar(string tarFile, string destDir, out string errorMessage)
 		{
+			errorMessage = null;
 			Process process = new Process();
 			try
 			{
@@ -205,11 +221,13 @@ namespace ForkPlus.Git.Commands
 				{
 					try { process.Kill(); } catch { }
 					Log.Warn("tar.exe timed out");
+					errorMessage = "timed out";
 					return false;
 				}
 				if (process.ExitCode != 0)
 				{
 					Log.Warn("tar.exe failed (exit " + process.ExitCode + "): " + stderr);
+					errorMessage = string.IsNullOrEmpty(stderr) ? "exit " + process.ExitCode : stderr;
 					return false;
 				}
 				return true;
@@ -217,6 +235,7 @@ namespace ForkPlus.Git.Commands
 			catch (Exception ex)
 			{
 				Log.Error("Failed to run tar.exe (Windows 10 1803+ required)", ex);
+				errorMessage = "tar.exe not available (Windows 10 1803+ required): " + ex.Message;
 				return false;
 			}
 			finally
