@@ -358,12 +358,12 @@ namespace ForkPlus.UI.Controls
 		return palette;
 	}
 
-	private static Color TryFindColor(string key)
+	private static Color? TryFindColor(string key)
 	{
 		object res = Application.Current?.TryFindResource(key);
 		if (res is Color c) return c;
 		if (res is SolidColorBrush b) return b.Color;
-		return Color.FromRgb(0, 0, 0);
+		return null;
 	}
 
 		private static Brush Freeze(Brush brush)

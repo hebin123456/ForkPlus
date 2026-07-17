@@ -5,6 +5,8 @@
 
 ForkPlus 是基于 Fork 的 Git 图形化工具增强版，底层用 Rust 重写（biturbo 引擎），内置 AI 辅助开发、代码统计、仓库树图、多主题皮肤、8 种语言等特色功能。本手册按功能模块组织，帮助你快速上手每个功能。
 
+> 注：手册中的菜单/按钮名称使用软件界面英文标签（软件默认语言为英文，切换到简体中文后界面会翻译为中文）。
+
 ---
 
 ## 目录
@@ -37,12 +39,12 @@ ForkPlus 主窗口分为四个区域：
 ┌─────────────────────────────────────────────┐
 │  标题栏菜单（File / View / Repository / Window / Help）  │
 ├─────────────────────────────────────────────┤
-│  工具栏（Fetch/Pull/Push/Stash/Branch/外观/工作区/打开/AI） │
+│  工具栏（Fetch/Pull/Push/Stash/Branch/Appearance/Workspaces/Open in/AI）│
 ├──────────┬──────────────────────────────────┤
 │          │                                  │
 │  侧栏     │        主区域                    │
-│ (分支/    │   (提交列表 + Diff 详情)          │
-│  搜索/PR) │                                  │
+│ (Branches/│   (提交列表 + Diff 详情)          │
+│  Search/PR)│                                 │
 │          │                                  │
 ├──────────┴──────────────────────────────────┤
 │  底部状态栏                                   │
@@ -103,7 +105,7 @@ ForkPlus 主窗口分为四个区域：
 - Submodule/Worktree：打开
 
 ### 右键菜单（本地分支）
-Checkout、Fast-Forward、Pull、Push、Create PR、检查远端同步状态（二级可搜索菜单）、Merge、Rebase、Interactive Rebase、Tracking 设置、Rename、Delete、AI Code Review、Code statistics、Copy Name、自定义命令
+Checkout、Fast-Forward、Pull、Push、Create PR、Check Remote Sync Status（二级可搜索菜单）、Merge、Rebase、Interactive Rebase、Tracking、Rename、Delete、AI Code Review、Code statistics、Copy Name、Custom Commands
 
 ### 拖拽操作
 - 拖分支到本地分支：弹出 Merge / Rebase 菜单
