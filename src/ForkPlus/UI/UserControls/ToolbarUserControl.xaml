@@ -215,7 +215,14 @@
             <ToolbarButton.Style>
               <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
             </ToolbarButton.Style>
-            <TextBlock Text="✦" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="AiIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
           </ToolbarButton>
           <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="4,3,4,3" Title="Open in" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="OpenInDropDownButton">
             <ToolbarDropDownButton.Style>

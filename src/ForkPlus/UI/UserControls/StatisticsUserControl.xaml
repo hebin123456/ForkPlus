@@ -92,7 +92,7 @@
           <TextBlock Grid.Column="0" Text="Code lines" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
             <TextBlock Text="Ref:" VerticalAlignment="Center" Margin="0,0,6,0" />
-            <ComboBox Width="220" Margin="0,0,8,0" x:Name="CodeLinesRefComboBox" SelectionChanged="CodeLinesRefComboBox_SelectionChanged" />
+            <ComboBox Width="220" Margin="0,0,8,0" x:Name="CodeLinesRefComboBox" IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False" SelectionChanged="CodeLinesRefComboBox_SelectionChanged" DropDownOpened="CodeLinesRefComboBox_DropDownOpened" DropDownClosed="CodeLinesRefComboBox_DropDownClosed" />
             <Button Content="Refresh" Padding="10,2" x:Name="CodeLinesRefreshButton" Click="CodeLinesRefreshButton_Click" />
           </StackPanel>
         </Grid>

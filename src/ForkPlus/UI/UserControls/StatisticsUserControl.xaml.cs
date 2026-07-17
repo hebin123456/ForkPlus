@@ -316,6 +316,19 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>防止 CodeLinesRefComboBox 初始化 SelectionChanged 事件触发查询。</summary>
 		private bool _isCodeLinesRefComboBoxInitializing;
 
+		/// <summary>Ref 下拉的全部项（Workspace + 本地分支 + tag）。用于支持搜索过滤。</summary>
+		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _codeLineRefs;
+
+		/// <summary>Ref 下拉的当前搜索过滤文本（忽略大小写）。空表示不过滤。</summary>
+		[Null]
+		private string _codeLineFilterText;
+
+		/// <summary>编辑文本框搜索逻辑是否已挂接，避免 ComboBox.Loaded 重复触发时重复挂接。</summary>
+		private bool _codeLineSearchWired;
+
+		/// <summary>程序设置编辑文本框 Text 时跳过搜索过滤，避免选中项回填触发误过滤。</summary>
+		private bool _codeLineSuppressTextChanged;
+
 		private bool _isCalendarUpdatingInProgress;
 
 		private static OxyColor BorderColor => Theme.BorderBrush.ToOxyColor();
@@ -352,6 +365,8 @@ namespace ForkPlus.UI.UserControls
 			StatsContainer.Collapse();
 			FallbackUserControl.FallbackTitle = Translate("Generating statistics...");
 			FallbackUserControl.Show();
+			// Editable ComboBox 的内部编辑文本框在模板应用后才能拿到，Loaded 时挂接搜索过滤
+			CodeLinesRefComboBox.Loaded += CodeLinesRefComboBox_Loaded;
 		}
 
 		public void ApplyLocalization()
@@ -507,13 +522,14 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		// ===================== 代码行数统计（tokei）=====================
 
 		/// <summary>初始化 ref 下拉：Workspace（工作区）+ 本地分支 + tag。
-		/// 走 git for-each-ref 一次性拿全，避免阻塞 UI。</summary>
+		/// 走 git for-each-ref 一次性拿全，避免阻塞 UI。用 ObservableCollection + CollectionView
+		/// 支持搜索过滤（分支/tag 多时在下拉里输入片段即可过滤）。</summary>
 		private void InitializeCodeLinesRefComboBox(GitModule gitModule)
 		{
 			_isCodeLinesRefComboBoxInitializing = true;
-			CodeLinesRefComboBox.Items.Clear();
+			_codeLineRefs = new System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem>();
 			// 第一项固定为"Workspace"（snapshot 模式）
-			CodeLinesRefComboBox.Items.Add(new CodeLineRefItem(Translate("Workspace"), null));
+			_codeLineRefs.Add(new CodeLineRefItem(Translate("Workspace"), null));
 			try
 			{
 				// 列本地分支和 tag。轻量命令，同步执行可接受（< 100ms 通常）
@@ -528,7 +544,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 						string trimmed = r.Trim();
 						if (!string.IsNullOrEmpty(trimmed))
 						{
-							CodeLinesRefComboBox.Items.Add(new CodeLineRefItem(trimmed, trimmed));
+							_codeLineRefs.Add(new CodeLineRefItem(trimmed, trimmed));
 						}
 					}
 				}
@@ -537,8 +553,100 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				Log.Error("Failed to list refs for CodeLines combo", ex);
 			}
+			CodeLinesRefComboBox.ItemsSource = _codeLineRefs;
+			// CollectionView 过滤：Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本
+			System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Filter =
+				obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
 			CodeLinesRefComboBox.SelectedIndex = 0;
 			_isCodeLinesRefComboBoxInitializing = false;
+		}
+
+		/// <summary>Ref 下拉过滤谓词。Workspace 项始终显示；其余项按 Display 包含搜索文本（忽略大小写）。</summary>
+		private bool FilterCodeLineRefItem(CodeLineRefItem item)
+		{
+			if (string.IsNullOrEmpty(_codeLineFilterText))
+			{
+				return true;
+			}
+			// Workspace（RefSpec 为空）始终保留，方便随时切回工作区 snapshot
+			if (item.RefSpec == null)
+			{
+				return true;
+			}
+			return item.Display != null && item.Display.IndexOf(_codeLineFilterText, StringComparison.OrdinalIgnoreCase) >= 0;
+		}
+
+		/// <summary>ComboBox 模板应用后挂接内部编辑文本框的 TextChanged 做实时过滤。</summary>
+		private void CodeLinesRefComboBox_Loaded(object sender, RoutedEventArgs e)
+		{
+			WireCodeLineSearch();
+		}
+
+		private void WireCodeLineSearch()
+		{
+			if (_codeLineSearchWired)
+			{
+				return;
+			}
+			CodeLinesRefComboBox.ApplyTemplate();
+			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
+			if (editBox == null)
+			{
+				return;
+			}
+			editBox.TextChanged += CodeLineRefEditBox_TextChanged;
+			_codeLineSearchWired = true;
+		}
+
+		private void CodeLineRefEditBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (_codeLineSuppressTextChanged || _codeLineRefs == null)
+			{
+				return;
+			}
+			var editBox = sender as TextBox;
+			_codeLineFilterText = editBox?.Text ?? "";
+			System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
+		}
+
+		/// <summary>打开下拉时清空过滤显示全部，并全选文本框让输入直接覆盖搜索。</summary>
+		private void CodeLinesRefComboBox_DropDownOpened(object sender, EventArgs e)
+		{
+			if (_codeLineRefs != null && !string.IsNullOrEmpty(_codeLineFilterText))
+			{
+				_codeLineSuppressTextChanged = true;
+				_codeLineFilterText = "";
+				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
+				_codeLineSuppressTextChanged = false;
+			}
+			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
+			if (editBox != null)
+			{
+				editBox.Dispatcher.BeginInvoke(new Action(editBox.SelectAll));
+			}
+		}
+
+		/// <summary>关闭下拉时若用户输入了搜索文本但未点选新项，恢复文本框为当前选中项的显示文本。</summary>
+		private void CodeLinesRefComboBox_DropDownClosed(object sender, EventArgs e)
+		{
+			if (_codeLineRefs == null)
+			{
+				return;
+			}
+			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
+			if (item == null)
+			{
+				return;
+			}
+			var editBox = CodeLinesRefComboBox.Template?.FindName("PART_EditableTextBox", CodeLinesRefComboBox) as TextBox;
+			if (editBox != null && editBox.Text != item.Display)
+			{
+				_codeLineSuppressTextChanged = true;
+				editBox.Text = item.Display;
+				_codeLineFilterText = "";
+				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs).Refresh();
+				_codeLineSuppressTextChanged = false;
+			}
 		}
 
 		/// <summary>ComboBox 选 ref 时触发。重新跑 tokei。</summary>

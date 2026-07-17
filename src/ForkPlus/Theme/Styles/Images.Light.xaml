@@ -2,6 +2,7 @@
   <BitmapImage x:Key="ActiveBranchIcon" UriSource="/Assets/ActiveBranch.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ActiveBranchSelectedIcon" UriSource="/Assets/ActiveBranchDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="AddIcon" UriSource="/Assets/Add.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="AiIcon" UriSource="/Assets/Ai.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="BinaryFile" UriSource="/Assets/BinaryFile.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="BisectGoodIcon" UriSource="/Assets/BisectGoodIcon.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="BisectBadIcon" UriSource="/Assets/BisectBadIcon.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
