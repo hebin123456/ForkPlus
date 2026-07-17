@@ -18,7 +18,10 @@ namespace ForkPlus.UI
 				case ThemeType.GitHubLight: return "GitHubLight";
 				case ThemeType.GitHubDark: return "GitHubDark";
 				case ThemeType.Monokai: return "Monokai";
-				case ThemeType.Purple: return "Purple";
+				case ThemeType.PurpleLight: return "PurpleLight";
+				case ThemeType.PurpleDark: return "PurpleDark";
+				case ThemeType.GreenLight: return "GreenLight";
+				case ThemeType.GreenDark: return "GreenDark";
 				default: return "Light";
 			}
 		}
@@ -34,7 +37,8 @@ namespace ForkPlus.UI
 				case ThemeType.Dracula:
 				case ThemeType.GitHubDark:
 				case ThemeType.Monokai:
-				case ThemeType.Purple:
+				case ThemeType.PurpleDark:
+				case ThemeType.GreenDark:
 					return true;
 				default:
 					return false;
@@ -58,7 +62,10 @@ namespace ForkPlus.UI
 			ThemeType.GitHubDark,
 			ThemeType.Dracula,
 			ThemeType.Monokai,
-			ThemeType.Purple
+			ThemeType.PurpleLight,
+			ThemeType.PurpleDark,
+			ThemeType.GreenLight,
+			ThemeType.GreenDark
 		};
 	}
 }

@@ -48,6 +48,13 @@ namespace ForkPlus.UI.Dialogs
 
 		public CustomColorsDialog()
 		{
+			// 关闭基类 ForkPlusDialogWindow 自动添加的 chrome（logo/header/footer/command preview）。
+			// 基类假设内容 Grid 是两列布局（Column 0=logo 列，Column 1=内容），会自动塞入 64x64
+			// ForkPlus logo + 标题头 + 底部 Submit/Cancel footer。本对话框自定义布局，不兼容该结构，
+			// 若不关闭会导致 logo 与颜色列表叠在 Column 0 上挤在一起，且 footer 与自定义按钮重复。
+			ShowHeader = false;
+			ShowLogo = false;
+			ShowFooter = false;
 			InitializeComponent();
 			Localize();
 			LoadItems();

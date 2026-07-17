@@ -13,6 +13,9 @@ namespace ForkPlus.UI
 		GitHubLight = 5,
 		GitHubDark = 6,
 		Monokai = 7,
-		Purple = 8
+		PurpleLight = 8,
+		PurpleDark = 9,
+		GreenLight = 10,
+		GreenDark = 11
 	}
 }

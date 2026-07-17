@@ -1,31 +1,31 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
   <Image x:Key="TransparentPatternImage" Source="/Assets/TransparentPatternDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <Color x:Key="LabelColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E4E0EB</Color>
+  <Color x:Key="LabelColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#D6E8DC</Color>
   <Color x:Key="SecondaryLabelColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C4C0C0</Color>
-  <Color x:Key="AccentColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A855F7</Color>
-  <Color x:Key="AccentSecondaryColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C084FC</Color>
-  <Color x:Key="ReferenceColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A855F7</Color>
-  <Color x:Key="IconColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C084FC</Color>
+  <Color x:Key="AccentColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3FB86B</Color>
+  <Color x:Key="AccentSecondaryColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#5FCC85</Color>
+  <Color x:Key="ReferenceColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3FB86B</Color>
+  <Color x:Key="IconColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#5FCC85</Color>
   <Color x:Key="GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#777777</Color>
   <Color x:Key="Disabled.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C6C6C6</Color>
-  <Color x:Key="ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E4E0EB</Color>
+  <Color x:Key="ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#D6E8DC</Color>
   <Color x:Key="ForegroundColor.Light" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFFFFF</Color>
-  <Color x:Key="ForegroundColor.DimGray" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B8B0C8</Color>
-  <Color x:Key="ForegroundColor.Gray" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#9D92B5</Color>
+  <Color x:Key="ForegroundColor.DimGray" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A8C2B0</Color>
+  <Color x:Key="ForegroundColor.Gray" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#8AA898</Color>
   <Color x:Key="Disabled.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#ABABAB</Color>
-  <Color x:Key="BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
-  <Color x:Key="FallbackBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
-  <Color x:Key="PanelBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
-  <Color x:Key="HeaderToolbarBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
-  <Color x:Key="TileBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2A2040</Color>
-  <Color x:Key="TileBackgroundColorDark" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2A2040</Color>
-  <Color x:Key="TileBorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3D2E5C</Color>
-  <Color x:Key="SecondaryBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0F1A14</Color>
+  <Color x:Key="FallbackBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0A140E</Color>
+  <Color x:Key="PanelBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#16241B</Color>
+  <Color x:Key="HeaderToolbarBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0A140E</Color>
+  <Color x:Key="TileBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1C2F22</Color>
+  <Color x:Key="TileBackgroundColorDark" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1C2F22</Color>
+  <Color x:Key="TileBorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#264533</Color>
+  <Color x:Key="SecondaryBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0A140E</Color>
   <Color x:Key="MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3C3C3C</Color>
   <Color x:Key="Pressed.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3C3C3C</Color>
   <Color x:Key="Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3C3C3C</Color>
   <Color x:Key="GroupBoxBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3C3C3C</Color>
-  <Color x:Key="BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3D2E5C</Color>
+  <Color x:Key="BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#264533</Color>
   <Color x:Key="MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#F0F0F0</Color>
   <Color x:Key="Pressed.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E5E5E5</Color>
   <Color x:Key="Pressed.BorderColorDark" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#F0F0F0</Color>
@@ -41,7 +41,7 @@
   <Color x:Key="Diff.FloatingButtonContainer.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2B2B2B</Color>
   <Color x:Key="CommandTextBox.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B0B0B0</Color>
   <Color x:Key="CommandTextBox.LabelColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">Black</Color>
-  <Color x:Key="Calendar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="Calendar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333337</Color>
   <Color x:Key="Calendar.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#6A6A75</Color>
   <Color x:Key="Calendar.DisabledColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A5FFFFFF</Color>
   <Color x:Key="Calendar.ButtonSelectedBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
@@ -65,7 +65,7 @@
   <Color x:Key="TabItem.Selected.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#EAE8E8</Color>
   <Color x:Key="TabControl.NormalBorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#4D4D4D</Color>
   <Color x:Key="TabItem.MouseOver.ButtonColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#555555</Color>
-  <Color x:Key="TabItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="TabItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="TabItem.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="TabItem.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#383838</Color>
   <Color x:Key="TabItem.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#383838</Color>
@@ -74,7 +74,7 @@
   <Color x:Key="TabItem.Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">DarkGray</Color>
   <Color x:Key="TabItem.Disabled.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">DarkGray</Color>
   <Color x:Key="TabItem.Disabled.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#878787</Color>
-  <Color x:Key="ClosableTabItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="ClosableTabItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#101010</Color>
   <Color x:Key="ClosableTabItem.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#404040</Color>
   <Color x:Key="ClosableTabItem.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1A1A</Color>
   <Color x:Key="ClosableTabItem.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#404040</Color>
@@ -92,20 +92,20 @@
   <Color x:Key="CloseButton.Static.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#838383</Color>
   <Color x:Key="CloseButton.MouseOver.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A4A4A4</Color>
   <Color x:Key="CloseButton.Pressed.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C9C9C9</Color>
-  <Color x:Key="TextBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="TextBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="TextBox.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="FilterPanel.SecondaryBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#292929</Color>
   <Color x:Key="FilterPanel.SecondaryBorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3B3B3B</Color>
-  <Color x:Key="Toolbar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="Toolbar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1A1A</Color>
   <Color x:Key="Toolbar.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#464646</Color>
   <Color x:Key="Toolbar.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B2B2B2</Color>
   <Color x:Key="Toolbar.PullPushBadgeColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#606060</Color>
-  <Color x:Key="Window.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="Window.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0A140E</Color>
   <Color x:Key="Window.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3BACED</Color>
-  <Color x:Key="Window.ButtonsRegionBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="Window.ButtonsRegionBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0F1A14</Color>
   <Color x:Key="Window.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFFFFF</Color>
-  <Color x:Key="Window.TitleBar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
-  <Color x:Key="Window.Dialog.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="Window.TitleBar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0A140E</Color>
+  <Color x:Key="Window.Dialog.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#16241B</Color>
   <Color x:Key="Window.Button.Static.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFFFFF</Color>
   <Color x:Key="Window.Button.MouseOver.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFFFFF</Color>
   <Color x:Key="Window.Button.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">Transparent</Color>
@@ -115,19 +115,19 @@
   <Color x:Key="Window.CloseButton.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">Transparent</Color>
   <Color x:Key="Window.CloseButton.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E81123</Color>
   <Color x:Key="Window.CloseButton.Pressed.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#F1707A</Color>
-  <Color x:Key="ScrollViewer.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
-  <Color x:Key="ScrollBar.ThumbColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3D2E5C</Color>
+  <Color x:Key="ScrollViewer.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
+  <Color x:Key="ScrollBar.ThumbColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#686868</Color>
   <Color x:Key="ScrollBar.MouseOver.ThumbColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B6B6B6</Color>
   <Color x:Key="ScrollBar.Pressed.ThumbColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A6A6A6</Color>
   <Color x:Key="ScrollBar.Static.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#686868</Color>
   <Color x:Key="ScrollBar.MouseOver.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B6B6B6</Color>
   <Color x:Key="ScrollBar.Pressed.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A6A6A6</Color>
   <Color x:Key="ScrollBar.Disabled.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#CFCFCF</Color>
-  <Color x:Key="ListBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="ListBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#212121</Color>
   <Color x:Key="ListBox.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="ListBox.Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">DarkGray</Color>
   <Color x:Key="ListBox.Disabled.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">DarkGray</Color>
-  <Color x:Key="Item.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="Item.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#212121</Color>
   <Color x:Key="Item.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="Item.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="Item.SelectedInactive.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
@@ -138,8 +138,8 @@
   <Color x:Key="GridViewColumnHeaderBorderBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="GridViewColumnHeaderHoverBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="GridViewColumnHeaderPressBackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
-  <Color x:Key="TreeView.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
-  <Color x:Key="TreeViewItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="TreeView.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#212121</Color>
+  <Color x:Key="TreeViewItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#212121</Color>
   <Color x:Key="TreeViewItem.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="TreeViewItem.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="TreeViewItem.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
@@ -147,9 +147,9 @@
   <Color x:Key="TreeViewItem.SelectedInactive.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="TreeViewItem.SelectedActive.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#236BD2</Color>
   <Color x:Key="TreeViewItem.SelectedActive.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#236BD2</Color>
-  <Color x:Key="Sidebar.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="Sidebar.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2C2C2D</Color>
   <Color x:Key="Sidebar.SelectionActive.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3F3F3F</Color>
-  <Color x:Key="ReferenceForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E4E0EB</Color>
+  <Color x:Key="ReferenceForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#D6E8DC</Color>
   <Color x:Key="ForkPlusDialogDescriptionForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#CAC6C6</Color>
   <Color x:Key="ToolbarButton.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">Transparent</Color>
   <Color x:Key="ToolbarButton.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#303030</Color>
@@ -157,8 +157,8 @@
   <Color x:Key="ToolbarButton.Pressed.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2A2A2A</Color>
   <Color x:Key="ToolbarButton.Pressed.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2A2A2A</Color>
   <Color x:Key="Button.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#EAE8E8</Color>
-  <Color x:Key="Button.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3D2E5C</Color>
-  <Color x:Key="Button.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3D2E5C</Color>
+  <Color x:Key="Button.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#264533</Color>
+  <Color x:Key="Button.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#264533</Color>
   <Color x:Key="Button.Static.ShadowColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#565656</Color>
   <Color x:Key="Button.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#242424</Color>
   <Color x:Key="Button.MouseOver.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#434343</Color>
@@ -168,13 +168,13 @@
   <Color x:Key="Button.Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#343434</Color>
   <Color x:Key="Button.Disabled.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#383838</Color>
   <Color x:Key="Button.Disabled.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#707070</Color>
-  <Color x:Key="CodeEditor.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
-  <Color x:Key="CodeEditor.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E4E0EB</Color>
-  <Color x:Key="CodeEditor.LinkForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C084FC</Color>
+  <Color x:Key="CodeEditor.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#0F1A14</Color>
+  <Color x:Key="CodeEditor.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#D6E8DC</Color>
+  <Color x:Key="CodeEditor.LinkForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#5FCC85</Color>
   <Color x:Key="MainMenu.Static.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#C0C6C6</Color>
-  <Color x:Key="MenuItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="MenuItem.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#16241B</Color>
   <Color x:Key="MenuItem.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#424242</Color>
-  <Color x:Key="StatusBar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#15101F</Color>
+  <Color x:Key="StatusBar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#303030</Color>
   <Color x:Key="OptionMark.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="OptionMark.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#6B6B6B</Color>
   <Color x:Key="OptionMark.MouseOver.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FF333333</Color>
@@ -198,11 +198,11 @@
   <Color x:Key="MergeCheckBox.Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="MergeCheckBox.Disabled.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFADB2B5</Color>
   <Color x:Key="ComboBox.Popup.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
-  <Color x:Key="ComboBox.Popup.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#241B33</Color>
+  <Color x:Key="ComboBox.Popup.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1B1B1C</Color>
   <Color x:Key="ComboBox.Static.GlyphColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E8E6E6</Color>
-  <Color x:Key="ComboBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="ComboBox.Static.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="ComboBox.Static.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
-  <Color x:Key="ComboBox.Static.Editable.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#1A1625</Color>
+  <Color x:Key="ComboBox.Static.Editable.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#333333</Color>
   <Color x:Key="ComboBox.Static.Editable.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
   <Color x:Key="ComboBox.Static.Editable.Button.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#373737</Color>
   <Color x:Key="ComboBox.Static.Editable.Button.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#525252</Color>
