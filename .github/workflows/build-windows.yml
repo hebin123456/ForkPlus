@@ -15,6 +15,15 @@ jobs:
         with:
           submodules: recursive
 
+      # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
+      # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
+      # key 绑定 tokei 版本号，升级时自动失效重新编译。
+      - name: Cache tokei
+        uses: actions/cache@v4
+        with:
+          path: third_party/tokei.exe
+          key: tokei-14.0.0-windows-x86_64
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 

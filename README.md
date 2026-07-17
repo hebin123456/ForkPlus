@@ -72,6 +72,18 @@ ForkPlus/
 
 因此首次编译需要网络访问 GitHub；后续编译若 `third_party/biturbo.dll` 已存在则跳过下载。CI 每次全新 checkout 都会拉取最新版。
 
+### tokei.exe 来源
+
+`tokei.exe` 是代码行数统计工具 [tokei](https://github.com/XAMPPRocky/tokei)（MIT 协议），用于统计面板的"代码行数"功能。tokei 上游 release 只发布源码、不发布预编译二进制，因此 **构建期用 `cargo install` 从源码编译**。
+
+具体机制（见 [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)）：
+
+- `RestoreTokei` target（`BeforeTargets=Build`）：检测到 `third_party/tokei.exe` 缺失时，调 `cargo install tokei --version 14.0.0 --locked` 编译到临时目录，再移动到 `third_party/tokei.exe`；cargo 不在 PATH 时报错提示
+- `CopyHelperExecutables` target（`AfterTargets=Build`）：将编译好的 `tokei.exe` 拷贝到输出目录
+- `.gitignore` 已忽略 `third_party/tokei.exe` 和 `third_party/.tokei-install/`
+
+因此**本地首次编译需要安装 [Rust 工具链](https://rustup.rs)**（`cargo` 需在 PATH）；或自行编译 tokei 后将 `tokei.exe` 放到 `third_party/` 目录。CI 环境自带 Rust，并用 `actions/cache` 缓存 `tokei.exe`，命中后跳过编译。
+
 ### 持续集成
 
 项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。

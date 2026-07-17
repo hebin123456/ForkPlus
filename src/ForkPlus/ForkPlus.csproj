@@ -98,12 +98,13 @@
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri 'https://github.com/hebin123456/Biturbo/releases/latest/download/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
   </Target>
 
-  <!-- tokei.exe（代码行数统计，MIT 协议）从上游 tokei 仓库最新 release 拉取。
-       只拉 Windows x86_64 二进制（重命名为 tokei.exe）；缺失时下载；已存在则跳过。
-       CI 环境下 github.com → objects.githubusercontent.com 的 302 重定向偶发"连接被关闭"，
-       故用 5 次重试 + 指数退避（5/10/15/20s），失败时清理半下载文件避免下次误判已存在。-->
+  <!-- tokei.exe（代码行数统计，MIT 协议）从源码编译。
+       tokei 上游 release 只发布源码、不发布预编译二进制，故缺失时用 cargo install 从
+       crates.io 拉源码编译到临时目录，再把 bin/tokei.exe 移到 third_party/tokei.exe。
+       本地首次编译需 Rust 工具链（rustup）；CI 用 actions/cache 缓存 third_party/tokei.exe
+       命中后跳过编译。cargo 不可用时给出清晰错误提示。-->
   <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $uri='https://github.com/XAMPPRocky/tokei/releases/latest/download/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $ok=$false; for($i=1; $i -le 5; $i++){ try { Invoke-WebRequest -Uri $uri -OutFile $out -UseBasicParsing -MaximumRedirection 10; $ok=$true; break } catch { Write-Host ('Attempt '+$i+' failed: '+$_.Exception.Message); if(Test-Path $out){ Remove-Item $out -Force }; if($i -lt 5){ Start-Sleep -Seconds (5*$i) } } }; if(-not $ok){ throw 'tokei.exe download failed after 5 attempts' }; Write-Host 'Restored tokei.exe from Tokei latest release'&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $out='..\..\third_party\tokei.exe'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $cargo = Get-Command cargo -ErrorAction SilentlyContinue; if(-not $cargo){ throw &quot;tokei.exe not found at $out and cargo not on PATH. Install Rust (https://rustup.rs) and re-run, or manually build tokei from https://github.com/XAMPPRocky/tokei and place the executable at $out.&quot; }; $root='..\..\third_party\.tokei-install'; if(Test-Path $root){ Remove-Item $root -Recurse -Force }; Write-Host 'Building tokei via cargo install (first run may take a few minutes)...'; &amp; cargo install tokei --version 14.0.0 --locked --root $root --no-track; if($LASTEXITCODE -ne 0){ throw 'cargo install tokei failed with exit code ' + $LASTEXITCODE }; $built = Join-Path $root 'bin\tokei.exe'; if(-not (Test-Path $built)){ throw &quot;tokei.exe not found at $built after cargo install&quot; }; Move-Item $built $out -Force; Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue; Write-Host &quot;Built and installed tokei.exe to $out&quot;&quot;" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">

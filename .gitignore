@@ -19,5 +19,6 @@ _ReSharper*/
 # biturbo.dll 不再提交，构建期从 Biturbo 仓库最新 release 拉取
 third_party/biturbo.dll
 
-# tokei.exe 不再提交，构建期从上游 tokei 仓库最新 release 拉取
+# tokei.exe 不再提交，缺失时用 cargo install 从源码编译（tokei 上游不发布预编译二进制）
 third_party/tokei.exe
+third_party/.tokei-install/
