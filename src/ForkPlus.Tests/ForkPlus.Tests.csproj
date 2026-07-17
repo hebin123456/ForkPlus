@@ -27,6 +27,11 @@
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- biturbo.dll 构建期从 Biturbo 仓库最新 release 拉取（缺失时下载）。-->
+  <Target Name="RestoreBiturbo" BeforeTargets="Build" Condition="!Exists('..\..\third_party\biturbo.dll')">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri 'https://github.com/hebin123456/Biturbo/releases/latest/download/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+  </Target>
+
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
