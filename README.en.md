@@ -7,6 +7,7 @@ An enhanced Git graphical tool based on Fork, with Rust-rewritten underlying cap
 ## Key Features
 
 - **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, and Japanese, with JSON-based extensibility for more languages
+- **Multiple themes**: 12 built-in skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Purple/Green light & dark) plus user-customizable color overrides applied instantly
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows
 - **AI-assisted development**: Integrated AI code review, automatic commit message generation, and AI-assisted code modification
 - **Performance optimizations**: Targeted improvements for large repository refresh, diff rendering, and submodule management
@@ -113,7 +114,7 @@ The codebase uses the following APIs for internationalization:
 
 For the latest release, visit the [Releases page](https://github.com/hebin123456/ForkPlus/releases).
 
-For changes in each version, see the [Release Notes](RELEASENOTES.md).
+For changes in each version, see the [Release Notes](RELEASE_NOTE.md).
 
 ## Development Convention
 

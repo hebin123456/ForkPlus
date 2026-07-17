@@ -40,11 +40,14 @@ namespace ForkPlus.UI.Dialogs
 		};
 
 		private List<CustomColorItem> _items;
-		private Dictionary<string, string> _workingCopy;
-		private CustomColorItem _popupEditingItem;
-		private bool _suppressUpdates;
-		private bool _isDraggingHsv;
-		private bool _isDraggingHue;
+	private Dictionary<string, string> _workingCopy;
+	// 对话框打开时的原始状态快照，Cancel 时还原（编辑过程已实时应用到 UI）。
+	private Dictionary<string, string> _originalCustomColors;
+	private bool _originalUseCustomColors;
+	private CustomColorItem _popupEditingItem;
+	private bool _suppressUpdates;
+	private bool _isDraggingHsv;
+	private bool _isDraggingHue;
 
 		public CustomColorsDialog()
 		{
@@ -79,9 +82,14 @@ namespace ForkPlus.UI.Dialogs
 
 		/// <summary>加载颜色列表。每项显示当前生效值（自定义覆盖或预设原色）。</summary>
 		private void LoadItems()
-		{
-			_workingCopy = new Dictionary<string, string>();
-			Dictionary<string, string> saved = ForkPlusSettings.Default.CustomColors;
+	{
+		// 保存打开对话框前的原始状态，供 Cancel 还原。
+		_originalCustomColors = ForkPlusSettings.Default.CustomColors != null
+			? new Dictionary<string, string>(ForkPlusSettings.Default.CustomColors)
+			: new Dictionary<string, string>();
+		_originalUseCustomColors = ForkPlusSettings.Default.UseCustomColors;
+		_workingCopy = new Dictionary<string, string>();
+		Dictionary<string, string> saved = ForkPlusSettings.Default.CustomColors;
 			_items = new List<CustomColorItem>();
 			string lang = ForkPlusSettings.Default.UiLanguage;
 			string resetLabel = PreferencesLocalization.Translate("Reset", lang);
@@ -446,15 +454,25 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void Ok_Click(object sender, RoutedEventArgs e)
+	{
+		// 确认编辑后启用自定义颜色覆盖（有自定义项时），并立即持久化避免崩溃丢失。
+		if (_workingCopy.Count > 0)
 		{
-			DialogResult = true;
-			Close();
+			ForkPlusSettings.Default.UseCustomColors = true;
 		}
+		try { ForkPlusSettings.Default.Save(); } catch { /* 持久化失败不阻断关闭 */ }
+		DialogResult = true;
+		Close();
+	}
 
-		private void Cancel_Click(object sender, RoutedEventArgs e)
-		{
-			DialogResult = false;
-		}
+	private void Cancel_Click(object sender, RoutedEventArgs e)
+	{
+		// 还原对话框打开前的状态（编辑过程已实时应用到 UI，需撤销）。
+		ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_originalCustomColors);
+		ForkPlusSettings.Default.UseCustomColors = _originalUseCustomColors;
+		App.ApplyCustomColors();
+		DialogResult = false;
+	}
 
 		/// <summary>颜色项 ViewModel。</summary>
 		public class CustomColorItem : INotifyPropertyChanged

@@ -27,8 +27,19 @@ namespace ForkPlus.UI.UserControls
 			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull");
 			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push");
 			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
-			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ShellChanged", ShellChanged);
+		WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ShellChanged", ShellChanged);
+		// 主题切换或自定义颜色变化时重建外观菜单，同步各 MenuItem 的 IsChecked 状态。
+		WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+	}
+
+	private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> args)
+	{
+		// 主题/自定义颜色变化后重建外观菜单，让 IsChecked 状态即时同步。
+		if (AppearanceToolbarDropdownButton?.ContextMenu != null)
+		{
+			InitializeAppearanceToolBarButtonContextMenu();
 		}
+	}
 
 		public void Initialize(MainWindow mainWindow)
 		{
@@ -267,35 +278,66 @@ namespace ForkPlus.UI.UserControls
 			ContextMenu contextMenu = AppearanceToolbarDropdownButton.ContextMenu;
 			contextMenu.Items.Clear();
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Theme", language)));
-			// 遍历所有内置预设皮肤动态生成菜单项，不再硬编码 Light/Dark
-			foreach (ThemeType theme in ThemeTypeExtensions.AllThemes)
+			// 遍历所有内置预设皮肤动态生成菜单项，不再硬编码 Light/Dark。
+		// 启用自定义颜色时所有主题项都不勾选（互斥语义），勾选自定义颜色项。
+		bool useCustom = ForkPlusSettings.Default.UseCustomColors;
+		foreach (ThemeType theme in ThemeTypeExtensions.AllThemes)
+		{
+			ThemeType themeCopy = theme;
+			MenuItem themeMenuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(
+				Preferences.PreferencesLocalization.Translate(theme.SkinName(), language), delegate
 			{
-				ThemeType themeCopy = theme;
-				MenuItem themeMenuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(
-					Preferences.PreferencesLocalization.Translate(theme.SkinName(), language), delegate
-				{
-					MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
-				});
-				themeMenuItem.IsChecked = ForkPlusSettings.Default.Theme == theme;
-				themeMenuItem.IsCheckable = true;
-				contextMenu.Items.Add(themeMenuItem);
-			}
-			// 自定义颜色入口
-			MenuItem customColorsItem = new MenuItem
+				MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
+			});
+			themeMenuItem.IsChecked = !useCustom && ForkPlusSettings.Default.Theme == theme;
+			themeMenuItem.IsCheckable = true;
+			contextMenu.Items.Add(themeMenuItem);
+		}
+		// "自定义颜色"可勾选项：与主题项互斥。勾选=启用 CustomColors 覆盖，取消勾选=回到主题原色。
+		MenuItem customColorsToggleItem = new MenuItem
+		{
+			Header = Preferences.PreferencesLocalization.Translate("Custom Colors", language),
+			IsCheckable = true,
+			IsChecked = useCustom
+		};
+		customColorsToggleItem.Click += delegate
+		{
+			// IsCheckable 自动 toggle 后 IsChecked 已变化，以 UseCustomColors 旧值为准取反。
+			bool nowEnabled = !ForkPlusSettings.Default.UseCustomColors;
+			ForkPlusSettings.Default.UseCustomColors = nowEnabled;
+			// 仅当启用且 CustomColors 为空时给出提示（用户需先编辑颜色）。
+			if (nowEnabled && (ForkPlusSettings.Default.CustomColors == null || ForkPlusSettings.Default.CustomColors.Count == 0))
 			{
-				Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language)
-			};
-			customColorsItem.Click += delegate
-			{
+				// 没有自定义颜色配置时直接打开编辑对话框，让用户先设置颜色。
 				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
 				{
 					Owner = Window.GetWindow(this)
 				};
 				dialog.ShowDialog();
-				// 对话框关闭后刷新主题菜单（IsChecked 状态可能变化）
-				InitializeAppearanceToolBarButtonContextMenu();
+			}
+			else
+			{
+				App.ApplyCustomColors();
+			}
+			InitializeAppearanceToolBarButtonContextMenu();
+		};
+		contextMenu.Items.Add(customColorsToggleItem);
+		// "编辑自定义颜色..."入口：打开编辑对话框。OK 后会自动启用自定义颜色。
+		MenuItem editCustomColorsItem = new MenuItem
+		{
+			Header = Preferences.PreferencesLocalization.Translate("Edit Custom Colors...", language)
+		};
+		editCustomColorsItem.Click += delegate
+		{
+			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
+			{
+				Owner = Window.GetWindow(this)
 			};
-			contextMenu.Items.Add(customColorsItem);
+			dialog.ShowDialog();
+			// 对话框关闭后刷新主题菜单（IsChecked 状态可能变化）
+			InitializeAppearanceToolBarButtonContextMenu();
+		};
+		contextMenu.Items.Add(editCustomColorsItem);
 			contextMenu.Items.Add(new Separator
 			{
 

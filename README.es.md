@@ -7,6 +7,7 @@ Una versión mejorada de la herramienta gráfica de Git basada en Fork, reescrit
 ## Características principales
 
 - **Soporte multilingüe**: incluye inglés, 简体中文, 繁體中文, 日本語, y permite añadir más idiomas mediante archivos JSON
+- **Múltiples temas**: 12 pieles integradas (Light/Dark, Solarized, GitHub, Dracula, Monokai, Púrpura/Verde claro y oscuro) más anulaciones de color personalizadas aplicadas al instante
 - **Flujo de trabajo git mm**: integra el subcomando `git mm`, que proporciona el flujo de trabajo Lean Branching
 - **Desarrollo asistido por IA**: integra revisión de código con IA, generación automática de mensajes de commit y modificación de código asistida por IA
 - **Optimización del rendimiento**: optimización específica para la actualización, renderizado de diff y gestión de submódulos en repositorios grandes
@@ -113,7 +114,7 @@ La internacionalización se implementa en el código mediante las siguientes API
 
 Para la última versión, vaya a la [página de Releases](https://github.com/hebin123456/ForkPlus/releases) para descargarla.
 
-Para los cambios de cada versión, consulte las [Release Notes](RELEASENOTES.md).
+Para los cambios de cada versión, consulte las [Release Notes](RELEASE_NOTE.md).
 
 ## Convenciones de desarrollo
 

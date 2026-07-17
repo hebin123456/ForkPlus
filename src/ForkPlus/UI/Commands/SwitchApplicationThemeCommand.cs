@@ -25,10 +25,13 @@ namespace ForkPlus.UI.Commands
 		}
 
 		public void Execute(ThemeType newTheme, bool followSystemTheme = false)
-		{
-			ForkPlusSettings.Default.Theme = newTheme;
-			ForkPlusSettings.Default.FollowSystemTheme = followSystemTheme;
-			App.RefreshWindowBorderBrush();
+	{
+		ForkPlusSettings.Default.Theme = newTheme;
+		ForkPlusSettings.Default.FollowSystemTheme = followSystemTheme;
+		// 切换主题时关闭自定义颜色覆盖，使用新主题的原色（避免自定义覆盖与主题色混乱）。
+		// CustomColors 字典保留，用户重新勾选"自定义颜色"时可恢复。
+		ForkPlusSettings.Default.UseCustomColors = false;
+		App.RefreshWindowBorderBrush();
 			// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
 			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries
 				.Where((ResourceDictionary rd) => rd.Source != null)

@@ -60,8 +60,8 @@
       <Link>Docs\gitmm.es.md</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\RELEASENOTES.md">
-      <Link>Docs\RELEASENOTES.md</Link>
+    <Content Include="..\..\RELEASE_NOTE.md">
+      <Link>Docs\RELEASE_NOTE.md</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="ForkPlus.Assets.Legal.txt" LogicalName="ForkPlus.Assets.Legal.txt" />

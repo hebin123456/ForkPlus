@@ -11,6 +11,7 @@
 ## 主要特性
 
 - **多语言支持**：内置英语、简体中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 种语言，并支持通过 JSON 文件扩展更多语言
+- **多主题皮肤**：内置 12 套预设皮肤（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/绿色浅色深色），并支持用户自定义颜色覆盖，即时生效
 - **git mm 工作流**：内置 `git mm` 子命令，提供精益分支（Lean Branching）工作流，统一管理多子仓的变更与同步
 - **AI 辅助开发**：集成 AI 代码审查、自动生成提交信息、AI 辅助修改代码
 - **贡献热力图**：GitHub 风格 53 周 × 7 天提交热力图，附带色阶图例和统计摘要（总提交数 / 最长连续提交天数 / 最活跃日期），鼠标悬停显示当日提交数和 Top 3 作者
@@ -145,7 +146,7 @@ git push origin v1.7.0
 
 最新版本请前往 [Releases 页面](https://github.com/hebin123456/ForkPlus/releases) 下载。
 
-各版本变更详情请查阅 [Release Notes](RELEASENOTES.md)。
+各版本变更详情请查阅 [Release Notes](RELEASE_NOTE.md)。
 
 ## 开发约定
 

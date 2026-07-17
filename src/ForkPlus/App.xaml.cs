@@ -645,48 +645,59 @@ namespace ForkPlus
 		}
 
 		/// <summary>根据 ForkPlusSettings.Default.CustomColors 构建动态 ResourceDictionary 并 merge 到
-		/// MergedDictionaries 末尾。由于 Brushes.xaml 中所有 Brush 都用 DynamicResource 引用 Color key，
-		/// 覆盖 Color 资源后所有引用该 Color 的 Brush 会自动更新，实现即时生效。
-		/// 主题切换后也需调用以重新应用覆盖（旧字典被移除后需要重建）。</summary>
-		public static void ApplyCustomColors()
+	/// MergedDictionaries 末尾。由于 Brushes.xaml 中所有 Brush 都用 DynamicResource 引用 Color key，
+	/// 覆盖 Color 资源后所有引用该 Color 的 Brush 会自动更新，实现即时生效。
+	/// 主题切换后也需调用以重新应用覆盖（旧字典被移除后需要重建）。
+	/// 仅当 UseCustomColors=true 且 CustomColors 非空时才应用覆盖；否则移除覆盖回到主题原色。
+	/// 末尾 raise ApplicationThemeChanged 事件，通知订阅者（RevisionList/DiffEditor/Heatmap 等）刷新缓存，
+	/// 否则这些控件不会感知自定义颜色变化，导致"只有重启才生效"。</summary>
+	public static void ApplyCustomColors()
+	{
+		// 移除旧的自定义颜色字典
+		if (_customColorsResourceDictionary != null)
 		{
-			// 移除旧的自定义颜色字典
-			if (_customColorsResourceDictionary != null)
-			{
-				Application.Current.Resources.MergedDictionaries.Remove(_customColorsResourceDictionary);
-				_customColorsResourceDictionary = null;
-			}
-			Dictionary<string, string> customColors = ForkPlusSettings.Default.CustomColors;
-			if (customColors == null || customColors.Count == 0)
-				return;
-			// 构建新的覆盖字典
-			ResourceDictionary dict = new ResourceDictionary();
-			foreach (KeyValuePair<string, string> kv in customColors)
-			{
-				try
-				{
-					string hex = kv.Value;
-					Color color;
-					if (hex.StartsWith("#") && hex.Length == 9)
-						color = (Color)ColorConverter.ConvertFromString(hex);
-					else if (hex.StartsWith("#") && hex.Length == 7)
-						color = (Color)ColorConverter.ConvertFromString(hex);
-					else
-						color = (Color)ColorConverter.ConvertFromString("#" + hex);
-					dict[kv.Key] = color;
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Invalid custom color value for key '" + kv.Key + "': " + kv.Value, ex);
-				}
-			}
-			if (dict.Count > 0)
-			{
-				Application.Current.Resources.MergedDictionaries.Add(dict);
-				_customColorsResourceDictionary = dict;
-			}
-			Theme.Refresh();
+			Application.Current.Resources.MergedDictionaries.Remove(_customColorsResourceDictionary);
+			_customColorsResourceDictionary = null;
 		}
+		// 仅当用户启用自定义颜色且有自定义项时才应用覆盖；否则使用当前主题原色。
+		Dictionary<string, string> customColors = ForkPlusSettings.Default.CustomColors;
+		if (!ForkPlusSettings.Default.UseCustomColors || customColors == null || customColors.Count == 0)
+		{
+			Theme.Refresh();
+			// 通知订阅者刷新（覆盖被移除时也需要刷新回到主题色）。
+			NotificationCenter.Current.RaiseApplicationThemeChanged(Application.Current, ForkPlusSettings.Default.Theme);
+			return;
+		}
+		// 构建新的覆盖字典
+		ResourceDictionary dict = new ResourceDictionary();
+		foreach (KeyValuePair<string, string> kv in customColors)
+		{
+			try
+			{
+				string hex = kv.Value;
+				Color color;
+				if (hex.StartsWith("#") && hex.Length == 9)
+					color = (Color)ColorConverter.ConvertFromString(hex);
+				else if (hex.StartsWith("#") && hex.Length == 7)
+					color = (Color)ColorConverter.ConvertFromString(hex);
+				else
+					color = (Color)ColorConverter.ConvertFromString("#" + hex);
+				dict[kv.Key] = color;
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Invalid custom color value for key '" + kv.Key + "': " + kv.Value, ex);
+			}
+		}
+		if (dict.Count > 0)
+		{
+			Application.Current.Resources.MergedDictionaries.Add(dict);
+			_customColorsResourceDictionary = dict;
+		}
+		Theme.Refresh();
+		// raise 事件让订阅者刷新缓存的颜色/画刷，实现自定义颜色实时生效。
+		NotificationCenter.Current.RaiseApplicationThemeChanged(Application.Current, ForkPlusSettings.Default.Theme);
+	}
 
 		private void InitializeTextEditorContextMenuStyle()
 		{

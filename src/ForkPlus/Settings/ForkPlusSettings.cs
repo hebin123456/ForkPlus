@@ -1052,7 +1052,9 @@ namespace ForkPlus.Settings
 
 		private Dictionary<string, string> _customColors;
 
-		private MergerLayoutOrientation _mergerOrientation;
+	private bool _useCustomColors;
+
+	private MergerLayoutOrientation _mergerOrientation;
 
 		private RevisionListOrientation _revisionListOrientation;
 
@@ -2197,20 +2199,34 @@ namespace ForkPlus.Settings
 		}
 
 		/// <summary>用户自定义颜色覆盖。key = Colors.*.xaml 中的 Color resource key，
-		/// value = hex 颜色值（#RRGGBB 或 #AARRGGBB）。空字典表示无覆盖，使用预设皮肤原色。</summary>
-		public Dictionary<string, string> CustomColors
+	/// value = hex 颜色值（#RRGGBB 或 #AARRGGBB）。空字典表示无覆盖，使用预设皮肤原色。</summary>
+	public Dictionary<string, string> CustomColors
+	{
+		get
 		{
-			get
-			{
-				return _customColors;
-			}
-			set
-			{
-				_customColors = value;
-			}
+			return _customColors;
 		}
+		set
+		{
+			_customColors = value;
+		}
+	}
 
-		public MergerLayoutOrientation MergerLayoutOrientation
+	/// <summary>是否启用自定义颜色覆盖。true=应用 CustomColors 覆盖主题色；false=使用当前主题原色。
+	/// 切换主题时自动置 false，避免自定义覆盖与主题色混乱；在 CustomColorsDialog 中确认后置 true。</summary>
+	public bool UseCustomColors
+	{
+		get
+		{
+			return _useCustomColors;
+		}
+		set
+		{
+			_useCustomColors = value;
+		}
+	}
+
+	public MergerLayoutOrientation MergerLayoutOrientation
 		{
 			get
 			{
@@ -2675,6 +2691,8 @@ namespace ForkPlus.Settings
 				}
 			}
 			RevisionListOrientation revisionListOrientation = (RevisionListOrientation)(json["RevisionListOrientation"]?.Value<int>() ?? 1);
+			// 是否启用自定义颜色覆盖。旧 settings.json 缺失时默认 false（使用主题原色）。
+			bool useCustomColors = json["UseCustomColors"]?.Value<bool>() ?? false;
 			MergerLayoutOrientation mergerLayoutOrientation = (MergerLayoutOrientation)(json["MergerLayoutOrientation"]?.Value<int>() ?? 0);
 			DateTime lastUpdateCheck = json["LastUpdateCheck"]?.Value<DateTime>() ?? DateTime.Today.AddMonths(-1);
 			bool checkForUpdatesAutomatically = json["CheckForUpdatesAutomatically"]?.Value<bool>() ?? true;
@@ -2790,6 +2808,7 @@ namespace ForkPlus.Settings
 				FollowSystemTheme = followSystemTheme,
 				UiLanguage = uiLanguage,
 				CustomColors = customColors,
+				UseCustomColors = useCustomColors,
 				RevisionListOrientation = revisionListOrientation,
 				MergerLayoutOrientation = mergerLayoutOrientation,
 				LastUpdateCheck = lastUpdateCheck,
@@ -3297,6 +3316,10 @@ namespace ForkPlus.Settings
 			{
 				"CustomColors",
 				EncodeCustomColors(target.CustomColors)
+			},
+			{
+				"UseCustomColors",
+				new JValue(target.UseCustomColors)
 			},
 			{
 				"RevisionListOrientation",

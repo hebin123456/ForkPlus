@@ -7,6 +7,7 @@
 ## 主要特性
 
 - **多語言支援**：內建英語、簡體中文、繁體中文、日本語，並支援透過 JSON 檔案擴充更多語言
+- **多主題面板**：內建 12 套預設面板（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/綠色淺色深色），並支援使用者自訂顏色覆蓋，即時生效
 - **git mm 工作流**：內建 `git mm` 子命令，提供精精益分支（Lean Branching）工作流
 - **AI 輔助開發**：整合 AI 程式碼審查、自動生成提交訊息、AI 輔助修改程式碼
 - **效能優化**：針對大型倉庫的重新整理、diff 渲染、子模組管理做了專項優化
@@ -113,7 +114,7 @@ git push origin v1.3.0
 
 最新版本請前往 [Releases 頁面](https://github.com/hebin123456/ForkPlus/releases) 下載。
 
-各版本變更詳情請查閱 [Release Notes](RELEASENOTES.md)。
+各版本變更詳情請查閱 [Release Notes](RELEASE_NOTE.md)。
 
 ## 開發約定
 
