@@ -213,14 +213,15 @@ namespace ForkPlus.Git.Commands
 			return false;
 		}
 
-		/// <summary>git archive --format=zip -o &lt;zipFile&gt; &lt;refSpec&gt; 然后用 .NET ZipFile.ExtractToDirectory 解压。
+		/// <summary>git archive --format=zip -o &lt;zipFile&gt; &lt;refSpec&gt; 然后逐条目解压（长路径加 \\?\ 前缀）。
 		/// 失败时通过 errorMessage 输出诊断信息（优先用 git rev-parse 区分 ref 不存在 vs 其他错误）。</summary>
 		private bool ExportRefToTarAndExtract(GitModule gitModule, string refSpec, string tempDir, [Null] JobMonitor monitor, out string errorMessage)
 		{
 			errorMessage = null;
-			// 用 zip 格式而非 tar：.NET 4.5 自带 ZipFile.ExtractToDirectory 原生解压，
-			// 避免依赖系统 tar.exe（Windows bsdtar 对 git archive 生成的 tar 中的 pax_global_header
-			// 等条目会报 "Invalid empty pathname: Unknown error"）。
+			// 用 zip 格式而非 tar，避免依赖系统 tar.exe（Windows bsdtar 对 git archive 生成的 tar
+			// 中的 pax_global_header 等条目会报 "Invalid empty pathname: Unknown error"）。
+			// 解压用逐条目方式 + \\?\ 长路径前缀，不能用 ZipFile.ExtractToDirectory（.NET Framework
+			// 4.7.2 的 ExtractToDirectory 内部走 FileStream，路径超 260 会报 DirectoryNotFoundException）。
 			string zipFile = Path.Combine(tempDir, "..", "tokei_export_" + Guid.NewGuid().ToString("N") + ".zip");
 			zipFile = Path.GetFullPath(zipFile);
 			try
@@ -252,10 +253,13 @@ namespace ForkPlus.Git.Commands
 					return false;
 				}
 
-				// 2. .NET 原生解压 zip，无需依赖系统 tar.exe
+				// 2. 逐条目解压 zip，对长路径加 \\?\ 前缀绕过 MAX_PATH(260) 限制。
+				// 不能用 ZipFile.ExtractToDirectory：.NET Framework 4.7.2 内部走 FileStream，
+				// 仓库内深嵌套文件解压到临时目录时路径易超 260，Win32 返回 ERROR_PATH_NOT_FOUND，
+				// .NET 映射成 DirectoryNotFoundException "未能找到路径...的一部分"。
 				try
 				{
-					System.IO.Compression.ZipFile.ExtractToDirectory(zipFile, tempDir);
+					ExtractZipWithLongPathSupport(zipFile, tempDir);
 				}
 				catch (Exception ex)
 				{
@@ -271,9 +275,45 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
+		/// <summary>逐条目解压 zip。对超过 MAX_PATH(260) 的条目加 \\?\ 前缀以支持长路径。
+		/// .NET Framework 4.7.2 的 ZipFile.ExtractToDirectory 内部用 FileStream，路径超 260 时
+		/// Win32 返回 ERROR_PATH_NOT_FOUND，.NET 映射成 DirectoryNotFoundException
+		/// "未能找到路径...的一部分"。\\?\ 前缀要求绝对路径且无相对组件(./..)，git archive 的
+		/// 条目均为相对路径，与已规范化的 tempDir 拼接后满足该要求，支持到 ~32767 字符。</summary>
+		private static void ExtractZipWithLongPathSupport(string zipFile, string destDir)
+		{
+			using (var archive = System.IO.Compression.ZipFile.OpenRead(zipFile))
+			{
+				foreach (var entry in archive.Entries)
+				{
+					// 跳过目录条目（FullName 以 / 结尾）和空名条目
+					if (entry.FullName.EndsWith("/") || string.IsNullOrEmpty(entry.Name))
+						continue;
+
+					// zip 内用 / 分隔，统一为 \ 再与 destDir 拼接
+					string relativePath = entry.FullName.Replace('/', '\\');
+					string destPath = Path.Combine(destDir, relativePath);
+
+					// 路径较长时加 \\?\ 前缀绕过 MAX_PATH 限制（248=目录上限，260=文件上限，取 248 保守）
+					string longPath = destPath;
+					if (longPath.Length > 248 && !longPath.StartsWith(@"\\?\"))
+						longPath = @"\\?\" + longPath;
+
+					// 确保父目录存在（\\?\ 前缀的路径 Directory.CreateDirectory 也支持）
+					string parentDir = Path.GetDirectoryName(longPath);
+					if (!string.IsNullOrEmpty(parentDir))
+						Directory.CreateDirectory(parentDir);
+
+					entry.ExtractToFile(longPath, overwrite: true);
+				}
+			}
+		}
+
 		private static string CreateTempDirectory()
 		{
-			string dir = Path.Combine(System.IO.Path.GetTempPath(), "ForkPlus_tokei_" + Guid.NewGuid().ToString("N"));
+			// 用短名(fpt_ + 12 位 guid)减小临时目录基路径长度，降低解压时超过 MAX_PATH 的概率。
+			// 长路径的根本兜底在 ExtractZipWithLongPathSupport 的 \\?\ 前缀。
+			string dir = Path.Combine(System.IO.Path.GetTempPath(), "fpt_" + Guid.NewGuid().ToString("N").Substring(0, 12));
 			Directory.CreateDirectory(dir);
 			return dir;
 		}
@@ -284,7 +324,11 @@ namespace ForkPlus.Git.Commands
 			{
 				if (Directory.Exists(dir))
 				{
-					Directory.Delete(dir, recursive: true);
+					// 加 \\?\ 前缀以支持删除含长路径文件的目录（解压时可能生成长路径文件）
+					string longDir = dir;
+					if (longDir.Length > 248 && !longDir.StartsWith(@"\\?\"))
+						longDir = @"\\?\" + longDir;
+					Directory.Delete(longDir, recursive: true);
 				}
 			}
 			catch (Exception ex)
