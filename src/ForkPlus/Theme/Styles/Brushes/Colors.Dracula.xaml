@@ -39,6 +39,38 @@
   <Color x:Key="Diff.AddedColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#38563C</Color>
   <Color x:Key="Diff.RemovedColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#633F3E</Color>
   <Color x:Key="Diff.FloatingButtonContainer.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2B2B2B</Color>
+<Color x:Key="Diff.AddColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3A5C3F</Color>
+  <Color x:Key="Diff.RemoveColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#633F3E</Color>
+  <Color x:Key="Diff.ExactAddColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#388442</Color>
+  <Color x:Key="Diff.ExactRemoveColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#9F4247</Color>
+  <Color x:Key="Diff.ServiceColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#959595</Color>
+  <Color x:Key="Diff.AlignmentColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#424242</Color>
+  <Color x:Key="Merge.AddColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3E553E</Color>
+  <Color x:Key="Merge.RemoveColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#5E403F</Color>
+  <Color x:Key="Merge.RemoteColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#5C5C76</Color>
+  <Color x:Key="Merge.LocalColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#354E59</Color>
+  <Color x:Key="Merge.UnresolvedColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A74946</Color>
+  <Color x:Key="Syntax.CommentColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#9198A1</Color>
+  <Color x:Key="Syntax.StringColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#CF9F89</Color>
+  <Color x:Key="Syntax.KeywordColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#649BD1</Color>
+  <Color x:Key="Syntax.TypeColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#649BD1</Color>
+  <Color x:Key="Syntax.CommandColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#649BD1</Color>
+  <Color x:Key="Syntax.AttributeColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#E64C80</Color>
+  <Color x:Key="Syntax.VariableColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#649BD1</Color>
+  <Color x:Key="Syntax.ValueColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#BED5A8</Color>
+  <Color x:Key="Syntax.NumberColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#BED5A8</Color>
+<Color x:Key="LineNumber.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A0A0A0</Color>
+  <Color x:Key="LineNumber.SeparatorColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#6E6E6E</Color>
+  <Color x:Key="MergeLineNumber.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A0A0A0</Color>
+  <Color x:Key="MergeConflict.MouseOverColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#A5A5A5</Color>
+  <Color x:Key="MergeConflict.SelectedColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3B89DA</Color>
+  <Color x:Key="ChunkSelection.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#419BF9</Color>
+  <Color x:Key="ChunkSelection.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#14358CFF</Color>
+<Color x:Key="Heatmap.Level0Color" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#161B22</Color>
+  <Color x:Key="Heatmap.Level1Color" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#033A16</Color>
+  <Color x:Key="Heatmap.Level2Color" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#196F1A</Color>
+  <Color x:Key="Heatmap.Level3Color" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#2EA043</Color>
+  <Color x:Key="Heatmap.Level4Color" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#3FD95E</Color>
   <Color x:Key="CommandTextBox.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#B0B0B0</Color>
   <Color x:Key="CommandTextBox.LabelColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">Black</Color>
   <Color x:Key="Calendar.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#282A36</Color>

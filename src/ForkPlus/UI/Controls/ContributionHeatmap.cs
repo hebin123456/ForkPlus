@@ -328,27 +328,43 @@ namespace ForkPlus.UI.Controls
 		}
 
 		private static Brush[] GetPalette()
-		{
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
+	{
+		// 优先读 Heatmap.LevelNColor 资源（CustomColorsDialog 覆盖或主题字典），取不到回退到硬编码默认值。
+		// 不 Freeze 资源画刷，使其能随主题/自定义颜色变化更新。
+		bool isDark = ForkPlusSettings.Default.Theme.IsDarkBase();
+		Color[] defaults = isDark
+			? new Color[5]
 			{
-				return new Brush[5]
-				{
-					Freeze(new SolidColorBrush(Color.FromRgb(22, 27, 34))),
-					Freeze(new SolidColorBrush(Color.FromRgb(3, 58, 22))),
-					Freeze(new SolidColorBrush(Color.FromRgb(25, 111, 26))),
-					Freeze(new SolidColorBrush(Color.FromRgb(46, 160, 67))),
-					Freeze(new SolidColorBrush(Color.FromRgb(63, 217, 94)))
-				};
+				Color.FromRgb(22, 27, 34),
+				Color.FromRgb(3, 58, 22),
+				Color.FromRgb(25, 111, 26),
+				Color.FromRgb(46, 160, 67),
+				Color.FromRgb(63, 217, 94)
 			}
-			return new Brush[5]
+			: new Color[5]
 			{
-				Freeze(new SolidColorBrush(Color.FromRgb(235, 237, 240))),
-				Freeze(new SolidColorBrush(Color.FromRgb(155, 233, 168))),
-				Freeze(new SolidColorBrush(Color.FromRgb(64, 196, 99))),
-				Freeze(new SolidColorBrush(Color.FromRgb(48, 161, 78))),
-				Freeze(new SolidColorBrush(Color.FromRgb(33, 110, 57)))
+				Color.FromRgb(235, 237, 240),
+				Color.FromRgb(155, 233, 168),
+				Color.FromRgb(64, 196, 99),
+				Color.FromRgb(48, 161, 78),
+				Color.FromRgb(33, 110, 57)
 			};
+		Brush[] palette = new Brush[5];
+		for (int i = 0; i < 5; i++)
+		{
+			Color c = TryFindColor("Heatmap.Level" + i + "Color") ?? defaults[i];
+			palette[i] = new SolidColorBrush(c);
 		}
+		return palette;
+	}
+
+	private static Color TryFindColor(string key)
+	{
+		object res = Application.Current?.TryFindResource(key);
+		if (res is Color c) return c;
+		if (res is SolidColorBrush b) return b.Color;
+		return Color.FromRgb(0, 0, 0);
+	}
 
 		private static Brush Freeze(Brush brush)
 		{

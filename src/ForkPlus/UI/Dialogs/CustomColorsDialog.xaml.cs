@@ -18,26 +18,38 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>可自定义的颜色 key 列表（Colors.*.xaml 中的 Color resource key）。
 		/// 只暴露核心颜色，不暴露全部 260+ key。</summary>
 		private static readonly string[] _editableColorKeys = new string[]
-		{
-			"BackgroundColor",
-			"SecondaryBackgroundColor",
-			"PanelBackgroundColor",
-			"BorderColor",
-			"TileBorderColor",
-			"LabelColor",
-			"ForegroundColor",
-			"SecondaryLabelColor",
-			"AccentColor",
-			"AccentSecondaryColor",
-			"ReferenceColor",
-			"IconColor",
-			"Diff.AddedColor",
-			"Diff.RemovedColor",
-			"CodeEditor.BackgroundColor",
-			"CodeEditor.ForegroundColor",
-			"Window.BackgroundColor",
-			"Window.TitleBar.BackgroundColor",
-		};
+	{
+		"BackgroundColor",
+		"SecondaryBackgroundColor",
+		"PanelBackgroundColor",
+		"BorderColor",
+		"TileBorderColor",
+		"LabelColor",
+		"ForegroundColor",
+		"SecondaryLabelColor",
+		"AccentColor",
+		"AccentSecondaryColor",
+		"ReferenceColor",
+		"IconColor",
+		"Diff.AddedColor",
+		"Diff.RemovedColor",
+		"Diff.AddColor",
+		"Diff.RemoveColor",
+		"Diff.ExactAddColor",
+		"Diff.ExactRemoveColor",
+		"LineNumber.ForegroundColor",
+		"LineNumber.SeparatorColor",
+		"ChunkSelection.BorderColor",
+		"ChunkSelection.BackgroundColor",
+		"Syntax.CommentColor",
+		"Syntax.StringColor",
+		"Syntax.KeywordColor",
+		"Syntax.NumberColor",
+		"CodeEditor.BackgroundColor",
+		"CodeEditor.ForegroundColor",
+		"Window.BackgroundColor",
+		"Window.TitleBar.BackgroundColor",
+	};
 
 		private List<CustomColorItem> _items;
 	private Dictionary<string, string> _workingCopy;
@@ -71,7 +83,8 @@ namespace ForkPlus.UI.Dialogs
 			HeaderTextBlock.Text = PreferencesLocalization.Translate("Custom Colors", lang) +
 				" (" + PreferencesLocalization.Translate(ForkPlusSettings.Default.Theme.SkinName(), lang) + ")";
 			ResetAllButton.Content = PreferencesLocalization.Translate("Reset All", lang);
-			OkButton.Content = PreferencesLocalization.Translate("OK", lang);
+		RandomPaletteButton.Content = PreferencesLocalization.Translate("Random Palette", lang);
+		OkButton.Content = PreferencesLocalization.Translate("OK", lang);
 			CancelButton.Content = PreferencesLocalization.Translate("Cancel", lang);
 			PopupTitleText.Text = PreferencesLocalization.Translate("Color Picker", lang);
 			SwatchLabelText.Text = PreferencesLocalization.Translate("Presets", lang);
@@ -435,15 +448,124 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void ResetAll_Click(object sender, RoutedEventArgs e)
+	{
+		_workingCopy.Clear();
+		foreach (CustomColorItem item in _items)
 		{
-			_workingCopy.Clear();
-			foreach (CustomColorItem item in _items)
-			{
-				item.HexValue = GetCurrentColorHex(item.Key);
-				item.IsCustomized = false;
-			}
-			ApplyAndRefresh();
+			item.HexValue = GetCurrentColorHex(item.Key);
+			item.IsCustomized = false;
 		}
+		ApplyAndRefresh();
+	}
+
+	/// <summary>随机生成一套搭配合理的配色并应用到所有可编辑颜色。
+	/// 算法：随机一个主色相 H，按当前主题基底（light/dark）派生整套配色——
+	/// 背景用极低饱和度 + 高/低明度的近中性色，面板/边框用稍深的同色调，
+	/// 文字/前景用对比色（light 主题用深色文字，dark 主题用浅色文字），
+	/// accent 用主色相满饱和，diff added 取绿区(120°)、removed 取红区(0°)，
+	/// 语法高亮用主色相邻近的几个色相做区分。保证整体色调统一、可读。</summary>
+	private void RandomPalette_Click(object sender, RoutedEventArgs e)
+	{
+		bool isDark = ForkPlusSettings.Default.Theme.IsDarkBase();
+		var rand = new Random();
+		// 主色相 0-360，避免取到极端红/绿区（留给 diff 用）
+		double baseHue = rand.NextDouble() * 360.0;
+		// 辅助色相：主色相对侧（互补色附近，加随机偏移）
+		double accentHue = (baseHue + 180.0 + (rand.NextDouble() * 60.0 - 30.0)) % 360.0;
+
+		// HSV→Color 辅助
+		Func<double, double, double, byte, Color> hsv = (h, s, v, a) =>
+		{
+			Color c = HsvToRgbColor(h, s, v);
+			return Color.FromArgb(a, c.R, c.G, c.B);
+		};
+
+		// 按基底明暗派生背景/文字/accent
+		Color bgColor, panelBgColor, secondaryBgColor, borderColor, labelColor, fgColor, secondaryLabelColor, accentColor, accentSecondaryColor, referenceColor, iconColor;
+		if (isDark)
+		{
+			// dark：背景低明度近黑带轻微主色调，文字浅色
+			bgColor = hsv(baseHue, 0.15, 0.10, 255);
+			panelBgColor = hsv(baseHue, 0.18, 0.14, 255);
+			secondaryBgColor = hsv(baseHue, 0.20, 0.18, 255);
+			borderColor = hsv(baseHue, 0.15, 0.28, 255);
+			labelColor = hsv(baseHue, 0.10, 0.92, 255);
+			fgColor = hsv(baseHue, 0.08, 0.96, 255);
+			secondaryLabelColor = hsv(baseHue, 0.12, 0.65, 255);
+			accentColor = hsv(baseHue, 0.70, 0.95, 255);
+			accentSecondaryColor = hsv(accentHue, 0.65, 0.90, 255);
+			referenceColor = hsv(baseHue, 0.55, 0.80, 255);
+			iconColor = hsv(baseHue, 0.30, 0.85, 255);
+		}
+		else
+		{
+			// light：背景高明度近白带轻微主色调，文字深色
+			bgColor = hsv(baseHue, 0.10, 0.98, 255);
+			panelBgColor = hsv(baseHue, 0.12, 0.95, 255);
+			secondaryBgColor = hsv(baseHue, 0.14, 0.90, 255);
+			borderColor = hsv(baseHue, 0.15, 0.80, 255);
+			labelColor = hsv(baseHue, 0.30, 0.20, 255);
+			fgColor = hsv(baseHue, 0.25, 0.12, 255);
+			secondaryLabelColor = hsv(baseHue, 0.20, 0.45, 255);
+			accentColor = hsv(baseHue, 0.75, 0.60, 255);
+			accentSecondaryColor = hsv(accentHue, 0.70, 0.55, 255);
+			referenceColor = hsv(baseHue, 0.60, 0.50, 255);
+			iconColor = hsv(baseHue, 0.40, 0.40, 255);
+		}
+		// diff：固定绿/红区，按基底调整明度饱和度
+		Color diffAdded, diffRemoved;
+		if (isDark)
+		{
+			diffAdded = hsv(120.0, 0.45, 0.40, 255);
+			diffRemoved = hsv(0.0, 0.45, 0.40, 255);
+		}
+		else
+		{
+			diffAdded = hsv(120.0, 0.40, 0.90, 255);
+			diffRemoved = hsv(0.0, 0.40, 0.92, 255);
+		}
+		// 代码编辑器：背景跟随主背景，前景跟随主文字
+		Color codeBg = isDark ? hsv(baseHue, 0.18, 0.12, 255) : hsv(baseHue, 0.10, 0.99, 255);
+		Color codeFg = isDark ? hsv(baseHue, 0.08, 0.92, 255) : hsv(baseHue, 0.25, 0.15, 255);
+		// 窗口/标题栏背景
+		Color windowBg = bgColor;
+		Color titleBarBg = isDark ? hsv(baseHue, 0.20, 0.16, 255) : hsv(baseHue, 0.14, 0.96, 255);
+
+		// 写入工作副本
+		void Set(string key, Color c)
+		{
+			_workingCopy[key] = "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+		}
+		Set("BackgroundColor", bgColor);
+		Set("SecondaryBackgroundColor", secondaryBgColor);
+		Set("PanelBackgroundColor", panelBgColor);
+		Set("BorderColor", borderColor);
+		Set("TileBorderColor", borderColor);
+		Set("LabelColor", labelColor);
+		Set("ForegroundColor", fgColor);
+		Set("SecondaryLabelColor", secondaryLabelColor);
+		Set("AccentColor", accentColor);
+		Set("AccentSecondaryColor", accentSecondaryColor);
+		Set("ReferenceColor", referenceColor);
+		Set("IconColor", iconColor);
+		Set("Diff.AddedColor", diffAdded);
+		Set("Diff.RemovedColor", diffRemoved);
+		Set("CodeEditor.BackgroundColor", codeBg);
+		Set("CodeEditor.ForegroundColor", codeFg);
+		Set("Window.BackgroundColor", windowBg);
+		Set("Window.TitleBar.BackgroundColor", titleBarBg);
+
+		// 更新 UI
+		foreach (CustomColorItem item in _items)
+		{
+			if (_workingCopy.TryGetValue(item.Key, out string hex))
+			{
+				item.HexValue = hex;
+				item.IsCustomized = true;
+			}
+		}
+		ApplyAndRefresh();
+	}
 
 		private void ApplyAndRefresh()
 		{

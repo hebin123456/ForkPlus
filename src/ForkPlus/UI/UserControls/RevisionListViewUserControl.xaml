@@ -305,9 +305,9 @@
                   <DataTrigger.Binding>
                     <Binding Path="IsReachable" />
                   </DataTrigger.Binding>
-                  <Setter TargetName="AuthorTextBlock" Property="TextElement.Foreground" Value="#FFA9A9A9" />
-                  <Setter TargetName="AuthorDateTextBlock" Property="TextElement.Foreground" Value="#FFA9A9A9" />
-                  <Setter TargetName="ShaTextBlock" Property="TextElement.Foreground" Value="#FFA9A9A9" />
+                  <Setter TargetName="AuthorTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                  <Setter TargetName="AuthorDateTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                  <Setter TargetName="ShaTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
                 </DataTrigger>
                 <MultiDataTrigger>
                   <MultiDataTrigger.Conditions>

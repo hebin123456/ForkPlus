@@ -304,16 +304,25 @@ namespace ForkPlus.UI.Controls.Editor
 		}
 
 		private void RefreshBrush()
-		{
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
-			{
-				ChunkBackgroundBrush = _chunkBackgroundBrushDark;
-			}
-			else
-			{
-				ChunkBackgroundBrush = _chunkBackgroundBrush;
-			}
-		}
+	{
+		// 优先读资源（CustomColorsDialog 覆盖或主题字典），取不到回退到 light/dark 静态画刷。
+		ChunkBackgroundBrush = TryFindColorBrush("ChunkSelection.BackgroundColor")
+			?? (ForkPlusSettings.Default.Theme.IsDarkBase() ? _chunkBackgroundBrushDark : _chunkBackgroundBrush);
+	}
+
+	private static Color? TryFindColor(string key)
+	{
+		object res = Application.Current?.TryFindResource(key);
+		if (res is Color c) return c;
+		if (res is SolidColorBrush b) return b.Color;
+		return null;
+	}
+
+	private static Brush TryFindColorBrush(string key)
+	{
+		Color? c = TryFindColor(key);
+		return c.HasValue ? new SolidColorBrush(c.Value) : null;
+	}
 
 		protected void DrawSelectionBorder(DrawingContext drawingContext, TextArea textArea)
 		{

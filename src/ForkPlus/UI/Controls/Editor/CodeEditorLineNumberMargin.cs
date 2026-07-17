@@ -81,18 +81,29 @@ namespace ForkPlus.UI.Controls.Editor
 		}
 
 		private void RefreshBrushes()
-		{
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
-			{
-				_brush = _darkBrush;
-				_separatorPen = _separatorPenDark;
-			}
-			else
-			{
-				_brush = _lightBrush;
-				_separatorPen = _separatorPenLight;
-			}
-		}
+	{
+		// 优先读资源（CustomColorsDialog 覆盖或主题字典），取不到回退到 light/dark 静态画刷。
+		_brush = TryFindColorBrush("LineNumber.ForegroundColor")
+			?? (ForkPlusSettings.Default.Theme.IsDarkBase() ? _darkBrush : _lightBrush);
+		Color? sepColor = TryFindColor("LineNumber.SeparatorColor");
+		_separatorPen = sepColor.HasValue
+			? new Pen(new SolidColorBrush(sepColor.Value), 1.0)
+			: (ForkPlusSettings.Default.Theme.IsDarkBase() ? _separatorPenDark : _separatorPenLight);
+	}
+
+	private static Color? TryFindColor(string key)
+	{
+		object res = Application.Current?.TryFindResource(key);
+		if (res is Color c) return c;
+		if (res is SolidColorBrush b) return b.Color;
+		return null;
+	}
+
+	private static Brush TryFindColorBrush(string key)
+	{
+		Color? c = TryFindColor(key);
+		return c.HasValue ? new SolidColorBrush(c.Value) : null;
+	}
 
 		private FormattedText CreateFormattedText(string text)
 		{

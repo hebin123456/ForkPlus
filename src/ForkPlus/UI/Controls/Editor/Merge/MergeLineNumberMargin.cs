@@ -260,18 +260,29 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		}
 
 		private void RefreshPen()
-		{
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
-			{
-				_separatorPen = _separatorPenDark;
-				_mergeConflictMouseOverBrush = _mergeConflictMouseOverBrushDark;
-			}
-			else
-			{
-				_separatorPen = _separatorPenLight;
-				_mergeConflictMouseOverBrush = _mergeConflictMouseOverBrushLight;
-			}
-		}
+	{
+		// 优先读资源（CustomColorsDialog 覆盖或主题字典），取不到回退到 light/dark 静态画刷。
+		Color? sepColor = TryFindColor("LineNumber.SeparatorColor");
+		_separatorPen = sepColor.HasValue
+			? new Pen(new SolidColorBrush(sepColor.Value), 1.0)
+			: (ForkPlusSettings.Default.Theme.IsDarkBase() ? _separatorPenDark : _separatorPenLight);
+		_mergeConflictMouseOverBrush = TryFindColorBrush("MergeConflict.MouseOverColor")
+			?? (ForkPlusSettings.Default.Theme.IsDarkBase() ? _mergeConflictMouseOverBrushDark : _mergeConflictMouseOverBrushLight);
+	}
+
+	private static Color? TryFindColor(string key)
+	{
+		object res = Application.Current?.TryFindResource(key);
+		if (res is Color c) return c;
+		if (res is SolidColorBrush b) return b.Color;
+		return null;
+	}
+
+	private static Brush TryFindColorBrush(string key)
+	{
+		Color? c = TryFindColor(key);
+		return c.HasValue ? new SolidColorBrush(c.Value) : null;
+	}
 
 		private FormattedText CreateFormattedText(string text, Brush brush)
 		{

@@ -66,6 +66,8 @@
 
     <!-- 底部按钮 -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button x:Name="RandomPaletteButton" Content="Random Palette" Padding="20,4" Margin="0,0,12,0"
+              Click="RandomPalette_Click" />
       <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4" Margin="0,0,12,0"
               Click="ResetAll_Click" />
       <Button x:Name="OkButton" Content="OK" Padding="28,4" Margin="0,0,12,0"

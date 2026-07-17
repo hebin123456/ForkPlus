@@ -293,51 +293,26 @@ namespace ForkPlus.UI.UserControls
 			themeMenuItem.IsCheckable = true;
 			contextMenu.Items.Add(themeMenuItem);
 		}
-		// "自定义颜色"可勾选项：与主题项互斥。勾选=启用 CustomColors 覆盖，取消勾选=回到主题原色。
-		MenuItem customColorsToggleItem = new MenuItem
+		// "自定义颜色"单一入口：点击打开编辑对话框，IsChecked 反映是否已启用自定义颜色覆盖。
+		// 只要用户在对话框里改动过任意颜色并确认，UseCustomColors 即被置 true，此项自动勾选；
+		// 与上方主题项互斥——启用自定义颜色时所有主题项不勾选。再次点击只是重新打开编辑对话框。
+		MenuItem customColorsItem = new MenuItem
 		{
-			Header = Preferences.PreferencesLocalization.Translate("Custom Colors", language),
+			Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language),
 			IsCheckable = true,
 			IsChecked = useCustom
 		};
-		customColorsToggleItem.Click += delegate
-		{
-			// IsCheckable 自动 toggle 后 IsChecked 已变化，以 UseCustomColors 旧值为准取反。
-			bool nowEnabled = !ForkPlusSettings.Default.UseCustomColors;
-			ForkPlusSettings.Default.UseCustomColors = nowEnabled;
-			// 仅当启用且 CustomColors 为空时给出提示（用户需先编辑颜色）。
-			if (nowEnabled && (ForkPlusSettings.Default.CustomColors == null || ForkPlusSettings.Default.CustomColors.Count == 0))
-			{
-				// 没有自定义颜色配置时直接打开编辑对话框，让用户先设置颜色。
-				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
-				{
-					Owner = Window.GetWindow(this)
-				};
-				dialog.ShowDialog();
-			}
-			else
-			{
-				App.ApplyCustomColors();
-			}
-			InitializeAppearanceToolBarButtonContextMenu();
-		};
-		contextMenu.Items.Add(customColorsToggleItem);
-		// "编辑自定义颜色..."入口：打开编辑对话框。OK 后会自动启用自定义颜色。
-		MenuItem editCustomColorsItem = new MenuItem
-		{
-			Header = Preferences.PreferencesLocalization.Translate("Edit Custom Colors...", language)
-		};
-		editCustomColorsItem.Click += delegate
+		customColorsItem.Click += delegate
 		{
 			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
 			{
 				Owner = Window.GetWindow(this)
 			};
 			dialog.ShowDialog();
-			// 对话框关闭后刷新主题菜单（IsChecked 状态可能变化）
+			// 对话框关闭后刷新主题菜单（IsChecked 状态可能因 OK/Cancel 变化）
 			InitializeAppearanceToolBarButtonContextMenu();
 		};
-		contextMenu.Items.Add(editCustomColorsItem);
+		contextMenu.Items.Add(customColorsItem);
 			contextMenu.Items.Add(new Separator
 			{
 
