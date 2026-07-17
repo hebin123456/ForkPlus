@@ -233,7 +233,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private void RefreshBrushes()
 		{
-			if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
 			{
 				_brush = _darkBrush;
 				_separatorPen = _separatorPenDark;

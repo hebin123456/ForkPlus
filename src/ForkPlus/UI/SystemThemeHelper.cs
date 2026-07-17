@@ -47,16 +47,16 @@ namespace ForkPlus.UI
 			case Theme.SystemColorType.Accent:
 				return (UIColorType)5;
 			case Theme.SystemColorType.Accent1:
-				if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
+			{
+				return (UIColorType)6;
+			}
+			return (UIColorType)4;
+		case Theme.SystemColorType.Accent2:
+			if (IsWindows11)
+			{
+				if (ForkPlusSettings.Default.Theme.IsDarkBase())
 				{
-					return (UIColorType)6;
-				}
-				return (UIColorType)4;
-			case Theme.SystemColorType.Accent2:
-				if (IsWindows11)
-				{
-					if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
-					{
 						return (UIColorType)7;
 					}
 					return (UIColorType)4;

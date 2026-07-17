@@ -572,7 +572,7 @@ namespace ForkPlus
 
 		public static void RefreshWindowBorderBrush()
 		{
-			SolidColorBrush solidColorBrush = ((ForkPlusSettings.Default.Theme == ThemeType.Light) ? _defaultWindowBorderLightBrush : _defaultWindowBorderDarkBrush);
+			SolidColorBrush solidColorBrush = (ForkPlusSettings.Default.Theme.IsDarkBase() ? _defaultWindowBorderDarkBrush : _defaultWindowBorderLightBrush);
 			Brush brush = (IsSystemAccentBrushEnabled() ? SystemParameters.WindowGlassBrush : solidColorBrush);
 			if (brush != _windowBorderBrush)
 			{
@@ -623,6 +623,7 @@ namespace ForkPlus
 			if (ForkPlusSettings.Default.FollowSystemTheme)
 			{
 				_systemTheme = GetSystemTheme();
+				// 跟随系统时只映射到基底 Light/Dark（系统只有明暗二元）
 				ForkPlusSettings.Default.Theme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
 			}
 			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries.FirstOrDefault((ResourceDictionary rd) => rd.Source != null && rd.Source.OriginalString.Contains("/ForkPlus;component/Theme/Generic."));
@@ -689,6 +690,7 @@ namespace ForkPlus
 				if (systemTheme != _systemTheme)
 				{
 					_systemTheme = systemTheme;
+					// 跟随系统变化时映射到基底 Light/Dark
 					ThemeType newTheme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
 					ForkPlus.UI.MainWindow.Commands.SwitchApplicationTheme.Execute(newTheme, followSystemTheme: true);
 				}

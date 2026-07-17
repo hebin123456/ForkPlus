@@ -305,7 +305,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private void RefreshBrush()
 		{
-			if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
 			{
 				ChunkBackgroundBrush = _chunkBackgroundBrushDark;
 			}

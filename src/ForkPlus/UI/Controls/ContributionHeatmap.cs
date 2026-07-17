@@ -329,7 +329,7 @@ namespace ForkPlus.UI.Controls
 
 		private static Brush[] GetPalette()
 		{
-			if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
 			{
 				return new Brush[5]
 				{

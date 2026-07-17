@@ -86,98 +86,105 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public static Brush GetHighlightBrush(this HighlightingType highlightingType, ThemeType theme)
 		{
-			switch (theme)
+			// 按基底明暗分发：所有 dark-base 皮肤（Dracula/Monokai 等）用 Dark 画刷，
+			// light-base 皮肤用 Light 画刷
+			return theme.IsDarkBase()
+				? GetDarkHighlightBrush(highlightingType)
+				: GetLightHighlightBrush(highlightingType);
+		}
+
+		private static Brush GetLightHighlightBrush(HighlightingType highlightingType)
+		{
+			switch (highlightingType)
 			{
-			case ThemeType.Light:
-				switch (highlightingType)
-				{
-				case HighlightingType.Add:
-					return AddBrush;
-				case HighlightingType.Remove:
-					return RemoveBrush;
-				case HighlightingType.ExactAdd:
-					return ExactAddBrush;
-				case HighlightingType.ExactRemove:
-					return ExactRemoveBrush;
-				case HighlightingType.Service:
-					return ServiceBrush;
-				case HighlightingType.MergeAdd:
-					return MergeAddBrush;
-				case HighlightingType.MergeRemove:
-					return MergeRemoveBrush;
-				case HighlightingType.MergeRemote:
-					return MergeRemoteBrush;
-				case HighlightingType.MergeLocal:
-					return MergeLocalBrush;
-				case HighlightingType.MergeUnresolved:
-					return MergeUnresolvedBrush;
-				case HighlightingType.Alignment:
-					return AlignmentBrush;
-				case HighlightingType.SyntaxComment:
-					return SyntaxCommentBrush;
-				case HighlightingType.SyntaxString:
-					return SyntaxStringBrush;
-				case HighlightingType.SyntaxKeyword:
-					return SyntaxKeywordBrush;
-				case HighlightingType.SyntaxType:
-					return SyntaxTypeBrush;
-				case HighlightingType.SyntaxCommand:
-					return SyntaxCommandBrush;
-				case HighlightingType.SyntaxAttribute:
-					return SyntaxAttributeBrush;
-				case HighlightingType.SyntaxVariable:
-					return SyntaxVariableBrush;
-				case HighlightingType.SyntaxValue:
-					return SyntaxValueBrush;
-				case HighlightingType.SyntaxNumber:
-					return SyntaxNumberBrush;
-				}
-				break;
-			case ThemeType.Dark:
-				switch (highlightingType)
-				{
-				case HighlightingType.Add:
-					return AddBrushDark;
-				case HighlightingType.Remove:
-					return RemoveBrushDark;
-				case HighlightingType.ExactAdd:
-					return ExactAddBrushDark;
-				case HighlightingType.ExactRemove:
-					return ExactRemoveBrushDark;
-				case HighlightingType.Service:
-					return ServiceBrushDark;
-				case HighlightingType.MergeAdd:
-					return MergeAddBrushDark;
-				case HighlightingType.MergeRemove:
-					return MergeRemoveBrushDark;
-				case HighlightingType.MergeRemote:
-					return MergeRemoteBrushDark;
-				case HighlightingType.MergeLocal:
-					return MergeLocalBrushDark;
-				case HighlightingType.MergeUnresolved:
-					return MergeUnresolvedBrushDark;
-				case HighlightingType.Alignment:
-					return AlignmentBrushDark;
-				case HighlightingType.SyntaxComment:
-					return SyntaxCommentBrushDark;
-				case HighlightingType.SyntaxString:
-					return SyntaxStringBrushDark;
-				case HighlightingType.SyntaxKeyword:
-					return SyntaxKeywordBrushDark;
-				case HighlightingType.SyntaxType:
-					return SyntaxTypeBrushDark;
-				case HighlightingType.SyntaxCommand:
-					return SyntaxCommandBrushDark;
-				case HighlightingType.SyntaxAttribute:
-					return SyntaxAttributeBrushDark;
-				case HighlightingType.SyntaxVariable:
-					return SyntaxVariableBrushDark;
-				case HighlightingType.SyntaxValue:
-					return SyntaxValueBrushDark;
-				case HighlightingType.SyntaxNumber:
-					return SyntaxNumberBrushDark;
-				}
-				break;
+			case HighlightingType.Add:
+				return AddBrush;
+			case HighlightingType.Remove:
+				return RemoveBrush;
+			case HighlightingType.ExactAdd:
+				return ExactAddBrush;
+			case HighlightingType.ExactRemove:
+				return ExactRemoveBrush;
+			case HighlightingType.Service:
+				return ServiceBrush;
+			case HighlightingType.MergeAdd:
+				return MergeAddBrush;
+			case HighlightingType.MergeRemove:
+				return MergeRemoveBrush;
+			case HighlightingType.MergeRemote:
+				return MergeRemoteBrush;
+			case HighlightingType.MergeLocal:
+				return MergeLocalBrush;
+			case HighlightingType.MergeUnresolved:
+				return MergeUnresolvedBrush;
+			case HighlightingType.Alignment:
+				return AlignmentBrush;
+			case HighlightingType.SyntaxComment:
+				return SyntaxCommentBrush;
+			case HighlightingType.SyntaxString:
+				return SyntaxStringBrush;
+			case HighlightingType.SyntaxKeyword:
+				return SyntaxKeywordBrush;
+			case HighlightingType.SyntaxType:
+				return SyntaxTypeBrush;
+			case HighlightingType.SyntaxCommand:
+				return SyntaxCommandBrush;
+			case HighlightingType.SyntaxAttribute:
+				return SyntaxAttributeBrush;
+			case HighlightingType.SyntaxVariable:
+				return SyntaxVariableBrush;
+			case HighlightingType.SyntaxValue:
+				return SyntaxValueBrush;
+			case HighlightingType.SyntaxNumber:
+				return SyntaxNumberBrush;
+			}
+			return Brushes.Transparent;
+		}
+
+		private static Brush GetDarkHighlightBrush(HighlightingType highlightingType)
+		{
+			switch (highlightingType)
+			{
+			case HighlightingType.Add:
+				return AddBrushDark;
+			case HighlightingType.Remove:
+				return RemoveBrushDark;
+			case HighlightingType.ExactAdd:
+				return ExactAddBrushDark;
+			case HighlightingType.ExactRemove:
+				return ExactRemoveBrushDark;
+			case HighlightingType.Service:
+				return ServiceBrushDark;
+			case HighlightingType.MergeAdd:
+				return MergeAddBrushDark;
+			case HighlightingType.MergeRemove:
+				return MergeRemoveBrushDark;
+			case HighlightingType.MergeRemote:
+				return MergeRemoteBrushDark;
+			case HighlightingType.MergeLocal:
+				return MergeLocalBrushDark;
+			case HighlightingType.MergeUnresolved:
+				return MergeUnresolvedBrushDark;
+			case HighlightingType.Alignment:
+				return AlignmentBrushDark;
+			case HighlightingType.SyntaxComment:
+				return SyntaxCommentBrushDark;
+			case HighlightingType.SyntaxString:
+				return SyntaxStringBrushDark;
+			case HighlightingType.SyntaxKeyword:
+				return SyntaxKeywordBrushDark;
+			case HighlightingType.SyntaxType:
+				return SyntaxTypeBrushDark;
+			case HighlightingType.SyntaxCommand:
+				return SyntaxCommandBrushDark;
+			case HighlightingType.SyntaxAttribute:
+				return SyntaxAttributeBrushDark;
+			case HighlightingType.SyntaxVariable:
+				return SyntaxVariableBrushDark;
+			case HighlightingType.SyntaxValue:
+				return SyntaxValueBrushDark;
+			case HighlightingType.SyntaxNumber:
+				return SyntaxNumberBrushDark;
 			}
 			return Brushes.Transparent;
 		}

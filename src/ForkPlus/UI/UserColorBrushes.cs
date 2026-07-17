@@ -40,19 +40,13 @@ namespace ForkPlus.UI
 
 		public SolidColorBrush[] AllBrushes(ThemeType theme)
 		{
-			if (theme != ThemeType.Dark)
-			{
-				return _userBorderBrushesLight;
-			}
+			if (!theme.IsDarkBase()) { return _userBorderBrushesLight; }
 			return _userBorderBrushesDark;
 		}
 
 		public SolidColorBrush GetBrush(byte index, ThemeType theme)
 		{
-			if (theme != ThemeType.Dark)
-			{
-				return _userBorderBrushesLight[index];
-			}
+			if (!theme.IsDarkBase()) { return _userBorderBrushesLight[index]; }
 			return _userBorderBrushesDark[index];
 		}
 

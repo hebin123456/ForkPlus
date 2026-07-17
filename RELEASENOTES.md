@@ -2,6 +2,29 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v2.0.0
+
+### 新增：多预设皮肤系统
+
+从 v1.x 只有 Light/Dark 两个硬编码主题，升级为可扩展的多预设皮肤架构，内置 8 套皮肤：
+
+- **Light** / **Dark**（保留，兼容旧设置）
+- **Solarized Light** / **Solarized Dark**（Solarized 经典配色）
+- **GitHub Light** / **GitHub Dark**（GitHub 官方配色）
+- **Dracula**（深紫黑底 + 粉紫 accent）
+- **Monokai**（经典 Monokai 深灰底 + 绿橙 accent）
+
+**架构改动**：
+- `ThemeType` 枚举扩展为 8 个值（Light=0/Dark=1 保留不变以兼容旧 settings.json），新增 `IsDarkBase()`/`SkinName()` 辅助方法标记每个皮肤的基底明暗 —— [ThemeType.cs](file:///workspace/src/ForkPlus/UI/ThemeType.cs)、[ThemeTypeExtensions.cs](file:///workspace/src/ForkPlus/UI/ThemeTypeExtensions.cs)
+- `ResourceUri()` 改为 `Generic.{SkinName}.xaml` 格式化，不再 switch 硬编码 —— [ThemeTypeExtensions.cs](file:///workspace/src/ForkPlus/UI/ThemeTypeExtensions.cs)
+- 主题切换命令的正则从 `(Light)|(Dark)` 改为匹配任意皮肤名 —— [SwitchApplicationThemeCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/SwitchApplicationThemeCommand.cs)
+- 主题菜单从两个硬编码 RadioButton 改为遍历 `AllThemes` 动态生成 —— [ToolbarUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/ToolbarUserControl.xaml.cs)
+- 所有 .cs 中的 `if (Theme == ThemeType.Dark)` 硬编码颜色判断（15 处）改为 `IsDarkBase()`，dark-base 皮肤（Dracula/Monokai 等）复用 Dark 资源，light-base 皮肤复用 Light 资源 —— 涉及 BranchViewModel、ContributionHeatmap、HighlightingTypeExtensions、4 个 LineNumberMargin、ChunkSelectionLayer、UserColorBrushes、SystemThemeHelper、App.xaml.cs、WebView2 主题等
+- 6 套新皮肤各一份 `Colors.{SkinName}.xaml`（基于 Dark/Light 模板，替换关键色调）+ `Generic.{SkinName}.xaml`（merge Colors + Images + Generic.xaml）
+- 7 个语言文件添加 6 个新皮肤名翻译 key
+
+**兼容性**：旧 settings.json 的 `Theme: 0/1` 仍能正确解码为 Light/Dark；`FollowSystemTheme` 仍映射到基底 Light/Dark（系统只有明暗二元）。
+
 ## v1.7.0
 
 ### 新增：代码行数统计（集成 tokei，饼图 + 列表双视图）

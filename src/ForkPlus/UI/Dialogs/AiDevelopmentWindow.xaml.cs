@@ -753,9 +753,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				await webView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
 				webView.CoreWebView2.Profile.PreferredColorScheme =
-					ForkPlusSettings.Default.Theme != ThemeType.Dark
-						? CoreWebView2PreferredColorScheme.Light
-						: CoreWebView2PreferredColorScheme.Dark;
+				ForkPlusSettings.Default.Theme.IsDarkBase()
+					? CoreWebView2PreferredColorScheme.Dark
+					: CoreWebView2PreferredColorScheme.Light;
 				webView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
 				{
 					e.Handled = true;

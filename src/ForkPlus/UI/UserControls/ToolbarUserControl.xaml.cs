@@ -267,18 +267,19 @@ namespace ForkPlus.UI.UserControls
 			ContextMenu contextMenu = AppearanceToolbarDropdownButton.ContextMenu;
 			contextMenu.Items.Clear();
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Theme", language)));
-			MenuItem menuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Light", language), delegate
+			// 遍历所有内置预设皮肤动态生成菜单项，不再硬编码 Light/Dark
+			foreach (ThemeType theme in ThemeTypeExtensions.AllThemes)
 			{
-				MainWindow.Commands.SwitchApplicationTheme.Execute(ThemeType.Light);
-			});
-			menuItem.IsChecked = ForkPlusSettings.Default.Theme == ThemeType.Light;
-			contextMenu.Items.Add(menuItem);
-			MenuItem menuItem2 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Dark", language), delegate
-			{
-				MainWindow.Commands.SwitchApplicationTheme.Execute(ThemeType.Dark);
-			});
-			menuItem2.IsChecked = ForkPlusSettings.Default.Theme == ThemeType.Dark;
-			contextMenu.Items.Add(menuItem2);
+				ThemeType themeCopy = theme;
+				MenuItem themeMenuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(
+					Preferences.PreferencesLocalization.Translate(theme.SkinName(), language), delegate
+				{
+					MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
+				});
+				themeMenuItem.IsChecked = ForkPlusSettings.Default.Theme == theme;
+				themeMenuItem.IsCheckable = true;
+				contextMenu.Items.Add(themeMenuItem);
+			}
 			contextMenu.Items.Add(new Separator
 			{
 

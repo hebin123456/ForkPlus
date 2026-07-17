@@ -261,7 +261,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private void RefreshPen()
 		{
-			if (ForkPlusSettings.Default.Theme == ThemeType.Dark)
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
 			{
 				_separatorPen = _separatorPenDark;
 				_mergeConflictMouseOverBrush = _mergeConflictMouseOverBrushDark;

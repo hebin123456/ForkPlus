@@ -237,7 +237,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (base.IsLoaded && AiResponseWebView.CoreWebView2 != null)
 			{
-				AiResponseWebView.CoreWebView2.Profile.PreferredColorScheme = ((ForkPlusSettings.Default.Theme != ThemeType.Dark) ? CoreWebView2PreferredColorScheme.Light : CoreWebView2PreferredColorScheme.Dark);
+				AiResponseWebView.CoreWebView2.Profile.PreferredColorScheme = (ForkPlusSettings.Default.Theme.IsDarkBase() ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light);
 			}
 		}
 

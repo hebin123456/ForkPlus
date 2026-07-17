@@ -29,7 +29,7 @@ namespace ForkPlus.UI
 				if (_borderBrush == null)
 				{
 					int num = ((base.ActiveGraphColumn >= 0) ? base.ActiveGraphColumn : 0);
-					_borderBrush = ((ForkPlusSettings.Default.Theme == ThemeType.Dark) ? (_borderBrush = _borderBrushesDark[num % _borderBrushesDark.Length]) : (_borderBrush = _borderBrushesLight[num % _borderBrushesLight.Length]));
+					_borderBrush = (ForkPlusSettings.Default.Theme.IsDarkBase() ? (_borderBrush = _borderBrushesDark[num % _borderBrushesDark.Length]) : (_borderBrush = _borderBrushesLight[num % _borderBrushesLight.Length]));
 				}
 				return _borderBrush;
 			}
@@ -50,7 +50,7 @@ namespace ForkPlus.UI
 				if (_backgroundBrush == null)
 				{
 					int num = ((base.ActiveGraphColumn >= 0) ? base.ActiveGraphColumn : 0);
-					_backgroundBrush = ((ForkPlusSettings.Default.Theme == ThemeType.Dark) ? (_backgroundBrush = _backgroundBrushesDark[num % _backgroundBrushesDark.Length]) : (_backgroundBrush = _backgroundBrushesLight[num % _backgroundBrushesLight.Length]));
+					_backgroundBrush = (ForkPlusSettings.Default.Theme.IsDarkBase() ? (_backgroundBrush = _backgroundBrushesDark[num % _backgroundBrushesDark.Length]) : (_backgroundBrush = _backgroundBrushesLight[num % _backgroundBrushesLight.Length]));
 				}
 				return _backgroundBrush;
 			}
