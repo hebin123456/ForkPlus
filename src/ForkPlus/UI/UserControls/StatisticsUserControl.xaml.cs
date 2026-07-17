@@ -577,9 +577,10 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			try
 			{
 				// 列本地分支和 tag。轻量命令，同步执行可接受（< 100ms 通常）
-				var result = new ForkPlus.Git.Interaction.GitRequest(gitModule)
-					.Command("for-each-ref", "--format=%(refname:short)", "refs/heads/", "refs/tags/")
-					.Execute(silent: true);
+				// 加 -c core.quotePath=false 让 git 输出原始 UTF-8 字节而非八进制转义，避免中文分支名乱码
+			var result = new ForkPlus.Git.Interaction.GitRequest(gitModule)
+				.Command("-c", "core.quotePath=false", "for-each-ref", "--format=%(refname:short)", "refs/heads/", "refs/tags/")
+				.Execute(silent: true);
 				if (result.Success && !string.IsNullOrEmpty(result.Stdout))
 				{
 					string[] refs = result.Stdout.Split(Consts.Chars.NewLine);

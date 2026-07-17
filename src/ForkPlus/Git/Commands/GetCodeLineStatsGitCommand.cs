@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 
@@ -10,9 +11,9 @@ namespace ForkPlus.Git.Commands
 	/// 代码行数统计命令。spawn tokei.exe 扫描仓库得到按语言聚合的 code/comments/blanks。
 	///
 	/// 两种模式：
-	/// - snapshot（refSpec 为 null/空）：直接在工作区目录跑 tokei，统计当前工作区文件。
-	/// - 历史 commit/分支（refSpec 非空）：用 git archive 把 ref 导出成 tar 流到临时目录解压，
-	///   再跑 tokei，避免污染工作区。tar 解压走 git 自带 tar（git archive --format=tar）。
+	/// - snapshot（refSpec 为 null/空，或 refSpec 指向当前工作区 HEAD）：直接在工作区目录跑 tokei。
+	/// - 历史 commit/分支（refSpec 非空且非当前 HEAD）：用 git archive --format=zip 把 ref 导出到
+	///   临时目录，用 .NET ZipFile.ExtractToDirectory 原生解压，再跑 tokei，避免污染工作区。
 	/// </summary>
 	public class GetCodeLineStatsGitCommand
 	{
@@ -168,8 +169,9 @@ namespace ForkPlus.Git.Commands
 			try
 			{
 				// 当前分支名（detached HEAD 时为空）
-				GitRequestResult branchResult = new GitRequest(gitModule)
-					.Command("symbolic-ref", "--quiet", "--short", "HEAD").Execute(silent: true);
+			// 加 -c core.quotePath=false 让 git 输出原始 UTF-8 字节而非八进制转义，避免中文分支名乱码
+			GitRequestResult branchResult = new GitRequest(gitModule)
+				.Command("-c", "core.quotePath=false", "symbolic-ref", "--quiet", "--short", "HEAD").Execute(silent: true);
 				if (branchResult.Success && branchResult.ExitCode == 0)
 				{
 					string currentBranch = (branchResult.Stdout ?? "").Trim();
@@ -180,8 +182,8 @@ namespace ForkPlus.Git.Commands
 					}
 				}
 				// HEAD 的完整 sha，覆盖 detached HEAD + sha 输入
-				GitRequestResult headShaResult = new GitRequest(gitModule)
-					.Command("rev-parse", "HEAD").Execute(silent: true);
+			GitRequestResult headShaResult = new GitRequest(gitModule)
+				.Command("-c", "core.quotePath=false", "rev-parse", "HEAD").Execute(silent: true);
 				if (headShaResult.Success && headShaResult.ExitCode == 0)
 				{
 					string headSha = (headShaResult.Stdout ?? "").Trim();
@@ -191,8 +193,8 @@ namespace ForkPlus.Git.Commands
 						return true;
 					}
 					// 也比较 refSpec 解析出的 sha（refSpec 可能是短 sha / refs/heads/x 等）
-					GitRequestResult refShaResult = new GitRequest(gitModule)
-						.Command("rev-parse", refSpec).Execute(silent: true);
+				GitRequestResult refShaResult = new GitRequest(gitModule)
+					.Command("-c", "core.quotePath=false", "rev-parse", refSpec).Execute(silent: true);
 					if (refShaResult.Success && refShaResult.ExitCode == 0)
 					{
 						string refSha = (refShaResult.Stdout ?? "").Trim();
@@ -211,17 +213,21 @@ namespace ForkPlus.Git.Commands
 			return false;
 		}
 
-		/// <summary>git archive --format=tar -o &lt;tarFile&gt; &lt;refSpec&gt; 然后 tar -xf 解压。
+		/// <summary>git archive --format=zip -o &lt;zipFile&gt; &lt;refSpec&gt; 然后用 .NET ZipFile.ExtractToDirectory 解压。
 		/// 失败时通过 errorMessage 输出诊断信息（优先用 git rev-parse 区分 ref 不存在 vs 其他错误）。</summary>
 		private bool ExportRefToTarAndExtract(GitModule gitModule, string refSpec, string tempDir, [Null] JobMonitor monitor, out string errorMessage)
 		{
 			errorMessage = null;
-			string tarFile = Path.Combine(tempDir, "..", "tokei_export_" + Guid.NewGuid().ToString("N") + ".tar");
-			tarFile = Path.GetFullPath(tarFile);
+			// 用 zip 格式而非 tar：.NET 4.5 自带 ZipFile.ExtractToDirectory 原生解压，
+			// 避免依赖系统 tar.exe（Windows bsdtar 对 git archive 生成的 tar 中的 pax_global_header
+			// 等条目会报 "Invalid empty pathname: Unknown error"）。
+			string zipFile = Path.Combine(tempDir, "..", "tokei_export_" + Guid.NewGuid().ToString("N") + ".zip");
+			zipFile = Path.GetFullPath(zipFile);
 			try
 			{
-				// 1. git archive --format=tar -o <tarFile> <refSpec>
-				GitRequestResult archiveResult = new GitRequest(gitModule).Command("archive", "--format=tar", "-o", tarFile, refSpec).Execute(monitor, silent: true);
+				// 1. git archive --format=zip -o <zipFile> <refSpec>
+				// 加 -c core.quotePath=false 让 git 输出原始 UTF-8 字节而非八进制转义，避免中文 ref 名乱码
+				GitRequestResult archiveResult = new GitRequest(gitModule).Command("-c", "core.quotePath=false", "archive", "--format=zip", "-o", zipFile, refSpec).Execute(monitor, silent: true);
 				if (!archiveResult.Success || archiveResult.ExitCode != 0)
 				{
 					string stderr = archiveResult.Stderr ?? "";
@@ -229,7 +235,7 @@ namespace ForkPlus.Git.Commands
 					// 用 git rev-parse 验证 ref 是否可解析，区分"ref 不存在"和"archive 其他错误"
 					// （如 worktree 状态异常、ref 只在远端未本地化等）
 					GitRequestResult revParseResult = new GitRequest(gitModule)
-						.Command("rev-parse", "--verify", refSpec + "^{commit}").Execute(silent: true);
+					.Command("-c", "core.quotePath=false", "rev-parse", "--verify", refSpec + "^{commit}").Execute(silent: true);
 					if (!revParseResult.Success || revParseResult.ExitCode != 0)
 					{
 						errorMessage = "ref '" + refSpec + "' does not resolve to a commit";
@@ -246,65 +252,22 @@ namespace ForkPlus.Git.Commands
 					return false;
 				}
 
-				// 2. tar -xf <tarFile> -C <tempDir>
-				// Windows 10 1803+ 自带 tar.exe（bsdtar）；CI 的 windows-latest 也有。
-				if (!ExtractTar(tarFile, tempDir, out string extractError))
+				// 2. .NET 原生解压 zip，无需依赖系统 tar.exe
+				try
 				{
-					errorMessage = "tar extract failed: " + extractError;
+					System.IO.Compression.ZipFile.ExtractToDirectory(zipFile, tempDir);
+				}
+				catch (Exception ex)
+				{
+					Log.Error("zip extract failed", ex);
+					errorMessage = "zip extract failed: " + ex.Message;
 					return false;
 				}
 				return true;
 			}
 			finally
 			{
-				try { if (File.Exists(tarFile)) File.Delete(tarFile); } catch { }
-			}
-		}
-
-		/// <summary>用系统 tar.exe 解压。Windows 10 1803+ / Windows 11 / CI windows-latest 都自带。</summary>
-		private bool ExtractTar(string tarFile, string destDir, out string errorMessage)
-		{
-			errorMessage = null;
-			Process process = new Process();
-			try
-			{
-				process.StartInfo = new ProcessStartInfo
-				{
-					FileName = "tar.exe",
-					Arguments = "-xf \"" + tarFile + "\" -C \"" + destDir + "\"",
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					CreateNoWindow = true
-				};
-				process.Start();
-				string stderr = process.StandardError.ReadToEnd();
-				process.StandardOutput.ReadToEnd();
-				bool exited = process.WaitForExit(TimeoutMs);
-				if (!exited)
-				{
-					try { process.Kill(); } catch { }
-					Log.Warn("tar.exe timed out");
-					errorMessage = "timed out";
-					return false;
-				}
-				if (process.ExitCode != 0)
-				{
-					Log.Warn("tar.exe failed (exit " + process.ExitCode + "): " + stderr);
-					errorMessage = string.IsNullOrEmpty(stderr) ? "exit " + process.ExitCode : stderr;
-					return false;
-				}
-				return true;
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to run tar.exe (Windows 10 1803+ required)", ex);
-				errorMessage = "tar.exe not available (Windows 10 1803+ required): " + ex.Message;
-				return false;
-			}
-			finally
-			{
-				process?.Dispose();
+				try { if (File.Exists(zipFile)) File.Delete(zipFile); } catch { }
 			}
 		}
 
