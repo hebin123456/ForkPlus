@@ -2028,6 +2028,15 @@
     "🔄 开始处理下一个请求 (剩余 {0} 个)": "🔄 Procesando siguiente solicitud ({0} restante(s))",
     "🗑️ 删除: {0}": "🗑️ Eliminado: {0}",
     "🤖 AI 响应": "🤖 Respuesta IA",
-    "🧑 我的需求": "🧑 Mi solicitud"
+    "🧑 我的需求": "🧑 Mi solicitud",
+    "Code lines": "Líneas de código",
+    "Ref:": "Ref:",
+    "Files": "Archivos",
+    "Code": "Código",
+    "Comments": "Comentarios",
+    "Blanks": "Líneas en blanco",
+    "Other": "Otros",
+    "Counting code lines...": "Contando líneas de código...",
+    "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} archivos · {2} código · {3} comentarios · {4} líneas en blanco"
   }
 }

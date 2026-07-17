@@ -77,8 +77,8 @@ ForkPlus/
 项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
 
 ```bash
-git tag v1.6.4
-git push origin v1.6.4
+git tag v1.7.0
+git push origin v1.7.0
 ```
 
 编译产物包含 `ForkPlus.exe`、所有依赖 dll、`biturbo.dll`、语言文件等，解压即可运行。

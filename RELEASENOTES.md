@@ -2,6 +2,24 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v1.7.0
+
+### 新增：代码行数统计（集成 tokei，饼图 + 列表双视图）
+
+- **需求**：仓库统计面板希望加一个"代码行数统计"，既能统计当前工作区，也能统计历史 commit/分支的快照；UI 要饼图和列表都有，方便从占比和明细两个角度看语言分布。这是个较大更新，版本号从 1.6.4 直接跳到 1.7.0。
+- **方案选型**：调研后选择集成 [tokei](https://github.com/XAMPPRocky/tokei)（MIT/Apache-2.0 双协议的 Rust 代码统计工具，支持 200+ 语言，区分 code/comments/blanks，尊重 .gitignore，提供稳定的 `--output json`）。相比在 biturbo native 侧加 API 或纯 managed 实现一遍语言识别，直接复用 tokei 的预编译 Windows 二进制最省力也最准确—— [ForkPlus.Assets.Legal.txt](file:///workspace/src/ForkPlus/ForkPlus.Assets.Legal.txt)
+- **构建期拉取 tokei.exe**：复用 biturbo.dll 的 `RestoreBiturbo` 模式，在 `ForkPlus.csproj` / `ForkPlus.Tests.csproj` 新增 `RestoreTokei` target（`BeforeTargets=Build`，缺失时用 PowerShell 从 tokei 最新 release 下载 `tokei-x86_64-pc-windows-msvc.exe` 重命名为 tokei.exe），并在 `CopyHelperExecutables` 里随构建拷贝到输出目录。`third_party/tokei.exe` 加入 `.gitignore` 不再提交—— [ForkPlus.csproj](file:///workspace/src/ForkPlus/ForkPlus.csproj)、[.gitignore](file:///workspace/.gitignore)
+- **数据获取命令**：新建 `GetCodeLineStatsGitCommand`，spawn tokei.exe 跑 `--output json` 并解析。两种模式：
+  - **snapshot 模式**（refSpec 为空）：直接在工作区目录跑 tokei，统计当前文件
+  - **历史 ref 模式**（refSpec 非空，分支/tag/sha）：`git archive --format=tar -o <temp> <ref>` 导出，再用系统 `tar.exe`（Windows 10 1803+ 自带）解压到临时目录跑 tokei，完成后清理，避免污染工作区
+  - 进程 spawn 异步读 stderr 防管道死锁，60s 超时兜底—— [GetCodeLineStatsGitCommand.cs](file:///workspace/src/ForkPlus/Git/Commands/GetCodeLineStatsGitCommand.cs)
+- **数据结构**：新建 `CodeLineStats`（RefSpec + LanguageStats[] + 总文件/代码/注释/空行汇总）+ `LanguageStats`（单语言的 files/code/comments/blanks）。`FromTokeiJson` 用 Newtonsoft.Json.Linq 解析 tokei 的 JSON（顶层按语言名做 key，每个值含 blobs/files 和 lines:{code,comments,blanks}），跳过 Total 汇总项，按代码行数降序排序—— [CodeLineStats.cs](file:///workspace/src/ForkPlus/Git/Commands/CodeLineStats.cs)
+- **UI 布局**：`StatisticsUserControl.xaml` 的 StatsContainer Grid 行数从 6 加到 7，新增 Row 6 代码行数区域——标题"Code lines" + Ref 下拉（Workspace/本地分支/tag）+ Refresh 按钮 + 摘要 TextBlock + 错误 TextBlock + 饼图 + 列表。列表 6 列（色块/Language/Files/Code/Comments/Blanks），表头置于列表正上方并同列对齐—— [StatisticsUserControl.xaml](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml)
+- **UI 交互**：`ShowStatistics` 时初始化 Ref 下拉（`git for-each-ref` 一次性拿全本地分支和 tag，第一项固定 Workspace）并触发首次 snapshot 查询。切换 ref 或点 Refresh 走 `JobQueue`（`JobFlags.LongRunning`，`showMessageWhenDone:false`）串行化后台执行，避免切换 ref 时并发 spawn tokei；回调里校验 `refSpecCopy != _currentCodeLinesRef` 防竞态。饼图取 Top 12 语言，其余合并为 "Other"，颜色复用现有 `_pieChartColors` 调色板—— [StatisticsUserControl.xaml.cs](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs)
+- **颜色转换修复**：列表色块的颜色字符串用新增的 `OxyColorToHex` 辅助方法直接拼 OxyColor 的 R/G/B 字节生成 `#RRGGBB`，规避 `OxyColor.ToColor().ToArgb()` 的编译问题（`ToColor()` 返回 WPF `System.Windows.Media.Color`，而 `ToArgb()` 是 `System.Drawing.Color` 的方法）
+- **i18n**：9 个新 key 同步到 7 语言文件（简中/繁中/日/韩/德/西/法）——`Code lines`、`Ref:`、`Files`、`Code`、`Comments`、`Blanks`、`Other`、`Counting code lines...`、`{0}: {1} files · {2} code · {3} comments · {4} blanks`。XAML 里的硬编码英文走 `PreferencesLocalization.Apply` 的逻辑树自动翻译机制（英文为默认 fallback，缺失 key 原样返回）
+- **版本号**：`AssemblyFileVersion` / `AssemblyInformationalVersion` 1.6.4 → 1.7.0；`AssemblyVersion` 1.6.1.0 → 1.7.0.0—— [AssemblyInfo.cs](file:///workspace/src/ForkPlus/Properties/AssemblyInfo.cs)
+
 ## v1.6.4
 
 ### 修复：仓库树图点击崩溃

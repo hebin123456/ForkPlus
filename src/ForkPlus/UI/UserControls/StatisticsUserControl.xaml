@@ -29,6 +29,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <controls:DateRangeButton Grid.Row="0" Margin="0,10,0,10" HorizontalAlignment="Left" x:Name="DateRangeButton" />
       <TextBlock Grid.Row="1" Text="Commits per month" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
@@ -81,6 +82,76 @@
           <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="DayHourPlot" />
         </StackPanel>
       </Grid>
+      <!-- Row 6: 代码行数统计（tokei）—— 标题行 + 模式切换 + 摘要 + 饼图 + 列表 -->
+      <StackPanel Grid.Row="6" Margin="0,30,0,0">
+        <Grid Margin="10,0,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="Code lines" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock Text="Ref:" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <ComboBox Width="220" Margin="0,0,8,0" x:Name="CodeLinesRefComboBox" SelectionChanged="CodeLinesRefComboBox_SelectionChanged" />
+            <Button Content="Refresh" Padding="10,2" x:Name="CodeLinesRefreshButton" Click="CodeLinesRefreshButton_Click" />
+          </StackPanel>
+        </Grid>
+        <TextBlock Margin="10,8,0,0" x:Name="CodeLinesSummary" TextWrapping="Wrap" />
+        <TextBlock Margin="10,8,0,0" x:Name="CodeLinesError" TextWrapping="Wrap" Foreground="#FFCC0000" Visibility="Collapsed" />
+        <Grid Margin="10,10,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="CodeLinesPiePlot" />
+          <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
+            <Grid Margin="0,0,0,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="70" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="1" Text="Language" FontWeight="Medium" />
+              <TextBlock Grid.Column="2" Text="Files" FontWeight="Medium" TextAlignment="Right" />
+              <TextBlock Grid.Column="3" Text="Code" FontWeight="Medium" TextAlignment="Right" />
+              <TextBlock Grid.Column="4" Text="Comments" FontWeight="Medium" TextAlignment="Right" />
+              <TextBlock Grid.Column="5" Text="Blanks" FontWeight="Medium" TextAlignment="Right" />
+            </Grid>
+            <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="CodeLinesListBox">
+              <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
+                  <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
+                  <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
+                  <Setter Property="Border.BorderBrush" Value="{DynamicResource BorderBrush}" />
+                </Style>
+              </ListBox.ItemContainerStyle>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Height="20">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="10" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="80" />
+                      <ColumnDefinition Width="70" />
+                      <ColumnDefinition Width="70" />
+                      <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center" Fill="{Binding Color}" />
+                    <TextBlock Grid.Column="1" Margin="4,0,8,0" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
+                    <TextBlock Grid.Column="2" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Files}" />
+                    <TextBlock Grid.Column="3" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Code}" />
+                    <TextBlock Grid.Column="4" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Comments}" />
+                    <TextBlock Grid.Column="5" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Blanks}" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
     </Grid>
     <usercontrols:FallbackUserControl Margin="30,15,20,15" Height="600" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FallbackUserControl" />
   </Grid>

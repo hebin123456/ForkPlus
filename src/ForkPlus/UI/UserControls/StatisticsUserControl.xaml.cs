@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -9,6 +10,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -43,6 +45,28 @@ namespace ForkPlus.UI.UserControls
 			{
 				Name = name;
 				TotalCommits = totalCommits;
+			}
+		}
+
+		/// <summary>代码行数列表行 ViewModel。每行一个语言。</summary>
+		public class CodeLineLanguageViewModel
+		{
+			public string Name { get; }
+			public long Files { get; }
+			public long Code { get; }
+			public long Comments { get; }
+			public long Blanks { get; }
+			/// <summary>饼图色块颜色，XAML 里 Rectangle.Fill 绑定。</summary>
+			public string Color { get; }
+
+			public CodeLineLanguageViewModel(string name, long files, long code, long comments, long blanks, string color)
+			{
+				Name = name;
+				Files = files;
+				Code = code;
+				Comments = comments;
+				Blanks = blanks;
+				Color = color;
 			}
 		}
 
@@ -279,6 +303,19 @@ namespace ForkPlus.UI.UserControls
 
 		private PlotModel _dayHourPlotModel;
 
+		/// <summary>代码行数饼图的 PlotModel（按语言代码行数占比）。</summary>
+		private PlotModel _codeLinesPieModel;
+
+		/// <summary>代码行数后台任务队列。串行化多次 refresh，避免切换 ref 时并发 spawn tokei。</summary>
+		private readonly JobQueue _codeLinesJobQueue = new JobQueue();
+
+		/// <summary>当前代码行数查询选中的 refSpec。null/空 = 工作区 snapshot。</summary>
+		[Null]
+		private string _currentCodeLinesRef;
+
+		/// <summary>防止 CodeLinesRefComboBox 初始化 SelectionChanged 事件触发查询。</summary>
+		private bool _isCodeLinesRefComboBoxInitializing;
+
 		private bool _isCalendarUpdatingInProgress;
 
 		private static OxyColor BorderColor => Theme.BorderBrush.ToOxyColor();
@@ -302,6 +339,9 @@ namespace ForkPlus.UI.UserControls
 			WeekDayPlot.Model = _weekDayPlotModel;
 			_dayHourPlotModel = PlotHelper.CreateDayHourPlotModel();
 			DayHourPlot.Model = _dayHourPlotModel;
+			// 代码行数饼图复用 CreatePiePlotModel（同样的 PieSeries 配置）
+			_codeLinesPieModel = PlotHelper.CreatePiePlotModel();
+			CodeLinesPiePlot.Model = _codeLinesPieModel;
 			DateRangeButton.DateRangeChanged += delegate
 			{
 				if (!_isCalendarUpdatingInProgress)
@@ -324,6 +364,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			_gitModule = gitModule;
 			UpdatePreview(gitModule, null);
+			// 初始化代码行数 ref 下拉并触发首次 snapshot 查询
+			InitializeCodeLinesRefComboBox(gitModule);
+			RefreshCodeLines(null);
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
@@ -459,6 +502,189 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		private static string Translate(string text)
 		{
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+		}
+
+		// ===================== 代码行数统计（tokei）=====================
+
+		/// <summary>初始化 ref 下拉：Workspace（工作区）+ 本地分支 + tag。
+		/// 走 git for-each-ref 一次性拿全，避免阻塞 UI。</summary>
+		private void InitializeCodeLinesRefComboBox(GitModule gitModule)
+		{
+			_isCodeLinesRefComboBoxInitializing = true;
+			CodeLinesRefComboBox.Items.Clear();
+			// 第一项固定为"Workspace"（snapshot 模式）
+			CodeLinesRefComboBox.Items.Add(new CodeLineRefItem(Translate("Workspace"), null));
+			try
+			{
+				// 列本地分支和 tag。轻量命令，同步执行可接受（< 100ms 通常）
+				var result = new ForkPlus.Git.Interaction.GitRequest(gitModule)
+					.Command("for-each-ref", "--format=%(refname:short)", "refs/heads/", "refs/tags/")
+					.Execute(silent: true);
+				if (result.Success && !string.IsNullOrEmpty(result.Stdout))
+				{
+					string[] refs = result.Stdout.Split(Consts.Chars.NewLine);
+					foreach (string r in refs)
+					{
+						string trimmed = r.Trim();
+						if (!string.IsNullOrEmpty(trimmed))
+						{
+							CodeLinesRefComboBox.Items.Add(new CodeLineRefItem(trimmed, trimmed));
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to list refs for CodeLines combo", ex);
+			}
+			CodeLinesRefComboBox.SelectedIndex = 0;
+			_isCodeLinesRefComboBoxInitializing = false;
+		}
+
+		/// <summary>ComboBox 选 ref 时触发。重新跑 tokei。</summary>
+		private void CodeLinesRefComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (_isCodeLinesRefComboBoxInitializing || _gitModule == null)
+			{
+				return;
+			}
+			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
+			RefreshCodeLines(item?.RefSpec);
+		}
+
+		/// <summary>Refresh 按钮点击。用当前选中的 ref 重跑。</summary>
+		private void CodeLinesRefreshButton_Click(object sender, RoutedEventArgs e)
+		{
+			CodeLineRefItem item = CodeLinesRefComboBox.SelectedItem as CodeLineRefItem;
+			RefreshCodeLines(item?.RefSpec);
+		}
+
+		/// <summary>异步跑 tokei 拿代码行数统计，更新饼图 + 列表 + 摘要。
+		/// 走 JobQueue 串行化，避免切换 ref 时并发 spawn。</summary>
+		private void RefreshCodeLines([Null] string refSpec)
+		{
+			if (_gitModule == null)
+			{
+				return;
+			}
+			_currentCodeLinesRef = refSpec;
+			// 立刻显示"加载中"，避免用户以为按钮没响应
+			CodeLinesError.Visibility = Visibility.Collapsed;
+			CodeLinesSummary.Text = Translate("Counting code lines...") + (string.IsNullOrEmpty(refSpec) ? "" : " (" + refSpec + ")");
+			CodeLinesRefreshButton.IsEnabled = false;
+			CodeLinesRefComboBox.IsEnabled = false;
+
+			// 复制一份避免闭包捕获到后续变化的 refSpec
+			string refSpecCopy = refSpec;
+			GitModule gitModule = _gitModule;
+			_codeLinesJobQueue.Add("CodeLinesStats", delegate (JobMonitor monitor)
+			{
+				var result = new GetCodeLineStatsGitCommand().Execute(gitModule, refSpecCopy, monitor);
+				Dispatcher.Async(delegate
+				{
+					// 用户可能在此期间又触发了新查询，校验是否还是当前选中的 ref
+					if (refSpecCopy != _currentCodeLinesRef)
+					{
+						return;
+					}
+					CodeLinesRefreshButton.IsEnabled = true;
+					CodeLinesRefComboBox.IsEnabled = true;
+					if (!result.Succeeded)
+					{
+						ShowCodeLinesError(result.Error?.FriendlyDescription ?? "Failed");
+						return;
+					}
+					UpdateCodeLinesPlot(result.Result);
+				});
+			}, JobFlags.LongRunning, showMessageWhenDone: false);
+		}
+
+		/// <summary>把 CodeLineStats 渲染到饼图 + 列表 + 摘要。</summary>
+		private void UpdateCodeLinesPlot(CodeLineStats stats)
+		{
+			CodeLinesError.Visibility = Visibility.Collapsed;
+			// 饼图
+			var pieSeries = _codeLinesPieModel.Series[0] as PieSeries;
+			pieSeries.Slices.Clear();
+			var listItems = new List<CodeLineLanguageViewModel>(stats.Languages.Length);
+			// 饼图最多显示 Top 12 语言（颜色有限），其余合并为 "Other"
+			long otherCode = 0;
+			int otherCount = 0;
+			for (int i = 0; i < stats.Languages.Length; i++)
+			{
+				var lang = stats.Languages[i];
+				if (i < 12)
+				{
+					pieSeries.Slices.Add(new PieSlice(lang.Name, lang.Code)
+					{
+						Fill = _pieChartColors[i % _pieChartColors.Length]
+					});
+					listItems.Add(new CodeLineLanguageViewModel(
+						lang.Name, lang.Files, lang.Code, lang.Comments, lang.Blanks,
+						OxyColorToHex(_colors[i % _colors.Length])));
+				}
+				else
+				{
+					otherCode += lang.Code;
+					otherCount += (int)lang.Files;
+				}
+			}
+			if (otherCode > 0)
+			{
+				int idx = 12;
+				pieSeries.Slices.Add(new PieSlice(Translate("Other"), otherCode)
+				{
+					Fill = _pieChartColors[idx % _pieChartColors.Length]
+				});
+				listItems.Add(new CodeLineLanguageViewModel(
+					Translate("Other"), otherCount, otherCode, 0, 0,
+					OxyColorToHex(_colors[idx % _colors.Length])));
+			}
+			CodeLinesListBox.ItemsSource = listItems;
+			CodeLinesPiePlot.InvalidatePlot();
+
+			// 摘要：总文件数 · 总代码行 · 总注释 · 总空白 · 当前 ref
+			string refLabel = string.IsNullOrEmpty(stats.RefSpec)
+				? Translate("Workspace")
+				: stats.RefSpec;
+			CodeLinesSummary.Text = string.Format(CultureInfo.CurrentUICulture,
+				Translate("{0}: {1} files · {2} code · {3} comments · {4} blanks"),
+				refLabel,
+				stats.TotalFiles.ToString("N0"),
+				stats.TotalCode.ToString("N0"),
+				stats.TotalComments.ToString("N0"),
+				stats.TotalBlanks.ToString("N0"));
+		}
+
+		private void ShowCodeLinesError(string message)
+		{
+			CodeLinesError.Text = message;
+			CodeLinesError.Visibility = Visibility.Visible;
+			CodeLinesSummary.Text = "";
+			// 清空饼图和列表
+			(_codeLinesPieModel.Series[0] as PieSeries).Slices.Clear();
+			CodeLinesPiePlot.InvalidatePlot();
+			CodeLinesListBox.ItemsSource = null;
+		}
+
+		/// <summary>OxyColor → "#RRGGBB" 十六进制字符串，给 XAML Rectangle.Fill 用。</summary>
+		private static string OxyColorToHex(OxyColor c)
+		{
+			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+		}
+
+		/// <summary>ComboBox 项：显示名 + 实际 refSpec（null=工作区 snapshot）。</summary>
+		public class CodeLineRefItem
+		{
+			public string Display { get; }
+			[Null]
+			public string RefSpec { get; }
+			public CodeLineRefItem(string display, [Null] string refSpec)
+			{
+				Display = display;
+				RefSpec = refSpec;
+			}
+			public override string ToString() => Display;
 		}
 
 	}
