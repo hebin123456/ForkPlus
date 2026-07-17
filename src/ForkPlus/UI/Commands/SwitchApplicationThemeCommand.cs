@@ -43,6 +43,8 @@ namespace ForkPlus.UI.Commands
 				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
 			}
 			Theme.Refresh();
+			// 切换皮肤后重新应用用户自定义颜色覆盖（旧字典随主题字典移除后需重建）
+			App.ApplyCustomColors();
 			NotificationCenter.Current.RaiseApplicationThemeChanged(this, newTheme);
 		}
 	}

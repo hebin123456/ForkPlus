@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v2.1.0
+
+### 新增：用户自定义颜色
+
+在 v2.0.0 多预设皮肤的基础上，支持用户对任意预设皮肤的颜色进行自定义覆盖。
+
+**功能**：
+- 主题菜单新增"自定义颜色..."入口，打开颜色编辑对话框
+- 对话框列出 18 个核心颜色（背景、文字、边框、强调色、diff、编辑器等），每个支持 hex 输入和颜色选择器
+- 颜色选择器包含预设色板 + RGB 滑块 + hex 输入 + 实时预览
+- 改动即时生效（无需重启），支持单个重置和全部重置
+- 自定义颜色持久化到 settings.json，切换皮肤后自动重新应用
+
+**技术实现**：
+- `ForkPlusSettings` 新增 `Dictionary<string, string> CustomColors` 字段（key=Color resource key, value=hex），JSON 序列化/反序列化 —— [ForkPlusSettings.cs](file:///workspace/src/ForkPlus/Settings/ForkPlusSettings.cs)
+- `App.ApplyCustomColors()` 构建动态 ResourceDictionary merge 到 MergedDictionaries 末尾，利用 Brushes.xaml 中 Brush 对 Color 的 `DynamicResource` 引用实现即时生效 —— [App.xaml.cs](file:///workspace/src/ForkPlus/App.xaml.cs)
+- `SwitchApplicationThemeCommand` 切换皮肤后重新应用自定义覆盖 —— [SwitchApplicationThemeCommand.cs](file:///workspace/src/ForkPlus/UI/Commands/SwitchApplicationThemeCommand.cs)
+- 新建 `CustomColorsDialog` 颜色编辑对话框 —— [CustomColorsDialog.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml)
+- 7 个语言文件添加 `Custom Colors` / `Color Picker` / `Reset All` 等翻译 key
+
+**兼容性**：旧 settings.json 无 `CustomColors` 字段时默认空字典（无覆盖），不影响现有皮肤。
+
 ## v2.0.0
 
 ### 新增：多预设皮肤系统

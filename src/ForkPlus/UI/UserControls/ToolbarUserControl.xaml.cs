@@ -280,6 +280,22 @@ namespace ForkPlus.UI.UserControls
 				themeMenuItem.IsCheckable = true;
 				contextMenu.Items.Add(themeMenuItem);
 			}
+			// 自定义颜色入口
+			MenuItem customColorsItem = new MenuItem
+			{
+				Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language)
+			};
+			customColorsItem.Click += delegate
+			{
+				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
+				{
+					Owner = Window.GetWindow(this)
+				};
+				dialog.ShowDialog();
+				// 对话框关闭后刷新主题菜单（IsChecked 状态可能变化）
+				InitializeAppearanceToolBarButtonContextMenu();
+			};
+			contextMenu.Items.Add(customColorsItem);
 			contextMenu.Items.Add(new Separator
 			{
 

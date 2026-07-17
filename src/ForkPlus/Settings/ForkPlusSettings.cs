@@ -1050,6 +1050,8 @@ namespace ForkPlus.Settings
 
 		private string _uiLanguage;
 
+		private Dictionary<string, string> _customColors;
+
 		private MergerLayoutOrientation _mergerOrientation;
 
 		private RevisionListOrientation _revisionListOrientation;
@@ -2194,6 +2196,20 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>用户自定义颜色覆盖。key = Colors.*.xaml 中的 Color resource key，
+		/// value = hex 颜色值（#RRGGBB 或 #AARRGGBB）。空字典表示无覆盖，使用预设皮肤原色。</summary>
+		public Dictionary<string, string> CustomColors
+		{
+			get
+			{
+				return _customColors;
+			}
+			set
+			{
+				_customColors = value;
+			}
+		}
+
 		public MergerLayoutOrientation MergerLayoutOrientation
 		{
 			get
@@ -2646,6 +2662,18 @@ namespace ForkPlus.Settings
 			ThemeType theme = (ThemeType)(json["Theme"]?.Value<int>() ?? 0);
 			bool followSystemTheme = json["FollowSystemTheme"]?.Value<bool>() ?? true;
 			string uiLanguage = json["UiLanguage"]?.Value<string>() ?? "zh-Hans";
+			// 自定义颜色覆盖：key=Color resource key, value=hex。null/缺失时返回空字典。
+			Dictionary<string, string> customColors = new Dictionary<string, string>();
+			JObject customColorsJson = json["CustomColors"] as JObject;
+			if (customColorsJson != null)
+			{
+				foreach (KeyValuePair<string, JToken> kv in customColorsJson)
+				{
+					string val = kv.Value?.Value<string>();
+					if (!string.IsNullOrEmpty(val))
+						customColors[kv.Key] = val;
+				}
+			}
 			RevisionListOrientation revisionListOrientation = (RevisionListOrientation)(json["RevisionListOrientation"]?.Value<int>() ?? 1);
 			MergerLayoutOrientation mergerLayoutOrientation = (MergerLayoutOrientation)(json["MergerLayoutOrientation"]?.Value<int>() ?? 0);
 			DateTime lastUpdateCheck = json["LastUpdateCheck"]?.Value<DateTime>() ?? DateTime.Today.AddMonths(-1);
@@ -2761,6 +2789,7 @@ namespace ForkPlus.Settings
 				Theme = theme,
 				FollowSystemTheme = followSystemTheme,
 				UiLanguage = uiLanguage,
+				CustomColors = customColors,
 				RevisionListOrientation = revisionListOrientation,
 				MergerLayoutOrientation = mergerLayoutOrientation,
 				LastUpdateCheck = lastUpdateCheck,
@@ -2868,6 +2897,21 @@ namespace ForkPlus.Settings
 			}
 			Log.Warn($"Failed to import predefined tool '{type}'");
 			return null;
+		}
+
+		/// <summary>把 CustomColors 字典序列化为 JObject。空字典返回空 JObject。</summary>
+		private static JObject EncodeCustomColors(Dictionary<string, string> customColors)
+		{
+			JObject obj = new JObject();
+			if (customColors != null)
+			{
+				foreach (KeyValuePair<string, string> kv in customColors)
+				{
+					if (!string.IsNullOrEmpty(kv.Value))
+						obj[kv.Key] = new JValue(kv.Value);
+				}
+			}
+			return obj;
 		}
 
 		public static JObject Encode(ForkPlusSettings target)
@@ -3247,12 +3291,16 @@ namespace ForkPlus.Settings
 					new JValue(target.FollowSystemTheme)
 				},
 				{
-					"UiLanguage",
-					new JValue(target.UiLanguage)
-				},
-				{
-					"RevisionListOrientation",
-					new JValue((long)target.RevisionListOrientation)
+				"UiLanguage",
+				new JValue(target.UiLanguage)
+			},
+			{
+				"CustomColors",
+				EncodeCustomColors(target.CustomColors)
+			},
+			{
+				"RevisionListOrientation",
+				new JValue((long)target.RevisionListOrientation)
 				},
 				{
 					"MergerLayoutOrientation",

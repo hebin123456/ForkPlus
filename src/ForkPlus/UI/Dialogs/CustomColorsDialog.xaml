@@ -1,0 +1,114 @@
+<dialogs:ForkPlusDialogWindow x:Class="ForkPlus.UI.Dialogs.CustomColorsDialog"
+    xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    Title="Custom Colors"
+    Width="520" Height="640"
+    WindowStartupLocation="CenterOwner"
+    ResizeMode="CanResize"
+    MinWidth="420" MinHeight="480">
+  <Grid Margin="16,12,16,16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- 标题区 -->
+    <TextBlock Grid.Row="0" x:Name="HeaderTextBlock" Margin="0,0,0,8"
+               FontSize="14" FontWeight="SemiBold"
+               Foreground="{DynamicResource ForegroundBrush}" />
+
+    <!-- 颜色列表 -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,8">
+      <ItemsControl x:Name="ColorListControl">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="0,3">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180" />
+                <ColumnDefinition Width="32" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <!-- 颜色名 -->
+              <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ForegroundBrush}"
+                         TextTrimming="CharacterEllipsis" />
+              <!-- 颜色预览（点击弹出颜色选择 Popup） -->
+              <Border Grid.Column="1" Width="24" Height="20"
+                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                      Margin="4,0,8,0" Cursor="Hand"
+                      MouseLeftButtonUp="ColorPreview_Click"
+                      Tag="{Binding}"
+                      ToolTip="{Binding Key}">
+                <Rectangle Fill="{Binding PreviewBrush}" />
+              </Border>
+              <!-- hex 输入 -->
+              <TextBox Grid.Column="2" Text="{Binding HexValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                       Margin="0,0,8,0" VerticalAlignment="Center"
+                       Tag="{Binding}" />
+              <!-- 重置按钮 -->
+              <Button Grid.Column="3" Content="Reset" Padding="8,2"
+                      Click="ResetItem_Click"
+                      Tag="{Binding}"
+                      IsEnabled="{Binding IsCustomized}"
+                      VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <!-- 底部按钮 -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button x:Name="ResetAllButton" Content="Reset All" Padding="16,4" Margin="0,0,8,0"
+              Click="ResetAll_Click" />
+      <Button x:Name="OkButton" Content="OK" Padding="24,4" Margin="0,0,8,0"
+              Click="Ok_Click" IsDefault="True" />
+      <Button x:Name="CancelButton" Content="Cancel" Padding="16,4"
+              Click="Cancel_Click" IsCancel="True" />
+    </StackPanel>
+
+    <!-- 颜色选择 Popup（放在 Grid 内，通过 IsOpen 控制） -->
+    <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3"
+           Placement="Mouse" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+      <Border Background="{DynamicResource BackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              Padding="12" Width="210">
+        <StackPanel>
+          <TextBlock x:Name="PopupTitleText" Text="Color Picker" FontWeight="SemiBold" Margin="0,0,0,8"
+                     Foreground="{DynamicResource ForegroundBrush}" />
+          <!-- 预设色板 -->
+          <WrapPanel x:Name="SwatchPanel" Margin="0,0,0,8" />
+          <!-- RGB 滑块 -->
+          <TextBlock Text="R" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
+          <Slider x:Name="RSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                  ValueChanged="RgbSlider_ValueChanged" />
+          <TextBlock Text="G" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
+          <Slider x:Name="GSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                  ValueChanged="RgbSlider_ValueChanged" />
+          <TextBlock Text="B" Foreground="{DynamicResource ForegroundBrush}" FontSize="11" />
+          <Slider x:Name="BSlider" Minimum="0" Maximum="255" SmallChange="1" LargeChange="16"
+                  ValueChanged="RgbSlider_ValueChanged" />
+          <!-- 预览 + hex -->
+          <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="40" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Rectangle x:Name="PopupPreviewRect" Width="32" Height="24"
+                       Stroke="{DynamicResource BorderBrush}" StrokeThickness="1" />
+            <TextBox Grid.Column="1" x:Name="PopupHexBox" Margin="8,0,0,0"
+                     VerticalAlignment="Center" TextChanged="PopupHex_TextChanged" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="OK" Padding="16,2" Margin="0,0,8,0" Click="PopupOk_Click" />
+            <Button Content="Cancel" Padding="12,2" Click="PopupCancel_Click" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Popup>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>
