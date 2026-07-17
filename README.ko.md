@@ -1,6 +1,6 @@
 # ForkPlus
 
-Fork 기반의 Git 그래픽 도구 강화판으로, Rust로 하위 기능을 재작성하고 다국어 지원, git mm 및 git repo 워크플로우를 추가했으며, 대용량 저장소 성능을 최적화하고 다수의 결함을 수정했습니다.
+Rust로 하위 엔진을 재작성한 고성능 Git GUI 클라이언트로, AI 지원 개발, 8개 언어, 12종 테마 스킨, git mm 워크플로우, 기여 히트맵 및 저장소 트리맵 등 시각화 기능을 내장하고 있습니다.
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 

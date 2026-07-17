@@ -1,6 +1,6 @@
 # ForkPlus
 
-Un outil graphique Git amélioré basé sur Fork, avec des capacités sous-jacentes réécrites en Rust, une prise en charge multilingue, des flux de travail git mm et git repo, des optimisations de performances pour les grands dépôts, et de nombreuses corrections de bugs.
+Un client GUI Git hautes performances avec un moteur sous-jacent réécrit en Rust, intégrant le développement assisté par IA, 8 langues, 12 thèmes, le workflow git mm, et des visualisations comme les cartes de chaleur de contributions et les treemaps de dépôt.
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 

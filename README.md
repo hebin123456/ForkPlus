@@ -4,7 +4,7 @@
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build-windows.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build-windows.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
 
-一个基于 Fork 的 Git 图形化工具增强版，使用 Rust 重写了底层能力（[biturbo](https://github.com/hebin123456/Biturbo)），新增多语言支持、git mm 工作流、贡献热力图、仓库树图等可视化能力，优化了大数据量仓库性能，并修复了大量缺陷。
+一款使用 Rust 重写底层引擎的高性能 Git 图形化客户端，内置 AI 辅助开发、8 种语言、12 套主题皮肤、git mm 工作流，以及贡献热力图、仓库树图等可视化能力。
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 

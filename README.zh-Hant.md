@@ -1,6 +1,6 @@
 # ForkPlus
 
-一個基於 Fork 的 Git 圖形化工具增強版，使用 Rust 重寫了底層能力，新增多語言支援、git mm 和 git repo 工作流，優化了大數據量倉庫效能，並修復了大量缺陷。
+一款使用 Rust 重寫底層引擎的高效能 Git 圖形化用戶端，內建 AI 輔助開發、8 種語言、12 套主題皮膚、git mm 工作流，以及貢獻熱力圖、倉庫樹圖等視覺化能力。
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
