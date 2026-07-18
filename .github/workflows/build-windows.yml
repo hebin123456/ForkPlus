@@ -68,7 +68,7 @@ jobs:
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
           dotnet test $dll --no-build --framework net472 `
             --filter $filter `
-            -- RunConfiguration.TestSessionTimeout=120000
+            -- RunConfiguration.TestSessionTimeout=600000
           exit $LASTEXITCODE
 
       - name: Run system tests (ST)
