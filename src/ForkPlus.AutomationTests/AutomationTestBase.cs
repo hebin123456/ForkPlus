@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using FlaUI.Core;
 using FlaUI.Core.Input;
+using FlaUI.Core.WindowsAPI;
 using FlaUI.UIA3;
 
 namespace ForkPlus.AutomationTests
