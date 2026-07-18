@@ -74,22 +74,20 @@ namespace ForkPlus.AutomationTests
 				for (int i = 0; i < 3; i++)
 				{
 					Assert.True(OpenAppearanceDropdown(app), $"第 {i + 1} 次未找到 Appearance 下拉按钮。");
-					// 找任意主题项点击（Dark/Light/深色/浅色 任一）
-					var items = app.Window.FindAllDescendants(
-						cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
-					foreach (var it in items)
+					// 找任意主题项点击（Dark/Light/深色/浅色 任一）。
+					// 主题项在 Appearance 下拉的 ContextMenu popup 里，不在主窗口视觉树，
+					// 必须从桌面根找（FindMenuItemByText 已内置桌面 fallback）。
+					string[] anyTheme = { "Dark", "Light", "深色", "浅色" };
+					bool clicked = false;
+					foreach (var name in anyTheme)
 					{
-						string n = (it.Name ?? "").Replace("_", "");
-						bool isTheme = n.IndexOf("Dark", StringComparison.OrdinalIgnoreCase) >= 0
-									|| n.IndexOf("Light", StringComparison.OrdinalIgnoreCase) >= 0
-									|| n.IndexOf("深色", StringComparison.OrdinalIgnoreCase) >= 0
-									|| n.IndexOf("浅色", StringComparison.OrdinalIgnoreCase) >= 0;
-						if (isTheme)
+						var item = FindMenuItemByText(app.Window, name);
+						if (item != null)
 						{
-							try { it.Click(); Thread.Sleep(1000); } catch { }
-							break;
+							try { item.Click(); Thread.Sleep(1000); clicked = true; break; } catch { }
 						}
 					}
+					// 即使没找到主题项也不失败——本测试只验证应用不崩溃（与原行为一致）。
 				}
 				Assert.False(app.Application.HasExited, "多次切换主题后应用退出。");
 			}

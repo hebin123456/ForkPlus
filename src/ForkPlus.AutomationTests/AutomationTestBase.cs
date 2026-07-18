@@ -117,10 +117,38 @@ namespace ForkPlus.AutomationTests
 		/// WPF 菜单未展开时子项不在 UIA 树里，调用方需先展开父菜单。
 		/// 文本匹配会去掉 WPF 访问键前缀 "_"（如 "_File" → "File"），且不区分大小写。
 		/// </summary>
+		/// <remarks>
+		/// 查找策略：先在主窗口后代里找；找不到再从桌面根找。
+		/// 桌面根 fallback 覆盖两种场景：
+		/// 1. WPF ContextMenu 是独立 popup HWND，不在主窗口视觉树里
+		///    （Appearance 下拉的主题项、Custom Colors 等都在此列）
+		/// 2. PART_MainMenu 在 CustomWindow 的 ControlTemplate 里，
+		///    UIA 有时不把它当作 Window 的后代
+		/// </remarks>
 		protected FlaUI.Core.AutomationElements.MenuItem FindMenuItemByText(
 			FlaUI.Core.AutomationElements.Window window, string text)
 		{
-			var items = window.FindAllDescendants(
+			var found = FindMenuItemInElement(window, text);
+			if (found != null)
+			{
+				return found;
+			}
+			// Fallback：从桌面根找（popup ContextMenu + ControlTemplate 元素）
+			try
+			{
+				var desktop = window.Automation.GetDesktop();
+				return FindMenuItemInElement(desktop, text);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		private static FlaUI.Core.AutomationElements.MenuItem FindMenuItemInElement(
+			FlaUI.Core.AutomationElements.AutomationElement root, string text)
+		{
+			var items = root.FindAllDescendants(
 				cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
 			foreach (var item in items)
 			{
