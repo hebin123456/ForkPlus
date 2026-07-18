@@ -62,7 +62,7 @@ namespace ForkPlus.AutomationTests
 				app.Window.Focus();
 				Thread.Sleep(500);
 				// VK_OEM_COMMA = 0xBC, LCONTROL = 0xA2
-				PressKeyCombination(VirtualKeyShort.LCONTROL, (VirtualKeyShort)0xBC);
+				PressKeyCombination(VirtualKeyShort.LCONTROL, VirtualKeyShort.OEM_COMMA);
 				// 等待 Preferences 窗口出现
 				var win = WaitForTopLevelWindow(app, "Preferences", TimeSpan.FromSeconds(5))
 						  ?? WaitForTopLevelWindow(app, "偏好设置", TimeSpan.FromSeconds(2));
