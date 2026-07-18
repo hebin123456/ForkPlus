@@ -182,7 +182,7 @@
               <Image.VerticalAlignment>Center</Image.VerticalAlignment>
             </Image>
           </ToolbarDropDownButton>
-          <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,0,3" Title="Appearance" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="AppearanceToolbarDropdownButton">
+          <ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,0,3" Title="Appearance" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="AppearanceToolbarDropdownButton" AutomationProperties.Name="Appearance">
             <ToolbarDropDownButton.Style>
               <DynamicResource ResourceKey="ToolbarDropdownButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
             </ToolbarDropDownButton.Style>

@@ -74,20 +74,21 @@ namespace ForkPlus.AutomationTests
 				for (int i = 0; i < 3; i++)
 				{
 					Assert.True(OpenAppearanceDropdown(app), $"第 {i + 1} 次未找到 Appearance 下拉按钮。");
-					// 找任意主题项点击
+					// 找任意主题项点击（Dark/Light/深色/浅色 任一）
 					var items = app.Window.FindAllDescendants(
 						cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
-					var themeItem = items.FirstOrDefault(it =>
+					foreach (var it in items)
 					{
-						string n = it.Name ?? "";
-						return n.IndexOf("Dark", System.StringComparison.OrdinalIgnoreCase) >= 0
-							|| n.IndexOf("Light", System.StringComparison.OrdinalIgnoreCase) >= 0
-							|| n.IndexOf("深色", System.StringComparison.OrdinalIgnoreCase) >= 0
-							|| n.IndexOf("浅色", System.StringComparison.OrdinalIgnoreCase) >= 0;
-					}) as FlaUI.Core.AutomationElements.MenuItem;
-					if (themeItem != null)
-					{
-						try { themeItem.Click(); Thread.Sleep(1000); } catch { }
+						string n = (it.Name ?? "").Replace("_", "");
+						bool isTheme = n.IndexOf("Dark", StringComparison.OrdinalIgnoreCase) >= 0
+									|| n.IndexOf("Light", StringComparison.OrdinalIgnoreCase) >= 0
+									|| n.IndexOf("深色", StringComparison.OrdinalIgnoreCase) >= 0
+									|| n.IndexOf("浅色", StringComparison.OrdinalIgnoreCase) >= 0;
+						if (isTheme)
+						{
+							try { it.Click(); Thread.Sleep(1000); } catch { }
+							break;
+						}
 					}
 				}
 				Assert.False(app.Application.HasExited, "多次切换主题后应用退出。");

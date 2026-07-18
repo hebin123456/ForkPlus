@@ -16,11 +16,9 @@ namespace ForkPlus.AutomationTests
 		{
 			using (var app = LaunchApp())
 			{
-				// 展开 File 菜单
-				var fileMenu = FindMenuItemByText(app.Window, "File");
-				if (fileMenu == null) fileMenu = FindMenuItemByText(app.Window, "文件");
-				Assert.NotNull(fileMenu);
-				try { fileMenu.Click(); Thread.Sleep(500); } catch { }
+				// 展开 File 菜单（WPF 菜单懒加载，必须先展开父项）
+				Assert.True(ExpandRootMenu(app, "File") || ExpandRootMenu(app, "文件"),
+					"未找到 File 菜单");
 
 				// 点击 "Preferences..."
 				var prefItem = FindMenuItemByText(app.Window, "Preferences");

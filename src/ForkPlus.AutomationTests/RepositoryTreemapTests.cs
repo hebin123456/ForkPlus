@@ -25,11 +25,9 @@ namespace ForkPlus.AutomationTests
 				Thread.Sleep(5000);
 				app.RefreshMainWindow();
 
-				// 展开 Repository 菜单
-				var repoMenu = FindMenuItemByText(app.Window, "Repository");
-				if (repoMenu == null) repoMenu = FindMenuItemByText(app.Window, "仓库");
-				Assert.NotNull(repoMenu);
-				try { repoMenu.Click(); Thread.Sleep(500); } catch { }
+				// 展开 Repository 菜单（WPF 菜单懒加载，必须先展开父项）
+				Assert.True(ExpandRootMenu(app, "Repository") || ExpandRootMenu(app, "仓库"),
+					"未找到 Repository 菜单");
 
 				// 点击 "Repository Treemap..."
 				var treemapItem = FindMenuItemByText(app.Window, "Repository Treemap");

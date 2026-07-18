@@ -115,6 +115,7 @@ namespace ForkPlus.AutomationTests
 		/// <summary>
 		/// 在窗口后代里按文本查找第一个 MenuItem（用于菜单点击）。
 		/// WPF 菜单未展开时子项不在 UIA 树里，调用方需先展开父菜单。
+		/// 文本匹配会去掉 WPF 访问键前缀 "_"（如 "_File" → "File"），且不区分大小写。
 		/// </summary>
 		protected FlaUI.Core.AutomationElements.MenuItem FindMenuItemByText(
 			FlaUI.Core.AutomationElements.Window window, string text)
@@ -123,7 +124,7 @@ namespace ForkPlus.AutomationTests
 				cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
 			foreach (var item in items)
 			{
-				string name = item.Name ?? "";
+				string name = (item.Name ?? "").Replace("_", "");
 				if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
 					return item as FlaUI.Core.AutomationElements.MenuItem;
@@ -134,21 +135,29 @@ namespace ForkPlus.AutomationTests
 
 		/// <summary>
 		/// 点击工具栏 "Appearance" 下拉按钮，展开其上下文菜单。
+		/// Appearance 按钮已通过 AutomationProperties.Name="Appearance" 暴露给 UIA。
 		/// </summary>
 		protected bool OpenAppearanceDropdown(LaunchedApp app)
 		{
-			// Appearance 按钮是个 ToggleButton，按 Name 定位（本地化后的外观名）。
-			// 英语 "Appearance"，简中 "外观"，简繁 "外觀"——遍历多个候选避免依赖语言。
-			string[] candidates = { "Appearance", "外观", "外觀", "Apparence", "Erscheinung", "Apariencia" };
-			foreach (string name in candidates)
+			// 优先按 AutomationId（x:Name）查找，最稳定，不依赖本地化
+			var btn = app.Window.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceToolbarDropdownButton"));
+			if (btn == null)
 			{
-				var btn = app.Window.FindFirstDescendant(cf => cf.ByName(name));
-				if (btn != null)
+				// 备选：按 Name 查找（AutomationProperties.Name 设为 "Appearance"，未本地化）
+				btn = app.Window.FindFirstDescendant(cf => cf.ByName("Appearance"));
+			}
+			if (btn == null)
+			{
+				// 最后备选：遍历多语言候选名
+				string[] candidates = { "外观", "外觀", "Apparence", "Erscheinung", "Apariencia" };
+				foreach (string name in candidates)
 				{
-					try { btn.Click(); System.Threading.Thread.Sleep(500); return true; } catch { }
+					btn = app.Window.FindFirstDescendant(cf => cf.ByName(name));
+					if (btn != null) break;
 				}
 			}
-			return false;
+			if (btn == null) return false;
+			try { btn.Click(); System.Threading.Thread.Sleep(800); return true; } catch { return false; }
 		}
 
 		/// <summary>
@@ -157,6 +166,33 @@ namespace ForkPlus.AutomationTests
 		protected void CloseWindow(FlaUI.Core.AutomationElements.Window window)
 		{
 			try { window.Close(); } catch { }
+		}
+
+		/// <summary>
+		/// 展开主菜单的某个根项（File/Repository/View 等），让子菜单项出现在 UIA 树里。
+		/// WPF 菜单是懒加载的：子项第一次展开时才创建，必须先 Expand/Click 父项才能找到子项。
+		/// </summary>
+		protected bool ExpandRootMenu(LaunchedApp app, string menuName)
+		{
+			var menu = FindMenuItemByText(app.Window, menuName);
+			if (menu == null) return false;
+			// 优先用 ExpandCollapse pattern（WPF MenuItem 支持）
+			try
+			{
+				menu.Expand();
+				System.Threading.Thread.Sleep(1000);
+				return true;
+			}
+			catch { }
+			// 备选：Click 触发展开
+			try
+			{
+				menu.Click();
+				System.Threading.Thread.Sleep(1500);
+				return true;
+			}
+			catch { }
+			return false;
 		}
 
 		/// <summary>
