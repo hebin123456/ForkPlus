@@ -98,7 +98,8 @@ namespace ForkPlus.AutomationTests
 			var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(15));
 			while (DateTime.UtcNow < deadline)
 			{
-				foreach (var win in app.Application.GetTopLevelWindows(app.Automation))
+				// FlaUI 3.x: Application.GetAllTopLevelWindows(AutomationBase) 返回该进程的所有顶级窗口
+				foreach (var win in app.Application.GetAllTopLevelWindows(app.Automation))
 				{
 					string title = win.Title ?? "";
 					if (title.IndexOf(titleSubstring, StringComparison.OrdinalIgnoreCase) >= 0)
