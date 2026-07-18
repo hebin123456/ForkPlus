@@ -100,6 +100,8 @@ jobs:
           #   2. AssemblyInfo.cs 设 [assembly: CollectionBehavior(DisableTestParallelization = true)]
           #      让所有 ST 串行执行，避免 settings.json 文件锁
           #   3. LaunchApp 加 3 次重试，应对 CI 上进程启动抖动
+          #   4. FindMenuItemByText 桌面根 fallback：覆盖 ContextMenu popup（不在主窗口视觉树）
+          #      和 PART_MainMenu 在 ControlTemplate 里（UIA 不当作 Window 后代）两种场景
           # 因此移除 continue-on-error，ST 失败现在会真正阻断构建。
           $stCsproj = "src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj"
           dotnet build $stCsproj -c Release --framework net472
@@ -121,6 +123,40 @@ jobs:
           }
           Write-Host "ST tests failed or did not complete (exit code $stExitCode)"
           exit $stExitCode
+
+      - name: Run AskPass and RI unit tests
+        shell: pwsh
+        run: |
+          # AskPass 和 RI 是独立 exe（internal Program，private 方法），用黑盒进程测试 +
+          # 反射测试 private 方法。两个测试项目都在 sln 里，build 步骤已构建。
+          $testDlls = @(
+            "src/ForkPlus.AskPass.Tests/bin/Release/net472/ForkPlus.AskPass.Tests.dll",
+            "src/ForkPlus.RI.Tests/bin/Release/net472/ForkPlus.RI.Tests.dll"
+          )
+          $allOutput = @()
+          foreach ($dll in $testDlls) {
+            if (-not (Test-Path $dll)) {
+              Write-Host "Test assembly not found at $dll — skipping"
+              continue
+            }
+            Write-Host "=== Running $dll ==="
+            $output = & dotnet test $dll --no-build --framework net472 `
+              -- RunConfiguration.TestSessionTimeout=120000 2>&1 |
+              ForEach-Object { Write-Host $_; $_ }
+            $allOutput += $output
+          }
+          $allText = $allOutput -join "`n"
+          # 两个测试项目都应通过：Passed! 且 Failed: 0
+          if ($allText -match 'Failed:\s+[1-9]') {
+            Write-Host "AskPass/RI tests failed"
+            exit 1
+          }
+          if ($allText -match 'Passed!' -and $allText -match 'Failed:\s+0,') {
+            Write-Host "All AskPass/RI unit tests passed"
+            exit 0
+          }
+          Write-Host "AskPass/RI tests did not complete cleanly"
+          exit 1
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

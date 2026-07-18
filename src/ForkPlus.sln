@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Tests", "ForkPlus.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AutomationTests", "ForkPlus.AutomationTests\ForkPlus.AutomationTests.csproj", "{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AskPass.Tests", "ForkPlus.AskPass.Tests\ForkPlus.AskPass.Tests.csproj", "{F1EAFDD0-817F-4390-948F-0AD9801FB587}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.RI.Tests", "ForkPlus.RI.Tests\ForkPlus.RI.Tests.csproj", "{1A2A315A-A268-4388-9E7B-FF925F7BA7CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +42,14 @@ Global
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1EAFDD0-817F-4390-948F-0AD9801FB587}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1EAFDD0-817F-4390-948F-0AD9801FB587}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1EAFDD0-817F-4390-948F-0AD9801FB587}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1EAFDD0-817F-4390-948F-0AD9801FB587}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A2A315A-A268-4388-9E7B-FF925F7BA7CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A2A315A-A268-4388-9E7B-FF925F7BA7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A2A315A-A268-4388-9E7B-FF925F7BA7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A2A315A-A268-4388-9E7B-FF925F7BA7CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Debug|Any CPU.Build.0 = Debug|x64
 		{A7D6110D-7C92-45CB-BE95-F88353F7FB30}.Release|Any CPU.ActiveCfg = Release|x64
