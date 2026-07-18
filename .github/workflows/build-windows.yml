@@ -66,10 +66,23 @@ jobs:
             'FeatureCoverageManifestTests','AssemblySmokeTests'
           )
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
-          dotnet test $dll --no-build --framework net472 `
+          # 已知问题：net472 + VSTest 在 386 个测试 1 秒跑完后，testhost 进程因加载了
+          # WPF 程序集（AssemblySmokeTests 验证 ForkPlus.exe 可加载）而不退出，
+          # 触发 TestSessionTimeout 后 dotnet test 返回 exit code 1，尽管测试全过。
+          # 修复：捕获输出，只要看到 "Passed!" 且 "Failed:     0" 就认为成功，
+          # 仅在真正有测试失败或运行器崩溃时才阻断构建。
+          $output = & dotnet test $dll --no-build --framework net472 `
             --filter $filter `
-            -- RunConfiguration.TestSessionTimeout=600000
-          exit $LASTEXITCODE
+            -- RunConfiguration.TestSessionTimeout=300000 2>&1 |
+            ForEach-Object { Write-Host $_; $_ }
+          $exitCode = $LASTEXITCODE
+          $outputText = $output -join "`n"
+          if ($outputText -match 'Passed!' -and $outputText -match 'Failed:\s+0,') {
+            Write-Host "All unit tests passed (ignoring VSTest session timeout exit code $exitCode)"
+            exit 0
+          }
+          Write-Host "Unit tests failed or did not complete (exit code $exitCode)"
+          exit $exitCode
 
       - name: Run system tests (ST)
         shell: pwsh
@@ -95,9 +108,19 @@ jobs:
             exit $LASTEXITCODE
           }
           $stDll = "src/ForkPlus.AutomationTests/bin/Release/net472/ForkPlus.AutomationTests.dll"
-          dotnet test $stDll --no-build --framework net472 `
-            -- RunConfiguration.TestSessionTimeout=900000
-          exit $LASTEXITCODE
+          # 同 unit tests：VSTest session 在测试跑完后可能不退出（FlaUI UIA3 后台线程），
+          # 捕获输出判断真实结果，仅在 "Passed!" 且 "Failed: 0" 时算通过。
+          $stOutput = & dotnet test $stDll --no-build --framework net472 `
+            -- RunConfiguration.TestSessionTimeout=900000 2>&1 |
+            ForEach-Object { Write-Host $_; $_ }
+          $stExitCode = $LASTEXITCODE
+          $stText = $stOutput -join "`n"
+          if ($stText -match 'Passed!' -and $stText -match 'Failed:\s+0,') {
+            Write-Host "All ST tests passed (ignoring VSTest session timeout exit code $stExitCode)"
+            exit 0
+          }
+          Write-Host "ST tests failed or did not complete (exit code $stExitCode)"
+          exit $stExitCode
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
