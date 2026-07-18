@@ -36,29 +36,126 @@ namespace ForkPlus.AutomationTests
 
 			EnsureStartupPrerequisites();
 
-			var startInfo = new ProcessStartInfo
+			// 启动重试：CI 上偶尔出现进程刚启动即被关闭（FlaUI 抛 "Could not find process with id"）。
+			// 重试 3 次，每次间隔 1 秒，覆盖应用启动期短暂抖动。
+			Exception lastError = null;
+			for (int attempt = 1; attempt <= 3; attempt++)
 			{
-				FileName = exePath,
-				UseShellExecute = false,
-			};
-			if (!string.IsNullOrWhiteSpace(arguments))
-			{
-				startInfo.Arguments = arguments;
+				var startInfo = new ProcessStartInfo
+				{
+					FileName = exePath,
+					UseShellExecute = false,
+				};
+				if (!string.IsNullOrWhiteSpace(arguments))
+				{
+					startInfo.Arguments = arguments;
+				}
+
+				// 设置 forkgitinstance 环境变量，让应用跳过 ConfigureGitInstanceWindow。
+				// 优先使用 PATH 中的 git，其次使用常见安装路径。
+				string gitPath = FindSystemGitPath();
+				if (gitPath != null)
+				{
+					startInfo.EnvironmentVariables[GitInstanceEnvVariable] = gitPath;
+				}
+
+				Application app = null;
+				UIA3Automation automation = null;
+				try
+				{
+					app = Application.Launch(startInfo);
+					automation = new UIA3Automation();
+					// 等待主窗口出现：给应用充分时间初始化（CI runner 慢，30s 是经验值）。
+					var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(30));
+					if (window != null)
+					{
+						return new LaunchedApp(app, automation, window);
+					}
+				}
+				catch (Exception ex)
+				{
+					lastError = ex;
+					// 清理本次失败的实例，避免进程残留干扰下一次重试。
+					try { automation?.Dispose(); } catch { }
+					try { if (app != null && !app.HasExited) app.Kill(); } catch { }
+					try { if (app != null) app.Dispose(); } catch { }
+					if (attempt < 3)
+					{
+						System.Threading.Thread.Sleep(1000);
+					}
+				}
 			}
+			throw new InvalidOperationException("ForkPlus 启动 3 次均失败，详见内部异常。", lastError);
+		}
 
-			// 设置 forkgitinstance 环境变量，让应用跳过 ConfigureGitInstanceWindow。
-			// 优先使用 PATH 中的 git，其次使用常见安装路径。
-			string gitPath = FindSystemGitPath();
-			if (gitPath != null)
+		/// <summary>
+		/// 等待指定标题的顶级窗口出现（用于对话框/子窗口检测）。
+		/// 超时返回 null，调用方自行断言。
+		/// </summary>
+		protected FlaUI.Core.AutomationElements.Window WaitForTopLevelWindow(
+			LaunchedApp app, string titleSubstring, TimeSpan? timeout = null)
+		{
+			var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(15));
+			while (DateTime.UtcNow < deadline)
 			{
-				startInfo.EnvironmentVariables[GitInstanceEnvVariable] = gitPath;
+				foreach (var win in app.Application.GetTopLevelWindows(app.Automation))
+				{
+					string title = win.Title ?? "";
+					if (title.IndexOf(titleSubstring, StringComparison.OrdinalIgnoreCase) >= 0)
+					{
+						return win;
+					}
+				}
+				System.Threading.Thread.Sleep(300);
 			}
+			return null;
+		}
 
-			Application app = Application.Launch(startInfo);
-			var automation = new UIA3Automation();
-			var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(30));
+		/// <summary>
+		/// 在窗口后代里按文本查找第一个 MenuItem（用于菜单点击）。
+		/// WPF 菜单未展开时子项不在 UIA 树里，调用方需先展开父菜单。
+		/// </summary>
+		protected FlaUI.Core.AutomationElements.MenuItem FindMenuItemByText(
+			FlaUI.Core.AutomationElements.Window window, string text)
+		{
+			var items = window.FindAllDescendants(
+				cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
+			foreach (var item in items)
+			{
+				string name = item.Name ?? "";
+				if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+				{
+					return item as FlaUI.Core.AutomationElements.MenuItem;
+				}
+			}
+			return null;
+		}
 
-			return new LaunchedApp(app, automation, window);
+		/// <summary>
+		/// 点击工具栏 "Appearance" 下拉按钮，展开其上下文菜单。
+		/// </summary>
+		protected bool OpenAppearanceDropdown(LaunchedApp app)
+		{
+			// Appearance 按钮是个 ToggleButton，按 Name 定位（本地化后的外观名）。
+			// 英语 "Appearance"，简中 "外观"，简繁 "外觀"——遍历多个候选避免依赖语言。
+			string[] candidates = { "Appearance", "外观", "外觀", "Apparence", "Erscheinung", "Apariencia" };
+			foreach (string name in candidates)
+			{
+				var btn = app.Window.FindFirstDescendant(cf => cf.ByName(name));
+				if (btn != null)
+				{
+					try { btn.Click(); System.Threading.Thread.Sleep(500); return true; } catch { }
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// 关闭指定窗口（按 Alt+F4 或点击关闭按钮）。
+		/// </summary>
+		protected void CloseWindow(FlaUI.Core.AutomationElements.Window window)
+		{
+			try { window.Close(); } catch { }
 		}
 
 		/// <summary>
@@ -156,7 +253,30 @@ namespace ForkPlus.AutomationTests
 			{
 				json = "{\n  \"Guid\": \"st-test-guid-00000000\"\n}\n";
 			}
-			File.WriteAllText(settingsPath, json, Encoding.UTF8);
+
+			// 写入重试：CI 上多测试可能并发，settings.json 被另一进程占用时
+			// File.WriteAllText 抛 IOException "being used by another process"。
+			// 重试 10 次，每次间隔 200ms，总等待 2 秒覆盖典型文件锁窗口。
+			WriteFileWithRetry(settingsPath, json);
+		}
+
+		/// <summary>
+		/// 写文件带重试，处理 settings.json 在 CI 上被并发占用的场景。
+		/// </summary>
+		private static void WriteFileWithRetry(string path, string content)
+		{
+			for (int attempt = 1; attempt <= 10; attempt++)
+			{
+				try
+				{
+					File.WriteAllText(path, content, Encoding.UTF8);
+					return;
+				}
+				catch (IOException) when (attempt < 10)
+				{
+					System.Threading.Thread.Sleep(200);
+				}
+			}
 		}
 
 		/// <summary>
@@ -222,7 +342,12 @@ namespace ForkPlus.AutomationTests
 		/// </summary>
 		private static void RunGit(string workingDir, params string[] args)
 		{
-			string arguments = string.Join(" ", args);
+			// 注意：参数不能直接用 string.Join(" ", args) 拼接，否则含空格的值
+			// （如 commit message "Initial commit" 或 user.name "ST Test"）会被 git 拆成多个
+			// token，导致 "Initial" 当 value、"commit" 当 pathspec，进而报
+			// "pathspec 'commit' did not match any file(s)" 或 "not in a git directory"。
+			// 这里手动给每个参数加双引号，含空格的值才会被正确作为一个参数传递。
+			string arguments = string.Join(" ", System.Array.ConvertAll(args, QuoteArgument));
 			using (var proc = new Process
 			{
 				StartInfo = new ProcessStartInfo
@@ -245,6 +370,25 @@ namespace ForkPlus.AutomationTests
 					throw new InvalidOperationException($"git {arguments} failed in {workingDir}: {error}");
 				}
 			}
+		}
+
+		/// <summary>
+		/// 给单个命令行参数加双引号（含空格或特殊字符时）。
+		/// net472 的 ProcessStartInfo 不支持 .NET Core 的 ArgumentList，需手动引用。
+		/// </summary>
+		private static string QuoteArgument(string arg)
+		{
+			if (string.IsNullOrEmpty(arg))
+			{
+				return "\"\"";
+			}
+			// 已带引号或不含空格/特殊字符的参数无需再处理
+			if (arg.StartsWith("\"") || (!arg.Contains(" ") && !arg.Contains("\t")))
+			{
+				return arg;
+			}
+			// 转义内部双引号并整体加双引号
+			return "\"" + arg.Replace("\"", "\\\"") + "\"";
 		}
 
 		public void Dispose()
