@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using FlaUI.Core;
 using FlaUI.Core.Input;
-using FlaUI.Core.WindowsApi;
 using FlaUI.UIA3;
 
 namespace ForkPlus.AutomationTests
@@ -350,8 +349,8 @@ namespace ForkPlus.AutomationTests
 				{
 					app.Window.Focus();
 					System.Threading.Thread.Sleep(300);
-					VirtualKey letterKey = (VirtualKey)(byte)char.ToUpper(accessKey);
-					PressKeyCombination(VirtualKey.LMENU, letterKey);
+					VirtualKeyShort letterKey = (VirtualKeyShort)(byte)char.ToUpper(accessKey);
+					PressKeyCombination(VirtualKeyShort.LMENU, letterKey);
 					// 等待子菜单 popup 出现（popup = ControlType.Menu 的独立 HWND）
 					WaitForPopupMenu(app, TimeSpan.FromSeconds(3));
 					Console.WriteLine("[ExpandRootMenu] Opened via Alt+" + accessKey);
@@ -383,9 +382,9 @@ namespace ForkPlus.AutomationTests
 
 		/// <summary>
 		/// 按下并释放一组键（先全部按下，再逆序释放），模拟快捷键组合。
-		/// 如 PressKeyCombination(VirtualKey.LCONTROL, VirtualKey.VK_OEM_COMMA) 发送 Ctrl+,。
+		/// 如 PressKeyCombination(VirtualKeyShort.LCONTROL, VK_OEM_COMMA) 发送 Ctrl+,。
 		/// </summary>
-		protected static void PressKeyCombination(params VirtualKey[] keys)
+		protected static void PressKeyCombination(params VirtualKeyShort[] keys)
 		{
 			if (keys == null || keys.Length == 0) return;
 			// 按顺序按下所有键（modifier 先按）
@@ -401,10 +400,10 @@ namespace ForkPlus.AutomationTests
 		}
 
 		/// <summary>
-		/// VK_OEM_COMMA (0xBC) — 逗号键的 Windows 虚拟键码。
-		/// 用于 Ctrl+, 快捷键（ShowPreferencesWindowCommand.Shortcut）。
-		/// </summary>
-		private static readonly VirtualKey VK_OEM_COMMA = (VirtualKey)0xBC;
+	/// VK_OEM_COMMA (0xBC) — 逗号键的 Windows 虚拟键码。
+	/// 用于 Ctrl+, 快捷键（ShowPreferencesWindowCommand.Shortcut）。
+	/// </summary>
+	private static readonly VirtualKeyShort VK_OEM_COMMA = (VirtualKeyShort)0xBC;
 
 		/// <summary>
 		/// 创建一个包含一次提交的临时 git 仓库，返回仓库根目录路径。
