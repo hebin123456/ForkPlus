@@ -7,12 +7,17 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 using ForkPlus.Accounts;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
-	public partial class NotificationManagerUserControl : UserControl
+	/// <summary>右上角通知按钮的弹出面板。
+	/// 实现 ILocalizableControl：MainWindow.ApplyLocalization 时会回调本类的
+	/// ApplyLocalization() 重新翻译 HeaderLabel.Text，避免语言切换后弹出面板
+	/// 仍显示旧语言（Bug v2.1.2：通知按钮切换语言不实时刷新）。</summary>
+	public partial class NotificationManagerUserControl : UserControl, ILocalizableControl
 	{
 		private readonly ObservableCollection<NotificationViewModel> _notifications = new ObservableCollection<NotificationViewModel>();
 
@@ -31,6 +36,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				NotificationManager.Current.Refresh();
 			};
+		}
+
+		/// <summary>MainWindow.ApplyLocalization 回调入口。
+		/// HeaderLabel.Text 在构造函数里只设一次，之前语言切换后弹出面板仍显示旧语言，
+		/// 需重启客户端才生效。这里按当前 UiLanguage 重新翻译。</summary>
+		public void ApplyLocalization()
+		{
+			HeaderLabel.Text = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 		}
 
 		protected override void OnVisualParentChanged(DependencyObject oldParent)

@@ -513,47 +513,83 @@ namespace ForkPlus.UI.Dialogs
 			iconColor = hsv(baseHue, 0.40, 0.40, 255);
 		}
 		// diff：固定绿/红区，按基底调整明度饱和度
-		Color diffAdded, diffRemoved;
-		if (isDark)
-		{
-			diffAdded = hsv(120.0, 0.45, 0.40, 255);
-			diffRemoved = hsv(0.0, 0.45, 0.40, 255);
-		}
-		else
-		{
-			diffAdded = hsv(120.0, 0.40, 0.90, 255);
-			diffRemoved = hsv(0.0, 0.40, 0.92, 255);
-		}
-		// 代码编辑器：背景跟随主背景，前景跟随主文字
-		Color codeBg = isDark ? hsv(baseHue, 0.18, 0.12, 255) : hsv(baseHue, 0.10, 0.99, 255);
-		Color codeFg = isDark ? hsv(baseHue, 0.08, 0.92, 255) : hsv(baseHue, 0.25, 0.15, 255);
-		// 窗口/标题栏背景
-		Color windowBg = bgColor;
-		Color titleBarBg = isDark ? hsv(baseHue, 0.20, 0.16, 255) : hsv(baseHue, 0.14, 0.96, 255);
+	Color diffAdded, diffRemoved, diffAddBg, diffRemoveBg, diffExactAdd, diffExactRemove;
+	if (isDark)
+	{
+		diffAdded = hsv(120.0, 0.45, 0.40, 255);
+		diffRemoved = hsv(0.0, 0.45, 0.40, 255);
+		// 行底色：比块色更低饱和度，接近背景
+		diffAddBg = hsv(120.0, 0.25, 0.20, 255);
+		diffRemoveBg = hsv(0.0, 0.25, 0.20, 255);
+		// 行内字色：比块色更鲜，作高亮
+		diffExactAdd = hsv(120.0, 0.75, 0.65, 255);
+		diffExactRemove = hsv(0.0, 0.75, 0.65, 255);
+	}
+	else
+	{
+		diffAdded = hsv(120.0, 0.40, 0.90, 255);
+		diffRemoved = hsv(0.0, 0.40, 0.92, 255);
+		diffAddBg = hsv(120.0, 0.15, 0.95, 255);
+		diffRemoveBg = hsv(0.0, 0.15, 0.95, 255);
+		diffExactAdd = hsv(120.0, 0.75, 0.35, 255);
+		diffExactRemove = hsv(0.0, 0.75, 0.35, 255);
+	}
+	// 代码编辑器：背景跟随主背景，前景跟随主文字
+	Color codeBg = isDark ? hsv(baseHue, 0.18, 0.12, 255) : hsv(baseHue, 0.10, 0.99, 255);
+	Color codeFg = isDark ? hsv(baseHue, 0.08, 0.92, 255) : hsv(baseHue, 0.25, 0.15, 255);
+	// 语法高亮：围绕主色相派生 4 个 token 色，避开 diff 红(0°)/绿(120°)区
+	Color syntaxComment = isDark ? hsv(baseHue, 0.20, 0.55, 255) : hsv(baseHue, 0.35, 0.45, 255);
+	Color syntaxString = hsv((baseHue + 30.0) % 360.0, 0.55, isDark ? 0.85 : 0.40, 255);
+	Color syntaxKeyword = hsv((baseHue + 180.0) % 360.0, 0.70, isDark ? 0.80 : 0.45, 255);
+	Color syntaxNumber = hsv((baseHue + 90.0) % 360.0, 0.55, isDark ? 0.75 : 0.40, 255);
+	// 行号：弱化文字色，分隔线极淡
+	Color lineNumberFg = isDark ? hsv(baseHue, 0.10, 0.45, 255) : hsv(baseHue, 0.20, 0.55, 255);
+	Color lineNumberSep = isDark ? hsv(baseHue, 0.10, 0.25, 255) : hsv(baseHue, 0.10, 0.80, 255);
+	// 选区：复用强调色作边框，带半透明的强调色变体作背景
+	Color chunkBorder = accentColor;
+	Color chunkBg = hsv(baseHue, 0.40, isDark ? 0.30 : 0.85, 60);
+	// 窗口/标题栏背景
+	Color windowBg = bgColor;
+	Color titleBarBg = isDark ? hsv(baseHue, 0.20, 0.16, 255) : hsv(baseHue, 0.14, 0.96, 255);
 
-		// 写入工作副本
-		void Set(string key, Color c)
-		{
-			_workingCopy[key] = "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
-		}
-		Set("BackgroundColor", bgColor);
-		Set("SecondaryBackgroundColor", secondaryBgColor);
-		Set("PanelBackgroundColor", panelBgColor);
-		Set("BorderColor", borderColor);
-		Set("TileBorderColor", borderColor);
-		Set("LabelColor", labelColor);
-		Set("ForegroundColor", fgColor);
-		Set("SecondaryLabelColor", secondaryLabelColor);
-		Set("AccentColor", accentColor);
-		Set("AccentSecondaryColor", accentSecondaryColor);
-		Set("ReferenceColor", referenceColor);
-		Set("IconColor", iconColor);
-		Set("Diff.AddedColor", diffAdded);
-		Set("Diff.RemovedColor", diffRemoved);
-		Set("CodeEditor.BackgroundColor", codeBg);
-		Set("CodeEditor.ForegroundColor", codeFg);
-		Set("Window.BackgroundColor", windowBg);
-		Set("Window.TitleBar.BackgroundColor", titleBarBg);
+	// 写入工作副本
+	void Set(string key, Color c)
+	{
+		_workingCopy[key] = "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+	}
+	Set("BackgroundColor", bgColor);
+	Set("SecondaryBackgroundColor", secondaryBgColor);
+	Set("PanelBackgroundColor", panelBgColor);
+	Set("BorderColor", borderColor);
+	Set("TileBorderColor", borderColor);
+	Set("LabelColor", labelColor);
+	Set("ForegroundColor", fgColor);
+	Set("SecondaryLabelColor", secondaryLabelColor);
+	Set("AccentColor", accentColor);
+	Set("AccentSecondaryColor", accentSecondaryColor);
+	Set("ReferenceColor", referenceColor);
+	Set("IconColor", iconColor);
+	Set("Diff.AddedColor", diffAdded);
+	Set("Diff.RemovedColor", diffRemoved);
+	// 补齐 Diff 细粒度色：行底色 + 行内字色（之前遗漏）
+	Set("Diff.AddColor", diffAddBg);
+	Set("Diff.RemoveColor", diffRemoveBg);
+	Set("Diff.ExactAddColor", diffExactAdd);
+	Set("Diff.ExactRemoveColor", diffExactRemove);
+	Set("CodeEditor.BackgroundColor", codeBg);
+	Set("CodeEditor.ForegroundColor", codeFg);
+	// 补齐语法高亮 4 个 token 色（之前遗漏）
+	Set("Syntax.CommentColor", syntaxComment);
+	Set("Syntax.StringColor", syntaxString);
+	Set("Syntax.KeywordColor", syntaxKeyword);
+	Set("Syntax.NumberColor", syntaxNumber);
+	// 补齐行号 + 选区色（之前遗漏）
+	Set("LineNumber.ForegroundColor", lineNumberFg);
+	Set("LineNumber.SeparatorColor", lineNumberSep);
+	Set("ChunkSelection.BorderColor", chunkBorder);
+	Set("ChunkSelection.BackgroundColor", chunkBg);
+	Set("Window.BackgroundColor", windowBg);
+	Set("Window.TitleBar.BackgroundColor", titleBarBg);
 
 		// 更新 UI
 		foreach (CustomColorItem item in _items)
@@ -568,20 +604,33 @@ namespace ForkPlus.UI.Dialogs
 	}
 
 		private void ApplyAndRefresh()
+	{
+		ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_workingCopy);
+		// 首次启用自定义颜色时 UseCustomColors 仍是 false，App.ApplyCustomColors 会走早退分支，
+		// 导致编辑过程中主窗口无法实时预览。这里在 _workingCopy 非空时临时置 true，
+		// 让 ApplyCustomColors 走正常分支 merge ResourceDictionary + raise ApplicationThemeChanged。
+		// Cancel_Click 会按 _originalUseCustomColors 还原，OK 时会再设 true。
+		bool prevUseCustom = ForkPlusSettings.Default.UseCustomColors;
+		if (_workingCopy.Count > 0)
 		{
-			ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_workingCopy);
-			App.ApplyCustomColors();
-			foreach (CustomColorItem item in _items)
-				item.RefreshPreview();
+			ForkPlusSettings.Default.UseCustomColors = true;
 		}
+		App.ApplyCustomColors();
+		foreach (CustomColorItem item in _items)
+			item.RefreshPreview();
+	}
 
-		private void Ok_Click(object sender, RoutedEventArgs e)
+	private void Ok_Click(object sender, RoutedEventArgs e)
 	{
 		// 确认编辑后启用自定义颜色覆盖（有自定义项时），并立即持久化避免崩溃丢失。
 		if (_workingCopy.Count > 0)
 		{
 			ForkPlusSettings.Default.UseCustomColors = true;
 		}
+		// 关键修复：必须调用 ApplyCustomColors 把 _workingCopy merge 到
+		// Application.Current.Resources 并 raise ApplicationThemeChanged，
+		// 否则 Diff/热力图/行号边距等 20+ 订阅控件不会重绘，UI 不会实时生效。
+		App.ApplyCustomColors();
 		try { ForkPlusSettings.Default.Save(); } catch { /* 持久化失败不阻断关闭 */ }
 		DialogResult = true;
 		Close();

@@ -26,11 +26,14 @@ namespace ForkPlus.UI
 {
 	[TemplatePart(Name = "PART_MainMenu", Type = typeof(Menu))]
 	[TemplatePart(Name = "Part_NotificationManagerToggleButton", Type = typeof(ToggleButton))]
+	[TemplatePart(Name = "NotificationManagerUserControl", Type = typeof(NotificationManagerUserControl))]
 	public partial class MainWindow : CustomWindow, ILocalizableControl
 	{
 		private const string PartNameMainMenu = "PART_MainMenu";
 
 		private const string PartNameNotificationManagerToggleButton = "Part_NotificationManagerToggleButton";
+
+		private const string PartNameNotificationManagerUserControl = "NotificationManagerUserControl";
 
 		public static readonly MainWindowCommands Commands = new MainWindowCommands();
 
@@ -41,6 +44,8 @@ namespace ForkPlus.UI
 		private Menu _templatePartMainMenu;
 
 		private ToggleButton _templatePartNotificationManagerToggleButton;
+
+		private NotificationManagerUserControl _templatePartNotificationManagerUserControl;
 
 		private readonly AutomaticBackgroundFetchManager _automaticBackgroundFetchManager = new AutomaticBackgroundFetchManager();
 
@@ -100,29 +105,32 @@ namespace ForkPlus.UI
 		}
 
 		public void ApplyLocalization()
+	{
+		_menuManager?.ApplyLocalization();
+		Toolbar.ApplyLocalization();
+		TabManager?.RefreshTabTitles();
+		if (_templatePartNotificationManagerToggleButton != null)
 		{
-			_menuManager?.ApplyLocalization();
-			Toolbar.ApplyLocalization();
-			TabManager?.RefreshTabTitles();
-			if (_templatePartNotificationManagerToggleButton != null)
+			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+		}
+		// 通知按钮弹出面板的 HeaderLabel 也需要随语言切换刷新；本控件实例在 ControlTemplate
+		// 内一次性构造，构造函数里的翻译只生效一次，之前必须重启客户端才更新（Bug v2.1.2）。
+		_templatePartNotificationManagerUserControl?.ApplyLocalization();
+		RepositoryUserControl activeRepositoryUserControl = ActiveRepositoryUserControl;
+		if (activeRepositoryUserControl != null)
+		{
+			activeRepositoryUserControl.ApplyLocalization();
+		}
+		TabManager?.ActiveRepositoryManager?.ApplyLocalization();
+		TabManager?.ActiveGitMmUserControl?.ApplyLocalization();
+		foreach (Window window in Application.Current.Windows)
+		{
+			if (window != this && window is ILocalizableControl localizableControl)
 			{
-				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
-			}
-			RepositoryUserControl activeRepositoryUserControl = ActiveRepositoryUserControl;
-			if (activeRepositoryUserControl != null)
-			{
-				activeRepositoryUserControl.ApplyLocalization();
-			}
-			TabManager?.ActiveRepositoryManager?.ApplyLocalization();
-			TabManager?.ActiveGitMmUserControl?.ApplyLocalization();
-			foreach (Window window in Application.Current.Windows)
-			{
-				if (window != this && window is ILocalizableControl localizableControl)
-				{
-					localizableControl.ApplyLocalization();
-				}
+				localizableControl.ApplyLocalization();
 			}
 		}
+	}
 
 		public void PreventRefreshAfterChildDialogClose(string reason)
 		{
@@ -143,14 +151,17 @@ namespace ForkPlus.UI
 				_menuManager = new MainWindowMenuManager(_templatePartMainMenu);
 			}
 			if (base.Template.TryFindName<ToggleButton>("Part_NotificationManagerToggleButton", this, out _templatePartNotificationManagerToggleButton))
+		{
+			NotificationManager.Current.IsActiveChanged += delegate
 			{
-				NotificationManager.Current.IsActiveChanged += delegate
-				{
-					_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-				};
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
-			}
+			};
+			_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
+			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+		}
+		// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
+		// ApplyLocalization 时调用其 ApplyLocalization() 刷新 HeaderLabel.Text（Bug v2.1.2）。
+		base.Template.TryFindName<NotificationManagerUserControl>(PartNameNotificationManagerUserControl, this, out _templatePartNotificationManagerUserControl);
 		}
 
 		public void RefreshTitle()

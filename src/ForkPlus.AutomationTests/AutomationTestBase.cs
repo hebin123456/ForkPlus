@@ -430,6 +430,30 @@ namespace ForkPlus.AutomationTests
 		}
 
 		/// <summary>
+		/// 创建一个空 git 仓库（git init 后不提交任何 commit），并写入一个 untracked 文本文件。
+		/// 用于复现 v2.1.2 Bug 3：初始化新仓库后 ForkPlus 一直转圈无法读取仓库。
+		/// 此时 HEAD 是 symref 指向不存在的 refs/heads/master，没有 commits/branches/tags，
+		/// bt_get_commits 对空 tips 行为不确定，可能死循环或永久阻塞。
+		/// 修复：GetRevisionStorageGitCommand.Execute 加空仓库快速路径直接返回空 RevisionStorage。
+		/// </summary>
+		protected string CreateEmptyGitRepo(string untrackedFileName = "notes.txt", string untrackedContent = "hello world")
+		{
+			string tempDir = Path.Combine(Path.GetTempPath(), "ForkPlus-ST-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+			Directory.CreateDirectory(tempDir);
+
+			RunGit(tempDir, "init");
+			RunGit(tempDir, "config", "user.name", "ST Test");
+			RunGit(tempDir, "config", "user.email", "st@test.local");
+			RunGit(tempDir, "config", "commit.gpgsign", "false");
+
+			// 写入 untracked 文件（git status 会显示 "Untracked files: notes.txt"）
+			// 这正是用户报告的场景：新仓库目录里有创建的文本文档
+			File.WriteAllText(Path.Combine(tempDir, untrackedFileName), untrackedContent);
+
+			return tempDir;
+		}
+
+		/// <summary>
 		/// 在已有仓库中追加一次提交，返回新增的文件路径。
 		/// </summary>
 		protected string AddCommit(string repoPath, string fileName, string content, string message)
