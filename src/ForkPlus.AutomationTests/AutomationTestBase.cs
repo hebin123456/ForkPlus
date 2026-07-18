@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using FlaUI.Core;
+using FlaUI.Core.Input;
+using FlaUI.Core.WindowsApi;
 using FlaUI.UIA3;
 
 namespace ForkPlus.AutomationTests
@@ -113,53 +115,123 @@ namespace ForkPlus.AutomationTests
 		}
 
 		/// <summary>
-		/// 在窗口后代里按文本查找第一个 MenuItem（用于菜单点击）。
-		/// WPF 菜单未展开时子项不在 UIA 树里，调用方需先展开父菜单。
-		/// 文本匹配会去掉 WPF 访问键前缀 "_"（如 "_File" → "File"），且不区分大小写。
-		/// </summary>
-		/// <remarks>
-		/// 查找策略：先在主窗口后代里找；找不到再从桌面根找。
-		/// 桌面根 fallback 覆盖两种场景：
-		/// 1. WPF ContextMenu 是独立 popup HWND，不在主窗口视觉树里
-		///    （Appearance 下拉的主题项、Custom Colors 等都在此列）
-		/// 2. PART_MainMenu 在 CustomWindow 的 ControlTemplate 里，
-		///    UIA 有时不把它当作 Window 的后代
-		/// </remarks>
-		protected FlaUI.Core.AutomationElements.MenuItem FindMenuItemByText(
-			FlaUI.Core.AutomationElements.Window window, string text)
+	/// 在窗口后代里按文本查找第一个 MenuItem（用于菜单点击）。
+	/// WPF 菜单未展开时子项不在 UIA 树里，调用方需先展开父菜单。
+	/// 文本匹配会去掉 WPF 访问键前缀 "_"（如 "_File" → "File"），且不区分大小写。
+	/// </summary>
+	/// <remarks>
+	/// 多策略查找（按可靠性递进）：
+	/// 1. FindAllDescendants on window — 快速，覆盖大部分场景
+	/// 2. TreeWalker on window — 更可靠，覆盖 ControlTemplate 内元素
+	///    （PART_MainMenu 在 CustomWindow.ControlTemplate 里，UIA 有时不把它当作 Window 后代）
+	/// 3. 遍历桌面所有顶级窗口的 FindAllDescendants — 覆盖 ContextMenu popup（独立 HWND）
+	/// 4. TreeWalker on 每个桌面顶级窗口 — 最后兜底
+	/// </remarks>
+	protected FlaUI.Core.AutomationElements.MenuItem FindMenuItemByText(
+		FlaUI.Core.AutomationElements.Window window, string text)
+	{
+		// Strategy 1: FindAllDescendants on main window (fast path)
+		var found = FindMenuItemInElement(window, text);
+		if (found != null) return found;
+
+		// Strategy 2: TreeWalker on main window (more reliable for ControlTemplate elements)
+		try
 		{
-			var found = FindMenuItemInElement(window, text);
-			if (found != null)
-			{
-				return found;
-			}
-			// Fallback：从桌面根找（popup ContextMenu + ControlTemplate 元素）
-			try
-			{
-				var desktop = window.Automation.GetDesktop();
-				return FindMenuItemInElement(desktop, text);
-			}
-			catch
-			{
-				return null;
-			}
+			found = FindMenuItemViaTreeWalker(window, text);
+			if (found != null) return found;
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine("[FindMenuItemByText] TreeWalker(window) failed: " + ex.Message);
 		}
 
-		private static FlaUI.Core.AutomationElements.MenuItem FindMenuItemInElement(
-			FlaUI.Core.AutomationElements.AutomationElement root, string text)
+		// Strategy 3: Search all desktop top-level windows (popup ContextMenu = separate HWND)
+		try
 		{
-			var items = root.FindAllDescendants(
-				cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
-			foreach (var item in items)
+			var desktop = window.Automation.GetDesktop();
+			var topWindows = desktop.FindAllChildren();
+			foreach (var topWin in topWindows)
 			{
-				string name = (item.Name ?? "").Replace("_", "");
+				found = FindMenuItemInElement(topWin, text);
+				if (found != null) return found;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine("[FindMenuItemByText] Desktop FindAllDescendants failed: " + ex.Message);
+		}
+
+		// Strategy 4: TreeWalker on all desktop top-level windows (last resort)
+		try
+		{
+			var desktop = window.Automation.GetDesktop();
+			var topWindows = desktop.FindAllChildren();
+			foreach (var topWin in topWindows)
+			{
+				found = FindMenuItemViaTreeWalker(topWin, text);
+				if (found != null) return found;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine("[FindMenuItemByText] TreeWalker(desktop) failed: " + ex.Message);
+		}
+
+		Console.WriteLine("[FindMenuItemByText] Not found anywhere: '" + text + "'");
+		return null;
+	}
+
+	private static FlaUI.Core.AutomationElements.MenuItem FindMenuItemInElement(
+		FlaUI.Core.AutomationElements.AutomationElement root, string text)
+	{
+		var items = root.FindAllDescendants(
+			cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.MenuItem));
+		foreach (var item in items)
+		{
+			string name = (item.Name ?? "").Replace("_", "");
+			if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				return item as FlaUI.Core.AutomationElements.MenuItem;
+			}
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// 用 TreeWalker 逐元素遍历 UIA 树查找 MenuItem。
+	/// 比 FindAllDescendants 更可靠：后者在某些 WPF ControlTemplate 场景下
+	/// 会漏掉元素（如 PART_MainMenu 在 CustomWindow 模板里时）。
+	/// </summary>
+	private FlaUI.Core.AutomationElements.MenuItem FindMenuItemViaTreeWalker(
+		FlaUI.Core.AutomationElements.AutomationElement root, string text)
+	{
+		if (root == null) return null;
+		var walker = root.Automation.TreeWalkerFactory.GetControlViewWalker();
+		return FindMenuItemViaTreeWalkerCore(walker, root, text);
+	}
+
+	private FlaUI.Core.AutomationElements.MenuItem FindMenuItemViaTreeWalkerCore(
+		ITreeWalker walker, FlaUI.Core.AutomationElements.AutomationElement element, string text)
+	{
+		var current = walker.GetFirstChild(element);
+		while (current != null)
+		{
+			if (current.ControlType == FlaUI.Core.Definitions.ControlType.MenuItem)
+			{
+				string name = (current.Name ?? "").Replace("_", "");
 				if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
-					return item as FlaUI.Core.AutomationElements.MenuItem;
+					return current as FlaUI.Core.AutomationElements.MenuItem;
 				}
 			}
-			return null;
+			// Recurse into children
+			var found = FindMenuItemViaTreeWalkerCore(walker, current, text);
+			if (found != null) return found;
+			// Move to next sibling
+			current = walker.GetNextSibling(current);
 		}
+		return null;
+	}
 
 		/// <summary>
 		/// 点击工具栏 "Appearance" 下拉按钮，展开其上下文菜单。
@@ -185,7 +257,44 @@ namespace ForkPlus.AutomationTests
 				}
 			}
 			if (btn == null) return false;
-			try { btn.Click(); System.Threading.Thread.Sleep(800); return true; } catch { return false; }
+			try
+			{
+				btn.Click();
+				// 等待 ContextMenu popup 出现（popup 是独立 HWND，需要时间创建）
+				WaitForPopupMenu(app, TimeSpan.FromSeconds(3));
+				return true;
+			}
+			catch { return false; }
+		}
+
+		/// <summary>
+		/// 等待 ContextMenu popup 窗口出现（独立 HWND 的顶级窗口，包含 MenuItem）。
+		/// 用于 Appearance 下拉、根菜单展开后的子菜单 popup 检测。
+		/// </summary>
+		protected bool WaitForPopupMenu(LaunchedApp app, TimeSpan? timeout = null)
+		{
+			var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(5));
+			while (DateTime.UtcNow < deadline)
+			{
+				try
+				{
+					var desktop = app.Automation.GetDesktop();
+					// WPF ContextMenu popup 在 UIA 中表现为 ControlType.Menu（独立 HWND），
+					// 与主窗口的 ControlType.Window 不同，可以精确区分。
+					var menus = desktop.FindAllChildren(
+						cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Menu));
+					foreach (var menu in menus)
+					{
+						if (menu.ProcessId == app.Application.ProcessId)
+						{
+							return true;
+						}
+					}
+				}
+				catch { }
+				System.Threading.Thread.Sleep(200);
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -200,28 +309,102 @@ namespace ForkPlus.AutomationTests
 		/// 展开主菜单的某个根项（File/Repository/View 等），让子菜单项出现在 UIA 树里。
 		/// WPF 菜单是懒加载的：子项第一次展开时才创建，必须先 Expand/Click 父项才能找到子项。
 		/// </summary>
+		/// <remarks>
+		/// 策略递进：
+		/// 1. 通过 UIA 查找 MenuItem 并 Expand/Click
+		/// 2. 如果找不到（PART_MainMenu 在 ControlTemplate 里，UIA 可能不暴露为 Window 后代），
+		///    用键盘 Alt+&lt;access key&gt; 打开菜单（_File → Alt+F，_Repository → Alt+R 等）
+		/// </remarks>
 		protected bool ExpandRootMenu(LaunchedApp app, string menuName)
 		{
+			// Strategy 1: Find menu item via UIA and expand/click it
 			var menu = FindMenuItemByText(app.Window, menuName);
-			if (menu == null) return false;
-			// 优先用 ExpandCollapse pattern（WPF MenuItem 支持）
-			try
+			if (menu != null)
 			{
-				menu.Expand();
-				System.Threading.Thread.Sleep(1000);
-				return true;
+				// 优先用 ExpandCollapse pattern（WPF MenuItem 支持）
+				try
+				{
+					menu.Expand();
+					WaitForPopupMenu(app, TimeSpan.FromSeconds(3));
+					return true;
+				}
+				catch { }
+				// 备选：Click 触发展开
+				try
+				{
+					menu.Click();
+					System.Threading.Thread.Sleep(1500);
+					WaitForPopupMenu(app, TimeSpan.FromSeconds(3));
+					return true;
+				}
+				catch { }
 			}
-			catch { }
-			// 备选：Click 触发展开
-			try
+
+			// Strategy 2: Keyboard Alt+<access key>
+			// WPF 菜单标题带 _ 前缀指定 access key：_File → F, _Repository → R, 等
+			// Alt+F 打开 File 菜单，Alt+R 打开 Repository 菜单，以此类推
+			char accessKey = GetMenuAccessKey(menuName);
+			if (accessKey != '\0')
 			{
-				menu.Click();
-				System.Threading.Thread.Sleep(1500);
-				return true;
+				try
+				{
+					app.Window.Focus();
+					System.Threading.Thread.Sleep(300);
+					VirtualKey letterKey = (VirtualKey)(byte)char.ToUpper(accessKey);
+					PressKeyCombination(VirtualKey.LMENU, letterKey);
+					// 等待子菜单 popup 出现（popup = ControlType.Menu 的独立 HWND）
+					WaitForPopupMenu(app, TimeSpan.FromSeconds(3));
+					Console.WriteLine("[ExpandRootMenu] Opened via Alt+" + accessKey);
+					return true;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("[ExpandRootMenu] Keyboard Alt+" + accessKey + " failed: " + ex.Message);
+				}
 			}
-			catch { }
+
 			return false;
 		}
+
+		/// <summary>
+		/// 根据菜单名获取 WPF access Key（_File → F, _Repository → R, 等）。
+		/// 用于 Alt+&lt;key&gt; 键盘快捷方式打开菜单。
+		/// </summary>
+		private static char GetMenuAccessKey(string menuName)
+		{
+			string lower = menuName.ToLowerInvariant();
+			if (lower == "file" || lower == "文件") return 'f';
+			if (lower == "repository" || lower == "仓库") return 'r';
+			if (lower == "view" || lower == "视图") return 'v';
+			if (lower == "window" || lower == "窗口") return 'w';
+			if (lower == "help" || lower == "帮助") return 'h';
+			return '\0';
+		}
+
+		/// <summary>
+		/// 按下并释放一组键（先全部按下，再逆序释放），模拟快捷键组合。
+		/// 如 PressKeyCombination(VirtualKey.LCONTROL, VirtualKey.VK_OEM_COMMA) 发送 Ctrl+,。
+		/// </summary>
+		protected static void PressKeyCombination(params VirtualKey[] keys)
+		{
+			if (keys == null || keys.Length == 0) return;
+			// 按顺序按下所有键（modifier 先按）
+			foreach (var key in keys)
+			{
+				Keyboard.Press(key);
+			}
+			// 逆序释放（modifier 后放）
+			for (int i = keys.Length - 1; i >= 0; i--)
+			{
+				Keyboard.Release(keys[i]);
+			}
+		}
+
+		/// <summary>
+		/// VK_OEM_COMMA (0xBC) — 逗号键的 Windows 虚拟键码。
+		/// 用于 Ctrl+, 快捷键（ShowPreferencesWindowCommand.Shortcut）。
+		/// </summary>
+		private static readonly VirtualKey VK_OEM_COMMA = (VirtualKey)0xBC;
 
 		/// <summary>
 		/// 创建一个包含一次提交的临时 git 仓库，返回仓库根目录路径。
