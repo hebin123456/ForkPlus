@@ -282,14 +282,16 @@ namespace ForkPlus.AutomationTests
 					// WPF ContextMenu popup 在 UIA 中表现为 ControlType.Menu（独立 HWND），
 					// 与主窗口的 ControlType.Window 不同，可以精确区分。
 					var menus = desktop.FindAllChildren(
-						cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Menu));
-					foreach (var menu in menus)
+					cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Menu));
+				foreach (var menu in menus)
+				{
+					// FlaUI 3.2.0: AutomationElement 没有直接 ProcessId 属性，
+					// 通过 Properties.ProcessId.Value 获取元素所属进程 ID。
+					if (menu.Properties.ProcessId.Value == app.Application.ProcessId)
 					{
-						if (menu.ProcessId == app.Application.ProcessId)
-						{
-							return true;
-						}
+						return true;
 					}
+				}
 				}
 				catch { }
 				System.Threading.Thread.Sleep(200);
