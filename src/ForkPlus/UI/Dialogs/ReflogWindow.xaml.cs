@@ -171,6 +171,12 @@ namespace ForkPlus.UI.Dialogs
 			OperationName = operationName ?? "";
 		}
 
+		/// <summary>完整 40 字符 sha。JumpToSelected 用它构造 reset --hard 参数。</summary>
+		public string Sha => _entry.Sha ?? "";
+
+		/// <summary>reflog 索引（HEAD@{N} 的 N）。JumpToSelected 用它生成操作名。</summary>
+		public int Index => _entry.Index;
+
 		public string IndexDisplay => "HEAD@{" + _entry.Index + "}";
 
 		public string ShaDisplay => string.IsNullOrEmpty(_entry.Sha) ? "" : _entry.Sha.Substring(0, Math.Min(8, _entry.Sha.Length));
