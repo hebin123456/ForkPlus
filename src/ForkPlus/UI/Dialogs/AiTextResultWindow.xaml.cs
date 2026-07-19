@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Biturbo;
+using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
