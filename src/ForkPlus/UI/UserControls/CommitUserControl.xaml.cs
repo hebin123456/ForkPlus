@@ -2285,7 +2285,7 @@ namespace ForkPlus.UI.UserControls
 			ChangedFile[] stagedFiles = StageFileUserControl.ExpandedStagedFiles;
 			if (stagedFiles == null || stagedFiles.Length == 0)
 			{
-				new ErrorWindow(RepositoryUserControl, PreferencesLocalization.Current("No staged files to compose. Stage some files first.")).ShowDialog();
+				new ErrorWindow(PreferencesLocalization.Current("No staged files to compose. Stage some files first.")).ShowDialog();
 				return;
 			}
 			// 至少 2 个 staged 文件才有拆分意义；只有 1 个时也允许（让 AI 生成单条 message）
