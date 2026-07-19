@@ -316,6 +316,9 @@
         </Grid>
         <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResolveButton_Click" x:Name="ResolveButton" />
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Button Padding="10,2,10,2" Margin="0,0,6,0" BorderThickness="1,1,1,1" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts in this file" x:Name="AiResolveButton">
+            <TextBlock Text="🤖 AI Resolve" FontFamily="Segoe UI, Segoe UI Emoji" />
+          </Button>
           <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" Style="{DynamicResource CommitButtonVisibleDropdownStyle}" Click="ResolveInExternalMergerButton_Click" x:Name="ResolveInExternalMergerButton" />
           <controls:DropDownButton Height="24" Margin="0" Style="{DynamicResource CommitDropDownButtonStyle}" x:Name="ResolveInExternalMergerDropdownButton">
             <controls:DropDownButton.ContextMenu>

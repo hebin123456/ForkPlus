@@ -307,7 +307,7 @@ namespace ForkPlus.UI.Dialogs
 			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
 
 			string fileName = Path.GetFileName(_changedFile.Path);
-			string prompt = BuildAiResolvePrompt(fileName, conflictedContent);
+			string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
 
 			StringBuilder responseBuilder = new StringBuilder();
 			Exception requestError = null;
@@ -373,7 +373,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				resolved = responseBuilder.ToString();
 			}
-			resolved = StripCodeFences(resolved);
+			resolved = OpenAiService.StripCodeFences(resolved);
 			if (string.IsNullOrWhiteSpace(resolved))
 			{
 				MessageBox.Show(
@@ -419,50 +419,6 @@ namespace ForkPlus.UI.Dialogs
 					MessageBoxButton.OK,
 					MessageBoxImage.Error);
 			}
-		}
-
-		/// <summary>构造 AI 解决冲突的 prompt：要求 AI 合并两侧变更、保留非冲突上下文、不输出解释。</summary>
-		private static string BuildAiResolvePrompt(string fileName, string conflictedContent)
-		{
-			return "You are an expert at resolving Git merge conflicts.\n"
-				+ "The file below contains conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).\n"
-				+ "Resolve ALL conflicts intelligently:\n"
-				+ "- Combine changes from both sides when they don't overlap.\n"
-				+ "- When both sides modify the same region, merge them preserving intent; prefer keeping both sets of changes if compatible.\n"
-				+ "- Keep the non-conflicting context intact.\n"
-				+ "- Preserve the file's overall structure, imports, and syntax.\n"
-				+ "Return ONLY the final merged file content with NO conflict markers, NO explanations, NO markdown code fences, NO surrounding prose.\n"
-				+ "Do not wrap the output in ``` code blocks.\n\n"
-				+ "File: " + fileName + "\n\n"
-				+ conflictedContent;
-		}
-
-		/// <summary>剥离 AI 输出可能包含的 markdown 代码围栏（```lang ... ```）。</summary>
-		private static string StripCodeFences(string text)
-		{
-			if (string.IsNullOrEmpty(text))
-			{
-				return text;
-			}
-			string trimmed = text.Trim();
-			if (trimmed.StartsWith("```"))
-			{
-				int firstNewLine = trimmed.IndexOf('\n');
-				if (firstNewLine >= 0)
-				{
-					trimmed = trimmed.Substring(firstNewLine + 1);
-				}
-				else
-				{
-					trimmed = trimmed.Substring(3);
-				}
-				if (trimmed.EndsWith("```"))
-				{
-					trimmed = trimmed.Substring(0, trimmed.Length - 3);
-				}
-				return trimmed;
-			}
-			return text;
 		}
 
 		private void RefreshCodeEditorFontSize(double codeEditorFontSize)

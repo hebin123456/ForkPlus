@@ -1311,6 +1311,20 @@ namespace ForkPlus.UI.UserControls
 					}
 				};
 				menuItem.Items.Add(menuItem3);
+				// AI 生成 PR 描述（基于 merge base..branch 的 commit 列表 + 聚合 diff）
+				MenuItem prDescItem = new MenuItem();
+				prDescItem.Header = PreferencesLocalization.FormatMenuHeader("Generate PR Description with {0}...", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI");
+				prDescItem.IsEnabled = isEnabled;
+				prDescItem.Click += delegate
+				{
+					AiCodeReviewTarget target = CreateBranchTarget(rc, remoteMain, branch);
+					if (target != null)
+					{
+						GeneratePullRequestDescription(rc, gitModule, target.Src, target.Dst, branch.Name);
+					}
+				};
+				menuItem.Items.Add(new Separator());
+				menuItem.Items.Add(prDescItem);
 			}
 			return menuItem;
 		}
@@ -1325,6 +1339,68 @@ namespace ForkPlus.UI.UserControls
 				return null;
 			}
 			return new AiCodeReviewTarget.Branch(gitCommandResult.Result, branch);
+		}
+
+		/// <summary>AI 生成 PR 描述：拉取 src..dst 的 commit log 和聚合 diff，打开 AiTextResultWindow 流式展示。</summary>
+		private static void GeneratePullRequestDescription(RepositoryUserControl repositoryUserControl, GitModule gitModule, Sha src, Sha dst, string name)
+		{
+			if (gitModule == null || src == null || dst == null)
+			{
+				return;
+			}
+			string srcStr = src.ToString();
+			string dstStr = dst.ToString();
+			string rangeLabel = name ?? dst.ToAbbreviatedString();
+
+			AiTextResultWindow window = new AiTextResultWindow();
+			window.Owner = Application.Current?.MainWindow;
+			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
+			window.Show();
+			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
+			{
+				try
+				{
+					// 拉取 commit log（含 subject + body）
+					GitCommand logCmd = new GitCommand("--no-pager", "log", "--no-color", "--no-decorate", "--pretty=format:* %s%n%b%n", srcStr + ".." + dstStr);
+					GitRequestResult logResult = new GitRequest(gitModule).Command(logCmd).Execute();
+					string commitLog = "";
+					if (logResult.ExitCode < 2)
+					{
+						commitLog = logResult.Stdout;
+						const int maxLogChars = 20000;
+						if (commitLog.Length > maxLogChars)
+						{
+							commitLog = commitLog.Substring(0, maxLogChars) + "\n... (log truncated)\n";
+						}
+					}
+					// 拉取聚合 diff
+					GitCommand diffCmd = new GitCommand("--no-pager", "diff", "--no-color", "--find-renames", "--no-ext-diff", "--submodule=short", "--unified=10", srcStr + ".." + dstStr);
+					GitRequestResult diffResult = new GitRequest(gitModule).Command(diffCmd).Execute();
+					string aggregatedDiff = "";
+					if (diffResult.ExitCode < 2)
+					{
+						aggregatedDiff = diffResult.Stdout;
+					}
+					OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
+					ServiceResult<OpenAiResponse> response = openAiService.GeneratePullRequestDescription(commitLog, aggregatedDiff, monitor, w.OnChunk);
+					if (monitor.IsCanceled)
+					{
+						return;
+					}
+					if (!response.Succeeded)
+					{
+						w.OnError(response.Error.FriendlyMessage);
+					}
+					else
+					{
+						w.OnSuccess(response.Result.Message);
+					}
+				}
+				catch (Exception ex)
+				{
+					w.OnError(ex.Message);
+				}
+			});
 		}
 
 		private static Control CreateRevisionRangeAiCodeReviewMenuItem(RepositoryUserControl repositoryUserControl, DecoratedRevision[] decoratedRevisions)
@@ -1355,6 +1431,19 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowAiResultWindow.Execute(repositoryUserControl, new AiCodeReviewTarget.ShaRange(array[1].Sha, array[0].Sha));
 				};
 				menuItem.Items.Add(menuItem3);
+				// AI 生成 PR 描述（基于 src..dst 的 commit 列表 + 聚合 diff）
+				MenuItem prDescItem = new MenuItem();
+				prDescItem.Header = PreferencesLocalization.FormatMenuHeader("Generate PR Description with {0}...", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI");
+				prDescItem.IsEnabled = isEnabled;
+				prDescItem.Click += delegate
+				{
+					Revision[] array3 = SortRevisionsByRows(decoratedRevisions).Map((DecoratedRevision x) => x.ToRevision());
+					Sha src = array3[1].Sha;
+					Sha dst = array3[0].Sha;
+					GeneratePullRequestDescription(repositoryUserControl, repositoryUserControl.GitModule, src, dst, dst.ToAbbreviatedString());
+				};
+				menuItem.Items.Add(new Separator());
+				menuItem.Items.Add(prDescItem);
 			}
 			return menuItem;
 		}

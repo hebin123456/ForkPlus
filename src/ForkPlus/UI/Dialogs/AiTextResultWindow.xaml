@@ -1,0 +1,40 @@
+<ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="640" Width="820" MinHeight="360" MinWidth="480" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiTextResultWindow">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <!-- 标题栏：标题 + Copy + Stop + Retry -->
+    <DockPanel Grid.Row="0" Margin="10,0,10,6" LastChildFill="True">
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry" Click="RetryButton_Click" x:Name="RetryButton" />
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip="Stop the current AI task" Click="StopButton_Click" x:Name="StopButton" Visibility="Collapsed" />
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Copy" ToolTip="Copy result to clipboard" Click="CopyButton_Click" x:Name="CopyButton" />
+      <TextBlock FontSize="16" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
+    </DockPanel>
+    <Separator HorizontalAlignment="Stretch" Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />
+    <!-- 状态栏 -->
+    <DockPanel Grid.Row="1" Margin="10,4,10,6" LastChildFill="True">
+      <ProgressBar DockPanel.Dock="Left" Width="120" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" x:Name="StatusProgressBar" />
+      <TextBlock FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
+    </DockPanel>
+    <!-- 内容区：WebView2 + BusyIndicator + Fallback -->
+    <Grid Grid.Row="2">
+      <wv2:WebView2 x:Name="AiResponseWebView" />
+      <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
+        <ProgressBar.Foreground>
+          <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+        </ProgressBar.Foreground>
+        <ProgressBar.Style>
+          <DynamicResource ResourceKey="CircularProgressBar" />
+        </ProgressBar.Style>
+      </ProgressBar>
+      <userControls:FallbackUserControl x:Name="AiResponseFallback">
+        <UserControl.Background>
+          <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+        </UserControl.Background>
+      </userControls:FallbackUserControl>
+    </Grid>
+  </Grid>
+</ui:CustomWindow>

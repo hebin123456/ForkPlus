@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using System.Threading.Tasks;
+using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -26,6 +29,8 @@ namespace ForkPlus.UI.UserControls
 
 		private ChangedFile _changedFile;
 
+		private bool _aiResolving;
+
 		private GitModule GitModule => _repositoryUserControl.GitModule;
 
 		public MergeConflictUserControl()
@@ -45,6 +50,15 @@ namespace ForkPlus.UI.UserControls
 			FileNameTextBlock.FilePath = changedFile.Path;
 			FileNameTextBlock.ToolTip = changedFile.Path;
 			FileDiffControl.RepositoryUserControl = repositoryUserControl;
+			// AI Resolve 按钮：仅在 AI 配置完毕且未解决时显示
+			if (!resolved && OpenAiService.IsAiReviewConfigured() && IsMergeAllowed(changedFile))
+			{
+				AiResolveButton.Show();
+			}
+			else
+			{
+				AiResolveButton.Collapse();
+			}
 			if (resolved)
 			{
 				Path.GetFileName(changedFile.Path);
@@ -125,6 +139,189 @@ namespace ForkPlus.UI.UserControls
 			if (_changedFile != null)
 			{
 				_repositoryUserControl.Content.CommitUserControl.StageSelectedFiles();
+			}
+		}
+
+		/// <summary>AI 解决当前文件的冲突：读取磁盘上带冲突标记的文件，发送给 AI，
+		/// 用户确认后通过 ResolveMergeConflictGitCommand 写回。</summary>
+		private async void AiResolveButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (_aiResolving)
+			{
+				return;
+			}
+			if (_changedFile == null || _repositoryUserControl?.GitModule == null)
+			{
+				return;
+			}
+			if (!OpenAiService.IsAiReviewConfigured())
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+			GitModule gitModule = _repositoryUserControl.GitModule;
+			string filePath;
+			try
+			{
+				filePath = gitModule.MakePath(_changedFile.Path);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to resolve file path: " + ex.Message);
+				return;
+			}
+			string conflictedContent;
+			try
+			{
+				conflictedContent = File.ReadAllText(filePath);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to read conflict file: " + ex.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				return;
+			}
+			if (string.IsNullOrEmpty(conflictedContent)
+				|| !conflictedContent.Contains("<<<<<<<") || !conflictedContent.Contains(">>>>>>>"))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("No conflict markers found in the file."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Information);
+				return;
+			}
+
+			_aiResolving = true;
+			AiResolveButton.IsEnabled = false;
+			string originalToolTip = AiResolveButton.ToolTip?.ToString();
+			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
+
+			string fileName = Path.GetFileName(_changedFile.Path);
+			string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
+
+			StringBuilder responseBuilder = new StringBuilder();
+			Exception requestError = null;
+			bool canceled = false;
+
+			await Task.Run(delegate
+			{
+				try
+				{
+					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+					JobMonitor monitor = new JobMonitor();
+					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
+						prompt,
+						monitor,
+						delegate(string delta)
+						{
+							if (string.IsNullOrEmpty(delta))
+							{
+								return;
+							}
+							lock (responseBuilder)
+							{
+								responseBuilder.Append(delta);
+							}
+						});
+					if (monitor.IsCanceled)
+					{
+						canceled = true;
+						return;
+					}
+					if (!result.Succeeded)
+					{
+						requestError = new Exception(result.Error?.FriendlyMessage ?? "Unknown error");
+					}
+				}
+				catch (Exception ex)
+				{
+					requestError = ex;
+				}
+			}).ConfigureAwait(true);
+
+			AiResolveButton.IsEnabled = true;
+			AiResolveButton.ToolTip = originalToolTip ?? PreferencesLocalization.Current("Use AI to resolve all conflicts in this file");
+			_aiResolving = false;
+
+			if (canceled)
+			{
+				return;
+			}
+			if (requestError != null)
+			{
+				Log.Error("AI Resolve failed: " + requestError.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				return;
+			}
+
+			string resolved;
+			lock (responseBuilder)
+			{
+				resolved = responseBuilder.ToString();
+			}
+			resolved = OpenAiService.StripCodeFences(resolved);
+			if (string.IsNullOrWhiteSpace(resolved))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI returned empty content. Aborting."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Current("AI output still contains conflict markers. Please review and try again, or resolve manually."),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+
+			MessageBoxResult confirm = MessageBox.Show(
+				PreferencesLocalization.Current("AI resolved all conflicts. Apply the resolved content?"),
+				PreferencesLocalization.Current("AI Resolve"),
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Question);
+			if (confirm != MessageBoxResult.Yes)
+			{
+				return;
+			}
+
+			try
+			{
+				GitCommandResult gitResult = new ResolveMergeConflictGitCommand().Execute(gitModule, _changedFile, resolved);
+				if (!gitResult.Succeeded)
+				{
+					new ErrorWindow(_repositoryUserControl, gitResult.Error).ShowDialog();
+				}
+				else
+				{
+					_repositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve: failed to write back: " + ex.Message);
+				MessageBox.Show(
+					PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
+					PreferencesLocalization.Current("AI Resolve"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
 			}
 		}
 

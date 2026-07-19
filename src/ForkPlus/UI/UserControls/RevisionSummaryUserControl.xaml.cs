@@ -8,13 +8,16 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
+using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
+using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
+using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -46,6 +49,16 @@ namespace ForkPlus.UI.UserControls
 			_sha = sha;
 			_bugtrackers = bugtrackers;
 			_userColors = userColors;
+			// AI Explain 按钮：仅在 AI 配置完毕时显示
+		if (OpenAiService.IsAiReviewConfigured())
+		{
+			AiExplainCommitButton.Show();
+			AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
+		}
+		else
+		{
+			AiExplainCommitButton.Collapse();
+		}
 			FullRevisionDetails fullRevisionDetails = RevisionDetailsUserControl.FullRevisionDetails;
 			RevisionDetails revisionDetails = fullRevisionDetails.RevisionDetails;
 			AuthorAvatarImage.UserIdentity = revisionDetails.Author;
@@ -349,6 +362,83 @@ namespace ForkPlus.UI.UserControls
 				return revisionDetails.AuthorDate != revisionDetails.CommitterDate;
 			}
 			return true;
+		}
+
+		/// <summary>AI 解释当前 commit：拉取 commit 的 subject/body/diff，打开 AiTextResultWindow 流式展示 AI 解释。</summary>
+		private void AiExplainCommitButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (!OpenAiService.IsAiReviewConfigured())
+			{
+				MessageBox.Show(
+					Preferences.PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
+					Preferences.PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+			if (!_sha.HasValue)
+			{
+				return;
+			}
+			Sha sha = _sha.GetValueOrDefault();
+			GitModule gitModule = RepositoryUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			FullRevisionDetails fullRevisionDetails = RevisionDetailsUserControl?.FullRevisionDetails;
+			if (fullRevisionDetails == null)
+			{
+				return;
+			}
+			fullRevisionDetails.RevisionDetails.MessageParts(out var subject, out var body);
+			string commitSubject = subject ?? "";
+			string commitBody = body ?? "";
+			string shaStr = sha.ToString();
+			string abbreviatedSha = sha.ToAbbreviatedString();
+
+			AiTextResultWindow window = new AiTextResultWindow();
+			window.Owner = Window.GetWindow(this);
+			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
+			window.Show();
+			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
+			{
+				try
+				{
+					// 拉取 commit 的 patch（含变更文件和差异内容）
+					GitCommand gitCommand = new GitCommand("--no-pager", "show", "--no-color", "--find-renames", "--submodule=short", "--unified=50", "--no-ext-diff", shaStr);
+					GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute();
+					string diffSummary = "";
+					if (gitRequestResult.ExitCode < 2)
+					{
+						diffSummary = gitRequestResult.Stdout;
+						// 限制 diff 体量，避免 token 爆炸
+						const int maxDiffChars = 20000;
+						if (diffSummary.Length > maxDiffChars)
+						{
+							diffSummary = diffSummary.Substring(0, maxDiffChars) + "\n... (diff truncated)\n";
+						}
+					}
+					OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
+					ServiceResult<OpenAiResponse> response = openAiService.ExplainCommit(commitSubject, commitBody, diffSummary, monitor, w.OnChunk);
+					if (monitor.IsCanceled)
+					{
+						return;
+					}
+					if (!response.Succeeded)
+					{
+						w.OnError(response.Error.FriendlyMessage);
+					}
+					else
+					{
+						w.OnSuccess(response.Result.Message);
+					}
+				}
+				catch (Exception ex)
+				{
+					w.OnError(ex.Message);
+				}
+			});
 		}
 
 		private void ListBoxItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)

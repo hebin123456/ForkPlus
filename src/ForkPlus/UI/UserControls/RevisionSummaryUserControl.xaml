@@ -89,6 +89,9 @@
         <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="SHA" />
         <DockPanel Grid.Row="1" Grid.Column="1" Margin="16,2,0,0" HorizontalAlignment="Left">
           <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ShaTextBlock" />
+          <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip="Use AI to explain this commit" x:Name="AiExplainCommitButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+            <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" />
+          </Button>
           <StackPanel Orientation="Horizontal" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionRemoteButtonsContainer" />
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Right" Margin="16,4,0,5" Foreground="{DynamicResource SecondaryLabelBrush}" Text="PARENTS" />

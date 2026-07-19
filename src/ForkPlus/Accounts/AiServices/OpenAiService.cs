@@ -213,6 +213,158 @@ namespace ForkPlus.Accounts.AiServices
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
+		/// <summary>AI 解释提交：根据 commit 的 subject/diff/统计信息生成通俗易懂的中文解释（按 UI 语言）。</summary>
+		public ServiceResult<OpenAiResponse> ExplainCommit(string commitSubject, string commitBody, string diffSummary, JobMonitor monitor, Action<string> onChunk = null)
+		{
+			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Explaining with {0}...", _model));
+			string responseLanguage = CommitMessageResponseLanguage();
+			StringBuilder prompt = new StringBuilder();
+			prompt.Append("\nYou are a senior engineer helping a teammate understand a git commit.\n");
+			prompt.Append("Explain what this commit does and why, in plain " + responseLanguage + ".\n");
+			prompt.Append("Structure the explanation as Markdown with these sections:\n");
+			prompt.Append("## 概述 (Summary)\nA 1-2 sentence plain-language summary of what changed.\n");
+			prompt.Append("## 变更内容 (Changes)\nBullet list of the key changes, grouped by concern if helpful.\n");
+			prompt.Append("## 为什么 (Why)\nThe motivation/intent inferred from the diff and message.\n");
+			prompt.Append("## 影响 (Impact)\nPotential impact, risk areas, or things to test. Omit if not applicable.\n");
+			prompt.Append("Keep it concise. Do not dump the raw diff. Use " + responseLanguage + ".\n\n");
+			prompt.Append("Commit subject: " + (commitSubject ?? "") + "\n");
+			if (!string.IsNullOrWhiteSpace(commitBody))
+			{
+				prompt.Append("Commit body:\n```\n" + commitBody + "\n```\n");
+			}
+			if (!string.IsNullOrWhiteSpace(diffSummary))
+			{
+				prompt.Append("Diff summary (changed files and patch):\n```\n" + diffSummary + "\n```\n");
+			}
+			string text = prompt.ToString();
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(text);
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
+			if (!serviceResult.Succeeded)
+			{
+				monitor.Fail(serviceResult.Error.FriendlyMessage);
+				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
+				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
+			}
+			monitor.Success(PreferencesLocalization.Current("explained"));
+			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
+		}
+
+		/// <summary>AI 生成 stash 名称：根据工作区 diff 生成简洁的 stash message（按 UI 语言）。</summary>
+		public ServiceResult<OpenAiResponse> GenerateStashName(string patchString, JobMonitor monitor, Action<string> onChunk = null)
+		{
+			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
+			string responseLanguage = CommitMessageResponseLanguage();
+			string text = "\nWrite a short stash message for the following working directory changes.\n"
+				+ "The message must be written in " + responseLanguage + ".\n"
+				+ "Keep it under 50 characters. Use present tense. Do not add quotes or prefixes.\n"
+				+ "Only respond with the stash message, no explanation.\n\n"
+				+ "Below is the git diff:\n\n```\n" + (patchString ?? "") + "\n```\n";
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(text);
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
+			if (!serviceResult.Succeeded)
+			{
+				monitor.Fail(serviceResult.Error.FriendlyMessage);
+				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
+				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
+			}
+			monitor.Success(PreferencesLocalization.Current("generated"));
+			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
+		}
+
+		/// <summary>AI 生成 Pull Request 描述：根据 commit range 的提交列表和聚合 diff 生成结构化 PR 描述（按 UI 语言）。</summary>
+		public ServiceResult<OpenAiResponse> GeneratePullRequestDescription(string commitLog, string aggregatedDiff, JobMonitor monitor, Action<string> onChunk = null)
+		{
+			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
+			string responseLanguage = CommitMessageResponseLanguage();
+			StringBuilder prompt = new StringBuilder();
+			prompt.Append("\nYou are generating a Pull Request description.\n");
+			prompt.Append("Write the description in " + responseLanguage + ", as Markdown.\n");
+			prompt.Append("Structure:\n");
+			prompt.Append("## 概述 (Summary)\n1-2 paragraph overview of what this PR does and why.\n");
+			prompt.Append("## 变更内容 (Changes)\nBullet list of key changes, grouped by concern.\n");
+			prompt.Append("## 测试建议 (Testing Notes)\nWhat reviewers should test or pay attention to. Omit if not applicable.\n");
+			prompt.Append("Keep it concise. Do not dump raw diffs. Do not include a title line.\n\n");
+			if (!string.IsNullOrWhiteSpace(commitLog))
+			{
+				prompt.Append("Commits in this PR:\n```\n" + commitLog + "\n```\n\n");
+			}
+			if (!string.IsNullOrWhiteSpace(aggregatedDiff))
+			{
+				// 限制 diff 体量，避免 token 爆炸
+				string diff = aggregatedDiff;
+				const int maxDiffChars = 20000;
+				if (diff.Length > maxDiffChars)
+				{
+					diff = diff.Substring(0, maxDiffChars) + "\n... (diff truncated)\n";
+				}
+				prompt.Append("Aggregated diff (may be truncated):\n```\n" + diff + "\n```\n");
+			}
+			string text = prompt.ToString();
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(text);
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
+			if (!serviceResult.Succeeded)
+			{
+				monitor.Fail(serviceResult.Error.FriendlyMessage);
+				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
+				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
+			}
+			monitor.Success(PreferencesLocalization.Current("generated"));
+			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
+		}
+
+		/// <summary>AI 解决合并冲突：构造 prompt，要求 AI 合并两侧变更、保留非冲突上下文、不输出解释。
+		/// 实际的 HTTP 调用仍由调用方通过 OpenAiRequestStreamingWithRetry 完成，这里只负责 prompt 构造，
+		/// 方便 SideBySideMergeWindow 和批量入口复用。</summary>
+		public static string BuildResolveConflictsPrompt(string fileName, string conflictedContent)
+		{
+			return "You are an expert at resolving Git merge conflicts.\n"
+				+ "The file below contains conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).\n"
+				+ "Resolve ALL conflicts intelligently:\n"
+				+ "- Combine changes from both sides when they don't overlap.\n"
+				+ "- When both sides modify the same region, merge them preserving intent; prefer keeping both sets of changes if compatible.\n"
+				+ "- Keep the non-conflicting context intact.\n"
+				+ "- Preserve the file's overall structure, imports, and syntax.\n"
+				+ "Return ONLY the final merged file content with NO conflict markers, NO explanations, NO markdown code fences, NO surrounding prose.\n"
+				+ "Do not wrap the output in ``` code blocks.\n\n"
+				+ "File: " + (fileName ?? "") + "\n\n"
+				+ (conflictedContent ?? "");
+		}
+
+		/// <summary>剥离 AI 输出可能包含的 markdown 代码围栏（```lang ... ```）。
+		/// SideBySideMergeWindow 和 MergeConflictUserControl 共用。</summary>
+		public static string StripCodeFences(string text)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return text;
+			}
+			string trimmed = text.Trim();
+			if (trimmed.StartsWith("```"))
+			{
+				int firstNewLine = trimmed.IndexOf('\n');
+				if (firstNewLine >= 0)
+				{
+					trimmed = trimmed.Substring(firstNewLine + 1);
+				}
+				else
+				{
+					trimmed = trimmed.Substring(3);
+				}
+				if (trimmed.EndsWith("```"))
+				{
+					trimmed = trimmed.Substring(0, trimmed.Length - 3);
+				}
+				return trimmed;
+			}
+			return text;
+		}
+
 		public ServiceResult<string[]> ListModels()
 		{
 			return RequestWithRetry(new ApiRequest(HttpMethod.Get, "/v1/models"), DecodeModels, null);
