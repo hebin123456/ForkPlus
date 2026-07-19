@@ -146,5 +146,67 @@ namespace ForkPlus.Tests
 			Assert.Equal("commit (amend): amend msg", entry.ReflogSubject);
 			Assert.Equal("amended subject", entry.CommitSubject);
 		}
+
+		// ===== v3.4.0 新增：TimestampUtc 字段解析测试 =====
+
+		[Fact]
+		public void ParseLine_WithTimestamp_ParsesTimestampUtc()
+		{
+			// %ci 格式：yyyy-MM-dd HH:mm:ss ±zz
+			string line = SampleSha + "\0" + "commit: fix" + "\0" + "fix" + "\0" + "2026-07-19 10:00:00 +0800";
+			ReflogEntry entry = ReflogHistoryProvider.ParseLine(line, 0);
+
+			Assert.NotNull(entry);
+			Assert.NotNull(entry.TimestampUtc);
+			// +0800 时区，10:00:00 +0800 = 02:00:00 UTC
+			Assert.Equal(new DateTime(2026, 7, 19, 2, 0, 0, DateTimeKind.Utc), entry.TimestampUtc.Value);
+		}
+
+		[Fact]
+		public void ParseLine_WithUtcTimestamp_ParsesCorrectly()
+		{
+			// UTC 时区（+0000）
+			string line = SampleSha + "\0" + "commit: fix" + "\0" + "fix" + "\0" + "2026-07-19 10:00:00 +0000";
+			ReflogEntry entry = ReflogHistoryProvider.ParseLine(line, 0);
+
+			Assert.NotNull(entry);
+			Assert.NotNull(entry.TimestampUtc);
+			Assert.Equal(new DateTime(2026, 7, 19, 10, 0, 0, DateTimeKind.Utc), entry.TimestampUtc.Value);
+		}
+
+		[Fact]
+		public void ParseLine_WithoutTimestamp_TimestampUtcIsNull()
+		{
+			// v3.3.0 老格式：只有 3 字段，无 %ci
+			string line = SampleSha + "\0" + "commit: fix" + "\0" + "fix";
+			ReflogEntry entry = ReflogHistoryProvider.ParseLine(line, 0);
+
+			Assert.NotNull(entry);
+			Assert.Null(entry.TimestampUtc);
+		}
+
+		[Fact]
+		public void ParseLine_WithEmptyTimestamp_TimestampUtcIsNull()
+		{
+			// 第 4 字段为空字符串
+			string line = SampleSha + "\0" + "commit: fix" + "\0" + "fix" + "\0" + "";
+			ReflogEntry entry = ReflogHistoryProvider.ParseLine(line, 0);
+
+			Assert.NotNull(entry);
+			Assert.Null(entry.TimestampUtc);
+		}
+
+		[Fact]
+		public void ParseLine_WithMalformedTimestamp_TimestampUtcIsNull()
+		{
+			// 时间字符串格式错误，应静默返回 null（不抛出）
+			string line = SampleSha + "\0" + "commit: fix" + "\0" + "fix" + "\0" + "not-a-date";
+			ReflogEntry entry = ReflogHistoryProvider.ParseLine(line, 0);
+
+			Assert.NotNull(entry);
+			Assert.Null(entry.TimestampUtc);
+			// 其他字段仍正常解析
+			Assert.Equal("commit: fix", entry.ReflogSubject);
+		}
 	}
 }

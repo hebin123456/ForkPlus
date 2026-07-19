@@ -69,7 +69,9 @@ jobs:
             'WipCommitGroupTests','WipCommitPlanTests','OpenAiServiceStaticTests',
             'HexFormatterTests','ThemeTypeExtensionsTests','JobMonitorTests',
             # v3.3.0：分层重构新增测试类（reflog 解析 + 索引文件持久化）
-            'ReflogHistoryProviderTests','UndoIndexStoreTests'
+            'ReflogHistoryProviderTests','UndoIndexStoreTests',
+            # v3.4.0：Layer 2 工作区快照 + Reflog 视图
+            'ReflogViewItemTests'
           )
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
           # 已知问题：net472 + VSTest 在 386 个测试 1 秒跑完后，testhost 进程因加载了

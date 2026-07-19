@@ -68,7 +68,9 @@ namespace ForkPlus.UI.Commands
 			string stageName = (fileCount == 1)
 				? PreferencesLocalization.FormatCurrent("Stage {0} File", fileCount)
 				: PreferencesLocalization.FormatCurrent("Stage {0} Files", fileCount);
-			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(stageName, delegate(JobMonitor monitor)
+			// v3.4.0 Layer 2：stage 走 AddUndoable，操作前抓工作区快照（stash create），
+			// Undo 时 stash apply --index 恢复 stage 前的 index 状态
+			commitUserControl.StageJob = repositoryUserControl.AddUndoable(stageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, changedFiles, monitor);
 				if (!stageResult.Succeeded)
@@ -136,6 +138,7 @@ namespace ForkPlus.UI.Commands
 						}
 					});
 				}
+				return stageResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);
@@ -164,7 +167,9 @@ namespace ForkPlus.UI.Commands
 			string unstageName = (fileCount == 1)
 				? PreferencesLocalization.FormatCurrent("Unstage {0} File", fileCount)
 				: PreferencesLocalization.FormatCurrent("Unstage {0} Files", fileCount);
-			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(unstageName, delegate(JobMonitor monitor)
+			// v3.4.0 Layer 2：unstage 走 AddUndoable，操作前抓工作区快照（stash create），
+			// Undo 时 stash apply --index 恢复 unstage 前的 index 状态
+			commitUserControl.StageJob = repositoryUserControl.AddUndoable(unstageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult unstageResult = (amendMode ? new UnstageForAmendGitCommand().Execute(gitModule, changedFiles, monitor) : new UnstageGitCommand().Execute(gitModule, changedFiles, monitor));
 				if (!unstageResult.Succeeded)
@@ -241,6 +246,7 @@ namespace ForkPlus.UI.Commands
 						}
 					});
 				}
+				return unstageResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);

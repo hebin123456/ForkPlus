@@ -12,6 +12,7 @@ namespace ForkPlus.Undo
 	/// 用作 Undo/Redo 的真相源：跨会话保留 + CLI 操作天然兼容 + 无栈深度限制。
 	///
 	/// 输出格式：索引 0 = 最近一次操作，索引 N = N 步之前的操作（与 git reflog HEAD@{N} 一致）。
+	/// v3.4.0：新增 TimestampUtc 字段，供 Reflog 视图显示时间。
 	/// </summary>
 	public class ReflogHistoryProvider
 	{
@@ -31,10 +32,10 @@ namespace ForkPlus.Undo
 			}
 			try
 			{
-				// 用 %x00 (NUL) 分隔字段，%x1f (US) 分隔行，避免 commit message 含换行干扰解析
-				// 字段顺序：%H（sha） %x00 %gs（reflog subject，如 "commit: fix: bug"） %x00 %s（commit subject）
+				// 用 %x00 (NUL) 分隔字段，避免 commit message 含换行干扰解析
+				// 字段顺序：%H（sha） %x00 %gs（reflog subject） %x00 %s（commit subject） %x00 %ci（committer date iso）
 				GitRequestResult r = new GitRequest(gitModule)
-					.Command("reflog", "HEAD", "--pretty=format:%H%x00%gs%x00%s", $"--max-count={maxCount}")
+					.Command("reflog", "HEAD", "--pretty=format:%H%x00%gs%x00%s%x00%ci", $"--max-count={maxCount}")
 					.Execute(silent: true);
 				if (!r.Success || string.IsNullOrEmpty(r.Stdout))
 				{
@@ -70,13 +71,37 @@ namespace ForkPlus.Undo
 			{
 				return null;
 			}
-			return new ReflogEntry
+			ReflogEntry entry = new ReflogEntry
 			{
 				Sha = parts[0],
 				ReflogSubject = parts.Length > 1 ? parts[1] : "",
 				CommitSubject = parts.Length > 2 ? parts[2] : "",
 				Index = index
 			};
+			// v3.4.0：解析 %ci（committer date iso，形如 "2026-07-19 10:00:00 +0800"）
+			if (parts.Length > 3 && !string.IsNullOrWhiteSpace(parts[3]))
+			{
+				entry.TimestampUtc = ParseIsoDate(parts[3]);
+			}
+			return entry;
+		}
+
+		/// <summary>
+		/// 解析 git %ci 输出（形如 "2026-07-19 10:00:00 +0800"）为 UTC DateTime。
+		/// 失败返回 null。
+		/// </summary>
+		private static DateTime? ParseIsoDate(string s)
+		{
+			try
+			{
+				// DateTime.Parse 支持 "yyyy-MM-dd HH:mm:ss zz" 格式
+				DateTime local = DateTime.Parse(s, null, System.Globalization.DateTimeStyles.AssumeLocal);
+				return local.ToUniversalTime();
+			}
+			catch
+			{
+				return null;
+			}
 		}
 	}
 
@@ -94,5 +119,8 @@ namespace ForkPlus.Undo
 
 		/// <summary>reflog 索引（HEAD@{N}）。0 = 最近一次。</summary>
 		public int Index { get; set; }
+
+		/// <summary>v3.4.0：reflog 记录时间（UTC）。可能为 null（解析失败或老格式）。</summary>
+		public DateTime? TimestampUtc { get; set; }
 	}
 }

@@ -1,0 +1,61 @@
+<ui:CustomWindow x:Class="ForkPlus.UI.Dialogs.ReflogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="clr-namespace:ForkPlus.UI"
+    xmlns:undo="clr-namespace:ForkPlus.Undo"
+    Title="Reflog"
+    Height="500" Width="700"
+    MinHeight="300" MinWidth="500"
+    WindowStartupLocation="CenterOwner">
+  <ui:CustomWindow.Resources>
+    <ResourceDictionary>
+      <Style x:Key="ReflogListItemStyle" TargetType="{x:Type ListViewItem}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="6,3" />
+      </Style>
+    </ResourceDictionary>
+  </ui:CustomWindow.Resources>
+  <Grid Margin="8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- 顶部工具栏 -->
+    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
+      <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold"
+                 Text="Reflog History" x:Name="HeaderTitle" />
+      <Button DockPanel.Dock="Right" x:Name="RefreshButton" Click="RefreshButton_Click"
+              Padding="12,4" Margin="8,0,0,0" Content="Refresh" />
+      <Button DockPanel.Dock="Right" x:Name="JumpButton" Click="JumpButton_Click"
+              Padding="12,4" Margin="4,0,0,0" Content="Jump to..." IsEnabled="False" />
+    </DockPanel>
+
+    <!-- reflog 列表 -->
+    <ListView Grid.Row="1" x:Name="ReflogListView"
+              MouseDoubleClick="ReflogListView_MouseDoubleClick"
+              SelectionChanged="ReflogListView_SelectionChanged"
+              ItemContainerStyle="{StaticResource ReflogListItemStyle}">
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Header="Index" Width="60"
+                          DisplayMemberBinding="{Binding IndexDisplay}" />
+          <GridViewColumn Header="SHA" Width="80"
+                          DisplayMemberBinding="{Binding ShaDisplay}" />
+          <GridViewColumn Header="Operation" Width="220"
+                          DisplayMemberBinding="{Binding OperationName}" />
+          <GridViewColumn Header="Commit Subject" Width="220"
+                          DisplayMemberBinding="{Binding CommitSubject}" />
+          <GridViewColumn Header="Time" Width="140"
+                          DisplayMemberBinding="{Binding TimeDisplay}" />
+        </GridView>
+      </ListView.View>
+    </ListView>
+
+    <!-- 状态栏 -->
+    <TextBlock Grid.Row="2" x:Name="StatusText" Margin="0,8,0,0"
+               Foreground="{DynamicResource ForegroundBrush.Gray}"
+               Text="Double-click an entry to jump to that state." />
+  </Grid>
+</ui:CustomWindow>

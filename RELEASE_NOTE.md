@@ -2,6 +2,85 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.4.0
+
+### Layer 2：工作区级快照（追平 Tower）
+
+v3.3.0 只能 undo HEAD 移动类操作（commit/checkout/reset 等）。v3.4.0 把 discard/stage/unstage/delete branch 这 4 类工作区高频操作也纳入 Undo/Redo 栈，追平 Tower 的工作区级 undo 能力。
+
+#### 数据结构扩展：UndoEntry 增加 PreOperationStashSha
+
+- **`UndoEntry` 新增第 5 字段 `PreOperationStashSha`**：操作前用 `git stash create --include-untracked` 抓的工作区快照 sha。
+  - 工作区干净时为 null（HEAD 移动类操作通常如此，节省一次 stash apply）
+  - 失败时为 null（降级到 v3.3.0 行为，只恢复 HEAD）
+  - Undo 时用 `git stash apply --index <sha>` 恢复工作区 + index 状态
+- **向后兼容**：构造函数第 5 参数默认 null，v3.3.0 调用方无需修改。
+
+#### 命令扩展
+
+- **`SnapshotGitCommand`**：新增 `ReadStashCreate` 调 `git stash create --include-untracked`（git < 2.35 回退到不带该选项）。从 2 次 git 进程 → 3 次。
+- **`RestoreSnapshotGitCommand`**：新增第 3 步，如有 `PreOperationStashSha` 调 `git stash apply --index`。失败不阻断（HEAD 已恢复，工作区冲突让用户手动解决）。
+
+#### 4 类工作区操作纳入 Undo/Redo
+
+| 操作 | 修改前 | 修改后 | Undo 行为 |
+|---|---|---|---|
+| Discard 文件变更 | `JobQueue.Add`（不进栈） | `AddUndoable` | stash apply 恢复被丢弃的变更 |
+| Stage 文件 | `JobQueue.Add`（不进栈） | `AddUndoable` | stash apply --index 恢复 stage 前的 index 状态 |
+| Unstage 文件 | `JobQueue.Add`（不进栈） | `AddUndoable` | stash apply --index 恢复 unstage 前的 index 状态 |
+| Delete local branch | 直接 Execute（无队列） | `AddUndoable` | stash apply + reset 恢复分支引用和工作区 |
+| Delete remote branch | 直接 Execute（无队列） | `AddUndoable` | 恢复本地 tracking ref（远程需 push 重建） |
+
+修改文件：
+- `DiscardChangedFilesCommand.cs`：`JobQueue.Add` → `AddUndoable`，返回 `discardResult`
+- `ToggleFileStageCommand.cs`：Stage 和 Unstage 两处 `JobQueue.Add` → `AddUndoable`
+- `RemoveLocalBranchWindow.xaml.cs`：`JobQueue.Add` → `AddUndoable`，用 `finalResult` 跟踪多分支结果
+- `RemoveRemoteBranchWindow.xaml.cs`：同上
+
+### UX 增强：Reflog 视图
+
+v3.3.0 的 Undo 下拉只能看栈内 50 条历史。v3.4.0 新增 Reflog 视图，让用户能看到完整 reflog（默认 200 条），包括超栈深度（LostCount）以外的历史，并能从任意历史状态恢复。
+
+#### 新增 ReflogWindow
+
+- **新建 `ReflogWindow.xaml` + `.xaml.cs`**：非模态工具窗口（可同时操作仓库和看 reflog）。
+- **ListView 展示**：Index（HEAD@{N}）/ SHA 前 8 位 / Operation / Commit Subject / Time（本地时区）。
+- **`UndoIndexStore` left-outer join**：命中索引显示 UI 友好操作名（如 "Commit 'fix: bug'"），未命中降级显示 reflog 原生 subject（如 "commit: fix: bug"）。
+- **双击跳转**：弹窗确认后走 `AddUndoable("Jump to HEAD@{N}", reset --hard <sha>)`，让用户能 Undo 回到跳转前状态。
+- **Refresh 按钮**：重新加载 reflog。
+
+#### 工具栏入口
+
+- **Undo 下拉菜单底部**加 "View Reflog..." 入口（始终可见，让用户能看完整 reflog 历史 + 跳转）。
+- **Redo 下拉菜单底部**对称加上同样入口。
+- `ShowReflogWindow` 方法非模态打开（`window.Show()` 而非 `ShowDialog()`）。
+
+#### ReflogEntry 扩展
+
+- **`ReflogEntry` 新增 `TimestampUtc` 字段**：解析 `git reflog --pretty=%H%x00%gs%x00%s%x00%ci` 的第 4 字段。
+  - `%ci` 格式：`yyyy-MM-dd HH:mm:ss ±zz`，解析为 UTC DateTime。
+  - 解析失败静默返回 null（不抛出），其他字段仍正常解析。
+- **`ReflogHistoryProvider.ReadHeadReflog`**：reflog 格式从 3 字段扩展到 4 字段（增加 `%ci`）。
+
+### Ctrl+Z 快捷键（v3.0.0 已实现，本次验证）
+
+- **Ctrl+Z** → Undo（`UndoCommand.Shortcut`，v3.0.0）
+- **Ctrl+Shift+Z** → Redo（`RedoCommand.Shortcut`，v3.0.0）
+- **Ctrl+Y** → Redo（`RedoCommand.SecondaryShortcut`，v3.0.0）
+- **作用范围**：主窗口内有效（WPF `CommandBindings`，不抢其他应用快捷键）。`MainWindow.InitializeKeyBindings()` v3.0.0 已注册，本次仅验证无需重做。
+
+### 单元测试
+
+- **`UndoRedoStackTests` 新增 5 个 PreOperationStashSha 测试**：默认 null / 显式赋值 / WithOperationName 保留 / null 归一化 / 栈操作中保持完整。
+- **`ReflogHistoryProviderTests` 新增 5 个 TimestampUtc 测试**：+0800 时区解析 / +0000 时区解析 / 老格式无时间 / 空时间 / 格式错误静默返回 null。
+- **新增 `ReflogViewItemTests`**（14 个测试）：IndexDisplay 格式 / ShaDisplay 截断 / 短 sha / 空 sha / OperationName 传递 / null 归一化 / CommitSubject / TimeDisplay 本地时间转换 / 空 timestamp。
+
+### 设计说明
+
+- **stash create 而非 write-tree**：`git stash create --include-untracked` 是 git 原生命令，能完整捕获 tracked + untracked 文件变更 + index 状态，且不写入 stash list（悬空 commit，对仓库无副作用）。
+- **stash apply 失败不阻断**：HEAD 已恢复是核心目标，工作区冲突让用户手动解决（避免强行 reset 丢数据）。
+- **Reflog 视图非模态**：用户可以同时操作仓库和看 reflog，符合工具窗口使用习惯。
+
 ## v3.3.0
 
 ### 重构：Undo/Redo 分层架构

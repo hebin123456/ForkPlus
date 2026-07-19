@@ -394,6 +394,29 @@ namespace ForkPlus.UI.UserControls
 			};
 			contextMenu.Items.Add(lostItem);
 		}
+		// v3.4.0：Reflog 视图入口（始终可见，让用户能看完整 reflog 历史 + 跳转）
+		contextMenu.Items.Add(new Separator());
+		MenuItem viewReflogItem = new MenuItem
+		{
+			Header = Preferences.PreferencesLocalization.Translate("View Reflog...", language)
+		};
+		viewReflogItem.Click += delegate
+		{
+			ShowReflogWindow(repo);
+		};
+		contextMenu.Items.Add(viewReflogItem);
+	}
+
+	/// <summary>v3.4.0：打开 Reflog 视图窗口（非模态，可同时操作仓库）。</summary>
+	private void ShowReflogWindow(RepositoryUserControl repo)
+	{
+		if (repo == null)
+		{
+			return;
+		}
+		ForkPlus.UI.Dialogs.ReflogWindow window = new ForkPlus.UI.Dialogs.ReflogWindow(repo);
+		window.Owner = _mainWindow;
+		window.Show();
 	}
 
 	private void RedoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)
@@ -423,6 +446,20 @@ namespace ForkPlus.UI.UserControls
 			contextMenu.Items.Add(item);
 			index++;
 		}
+		// v3.4.0：Reflog 视图入口（与 Undo 下拉对称）
+		if (index > 1)
+		{
+			contextMenu.Items.Add(new Separator());
+		}
+		MenuItem viewReflogItem = new MenuItem
+		{
+			Header = Preferences.PreferencesLocalization.Translate("View Reflog...", language)
+		};
+		viewReflogItem.Click += delegate
+		{
+			ShowReflogWindow(repo);
+		};
+		contextMenu.Items.Add(viewReflogItem);
 	}
 
 	/// <summary>跳转到 undo 历史中的某一步（多次 Undo 直到目标）。v3.0.0。</summary>

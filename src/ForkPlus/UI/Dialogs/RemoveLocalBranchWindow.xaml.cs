@@ -197,8 +197,11 @@ namespace ForkPlus.UI.Dialogs
 			string name = ((branchesToRemove.Length > 1) ? $"Delete {branchesToRemove.Length} branches" : ("Delete '" + branchesToRemove[0].Name + "'"));
 			bool removeWorktree = DeleteWorktreeCheckBox.IsChecked.GetValueOrDefault();
 			Worktree? worktreeToRemove = _worktreeToRemove;
-			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+			// v3.4.0 Layer 2：删 branch 走 AddUndoable，操作前抓工作区快照（stash create），
+			// Undo 时 stash apply --index 恢复，让用户能撤回误删的分支引用
+			_repositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
 			{
+				GitCommandResult finalResult = GitCommandResult.Success();
 				if (removeWorktree && worktreeToRemove.HasValue)
 				{
 					Worktree valueOrDefault = worktreeToRemove.GetValueOrDefault();
@@ -209,11 +212,12 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult removeWorktreeResult = new RemoveWorktreeGitCommand().Execute(gitModule, valueOrDefault.Path, monitor);
 					if (!removeWorktreeResult.Succeeded)
 					{
+						finalResult = removeWorktreeResult;
 						base.Dispatcher.Async(delegate
 						{
 							Close(removeWorktreeResult);
 						});
-						return;
+						return finalResult;
 					}
 					base.Dispatcher.Async(delegate
 					{
@@ -227,6 +231,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult removeLocalBranchResult = new RemoveLocalBranchGitCommand().Execute(gitModule, branchesToRemove.Map((LocalBranch x) => x.Name), monitor);
 				if (!removeLocalBranchResult.Succeeded)
 				{
+					finalResult = removeLocalBranchResult;
 					base.Dispatcher.Async(delegate
 					{
 						Close(removeLocalBranchResult);
@@ -276,11 +281,12 @@ namespace ForkPlus.UI.Dialogs
 							}
 							if (!removeRemoteBranchesResult.Succeeded)
 							{
+								finalResult = removeRemoteBranchesResult;
 								base.Dispatcher.Async(delegate
 								{
 									Close(removeRemoteBranchesResult);
 								});
-								return;
+								return finalResult;
 							}
 						}
 					}
@@ -292,6 +298,7 @@ namespace ForkPlus.UI.Dialogs
 						Close(GitCommandResult.Success());
 					});
 				}
+				return finalResult;
 			}, JobFlags.SaveToLog);
 		}
 

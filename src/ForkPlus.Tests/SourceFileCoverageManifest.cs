@@ -1044,6 +1044,7 @@ namespace ForkPlus.Tests
 			"src/ForkPlus/UI/Dialogs/PushTagWindow.xaml.cs",
 			"src/ForkPlus/UI/Dialogs/PushWindow.xaml.cs",
 			"src/ForkPlus/UI/Dialogs/RebaseBranchWindow.xaml.cs",
+			"src/ForkPlus/UI/Dialogs/ReflogWindow.xaml.cs",
 			"src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.xaml.cs",
 			"src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.xaml.cs",
 			"src/ForkPlus/UI/Dialogs/RemoveStashWindow.xaml.cs",

@@ -13,9 +13,14 @@ namespace ForkPlus.Tests
 	public class UndoRedoStackTests
 	{
 		private static UndoEntry MakeEntry(string opName, string headSha = null)
-		{
-			return new UndoEntry(headSha, "main", opName, DateTime.UtcNow);
-		}
+	{
+		return new UndoEntry(headSha, "main", opName, DateTime.UtcNow);
+	}
+
+	private static UndoEntry MakeEntryWithStash(string opName, string headSha, string stashSha)
+	{
+		return new UndoEntry(headSha, "main", opName, DateTime.UtcNow, stashSha);
+	}
 
 		[Fact]
 		public void NewStack_CannotUndoOrRedo()
@@ -332,13 +337,66 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void UndoEntry_WithOperationName_NullNormalizesToEmpty()
-		{
-			UndoEntry original = new UndoEntry("sha1", "main", "op1", DateTime.UtcNow);
-			UndoEntry copy = original.WithOperationName(null);
+	public void UndoEntry_WithOperationName_NullNormalizesToEmpty()
+	{
+		UndoEntry original = new UndoEntry("sha1", "main", "op1", DateTime.UtcNow);
+		UndoEntry copy = original.WithOperationName(null);
 
-			Assert.Equal("", copy.OperationName);
-			Assert.Equal("sha1", copy.HeadSha);
-		}
+		Assert.Equal("", copy.OperationName);
+		Assert.Equal("sha1", copy.HeadSha);
 	}
+
+	// ===== v3.4.0 Layer 2 新增：PreOperationStashSha 字段测试 =====
+
+	[Fact]
+	public void UndoEntry_DefaultPreOperationStashSha_IsNull()
+	{
+		// 不传 stashSha 时默认 null（向后兼容 v3.3.0 调用方）
+		UndoEntry entry = new UndoEntry("sha1", "main", "op1", DateTime.UtcNow);
+		Assert.Null(entry.PreOperationStashSha);
+	}
+
+	[Fact]
+	public void UndoEntry_WithStashSha_PreservesField()
+	{
+		UndoEntry entry = MakeEntryWithStash("Discard Changes", "sha1", "stashSha1");
+		Assert.Equal("stashSha1", entry.PreOperationStashSha);
+		Assert.Equal("sha1", entry.HeadSha);
+		Assert.Equal("Discard Changes", entry.OperationName);
+	}
+
+	[Fact]
+	public void UndoEntry_WithOperationName_PreservesStashSha()
+	{
+		// WithOperationName 副本不应丢失 stash sha（v3.4.0 修复）
+		UndoEntry original = MakeEntryWithStash("op1", "sha1", "stashSha1");
+		UndoEntry copy = original.WithOperationName("renamed");
+
+		Assert.Equal("renamed", copy.OperationName);
+		Assert.Equal("stashSha1", copy.PreOperationStashSha);
+		Assert.Equal("sha1", copy.HeadSha);
+	}
+
+	[Fact]
+	public void UndoEntry_NullStashSha_NormalizedToNull()
+	{
+		// 显式传 null 应等同默认（不报错，字段为 null）
+		UndoEntry entry = new UndoEntry("sha1", "main", "op1", DateTime.UtcNow, null);
+		Assert.Null(entry.PreOperationStashSha);
+	}
+
+	[Fact]
+	public void Stack_WithStashEntry_PopForUndo_ReturnsEntryWithStashSha()
+	{
+		// 验证含 stash sha 的 entry 在栈操作中保持完整（不被丢失）
+		UndoRedoStack stack = new UndoRedoStack();
+		UndoEntry before = MakeEntryWithStash("Discard Changes", "sha1", "stashSha1");
+		stack.RecordBeforeOperation(before);
+
+		UndoEntry target = stack.PopForUndo(MakeEntry("current", "sha2"));
+
+		Assert.Same(before, target);
+		Assert.Equal("stashSha1", target.PreOperationStashSha);
+	}
+}
 }

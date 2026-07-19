@@ -74,8 +74,11 @@ namespace ForkPlus.UI.Dialogs
 			DisableEditableControls();
 			GitModule gitModule = _repositoryUserControl.GitModule;
 			string name = ((_remoteBranches.Length > 1) ? $"Delete {_remoteBranches.Length} branches" : ("Delete '" + _remoteBranches[0].Name + "'"));
-			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+			// v3.4.0 Layer 2：删远程 branch 走 AddUndoable，操作前抓工作区快照。
+			// 注意：远程分支删除需 push --delete，本地 Undo 无法恢复远程，但可恢复本地 tracking ref 和设置。
+			_repositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
 			{
+				GitCommandResult finalResult = GitCommandResult.Success();
 				for (int i = 0; i < _remoteBranches.Length; i++)
 				{
 					RemoteBranch remoteBranch = _remoteBranches[i];
@@ -86,11 +89,12 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult removeRemoteBranchResult = new RemoveRemoteBranchGitCommand().Execute(gitModule, remoteBranch, monitor);
 					if (!removeRemoteBranchResult.Succeeded)
 					{
+						finalResult = removeRemoteBranchResult;
 						base.Dispatcher.Async(delegate
 						{
 							Close(removeRemoteBranchResult);
 						});
-						return;
+						return finalResult;
 					}
 					LocalBranch localBranch = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.UpstreamFullReference == remoteBranch.FullReference);
 					if (localBranch != null)
@@ -98,11 +102,12 @@ namespace ForkPlus.UI.Dialogs
 						GitCommandResult removeTrackingReferenceResult = new UpdateTrackingReferenceGitCommand().Execute(gitModule, localBranch, null, monitor);
 						if (!removeTrackingReferenceResult.Succeeded)
 						{
+							finalResult = removeTrackingReferenceResult;
 							base.Dispatcher.Async(delegate
 							{
 								Close(removeTrackingReferenceResult);
 							});
-							return;
+							return finalResult;
 						}
 					}
 				}
@@ -113,6 +118,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					Close(GitCommandResult.Success());
 				});
+				return finalResult;
 			}, JobFlags.SaveToLog);
 		}
 

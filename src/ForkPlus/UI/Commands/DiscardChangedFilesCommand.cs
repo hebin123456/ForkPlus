@@ -100,7 +100,9 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
-			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(Translate("Discard Changes"), delegate(JobMonitor monitor)
+			// v3.4.0 Layer 2：discard 走 AddUndoable，操作前抓工作区快照（stash create），
+			// Undo 时 stash apply --index 恢复被丢弃的变更
+			commitUserControl.StageJob = repositoryUserControl.AddUndoable(Translate("Discard Changes"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult discardResult = new DiscardFileChangesGitCommand().Execute(gitModule, changedFiles.ToArray(), monitor);
 				if (!discardResult.Succeeded)
@@ -155,6 +157,7 @@ namespace ForkPlus.UI.Commands
 						});
 					}
 				}
+				return discardResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);

@@ -15,6 +15,12 @@ namespace ForkPlus.Git.Commands
 	///   - 重建分支/tag/stash 不再需要：CLI 操作和 UI 操作都通过 reflog 兜底恢复
 	///   - 旧版重建分支/tag/stash 的逻辑反而可能产生副作用（比如重建已被用户故意删除的分支）
 	///
+	/// v3.4.0 Layer 2 扩展：
+	/// - 新增第 3 步：如果有 PreOperationStashSha，用 git stash apply --index 恢复工作区 + index 状态
+	/// - 用于 undo discard/stage/unstage/delete branch 等工作区级操作
+	/// - HEAD 移动类操作 stash sha 为 null，跳过此步，行为与 v3.3.0 一致
+	/// - stash apply 失败不阻断（HEAD 已恢复，工作区可能部分冲突，让用户手动解决）
+	///
 	/// 设计原则：恢复失败立即返回，不继续后续步骤。
 	/// 工作区 dirty 检测由调用方在 UI 层弹窗确认，本命令不做拦截。
 	/// </summary>
@@ -72,6 +78,26 @@ namespace ForkPlus.Git.Commands
 					{
 						return GitCommandResult.Failure(new GitCommandError.GitError(handler.FullOutput(), handler.Stderr()));
 					}
+				}
+			}
+
+			// 3. v3.4.0 Layer 2：恢复工作区 + index 状态（如果有 stash 快照）
+			// 用于 undo discard/stage/unstage/delete branch 等工作区级操作
+			if (!string.IsNullOrEmpty(target.PreOperationStashSha))
+			{
+				monitor?.Update(0.8, PreferencesLocalization.FormatCurrent("Restoring working tree..."));
+				GitCommand stashApplyCmd = new GitCommand(App.OverrideCredentialHelper, "stash", "apply", "--index", target.PreOperationStashSha);
+				monitor?.Append(null, stashApplyCmd);
+				GitRequestResult stashResult = new GitRequest(gitModule).Command(stashApplyCmd).Execute(monitor);
+				if (monitor != null && monitor.IsCanceled)
+				{
+					return GitCommandResult.Failure(new GitCommandError.Cancelled());
+				}
+				// stash apply 失败不阻断恢复（HEAD 已恢复，工作区冲突让用户手动解决）
+				// 仅记录到 monitor 日志，返回成功
+				if (!stashResult.Success)
+				{
+					monitor?.Append(PreferencesLocalization.FormatCurrent("Working tree restore skipped: {0}", stashResult.Stderr?.Trim() ?? "unknown error"), null);
 				}
 			}
 

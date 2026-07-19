@@ -1298,6 +1298,8 @@ namespace ForkPlus.Tests
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/PushWindow.xaml.cs", "class", "RemoteBranchItem", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/PushWindow.xaml.cs", "enum", "RemoteBranchItemType", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RebaseBranchWindow.xaml.cs", "class", "RebaseBranchWindow", "UNIT-SOURCE-COVERAGE-001"),
+			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/ReflogWindow.xaml.cs", "class", "ReflogWindow", "UNIT-SOURCE-COVERAGE-001"),
+			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/ReflogWindow.xaml.cs", "class", "ReflogViewItem", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.xaml.cs", "class", "RemoveLocalBranchWindow", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.xaml.cs", "class", "RemoveLocalBranchItem", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.xaml.cs", "class", "RemoveRemoteBranchWindow", "UNIT-SOURCE-COVERAGE-001"),
