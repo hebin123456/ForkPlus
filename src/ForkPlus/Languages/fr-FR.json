@@ -2140,6 +2140,13 @@
     "{0} older operations not in history (use reflog to recover)": "{0} opérations plus anciennes absentes de l'historique (récupérables via reflog)",
     "Copy result to clipboard": "Copier le résultat dans le presse-papiers",
     "Stop the current AI task": "Arrêter la tâche IA actuelle",
-    "Select AI model": "Sélectionner le modèle d'IA"
+    "Select AI model": "Sélectionner le modèle d'IA",
+    "Bytes per row": "Octets par ligne",
+    "Show ASCII": "Afficher ASCII",
+    "Show offset": "Afficher l'offset",
+    "Source": "Source",
+    "Destination": "Destination",
+    "Search (ASCII or hex bytes like 41 42)": "Rechercher (ASCII ou octets hex comme 41 42)",
+    "Copy as raw bytes": "Copier les octets bruts"
   }
 }

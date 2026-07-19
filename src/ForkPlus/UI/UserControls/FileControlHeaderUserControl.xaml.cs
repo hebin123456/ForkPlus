@@ -387,6 +387,12 @@ namespace ForkPlus.UI.UserControls
 				TextModeNavigationButtonsContainer.Collapse();
 				ImageModeButtonsContainer.Show();
 				break;
+			// v3.1.0：Hex 模式下不显示 Text/Image 工具栏按钮（HexContentControl 自带工具栏）
+			case FileControlHeaderMode.Hex:
+				TextModeButtonsContainer.Collapse();
+				TextModeNavigationButtonsContainer.Collapse();
+				ImageModeButtonsContainer.Collapse();
+				break;
 			}
 		}
 

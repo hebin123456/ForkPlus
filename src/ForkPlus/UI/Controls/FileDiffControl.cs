@@ -15,6 +15,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
+using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
@@ -320,29 +321,45 @@ namespace ForkPlus.UI.Controls
 						return;
 					}
 					_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading binary info for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
+				{
+					GitCommandResult<UnknownBinaryDiffContent> unknownBinaryDiffContentResult = LoadUnknownBinaryDiffContent(diff2, parsedDiffContent.GitModule, changedFile, new JobMonitor());
+					// v3.1.0：当两侧大小均不超过阈值时，额外加载字节用于 Hex Diff 视图
+					GitCommandResult<HexDiffContent> hexDiffContentResult = null;
+					if (unknownBinaryDiffContentResult.Succeeded && CanLoadHexDiff(unknownBinaryDiffContentResult.Result))
 					{
-						GitCommandResult<UnknownBinaryDiffContent> unknownBinaryDiffContentResult = LoadUnknownBinaryDiffContent(diff2, parsedDiffContent.GitModule, changedFile, new JobMonitor());
-						base.Dispatcher.Async(delegate
+						hexDiffContentResult = LoadHexDiffContent(diff2, parsedDiffContent.GitModule, changedFile, monitor);
+					}
+					base.Dispatcher.Async(delegate
+					{
+						if (!monitor.IsCanceled)
 						{
-							if (!monitor.IsCanceled)
+							_activeRefreshJob = null;
+							if (!unknownBinaryDiffContentResult.Succeeded)
 							{
-								_activeRefreshJob = null;
-								if (!unknownBinaryDiffContentResult.Succeeded)
-								{
-									ShowErrorView(unknownBinaryDiffContentResult.Error);
-								}
-								else
-								{
-									UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
-									ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
-									{
-										c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2);
-										ShowHeaderIfAllowed(h, changedFile);
-									});
-								}
+								ShowErrorView(unknownBinaryDiffContentResult.Error);
 							}
-						});
-					}, JobFlags.Hidden);
+							else if (hexDiffContentResult != null && hexDiffContentResult.Succeeded)
+							{
+								// v3.1.0：Hex Diff 视图（side-by-side 字节比较）
+								HexDiffContent hexDiffContent = hexDiffContentResult.Result;
+								ShowSubView(() => new HexDiffUserControl(), delegate(HexDiffUserControl c, FileControlHeaderUserControl h)
+								{
+									c.SetContent(hexDiffContent);
+									ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Hex);
+								});
+							}
+							else
+							{
+								UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
+								ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+								{
+									c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2);
+									ShowHeaderIfAllowed(h, changedFile);
+								});
+							}
+						}
+					});
+				}, JobFlags.Hidden);
 				}
 				else
 				{
@@ -664,9 +681,71 @@ namespace ForkPlus.UI.Controls
 				return GitCommandResult<UnknownBinaryDiffContent>.Failure(gitCommandResult2.Error);
 			}
 			return GitCommandResult<UnknownBinaryDiffContent>.Success(new UnknownBinaryDiffContent(changedFile, gitCommandResult.Result, gitCommandResult2.Result));
+	}
+
+	/// <summary>v3.1.0：Hex Diff 自动加载阈值。两侧 blob 大小均不超过此值时自动加载字节并启用 Hex Diff 视图。</summary>
+	private const long MaxHexDiffSize = 10 * 1024 * 1024;
+
+	/// <summary>v3.1.0：判断 UnknownBinaryDiffContent 是否可以升级为 HexDiffContent（两侧大小均不超过阈值且非空）。</summary>
+	private static bool CanLoadHexDiff(UnknownBinaryDiffContent content)
+	{
+		if (content == null) return false;
+		long? src = content.SrcSize;
+		long? dst = content.DstSize;
+		// 纯新增/纯删除文件（一侧为 0 或 null）也允许，另一侧只要不超过阈值即可
+		if (src.HasValue && src.Value > MaxHexDiffSize) return false;
+		if (dst.HasValue && dst.Value > MaxHexDiffSize) return false;
+		return true;
+	}
+
+	/// <summary>v3.1.0：加载两侧 blob 字节，构造 HexDiffContent。
+	/// 复用 LoadUnknownBinaryDiffContent 里 src/dst BlobTarget 的判定逻辑。</summary>
+	private static GitCommandResult<HexDiffContent> LoadHexDiffContent(Diff diff, GitModule gitModule, ChangedFile changedFile, JobMonitor monitor)
+	{
+		string srcObject = diff.SrcObject;
+		string dstObject = diff.DstObject;
+		Sha? srcSha = srcObject != null ? Sha.Parse(srcObject) : (Sha?)null;
+		Sha? dstSha = dstObject != null ? Sha.Parse(dstObject) : (Sha?)null;
+		if (srcSha == null && dstSha == null)
+		{
+			return GitCommandResult<HexDiffContent>.Failure(new GitCommandError.ParseError("Can not find src/dst in binary diff for hex view"));
 		}
 
-		private static GitCommandResult<SubmoduleDiffContent> LoadSubmoduleDiffContent(Diff diff, GitModule gitModule, SubmoduleChangedFile submoduleChangedFile, JobMonitor monitor)
+		MemoryStream srcData = null;
+		MemoryStream dstData = null;
+		try
+		{
+			// src 侧：通过 BlobTarget.Blob(srcSha) 加载；srcSha 为 null 时（纯新增）跳过
+			if (srcSha.HasValue && srcSha.GetValueOrDefault() != Sha.Zero)
+			{
+				if (monitor.IsCanceled) return GitCommandResult<HexDiffContent>.Failure(new GitCommandError.Cancelled());
+				GitCommandResult<MemoryStream> srcResult = new GetBlobGitCommand().Execute(gitModule, new BlobTarget.Blob(srcSha.GetValueOrDefault()));
+				if (!srcResult.Succeeded) return GitCommandResult<HexDiffContent>.Failure(srcResult.Error);
+				srcData = srcResult.Result;
+			}
+
+			// dst 侧：复用 LoadUnknownBinaryDiffContent 的 BlobTarget 选择逻辑
+			if (dstSha.HasValue)
+			{
+				if (monitor.IsCanceled) return GitCommandResult<HexDiffContent>.Failure(new GitCommandError.Cancelled());
+				BlobTarget dstTarget = (!changedFile.Tracked || !changedFile.Staged)
+					? (BlobTarget)new BlobTarget.Unstaged(changedFile.Path)
+					: (BlobTarget)new BlobTarget.Blob(dstSha.GetValueOrDefault());
+				GitCommandResult<MemoryStream> dstResult = new GetBlobGitCommand().Execute(gitModule, dstTarget);
+				if (!dstResult.Succeeded) return GitCommandResult<HexDiffContent>.Failure(dstResult.Error);
+				dstData = dstResult.Result;
+			}
+			return GitCommandResult<HexDiffContent>.Success(new HexDiffContent(changedFile, srcData, dstData));
+		}
+		catch (Exception ex)
+		{
+			srcData?.Dispose();
+			dstData?.Dispose();
+			return GitCommandResult<HexDiffContent>.Failure(ex);
+		}
+	}
+
+	private static GitCommandResult<SubmoduleDiffContent> LoadSubmoduleDiffContent(Diff diff, GitModule gitModule, SubmoduleChangedFile submoduleChangedFile, JobMonitor monitor)
 		{
 			string[] lines = diff.Lines;
 			GitCommandResult<Sha?> gitCommandResult = ParseSubmoduleSha(diff, diff.Chunks.FirstItem()?.SubChunks.FirstItem()?.Deleted);

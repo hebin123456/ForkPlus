@@ -2140,6 +2140,13 @@
     "{0} older operations not in history (use reflog to recover)": "{0} 件の古い操作が履歴にありません（reflog で復元できます）",
     "Copy result to clipboard": "結果をクリップボードにコピー",
     "Stop the current AI task": "現在の AI タスクを停止",
-    "Select AI model": "AI モデルを選択"
+    "Select AI model": "AI モデルを選択",
+    "Bytes per row": "1 行あたりのバイト数",
+    "Show ASCII": "ASCII を表示",
+    "Show offset": "オフセットを表示",
+    "Source": "ソース",
+    "Destination": "デスティネーション",
+    "Search (ASCII or hex bytes like 41 42)": "検索 (ASCII または 16 進バイト、例: 41 42)",
+    "Copy as raw bytes": "生バイトをコピー"
   }
 }

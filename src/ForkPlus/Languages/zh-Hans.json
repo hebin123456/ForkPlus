@@ -2140,6 +2140,13 @@
     "{0} older operations not in history (use reflog to recover)": "{0} 个早期操作未在历史中（可通过 reflog 恢复）",
     "Copy result to clipboard": "复制结果到剪贴板",
     "Stop the current AI task": "停止当前 AI 任务",
-    "Select AI model": "选择 AI 模型"
+    "Select AI model": "选择 AI 模型",
+    "Bytes per row": "每行字节数",
+    "Show ASCII": "显示 ASCII",
+    "Show offset": "显示偏移",
+    "Source": "源",
+    "Destination": "目标",
+    "Search (ASCII or hex bytes like 41 42)": "搜索（ASCII 或十六进制字节，如 41 42）",
+    "Copy as raw bytes": "复制原始字节"
   }
 }

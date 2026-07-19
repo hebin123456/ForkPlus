@@ -120,6 +120,17 @@ namespace ForkPlus.UI.Controls
 				return;
 			}
 			Content result = Content.Result;
+			// v3.1.0：优先判断 HexContent（携带字节，走 Hex 视图），再回退到普通 BinaryContent（只有大小）
+			HexContent hexContent = result as HexContent;
+			if (hexContent != null)
+			{
+				ShowSubView(() => new HexContentControl(), delegate(HexContentControl c, FileControlHeaderUserControl h)
+				{
+					c.SetContent(hexContent);
+					ShowHeader(h, hexContent.Path, FileControlHeaderMode.Hex);
+				});
+				return;
+			}
 			BinaryContent binaryContent = result as BinaryContent;
 			if (binaryContent != null)
 			{

@@ -2140,6 +2140,13 @@
     "{0} older operations not in history (use reflog to recover)": "{0} ältere Vorgänge nicht im Verlauf (über reflog wiederherstellbar)",
     "Copy result to clipboard": "Ergebnis in die Zwischenablage kopieren",
     "Stop the current AI task": "Aktuelle KI-Aufgabe stoppen",
-    "Select AI model": "KI-Modell auswählen"
+    "Select AI model": "KI-Modell auswählen",
+    "Bytes per row": "Bytes pro Zeile",
+    "Show ASCII": "ASCII anzeigen",
+    "Show offset": "Offset anzeigen",
+    "Source": "Quelle",
+    "Destination": "Ziel",
+    "Search (ASCII or hex bytes like 41 42)": "Suchen (ASCII oder Hex-Bytes wie 41 42)",
+    "Copy as raw bytes": "Als Rohbytes kopieren"
   }
 }

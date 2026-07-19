@@ -989,6 +989,11 @@ namespace ForkPlus.Settings
 		// v3.0.4：Undo/Redo 总开关，默认不使能（避免每次写操作都抓快照导致卡顿）
 		private bool _undoRedoEnabled;
 
+		// v3.1.0：Hex Viewer 设置项（每行字节数 / 是否显示 ASCII 列 / 是否显示 Offset 列）
+		private int _hexViewBytesPerRow;
+		private bool _hexViewShowAscii;
+		private bool _hexViewShowOffset;
+
 		private bool _disableSyntaxHighlighting;
 
 		private int _maxCommitCount;
@@ -1827,6 +1832,46 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>v3.1.0：Hex Viewer 每行显示的字节数（8/16/32），默认 16。</summary>
+		public int HexViewBytesPerRow
+		{
+			get
+			{
+				int v = _hexViewBytesPerRow;
+				return v == 8 || v == 16 || v == 32 ? v : 16;
+			}
+			set
+			{
+				_hexViewBytesPerRow = value == 8 || value == 16 || value == 32 ? value : 16;
+			}
+		}
+
+		/// <summary>v3.1.0：Hex Viewer 是否显示 ASCII 列，默认 true。</summary>
+		public bool HexViewShowAscii
+		{
+			get
+			{
+				return _hexViewShowAscii;
+			}
+			set
+			{
+				_hexViewShowAscii = value;
+			}
+		}
+
+		/// <summary>v3.1.0：Hex Viewer 是否显示 Offset 列，默认 true。</summary>
+		public bool HexViewShowOffset
+		{
+			get
+			{
+				return _hexViewShowOffset;
+			}
+			set
+			{
+				_hexViewShowOffset = value;
+			}
+		}
+
 		public bool DisableSyntaxHighlighting
 		{
 			get
@@ -2656,6 +2701,10 @@ namespace ForkPlus.Settings
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
 			// v3.0.4：Undo/Redo 默认不使能
 			bool undoRedoEnabled = json["UndoRedoEnabled"]?.Value<bool>() ?? false;
+			// v3.1.0：Hex Viewer 设置项（默认 16/true/true）
+			int hexViewBytesPerRow = json["HexViewBytesPerRow"]?.Value<int>() ?? 16;
+			bool hexViewShowAscii = json["HexViewShowAscii"]?.Value<bool>() ?? true;
+			bool hexViewShowOffset = json["HexViewShowOffset"]?.Value<bool>() ?? true;
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
 			int maxCommitCount = json["MaxCommitCount"]?.Value<int>() ?? 50000;
 			int layoutScaling = json["LayoutScaling"]?.Value<int>() ?? 100;
@@ -2786,6 +2835,9 @@ namespace ForkPlus.Settings
 				PushAutomaticallyOnCommit = pushAutomaticallyOnCommit,
 				CompactBranchLabels = compactBranchLabels,
 				UndoRedoEnabled = undoRedoEnabled,
+				HexViewBytesPerRow = hexViewBytesPerRow,
+				HexViewShowAscii = hexViewShowAscii,
+				HexViewShowOffset = hexViewShowOffset,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
 				MaxCommitCount = maxCommitCount,
 				LayoutScaling = layoutScaling,
@@ -3177,9 +3229,21 @@ namespace ForkPlus.Settings
 					new JValue(target.CompactBranchLabels)
 				},
 				{
-					"UndoRedoEnabled",
-					new JValue(target.UndoRedoEnabled)
-				},
+				"UndoRedoEnabled",
+				new JValue(target.UndoRedoEnabled)
+			},
+			{
+				"HexViewBytesPerRow",
+				new JValue(target.HexViewBytesPerRow)
+			},
+			{
+				"HexViewShowAscii",
+				new JValue(target.HexViewShowAscii)
+			},
+			{
+				"HexViewShowOffset",
+				new JValue(target.HexViewShowOffset)
+			},
 				{
 				"DisableSyntaxHighlighting",
 				new JValue(target.DisableSyntaxHighlighting)

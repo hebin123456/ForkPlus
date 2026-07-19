@@ -2,6 +2,22 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.1.0
+
+### 新特性
+
+- **Binary / Hex Viewer**：为二进制文件新增 Hex 视图，复用 AvalonEdit 的虚拟化、选中、搜索能力，替代原先仅显示文件大小的 "Binary file" 占位符。
+  - **单文件 Hex 视图**（`HexContentControl` + `HexEditor`）：点击工作区或提交里的任意二进制文件（图片除外，<=10MB 自动加载，>10MB 仍走原 Binary 视图），即以 Offset / Hex / ASCII 三列展示。工具栏支持：
+    - 字节宽度切换（8 / 16 / 32 字节每行）
+    - 显示/隐藏 ASCII 列、显示/隐藏 Offset 列
+    - 搜索（支持 ASCII 文本或十六进制字节，如 `41 42`）
+    - 复制选中原始字节到剪贴板
+  - **Hex Diff 视图**（`HexDiffUserControl`）：二进制文件的 Diff 不再只显示两侧大小，而是 side-by-side 展示两份字节流，逐字节比较，差异字节以金色（Gold）背景高亮。<=10MB 的二进制 diff 自动加载 Hex 视图，超过则回退到原 `BinaryDiffUserControl`。
+  - **三列着色**（`HexColorizer`）：Offset 列灰色、Hex 列蓝色（高位）/暗红色（低位）、ASCII 列绿色；不可打印字符显示为 `.`；差异字节在 Hex 列与 ASCII 列同时加背景。
+  - **设置持久化**：在偏好设置中新增 `HexViewBytesPerRow` / `HexViewShowAscii` / `HexViewShowOffset` 三项，记忆用户上次选择的字节宽度和列显示偏好，单文件视图与 Diff 视图共享设置。
+  - **头部工具栏**：新增 `FileControlHeaderMode.Hex` 枚举值，Hex 视图下隐藏 Text/Image 工具栏按钮（Hex 视图自带工具栏），仅显示文件路径。
+- **国际化**：8 种语言（简中 / 繁中 / 日 / 韩 / 法 / 德 / 西 / 英）补齐 Hex 视图相关文案（Bytes per row / Show ASCII / Show offset / Source / Destination / Search / Copy as raw bytes）。
+
 ## v3.0.4
 
 ### 修复与改进

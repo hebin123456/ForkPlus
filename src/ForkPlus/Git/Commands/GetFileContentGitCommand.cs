@@ -5,6 +5,13 @@ namespace ForkPlus.Git.Commands
 {
 	public class GetFileContentGitCommand : GetFileChangesGitCommand
 	{
+		/// <summary>
+		/// v3.1.0：超过此阈值（10 MB）的二进制文件不自动加载 hex 内容，只返回 BinaryContent（仅大小）。
+		/// 与 TextContent 的 1MB 阈值同量级但放宽，因为 hex 是固定宽度更省内存。
+		/// 用户可在 FileContentControl 中通过 "Load Hex" 按钮强制加载。
+		/// </summary>
+		private const long MaxAutoLoadHexSize = 10 * 1024 * 1024;
+
 		public GitCommandResult<Content> Execute(GitModule gitModule, Sha sha, string filePath)
 		{
 			GitCommandResult<MemoryStream> gitCommandResult = new GetBlobGitCommand().Execute(gitModule, new BlobTarget.Revision(sha.ToString(), filePath));
@@ -34,6 +41,11 @@ namespace ForkPlus.Git.Commands
 			if (text != null)
 			{
 				return GitCommandResult<Content>.Success(new TextContent(filePath, isTracked: true, text));
+			}
+			// v3.1.0：非图片二进制 → HexContent（携带字节，<= 10MB），否则只返回 BinaryContent（仅大小）
+			if (result.Length <= MaxAutoLoadHexSize)
+			{
+				return GitCommandResult<Content>.Success(new HexContent(filePath, isTracked: true, result));
 			}
 			return GitCommandResult<Content>.Success(new BinaryContent(filePath, isTracked: true, result.Length));
 		}
