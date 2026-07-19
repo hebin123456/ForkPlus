@@ -66,7 +66,11 @@ namespace ForkPlus.Tests
 			new FeatureCoverageEntry("ipc.pipe-protocol", "IPC", "UNIT-IPC-001"),
 			new FeatureCoverageEntry("performance.observability", "Infrastructure", "UNIT-PERF-TELEMETRY-001"),
 			new FeatureCoverageEntry("logging.configuration", "Infrastructure", "UNIT-ASSEMBLY-SMOKE-001"),
-			new FeatureCoverageEntry("settings.persistence", "Infrastructure", "UNIT-SOURCE-COVERAGE-001")
+			new FeatureCoverageEntry("settings.persistence", "Infrastructure", "UNIT-SOURCE-COVERAGE-001"),
+			new FeatureCoverageEntry("repository.undo-redo", "Repository", "UNIT-SOURCE-COVERAGE-001"),
+			new FeatureCoverageEntry("ai.commit-composer", "AI", "UNIT-SOURCE-COVERAGE-001"),
+			new FeatureCoverageEntry("diff.hex-viewer", "Diff", "UNIT-SOURCE-COVERAGE-001"),
+			new FeatureCoverageEntry("app.theme-solid-colors", "Application", "UNIT-LOCALIZATION-001")
 		};
 	}
 }
