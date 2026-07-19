@@ -2,6 +2,15 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.0.1
+
+### 修复与改进
+
+- **Undo/Redo 工具栏按钮对齐**：按钮样式从 `ToolbarButton` 改为 `StashToolbarButtonStyle`，与 Stash 按钮组视觉一致（左圆角 + 右侧 dropdown 形成"按钮组"整体感）；图标用 `Viewbox` 包裹并限定为 20×20 + `Stretch=Uniform`，与其他按钮（Fetch/Pull/Push/Stash 都是 20×20 Image）大小对齐。
+- **右键"AI 解释提交..."位置调整**：移到"还原提交"下面、"另存为补丁..."上面，符合"AI 操作紧跟相关 Git 操作"的菜单分组约定。
+- **AI 文本结果窗口（AI 解释 commit / AI 生成 PR 描述）加模型下拉**：在 Copy 按钮左侧新增模型下拉，列表从 `/v1/models` 拉取，切换后立即保存到设置并生效，下次请求使用新模型；与 AI Development / AI Code Review 窗口行为一致。
+- **国际化补齐**：`Copy result to clipboard`、`Stop the current AI task`、`Select AI model` 在 AiTextResultWindow 此前为硬编码英文，现已本地化到 8 种语言。
+
 ## v3.0.0
 
 ### 新特性

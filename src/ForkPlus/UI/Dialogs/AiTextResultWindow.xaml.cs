@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -10,6 +11,7 @@ using ForkPlus.Accounts.AiServices;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
+using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Microsoft.Web.WebView2.Core;
@@ -34,6 +36,9 @@ namespace ForkPlus.UI.Dialogs
 		private JobMonitor _currentMonitor;
 		private static string _cachedCss;
 
+		// v3.0.1：模型下拉框是否已完成后台加载
+		private bool _modelListLoaded;
+
 		public AiTextResultWindow()
 		{
 			InitializeComponent();
@@ -43,12 +48,133 @@ namespace ForkPlus.UI.Dialogs
 
 		private async void AiTextResultWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+			InitializeModelComboBox();
+			ApplyLocalizationToButtons();
 			await InitializeWebView();
 			// 首次加载触发一次请求（如果调用方已设置 _requestAction）
 			if (_requestAction != null)
 			{
 				RunRequest();
 			}
+		}
+
+		/// <summary>v3.0.1：初始化模型下拉框。先用当前选中模型占位，再后台拉取完整列表。</summary>
+		private void InitializeModelComboBox()
+		{
+			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
+			if (!string.IsNullOrWhiteSpace(currentModel))
+			{
+				ModelComboBox.Items.Add(currentModel);
+				ModelComboBox.SelectedIndex = 0;
+			}
+			else
+			{
+				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
+				ModelComboBox.SelectedIndex = 0;
+			}
+
+			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
+			{
+				List<string> models = null;
+				try
+				{
+					if (OpenAiService.IsAiReviewConfigured())
+					{
+						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+						ServiceResult<string[]> result = aiService.ListModels();
+						if (result.Succeeded && result.Result != null)
+						{
+							models = new List<string>(result.Result);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("AiTextResultWindow failed to load AI model list: " + ex.Message);
+				}
+
+				if (models == null || models.Count == 0)
+				{
+					return;
+				}
+
+				Dispatcher.Async(delegate
+				{
+					try
+					{
+						if (_modelListLoaded)
+						{
+							return;
+						}
+						_modelListLoaded = true;
+						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
+						ModelComboBox.Items.Clear();
+						foreach (string m in models)
+						{
+							if (!string.IsNullOrWhiteSpace(m))
+							{
+								ModelComboBox.Items.Add(m);
+							}
+						}
+						int idx = -1;
+						for (int i = 0; i < ModelComboBox.Items.Count; i++)
+						{
+							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
+							{
+								idx = i;
+								break;
+							}
+						}
+						if (idx >= 0)
+						{
+							ModelComboBox.SelectedIndex = idx;
+						}
+						else if (!string.IsNullOrWhiteSpace(selected))
+						{
+							ModelComboBox.Items.Insert(0, selected);
+							ModelComboBox.SelectedIndex = 0;
+						}
+						else if (ModelComboBox.Items.Count > 0)
+						{
+							ModelComboBox.SelectedIndex = 0;
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("AiTextResultWindow failed to populate model combo box: " + ex.Message);
+					}
+				});
+			});
+		}
+
+		/// <summary>v3.0.1：切换模型时保存到设置。</summary>
+		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (ModelComboBox.SelectedItem == null)
+			{
+				return;
+			}
+			string selected = (string)ModelComboBox.SelectedItem;
+			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
+			{
+				return;
+			}
+			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
+			{
+				return;
+			}
+			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
+			ForkPlusSettings.Default.Save();
+			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected);
+		}
+
+		/// <summary>v3.0.1：应用按钮 ToolTip / Content 的本地化文案。</summary>
+		private void ApplyLocalizationToButtons()
+		{
+			RetryButton.ToolTip = PreferencesLocalization.Current("Retry");
+			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task");
+			CopyButton.ToolTip = PreferencesLocalization.Current("Copy result to clipboard");
+			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
 		}
 
 		private async Task InitializeWebView()
@@ -351,6 +477,7 @@ namespace ForkPlus.UI.Dialogs
 		public void ApplyLocalization()
 		{
 			PreferencesLocalization.ApplyCurrent(this);
+			ApplyLocalizationToButtons();
 		}
 	}
 }

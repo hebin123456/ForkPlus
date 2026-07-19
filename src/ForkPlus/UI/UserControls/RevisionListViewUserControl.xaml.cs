@@ -799,20 +799,20 @@ namespace ForkPlus.UI.UserControls
 				RepositoryUserControl.Commands.ShowCherryPickWindow.Execute(repositoryUserControl, new DecoratedRevision[1] { selectedRevision });
 			});
 			yield return RepositoryUserControl.Commands.ShowRevertRevisionWindow.CreateMenuItem(delegate
-			{
-				RepositoryUserControl.Commands.ShowRevertRevisionWindow.Execute(repositoryUserControl, selectedRevision);
-			});
-			yield return RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.CreateMenuItem(delegate
-			{
-				RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.Execute(repositoryUserControl, gitModule, new Revision[1] { selectedRevision.ToRevision() });
-			});
-			yield return new Separator();
-		yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
 		{
-			RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(selectedRevision.Sha);
+			RepositoryUserControl.Commands.ShowRevertRevisionWindow.Execute(repositoryUserControl, selectedRevision);
 		});
 		yield return CreateAiExplainRevisionMenuItem(repositoryUserControl, gitModule, selectedRevision.Sha);
+		yield return RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.CreateMenuItem(delegate
+		{
+			RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.Execute(repositoryUserControl, gitModule, new Revision[1] { selectedRevision.ToRevision() });
+		});
 		yield return new Separator();
+	yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
+	{
+		RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(selectedRevision.Sha);
+	});
+	yield return new Separator();
 		yield return RepositoryUserControl.Commands.CopyRevisionSha.CreateMenuItem(delegate
 		{
 			RepositoryUserControl.Commands.CopyRevisionSha.Execute(new Revision[1] { selectedRevision.ToRevision() });

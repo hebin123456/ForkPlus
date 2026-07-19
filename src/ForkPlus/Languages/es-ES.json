@@ -2137,6 +2137,9 @@
     "Auto-stash before {0}": "Auto-stash antes de {0}",
     "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "El directorio de trabajo tiene cambios sin confirmar. {0} los descartará. ¿Guardar en stash primero?",
     "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} deshará commits ya empujados al remoto. ¿Forzar push también?",
-    "{0} older operations not in history (use reflog to recover)": "{0} operaciones anteriores no están en el historial (recuperables mediante reflog)"
+    "{0} older operations not in history (use reflog to recover)": "{0} operaciones anteriores no están en el historial (recuperables mediante reflog)",
+    "Copy result to clipboard": "Copiar resultado al portapapeles",
+    "Stop the current AI task": "Detener la tarea de IA actual",
+    "Select AI model": "Seleccionar modelo de IA"
   }
 }

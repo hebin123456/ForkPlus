@@ -6,11 +6,18 @@
       <RowDefinition />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <!-- 标题栏：标题 + Copy + Stop + Retry -->
+    <!-- 标题栏：标题 + Model + Copy + Stop + Retry -->
     <DockPanel Grid.Row="0" Margin="10,0,10,6" LastChildFill="True">
       <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry" Click="RetryButton_Click" x:Name="RetryButton" />
       <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip="Stop the current AI task" Click="StopButton_Click" x:Name="StopButton" Visibility="Collapsed" />
       <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Copy" ToolTip="Copy result to clipboard" Click="CopyButton_Click" x:Name="CopyButton" />
+      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="140" MaxWidth="260" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
       <TextBlock FontSize="16" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
     </DockPanel>
     <Separator HorizontalAlignment="Stretch" Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />

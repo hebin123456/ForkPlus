@@ -2137,6 +2137,9 @@
     "Auto-stash before {0}": "{0} 前自动贮藏",
     "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "工作目录有未提交的变更。{0} 将丢弃这些变更。先贮藏吗？",
     "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} 将撤销已推送到远端的提交。是否同时强制推送到远端？",
-    "{0} older operations not in history (use reflog to recover)": "{0} 个早期操作未在历史中（可通过 reflog 恢复）"
+    "{0} older operations not in history (use reflog to recover)": "{0} 个早期操作未在历史中（可通过 reflog 恢复）",
+    "Copy result to clipboard": "复制结果到剪贴板",
+    "Stop the current AI task": "停止当前 AI 任务",
+    "Select AI model": "选择 AI 模型"
   }
 }

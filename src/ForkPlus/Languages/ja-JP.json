@@ -2137,6 +2137,9 @@
     "Auto-stash before {0}": "{0} の前に自動スタッシュ",
     "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "作業ディレクトリに未コミットの変更があります。{0} によりこれらの変更が破棄されます。先にスタッシュしますか？",
     "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} はリモートにプッシュ済みのコミットを取り消します。リモートにも強制プッシュしますか？",
-    "{0} older operations not in history (use reflog to recover)": "{0} 件の古い操作が履歴にありません（reflog で復元できます）"
+    "{0} older operations not in history (use reflog to recover)": "{0} 件の古い操作が履歴にありません（reflog で復元できます）",
+    "Copy result to clipboard": "結果をクリップボードにコピー",
+    "Stop the current AI task": "現在の AI タスクを停止",
+    "Select AI model": "AI モデルを選択"
   }
 }

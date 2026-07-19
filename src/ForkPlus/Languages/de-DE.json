@@ -2137,6 +2137,9 @@
     "Auto-stash before {0}": "Auto-Stash vor {0}",
     "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "Das Arbeitsverzeichnis hat ungespeicherte Änderungen. {0} verwirft diese. Zuerst stashen?",
     "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} macht bereits gepushte Commits rückgängig. Auch per Force-Push pushen?",
-    "{0} older operations not in history (use reflog to recover)": "{0} ältere Vorgänge nicht im Verlauf (über reflog wiederherstellbar)"
+    "{0} older operations not in history (use reflog to recover)": "{0} ältere Vorgänge nicht im Verlauf (über reflog wiederherstellbar)",
+    "Copy result to clipboard": "Ergebnis in die Zwischenablage kopieren",
+    "Stop the current AI task": "Aktuelle KI-Aufgabe stoppen",
+    "Select AI model": "KI-Modell auswählen"
   }
 }
