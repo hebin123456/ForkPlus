@@ -2,6 +2,22 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.0.0
+
+### 新特性
+
+- **Undo / Redo 任意 Git 操作**：参考 GitKraken / Tower，引入仓库级 Undo/Redo 能力，覆盖 commit / checkout / reset / merge / rebase / cherry-pick / revert / create branch / create tag / stash 等所有写操作。每次写操作执行前抓取 HEAD/分支/tag/stash 状态快照入栈，失败不入栈，Undo 时按快照恢复。
+- **工具栏 Undo/Redo 按钮组**：在工具栏 Stash 按钮组后新增 Undo / Redo 按钮，旁边的下拉箭头展开历史列表，可直接跳转到任意一步。
+- **Undo/Redo 快捷键**：`Ctrl+Z` 撤销，`Ctrl+Shift+Z` 或 `Ctrl+Y` 重做。
+- **dirty 工作区弹窗**：Undo/Redo 前若工作区有未提交变更会弹窗询问，可选择先 stash 再恢复，避免误丢工作区修改。
+- **已 push commit Undo 弹窗**：Undo 一个已推送到远端的 commit 时弹窗询问处理方式（仅本地 Undo / 本地 Undo + 强制推送 / 取消），防止误改远端历史。
+- **超栈深度提示**：Undo 栈上限 50 步，超出丢弃最底部并在下拉历史底部提示「X 个早期操作未在历史中（可通过 reflog 恢复）」。
+- **跨会话不持久化**：关闭重开仓库清空 Undo/Redo 栈，避免基于过期快照恢复。
+
+### 国际化
+
+- 8 种语言（简中 / 繁中 / 日 / 韩 / 法 / 德 / 西 / 英）补齐 Undo / Redo / Undo History / Redo History / (unknown) / dirty 弹窗 / 已 push 弹窗 / 超栈深度提示 等文案。
+
 ## v2.2.3
 
 ### 修复

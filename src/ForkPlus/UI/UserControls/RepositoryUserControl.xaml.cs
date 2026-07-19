@@ -1248,17 +1248,20 @@ namespace ForkPlus.UI.UserControls
 			{
 				return false;
 			}
-			Sha? sha = Sha.Parse(currentSnapshot.HeadSha);
-			if (sha == null)
+			try
+			{
+				// 静默查询是否有 remote 分支包含当前 HEAD sha
+				GitRequestResult r = new GitRequest(GitModule).Command("branch", "--list", "--remotes", "--contains", currentSnapshot.HeadSha).Execute(silent: true);
+				if (!r.Success)
+				{
+					return false;
+				}
+				return !string.IsNullOrWhiteSpace(r.Stdout);
+			}
+			catch
 			{
 				return false;
 			}
-			GitCommandResult<string[]> r = new GetRemoteBranchesContainingShaGitCommand().Execute(GitModule, sha.Value, null);
-			if (!r.Succeeded || r.Result == null)
-			{
-				return false;
-			}
-			return r.Result.Length > 0;
 		}
 
 		/// <summary>
