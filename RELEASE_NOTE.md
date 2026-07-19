@@ -2,6 +2,21 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.2.0
+
+### 新特性
+
+- **AI Commit Composer（WIP 拆分）**：在 Commit 下拉菜单中新增「Compose WIP into commits...」入口，一键把当前所有 staged 文件按逻辑分组拆成多个独立 commit。
+  - **AI 流式生成方案**：调 OpenAI Chat Completions API（流式 SSE），让 AI 根据 staged diff 把文件归类成多个 commit 分组，每个分组给出 subject / body / files / reason，diff 体量超 30000 字符时自动截断防爆 token。
+  - **三栏预览窗口**（`AiCommitComposerWindow`）：左栏列出所有 commit 分组、中栏列出选中分组包含的文件、右栏可编辑 subject / body；AI 给出但未匹配到 staged 文件的路径会以橙色「(not staged)」标识；底部提示「N 个 staged 文件未分配到任何分组」，方便用户核对。
+  - **可编辑 + 可撤销 + 可取消**：用户可在右栏修改任意分组的 subject / body；分组 subject 为空时会弹窗拦截（git 不允许空 message）；执行期间进度条 + 状态文本实时反馈（如「Composing commit 2/5: refactor auth module」），可随时点 Stop 中止。
+  - **执行流程**：点 Apply All 后用 `ComposeWipCommitsGitCommand` 按「先 `git reset HEAD --` 清空 staging，再逐组 stage + commit」顺序执行；空仓库（无 HEAD）时容错忽略 `ambiguous argument 'HEAD'` 错误；任一分组失败立即中止，已提交分组不回滚（与手动 commit 行为一致）。
+  - **集成 Undo/Redo 栈**：用 `RepositoryUserControl.AddUndoable` 包裹整批 commit，与 v3.0.0 引入的 Undo/Redo 栈联动，用户可一键撤销整批拆分。
+  - **模型下拉**：标题栏内置 AI 模型下拉，复用 AI Review 设置，与 AI Development / AI Code Review / AI Text Result 窗口行为一致。
+  - **路径匹配鲁棒性**：AI 给出的路径与 staged 文件路径可能存在大小写 / 分隔符差异，`WipCommitPlan.RebuildMatchedFiles` 用 `NormalizePath`（替换 `\\` 为 `/`、`TrimEnd('/')`、`ToLowerInvariant`）做归一化匹配；重命名 / 复制文件的 `OldPath` 也加入索引，让 AI 给出的旧路径也能命中。
+  - **JSON 解析鲁棒性**：`ExtractJsonArray` 用状态机遍历字符串字面量，正确处理嵌套方括号和 markdown 围栏；支持 `{ "groups": [...] }` 和直接 `[...]` 两种格式。
+- **国际化**：8 种语言（简中 / 繁中 / 日 / 韩 / 法 / 德 / 西 / 英）补齐 AI Commit Composer 相关 26 条文案。
+
 ## v3.1.1
 
 ### 新特性

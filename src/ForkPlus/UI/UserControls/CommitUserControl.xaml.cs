@@ -2267,6 +2267,33 @@ namespace ForkPlus.UI.UserControls
 			{
 				Commands.Commit.Execute(this, !commitAndPushEnabled);
 			}));
+			// AI Commit Composer (WIP拆分)：仅在 AI 配置完毕时显示
+			if (OpenAiService.IsAiReviewConfigured())
+			{
+				obj.Items.Add(new Separator());
+				obj.Items.Add(Commands.Commit.CreateMenuItem(PreferencesLocalization.Current("Compose WIP into commits..."), delegate
+				{
+					OpenAiCommitComposer();
+				}));
+			}
+		}
+
+		/// <summary>AI Commit Composer (WIP拆分) 入口：把当前 staged 区的多个变更交给 AI 拆分成多个有逻辑意义的提交。
+		/// 弹出 AiCommitComposerWindow 让用户预览/编辑分组后再一键应用。</summary>
+		private void OpenAiCommitComposer()
+		{
+			ChangedFile[] stagedFiles = StageFileUserControl.ExpandedStagedFiles;
+			if (stagedFiles == null || stagedFiles.Length == 0)
+			{
+				new ErrorWindow(RepositoryUserControl, PreferencesLocalization.Current("No staged files to compose. Stage some files first.")).ShowDialog();
+				return;
+			}
+			// 至少 2 个 staged 文件才有拆分意义；只有 1 个时也允许（让 AI 生成单条 message）
+			AiCommitComposerWindow window = new AiCommitComposerWindow(GitModule, stagedFiles, AmendMode)
+			{
+				Owner = MainWindow.Instance
+			};
+			window.Show();
 		}
 
 		private static int GetUniqueFilesCount(ChangedFile[] changedFiles)

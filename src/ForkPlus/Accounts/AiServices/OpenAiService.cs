@@ -318,6 +318,214 @@ namespace ForkPlus.Accounts.AiServices
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
+		/// <summary>AI Commit Composer (WIP拆分)：分析已暂存变更，将文件分组成多个有逻辑意义的提交，并为每个分组生成 commit message。
+		/// 输出为 JSON 数组（每个元素含 subject/body/files/reason），由 <see cref="ParseWipCommitPlan"/> 解析为 <see cref="WipCommitPlan"/>。
+		/// commit message 按 UI 语言生成（复用 <see cref="CommitMessageResponseLanguage"/>）。</summary>
+		/// <param name="patchString">已暂存文件的聚合 diff（来自 <c>git diff --staged</c>）。</param>
+		/// <param name="stagedFilePaths">已暂存文件路径列表，供 prompt 告知 AI 可分组的文件清单。</param>
+		/// <param name="gitModule">仓库模块，用于读取 commit message regex 约束。可为 null。</param>
+		/// <param name="monitor">任务监视器（进度、取消）。</param>
+		/// <param name="onChunk">流式 chunk 回调（实时把原始文本传给 UI）。</param>
+		public ServiceResult<OpenAiResponse> GenerateWipCommitSplits(string patchString, string[] stagedFilePaths, GitModule gitModule, JobMonitor monitor, Action<string> onChunk = null)
+		{
+			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Composing with {0}...", _model));
+			int pageGuideLinePosition = ForkPlusSettings.Default.PageGuideLinePosition;
+			int commitSubjectLowLimit = ForkPlusSettings.Default.CommitSubjectLowLimit;
+			int commitSubjectHighLimit = ForkPlusSettings.Default.CommitSubjectHighLimit;
+			string responseLanguage = CommitMessageResponseLanguage();
+			string commitMessageRegex = gitModule?.Settings?.CommitMessageRegex;
+			if (string.IsNullOrWhiteSpace(commitMessageRegex))
+			{
+				commitMessageRegex = ForkPlusSettings.Default.CommitMessageRegex;
+			}
+			string regexInstruction = string.IsNullOrWhiteSpace(commitMessageRegex)
+				? ""
+				: $"\nEach commit subject must match this Go regular expression:\n`{commitMessageRegex}`\nIf the regex implies a required prefix, issue id, type, scope, or format, follow it strictly for every group's subject.\n";
+
+			string fileList = stagedFilePaths == null || stagedFilePaths.Length == 0
+				? "(no staged files provided)"
+				: string.Join("\n", stagedFilePaths);
+
+			// 限制 diff 体量，避免 token 爆炸
+			string diff = patchString ?? "";
+			const int maxDiffChars = 30000;
+			if (diff.Length > maxDiffChars)
+			{
+				diff = diff.Substring(0, maxDiffChars) + "\n... (diff truncated)\n";
+			}
+
+			StringBuilder prompt = new StringBuilder();
+			prompt.Append("\nYou are a senior engineer helping split a large batch of staged changes into multiple logical commits.\n");
+			prompt.Append("Analyze the staged diff and the list of staged files, then propose a commit plan.\n");
+			prompt.Append("Group files that belong to the same logical change into one commit.\n");
+			prompt.Append("Each commit must contain at least one file. Every staged file must appear in exactly one group.\n");
+			prompt.Append("Order groups from the most foundational change to the most dependent (e.g. infrastructure before features).\n");
+			prompt.Append("Write every commit subject and body in " + responseLanguage + ".\n");
+			prompt.Append("Use the present tense. Keep each subject under " + commitSubjectLowLimit + " (soft) / " + commitSubjectHighLimit + " (hard) characters.\n");
+			prompt.Append("Hard-wrap body lines at " + pageGuideLinePosition + " characters. Do not start any line with the hash symbol.\n");
+			prompt.Append(regexInstruction);
+			prompt.Append("Respond with ONLY a fenced JSON block named `forkplus-ai-wip-plan`, no surrounding prose.\n");
+			prompt.Append("The schema is:\n\n");
+			prompt.Append("```forkplus-ai-wip-plan\n[\n");
+			prompt.Append("  {\n");
+			prompt.Append("    \"subject\": \"short imperative summary\",\n");
+			prompt.Append("    \"body\": \"optional multi-paragraph explanation; omit or empty if not needed\",\n");
+			prompt.Append("    \"files\": [\"relative/path/one\", \"relative/path/two\"],\n");
+			prompt.Append("    \"reason\": \"one short sentence explaining why these files belong together\"\n");
+			prompt.Append("  }\n]\n```\n\n");
+			prompt.Append("Use the exact relative paths from the staged file list below. Do not invent paths.\n");
+			prompt.Append("If all staged files naturally belong to a single commit, return an array with one group containing every file.\n\n");
+			prompt.Append("Staged files:\n```\n" + fileList + "\n```\n\n");
+			prompt.Append("Staged diff (may be truncated):\n```\n" + diff + "\n```\n");
+
+			string text = prompt.ToString();
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(text);
+			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
+			if (!serviceResult.Succeeded)
+			{
+				monitor.Fail(serviceResult.Error.FriendlyMessage);
+				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
+				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
+			}
+			monitor.Success(PreferencesLocalization.Current("composed"));
+			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
+		}
+
+		/// <summary>从 AI 输出文本中提取并解析 WIP 拆分方案。
+		/// 1. 剥离 markdown 围栏（```forkplus-ai-wip-plan 或 ```json 等）。
+		/// 2. 定位第一个 JSON 数组开始位置（`[`）到对应的 `]`，容忍前后多余文本。
+		/// 3. 用 Newtonsoft.Json 解析为 <see cref="WipCommitPlan"/>，并调用 <see cref="WipCommitPlan.RebuildMatchedFiles"/> 建立文件匹配。
+		/// 解析失败返回 null。</summary>
+		[Null]
+		public static WipCommitPlan ParseWipCommitPlan(string aiOutput, IEnumerable<ForkPlus.Git.ChangedFile> stagedFiles)
+		{
+			if (string.IsNullOrWhiteSpace(aiOutput))
+			{
+				return null;
+			}
+			string json = ExtractJsonArray(aiOutput);
+			if (string.IsNullOrWhiteSpace(json))
+			{
+				Log.Warn("AiCommitComposer: cannot locate JSON array in AI output");
+				return null;
+			}
+			JArray array;
+			try
+			{
+				JToken parsed = JToken.Parse(json);
+				array = parsed as JArray;
+				if (array == null && parsed is JObject obj && obj["groups"] is JArray groupsArray)
+				{
+					array = groupsArray;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("AiCommitComposer: failed to parse JSON array: " + ex.Message);
+				return null;
+			}
+			if (array == null || array.Count == 0)
+			{
+				return null;
+			}
+
+			WipCommitPlan plan = new WipCommitPlan(stagedFiles);
+			foreach (JToken token in array)
+			{
+				if (!(token is JObject groupObj))
+				{
+					continue;
+				}
+				string subject = groupObj["subject"]?.Value<string>();
+				if (string.IsNullOrWhiteSpace(subject))
+				{
+					continue;
+				}
+				WipCommitGroup group = new WipCommitGroup(subject.Trim())
+				{
+					Body = groupObj["body"]?.Value<string>() ?? "",
+					Reason = groupObj["reason"]?.Value<string>() ?? ""
+				};
+				JToken filesToken = groupObj["files"];
+				if (filesToken is JArray filesArray)
+				{
+					foreach (JToken fileToken in filesArray)
+					{
+						string file = fileToken.Value<string>();
+						if (!string.IsNullOrWhiteSpace(file))
+						{
+							group.Files.Add(file.Trim());
+						}
+					}
+				}
+				plan.Groups.Add(group);
+			}
+			if (plan.Groups.Count == 0)
+			{
+				return null;
+			}
+			plan.RebuildMatchedFiles();
+			return plan;
+		}
+
+		/// <summary>从可能含 markdown 围栏 / 前后说明文本的 AI 输出中提取 JSON 数组字符串。
+		/// 仅截取从第一个 `[` 到与之平衡的 `]`，忽略字符串字面量内的方括号。</summary>
+		private static string ExtractJsonArray(string text)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return null;
+			}
+			string stripped = StripCodeFences(text).Trim();
+			int start = stripped.IndexOf('[');
+			if (start < 0)
+			{
+				return null;
+			}
+			int depth = 0;
+			bool inString = false;
+			bool escape = false;
+			for (int i = start; i < stripped.Length; i++)
+			{
+				char c = stripped[i];
+				if (escape)
+				{
+					escape = false;
+					continue;
+				}
+				if (c == '\\')
+				{
+					escape = true;
+					continue;
+				}
+				if (c == '"')
+				{
+					inString = !inString;
+					continue;
+				}
+				if (inString)
+				{
+					continue;
+				}
+				if (c == '[')
+				{
+					depth++;
+				}
+				else if (c == ']')
+				{
+					depth--;
+					if (depth == 0)
+					{
+						return stripped.Substring(start, i - start + 1);
+					}
+				}
+			}
+			// 未闭合，返回从 [ 开始到末尾
+			return stripped.Substring(start);
+		}
+
 		/// <summary>AI 解决合并冲突：构造 prompt，要求 AI 合并两侧变更、保留非冲突上下文、不输出解释。
 		/// 实际的 HTTP 调用仍由调用方通过 OpenAiRequestStreamingWithRetry 完成，这里只负责 prompt 构造，
 		/// 方便 SideBySideMergeWindow 和批量入口复用。</summary>
