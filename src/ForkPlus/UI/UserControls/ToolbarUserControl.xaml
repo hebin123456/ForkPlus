@@ -102,16 +102,14 @@
                 <ToolbarButton.Style>
                   <DynamicResource ResourceKey="StashToolbarButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
                 </ToolbarButton.Style>
-                <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
-                  <Path Stretch="Uniform" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-                    <Path.Fill>
-                      <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </Path.Fill>
-                    <Path.Data>
-                      <PathGeometry xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Figures="M 12.5,8 C 9.85,8 7.45,8.99 5.6,10.6 L 2,7 v 9 h 9 L 7.32,11.32 C 8.77,10.03 10.54,9.25 12.5,9.25 c 3.59,0 6.63,2.42 7.5,5.73 l 2.28,-0.68 C 21.04,10.04 17.03,8 12.5,8 z" />
-                    </Path.Data>
-                  </Path>
-                </Viewbox>
+                <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Image.Source>
+                    <DynamicResource ResourceKey="UndoIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Image.Source>
+                  <Image.Width>20</Image.Width>
+                  <Image.Height>20</Image.Height>
+                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                </Image>
               </ToolbarButton>
               <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="UndoToolbarDropdownButton">
                 <DropDownButton.Style>
@@ -137,16 +135,14 @@
                 <ToolbarButton.Style>
                   <DynamicResource ResourceKey="StashToolbarButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
                 </ToolbarButton.Style>
-                <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
-                  <Path Stretch="Uniform" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-                    <Path.Fill>
-                      <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </Path.Fill>
-                    <Path.Data>
-                      <PathGeometry xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Figures="M 18.4,10.6 C 16.55,8.99 14.15,8 11.5,8 c -4.65,0 -8.58,3.03 -9.96,7.22 L 3.9,16.6 c 1.05,-3.35 4.17,-5.8 7.9,-5.8 c 2.29,0 4.36,0.92 5.88,2.4 L 14,16 h 6 V 10 L 18.4,10.6 z" />
-                    </Path.Data>
-                  </Path>
-                </Viewbox>
+                <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Image.Source>
+                    <DynamicResource ResourceKey="RedoIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Image.Source>
+                  <Image.Width>20</Image.Width>
+                  <Image.Height>20</Image.Height>
+                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                </Image>
               </ToolbarButton>
               <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="RedoToolbarDropdownButton">
                 <DropDownButton.Style>

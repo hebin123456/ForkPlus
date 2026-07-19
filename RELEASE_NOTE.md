@@ -2,6 +2,12 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.0.3
+
+### 修复与改进
+
+- **Undo/Redo 图标改为 PNG 资源**：原先用 `Viewbox+Path` 矢量绘制（v3.0.2 改用 Material Design path 但仍是矢量），与工具栏其他按钮（Fetch/Pull/Push/Stash 均为 40×40 PNG 资源）风格不一致。本次新增 4 个 PNG 资源 `Undo.png` / `UndoDark.png` / `Redo.png` / `RedoDark.png`（40×40 RGBA，light=#797979、dark=#CFCFCF，与现有图标颜色规范一致），并在 `Images.Light.xaml` / `Images.Dark.xaml` 注册 `UndoIcon` / `RedoIcon` 资源，工具栏按钮改用 `Image` + `DynamicResource` 引用，行为与 Fetch/Pull/Push/Stash 完全一致（主题切换时自动跟随 light/dark 版本）。
+
 ## v3.0.2
 
 ### 修复与改进

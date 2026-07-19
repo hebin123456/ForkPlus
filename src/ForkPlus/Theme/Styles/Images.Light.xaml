@@ -94,6 +94,8 @@
   <BitmapImage x:Key="SubmoduleOnIcon" UriSource="/Assets/SubmoduleOn.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="SwapIcon" UriSource="/Assets/Swap.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="TagIcon" UriSource="/Assets/Tag.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="UndoIcon" UriSource="/Assets/Undo.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="RedoIcon" UriSource="/Assets/Redo.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="TagSelectedIcon" UriSource="/Assets/TagDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="TagOnIcon" UriSource="/Assets/TagOn.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ThemeIcon" UriSource="/Assets/Theme.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
