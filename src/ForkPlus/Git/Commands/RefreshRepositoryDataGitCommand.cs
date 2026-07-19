@@ -181,6 +181,13 @@ namespace ForkPlus.Git.Commands
 				});
 			}
 			BtOidPair[] array = list2.ToArray();
+			// 防御性：空仓库或没有 upstream 的仓库，pairs 为空，array.Length == 0。
+			// bt_get_behind_ahead_counts 对空数组的行为不确定，跳过 native 调用直接返回空 cache。
+			if (array.Length == 0)
+			{
+				benchmarker.ReportElapsed();
+				return GitCommandResult<UpstreamStatusCache>.Success(new UpstreamStatusCache(resultDictionary, activeBranchCommitsStatus));
+			}
 			BtCommitGraphCache commit_graph_cache_ptr = commitGraphCache.Handle;
 			BtBehindAheadCounts out_result = default(BtBehindAheadCounts);
 			BtResult btResult = Bt.bt_get_behind_ahead_counts(gitModule.GitDir(), array, array.Length, ref commit_graph_cache_ptr, ref out_result);

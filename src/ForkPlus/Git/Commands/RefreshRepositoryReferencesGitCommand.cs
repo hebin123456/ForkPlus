@@ -160,17 +160,22 @@ namespace ForkPlus.Git.Commands
 			// 无效 sha 可能永久阻塞，bt_get_commits 对空 tips 数组也可能死循环。
 			// v2.1.2 曾在 GetRevisionStorageGitCommand.Execute 加快速路径，但失败发生在更早的
 			// RefreshReferences 阶段（这里），根本走不到那段。v2.1.4 把快速路径前移到这里，
-			// 在任何 native biturbo 调用之前就检测空仓库并直接返回空 ReferenceStorage。
+			// 在任何 native biturbo 调用之前就检测空仓库并直接返回 ReferenceStorage。
 			//
 			// 检测方式：git rev-parse --verify HEAD 失败说明仓库没有任何 commit（git init 完毕状态）。
 			// 这是 100% 准确的判定，开销是一次 git 子进程调用（仅首次加载时，可接受）。
+			//
+			// v2.1.4 修订：早期版本返回完全空的 ReferenceStorage（refs=[]），导致 ActiveBranchIndex
+			// 为 null，下游 RepositoryReferences.ActiveBranch 也为 null，StatusUserControl 把它
+			// 误判为 "detached HEAD"。实际上空仓库 HEAD 是 symref 指向未创建的 master，应该显示
+			// branch 名。这里读 .git/HEAD 解析 symref target，构建一个 unborn local branch
+			// （Sha.Zero），让 UI 能正确显示 branch 名。HeadSha 保持 null，让 GetRevisionStorageGitCommand
+			// 的空仓库快速路径仍然生效（避免 bt_get_commits 死循环）。
 			if (IsEmptyRepository(gitModule))
 			{
 				Log.Info("Empty repository detected (no commits yet), skipping native biturbo calls");
 				ReferenceStorage.UpstreamTrackingReference[] emptyUpstreams = gitConfig.ReadUpstreams();
-				return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(
-					new string[0], new Sha[0], 0UL, new DateTime[0],
-					new string[0], new string[0], emptyUpstreams, HashHelper.GetHashCode(emptyUpstreams)));
+				return GitCommandResult<ReferenceStorage>.Success(BuildUnbornReferenceStorage(gitModule, emptyUpstreams));
 			}
 			ReferenceStorage.UpstreamTrackingReference[] array = gitConfig.ReadUpstreams();
 			int hashCode = HashHelper.GetHashCode(array);
@@ -277,6 +282,59 @@ namespace ForkPlus.Git.Commands
 				// 检测失败时不阻塞加载，让原流程继续走（保守策略：宁可尝试 native 也不要误判为空）
 				Log.Warn("IsEmptyRepository check failed: " + ex.Message);
 				return false;
+			}
+		}
+
+		/// <summary>为空仓库构建含 unborn branch 的 ReferenceStorage。
+		/// 空仓库 HEAD 是 symref 指向不存在的 refs/heads/master（或其他 branch 名），
+		/// refs 数组里没有 master（因为它还没被创建）。如果直接返回完全空的 ReferenceStorage，
+		/// 下游 RepositoryReferences.ActiveBranch 会是 null，StatusUserControl 误判为 "detached HEAD"。
+		/// 这里读 .git/HEAD 解析 symref target，构建一个 unborn local branch（Sha.Zero），
+		/// 让 UI 能正确显示 branch 名。HeadSha 保持 null，让 GetRevisionStorageGitCommand
+		/// 的空仓库快速路径仍然生效（避免 bt_get_commits 死循环）。</summary>
+		private static ReferenceStorage BuildUnbornReferenceStorage(GitModule gitModule, ReferenceStorage.UpstreamTrackingReference[] upstreams)
+		{
+			string headSymrefTarget = ReadHeadSymrefTarget(gitModule.GitDir());
+			int upstreamsHash = HashHelper.GetHashCode(upstreams);
+			if (headSymrefTarget != null && headSymrefTarget.StartsWith("refs/heads/"))
+			{
+				// 构建 unborn branch：refs 里有 master 但 sha 是 Zero（branch 还没创建）
+				string[] refs = new string[] { headSymrefTarget };
+				Sha[] shas = new Sha[] { Sha.Zero };
+				DateTime[] committerDates = new DateTime[] { DateTimeHelper.UnixStartTime };
+				string[] symrefs = new string[] { "HEAD" };
+				string[] symrefTargets = new string[] { headSymrefTarget };
+				// upstreams 数组长度必须等于 localBranches.Length，unborn branch 没有 upstream
+				string[] upstreamsArray = new string[] { null };
+				// localBranches = [0,1)，remoteBranches = [1,1) 空，tags = [1,1) 空
+				return new ReferenceStorage(refs, shas, 0UL, committerDates, symrefs, symrefTargets,
+					new Range(0, 1), new Range(1, 1), new Range(1, 1),
+					upstreamsArray, upstreamsHash, null /* headSha */, 0 /* activeBranchIndex */);
+			}
+			// fallback：HEAD 不是 symref（detached 但无 commit？理论不会发生），返回完全空
+			return ReferenceStorage.New(new string[0], new Sha[0], 0UL, new DateTime[0],
+				new string[0], new string[0], upstreams, upstreamsHash);
+		}
+
+		/// <summary>读取 .git/HEAD 文件，如果是 symref（"ref: refs/heads/xxx"）返回 target，
+		/// 否则返回 null。直接读文件避免调用 git 子进程，开销最小。</summary>
+		[Null]
+		private static string ReadHeadSymrefTarget(string gitDirectory)
+		{
+			try
+			{
+				string path = PathHelper.Combine(gitDirectory, "HEAD");
+				string text = File.ReadAllText(path).TrimEnd();
+				if (text.StartsWith("ref: "))
+				{
+					return text.Substring(5);
+				}
+				return null;
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Cannot read .git/HEAD: " + ex.Message);
+				return null;
 			}
 		}
 

@@ -10,14 +10,17 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<RevisionStorage> Execute(GitModule gitModule, ReferenceStorage references, bool topoOrder, bool reflog, int skipPages, int minPagesCount, IReadOnlyList<Sha> requiredShas, long timestamp, CommitGraphCache commitGraphCache, JobMonitor monitor)
 	{
-		// 空仓库快速路径：刚 git init 完毕的仓库没有 commits/branches/tags，HEAD 是 symref
-		// 指向不存在的 refs/heads/master。此时 btTipsArray 为空数组，bt_get_commits 对空 tips
-		// 的处理行为不确定（可能死循环或永久阻塞），导致 UI 一直转圈无法读取仓库。
+		// 空仓库快速路径：刚 git init 完毕的仓库没有 commits，HEAD 是 symref 指向未创建的
+		// refs/heads/master。此时 btTipsArray 要么为空，要么只含 Sha.Zero（unborn branch），
+		// bt_get_commits 对这种 tips 的处理行为不确定（可能死循环或永久阻塞）。
 		// 直接返回空 RevisionStorage 跳过原生调用，git status 仍能正常显示 untracked 文件。
-		if (references.LocalBranches.Length == 0
-			&& references.RemoteBranches.Length == 0
+		// v2.1.4 修订：RefreshRepositoryReferencesGitCommand 现在为空仓库构建含 unborn branch
+		// 的 ReferenceStorage（refs=["refs/heads/master"], shas=[Sha.Zero]），所以 LocalBranches.Length
+		// 可能是 1（unborn）或 0（HEAD 读取失败 fallback）。HeadSha 保持 null。这里两种情况都要放行。
+		if (references.RemoteBranches.Length == 0
 			&& references.Tags.Length == 0
 			&& !references.HeadSha.HasValue
+			&& references.LocalBranches.Length <= 1
 			&& requiredShas.Count == 0)
 		{
 			return GitCommandResult<RevisionStorage>.Success(new RevisionStorage(new Sha[0], new Sha[0], new int[0], false, timestamp));
