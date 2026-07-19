@@ -225,18 +225,20 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void StripCodeFences_StandardJsonFence_Stripped()
-		{
-			string text = "```json\n{\"key\":\"value\"}\n```";
-			Assert.Equal("{\"key\":\"value\"}", OpenAiService.StripCodeFences(text));
-		}
+	public void StripCodeFences_StandardJsonFence_Stripped()
+	{
+		// 实现行为：先 Trim 整体，再切掉首行 ```lang 和尾部 ```；中间内容原样保留（含尾部 \n）
+		string text = "```json\n{\"key\":\"value\"}\n```";
+		Assert.Equal("{\"key\":\"value\"}\n", OpenAiService.StripCodeFences(text));
+	}
 
-		[Fact]
-		public void StripCodeFences_FenceWithoutLang_Stripped()
-		{
-			string text = "```\ncontent\n```";
-			Assert.Equal("content", OpenAiService.StripCodeFences(text));
-		}
+	[Fact]
+	public void StripCodeFences_FenceWithoutLang_Stripped()
+	{
+		// 同上：切掉尾部 ``` 后保留 content\n
+		string text = "```\ncontent\n```";
+		Assert.Equal("content\n", OpenAiService.StripCodeFences(text));
+	}
 
 		[Fact]
 		public void StripCodeFences_OpenFenceOnlyNoClose_StripsPrefix()
