@@ -14,6 +14,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Utils.Http;
 using Microsoft.Web.WebView2.Core;
 
 namespace ForkPlus.UI.Dialogs
