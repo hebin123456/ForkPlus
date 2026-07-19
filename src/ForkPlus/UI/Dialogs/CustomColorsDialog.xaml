@@ -64,16 +64,12 @@
       </ItemsControl>
     </ScrollViewer>
 
-    <!-- 底部按钮 -->
+    <!-- 底部按钮：换色已实时落盘，无需 OK/Cancel 确认 -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
       <Button x:Name="RandomPaletteButton" Content="Random Palette" Padding="20,4" Margin="0,0,12,0"
               Click="RandomPalette_Click" />
-      <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4" Margin="0,0,12,0"
+      <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4"
               Click="ResetAll_Click" />
-      <Button x:Name="OkButton" Content="OK" Padding="28,4" Margin="0,0,12,0"
-              Click="Ok_Click" IsDefault="True" />
-      <Button x:Name="CancelButton" Content="Cancel" Padding="20,4"
-              Click="Cancel_Click" IsCancel="True" />
     </StackPanel>
 
     <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
@@ -194,11 +190,7 @@
             <TextBox Grid.Column="1" x:Name="PopupHexBox" Margin="8,0,0,0"
                      VerticalAlignment="Center" TextChanged="PopupHex_TextChanged" />
           </Grid>
-
-          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button x:Name="PopupOkButton" Content="OK" Padding="20,2" Margin="0,0,8,0" Click="PopupOk_Click" />
-            <Button x:Name="PopupCancelButton" Content="Cancel" Padding="16,2" Click="PopupCancel_Click" />
-          </StackPanel>
+          <!-- 选色实时落盘，点 Popup 外部即关闭，无需 OK/Cancel 按钮 -->
         </StackPanel>
       </Border>
     </Popup>

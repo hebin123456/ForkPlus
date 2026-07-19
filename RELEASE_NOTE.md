@@ -2,6 +2,37 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v2.1.2
+
+### 修复：自定义颜色对话框三个交互问题
+
+针对 v2.1.0 引入的自定义颜色功能，修复用户反馈的三个交互问题：
+
+**Bug 1：随机配色时 Diff 开头几个选项不动**
+
+- **现象**：点击 "Random Palette" 后，列表中 `Diff.AddedColor` / `Diff.RemovedColor` / `Diff.AddColor` / `Diff.RemoveColor` / `Diff.ExactAddColor` / `Diff.ExactRemoveColor` 这 6 项的色块几乎不变化，看起来像被冻结。
+- **根因**：`RandomPalette_Click` 中 Diff 颜色用**固定 HSV 值**（绿区固定 hue=120，红区固定 hue=0，S/V 也固定常量），每次随机生成的都是同一组值，所以视觉上"不动"。这是实现疏忽，不是设计意图。
+- **修复**：色相在语义区间内随机偏移——绿色 hue 在 90°~150°、红色 hue 在 345°~15° 内随机；饱和度/明度也在合理范围内轻微抖动，既保持 Diff "绿增红删" 的语义色，又让每次随机都有变化 —— [CustomColorsDialog.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml.cs)
+
+**Bug 2：换色（随机配色 / 单项换色）不实时生效**
+
+- **现象**：无论点 "Random Palette" 还是打开颜色选择器改单个颜色，主界面都不会立刻变化，必须关闭再重启应用才能看到效果。
+- **根因**：
+  1. `ApplyAndRefresh` 只把新颜色写到内存的 `ForkPlusSettings.Default.CustomColors` 并调用 `App.ApplyCustomColors()` 重建 ResourceDictionary，但没有调用 `Save()`，未落盘到 settings.json——一旦应用崩溃或异常关闭，自定义颜色就丢失。
+  2. 颜色选择器 Popup 内的交互（拖 RGB 滑块、HSV 2D 方块、色相条、改 hex 输入框、点预设色板）只在点 OK 时才把颜色写回 `_workingCopy`，拖动过程中主界面不刷新。
+- **修复**：
+  - `ApplyAndRefresh` 末尾增加 `ForkPlusSettings.Default.Save()` 立即落盘到 settings.json。
+  - 新增 `ApplyPopupColor()` 方法，在 Popup 内任何交互（RGB 滑块 / HSV 方块 / 色相条 / hex 输入 / 预设色板）触发时立即把当前 hex 写回 `_workingCopy` + `ApplyAndRefresh`，做到拖动滑块时主界面实时跟随变化。
+  - 新增 `_isPopupInitializing` 标志：`ColorPreview_Click` 打开 Popup 用 item 当前 hex 初始化控件时，避免把"加载已有值"误当成"用户改色"触发不必要的 Save。
+  - `RgbSlider_ValueChanged` / `UpdateHsvFromMouse` / `UpdateHueFromMouse` 内部用 `_suppressUpdates=true` 阻止了 `PopupHex_TextChanged → UpdatePopupFromHex` 链路，故在这些方法末尾手动调用 `ApplyPopupColor()` 触发实时落盘 —— [CustomColorsDialog.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml.cs)
+
+**Bug 3：移除 OK / Cancel 按钮**
+
+- **原因**：换色实时落盘后，"确定"和"取消"已失去语义——既没有"待提交"的中间状态需要确认，也没有"撤销所有改动"的回滚机制（每次改色都已 Save）。
+- **修复**：移除主对话框底部和颜色选择器 Popup 中的 OK / Cancel 按钮及对应事件处理器；主对话框靠窗口标题栏 X 按钮关闭，Popup 靠点外部关闭（`StaysOpen="False"`）—— [CustomColorsDialog.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml)、[CustomColorsDialog.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml.cs)
+
+**测试同步**：`BugFixV212Tests` / `CustomColorsDialogTests` 原本依赖 OK/Cancel 按钮的用例改为直接 `CloseWindow`，验证换色实时落盘后关闭窗口主应用不崩溃。
+
 ## v2.1.0
 
 ### 新增：用户自定义颜色

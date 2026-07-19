@@ -10,12 +10,14 @@ namespace ForkPlus.AutomationTests
 	/// v2.1.2 bug 修复保护测试。覆盖以下 4 个 bug 修复：
 	///
 	/// Bug 1: 自定义颜色修改不实时生效
-	///   修复：CustomColorsDialog.Ok_Click / ApplyAndRefresh 调用 App.ApplyCustomColors()
-	///   测试：打开 Custom Colors 对话框 → 改色 → OK，验证应用不崩溃且对话框正常关闭。
+	///   修复：CustomColorsDialog.ApplyAndRefresh 调用 App.ApplyCustomColors() + Save() 立即落盘。
+	///   v2.1.2 起移除 OK/Cancel 按钮，换色实时落盘，对话框靠窗口标题栏关闭。
+	///   测试：打开 Custom Colors 对话框 → 关闭窗口，验证应用不崩溃。
 	///
 	/// Bug 2: 随机配色覆盖不全（遗漏 Diff 细粒度色 / 语法高亮色 / 行号选区色共 12 个 key）
-	///   修复：RandomPalette_Click 补齐 12 个 Set 调用，覆盖全部 30 个 _editableColorKeys。
-	///   测试：打开 Custom Colors 对话框 → Random Palette → OK，验证应用不崩溃。
+	///   修复：RandomPalette_Click 补齐 12 个 Set 调用，覆盖全部 30 个 _editableColorKeys；
+	///         Diff 色相在绿区(90-150)/红区(345-15)内随机，避免每次配色 Diff 都相同。
+	///   测试：打开 Custom Colors 对话框 → Random Palette → 关闭窗口，验证应用不崩溃。
 	///
 	/// Bug 3: 初始化新仓库卡死（bt_get_commits 对空 tips 数组永久阻塞，UI 一直转圈）
 	///   修复：GetRevisionStorageGitCommand.Execute 加空仓库快速路径直接返回空 RevisionStorage。
@@ -34,13 +36,14 @@ namespace ForkPlus.AutomationTests
 		// ============================================================
 
 		/// <summary>
-		/// Bug 1：打开 Custom Colors 对话框 → 通过 popup 改一个颜色 → OK 关闭对话框。
-		/// 验证 App.ApplyCustomColors() 被调用后应用不崩溃。
+		/// Bug 1：打开 Custom Colors 对话框 → 关闭窗口。
+		/// 验证 App.ApplyCustomColors() + Save() 流程不崩溃。
 		/// 修复前：Ok_Click 只保存设置不调用 ApplyCustomColors，导致 Diff/热力图等控件不重绘。
-		/// 修复后：Ok_Click 调用 ApplyCustomColors merge ResourceDictionary + raise ApplicationThemeChanged。
+		/// v2.1.2 修复：ApplyAndRefresh 调用 ApplyCustomColors + Save 实时落盘；
+		///   对话框移除 OK/Cancel 按钮，换色实时生效，靠窗口标题栏关闭。
 		/// </summary>
 		[Fact]
-		public void Bug1_CustomColorEdit_OkButton_AppliesWithoutCrash()
+		public void Bug1_CustomColorEdit_CloseWindow_NoCrash()
 		{
 			using (var app = LaunchApp())
 			{
@@ -56,18 +59,15 @@ namespace ForkPlus.AutomationTests
 						  ?? WaitForTopLevelWindow(app, "自定义颜色", TimeSpan.FromSeconds(3));
 				Assert.NotNull(win);
 
-				// 点击 OK 按钮关闭对话框（即使没改色，OK 也会触发 ApplyCustomColors）
-				// Bug 1 修复核心：Ok_Click 调用 App.ApplyCustomColors()
-				var okBtn = win.FindFirstDescendant(cf => cf.ByName("OK"))
-					?? win.FindFirstDescendant(cf => cf.ByName("确定"));
-				Assert.NotNull(okBtn);
-				try { okBtn.Click(); Thread.Sleep(1500); } catch { }
+				// v2.1.2 起对话框无 OK/Cancel 按钮，换色已实时落盘。直接关闭窗口。
+				CloseWindow(win);
+				Thread.Sleep(1500);
 
-				// 验证应用未崩溃（ApplyCustomColors 不应抛异常导致进程退出）
+				// 验证应用未崩溃（ApplyCustomColors + Save 不应抛异常导致进程退出）
 				Assert.False(app.Application.HasExited,
-					"点击 OK 后应用退出，Bug 1 修复可能引入回归：ApplyCustomColors 抛异常。");
+					"关闭对话框后应用退出，Bug 1 修复可能引入回归：ApplyCustomColors/Save 抛异常。");
 
-				// 验证对话框已关闭（OK 后窗口应消失）
+				// 验证对话框已关闭
 				var stillOpen = WaitForTopLevelWindow(app, "Custom Colors", TimeSpan.FromSeconds(1))
 							  ?? WaitForTopLevelWindow(app, "自定义颜色", TimeSpan.FromSeconds(1));
 				Assert.Null(stillOpen);
@@ -82,7 +82,8 @@ namespace ForkPlus.AutomationTests
 		/// Bug 2：Random Palette 应覆盖全部 30 个 _editableColorKeys。
 		/// 修复前：RandomPalette_Click 只 Set 18 个 key，遗漏 Diff.AddColor / Diff.RemoveColor /
 		/// Diff.ExactAddColor / Diff.ExactRemoveColor / Syntax.* / LineNumber.* / ChunkSelection.* 共 12 个。
-		/// 修复后：补齐 12 个 Set 调用。测试点击 Random Palette 后 OK，验证不崩溃。
+		/// v2.1.2 修复：补齐 12 个 Set 调用；Diff 色相在绿区(90-150)/红区(345-15)内随机，
+		///   避免每次配色 Diff 颜色都完全相同。测试点击 Random Palette 后关闭窗口，验证不崩溃。
 		/// </summary>
 		[Fact]
 		public void Bug2_RandomPalette_CoversAllColorKeys_NoCrash()
@@ -100,7 +101,7 @@ namespace ForkPlus.AutomationTests
 						  ?? WaitForTopLevelWindow(app, "自定义颜色", TimeSpan.FromSeconds(3));
 				Assert.NotNull(win);
 
-				// 点击 Random Palette（Bug 2 修复核心：补齐 12 个 Set 调用）
+				// 点击 Random Palette（Bug 2 修复核心：补齐 12 个 Set 调用 + Diff 色相随机）
 				var randomBtn = win.FindFirstDescendant(cf => cf.ByName("Random Palette"))
 					?? win.FindFirstDescendant(cf => cf.ByName("随机配色"));
 				Assert.NotNull(randomBtn);
@@ -110,20 +111,13 @@ namespace ForkPlus.AutomationTests
 				Assert.False(app.Application.HasExited,
 					"点击 Random Palette 后应用退出，Bug 2 修复可能引入回归。");
 
-				// 点击 OK 保存随机配色（触发 ApplyCustomColors，验证 30 个 key 都能正确 merge）
-				var okBtn = win.FindFirstDescendant(cf => cf.ByName("OK"))
-					?? win.FindFirstDescendant(cf => cf.ByName("确定"));
-				if (okBtn != null)
-				{
-					try { okBtn.Click(); Thread.Sleep(1500); } catch { }
-				}
-				else
-				{
-					CloseWindow(win);
-				}
+				// v2.1.2 起对话框无 OK 按钮，随机配色已实时落盘（ApplyAndRefresh → Save）。
+				// 直接关闭窗口，验证 30 个 key 都能正确 merge + 落盘。
+				CloseWindow(win);
+				Thread.Sleep(1500);
 
 				Assert.False(app.Application.HasExited,
-					"保存随机配色后应用退出，30 个 key merge 可能有问题。");
+					"关闭对话框后应用退出，30 个 key merge/Save 可能有问题。");
 			}
 		}
 

@@ -12,7 +12,8 @@ using ForkPlus.UI.UserControls.Preferences;
 namespace ForkPlus.UI.Dialogs
 {
 	/// <summary>自定义颜色编辑对话框。列出可自定义的核心颜色，支持 hex 输入和 HSV 颜色选择器。
-	/// 改动即时应用到 UI（通过 App.ApplyCustomColors），确定后保存到 settings.json。</summary>
+	/// 改动即时应用到主界面并立即落盘到 settings.json（每次换色都 Save），无需 OK/Cancel 确认。
+	/// 关闭对话框靠窗口标题栏 X 按钮；颜色选择器 Popup 靠点外部关闭。</summary>
 	public partial class CustomColorsDialog : ForkPlusDialogWindow
 	{
 		/// <summary>可自定义的颜色 key 列表（Colors.*.xaml 中的 Color resource key）。
@@ -53,13 +54,13 @@ namespace ForkPlus.UI.Dialogs
 
 		private List<CustomColorItem> _items;
 	private Dictionary<string, string> _workingCopy;
-	// 对话框打开时的原始状态快照，Cancel 时还原（编辑过程已实时应用到 UI）。
-	private Dictionary<string, string> _originalCustomColors;
-	private bool _originalUseCustomColors;
 	private CustomColorItem _popupEditingItem;
 	private bool _suppressUpdates;
 	private bool _isDraggingHsv;
 	private bool _isDraggingHue;
+	// Popup 初始化阶段标志：ColorPreview_Click 打开 Popup 时用 item 当前 hex 初始化控件，
+	// 此时不应该把"初始化值"当成"用户改色"写回 _workingCopy（避免覆盖已有自定义值）。
+	private bool _isPopupInitializing;
 
 		public CustomColorsDialog()
 		{
@@ -74,6 +75,8 @@ namespace ForkPlus.UI.Dialogs
 			Localize();
 			LoadItems();
 			InitializeSwatches();
+			// Popup 关闭（点外部）时清空正在编辑的 item，避免后续误写。
+			ColorPickerPopup.Closed += Popup_Closed;
 		}
 
 		private void Localize()
@@ -84,23 +87,14 @@ namespace ForkPlus.UI.Dialogs
 				" (" + PreferencesLocalization.Translate(ForkPlusSettings.Default.Theme.SkinName(), lang) + ")";
 			ResetAllButton.Content = PreferencesLocalization.Translate("Reset All", lang);
 		RandomPaletteButton.Content = PreferencesLocalization.Translate("Random Palette", lang);
-		OkButton.Content = PreferencesLocalization.Translate("OK", lang);
-			CancelButton.Content = PreferencesLocalization.Translate("Cancel", lang);
 			PopupTitleText.Text = PreferencesLocalization.Translate("Color Picker", lang);
 			SwatchLabelText.Text = PreferencesLocalization.Translate("Presets", lang);
-			PopupOkButton.Content = PreferencesLocalization.Translate("OK", lang);
-			PopupCancelButton.Content = PreferencesLocalization.Translate("Cancel", lang);
 			// DataTemplate 里的 "Reset" 按钮文字在 LoadItems 后通过遍历设置
 		}
 
 		/// <summary>加载颜色列表。每项显示当前生效值（自定义覆盖或预设原色）。</summary>
 		private void LoadItems()
 	{
-		// 保存打开对话框前的原始状态，供 Cancel 还原。
-		_originalCustomColors = ForkPlusSettings.Default.CustomColors != null
-			? new Dictionary<string, string>(ForkPlusSettings.Default.CustomColors)
-			: new Dictionary<string, string>();
-		_originalUseCustomColors = ForkPlusSettings.Default.UseCustomColors;
 		_workingCopy = new Dictionary<string, string>();
 		Dictionary<string, string> saved = ForkPlusSettings.Default.CustomColors;
 			_items = new List<CustomColorItem>();
@@ -200,12 +194,16 @@ namespace ForkPlus.UI.Dialogs
 			if (sender is FrameworkElement fe && fe.Tag is CustomColorItem item)
 			{
 				_popupEditingItem = item;
+				// 初始化阶段标志：用 item 当前 hex 填充 Popup 控件时不要回写 _workingCopy
+				_isPopupInitializing = true;
 				UpdatePopupFromHex(item.HexValue);
+				_isPopupInitializing = false;
 				ColorPickerPopup.IsOpen = true;
 			}
 		}
 
-		/// <summary>从 hex 值更新整个 Popup 状态（HSV 方块、色相条、RGB 滑块、预览）。</summary>
+		/// <summary>从 hex 值更新整个 Popup 状态（HSV 方块、色相条、RGB 滑块、预览）。
+		/// 非初始化阶段会顺带把当前 hex 实时写回 _workingCopy + 主界面 + 落盘。</summary>
 		private void UpdatePopupFromHex(string hex)
 		{
 			try
@@ -224,8 +222,32 @@ namespace ForkPlus.UI.Dialogs
 				UpdateHsvCanvas(h, s, v);
 				UpdateHueIndicator(h);
 				_suppressUpdates = false;
+				// 用户在 Popup 内的任何交互（拖滑块/HSV/色相条、改 hex、点预设色板）都实时落盘
+				if (!_isPopupInitializing)
+					ApplyPopupColor();
 			}
 			catch { }
+		}
+
+		/// <summary>把 Popup 当前 hex 实时写回正在编辑的 item + _workingCopy + 主界面 + settings.json。
+		/// 这样用户在 Popup 里拖动滑块时主界面立刻跟着变，且立即落盘，无需点 OK 确认。</summary>
+		private void ApplyPopupColor()
+		{
+			if (_popupEditingItem == null) return;
+			string hex = PopupHexBox.Text.Trim();
+			if (string.IsNullOrEmpty(hex)) return;
+			if (!hex.StartsWith("#")) hex = "#" + hex;
+			try { ColorConverter.ConvertFromString(hex); }
+			catch { return; }
+			_popupEditingItem.HexValue = hex;
+			_popupEditingItem.IsCustomized = true;
+			_workingCopy[_popupEditingItem.Key] = hex;
+			ApplyAndRefresh();
+		}
+
+		private void Popup_Closed(object sender, EventArgs e)
+		{
+			_popupEditingItem = null;
 		}
 
 		/// <summary>更新 HSV 2D 方块的背景色（当前色相纯色）+ 指示器位置。</summary>
@@ -282,6 +304,8 @@ namespace ForkPlus.UI.Dialogs
 			PopupPreviewRect.Fill = new SolidColorBrush(c);
 			UpdateHsvCanvas(h, s, v);
 			_suppressUpdates = false;
+			// 拖 HSV 方块时 _suppressUpdates 阻止了下游事件，手动触发实时落盘。
+			ApplyPopupColor();
 		}
 
 		// 色相条鼠标交互
@@ -319,6 +343,8 @@ namespace ForkPlus.UI.Dialogs
 			UpdateHsvCanvas(h, s, v);
 			UpdateHueIndicator(h);
 			_suppressUpdates = false;
+			// 拖色相条时 _suppressUpdates 阻止了下游事件，手动触发实时落盘。
+			ApplyPopupColor();
 		}
 
 		private double GetHueFromIndicator()
@@ -349,6 +375,9 @@ namespace ForkPlus.UI.Dialogs
 			UpdateHsvCanvas(h, s, v);
 			UpdateHueIndicator(h);
 			_suppressUpdates = false;
+			// 拖 RGB 滑块时 _suppressUpdates 阻止了 PopupHex_TextChanged → UpdatePopupFromHex，
+			// 这里手动触发实时落盘（用户拖滑块时主界面立刻跟着变）。
+			ApplyPopupColor();
 		}
 
 		private void PopupHex_TextChanged(object sender, TextChangedEventArgs e)
@@ -393,29 +422,6 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		#endregion
-
-		private void PopupOk_Click(object sender, RoutedEventArgs e)
-		{
-			if (_popupEditingItem != null)
-			{
-				string hex = PopupHexBox.Text.Trim();
-				if (!hex.StartsWith("#")) hex = "#" + hex;
-				try { ColorConverter.ConvertFromString(hex); }
-				catch { return; }
-				_popupEditingItem.HexValue = hex;
-				_popupEditingItem.IsCustomized = true;
-				_workingCopy[_popupEditingItem.Key] = hex;
-				ApplyAndRefresh();
-			}
-			ColorPickerPopup.IsOpen = false;
-			_popupEditingItem = null;
-		}
-
-		private void PopupCancel_Click(object sender, RoutedEventArgs e)
-		{
-			ColorPickerPopup.IsOpen = false;
-			_popupEditingItem = null;
-		}
 
 		private void HexTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -462,7 +468,7 @@ namespace ForkPlus.UI.Dialogs
 	/// 算法：随机一个主色相 H，按当前主题基底（light/dark）派生整套配色——
 	/// 背景用极低饱和度 + 高/低明度的近中性色，面板/边框用稍深的同色调，
 	/// 文字/前景用对比色（light 主题用深色文字，dark 主题用浅色文字），
-	/// accent 用主色相满饱和，diff added 取绿区(120°)、removed 取红区(0°)，
+	/// accent 用主色相满饱和，diff added 在绿区(90-150°)、removed 在红区(345-15°)内随机，
 	/// 语法高亮用主色相邻近的几个色相做区分。保证整体色调统一、可读。</summary>
 	private void RandomPalette_Click(object sender, RoutedEventArgs e)
 	{
@@ -512,27 +518,30 @@ namespace ForkPlus.UI.Dialogs
 			referenceColor = hsv(baseHue, 0.60, 0.50, 255);
 			iconColor = hsv(baseHue, 0.40, 0.40, 255);
 		}
-		// diff：固定绿/红区，按基底调整明度饱和度
+		// diff：保持绿/红语义色，但色相在绿区(90-150)/红区(345-15)内随机偏移，
+	// 饱和度/明度也轻微随机，避免每次随机配色 Diff 颜色都完全相同（用户反馈"不动"）。
+	double greenHue = 120.0 + (rand.NextDouble() * 60.0 - 30.0);          // 90-150
+	double redHue = (360.0 + (rand.NextDouble() * 30.0 - 15.0)) % 360.0;  // 345-15
 	Color diffAdded, diffRemoved, diffAddBg, diffRemoveBg, diffExactAdd, diffExactRemove;
 	if (isDark)
 	{
-		diffAdded = hsv(120.0, 0.45, 0.40, 255);
-		diffRemoved = hsv(0.0, 0.45, 0.40, 255);
+		diffAdded = hsv(greenHue, 0.40 + rand.NextDouble() * 0.15, 0.35 + rand.NextDouble() * 0.15, 255);
+		diffRemoved = hsv(redHue, 0.40 + rand.NextDouble() * 0.15, 0.35 + rand.NextDouble() * 0.15, 255);
 		// 行底色：比块色更低饱和度，接近背景
-		diffAddBg = hsv(120.0, 0.25, 0.20, 255);
-		diffRemoveBg = hsv(0.0, 0.25, 0.20, 255);
+		diffAddBg = hsv(greenHue, 0.20 + rand.NextDouble() * 0.15, 0.15 + rand.NextDouble() * 0.15, 255);
+		diffRemoveBg = hsv(redHue, 0.20 + rand.NextDouble() * 0.15, 0.15 + rand.NextDouble() * 0.15, 255);
 		// 行内字色：比块色更鲜，作高亮
-		diffExactAdd = hsv(120.0, 0.75, 0.65, 255);
-		diffExactRemove = hsv(0.0, 0.75, 0.65, 255);
+		diffExactAdd = hsv(greenHue, 0.65 + rand.NextDouble() * 0.20, 0.55 + rand.NextDouble() * 0.20, 255);
+		diffExactRemove = hsv(redHue, 0.65 + rand.NextDouble() * 0.20, 0.55 + rand.NextDouble() * 0.20, 255);
 	}
 	else
 	{
-		diffAdded = hsv(120.0, 0.40, 0.90, 255);
-		diffRemoved = hsv(0.0, 0.40, 0.92, 255);
-		diffAddBg = hsv(120.0, 0.15, 0.95, 255);
-		diffRemoveBg = hsv(0.0, 0.15, 0.95, 255);
-		diffExactAdd = hsv(120.0, 0.75, 0.35, 255);
-		diffExactRemove = hsv(0.0, 0.75, 0.35, 255);
+		diffAdded = hsv(greenHue, 0.35 + rand.NextDouble() * 0.15, 0.85 + rand.NextDouble() * 0.10, 255);
+		diffRemoved = hsv(redHue, 0.35 + rand.NextDouble() * 0.15, 0.87 + rand.NextDouble() * 0.10, 255);
+		diffAddBg = hsv(greenHue, 0.10 + rand.NextDouble() * 0.15, 0.90 + rand.NextDouble() * 0.08, 255);
+		diffRemoveBg = hsv(redHue, 0.10 + rand.NextDouble() * 0.15, 0.90 + rand.NextDouble() * 0.08, 255);
+		diffExactAdd = hsv(greenHue, 0.65 + rand.NextDouble() * 0.20, 0.30 + rand.NextDouble() * 0.15, 255);
+		diffExactRemove = hsv(redHue, 0.65 + rand.NextDouble() * 0.20, 0.30 + rand.NextDouble() * 0.15, 255);
 	}
 	// 代码编辑器：背景跟随主背景，前景跟随主文字
 	Color codeBg = isDark ? hsv(baseHue, 0.18, 0.12, 255) : hsv(baseHue, 0.10, 0.99, 255);
@@ -607,42 +616,19 @@ namespace ForkPlus.UI.Dialogs
 	{
 		ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_workingCopy);
 		// 首次启用自定义颜色时 UseCustomColors 仍是 false，App.ApplyCustomColors 会走早退分支，
-		// 导致编辑过程中主窗口无法实时预览。这里在 _workingCopy 非空时临时置 true，
+		// 导致主窗口无法实时预览。这里在 _workingCopy 非空时置 true，
 		// 让 ApplyCustomColors 走正常分支 merge ResourceDictionary + raise ApplicationThemeChanged。
-		// Cancel_Click 会按 _originalUseCustomColors 还原，OK 时会再设 true。
-		bool prevUseCustom = ForkPlusSettings.Default.UseCustomColors;
 		if (_workingCopy.Count > 0)
 		{
 			ForkPlusSettings.Default.UseCustomColors = true;
 		}
+		// 关键：merge ResourceDictionary + raise ApplicationThemeChanged，
+		// 否则 Diff/热力图/行号边距等 20+ 订阅控件不会重绘，主界面不会实时生效。
 		App.ApplyCustomColors();
 		foreach (CustomColorItem item in _items)
 			item.RefreshPreview();
-	}
-
-	private void Ok_Click(object sender, RoutedEventArgs e)
-	{
-		// 确认编辑后启用自定义颜色覆盖（有自定义项时），并立即持久化避免崩溃丢失。
-		if (_workingCopy.Count > 0)
-		{
-			ForkPlusSettings.Default.UseCustomColors = true;
-		}
-		// 关键修复：必须调用 ApplyCustomColors 把 _workingCopy merge 到
-		// Application.Current.Resources 并 raise ApplicationThemeChanged，
-		// 否则 Diff/热力图/行号边距等 20+ 订阅控件不会重绘，UI 不会实时生效。
-		App.ApplyCustomColors();
-		try { ForkPlusSettings.Default.Save(); } catch { /* 持久化失败不阻断关闭 */ }
-		DialogResult = true;
-		Close();
-	}
-
-	private void Cancel_Click(object sender, RoutedEventArgs e)
-	{
-		// 还原对话框打开前的状态（编辑过程已实时应用到 UI，需撤销）。
-		ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_originalCustomColors);
-		ForkPlusSettings.Default.UseCustomColors = _originalUseCustomColors;
-		App.ApplyCustomColors();
-		DialogResult = false;
+		// 立即落盘到 settings.json，避免崩溃/关窗丢失。换色已实时落盘，故无需 OK/Cancel。
+		try { ForkPlusSettings.Default.Save(); } catch { /* 持久化失败不阻断编辑 */ }
 	}
 
 		/// <summary>颜色项 ViewModel。</summary>

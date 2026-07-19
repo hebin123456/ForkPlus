@@ -8,7 +8,8 @@ namespace ForkPlus.AutomationTests
 {
 	/// <summary>
 	/// 自定义颜色对话框 ST：通过 Appearance 下拉打开 Custom Colors 对话框，
-	/// 验证对话框能弹出、点击 Random Palette 不崩溃、能通过 Cancel/OK 关闭。
+	/// 验证对话框能弹出、点击 Random Palette 不崩溃、能通过关闭窗口按钮关闭。
+	/// v2.1.2 起换色实时落盘，对话框不再有 OK/Cancel 按钮，靠窗口标题栏关闭。
 	/// </summary>
 	public class CustomColorsDialogTests : AutomationTestBase, IDisposable
 	{
@@ -57,20 +58,13 @@ namespace ForkPlus.AutomationTests
 				Assert.NotNull(randomBtn);
 				try { randomBtn.Click(); Thread.Sleep(1000); } catch { }
 
-				// 验证应用未崩溃
+				// 验证应用未崩溃（随机配色应实时落盘 + 应用到主界面）
 				Assert.False(app.Application.HasExited, "点击 Random Palette 后应用退出。");
 
-				// 点击 Cancel 关闭对话框（不保存随机配色）
-				var cancelBtn = win.FindFirstDescendant(cf => cf.ByName("Cancel"))
-					?? win.FindFirstDescendant(cf => cf.ByName("取消"));
-				if (cancelBtn != null)
-				{
-					try { cancelBtn.Click(); Thread.Sleep(500); } catch { }
-				}
-				else
-				{
-					CloseWindow(win);
-				}
+				// v2.1.2 起对话框无 Cancel 按钮，换色已实时落盘。直接关闭窗口。
+				CloseWindow(win);
+				Thread.Sleep(500);
+				Assert.False(app.Application.HasExited, "关闭自定义颜色对话框后主应用退出。");
 			}
 		}
 	}
