@@ -13,6 +13,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.Utils.Http;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;

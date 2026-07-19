@@ -13,11 +13,13 @@ using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Commands.LeanBranching;
+using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
+using ForkPlus.Utils.Http;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
@@ -1317,7 +1319,7 @@ namespace ForkPlus.UI.UserControls
 				prDescItem.IsEnabled = isEnabled;
 				prDescItem.Click += delegate
 				{
-					AiCodeReviewTarget target = CreateBranchTarget(rc, remoteMain, branch);
+					AiCodeReviewTarget.Branch target = CreateBranchTarget(rc, remoteMain, branch);
 					if (target != null)
 					{
 						GeneratePullRequestDescription(rc, gitModule, target.Src, target.Dst, branch.Name);

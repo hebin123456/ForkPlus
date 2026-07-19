@@ -16,6 +16,7 @@ using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Utils.Http;
 
 namespace ForkPlus.UI.UserControls
 {

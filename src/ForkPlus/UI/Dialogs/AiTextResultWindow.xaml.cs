@@ -120,10 +120,10 @@ namespace ForkPlus.UI.Dialogs
 			RetryButton.IsEnabled = false;
 
 			_currentMonitor = new JobMonitor();
-			_currentMonitor.Canceled += delegate
+			_currentMonitor.SetCancellationAction(delegate
 			{
 				Dispatcher.Async(delegate { StopStreamingRender(); });
-			};
+			});
 			// 后台线程执行 AI 请求
 			Task.Run(delegate
 			{

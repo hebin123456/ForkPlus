@@ -7,10 +7,12 @@ using System.Windows.Markup;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Utils.Http;
 
 namespace ForkPlus.UI.Dialogs
 {
