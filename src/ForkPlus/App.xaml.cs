@@ -645,12 +645,29 @@ namespace ForkPlus
 		}
 
 		/// <summary>根据 ForkPlusSettings.Default.CustomColors 构建动态 ResourceDictionary 并 merge 到
-	/// MergedDictionaries 末尾。由于 Brushes.xaml 中所有 Brush 都用 DynamicResource 引用 Color key，
-	/// 覆盖 Color 资源后所有引用该 Color 的 Brush 会自动更新，实现即时生效。
-	/// 主题切换后也需调用以重新应用覆盖（旧字典被移除后需要重建）。
-	/// 仅当 UseCustomColors=true 且 CustomColors 非空时才应用覆盖；否则移除覆盖回到主题原色。
-	/// 末尾 raise ApplicationThemeChanged 事件，通知订阅者（RevisionList/DiffEditor/Heatmap 等）刷新缓存，
-	/// 否则这些控件不会感知自定义颜色变化，导致"只有重启才生效"。</summary>
+	/// MergedDictionaries 末尾。仅当 UseCustomColors=true 且 CustomColors 非空时才应用覆盖。
+	///
+	/// v2.1.2 关键修复：用户反馈"换色后主界面不刷新，必须重启才生效"。根因——
+	/// 旧实现只在 MergedDictionaries 末尾 Add 一个含 29 个 Color key 的小 dict，依赖
+	/// Brushes.xaml 中 SolidColorBrush.Color = {DynamicResource XXXColor} 的链式通知自动更新。
+	/// 但 WPF 在 Style/Template 已实例化、控件已渲染后，对 MergedDictionaries 末尾 Add
+	/// 同名 key 的覆盖不会可靠地触发所有 DynamicResource 重新解析——尤其是 Style 中
+	/// Setter 引用的 Brush、ContextMenu/Popup 内的控件、已渲染过的 UserControl 等，
+	/// 表现为"换色后只有部分 UI 刷新，主界面整体不变化"。
+	///
+	/// 对比主题切换（SwitchApplicationThemeCommand）能立即刷新——因为它**重新加载
+	/// 整个 Generic.{Skin}.xaml 字典**（先 Add 新 dict → 后 Remove 旧 dict），这会强制
+	/// WPF 让所有 DynamicResource 失效并重新解析，所有 SolidColorBrush 实例被重建，
+	/// 所有引用 Brush 的控件（包括 Style/Popup/已渲染控件）都拿到新 Brush。
+	///
+	/// 修复策略：模仿主题切换的做法，在 ApplyCustomColors 末尾对当前 Generic 字典
+	/// 做一次"Add 新 + Remove 旧"的等效刷新——重新加载同一份 Generic.{Skin}.xaml，
+	/// 强制 WPF 全量失效所有 DynamicResource。然后再 Add 自定义颜色覆盖字典。
+	/// 这样换色效果和主题切换一样立即生效，性能代价是重新加载一份 ~290 Color + 270 Brush
+	/// 的字典（毫秒级，可接受）。
+	///
+	/// 末尾 raise ApplicationThemeChanged 事件，通知 18 个订阅控件（DiffEditor/Heatmap 等）
+	/// 主动刷新缓存的 Color 值（这些控件缓存 Color 值类型，必须靠事件刷新）。</summary>
 	public static void ApplyCustomColors()
 	{
 		// 移除旧的自定义颜色字典
@@ -661,42 +678,86 @@ namespace ForkPlus
 		}
 		// 仅当用户启用自定义颜色且有自定义项时才应用覆盖；否则使用当前主题原色。
 		Dictionary<string, string> customColors = ForkPlusSettings.Default.CustomColors;
-		if (!ForkPlusSettings.Default.UseCustomColors || customColors == null || customColors.Count == 0)
+		bool hasCustomColors = ForkPlusSettings.Default.UseCustomColors && customColors != null && customColors.Count > 0;
+
+		// 关键：重新加载当前主题的 Generic.{Skin}.xaml 字典，模仿主题切换的强力刷新机制。
+		// 这一步强制 WPF 让所有 DynamicResource 失效并重新解析，所有 SolidColorBrush 实例
+		// 被重建，所有引用 Brush 的控件（含 Style/Popup/已渲染控件）都会刷新——
+		// 这是"主题切换能立即生效"的根因，自定义颜色同样需要走这条路径。
+		ReloadThemeDictionary();
+
+		// 构建新的覆盖字典并 Add 到 MergedDictionaries 末尾
+		if (hasCustomColors)
 		{
-			Theme.Refresh();
-			// 通知订阅者刷新（覆盖被移除时也需要刷新回到主题色）。
-			NotificationCenter.Current.RaiseApplicationThemeChanged(Application.Current, ForkPlusSettings.Default.Theme);
-			return;
-		}
-		// 构建新的覆盖字典
-		ResourceDictionary dict = new ResourceDictionary();
-		foreach (KeyValuePair<string, string> kv in customColors)
-		{
-			try
+			ResourceDictionary dict = new ResourceDictionary();
+			foreach (KeyValuePair<string, string> kv in customColors)
 			{
-				string hex = kv.Value;
-				Color color;
-				if (hex.StartsWith("#") && hex.Length == 9)
-					color = (Color)ColorConverter.ConvertFromString(hex);
-				else if (hex.StartsWith("#") && hex.Length == 7)
-					color = (Color)ColorConverter.ConvertFromString(hex);
-				else
-					color = (Color)ColorConverter.ConvertFromString("#" + hex);
-				dict[kv.Key] = color;
+				try
+				{
+					string hex = kv.Value;
+					Color color;
+					if (hex.StartsWith("#") && hex.Length == 9)
+						color = (Color)ColorConverter.ConvertFromString(hex);
+					else if (hex.StartsWith("#") && hex.Length == 7)
+						color = (Color)ColorConverter.ConvertFromString(hex);
+					else
+						color = (Color)ColorConverter.ConvertFromString("#" + hex);
+					dict[kv.Key] = color;
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Invalid custom color value for key '" + kv.Key + "': " + kv.Value, ex);
+				}
 			}
-			catch (Exception ex)
+			if (dict.Count > 0)
 			{
-				Log.Warn("Invalid custom color value for key '" + kv.Key + "': " + kv.Value, ex);
+				Application.Current.Resources.MergedDictionaries.Add(dict);
+				_customColorsResourceDictionary = dict;
 			}
-		}
-		if (dict.Count > 0)
-		{
-			Application.Current.Resources.MergedDictionaries.Add(dict);
-			_customColorsResourceDictionary = dict;
 		}
 		Theme.Refresh();
 		// raise 事件让订阅者刷新缓存的颜色/画刷，实现自定义颜色实时生效。
 		NotificationCenter.Current.RaiseApplicationThemeChanged(Application.Current, ForkPlusSettings.Default.Theme);
+	}
+
+	/// <summary>重新加载当前主题的 Generic.{Skin}.xaml 字典：先 Add 新 dict → 后 Remove 旧 dict。
+	/// 这是 SwitchApplicationThemeCommand 主题切换能立即刷新所有 UI 的核心机制——
+	/// 通过替换整个 Generic 字典让 WPF 强制让所有 DynamicResource 失效并重新解析，
+	/// 所有 SolidColorBrush 实例被重建，所有引用 Brush 的控件（含 Style/Popup/已渲染控件）
+	/// 都拿到新 Brush。自定义颜色变化时同样调用此方法，让换色效果像主题切换一样即时生效。</summary>
+	private static void ReloadThemeDictionary()
+	{
+		try
+		{
+			// 找到当前的 Generic.{Skin}.xaml 字典（Source 非空且匹配 /Theme/Generic.*.xaml）
+			ResourceDictionary oldThemeDict = null;
+			foreach (ResourceDictionary rd in Application.Current.Resources.MergedDictionaries)
+			{
+				if (rd.Source != null &&
+				    System.Text.RegularExpressions.Regex.Match(
+					    rd.Source.OriginalString,
+					    @"\/ForkPlus;component\/Theme\/Generic\.\w+\.xaml").Success)
+				{
+					oldThemeDict = rd;
+					break;
+				}
+			}
+			if (oldThemeDict == null)
+				return;  // 未找到主题字典（启动早期或异常状态），跳过刷新
+
+			// 先 Add 新 dict（同一 Source 重新加载），后 Remove 旧 dict——
+			// 这个顺序与 SwitchApplicationThemeCommand 一致，确保资源查找不出现空窗。
+			ResourceDictionary newThemeDict = new ResourceDictionary
+			{
+				Source = ForkPlusSettings.Default.Theme.ResourceUri()
+			};
+			Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
+			Application.Current.Resources.MergedDictionaries.Remove(oldThemeDict);
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("ReloadThemeDictionary failed: " + ex.Message, ex);
+		}
 	}
 
 		private void InitializeTextEditorContextMenuStyle()
