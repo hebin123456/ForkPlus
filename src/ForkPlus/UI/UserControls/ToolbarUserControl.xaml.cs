@@ -460,21 +460,45 @@ namespace ForkPlus.UI.UserControls
 			ContextMenu contextMenu = AppearanceToolbarDropdownButton.ContextMenu;
 			contextMenu.Items.Clear();
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Theme", language)));
-			// 遍历所有内置预设皮肤动态生成菜单项，不再硬编码 Light/Dark。
-		// 启用自定义颜色时所有主题项都不勾选（互斥语义），勾选自定义颜色项。
+			// v3.1.1：菜单分两段——非纯色主题直接列在主菜单，纯色主题（红/橙/黄/绿/青/蓝/紫）
+			// 收拢到"纯色"二级菜单，按彩虹色排序。
+			// 启用自定义颜色时所有主题项都不勾选（互斥语义），勾选自定义颜色项。
 		bool useCustom = ForkPlusSettings.Default.UseCustomColors;
+		ThemeType currentTheme = ForkPlusSettings.Default.Theme;
 		foreach (ThemeType theme in ThemeTypeExtensions.AllThemes)
 		{
+			// 纯色主题不直接显示在主菜单，统一进"纯色"二级菜单
+			if (theme.IsSolidColor()) continue;
 			ThemeType themeCopy = theme;
 			MenuItem themeMenuItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(
 				Preferences.PreferencesLocalization.Translate(theme.SkinName(), language), delegate
 			{
 				MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
 			});
-			themeMenuItem.IsChecked = !useCustom && ForkPlusSettings.Default.Theme == theme;
+			themeMenuItem.IsChecked = !useCustom && currentTheme == theme;
 			themeMenuItem.IsCheckable = true;
 			contextMenu.Items.Add(themeMenuItem);
 		}
+		// v3.1.1："纯色"二级菜单：父项 IsChecked 表示当前主题是某个纯色；子项 IsChecked 表示当前主题等于该项
+		MenuItem solidColorsParent = new MenuItem
+		{
+			Header = Preferences.PreferencesLocalization.Translate("Solid Colors", language),
+			IsCheckable = true,
+			IsChecked = !useCustom && currentTheme.IsSolidColor()
+		};
+		foreach (ThemeType solidTheme in ThemeTypeExtensions.SolidColorThemes)
+		{
+			ThemeType solidCopy = solidTheme;
+			MenuItem subItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(
+				Preferences.PreferencesLocalization.Translate(solidTheme.SkinName(), language), delegate
+			{
+				MainWindow.Commands.SwitchApplicationTheme.Execute(solidCopy);
+			});
+			subItem.IsChecked = !useCustom && currentTheme == solidTheme;
+			subItem.IsCheckable = true;
+			solidColorsParent.Items.Add(subItem);
+		}
+		contextMenu.Items.Add(solidColorsParent);
 		// "自定义颜色"单一入口：点击打开编辑对话框，IsChecked 反映是否已启用自定义颜色覆盖。
 		// 只要用户在对话框里改动过任意颜色并确认，UseCustomColors 即被置 true，此项自动勾选；
 		// 与上方主题项互斥——启用自定义颜色时所有主题项不勾选。再次点击只是重新打开编辑对话框。

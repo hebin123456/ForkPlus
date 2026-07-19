@@ -157,20 +157,22 @@ namespace ForkPlus.UI.Commands
 					commitUserControl.Refresh(SubDomain.All);
 					new ErrorWindow(repositoryUserControl, gitResult.Error).ShowDialog();
 				}
-				else
+				else if (!monitor.IsCanceled)
+			{
+				// v3.1.1：用户在 commit 过程中按了取消（IsCanceled=true）时不能再调 Success，
+				// 否则会把 Canceled 状态覆盖回 Succeeded（虽然 JobMonitor 已加守卫，但这里语义上也不应调）
+				monitor.Success(null);
+				commitUserControl.EraseSavedCommitMessage();
+				commitUserControl.DontRefreshOnAmend = true;
+				commitUserControl.AmendMode = false;
+				commitUserControl.DontRefreshOnAmend = false;
+				commitUserControl.FullCommitMessage = "";
+				commitUserControl.Refresh(SubDomain.All);
+				if (commitAndPush)
 				{
-					monitor.Success(null);
-					commitUserControl.EraseSavedCommitMessage();
-					commitUserControl.DontRefreshOnAmend = true;
-					commitUserControl.AmendMode = false;
-					commitUserControl.DontRefreshOnAmend = false;
-					commitUserControl.FullCommitMessage = "";
-					commitUserControl.Refresh(SubDomain.All);
-					if (commitAndPush)
-					{
-						MainWindow.Commands.QuickPush.Execute(repositoryUserControl);
-					}
+					MainWindow.Commands.QuickPush.Execute(repositoryUserControl);
 				}
+			}
 			});
 			return gitResult;
 		}, JobFlags.Default, showMessageWhenDone: false);

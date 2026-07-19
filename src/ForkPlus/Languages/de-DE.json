@@ -2147,6 +2147,19 @@
     "Source": "Quelle",
     "Destination": "Ziel",
     "Search (ASCII or hex bytes like 41 42)": "Suchen (ASCII oder Hex-Bytes wie 41 42)",
-    "Copy as raw bytes": "Als Rohbytes kopieren"
+    "Copy as raw bytes": "Als Rohbytes kopieren",
+    "Sync scroll": "Synchrones Scrollen",
+    "Solid Colors": "Einfarbig",
+    "RedLight": "Rot Hell",
+    "RedDark": "Rot Dunkel",
+    "OrangeLight": "Orange Hell",
+    "OrangeDark": "Orange Dunkel",
+    "YellowLight": "Gelb Hell",
+    "YellowDark": "Gelb Dunkel",
+    "CyanLight": "Cyan Hell",
+    "CyanDark": "Cyan Dunkel",
+    "BlueLight": "Blau Hell",
+    "BlueDark": "Blau Dunkel",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Rückgängig/Wiederholen aktivieren (experimentell, kann bei großen Repositories die Leistung beeinträchtigen)"
   }
 }

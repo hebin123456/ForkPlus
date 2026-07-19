@@ -16,6 +16,17 @@ namespace ForkPlus.UI
 		PurpleLight = 8,
 		PurpleDark = 9,
 		GreenLight = 10,
-		GreenDark = 11
+		GreenDark = 11,
+		// v3.1.1：纯色主题扩展（按彩虹色：红→橙→黄→绿→青→蓝→紫）
+		RedLight = 12,
+		RedDark = 13,
+		OrangeLight = 14,
+		OrangeDark = 15,
+		YellowLight = 16,
+		YellowDark = 17,
+		CyanLight = 18,
+		CyanDark = 19,
+		BlueLight = 20,
+		BlueDark = 21
 	}
 }

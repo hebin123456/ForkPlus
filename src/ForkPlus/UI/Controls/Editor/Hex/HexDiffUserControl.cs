@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -32,11 +33,19 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		}
 
 		private readonly HexEditor _srcEditor;
-		private readonly HexEditor _dstEditor;
-		private readonly ComboBox _bytesPerRowComboBox;
-		private readonly CheckBox _showAsciiCheckBox;
-		private readonly CheckBox _showOffsetCheckBox;
-		private HexDiffContent _content;
+	private readonly HexEditor _dstEditor;
+	private readonly ComboBox _bytesPerRowComboBox;
+	private readonly CheckBox _showAsciiCheckBox;
+	private readonly CheckBox _showOffsetCheckBox;
+	// v3.1.1：左右行对齐（滚动同步）开关，默认勾上
+	private readonly CheckBox _syncScrollCheckBox;
+	private HexDiffContent _content;
+
+	// v3.1.1：滚动同步防抖状态（参考 SideBySideTextDiffControl 的 100ms 防抖模式，
+	// 避免两侧相互触发 ScrollOffsetChanged 形成回环）
+	private DateTime _lastScrollTime;
+	private HexEditor _lastScrolledEditor;
+	private bool _isSyncingScroll;
 
 		public HexDiffUserControl()
 		{
@@ -82,16 +91,28 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			toolbar.Children.Add(_showAsciiCheckBox);
 
 			_showOffsetCheckBox = new CheckBox
-			{
-				Content = PreferencesLocalization.Current("Show offset"),
-				IsChecked = ForkPlusSettings.Default.HexViewShowOffset,
-				VerticalAlignment = VerticalAlignment.Center,
-				Margin = new Thickness(0, 0, 8, 0)
-			};
-			_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-			_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
-			DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
-			toolbar.Children.Add(_showOffsetCheckBox);
+		{
+			Content = PreferencesLocalization.Current("Show offset"),
+			IsChecked = ForkPlusSettings.Default.HexViewShowOffset,
+			VerticalAlignment = VerticalAlignment.Center,
+			Margin = new Thickness(0, 0, 8, 0)
+		};
+		_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
+		_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+		DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
+		toolbar.Children.Add(_showOffsetCheckBox);
+
+		// v3.1.1：左右行对齐 — 默认勾上。勾上时左右两侧 HexEditor 同步垂直/水平滚动，
+		// 一侧拉到第 N 行，另一侧也拉到第 N 行。
+		_syncScrollCheckBox = new CheckBox
+		{
+			Content = PreferencesLocalization.Current("Sync scroll"),
+			IsChecked = true,
+			VerticalAlignment = VerticalAlignment.Center,
+			Margin = new Thickness(0, 0, 8, 0)
+		};
+		DockPanel.SetDock(_syncScrollCheckBox, Dock.Left);
+		toolbar.Children.Add(_syncScrollCheckBox);
 
 			// Src / Dst 标签
 			TextBlock srcLabel = new TextBlock
@@ -121,14 +142,18 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			editorsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			_srcEditor = new HexEditor();
-			_srcEditor.Loaded += (s, e) => _srcEditor.InstallSearchPanel();
-			editorsGrid.Children.Add(_srcEditor);
-			SetColumn(_srcEditor, 0);
+		_srcEditor.Loaded += (s, e) => _srcEditor.InstallSearchPanel();
+		// v3.1.1：订阅滚动事件，用于左右行对齐
+		_srcEditor.TextArea.TextView.ScrollOffsetChanged += delegate { OnScrollOffsetChanged(_srcEditor); };
+		editorsGrid.Children.Add(_srcEditor);
+		SetColumn(_srcEditor, 0);
 
-			_dstEditor = new HexEditor();
-			_dstEditor.Loaded += (s, e) => _dstEditor.InstallSearchPanel();
-			editorsGrid.Children.Add(_dstEditor);
-			SetColumn(_dstEditor, 1);
+		_dstEditor = new HexEditor();
+		_dstEditor.Loaded += (s, e) => _dstEditor.InstallSearchPanel();
+		// v3.1.1：订阅滚动事件，用于左右行对齐
+		_dstEditor.TextArea.TextView.ScrollOffsetChanged += delegate { OnScrollOffsetChanged(_dstEditor); };
+		editorsGrid.Children.Add(_dstEditor);
+		SetColumn(_dstEditor, 1);
 
 			Children.Add(editorsGrid);
 			SetRow(editorsGrid, 1);
@@ -205,12 +230,57 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		}
 
 		private void ShowOffsetCheckBox_Changed(object sender, RoutedEventArgs e)
-		{
-			bool v = _showOffsetCheckBox.IsChecked.GetValueOrDefault();
-			_srcEditor.ShowOffset = v;
-			_dstEditor.ShowOffset = v;
-			ForkPlusSettings.Default.HexViewShowOffset = v;
-			ForkPlusSettings.Default.Save();
-		}
+	{
+		bool v = _showOffsetCheckBox.IsChecked.GetValueOrDefault();
+		_srcEditor.ShowOffset = v;
+		_dstEditor.ShowOffset = v;
+		ForkPlusSettings.Default.HexViewShowOffset = v;
+		ForkPlusSettings.Default.Save();
 	}
+
+	/// <summary>
+	/// v3.1.1：左右行对齐（滚动同步）。一侧滚动时，把另一侧也滚到相同 vertical/horizontal offset。
+	/// 采用 100ms 防抖 + _isSyncingScroll 重入守卫，避免两侧相互触发 ScrollOffsetChanged 形成回环。
+	/// 参考 SideBySideTextDiffControl.OnScrollOffsetChanged 的实现。
+	/// </summary>
+	private void OnScrollOffsetChanged(HexEditor editor)
+	{
+		// 用户取消勾选"左右行对齐"时，完全不同步
+		if (_syncScrollCheckBox == null || _syncScrollCheckBox.IsChecked != true)
+		{
+			return;
+		}
+		// 正在同步对侧滚动期间触发的回调直接忽略，避免回环
+		if (_isSyncingScroll)
+		{
+			return;
+		}
+		// 100ms 防抖：连续滚动时只让先发起的那一侧主导，另一侧触发的回调被丢弃
+		if (DateTime.Now - _lastScrollTime < TimeSpan.FromMilliseconds(100.0) && editor != _lastScrolledEditor)
+		{
+			return;
+		}
+		double verticalOffset = editor.TextArea.TextView.VerticalOffset;
+		double horizontalOffset = editor.TextArea.TextView.HorizontalOffset;
+		HexEditor other = editor == _srcEditor ? _dstEditor : _srcEditor;
+		_isSyncingScroll = true;
+		try
+		{
+			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
+			{
+				other.ScrollToVerticalOffset(verticalOffset);
+			}
+			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
+			{
+				other.ScrollToHorizontalOffset(horizontalOffset);
+			}
+		}
+		finally
+		{
+			_isSyncingScroll = false;
+		}
+		_lastScrollTime = DateTime.Now;
+		_lastScrolledEditor = editor;
+	}
+}
 }

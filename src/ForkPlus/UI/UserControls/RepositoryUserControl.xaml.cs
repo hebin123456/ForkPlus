@@ -1062,22 +1062,25 @@ namespace ForkPlus.UI.UserControls
 				}
 
 				// 2. 执行实际操作，失败时 CancelLastRecord
-				GitCommandResult result = null;
-				try
-				{
-					result = action(monitor);
-				}
-				catch
-				{
-					UndoRedoStack.CancelLastRecord();
-					RaiseUndoRedoStateChanged();
-					throw;
-				}
-				if (result == null || !result.Succeeded)
-				{
-					UndoRedoStack.CancelLastRecord();
-				}
+			GitCommandResult result = null;
+			try
+			{
+				result = action(monitor);
+			}
+			catch
+			{
+				// v3.1.1：异常时也要看 IsCanceled。已取消的话栈顶 entry 应当弹出，否则栈里会留下"已取消但未弹出"的孤儿
+				UndoRedoStack.CancelLastRecord();
 				RaiseUndoRedoStateChanged();
+				throw;
+			}
+			// v3.1.1：用户在 action 执行过程中按了取消（IsCanceled=true）时，栈顶 entry 必须弹出，
+			// 否则会表现为：撤销栈里已经有这条提交，但状态栏还显示"提交 1 个文件"且一直转圈、取消不掉
+			if (monitor.IsCanceled || result == null || !result.Succeeded)
+			{
+				UndoRedoStack.CancelLastRecord();
+			}
+			RaiseUndoRedoStateChanged();
 			}, flags, showMessageWhenDone);
 		}
 

@@ -2147,6 +2147,19 @@
     "Source": "소스",
     "Destination": "대상",
     "Search (ASCII or hex bytes like 41 42)": "검색 (ASCII 또는 16진수 바이트, 예: 41 42)",
-    "Copy as raw bytes": "원시 바이트로 복사"
+    "Copy as raw bytes": "원시 바이트로 복사",
+    "Sync scroll": "좌우 동기 스크롤",
+    "Solid Colors": "단색",
+    "RedLight": "빨강 밝은",
+    "RedDark": "빨강 어두운",
+    "OrangeLight": "주황 밝은",
+    "OrangeDark": "주황 어두운",
+    "YellowLight": "노랑 밝은",
+    "YellowDark": "노랑 어두운",
+    "CyanLight": "시안 밝은",
+    "CyanDark": "시안 어두운",
+    "BlueLight": "파랑 밝은",
+    "BlueDark": "파랑 어두운",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "실행 취소/다시 실행 활성화 (실험적, 대형 저장소에서 성능에 영향을 줄 수 있음)"
   }
 }

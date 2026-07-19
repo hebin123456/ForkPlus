@@ -10,6 +10,19 @@
     "Source": "Source",
     "Destination": "Destination",
     "Search (ASCII or hex bytes like 41 42)": "Search (ASCII or hex bytes like 41 42)",
-    "Copy as raw bytes": "Copy as raw bytes"
+    "Copy as raw bytes": "Copy as raw bytes",
+    "Sync scroll": "Sync scroll",
+    "Solid Colors": "Solid Colors",
+    "RedLight": "Red Light",
+    "RedDark": "Red Dark",
+    "OrangeLight": "Orange Light",
+    "OrangeDark": "Orange Dark",
+    "YellowLight": "Yellow Light",
+    "YellowDark": "Yellow Dark",
+    "CyanLight": "Cyan Light",
+    "CyanDark": "Cyan Dark",
+    "BlueLight": "Blue Light",
+    "BlueDark": "Blue Dark",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Enable Undo/Redo (experimental, may impact performance on large repos)"
   }
 }

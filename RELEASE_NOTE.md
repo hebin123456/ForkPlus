@@ -2,6 +2,23 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.1.1
+
+### 新特性
+
+- **外观菜单 - 纯色二级菜单**：将原来平铺在外观下拉里的紫色、绿色主题收拢到「纯色」二级菜单中，并新增 5 种纯色配色（红、橙、黄、青、蓝），每种都有浅色 / 深色两个变体，按彩虹色排序（红→橙→黄→绿→青→蓝→紫）。父菜单「纯色」与子菜单中当前选中的颜色都会打勾。
+- **Hex Diff - 左右行对齐**：二进制对比界面工具栏新增「左右行对齐」复选框，默认勾上。勾上时左右两个 HexEditor 同步滚动 —— 一侧拉到第 N 行，另一侧立即跟随到第 N 行。采用 100ms 防抖 + 重入守卫，避免两侧相互触发滚动事件形成回环。
+
+### 修复与改进
+
+- **Undo/Redo 默认开启**：`UndoRedoEnabled` 默认值从 `false` 改为 `true`，新用户开箱即用，无需手动到偏好设置中勾选。
+- **Undo/Redo 开关文案国际化**：偏好设置中 `Enable Undo/Redo (experimental, may impact performance on large repos)` 此前为硬编码英文，现已本地化到 8 种语言。
+- **修复提交后状态栏一直转圈 / 取消不掉**：用户启用 Undo/Redo 后提交一个文件，撤销栈里已出现该提交，但状态栏仍显示「Commit 1 File」并一直转圈、无法取消。根因是 Job 状态机在取消信号与完成信号之间存在多处覆盖漏洞，本次系统性修复：
+  - `JobMonitor.Update` / `Success` / `Fail` 在 `_state == Canceled` 时直接返回，不允许把 Canceled 改回 InProgress / Succeeded / Failed（否则取消信号被吞掉，状态栏继续转圈、Job 实际完成、栈里仍入 entry）。
+  - `JobQueue.Schedule` 用 `try/finally` 包裹 `job.Run()`，确保 action 抛异常时 Job 也能从 `_runningJobs` 移除、`Status` 置为 `Finished`，否则 `IsIdle` 永远为 `false`、状态栏永远转圈。
+  - `RepositoryUserControl.AddUndoable` 在 action 返回后检查 `monitor.IsCanceled`，已取消时调用 `CancelLastRecord` 弹出栈顶 entry，避免栈里留下「已取消但未弹出」的孤儿。
+  - `CommitCommand` 在 commit 成功回调里加 `!monitor.IsCanceled` 守卫，已取消时不再调 `monitor.Success(null)`。
+
 ## v3.1.0
 
 ### 新特性

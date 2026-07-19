@@ -2147,6 +2147,19 @@
     "Source": "來源",
     "Destination": "目標",
     "Search (ASCII or hex bytes like 41 42)": "搜尋（ASCII 或十六進位位元組，如 41 42）",
-    "Copy as raw bytes": "複製原始位元組"
+    "Copy as raw bytes": "複製原始位元組",
+    "Sync scroll": "左右行對齊",
+    "Solid Colors": "純色",
+    "RedLight": "紅色淺色",
+    "RedDark": "紅色深色",
+    "OrangeLight": "橙色淺色",
+    "OrangeDark": "橙色深色",
+    "YellowLight": "黃色淺色",
+    "YellowDark": "黃色深色",
+    "CyanLight": "青色淺色",
+    "CyanDark": "青色深色",
+    "BlueLight": "藍色淺色",
+    "BlueDark": "藍色深色",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "啟用復原/重做（實驗功能，大型倉庫可能影響效能）"
   }
 }

@@ -2147,6 +2147,19 @@
     "Source": "源",
     "Destination": "目标",
     "Search (ASCII or hex bytes like 41 42)": "搜索（ASCII 或十六进制字节，如 41 42）",
-    "Copy as raw bytes": "复制原始字节"
+    "Copy as raw bytes": "复制原始字节",
+    "Sync scroll": "左右行对齐",
+    "Solid Colors": "纯色",
+    "RedLight": "红色浅色",
+    "RedDark": "红色深色",
+    "OrangeLight": "橙色浅色",
+    "OrangeDark": "橙色深色",
+    "YellowLight": "黄色浅色",
+    "YellowDark": "黄色深色",
+    "CyanLight": "青色浅色",
+    "CyanDark": "青色深色",
+    "BlueLight": "蓝色浅色",
+    "BlueDark": "蓝色深色",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "启用撤销/重做（实验功能，大型仓库可能影响性能）"
   }
 }

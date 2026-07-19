@@ -987,7 +987,8 @@ namespace ForkPlus.Settings
 		private bool _compactBranchLabels;
 
 		// v3.0.4：Undo/Redo 总开关，默认不使能（避免每次写操作都抓快照导致卡顿）
-		private bool _undoRedoEnabled;
+		// v3.1.1：默认改为使能（已修复卡顿/取消不掉的问题）
+		private bool _undoRedoEnabled = true;
 
 		// v3.1.0：Hex Viewer 设置项（每行字节数 / 是否显示 ASCII 列 / 是否显示 Offset 列）
 		private int _hexViewBytesPerRow;
@@ -2700,7 +2701,8 @@ namespace ForkPlus.Settings
 			bool pushAutomaticallyOnCommit = json["PushAutomaticallyOnCommit"]?.Value<bool>() ?? false;
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
 			// v3.0.4：Undo/Redo 默认不使能
-			bool undoRedoEnabled = json["UndoRedoEnabled"]?.Value<bool>() ?? false;
+			// v3.1.1：默认改为使能（已修复 AddUndoable 完成后状态栏转圈/取消不掉的问题）
+			bool undoRedoEnabled = json["UndoRedoEnabled"]?.Value<bool>() ?? true;
 			// v3.1.0：Hex Viewer 设置项（默认 16/true/true）
 			int hexViewBytesPerRow = json["HexViewBytesPerRow"]?.Value<int>() ?? 16;
 			bool hexViewShowAscii = json["HexViewShowAscii"]?.Value<bool>() ?? true;

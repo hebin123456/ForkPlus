@@ -109,9 +109,17 @@ namespace ForkPlus.Jobs
 			Task task = new Task(delegate
 			{
 				job.Status = JobStatus.Running;
-				job.Run();
-				RemoveJob(job);
-				job.Status = JobStatus.Finished;
+				// v3.1.1：包 try/finally，确保 action 抛异常时 Job 也能从 _runningJobs 移除、
+				// Status 置为 Finished，否则 IsIdle 永远为 false、状态栏永远转圈
+				try
+				{
+					job.Run();
+				}
+				finally
+				{
+					RemoveJob(job);
+					job.Status = JobStatus.Finished;
+				}
 			}, creationOptions);
 			AddJob(job);
 			task.Start(_taskScheduler);

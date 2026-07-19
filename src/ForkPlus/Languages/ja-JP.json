@@ -2147,6 +2147,19 @@
     "Source": "ソース",
     "Destination": "デスティネーション",
     "Search (ASCII or hex bytes like 41 42)": "検索 (ASCII または 16 進バイト、例: 41 42)",
-    "Copy as raw bytes": "生バイトをコピー"
+    "Copy as raw bytes": "生バイトをコピー",
+    "Sync scroll": "左右同期スクロール",
+    "Solid Colors": "単色",
+    "RedLight": "赤 明色",
+    "RedDark": "赤 暗色",
+    "OrangeLight": "オレンジ 明色",
+    "OrangeDark": "オレンジ 暗色",
+    "YellowLight": "黄 明色",
+    "YellowDark": "黄 暗色",
+    "CyanLight": "シアン 明色",
+    "CyanDark": "シアン 暗色",
+    "BlueLight": "青 明色",
+    "BlueDark": "青 暗色",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "元に戻す/やり直しを有効化（実験的、大規模リポジトリではパフォーマンスに影響する可能性があります）"
   }
 }

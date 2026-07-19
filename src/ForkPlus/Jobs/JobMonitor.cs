@@ -124,6 +124,11 @@ namespace ForkPlus.Jobs
 		{
 			lock (_updateLock)
 			{
+				// v3.1.1：已取消的 Job 不允许被 Success 覆盖回 Succeeded，否则取消会被吞掉
+				if (_state == JobMonitorState.Canceled)
+				{
+					return;
+				}
 				_progress = TotalProgress;
 				_progressMessage = resultMessage;
 				_state = JobMonitorState.Succeeded;
@@ -134,6 +139,12 @@ namespace ForkPlus.Jobs
 		{
 			lock (_updateLock)
 			{
+				// v3.1.1：已取消的 Job 不允许被 Fail 改回 Failed，否则 IsCanceled 会变 false，
+				// 状态栏会从"取消中"切到错误消息，且取消按钮逻辑会错乱
+				if (_state == JobMonitorState.Canceled)
+				{
+					return;
+				}
 				_progress = TotalProgress;
 				_progressMessage = resultErrorMessage;
 				_state = JobMonitorState.Failed;
@@ -144,6 +155,13 @@ namespace ForkPlus.Jobs
 		{
 			lock (_updateLock)
 			{
+				// v3.1.1：已取消的 Job 不允许被 Update 改回 InProgress（否则取消信号会被吞掉，
+				// 表现为：取消后状态栏继续转圈、Job 实际完成、栈里仍入 entry）
+				if (_state == JobMonitorState.Canceled)
+				{
+					_progressAction?.Invoke();
+					return;
+				}
 				_progress = progress;
 				_progressMessage = message;
 				_state = state;

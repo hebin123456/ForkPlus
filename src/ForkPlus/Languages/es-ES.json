@@ -2147,6 +2147,19 @@
     "Source": "Origen",
     "Destination": "Destino",
     "Search (ASCII or hex bytes like 41 42)": "Buscar (ASCII o bytes hex como 41 42)",
-    "Copy as raw bytes": "Copiar bytes sin procesar"
+    "Copy as raw bytes": "Copiar bytes sin procesar",
+    "Sync scroll": "Desplazamiento sincronizado",
+    "Solid Colors": "Colores sólidos",
+    "RedLight": "Rojo claro",
+    "RedDark": "Rojo oscuro",
+    "OrangeLight": "Naranja claro",
+    "OrangeDark": "Naranja oscuro",
+    "YellowLight": "Amarillo claro",
+    "YellowDark": "Amarillo oscuro",
+    "CyanLight": "Cian claro",
+    "CyanDark": "Cian oscuro",
+    "BlueLight": "Azul claro",
+    "BlueDark": "Azul oscuro",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Activar Deshacer/Rehacer (experimental, puede afectar al rendimiento en repositorios grandes)"
   }
 }

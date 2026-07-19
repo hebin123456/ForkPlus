@@ -22,6 +22,17 @@ namespace ForkPlus.UI
 				case ThemeType.PurpleDark: return "PurpleDark";
 				case ThemeType.GreenLight: return "GreenLight";
 				case ThemeType.GreenDark: return "GreenDark";
+				// v3.1.1：纯色主题
+				case ThemeType.RedLight: return "RedLight";
+				case ThemeType.RedDark: return "RedDark";
+				case ThemeType.OrangeLight: return "OrangeLight";
+				case ThemeType.OrangeDark: return "OrangeDark";
+				case ThemeType.YellowLight: return "YellowLight";
+				case ThemeType.YellowDark: return "YellowDark";
+				case ThemeType.CyanLight: return "CyanLight";
+				case ThemeType.CyanDark: return "CyanDark";
+				case ThemeType.BlueLight: return "BlueLight";
+				case ThemeType.BlueDark: return "BlueDark";
 				default: return "Light";
 			}
 		}
@@ -39,6 +50,11 @@ namespace ForkPlus.UI
 				case ThemeType.Monokai:
 				case ThemeType.PurpleDark:
 				case ThemeType.GreenDark:
+				case ThemeType.RedDark:
+				case ThemeType.OrangeDark:
+				case ThemeType.YellowDark:
+				case ThemeType.CyanDark:
+				case ThemeType.BlueDark:
 					return true;
 				default:
 					return false;
@@ -65,7 +81,53 @@ namespace ForkPlus.UI
 			ThemeType.PurpleLight,
 			ThemeType.PurpleDark,
 			ThemeType.GreenLight,
-			ThemeType.GreenDark
+			ThemeType.GreenDark,
+			ThemeType.RedLight,
+			ThemeType.RedDark,
+			ThemeType.OrangeLight,
+			ThemeType.OrangeDark,
+			ThemeType.YellowLight,
+			ThemeType.YellowDark,
+			ThemeType.CyanLight,
+			ThemeType.CyanDark,
+			ThemeType.BlueLight,
+			ThemeType.BlueDark
 		};
+
+		/// <summary>v3.1.1：纯色皮肤（红/橙/黄/绿/青/蓝/紫，每种含深浅），
+		/// 按彩虹色排序。外观菜单里收拢到"纯色"二级菜单。</summary>
+		public static readonly IReadOnlyList<ThemeType> SolidColorThemes = new ThemeType[]
+		{
+			ThemeType.RedLight,
+			ThemeType.RedDark,
+			ThemeType.OrangeLight,
+			ThemeType.OrangeDark,
+			ThemeType.YellowLight,
+			ThemeType.YellowDark,
+			ThemeType.GreenLight,
+			ThemeType.GreenDark,
+			ThemeType.CyanLight,
+			ThemeType.CyanDark,
+			ThemeType.BlueLight,
+			ThemeType.BlueDark,
+			ThemeType.PurpleLight,
+			ThemeType.PurpleDark
+		};
+
+		/// <summary>v3.1.1：判断是否纯色皮肤（用于"纯色"父菜单项的 IsChecked）。</summary>
+		public static bool IsSolidColor(this ThemeType themeType)
+		{
+			ThemeType[] solid = new ThemeType[]
+			{
+				ThemeType.RedLight, ThemeType.RedDark,
+				ThemeType.OrangeLight, ThemeType.OrangeDark,
+				ThemeType.YellowLight, ThemeType.YellowDark,
+				ThemeType.GreenLight, ThemeType.GreenDark,
+				ThemeType.CyanLight, ThemeType.CyanDark,
+				ThemeType.BlueLight, ThemeType.BlueDark,
+				ThemeType.PurpleLight, ThemeType.PurpleDark
+			};
+			return Array.IndexOf(solid, themeType) >= 0;
+		}
 	}
 }

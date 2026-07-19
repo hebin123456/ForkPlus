@@ -2147,6 +2147,19 @@
     "Source": "Source",
     "Destination": "Destination",
     "Search (ASCII or hex bytes like 41 42)": "Rechercher (ASCII ou octets hex comme 41 42)",
-    "Copy as raw bytes": "Copier les octets bruts"
+    "Copy as raw bytes": "Copier les octets bruts",
+    "Sync scroll": "Défilement synchronisé",
+    "Solid Colors": "Couleurs unies",
+    "RedLight": "Rouge clair",
+    "RedDark": "Rouge foncé",
+    "OrangeLight": "Orange clair",
+    "OrangeDark": "Orange foncé",
+    "YellowLight": "Jaune clair",
+    "YellowDark": "Jaune foncé",
+    "CyanLight": "Cyan clair",
+    "CyanDark": "Cyan foncé",
+    "BlueLight": "Bleu clair",
+    "BlueDark": "Bleu foncé",
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Activer Annuler/Rétablir (expérimental, peut affecter les performances sur les grands dépôts)"
   }
 }
