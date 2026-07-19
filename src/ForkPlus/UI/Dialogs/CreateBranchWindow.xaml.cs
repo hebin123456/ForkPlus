@@ -195,34 +195,34 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.Checkout_StashAndReapply = checkoutStashAndReapply == StashAndReapply.Possible;
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Create branch '{0}'", branchName), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Create branch '{0}'", branchName), delegate(JobMonitor monitor)
+		{
+			if (checkout && leaveAsStash)
 			{
-				if (checkout && leaveAsStash)
+				GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{branchName}' {DateTime.Now}", stageNewFiles: false, monitor);
+				if (!stashResult.Succeeded)
 				{
-					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{branchName}' {DateTime.Now}", stageNewFiles: false, monitor);
-					if (!stashResult.Succeeded)
-					{
-						base.Dispatcher.Async(delegate
-						{
-							Close(GitCommandResult.Failure(stashResult.Error));
-						});
-						return;
-					}
-				}
-				GitCommandResult result = PerformCreateBranch(checkout, gitModule, gitPoint, branchName, checkoutStashAndReapply, checkoutDiscard, sourceString, submodulesToUpdate, monitor);
-				if (monitor.IsCanceled)
-				{
-					Close(GitCommandResult.Success());
-				}
-				else
-				{
+					GitCommandResult stashFail = GitCommandResult.Failure(stashResult.Error);
 					base.Dispatcher.Async(delegate
 					{
-						Close(result);
+						Close(stashFail);
 					});
+					return stashFail;
 				}
-			}, JobFlags.SaveToLog);
-		}
+			}
+			GitCommandResult result = PerformCreateBranch(checkout, gitModule, gitPoint, branchName, checkoutStashAndReapply, checkoutDiscard, sourceString, submodulesToUpdate, monitor);
+			if (monitor.IsCanceled)
+			{
+				Close(GitCommandResult.Success());
+				return GitCommandResult.Success();
+			}
+			base.Dispatcher.Async(delegate
+			{
+				Close(result);
+			});
+			return result;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void SaveRecentNewBranchPrefix(GitModule gitModule, string branchName)
 		{

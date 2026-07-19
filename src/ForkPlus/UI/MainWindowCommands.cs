@@ -132,6 +132,10 @@ namespace ForkPlus.UI
 
 		private ShowSaveStashWindowCommand _showSaveStashWindow;
 
+		private UndoCommand _undo;
+
+		private RedoCommand _redo;
+
 		public ActivateCommitViewCommand ActivateCommitView => CommandContainer.Lazy(ref _activateCommitView);
 
 		public ActivateRevisionListCommand ActivateRevisionList => CommandContainer.Lazy(ref _activateRevisionList);
@@ -259,5 +263,11 @@ namespace ForkPlus.UI
 		public ShowPerformanceDiagnosticsWindowCommand ShowPerformanceDiagnosticsWindow => CommandContainer.Lazy(ref _showPerformanceDiagnosticsWindow);
 
 		public ShowSaveStashWindowCommand ShowSaveStashWindow => CommandContainer.Lazy(ref _showSaveStashWindow);
+
+		/// <summary>撤销最近一次仓库操作。v3.0.0 新增。</summary>
+		public UndoCommand Undo => CommandContainer.Lazy(ref _undo);
+
+		/// <summary>重做最近被撤销的操作。v3.0.0 新增。</summary>
+		public RedoCommand Redo => CommandContainer.Lazy(ref _redo);
 	}
 }

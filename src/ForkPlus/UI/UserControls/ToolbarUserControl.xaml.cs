@@ -20,6 +20,9 @@ namespace ForkPlus.UI.UserControls
 	{
 		private MainWindow _mainWindow;
 
+		/// <summary>当前已订阅 UndoRedoStateChanged 的仓库控件。v3.0.0。</summary>
+		private RepositoryUserControl _subscribedUndoRedoRepo;
+
 		public ToolbarUserControl()
 		{
 			InitializeComponent();
@@ -155,18 +158,34 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			WorkspacesToolbarDropdownButton.Click += delegate
+		{
+			if (KeyboardHelper.IsCtrlDown)
 			{
-				if (KeyboardHelper.IsCtrlDown)
-				{
-					MainWindow.Commands.SwitchWorkspace.Execute();
-					WorkspacesToolbarDropdownButton.ContextMenu.IsOpen = false;
-				}
-				else
-				{
-					InitializeWorkspacesToolbarDropdownButtonContextMenu();
-				}
-			};
-		}
+				MainWindow.Commands.SwitchWorkspace.Execute();
+				WorkspacesToolbarDropdownButton.ContextMenu.IsOpen = false;
+			}
+			else
+			{
+				InitializeWorkspacesToolbarDropdownButtonContextMenu();
+			}
+		};
+		UndoToolbarButton.Click += delegate
+		{
+			RepositoryUserControl repo = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+			if (repo != null)
+			{
+				MainWindow.Commands.Undo.Execute(repo);
+			}
+		};
+		RedoToolbarButton.Click += delegate
+		{
+			RepositoryUserControl repo = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+			if (repo != null)
+			{
+				MainWindow.Commands.Redo.Execute(repo);
+			}
+		};
+	}
 
 		public void RefreshWorkspacesButton()
 		{
@@ -181,7 +200,9 @@ namespace ForkPlus.UI.UserControls
 			PullToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Pull", language);
 			PushToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Push", language);
 			StashToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Stash", language);
-			BranchToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Branch", language);
+		UndoToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Undo", language);
+		RedoToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Redo", language);
+		BranchToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Branch", language);
 			AppearanceToolbarDropdownButton.Title = Preferences.PreferencesLocalization.Translate("Appearance", language);
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
@@ -241,36 +262,180 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void RefreshToolbar()
+	{
+		ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
+		RepositoryUserControl repositoryUserControl = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+		bool isEnabled = repositoryUserControl != null;
+		FetchToolbarButton.IsEnabled = isEnabled;
+		PullToolbarButton.IsEnabled = isEnabled;
+		PushToolbarButton.IsEnabled = isEnabled;
+		StashToolbarButton.IsEnabled = isEnabled;
+		StashToolbarDropdownButton.IsEnabled = isEnabled;
+		BranchToolbarButton.IsEnabled = isEnabled;
+		BranchToolbarDropdownButton.IsEnabled = isEnabled;
+		OpenInDropDownButton.IsEnabled = isEnabled;
+		OpenInConsoleToolbarButton.IsEnabled = isEnabled;
+		AiDevelopmentToolbarButton.IsEnabled = isEnabled;
+		// v3.0.0：订阅当前仓库的 UndoRedoStateChanged，刷新按钮可用性
+		SubscribeUndoRedoStateChanged(repositoryUserControl);
+		RefreshUndoRedoButtons();
+		if (repositoryUserControl != null)
 		{
-			ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
-			RepositoryUserControl repositoryUserControl = _mainWindow?.TabManager.ActiveRepositoryUserControl;
-			bool isEnabled = repositoryUserControl != null;
-			FetchToolbarButton.IsEnabled = isEnabled;
-			PullToolbarButton.IsEnabled = isEnabled;
-			PushToolbarButton.IsEnabled = isEnabled;
-			StashToolbarButton.IsEnabled = isEnabled;
-			StashToolbarDropdownButton.IsEnabled = isEnabled;
-			BranchToolbarButton.IsEnabled = isEnabled;
-			BranchToolbarDropdownButton.IsEnabled = isEnabled;
-			OpenInDropDownButton.IsEnabled = isEnabled;
-			OpenInConsoleToolbarButton.IsEnabled = isEnabled;
-			AiDevelopmentToolbarButton.IsEnabled = isEnabled;
-			if (repositoryUserControl != null)
+			RepositoryData repositoryData = repositoryUserControl.RepositoryData;
+			if (repositoryData != null)
 			{
-				RepositoryData repositoryData = repositoryUserControl.RepositoryData;
-				if (repositoryData != null)
+				LocalBranch activeBranch = repositoryData.References.ActiveBranch;
+				if (activeBranch != null)
 				{
-					LocalBranch activeBranch = repositoryData.References.ActiveBranch;
-					if (activeBranch != null)
-					{
-						UpstreamStatus? upstreamStatus = repositoryData.UpstreamStatus.GetUpstreamStatus(activeBranch);
-						RefreshPullPushBadges(upstreamStatus);
-						return;
-					}
+					UpstreamStatus? upstreamStatus = repositoryData.UpstreamStatus.GetUpstreamStatus(activeBranch);
+					RefreshPullPushBadges(upstreamStatus);
+					return;
 				}
 			}
-			RefreshPullPushBadges(null);
 		}
+		RefreshPullPushBadges(null);
+	}
+
+	/// <summary>切换活动仓库时重新订阅 UndoRedoStateChanged。v3.0.0。</summary>
+	private void SubscribeUndoRedoStateChanged(RepositoryUserControl repositoryUserControl)
+	{
+		if (_subscribedUndoRedoRepo == repositoryUserControl)
+		{
+			return;
+		}
+		if (_subscribedUndoRedoRepo != null)
+		{
+			_subscribedUndoRedoRepo.UndoRedoStateChanged -= OnUndoRedoStateChanged;
+		}
+		_subscribedUndoRedoRepo = repositoryUserControl;
+		if (_subscribedUndoRedoRepo != null)
+		{
+			_subscribedUndoRedoRepo.UndoRedoStateChanged += OnUndoRedoStateChanged;
+		}
+	}
+
+	private void OnUndoRedoStateChanged(object sender, EventArgs e)
+	{
+		RefreshUndoRedoButtons();
+	}
+
+	/// <summary>根据当前仓库的 UndoRedoStack 状态刷新按钮可用性和 tooltip。v3.0.0。</summary>
+	private void RefreshUndoRedoButtons()
+	{
+		RepositoryUserControl repo = _subscribedUndoRedoRepo;
+		bool canUndo = repo != null && repo.UndoRedoStack.CanUndo;
+		bool canRedo = repo != null && repo.UndoRedoStack.CanRedo;
+		UndoToolbarButton.IsEnabled = canUndo;
+		UndoToolbarDropdownButton.IsEnabled = canUndo;
+		RedoToolbarButton.IsEnabled = canRedo;
+		RedoToolbarDropdownButton.IsEnabled = canRedo;
+		string undoLabel = Preferences.PreferencesLocalization.Current("Undo");
+		string redoLabel = Preferences.PreferencesLocalization.Current("Redo");
+		UndoToolbarButton.ToolTip = canUndo
+			? undoLabel + ": " + repo.UndoRedoStack.LastUndoOperationName
+			: undoLabel;
+		RedoToolbarButton.ToolTip = canRedo
+			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
+			: redoLabel;
+	}
+
+	private void UndoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)
+	{
+		ContextMenu contextMenu = sender as ContextMenu;
+		contextMenu.Items.Clear();
+		RepositoryUserControl repo = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+		if (repo == null)
+		{
+			return;
+		}
+		string language = ForkPlusSettings.Default.UiLanguage;
+		contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Undo History", language)));
+		contextMenu.Items.Add(new Separator());
+		int index = 1;
+		foreach (ForkPlus.Git.Commands.RepositorySnapshot snapshot in repo.UndoRedoStack.UndoHistory)
+		{
+			ForkPlus.Git.Commands.RepositorySnapshot snapshotCopy = snapshot;
+			MenuItem item = new MenuItem
+			{
+				Header = index + ". " + (string.IsNullOrEmpty(snapshot.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : snapshot.OperationName)
+			};
+			item.Click += delegate
+			{
+				JumpUndoTo(repo, snapshotCopy);
+			};
+			contextMenu.Items.Add(item);
+			index++;
+		}
+		// P3.3：超栈深度提示
+		if (repo.UndoRedoStack.LostCount > 0)
+		{
+			contextMenu.Items.Add(new Separator());
+			MenuItem lostItem = new MenuItem
+			{
+				Header = Preferences.PreferencesLocalization.FormatCurrent("{0} older operations not in history (use reflog to recover)", repo.UndoRedoStack.LostCount),
+				IsEnabled = false
+			};
+			contextMenu.Items.Add(lostItem);
+		}
+	}
+
+	private void RedoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)
+	{
+		ContextMenu contextMenu = sender as ContextMenu;
+		contextMenu.Items.Clear();
+		RepositoryUserControl repo = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+		if (repo == null)
+		{
+			return;
+		}
+		string language = ForkPlusSettings.Default.UiLanguage;
+		contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Redo History", language)));
+		contextMenu.Items.Add(new Separator());
+		int index = 1;
+		foreach (ForkPlus.Git.Commands.RepositorySnapshot snapshot in repo.UndoRedoStack.RedoHistory)
+		{
+			ForkPlus.Git.Commands.RepositorySnapshot snapshotCopy = snapshot;
+			MenuItem item = new MenuItem
+			{
+				Header = index + ". " + (string.IsNullOrEmpty(snapshot.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : snapshot.OperationName)
+			};
+			item.Click += delegate
+			{
+				JumpRedoTo(repo, snapshotCopy);
+			};
+			contextMenu.Items.Add(item);
+			index++;
+		}
+	}
+
+	/// <summary>跳转到 undo 历史中的某一步（多次 Undo 直到目标）。v3.0.0。</summary>
+	private void JumpUndoTo(RepositoryUserControl repo, ForkPlus.Git.Commands.RepositorySnapshot target)
+	{
+		// 简化实现：连续 Undo 直到栈顶是 target（或栈空）
+		while (repo.UndoRedoStack.CanUndo)
+		{
+			if (ReferenceEquals(repo.UndoRedoStack.UndoHistory[0], target))
+			{
+				repo.Undo();
+				return;
+			}
+			repo.Undo();
+		}
+	}
+
+	/// <summary>跳转到 redo 历史中的某一步（多次 Redo 直到目标）。v3.0.0。</summary>
+	private void JumpRedoTo(RepositoryUserControl repo, ForkPlus.Git.Commands.RepositorySnapshot target)
+	{
+		while (repo.UndoRedoStack.CanRedo)
+		{
+			if (ReferenceEquals(repo.UndoRedoStack.RedoHistory[0], target))
+			{
+				repo.Redo();
+				return;
+			}
+			repo.Redo();
+		}
+	}
 
 		private void InitializeAppearanceToolBarButtonContextMenu()
 		{

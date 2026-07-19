@@ -141,39 +141,40 @@ namespace ForkPlus.UI.Commands
 			  : PreferencesLocalization.FormatCurrent("Commit {0} Files", stagedCount));
 			commitUserControl.CommittingInProgress = true;
 			commitUserControl.UpdateCommitSection();
-			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+			repositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
+		{
+		 string monitorMsg = (stagedCount == 1)
+		  ? PreferencesLocalization.FormatCurrent("{0} file...", stagedCount)
+		  : PreferencesLocalization.FormatCurrent("{0} files...", stagedCount);
+		 monitor.Update(0.0, monitorMsg);
+			GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
+			repositoryUserControl.Dispatcher.Async(delegate
 			{
-			 string monitorMsg = (stagedCount == 1)
-			  ? PreferencesLocalization.FormatCurrent("{0} file...", stagedCount)
-			  : PreferencesLocalization.FormatCurrent("{0} files...", stagedCount);
-			 monitor.Update(0.0, monitorMsg);
-				GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				commitUserControl.CommittingInProgress = false;
+				if (!gitResult.Succeeded)
 				{
-					commitUserControl.CommittingInProgress = false;
-					if (!gitResult.Succeeded)
+					commitUserControl.SaveCommitMessage();
+					commitUserControl.Refresh(SubDomain.All);
+					new ErrorWindow(repositoryUserControl, gitResult.Error).ShowDialog();
+				}
+				else
+				{
+					monitor.Success(null);
+					commitUserControl.EraseSavedCommitMessage();
+					commitUserControl.DontRefreshOnAmend = true;
+					commitUserControl.AmendMode = false;
+					commitUserControl.DontRefreshOnAmend = false;
+					commitUserControl.FullCommitMessage = "";
+					commitUserControl.Refresh(SubDomain.All);
+					if (commitAndPush)
 					{
-						commitUserControl.SaveCommitMessage();
-						commitUserControl.Refresh(SubDomain.All);
-						new ErrorWindow(repositoryUserControl, gitResult.Error).ShowDialog();
+						MainWindow.Commands.QuickPush.Execute(repositoryUserControl);
 					}
-					else
-					{
-						monitor.Success(null);
-						commitUserControl.EraseSavedCommitMessage();
-						commitUserControl.DontRefreshOnAmend = true;
-						commitUserControl.AmendMode = false;
-						commitUserControl.DontRefreshOnAmend = false;
-						commitUserControl.FullCommitMessage = "";
-						commitUserControl.Refresh(SubDomain.All);
-						if (commitAndPush)
-						{
-							MainWindow.Commands.QuickPush.Execute(repositoryUserControl);
-						}
-					}
-				});
-			}, JobFlags.Default, showMessageWhenDone: false);
-		}
+				}
+			});
+			return gitResult;
+		}, JobFlags.Default, showMessageWhenDone: false);
+	}
 
 		private static GitCommandResult UpdateSubmodulesIfNeeded(GitCommandResult prioritizedResult, GitModule gitModule, SubmodulesToUpdate submodules, JobMonitor monitor)
 		{

@@ -2128,6 +2128,15 @@
     "Other": "其他",
     "Counting code lines...": "正在統計程式碼行數...",
     "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}：{1} 個檔案 · {2} 行程式碼 · {3} 行註解 · {4} 行空行",
-    "Code statistics...": "程式碼統計..."
+    "Code statistics...": "程式碼統計...",
+    "(unknown)": "(未知)",
+    "Redo": "重做",
+    "Redo History": "重做歷史",
+    "Undo": "撤銷",
+    "Undo History": "撤銷歷史",
+    "Auto-stash before {0}": "{0} 前自動暫存",
+    "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "工作目錄有未提交的變更。{0} 將丟棄這些變更。先暫存嗎？",
+    "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} 將撤銷已推送到遠端的提交。是否同時強制推送到遠端？",
+    "{0} older operations not in history (use reflog to recover)": "{0} 個早期操作未在歷史中（可透過 reflog 恢復）"
   }
 }

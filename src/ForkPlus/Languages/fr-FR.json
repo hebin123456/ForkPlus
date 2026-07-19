@@ -2128,6 +2128,15 @@
     "Other": "Autres",
     "Counting code lines...": "Comptage des lignes de code...",
     "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0} : {1} fichiers · {2} code · {3} commentaires · {4} lignes vides",
-    "Code statistics...": "Statistiques de code..."
+    "Code statistics...": "Statistiques de code...",
+    "(unknown)": "(inconnu)",
+    "Redo": "Rétablir",
+    "Redo History": "Historique de rétablissement",
+    "Undo": "Annuler",
+    "Undo History": "Historique d'annulation",
+    "Auto-stash before {0}": "Remise automatique avant {0}",
+    "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "Le répertoire de travail contient des modifications non validées. {0} les supprimera. Les remiser d'abord ?",
+    "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} annulera des commits déjà poussés vers le distant. Effectuer un push forcé également ?",
+    "{0} older operations not in history (use reflog to recover)": "{0} opérations plus anciennes absentes de l'historique (récupérables via reflog)"
   }
 }

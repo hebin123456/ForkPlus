@@ -128,55 +128,56 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.MergeType = selectedMergeType;
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Merge '{0}' into '{1}'", source.Name, destination.Name), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Merge '{0}' into '{1}'", source.Name, destination.Name), delegate(JobMonitor monitor)
+		{
+			if (!destination.IsActive)
 			{
-				if (!destination.IsActive)
+				base.Dispatcher.Async(delegate
+				{
+					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+				});
+				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, destination, monitor);
+				if (!checkoutResult.Succeeded)
 				{
 					base.Dispatcher.Async(delegate
 					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+						Close(checkoutResult);
 					});
-					GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, destination, monitor);
-					if (!checkoutResult.Succeeded)
-					{
-						base.Dispatcher.Async(delegate
-						{
-							Close(checkoutResult);
-						});
-						return;
-					}
+					return checkoutResult;
 				}
+			}
+			base.Dispatcher.Async(delegate
+			{
+				SetStatus(ForkPlusDialogStatus.InProgress, "Merging...");
+			});
+			GitCommandResult mergeResult = new MergeGitCommand().Execute(gitModule, source, selectedMergeType, repositoryData.References, monitor);
+			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
+			if (submodulesToUpdate.Length > 0)
+			{
 				base.Dispatcher.Async(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Merging...");
+					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
-				GitCommandResult mergeResult = new MergeGitCommand().Execute(gitModule, source, selectedMergeType, repositoryData.References, monitor);
-				GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
-				if (submodulesToUpdate.Length > 0)
+				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+			}
+			base.Dispatcher.Async(delegate
+			{
+				if (!mergeResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
-					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-					});
-					updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+					Close(mergeResult);
 				}
-				base.Dispatcher.Async(delegate
+				else if (!updateSubmodulesResult.Succeeded)
 				{
-					if (!mergeResult.Succeeded)
-					{
-						Close(mergeResult);
-					}
-					else if (!updateSubmodulesResult.Succeeded)
-					{
-						Close(updateSubmodulesResult);
-					}
-					else
-					{
-						Close(mergeResult);
-					}
-				});
-			}, JobFlags.SaveToLog);
-		}
+					Close(updateSubmodulesResult);
+				}
+				else
+				{
+					Close(mergeResult);
+				}
+			});
+			return mergeResult.Succeeded ? updateSubmodulesResult : mergeResult;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void MergeTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{

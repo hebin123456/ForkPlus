@@ -2128,6 +2128,15 @@
     "Other": "Sonstige",
     "Counting code lines...": "Codezeilen werden gezählt...",
     "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}: {1} Dateien · {2} Code · {3} Kommentare · {4} Leerzeilen",
-    "Code statistics...": "Code-Statistik..."
+    "Code statistics...": "Code-Statistik...",
+    "(unknown)": "(unbekannt)",
+    "Redo": "Wiederherstellen",
+    "Redo History": "Wiederherstellen-Verlauf",
+    "Undo": "Rückgängig",
+    "Undo History": "Rückgängig-Verlauf",
+    "Auto-stash before {0}": "Auto-Stash vor {0}",
+    "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "Das Arbeitsverzeichnis hat ungespeicherte Änderungen. {0} verwirft diese. Zuerst stashen?",
+    "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} macht bereits gepushte Commits rückgängig. Auch per Force-Push pushen?",
+    "{0} older operations not in history (use reflog to recover)": "{0} ältere Vorgänge nicht im Verlauf (über reflog wiederherstellbar)"
   }
 }

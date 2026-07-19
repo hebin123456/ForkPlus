@@ -96,6 +96,72 @@
               </DropDownButton>
             </StackPanel.Children>
           </StackPanel>
+          <StackPanel Orientation="Horizontal" Margin="8,3,0,3">
+            <StackPanel.Children>
+              <ToolbarButton Title="Undo" Padding="4,0,4,0" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="UndoToolbarButton">
+                <ToolbarButton.Style>
+                  <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </ToolbarButton.Style>
+                <Path HorizontalAlignment="Center" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <PathGeometry xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Figures="M 11,3 A 4,4 0 1 0 11,7 M 11,3 L 7,0 L 7,6 Z" />
+                  </Path.Data>
+                </Path>
+              </ToolbarButton>
+              <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="UndoToolbarDropdownButton">
+                <DropDownButton.Style>
+                  <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </DropDownButton.Style>
+                <DropDownButton.ContextMenu>
+                  <ContextMenu MaxWidth="500" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Opened="UndoToolbarDropdownButtonContextMenu_Opened" />
+                </DropDownButton.ContextMenu>
+                <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <DynamicResource ResourceKey="ArrowGeometry" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Data>
+                </Path>
+              </DropDownButton>
+            </StackPanel.Children>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Margin="0,3,0,3">
+            <StackPanel.Children>
+              <ToolbarButton Title="Redo" Padding="4,0,4,0" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="RedoToolbarButton">
+                <ToolbarButton.Style>
+                  <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </ToolbarButton.Style>
+                <Path HorizontalAlignment="Center" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <PathGeometry xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Figures="M 1,3 A 4,4 0 1 1 1,7 M 1,3 L 5,0 L 5,6 Z" />
+                  </Path.Data>
+                </Path>
+              </ToolbarButton>
+              <DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="RedoToolbarDropdownButton">
+                <DropDownButton.Style>
+                  <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                </DropDownButton.Style>
+                <DropDownButton.ContextMenu>
+                  <ContextMenu MaxWidth="500" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Opened="RedoToolbarDropdownButtonContextMenu_Opened" />
+                </DropDownButton.ContextMenu>
+                <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                  <Path.Fill>
+                    <DynamicResource ResourceKey="ToolbarForeground" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Fill>
+                  <Path.Data>
+                    <DynamicResource ResourceKey="ArrowGeometry" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  </Path.Data>
+                </Path>
+              </DropDownButton>
+            </StackPanel.Children>
+          </StackPanel>
         </StackPanel.Children>
       </StackPanel>
       <Canvas Grid.Column="0" IsHitTestVisible="False" x:Name="BadgesCanvas">

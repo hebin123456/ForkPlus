@@ -16,6 +16,7 @@ using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.Undo;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -26,6 +27,12 @@ namespace ForkPlus.UI.UserControls
 		public readonly TempFileManager TempFileManager = new TempFileManager();
 
 		public readonly JobQueue JobQueue = new JobQueue();
+
+		/// <summary>本仓库的 Undo/Redo 历史栈。v3.0.0 新增。</summary>
+		public readonly UndoRedoStack UndoRedoStack = new UndoRedoStack();
+
+		/// <summary>Undo/Redo 状态变化时触发，UI 工具栏订阅以刷新按钮可用性。</summary>
+		public event EventHandler UndoRedoStateChanged;
 
 		private bool _isDirty;
 
@@ -987,6 +994,325 @@ namespace ForkPlus.UI.UserControls
 		public void UncheckAmendCheckBox()
 		{
 			Content.CommitUserControl.AmendMode = false;
+		}
+
+		// ===== v3.0.0 Undo/Redo =====
+
+		/// <summary>
+		/// 抓取当前仓库快照。失败时返回 null（永不抛出）。
+		/// </summary>
+		private RepositorySnapshot TakeSnapshot(string operationName)
+		{
+			try
+			{
+				GitCommandResult<RepositorySnapshot> r = new SnapshotGitCommand().Execute(GitModule, operationName);
+				return r.Succeeded ? r.Result : null;
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// 触发 UndoRedoStateChanged 事件。工具栏订阅以刷新按钮可用性。
+		/// </summary>
+		public void RaiseUndoRedoStateChanged()
+		{
+			UndoRedoStateChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		/// <summary>
+		/// 包装一个会改仓库的操作：操作前抓快照入栈，操作失败时弹出栈顶。
+		/// 调用方需要返回 GitCommandResult 以让包装层感知成功/失败。
+		/// </summary>
+		public Job AddUndoable(string operationName, Func<JobMonitor, GitCommandResult> action, JobFlags flags = JobFlags.Default, bool showMessageWhenDone = true)
+		{
+			// 1. 操作前抓快照（同步，避免和操作之间产生竞态）
+			RepositorySnapshot snapshot = TakeSnapshot(operationName);
+			if (snapshot != null)
+			{
+				UndoRedoStack.RecordBeforeOperation(snapshot);
+			}
+
+			// 2. 包装 action，失败时 CancelLastRecord
+			return JobQueue.Add(operationName, delegate(JobMonitor monitor)
+			{
+				GitCommandResult result = null;
+				try
+				{
+					result = action(monitor);
+				}
+				catch
+				{
+					UndoRedoStack.CancelLastRecord();
+					RaiseUndoRedoStateChanged();
+					throw;
+				}
+				if (result == null || !result.Succeeded)
+				{
+					UndoRedoStack.CancelLastRecord();
+				}
+				RaiseUndoRedoStateChanged();
+			}, flags, showMessageWhenDone);
+		}
+
+		/// <summary>
+		/// 包装一个会改仓库的操作：调用方不返回 GitCommandResult 时使用。
+		/// 此重载无法感知操作失败，栈顶会保留（即使操作失败）。
+		/// 优先使用 Func 重载。
+		/// </summary>
+		public Job AddUndoable(string operationName, Action<JobMonitor> action, JobFlags flags = JobFlags.Default, bool showMessageWhenDone = true)
+		{
+			return AddUndoable(operationName, delegate(JobMonitor monitor)
+			{
+				action(monitor);
+				return GitCommandResult.Success();
+			}, flags, showMessageWhenDone);
+		}
+
+		/// <summary>
+		/// 撤销最近一次操作。弹栈并恢复到栈顶快照状态。
+		/// </summary>
+		public void Undo()
+		{
+			if (!UndoRedoStack.CanUndo)
+			{
+				return;
+			}
+			string opLabel = PreferencesLocalization.Current("Undo");
+			RepositorySnapshot currentSnapshot = TakeSnapshot(opLabel);
+			if (currentSnapshot == null)
+			{
+				RaiseUndoRedoStateChanged();
+				return;
+			}
+			// P3.1：dirty 时弹窗问用户
+			if (!ConfirmAndStashBeforeRestore(currentSnapshot.IsWorkingTreeDirty, opLabel, out bool shouldStashFirst))
+			{
+				return;
+			}
+			// P3.2：peek 目标快照，检查 Undo 是否会回退已 push 的 commit
+			RepositorySnapshot peekedTarget = UndoRedoStack.UndoHistory.Count > 0 ? UndoRedoStack.UndoHistory[0] : null;
+			bool forcePushAfterRestore = false;
+			if (ShouldPromptForPushedCommits(currentSnapshot, peekedTarget))
+			{
+				if (!ConfirmPushedUndo(opLabel, out forcePushAfterRestore))
+				{
+					return;
+				}
+			}
+			RepositorySnapshot target = UndoRedoStack.PopForUndo(currentSnapshot);
+			if (target == null)
+			{
+				RaiseUndoRedoStateChanged();
+				return;
+			}
+			JobQueue.Add(opLabel, delegate(JobMonitor monitor)
+			{
+				GitCommandResult preResult = EnsureStashedIfNeeded(shouldStashFirst, opLabel, monitor);
+				if (!preResult.Succeeded)
+				{
+					ShowRestoreFailureAsync(preResult.Error);
+					return;
+				}
+				GitCommandResult result = new RestoreSnapshotGitCommand().Execute(GitModule, target, monitor);
+				if (result.Succeeded && forcePushAfterRestore)
+				{
+					// P3.2：本地恢复成功后，按用户选择执行 force push
+					GitCommandResult pushResult = ForcePushCurrentBranch(monitor);
+					base.Dispatcher.Async(delegate
+					{
+						InvalidateAndRefresh(SubDomain.All);
+						RaiseUndoRedoStateChanged();
+						if (!pushResult.Succeeded)
+						{
+							new ErrorWindow(this, pushResult.Error).ShowDialog();
+						}
+					});
+					return;
+				}
+				base.Dispatcher.Async(delegate
+				{
+					InvalidateAndRefresh(SubDomain.All);
+					RaiseUndoRedoStateChanged();
+					if (!result.Succeeded)
+					{
+						new ErrorWindow(this, result.Error).ShowDialog();
+					}
+				});
+			});
+		}
+
+		/// <summary>
+		/// 重做最近被撤销的操作。
+		/// </summary>
+		public void Redo()
+		{
+			if (!UndoRedoStack.CanRedo)
+			{
+				return;
+			}
+			string opLabel = PreferencesLocalization.Current("Redo");
+			RepositorySnapshot currentSnapshot = TakeSnapshot(opLabel);
+			if (currentSnapshot == null)
+			{
+				RaiseUndoRedoStateChanged();
+				return;
+			}
+			// P3.1：dirty 时弹窗问用户
+			if (!ConfirmAndStashBeforeRestore(currentSnapshot.IsWorkingTreeDirty, opLabel, out bool shouldStashFirst))
+			{
+				return;
+			}
+			RepositorySnapshot target = UndoRedoStack.PopForRedo(currentSnapshot);
+			if (target == null)
+			{
+				RaiseUndoRedoStateChanged();
+				return;
+			}
+			JobQueue.Add(opLabel, delegate(JobMonitor monitor)
+			{
+				GitCommandResult preResult = EnsureStashedIfNeeded(shouldStashFirst, opLabel, monitor);
+				if (!preResult.Succeeded)
+				{
+					ShowRestoreFailureAsync(preResult.Error);
+					return;
+				}
+				GitCommandResult result = new RestoreSnapshotGitCommand().Execute(GitModule, target, monitor);
+				base.Dispatcher.Async(delegate
+				{
+					InvalidateAndRefresh(SubDomain.All);
+					RaiseUndoRedoStateChanged();
+					if (!result.Succeeded)
+					{
+						new ErrorWindow(this, result.Error).ShowDialog();
+					}
+				});
+			});
+		}
+
+		/// <summary>
+		/// P3.1：Undo/Redo 前 dirty 检查弹窗。
+		/// 返回 false 表示用户取消（不应继续），true 表示可以继续。
+		/// 若用户选择 stash，shouldStashFirst 会被设为 true。
+		/// </summary>
+		private bool ConfirmAndStashBeforeRestore(bool isDirty, string opLabel, out bool shouldStashFirst)
+		{
+			shouldStashFirst = false;
+			if (!isDirty)
+			{
+				return true;
+			}
+			string message = PreferencesLocalization.FormatCurrent(
+				"Working directory has uncommitted changes. {0} will discard them. Stash changes first?",
+				opLabel);
+			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNo, MessageBoxImage.Question);
+			if (r != MessageBoxResult.Yes)
+			{
+				return false;
+			}
+			shouldStashFirst = true;
+			return true;
+		}
+
+		/// <summary>
+		/// 在 Job 内同步执行 stash（若需要）。失败时返回 Failure。
+		/// </summary>
+		private GitCommandResult EnsureStashedIfNeeded(bool shouldStashFirst, string opLabel, JobMonitor monitor)
+		{
+			if (!shouldStashFirst)
+			{
+				return GitCommandResult.Success();
+			}
+			string stashMsg = PreferencesLocalization.FormatCurrent("Auto-stash before {0}", opLabel);
+			GitCommandResult<bool> sr = new SaveStashGitCommand().Execute(GitModule, stashMsg, false, monitor);
+			return sr.Succeeded ? GitCommandResult.Success() : GitCommandResult.Failure(sr.Error);
+		}
+
+		/// <summary>
+		/// P3.2：判断是否需要在 Undo 前提示"已 push"。
+		/// 条件：HEAD 会移动（current != target），且当前 HEAD 已 push 到某个 remote 分支。
+		/// </summary>
+		private bool ShouldPromptForPushedCommits(RepositorySnapshot currentSnapshot, RepositorySnapshot target)
+		{
+			if (currentSnapshot == null || target == null)
+			{
+				return false;
+			}
+			if (string.IsNullOrEmpty(currentSnapshot.HeadSha) || string.IsNullOrEmpty(target.HeadSha))
+			{
+				return false;
+			}
+			if (currentSnapshot.HeadSha == target.HeadSha)
+			{
+				return false;
+			}
+			Sha? sha = Sha.Parse(currentSnapshot.HeadSha);
+			if (sha == null)
+			{
+				return false;
+			}
+			GitCommandResult<string[]> r = new GetRemoteBranchesContainingShaGitCommand().Execute(GitModule, sha.Value, null);
+			if (!r.Succeeded || r.Result == null)
+			{
+				return false;
+			}
+			return r.Result.Length > 0;
+		}
+
+		/// <summary>
+		/// P3.2：弹窗询问用户如何处理已 push 的 commit。
+		/// Yes = 本地 Undo + 强制推送（force-with-lease）
+		/// No = 仅本地 Undo（远端保持不变）
+		/// Cancel = 中止
+		/// 返回 false 表示用户取消，true 表示继续。
+		/// </summary>
+		private bool ConfirmPushedUndo(string opLabel, out bool forcePushAfterRestore)
+		{
+			forcePushAfterRestore = false;
+			string message = PreferencesLocalization.FormatCurrent(
+				"{0} will undo commit(s) that have been pushed to remote. Force push to remote too?",
+				opLabel);
+			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+			if (r == MessageBoxResult.Cancel)
+			{
+				return false;
+			}
+			forcePushAfterRestore = (r == MessageBoxResult.Yes);
+			return true;
+		}
+
+		/// <summary>
+		/// P3.2：对当前分支执行 force push（--force-with-lease）。
+		/// 依赖当前分支的 upstream 配置。失败时返回 Failure。
+		/// </summary>
+		private GitCommandResult ForcePushCurrentBranch(JobMonitor monitor)
+		{
+			try
+			{
+				GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelperBt, "-c", "push.default=upstream", "push", "--force-with-lease", "--verbose", "--progress");
+				GitRequestResult r = new GitRequest(GitModule).Command(gitCommand).Execute(monitor);
+				if (!r.Success)
+				{
+					return GitCommandResult.Failure(r.ToGitCommandError());
+				}
+				return GitCommandResult.Success();
+			}
+			catch (System.Exception ex)
+			{
+				return GitCommandResult.Failure(new GitCommandError.CallbackUnknownError(ex.Message));
+			}
+		}
+
+		/// <summary>Job 内失败时在 UI 线程弹错误窗并刷新 Undo/Redo 状态。</summary>
+		private void ShowRestoreFailureAsync(GitCommandError error)
+		{
+			base.Dispatcher.Async(delegate
+			{
+				new ErrorWindow(this, error).ShowDialog();
+				RaiseUndoRedoStateChanged();
+			});
 		}
 
 	}

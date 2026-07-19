@@ -114,15 +114,16 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
 			string name = Translate(push ? ("Create and push tag '" + tagName + "'") : ("Create tag '" + tagName + "'"));
-			activeRepositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
+			activeRepositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
+		{
+			GitCommandResult result = PerformCreateTag(tagName, tagMessage, push, monitor);
+			base.Dispatcher.Async(delegate
 			{
-				GitCommandResult result = PerformCreateTag(tagName, tagMessage, push, monitor);
-				base.Dispatcher.Async(delegate
-				{
-					Close(result);
-				});
-			}, JobFlags.SaveToLog);
-		}
+				Close(result);
+			});
+			return result;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void TagNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{

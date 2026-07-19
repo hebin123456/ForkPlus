@@ -474,6 +474,22 @@ namespace ForkPlus.UI
 			{
 				Commands.ShowPreferencesWindow.Execute();
 			}));
+			base.CommandBindings.Add(Commands.Undo.CreateShortcutCommandBinding(delegate
+			{
+				RepositoryUserControl activeRepoForUndo = TabManager.ActiveRepositoryUserControl;
+				if (activeRepoForUndo != null)
+				{
+					Commands.Undo.Execute(activeRepoForUndo);
+				}
+			}));
+			base.CommandBindings.Add(Commands.Redo.CreateShortcutCommandBinding(delegate
+			{
+				RepositoryUserControl activeRepoForRedo = TabManager.ActiveRepositoryUserControl;
+				if (activeRepoForRedo != null)
+				{
+					Commands.Redo.Execute(activeRepoForRedo);
+				}
+			}));
 		}
 
 		private void Window_Closing(object sender, CancelEventArgs e)

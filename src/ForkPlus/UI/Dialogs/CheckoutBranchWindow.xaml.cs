@@ -150,34 +150,34 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.Checkout_StashAndReapply = checkoutStashAndReapply == StashAndReapply.Possible;
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
+		_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
+		{
+			if (leaveAsStash)
 			{
-				if (leaveAsStash)
+				GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{branch.Name}' {DateTime.Now}", stageNewFiles: false, monitor);
+				if (!stashResult.Succeeded)
 				{
-					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{branch.Name}' {DateTime.Now}", stageNewFiles: false, monitor);
-					if (!stashResult.Succeeded)
-					{
-						base.Dispatcher.Async(delegate
-						{
-							Close(GitCommandResult.Failure(stashResult.Error));
-						});
-						return;
-					}
-				}
-				GitCommandResult result = PerformCheckout(gitModule, branch, fastForwardTo, checkoutStashAndReapply, checkoutDiscard, sourceString, submodulesToUpdate, monitor);
-				if (monitor.IsCanceled)
-				{
-					Close(GitCommandResult.Success());
-				}
-				else
-				{
+					GitCommandResult failResult = GitCommandResult.Failure(stashResult.Error);
 					base.Dispatcher.Async(delegate
 					{
-						Close(result);
+						Close(failResult);
 					});
+					return failResult;
 				}
-			}, JobFlags.SaveToLog);
-		}
+			}
+			GitCommandResult result = PerformCheckout(gitModule, branch, fastForwardTo, checkoutStashAndReapply, checkoutDiscard, sourceString, submodulesToUpdate, monitor);
+			if (monitor.IsCanceled)
+			{
+				Close(GitCommandResult.Success());
+				return GitCommandResult.Success();
+			}
+			base.Dispatcher.Async(delegate
+			{
+				Close(result);
+			});
+			return result;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void LocalChangesOption_Changed(object sender, RoutedEventArgs e)
 		{

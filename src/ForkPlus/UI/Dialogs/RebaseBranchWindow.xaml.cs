@@ -140,92 +140,94 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.RebaseUpdateRefs = UpdateRefsCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Rebase '{0}' onto '{1}'", source.Name, destination.FriendlyName), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Rebase '{0}' onto '{1}'", source.Name, destination.FriendlyName), delegate(JobMonitor monitor)
+		{
+			if (stashAndReapply && workingDirectoryIsDirty)
 			{
-				if (stashAndReapply && workingDirectoryIsDirty)
+				monitor.Update(10.0, "Stashing...");
+				GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Rebase autostash {DateTime.Now}", stageNewFiles: false, monitor);
+				if (!stashResult.Succeeded)
 				{
-					monitor.Update(10.0, "Stashing...");
-					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Rebase autostash {DateTime.Now}", stageNewFiles: false, monitor);
-					if (!stashResult.Succeeded)
+					GitCommandResult stashFail = GitCommandResult.Failure(stashResult.Error);
+					base.Dispatcher.Async(delegate
 					{
-						base.Dispatcher.Async(delegate
-						{
-							Close(GitCommandResult.Failure(stashResult.Error));
-						});
-						return;
-					}
+						Close(stashFail);
+					});
+					return stashFail;
 				}
-				if (!source.IsActive)
+			}
+			if (!source.IsActive)
+			{
+				base.Dispatcher.Async(delegate
+				{
+					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+				});
+				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, source, monitor);
+				if (!checkoutResult.Succeeded)
 				{
 					base.Dispatcher.Async(delegate
 					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+						Close(checkoutResult);
 					});
-					GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, source, monitor);
-					if (!checkoutResult.Succeeded)
+					return checkoutResult;
+				}
+			}
+			base.Dispatcher.Async(delegate
+			{
+				SetStatus(ForkPlusDialogStatus.InProgress, "Rebasing...");
+			});
+			GitCommandResult rebaseBranchResult = new RebaseBranchGitCommand().Execute(gitModule, destination.ObjectName, rebaseMerges: false, updateRefs, monitor);
+			if (!rebaseBranchResult.Succeeded)
+			{
+				if (submodulesToUpdate.Length > 0)
+				{
+					base.Dispatcher.Async(delegate
 					{
-						base.Dispatcher.Async(delegate
-						{
-							Close(checkoutResult);
-						});
-						return;
-					}
+						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
+					});
+					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
 				base.Dispatcher.Async(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Rebasing...");
+					Close(rebaseBranchResult);
 				});
-				GitCommandResult rebaseBranchResult = new RebaseBranchGitCommand().Execute(gitModule, destination.ObjectName, rebaseMerges: false, updateRefs, monitor);
-				if (!rebaseBranchResult.Succeeded)
+				return rebaseBranchResult;
+			}
+			GitCommandResult applyStashResult = GitCommandResult.Success();
+			if (stashAndReapply && workingDirectoryIsDirty)
+			{
+				monitor.Update(10.0, "Applying stash...");
+				applyStashResult = new ApplyStashGitCommand().Execute(gitModule, "stash@{0}", deleteAfterApply: true, monitor);
+			}
+			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
+			if (submodulesToUpdate.Length > 0)
+			{
+				base.Dispatcher.Async(delegate
 				{
-					if (submodulesToUpdate.Length > 0)
-					{
-						base.Dispatcher.Async(delegate
-						{
-							SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-						});
-						new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
-					}
-					base.Dispatcher.Async(delegate
-					{
-						Close(rebaseBranchResult);
-					});
+					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
+				});
+				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+			}
+			base.Dispatcher.Async(delegate
+			{
+				if (!applyStashResult.Succeeded)
+				{
+					Close(applyStashResult);
+				}
+				else if (!updateSubmodulesResult.Succeeded)
+				{
+					Close(updateSubmodulesResult);
 				}
 				else
 				{
-					GitCommandResult applyStashResult = GitCommandResult.Success();
-					if (stashAndReapply && workingDirectoryIsDirty)
-					{
-						monitor.Update(10.0, "Applying stash...");
-						applyStashResult = new ApplyStashGitCommand().Execute(gitModule, "stash@{0}", deleteAfterApply: true, monitor);
-					}
-					GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
-					if (submodulesToUpdate.Length > 0)
-					{
-						base.Dispatcher.Async(delegate
-						{
-							SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-						});
-						updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
-					}
-					base.Dispatcher.Async(delegate
-					{
-						if (!applyStashResult.Succeeded)
-						{
-							Close(applyStashResult);
-						}
-						else if (!updateSubmodulesResult.Succeeded)
-						{
-							Close(updateSubmodulesResult);
-						}
-						else
-						{
-							Close(rebaseBranchResult);
-						}
-					});
+					Close(rebaseBranchResult);
 				}
-			}, JobFlags.SaveToLog);
-		}
+			});
+			return applyStashResult.Succeeded
+				? (updateSubmodulesResult.Succeeded ? rebaseBranchResult : updateSubmodulesResult)
+				: applyStashResult;
+		}, JobFlags.SaveToLog);
+	}
 
 		private static Sha? GetSha(IGitPoint gitPoint)
 		{

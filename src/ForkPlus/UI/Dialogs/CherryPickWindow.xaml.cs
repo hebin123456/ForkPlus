@@ -166,39 +166,40 @@ namespace ForkPlus.UI.Dialogs
 			int? parentNumber = (MergeRevision ? new int?(RevisionParentComboBox.SelectedIndex + 1) : null);
 			ForkPlusSettings.Default.CherryPick_AppendOriginSha = appendOriginSha;
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(Translate("Cherry-pick"), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(Translate("Cherry-pick"), delegate(JobMonitor monitor)
+		{
+			base.Dispatcher.Async(delegate
+			{
+				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Cherry-picking..."));
+			});
+			GitCommandResult cherryPickResult = new CherryPickGitCommand().Execute(gitModule, shas, commit, appendOriginSha, parentNumber, monitor);
+			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
+			if (submodulesToUpdate.Length > 0)
 			{
 				base.Dispatcher.Async(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, Translate("Cherry-picking..."));
+					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
-				GitCommandResult cherryPickResult = new CherryPickGitCommand().Execute(gitModule, shas, commit, appendOriginSha, parentNumber, monitor);
-				GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
-				if (submodulesToUpdate.Length > 0)
+				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+			}
+			base.Dispatcher.Async(delegate
+			{
+				if (!cherryPickResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
-					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-					});
-					updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+					Close(cherryPickResult);
 				}
-				base.Dispatcher.Async(delegate
+				else if (!updateSubmodulesResult.Succeeded)
 				{
-					if (!cherryPickResult.Succeeded)
-					{
-						Close(cherryPickResult);
-					}
-					else if (!updateSubmodulesResult.Succeeded)
-					{
-						Close(updateSubmodulesResult);
-					}
-					else
-					{
-						Close(cherryPickResult);
-					}
-				});
-			}, JobFlags.SaveToLog);
-		}
+					Close(updateSubmodulesResult);
+				}
+				else
+				{
+					Close(cherryPickResult);
+				}
+			});
+			return cherryPickResult.Succeeded ? updateSubmodulesResult : cherryPickResult;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void RefreshAppendOriginShaCheckBox()
 		{

@@ -2128,6 +2128,15 @@
     "Other": "その他",
     "Counting code lines...": "コード行数を集計中...",
     "{0}: {1} files · {2} code · {3} comments · {4} blanks": "{0}：{1} ファイル · {2} コード · {3} コメント · {4} 空行",
-    "Code statistics...": "コード統計..."
+    "Code statistics...": "コード統計...",
+    "(unknown)": "(不明)",
+    "Redo": "やり直し",
+    "Redo History": "やり直し履歴",
+    "Undo": "元に戻す",
+    "Undo History": "元に戻す履歴",
+    "Auto-stash before {0}": "{0} の前に自動スタッシュ",
+    "Working directory has uncommitted changes. {0} will discard them. Stash changes first?": "作業ディレクトリに未コミットの変更があります。{0} によりこれらの変更が破棄されます。先にスタッシュしますか？",
+    "{0} will undo commit(s) that have been pushed to remote. Force push to remote too?": "{0} はリモートにプッシュ済みのコミットを取り消します。リモートにも強制プッシュしますか？",
+    "{0} older operations not in history (use reflog to recover)": "{0} 件の古い操作が履歴にありません（reflog で復元できます）"
   }
 }

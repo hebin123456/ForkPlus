@@ -166,15 +166,17 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, "Stashing...");
-			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("Stash local changes"), delegate(JobMonitor monitor)
+			MainWindow.ActiveRepositoryUserControl.AddUndoable(Translate("Stash local changes"), delegate(JobMonitor monitor)
+		{
+			GitCommandResult<bool> result = new SaveStashGitCommand().Execute(_gitModule, stashMessage, stageNewFiles, monitor);
+			GitCommandResult finalResult = result.Succeeded ? GitCommandResult.Success() : GitCommandResult.Failure(result.Error);
+			base.Dispatcher.Async(delegate
 			{
-				GitCommandResult<bool> result = new SaveStashGitCommand().Execute(_gitModule, stashMessage, stageNewFiles, monitor);
-				base.Dispatcher.Async(delegate
-				{
-					Close(GitCommandResult.Failure(result.Error));
-				});
-			}, JobFlags.SaveToLog);
-		}
+				Close(finalResult);
+			});
+			return finalResult;
+		}, JobFlags.SaveToLog);
+	}
 
 		private void StashMessageTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{

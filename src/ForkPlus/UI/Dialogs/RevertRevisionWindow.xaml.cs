@@ -128,39 +128,40 @@ namespace ForkPlus.UI.Dialogs
 			int? parentNumber = (MergeRevision ? new int?(RevisionParentComboBox.SelectedIndex + 1) : null);
 			SubmodulesToUpdate submodulesToUpdate = _repositoryUserControl.SubmodulesToUpdate();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Revert '{0}'"), shaToRevert.ToAbbreviatedString()), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(string.Format(Translate("Revert '{0}'"), shaToRevert.ToAbbreviatedString()), delegate(JobMonitor monitor)
+		{
+			base.Dispatcher.Async(delegate
+			{
+				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Reverting..."));
+			});
+			GitCommandResult revertResult = new RevertCommitGitCommand().Execute(gitModule, shaToRevert, commit, parentNumber, monitor);
+			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
+			if (submodulesToUpdate.Length > 0)
 			{
 				base.Dispatcher.Async(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, Translate("Reverting..."));
+					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
-				GitCommandResult revertResult = new RevertCommitGitCommand().Execute(gitModule, shaToRevert, commit, parentNumber, monitor);
-				GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
-				if (submodulesToUpdate.Length > 0)
+				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+			}
+			base.Dispatcher.Async(delegate
+			{
+				if (!revertResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
-					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-					});
-					updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+					Close(revertResult);
 				}
-				base.Dispatcher.Async(delegate
+				else if (!updateSubmodulesResult.Succeeded)
 				{
-					if (!revertResult.Succeeded)
-					{
-						Close(revertResult);
-					}
-					else if (!updateSubmodulesResult.Succeeded)
-					{
-						Close(updateSubmodulesResult);
-					}
-					else
-					{
-						Close(revertResult);
-					}
-				});
-			}, JobFlags.SaveToLog);
-		}
+					Close(updateSubmodulesResult);
+				}
+				else
+				{
+					Close(revertResult);
+				}
+			});
+			return revertResult.Succeeded ? updateSubmodulesResult : revertResult;
+		}, JobFlags.SaveToLog);
+	}
 
 		private static string Translate(string text)
 		{

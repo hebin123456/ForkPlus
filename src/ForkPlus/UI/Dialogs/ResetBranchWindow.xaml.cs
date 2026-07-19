@@ -104,39 +104,41 @@ namespace ForkPlus.UI.Dialogs
 			string resetTypeName = GetResetTypeName(_resetType);
 			SubmodulesToUpdate submodulesToUpdate = _repositoryUserControl.SubmodulesToUpdate();
 			DisableEditableControls();
-			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Reset '{0}' ({1})", branchName, resetTypeName), delegate(JobMonitor monitor)
+			_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Reset '{0}' ({1})", branchName, resetTypeName), delegate(JobMonitor monitor)
+		{
+			base.Dispatcher.Async(delegate
+			{
+				SetStatus(ForkPlusDialogStatus.InProgress, "Resetting '" + branchName + "'...");
+			});
+			GitCommandResult resetBranchResult = new ResetCurrentBranchToRevisionGitCommand().Execute(gitModule, destinationSha, resetType, monitor);
+			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
+			if (submodulesToUpdate.Length > 0 && resetType == BranchResetType.Hard)
 			{
 				base.Dispatcher.Async(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Resetting '" + branchName + "'...");
+					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
-				GitCommandResult resetBranchResult = new ResetCurrentBranchToRevisionGitCommand().Execute(gitModule, destinationSha, resetType, monitor);
-				GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
-				if (submodulesToUpdate.Length > 0 && resetType == BranchResetType.Hard)
+				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+			}
+			base.Dispatcher.Async(delegate
+			{
+				if (!resetBranchResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
-					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
-					});
-					updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
+					Close(resetBranchResult);
 				}
-				base.Dispatcher.Async(delegate
+				else if (!updateSubmodulesResult.Succeeded)
 				{
-					if (!resetBranchResult.Succeeded)
-					{
-						Close(resetBranchResult);
-					}
-					else if (!updateSubmodulesResult.Succeeded)
-					{
-						Close(updateSubmodulesResult);
-					}
-					else
-					{
-						Close(resetBranchResult);
-					}
-				});
+					Close(updateSubmodulesResult);
+				}
+				else
+				{
+					Close(resetBranchResult);
+				}
 			});
-		}
+			// 返回最终结果，让 AddUndoable 据此决定是否取消快照
+			return resetBranchResult.Succeeded ? updateSubmodulesResult : resetBranchResult;
+		});
+	}
 
 		private void ResetTypeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
