@@ -65,12 +65,27 @@
     </ScrollViewer>
 
     <!-- 底部按钮：换色已实时落盘，无需 OK/Cancel 确认 -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-      <Button x:Name="RandomPaletteButton" Content="Random Palette" Padding="20,4" Margin="0,0,12,0"
-              Click="RandomPalette_Click" />
-      <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4"
-              Click="ResetAll_Click" />
-    </StackPanel>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <!-- 左侧：导入/导出颜色（v2.1.3 新增）。可把当前配色导出为 JSON 分享，
+           或导入别人导出的配色 JSON 文件。导入时会校验格式，不合法会阻止导入。 -->
+      <StackPanel Grid.Column="0" Orientation="Horizontal">
+        <Button x:Name="ImportColorsButton" Content="Import Colors" Padding="20,4" Margin="0,0,12,0"
+                Click="ImportColors_Click" />
+        <Button x:Name="ExportColorsButton" Content="Export Colors" Padding="20,4"
+                Click="ExportColors_Click" />
+      </StackPanel>
+      <!-- 右侧：随机配色 + 全部重置 -->
+      <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button x:Name="RandomPaletteButton" Content="Random Palette" Padding="20,4" Margin="0,0,12,0"
+                Click="RandomPalette_Click" />
+        <Button x:Name="ResetAllButton" Content="Reset All" Padding="20,4"
+                Click="ResetAll_Click" />
+      </StackPanel>
+    </Grid>
 
     <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
     <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3"

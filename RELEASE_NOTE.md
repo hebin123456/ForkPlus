@@ -2,6 +2,60 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v2.1.3
+
+### 新增：自定义颜色配置导入/导出
+
+v2.1.0 引入自定义颜色功能后，用户希望把配好的颜色方案分享给团队或备份。v2.1.3 在自定义颜色对话框新增"导入颜色"和"导出颜色"两个按钮，支持 JSON 格式的配置文件。
+
+**功能**：
+
+- 自定义颜色对话框底部左侧新增两个按钮：**Import Colors**（导入颜色）/ **Export Colors**（导出颜色）—— [CustomColorsDialog.xaml](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml)、[CustomColorsDialog.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml.cs)
+- **导出**：把当前 `_workingCopy` 中所有自定义颜色项序列化为 JSON 文件保存。文件名默认 `ForkPlus-Colors-{SkinName}.json`，用户可改名。
+- **导入**：选择 JSON 文件后**先严格校验**，校验通过才合并应用到当前配色。导入是"覆盖式合并"——文件中出现的 key 覆盖当前值，文件中未出现的 key 保持不变，方便用户只覆盖部分颜色。
+- **18 个 i18n key** 同步到 7 个语言文件（简中/繁中/日/韩/德/西/法）—— [Languages/*.json](file:///workspace/src/ForkPlus/Languages/)
+
+**JSON 文件格式**：
+
+```json
+{
+  "schema": "ForkPlus.CustomColors/v1",
+  "theme": "Dark",
+  "exportedAt": "2026-07-19T10:00:00Z",
+  "customColors": {
+    "BackgroundColor": "#282A36",
+    "Diff.AddedColor": "#50FA7B",
+    "AccentColor": "#BD93F9",
+    ...
+  }
+}
+```
+
+- `schema`：schema 标识，固定为 `"ForkPlus.CustomColors/v1"`，未来格式升级时用于向后兼容判断
+- `theme`：导出时的主题名（仅参考，导入时不强制匹配——用户可在不同主题间共享颜色）
+- `exportedAt`：导出时间戳（UTC，ISO 8601）
+- `customColors`：核心数据，`{ "ColorKey": "#RRGGBB" }` 字典，仅包含用户实际自定义过的项
+
+**导入校验规则**（任一不通过即阻止导入，弹出 MessageBox 提示具体错误）：
+
+1. **必须是合法 JSON**：解析失败提示 "Invalid JSON: ..."
+2. **JSON 根必须是对象**：数组/原始值拒绝，提示 "JSON root must be an object"
+3. **`schema` 字段如果存在，必须匹配** `"ForkPlus.CustomColors/v1"`：不匹配提示 "Unsupported schema. Expected ..."
+4. **必须含 `customColors` 字段且为对象**：缺失或类型错误均拒绝
+5. **`customColors` 中每个 key 必须在 29 个可编辑颜色 key 白名单内**：未知 key 提示 "unknown color key"
+6. **`customColors` 中每个 value 必须是字符串且为合法 hex 颜色**（`#RRGGBB` / `#AARRGGBB` / `RRGGBB` 等）：非法值提示 "invalid hex color '...'"
+7. **错误聚合展示**：所有错误一次性收集（最多显示前 10 条），统一提示 "Import aborted: N errors found"，避免用户逐条修复
+
+**技术实现要点**：
+
+- 使用 `Microsoft.Win32.SaveFileDialog` / `OpenFileDialog` 选择文件
+- 使用 `Newtonsoft.Json.Linq.JObject` / `JToken` 解析和序列化（项目已引用 Newtonsoft.Json 13.0.4）
+- `IsValidHexColor` 复用 `ColorConverter.ConvertFromString` 校验 hex 字符串
+- 导入成功后调用 `ApplyAndRefresh()`（v2.1.2 修复版）立即应用到主界面并落盘
+- 弹 MessageBox 前先关闭颜色选择器 Popup，避免遮挡对话框
+
+**版本号**：`AssemblyFileVersion` / `AssemblyInformationalVersion` 2.1.2 → 2.1.3；`AssemblyVersion` 2.1.2.0 → 2.1.3.0 —— [AssemblyInfo.cs](file:///workspace/src/ForkPlus/Properties/AssemblyInfo.cs)
+
 ## v2.1.2
 
 ### 修复：自定义颜色对话框四个交互问题（含核心刷新机制重写）
