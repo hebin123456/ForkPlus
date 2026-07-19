@@ -986,6 +986,9 @@ namespace ForkPlus.Settings
 
 		private bool _compactBranchLabels;
 
+		// v3.0.4：Undo/Redo 总开关，默认不使能（避免每次写操作都抓快照导致卡顿）
+		private bool _undoRedoEnabled;
+
 		private bool _disableSyntaxHighlighting;
 
 		private int _maxCommitCount;
@@ -1808,6 +1811,19 @@ namespace ForkPlus.Settings
 			set
 			{
 				_compactBranchLabels = value;
+			}
+		}
+
+		/// <summary>v3.0.4：Undo/Redo 总开关。默认 false，关闭时 AddUndoable 直接走 JobQueue.Add，跳过快照抓取。</summary>
+		public bool UndoRedoEnabled
+		{
+			get
+			{
+				return _undoRedoEnabled;
+			}
+			set
+			{
+				_undoRedoEnabled = value;
 			}
 		}
 
@@ -2638,6 +2654,8 @@ namespace ForkPlus.Settings
 			string aiDevSendMode = json["AiDevSendMode"]?.Value<string>() ?? "Enter";
 			bool pushAutomaticallyOnCommit = json["PushAutomaticallyOnCommit"]?.Value<bool>() ?? false;
 			bool compactBranchLabels = json["CompactBranchLabels"]?.Value<bool>() ?? true;
+			// v3.0.4：Undo/Redo 默认不使能
+			bool undoRedoEnabled = json["UndoRedoEnabled"]?.Value<bool>() ?? false;
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
 			int maxCommitCount = json["MaxCommitCount"]?.Value<int>() ?? 50000;
 			int layoutScaling = json["LayoutScaling"]?.Value<int>() ?? 100;
@@ -2767,6 +2785,7 @@ namespace ForkPlus.Settings
 				AiDevSendMode = aiDevSendMode,
 				PushAutomaticallyOnCommit = pushAutomaticallyOnCommit,
 				CompactBranchLabels = compactBranchLabels,
+				UndoRedoEnabled = undoRedoEnabled,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
 				MaxCommitCount = maxCommitCount,
 				LayoutScaling = layoutScaling,
@@ -3156,6 +3175,10 @@ namespace ForkPlus.Settings
 				{
 					"CompactBranchLabels",
 					new JValue(target.CompactBranchLabels)
+				},
+				{
+					"UndoRedoEnabled",
+					new JValue(target.UndoRedoEnabled)
 				},
 				{
 				"DisableSyntaxHighlighting",

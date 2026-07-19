@@ -322,6 +322,17 @@ namespace ForkPlus.UI.UserControls
 	/// <summary>根据当前仓库的 UndoRedoStack 状态刷新按钮可用性和 tooltip。v3.0.0。</summary>
 	private void RefreshUndoRedoButtons()
 	{
+		// v3.0.4：开关关闭时隐藏 Undo/Redo 按钮组
+		bool enabled = ForkPlusSettings.Default.UndoRedoEnabled;
+		Visibility undoRedoVisibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+		UndoToolbarButton.Visibility = undoRedoVisibility;
+		UndoToolbarDropdownButton.Visibility = undoRedoVisibility;
+		RedoToolbarButton.Visibility = undoRedoVisibility;
+		RedoToolbarDropdownButton.Visibility = undoRedoVisibility;
+		if (!enabled)
+		{
+			return;
+		}
 		RepositoryUserControl repo = _subscribedUndoRedoRepo;
 		bool canUndo = repo != null && repo.UndoRedoStack.CanUndo;
 		bool canRedo = repo != null && repo.UndoRedoStack.CanRedo;
@@ -337,6 +348,12 @@ namespace ForkPlus.UI.UserControls
 		RedoToolbarButton.ToolTip = canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
 			: redoLabel;
+	}
+
+	/// <summary>v3.0.4：供设置变更后调用，刷新 Undo/Redo 按钮可见性。</summary>
+	public void RefreshUndoRedoVisibility()
+	{
+		RefreshUndoRedoButtons();
 	}
 
 	private void UndoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)

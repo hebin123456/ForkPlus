@@ -1025,19 +1025,43 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>
 		/// 包装一个会改仓库的操作：操作前抓快照入栈，操作失败时弹出栈顶。
 		/// 调用方需要返回 GitCommandResult 以让包装层感知成功/失败。
+		/// v3.0.4：新增 UndoRedoEnabled 开关。关闭时直接走 JobQueue.Add，跳过快照抓取（避免卡顿）。
+		/// 开启时把 TakeSnapshot 推迟到 Job 内（后台线程），UI 线程立即返回，且能响应取消。
 		/// </summary>
 		public Job AddUndoable(string operationName, Func<JobMonitor, GitCommandResult> action, JobFlags flags = JobFlags.Default, bool showMessageWhenDone = true)
 		{
-			// 1. 操作前抓快照（同步，避免和操作之间产生竞态）
-			RepositorySnapshot snapshot = TakeSnapshot(operationName);
-			if (snapshot != null)
+			// v3.0.4：开关关闭时直接走原始 JobQueue.Add，不抓快照
+			if (!ForkPlusSettings.Default.UndoRedoEnabled)
 			{
-				UndoRedoStack.RecordBeforeOperation(snapshot);
+				return JobQueue.Add(operationName, delegate(JobMonitor monitor)
+				{
+					action(monitor);
+				}, flags, showMessageWhenDone);
 			}
 
-			// 2. 包装 action，失败时 CancelLastRecord
+			// 开关开启：在 Job 内抓快照（后台线程，不阻塞 UI，可响应取消）
 			return JobQueue.Add(operationName, delegate(JobMonitor monitor)
 			{
+				// 1. Job 内抓快照（后台线程执行，git 进程不阻塞 UI）
+				RepositorySnapshot snapshot = null;
+				try
+				{
+					snapshot = TakeSnapshot(operationName);
+				}
+				catch
+				{
+					snapshot = null;
+				}
+				if (monitor.IsCanceled)
+				{
+					return;
+				}
+				if (snapshot != null)
+				{
+					UndoRedoStack.RecordBeforeOperation(snapshot);
+				}
+
+				// 2. 执行实际操作，失败时 CancelLastRecord
 				GitCommandResult result = null;
 				try
 				{

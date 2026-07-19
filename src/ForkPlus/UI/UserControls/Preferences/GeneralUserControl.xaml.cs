@@ -56,6 +56,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			SpaceCharacterComboBox.SelectedValue = ForkPlusSettings.Default.ReferenceSpaceCharacterReplacement;
 			PushAutomaticallyOnCommitCheckBox.IsChecked = ForkPlusSettings.Default.PushAutomaticallyOnCommit;
 			CompactBranchLabelsCheckBox.IsChecked = ForkPlusSettings.Default.CompactBranchLabels;
+			// v3.0.4：Undo/Redo 开关，默认不使能
+			UndoRedoEnabledCheckBox.IsChecked = ForkPlusSettings.Default.UndoRedoEnabled;
 			RefreshLanguageComboBoxItems();
 			SelectUiLanguage(ForkPlusSettings.Default.UiLanguage);
 			_initialized = true;
@@ -257,6 +259,17 @@ namespace ForkPlus.UI.UserControls.Preferences
 				bool valueOrDefault = CompactBranchLabelsCheckBox.IsChecked.GetValueOrDefault(true);
 				ForkPlusSettings.Default.CompactBranchLabels = valueOrDefault;
 				NotificationCenter.Current.RaiseCompactBranchLabelsChanged(this, valueOrDefault);
+			}
+		}
+
+		/// <summary>v3.0.4：Undo/Redo 总开关切换。保存到设置，立即生效（AddUndoable 每次读取）。</summary>
+		private void UndoRedoEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (_initialized)
+			{
+				bool valueOrDefault = UndoRedoEnabledCheckBox.IsChecked.GetValueOrDefault();
+				ForkPlusSettings.Default.UndoRedoEnabled = valueOrDefault;
+				ForkPlusSettings.Default.Save();
 			}
 		}
 

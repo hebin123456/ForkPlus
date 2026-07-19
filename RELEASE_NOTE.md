@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.0.4
+
+### 修复与改进
+
+- **Undo/Redo 总开关（默认关闭）**：在偏好设置 → 通用 tab 新增 "Enable Undo/Redo" 复选框，默认不勾选。关闭时 `AddUndoable` 直接走原始 `JobQueue.Add`，跳过所有快照抓取逻辑，性能回到 v3.0.0 之前的水平。需要 Undo/Redo 功能的用户可手动开启。
+- **Undo/Redo 性能优化**：修复"提交一条信息要转很久、取消也停不下来"的卡顿问题。根因是 `AddUndoable` 在 UI 线程同步抓取 7 次 git 进程快照（包括 `git status --porcelain`，大仓库很慢），且不响应取消。优化后：
+  - 开关开启时，`TakeSnapshot` 推迟到 Job 内（后台线程）执行，UI 线程立即返回，不再阻塞
+  - 在抓快照阶段检查 `monitor.IsCanceled`，用户取消时立即跳出，不再卡死
+- 工具栏 Undo/Redo 按钮根据开关显示/隐藏（关闭时 Collapsed），设置变更后立即刷新
+
 ## v3.0.3
 
 ### 修复与改进
