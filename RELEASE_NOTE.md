@@ -2,6 +2,52 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v2.1.4
+
+### 修复：加载空仓库（git init 完毕，无任何 commit）无限转圈卡死
+
+- **现象**：用户 `git init` 一个新仓库后用 ForkPlus 打开，应用一直处于无限加载状态，UI 永久转圈，完全刷不出内容。但 `git status` 在命令行能正常显示 untracked 文件。
+- **根因分析**（v2.1.2 修复不彻底）：
+  - v2.1.2 曾在 `GetRevisionStorageGitCommand.Execute` 开头加"空仓库快速路径"（检测 `references.LocalBranches.Length == 0 && ... && !references.HeadSha.HasValue` 直接返回空 `RevisionStorage`），但**这个快速路径加错位置了**——失败发生在更早的 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 阶段，根本走不到 `GetRevisionStorageGitCommand`。
+  - 执行顺序：`RefreshRepositoryDataGitCommand.Execute` 第 55 行先调 `RefreshRepositoryReferencesGitCommand.Execute` 拿 `RepositoryReferences`，**然后**（第 65 行）才启动 revisions 刷新 task 调 `GetRevisionStorageGitCommand`。如果 `RefreshReferences` 挂住，整个 `Execute` 就回不来。
+  - `RefreshReferences` 中最可能挂住的地方：第 230 行 `GetCommitterDates` → `bt_get_committer_times(gitDir, shas, ...)`。空仓库的 `shas` 数组可能包含 `Sha.Zero`（biturbo 把 HEAD symref 解析成空 sha），传给 native 后行为不确定，可能永久阻塞。
+- **修复**：把空仓库快速路径**前移到 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 开头**，在任何 native biturbo 调用（`bt_get_references` / `bt_get_committer_times` / `bt_get_commits`）之前就检测空仓库并直接返回空 `ReferenceStorage` —— [RefreshRepositoryReferencesGitCommand.cs](file:///workspace/src/ForkPlus/Git/Commands/RefreshRepositoryReferencesGitCommand.cs)
+- **检测方式**：新增 `IsEmptyRepository(gitModule)` 方法，用 `git rev-parse --verify HEAD`——失败即说明 HEAD 无法解析为有效 commit（`git init` 完毕状态）。这是 100% 准确的判定（detached HEAD 但有 commit 时也能正确返回成功），开销是一次 git 子进程调用，仅首次加载时执行，可接受。检测异常时保守返回 `false`（宁可尝试 native 也不要误判为空）。
+- **关键代码**：
+  ```csharp
+  private static GitCommandResult<ReferenceStorage> RefreshReferences(...)
+  {
+      // 空仓库快速路径：在任何 native biturbo 调用之前检测
+      if (IsEmptyRepository(gitModule))
+      {
+          Log.Info("Empty repository detected (no commits yet), skipping native biturbo calls");
+          ReferenceStorage.UpstreamTrackingReference[] emptyUpstreams = gitConfig.ReadUpstreams();
+          return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(
+              new string[0], new Sha[0], 0UL, new DateTime[0],
+              new string[0], new string[0], emptyUpstreams, HashHelper.GetHashCode(emptyUpstreams)));
+      }
+      // ... 原有 native biturbo 调用逻辑
+  }
+
+  private static bool IsEmptyRepository(GitModule gitModule)
+  {
+      try
+      {
+          GitRequestResult result = new GitRequest(gitModule)
+              .Command("rev-parse", "--verify", "HEAD")
+              .Execute(silent: true);
+          return !result.Success;
+      }
+      catch (Exception ex)
+      {
+          Log.Warn("IsEmptyRepository check failed: " + ex.Message);
+          return false;
+      }
+  }
+  ```
+- **v2.1.2 遗留的 `GetRevisionStorageGitCommand` 快速路径保留**：作为双重保险，即使 `RefreshReferences` 漏判（极端情况），revisions 刷新阶段仍会检测空 references 并跳过 `bt_get_commits`。
+- **版本号**：`AssemblyFileVersion` / `AssemblyInformationalVersion` 2.1.3 → 2.1.4；`AssemblyVersion` 2.1.3.0 → 2.1.4.0 —— [AssemblyInfo.cs](file:///workspace/src/ForkPlus/Properties/AssemblyInfo.cs)
+
 ## v2.1.3
 
 ### 新增：自定义颜色配置导入/导出

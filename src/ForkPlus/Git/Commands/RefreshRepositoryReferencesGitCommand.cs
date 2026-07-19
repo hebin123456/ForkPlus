@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ForkPlus.Biturbo;
+using ForkPlus.Git.Interaction;
 
 namespace ForkPlus.Git.Commands
 {
@@ -153,6 +154,24 @@ namespace ForkPlus.Git.Commands
 
 		private static GitCommandResult<ReferenceStorage> RefreshReferences(GitModule gitModule, GitConfig gitConfig, bool skipTags, [Null] ReferenceStorage oldReferences, CommitGraphCache commitGraphCache)
 		{
+			// 空仓库快速路径（v2.1.4 修复）：刚 git init 完毕的仓库没有任何 commit，HEAD 是 symref
+			// 指向不存在的 refs/heads/master。此时调用 native biturbo 的行为不确定——
+			// bt_get_references 可能返回含 Sha.Zero 的 HEAD ref，bt_get_committer_times 传入
+			// 无效 sha 可能永久阻塞，bt_get_commits 对空 tips 数组也可能死循环。
+			// v2.1.2 曾在 GetRevisionStorageGitCommand.Execute 加快速路径，但失败发生在更早的
+			// RefreshReferences 阶段（这里），根本走不到那段。v2.1.4 把快速路径前移到这里，
+			// 在任何 native biturbo 调用之前就检测空仓库并直接返回空 ReferenceStorage。
+			//
+			// 检测方式：git rev-parse --verify HEAD 失败说明仓库没有任何 commit（git init 完毕状态）。
+			// 这是 100% 准确的判定，开销是一次 git 子进程调用（仅首次加载时，可接受）。
+			if (IsEmptyRepository(gitModule))
+			{
+				Log.Info("Empty repository detected (no commits yet), skipping native biturbo calls");
+				ReferenceStorage.UpstreamTrackingReference[] emptyUpstreams = gitConfig.ReadUpstreams();
+				return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(
+					new string[0], new Sha[0], 0UL, new DateTime[0],
+					new string[0], new string[0], emptyUpstreams, HashHelper.GetHashCode(emptyUpstreams)));
+			}
 			ReferenceStorage.UpstreamTrackingReference[] array = gitConfig.ReadUpstreams();
 			int hashCode = HashHelper.GetHashCode(array);
 			Benchmarker benchmarker = new Benchmarker("bt_get_references");
@@ -237,6 +256,28 @@ namespace ForkPlus.Git.Commands
 			ulong hash = out_result.hash;
 			Bt.bt_release_references(ref out_result);
 			return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(refs, shas, hash, committerDates, symrefs2, symrefTargets, array, hashCode));
+		}
+
+		/// <summary>检测仓库是否为空（git init 完毕，没有任何 commit）。
+		/// 用 git rev-parse --verify HEAD——失败即说明 HEAD 无法解析为有效 commit，
+		/// 这是空仓库的 100% 准确判定（detached HEAD 但有 commit 时也能正确返回成功）。
+		/// 开销是一次 git 子进程调用，仅首次加载时执行，可接受。</summary>
+		private static bool IsEmptyRepository(GitModule gitModule)
+		{
+			try
+			{
+				// silent:true 避免空仓库时 stderr 输出 "fatal: Needed a single revision" 污染日志
+				GitRequestResult result = new GitRequest(gitModule)
+					.Command("rev-parse", "--verify", "HEAD")
+					.Execute(silent: true);
+				return !result.Success;
+			}
+			catch (Exception ex)
+			{
+				// 检测失败时不阻塞加载，让原流程继续走（保守策略：宁可尝试 native 也不要误判为空）
+				Log.Warn("IsEmptyRepository check failed: " + ex.Message);
+				return false;
+			}
 		}
 
 		private static GitCommandResult<DateTime[]> GetCommitterDates(GitModule gitModule, Sha[] shas, CommitGraphCache commitGraphCache)
