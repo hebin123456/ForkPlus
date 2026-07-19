@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;

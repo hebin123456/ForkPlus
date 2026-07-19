@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls.Editor;
+using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 
