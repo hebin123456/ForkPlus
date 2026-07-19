@@ -2,6 +2,62 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.3.0
+
+### 重构：Undo/Redo 分层架构
+
+把 Undo/Redo 系统从「单一内存快照栈」改造为「reflog 真相源 + 索引文件元数据」的分层架构，对标 Sublime Merge 的持久化机制。**完全打破旧代码**：删除 `RepositorySnapshot`，用更轻量的 `UndoEntry` 替代。
+
+#### Layer 1：reflog 作为真相源（持久化 + CLI 兼容）
+
+- **新增 `ReflogHistoryProvider`**：读取 `git reflog HEAD --pretty=format:%H%x00%gs%x00%s`，解析为 `List<ReflogEntry>`，NUL 分隔字段避免 commit message 换行干扰。
+  - reflog 是 git 原生持久化的（`.git/logs/HEAD`，默认保留 90 天），跨会话保留 + CLI 操作天然兼容 + 无栈深度限制。
+  - 默认读取最近 200 条（防止超大 reflog 拖慢 UI）。
+  - 读取失败永不抛出，返回空列表（不阻断 Undo/Redo）。
+
+#### Layer 0：索引文件保留 OperationName
+
+- **新增 `UndoIndexStore`**：读写 `.git/forkplus-undo-index.json`，存储 `{HeadSha → UndoIndexEntry}` 映射，为 reflog 条目附加 UI 友好的操作名（如「Commit 'fix: bug'」「Checkout 'feature/x'」）。
+  - **位置**：`.git/forkplus-undo-index.json`（与 reflog 同生命周期，clone 后是空的）。
+  - **原子写入**：先写 `.tmp` 再 rename，避免崩溃导致文件损坏。
+  - **文件损坏静默恢复**：JSON 解析失败时删除文件重建，不阻断 Undo/Redo。
+  - **容量上限**：默认 500 条，LRU 淘汰（按 TimestampUtc 排序删最早的）。
+  - 索引与 reflog 不同步时降级显示 reflog 原生 message（如 `commit: fix: bug`），不报错。
+- **新增 `UndoIndexEntry`**：4 字段（HeadSha / OperationName / TimestampUtc / OperationType）。`OperationType` 预留给 v3.4+ 的 UI 图标。
+
+#### 数据结构精简：UndoEntry 替代 RepositorySnapshot
+
+- **新增 `UndoEntry`**：4 字段（HeadSha / CurrentBranchName / OperationName / TimestampUtc），替代旧 `RepositorySnapshot` 的 11 字段。
+  - HEAD sha 是恢复真相源，所有 ref 状态都跟着 sha 走。
+  - OperationName 通过 UndoIndexStore 持久化到 `.git/forkplus-undo-index.json`。
+  - 当前分支名用于 Undo 后切回原分支（避免进入 detached HEAD）。
+  - 含 `WithOperationName()` 副本方法，支持「先抓快照、后赋名」场景。
+- **删除 `RepositorySnapshot`**（含 `RepositorySnapshotTests`）：不再保存 branch list / tag list / stash list / ORIG_HEAD / IsWorkingTreeDirty / ChangedFilesCount 等 11 字段。
+  - 旧版重建分支 / tag / stash 的逻辑反而可能产生副作用（如重建已被用户故意删除的分支）。
+  - 这些状态在 Undo 时由 reflog 兜底恢复，无需在快照里冗余保存。
+
+#### 命令简化
+
+- **`SnapshotGitCommand`**：从 7 次 git 进程调用简化为 2 次（`git rev-parse HEAD` + `git symbolic-ref --short -q HEAD`），性能提升 ~70%（大仓库尤其明显）。
+- **`RestoreSnapshotGitCommand`**：从 5 步组合命令（checkout + reset --hard + 重建分支 + 重建 tag + 重建 stash）简化为 2 步（checkout 切回原分支 + `git reset --hard <sha>`）。
+
+#### UI 层适配
+
+- **`RepositoryUserControl.AddUndoable`**：操作成功后写入 `UndoIndexStore.Record(...)`，把 OperationName 持久化到 `.git/forkplus-undo-index.json`。
+- **`RepositoryUserControl.IsWorkingTreeDirty()`**：实时调 `git status --porcelain` 检测工作区是否 dirty，替代旧 `RepositorySnapshot.IsWorkingTreeDirty` 字段。
+- **`ToolbarUserControl`**：4 处 `RepositorySnapshot` 引用改为 `UndoEntry`，下拉历史列表 / JumpUndoTo / JumpRedoTo 签名同步更新。
+
+#### 单元测试
+
+- **重写 `UndoRedoStackTests`**：20 个测试覆盖栈空 / MaxDepth / LostCount / JumpTo / CancelLastRecord 等纯逻辑，新增 3 个 UndoEntry 数据结构测试（null OperationName 归一化、WithOperationName 副本）。
+- **新增 `ReflogHistoryProviderTests`**：11 个测试覆盖 ParseLine 各种输入（合法行 / 缺字段 / 空行 / 短 sha / 多 NUL 字段 / amend / checkout 类 subject）。
+- **新增 `UndoIndexStoreTests`**：19 个测试覆盖 GetIndexPath / Load / Record / Lookup / 容量淘汰 / 文件损坏恢复 / 空文件 / 跨实例持久化 / 特殊字符 / 原子写入不留 .tmp。用临时目录 + 真实 GitModule 实例，不依赖真实 git 进程。
+
+### 设计决策（v3.4+ 待办）
+
+- **Layer 2（工作区级快照）**：追平 Tower 的 discard / stage / 删 branch undo 能力，待 v3.4 实现。
+- **UX 增强**：Reflog 视图（与 reflog 兜底联动）、全局 Ctrl+Z 快捷键、Reflog 视图入口，待 v3.4 实现。
+
 ## v3.2.0
 
 ### 新特性

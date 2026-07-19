@@ -65,9 +65,11 @@ jobs:
             'PerformanceTelemetryTests','GitStatusParsingTests',
             'FeatureCoverageManifestTests','AssemblySmokeTests',
             # v3.2.0：新增的单元测试类（覆盖 Undo/Redo、AI Commit Composer、Hex Viewer、Theme、JobMonitor）
-            'UndoRedoStackTests','RepositorySnapshotTests',
+            'UndoRedoStackTests',
             'WipCommitGroupTests','WipCommitPlanTests','OpenAiServiceStaticTests',
-            'HexFormatterTests','ThemeTypeExtensionsTests','JobMonitorTests'
+            'HexFormatterTests','ThemeTypeExtensionsTests','JobMonitorTests',
+            # v3.3.0：分层重构新增测试类（reflog 解析 + 索引文件持久化）
+            'ReflogHistoryProviderTests','UndoIndexStoreTests'
           )
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
           # 已知问题：net472 + VSTest 在 386 个测试 1 秒跑完后，testhost 进程因加载了

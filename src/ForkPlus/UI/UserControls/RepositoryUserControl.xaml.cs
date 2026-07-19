@@ -999,18 +999,36 @@ namespace ForkPlus.UI.UserControls
 		// ===== v3.0.0 Undo/Redo =====
 
 		/// <summary>
-		/// 抓取当前仓库快照。失败时返回 null（永不抛出）。
+		/// v3.3.0：抓取当前仓库轻量 entry（HEAD sha + 当前分支名）。
+		/// 旧版抓 11 字段调用 7 次 git 进程，新版只抓 2 字段调用 2 次 git 进程，性能提升 ~70%。
 		/// </summary>
-		private RepositorySnapshot TakeSnapshot(string operationName)
+		private UndoEntry TakeSnapshot(string operationName)
 		{
 			try
 			{
-				GitCommandResult<RepositorySnapshot> r = new SnapshotGitCommand().Execute(GitModule, operationName);
+				GitCommandResult<UndoEntry> r = new SnapshotGitCommand().Execute(GitModule, operationName);
 				return r.Succeeded ? r.Result : null;
 			}
 			catch
 			{
 				return null;
+			}
+		}
+
+		/// <summary>
+		/// v3.3.0：实时检测工作区是否 dirty。取代旧 RepositorySnapshot.IsWorkingTreeDirty 字段。
+		/// 在 Undo/Redo 前调用，避免抓快照时白白消耗一次 git status 进程。
+		/// </summary>
+		private bool IsWorkingTreeDirty()
+		{
+			try
+			{
+				GitRequestResult r = new GitRequest(GitModule).Command("status", "--porcelain").Execute(silent: true);
+				return r.Success && !string.IsNullOrWhiteSpace(r.Stdout);
+			}
+			catch
+			{
+				return false;
 			}
 		}
 
@@ -1027,6 +1045,8 @@ namespace ForkPlus.UI.UserControls
 		/// 调用方需要返回 GitCommandResult 以让包装层感知成功/失败。
 		/// v3.0.4：新增 UndoRedoEnabled 开关。关闭时直接走 JobQueue.Add，跳过快照抓取（避免卡顿）。
 		/// 开启时把 TakeSnapshot 推迟到 Job 内（后台线程），UI 线程立即返回，且能响应取消。
+		/// v3.3.0：操作成功后把 OperationName 写入 UndoIndexStore（持久化到 .git/forkplus-undo-index.json），
+		/// 跨会话保留 + reflog 兜底时仍可显示友好操作名。
 		/// </summary>
 		public Job AddUndoable(string operationName, Func<JobMonitor, GitCommandResult> action, JobFlags flags = JobFlags.Default, bool showMessageWhenDone = true)
 		{
@@ -1039,26 +1059,26 @@ namespace ForkPlus.UI.UserControls
 				}, flags, showMessageWhenDone);
 			}
 
-			// 开关开启：在 Job 内抓快照（后台线程，不阻塞 UI，可响应取消）
+			// 开关开启：在 Job 内抓 entry（后台线程，不阻塞 UI，可响应取消）
 			return JobQueue.Add(operationName, delegate(JobMonitor monitor)
 			{
-				// 1. Job 内抓快照（后台线程执行，git 进程不阻塞 UI）
-				RepositorySnapshot snapshot = null;
+				// 1. Job 内抓 entry（后台线程执行，git 进程不阻塞 UI）
+				UndoEntry entry = null;
 				try
 				{
-					snapshot = TakeSnapshot(operationName);
+					entry = TakeSnapshot(operationName);
 				}
 				catch
 				{
-					snapshot = null;
+					entry = null;
 				}
 				if (monitor.IsCanceled)
 				{
 					return;
 				}
-				if (snapshot != null)
+				if (entry != null)
 				{
-					UndoRedoStack.RecordBeforeOperation(snapshot);
+					UndoRedoStack.RecordBeforeOperation(entry);
 				}
 
 				// 2. 执行实际操作，失败时 CancelLastRecord
@@ -1079,6 +1099,23 @@ namespace ForkPlus.UI.UserControls
 			if (monitor.IsCanceled || result == null || !result.Succeeded)
 			{
 				UndoRedoStack.CancelLastRecord();
+				RaiseUndoRedoStateChanged();
+				return;
+			}
+			// v3.3.0：操作成功后，把 {entry.HeadSha → operationName} 写入持久化索引
+			// 用操作"前"的 HeadSha 作为 key（即 Undo 后要回到的状态），这样 Undo/Redo 走 reflog 时
+			// 仍可通过 HeadSha join 出 UI 友好的操作名
+			if (entry != null && !string.IsNullOrEmpty(entry.HeadSha))
+			{
+				try
+				{
+					UndoIndexStore indexStore = new UndoIndexStore(GitModule);
+					indexStore.Record(new UndoIndexEntry(entry.HeadSha, operationName, entry.TimestampUtc));
+				}
+				catch
+				{
+					// 静默：索引写入失败不阻断主操作
+				}
 			}
 			RaiseUndoRedoStateChanged();
 			}, flags, showMessageWhenDone);
@@ -1099,7 +1136,9 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		/// <summary>
-		/// 撤销最近一次操作。弹栈并恢复到栈顶快照状态。
+		/// 撤销最近一次操作。弹栈并恢复到栈顶 entry 描述的状态。
+		/// v3.3.0：恢复走 git reset --hard &lt;target.HeadSha&gt;（2 步：checkout + reset），
+		/// 不再走旧版 5 步（重建分支/tag/stash）。
 		/// </summary>
 		public void Undo()
 		{
@@ -1108,28 +1147,29 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			string opLabel = PreferencesLocalization.Current("Undo");
-			RepositorySnapshot currentSnapshot = TakeSnapshot(opLabel);
-			if (currentSnapshot == null)
+			UndoEntry currentEntry = TakeSnapshot(opLabel);
+			if (currentEntry == null)
 			{
 				RaiseUndoRedoStateChanged();
 				return;
 			}
-			// P3.1：dirty 时弹窗问用户
-			if (!ConfirmAndStashBeforeRestore(currentSnapshot.IsWorkingTreeDirty, opLabel, out bool shouldStashFirst))
+			// v3.3.0：dirty 检测改为实时调用 git status（旧版从 snapshot 字段读）
+			bool isDirty = IsWorkingTreeDirty();
+			if (!ConfirmAndStashBeforeRestore(isDirty, opLabel, out bool shouldStashFirst))
 			{
 				return;
 			}
-			// P3.2：peek 目标快照，检查 Undo 是否会回退已 push 的 commit
-			RepositorySnapshot peekedTarget = UndoRedoStack.UndoHistory.Count > 0 ? UndoRedoStack.UndoHistory[0] : null;
+			// P3.2：peek 目标 entry，检查 Undo 是否会回退已 push 的 commit
+			UndoEntry peekedTarget = UndoRedoStack.UndoHistory.Count > 0 ? UndoRedoStack.UndoHistory[0] : null;
 			bool forcePushAfterRestore = false;
-			if (ShouldPromptForPushedCommits(currentSnapshot, peekedTarget))
+			if (ShouldPromptForPushedCommits(currentEntry, peekedTarget))
 			{
 				if (!ConfirmPushedUndo(opLabel, out forcePushAfterRestore))
 				{
 					return;
 				}
 			}
-			RepositorySnapshot target = UndoRedoStack.PopForUndo(currentSnapshot);
+			UndoEntry target = UndoRedoStack.PopForUndo(currentEntry);
 			if (target == null)
 			{
 				RaiseUndoRedoStateChanged();
@@ -1173,6 +1213,7 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>
 		/// 重做最近被撤销的操作。
+		/// v3.3.0：恢复走 git reset --hard &lt;target.HeadSha&gt;（2 步：checkout + reset）。
 		/// </summary>
 		public void Redo()
 		{
@@ -1181,18 +1222,19 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			string opLabel = PreferencesLocalization.Current("Redo");
-			RepositorySnapshot currentSnapshot = TakeSnapshot(opLabel);
-			if (currentSnapshot == null)
+			UndoEntry currentEntry = TakeSnapshot(opLabel);
+			if (currentEntry == null)
 			{
 				RaiseUndoRedoStateChanged();
 				return;
 			}
-			// P3.1：dirty 时弹窗问用户
-			if (!ConfirmAndStashBeforeRestore(currentSnapshot.IsWorkingTreeDirty, opLabel, out bool shouldStashFirst))
+			// v3.3.0：dirty 检测改为实时调用 git status
+			bool isDirty = IsWorkingTreeDirty();
+			if (!ConfirmAndStashBeforeRestore(isDirty, opLabel, out bool shouldStashFirst))
 			{
 				return;
 			}
-			RepositorySnapshot target = UndoRedoStack.PopForRedo(currentSnapshot);
+			UndoEntry target = UndoRedoStack.PopForRedo(currentEntry);
 			if (target == null)
 			{
 				RaiseUndoRedoStateChanged();
@@ -1260,25 +1302,26 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>
 		/// P3.2：判断是否需要在 Undo 前提示"已 push"。
 		/// 条件：HEAD 会移动（current != target），且当前 HEAD 已 push 到某个 remote 分支。
+		/// v3.3.0：参数从 RepositorySnapshot 改为 UndoEntry。
 		/// </summary>
-		private bool ShouldPromptForPushedCommits(RepositorySnapshot currentSnapshot, RepositorySnapshot target)
+		private bool ShouldPromptForPushedCommits(UndoEntry currentEntry, UndoEntry target)
 		{
-			if (currentSnapshot == null || target == null)
+			if (currentEntry == null || target == null)
 			{
 				return false;
 			}
-			if (string.IsNullOrEmpty(currentSnapshot.HeadSha) || string.IsNullOrEmpty(target.HeadSha))
+			if (string.IsNullOrEmpty(currentEntry.HeadSha) || string.IsNullOrEmpty(target.HeadSha))
 			{
 				return false;
 			}
-			if (currentSnapshot.HeadSha == target.HeadSha)
+			if (currentEntry.HeadSha == target.HeadSha)
 			{
 				return false;
 			}
 			try
 			{
 				// 静默查询是否有 remote 分支包含当前 HEAD sha
-				GitRequestResult r = new GitRequest(GitModule).Command("branch", "--list", "--remotes", "--contains", currentSnapshot.HeadSha).Execute(silent: true);
+				GitRequestResult r = new GitRequest(GitModule).Command("branch", "--list", "--remotes", "--contains", currentEntry.HeadSha).Execute(silent: true);
 				if (!r.Success)
 				{
 					return false;

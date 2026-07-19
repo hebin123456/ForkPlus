@@ -369,16 +369,16 @@ namespace ForkPlus.UI.UserControls
 		contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Undo History", language)));
 		contextMenu.Items.Add(new Separator());
 		int index = 1;
-		foreach (ForkPlus.Git.Commands.RepositorySnapshot snapshot in repo.UndoRedoStack.UndoHistory)
+		foreach (ForkPlus.Undo.UndoEntry entry in repo.UndoRedoStack.UndoHistory)
 		{
-			ForkPlus.Git.Commands.RepositorySnapshot snapshotCopy = snapshot;
+			ForkPlus.Undo.UndoEntry entryCopy = entry;
 			MenuItem item = new MenuItem
 			{
-				Header = index + ". " + (string.IsNullOrEmpty(snapshot.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : snapshot.OperationName)
+				Header = index + ". " + (string.IsNullOrEmpty(entry.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : entry.OperationName)
 			};
 			item.Click += delegate
 			{
-				JumpUndoTo(repo, snapshotCopy);
+				JumpUndoTo(repo, entryCopy);
 			};
 			contextMenu.Items.Add(item);
 			index++;
@@ -409,16 +409,16 @@ namespace ForkPlus.UI.UserControls
 		contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Redo History", language)));
 		contextMenu.Items.Add(new Separator());
 		int index = 1;
-		foreach (ForkPlus.Git.Commands.RepositorySnapshot snapshot in repo.UndoRedoStack.RedoHistory)
+		foreach (ForkPlus.Undo.UndoEntry entry in repo.UndoRedoStack.RedoHistory)
 		{
-			ForkPlus.Git.Commands.RepositorySnapshot snapshotCopy = snapshot;
+			ForkPlus.Undo.UndoEntry entryCopy = entry;
 			MenuItem item = new MenuItem
 			{
-				Header = index + ". " + (string.IsNullOrEmpty(snapshot.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : snapshot.OperationName)
+				Header = index + ". " + (string.IsNullOrEmpty(entry.OperationName) ? Preferences.PreferencesLocalization.Translate("(unknown)", language) : entry.OperationName)
 			};
 			item.Click += delegate
 			{
-				JumpRedoTo(repo, snapshotCopy);
+				JumpRedoTo(repo, entryCopy);
 			};
 			contextMenu.Items.Add(item);
 			index++;
@@ -426,7 +426,7 @@ namespace ForkPlus.UI.UserControls
 	}
 
 	/// <summary>跳转到 undo 历史中的某一步（多次 Undo 直到目标）。v3.0.0。</summary>
-	private void JumpUndoTo(RepositoryUserControl repo, ForkPlus.Git.Commands.RepositorySnapshot target)
+	private void JumpUndoTo(RepositoryUserControl repo, ForkPlus.Undo.UndoEntry target)
 	{
 		// 简化实现：连续 Undo 直到栈顶是 target（或栈空）
 		while (repo.UndoRedoStack.CanUndo)
@@ -441,7 +441,7 @@ namespace ForkPlus.UI.UserControls
 	}
 
 	/// <summary>跳转到 redo 历史中的某一步（多次 Redo 直到目标）。v3.0.0。</summary>
-	private void JumpRedoTo(RepositoryUserControl repo, ForkPlus.Git.Commands.RepositorySnapshot target)
+	private void JumpRedoTo(RepositoryUserControl repo, ForkPlus.Undo.UndoEntry target)
 	{
 		while (repo.UndoRedoStack.CanRedo)
 		{
