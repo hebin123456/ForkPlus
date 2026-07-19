@@ -92,6 +92,23 @@ namespace ForkPlus.UI.Dialogs
 			}
 			CommitCheckBox.IsChecked = true;
 			UpdateSubmitButton();
+			// Cherry-pick 冲突预检：构造函数里同步调用 git merge-tree 做无副作用预演，
+			// 三态展示（Success / Warning / Unknown 不显示）。
+			// 多 commit 场景下用第一个 commit 的预检结果代表整体（简化策略）。
+			Sha[] previewShas = _revisions.Map((Revision x) => x.Sha);
+			int? previewParentNumber = (MergeRevision ? new int?(1) : null);
+			GitCommandResult<CherryPickTestGitCommand.TestResult> previewResult = new CherryPickTestGitCommand().Execute(gitModule, previewShas, previewParentNumber);
+			if (previewResult.Succeeded)
+			{
+				if (previewResult.Result == CherryPickTestGitCommand.TestResult.Success)
+				{
+					SetStatus(ForkPlusDialogStatus.Success, Translate("Cherry-pick can be done without conflicts"));
+				}
+				else if (previewResult.Result == CherryPickTestGitCommand.TestResult.Conflict)
+				{
+					SetStatus(ForkPlusDialogStatus.Warning, Translate("Cherry-pick will cause conflicts"));
+				}
+			}
 		}
 
 		private void CommitCheckBox_Changed(object sender, RoutedEventArgs e)

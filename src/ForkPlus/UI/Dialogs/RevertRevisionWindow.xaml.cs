@@ -75,6 +75,21 @@ namespace ForkPlus.UI.Dialogs
 				RevisionParentComboBox.Visibility = Visibility.Collapsed;
 			}
 			UpdateSubmitButton();
+			// Revert 冲突预检：构造函数里同步调用 git merge-tree 做无副作用预演，
+			// 三态展示（Success / Warning / Unknown 不显示）。
+			int? previewParentNumber = (MergeRevision ? new int?(1) : null);
+			GitCommandResult<RevertTestGitCommand.TestResult> previewResult = new RevertTestGitCommand().Execute(gitModule, _revision.Sha, previewParentNumber);
+			if (previewResult.Succeeded)
+			{
+				if (previewResult.Result == RevertTestGitCommand.TestResult.Success)
+				{
+					SetStatus(ForkPlusDialogStatus.Success, Translate("Revert can be done without conflicts"));
+				}
+				else if (previewResult.Result == RevertTestGitCommand.TestResult.Conflict)
+				{
+					SetStatus(ForkPlusDialogStatus.Warning, Translate("Revert will cause conflicts"));
+				}
+			}
 		}
 
 		protected override string GetCommandPreview()
