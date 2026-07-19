@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "저장소 통계...",
     "Repository Treemap": "저장소 트리맵",
     "Repository Treemap...": "저장소 트리맵...",
+    "Repository Treemap Tooltip": "저장소 트리맵 설명",
+    "Repository Treemap Tooltip Body": "저장소 트리맵은 각 파일/폴더의 상대적 크기(일반적으로 코드 줄 수 또는 파일 크기)를 사각형 면적으로 나타냅니다. 면적이 클수록 해당 파일/폴더가 저장소에서 차지하는 비중이 높습니다. 폴더를 더블 클릭하면 내부 구조를 드릴다운하여 볼 수 있고, 클릭하면 선택하여 오른쪽의 커밋 및 작성자 통계를 볼 수 있습니다. 색상은 폴더를 구분하는 데 사용되며, 어두운 테두리는 현재 선택된 항목을 나타냅니다.",
     "Repository URL:": "저장소 URL:",
     "Repository Url:": "저장소 URL:",
     "Repository is in detached HEAD state": "저장소가 분리된 HEAD 상태입니다",

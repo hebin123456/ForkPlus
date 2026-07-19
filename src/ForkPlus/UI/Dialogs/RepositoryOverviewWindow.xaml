@@ -19,7 +19,17 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
-          <TextBlock Text="Repository Treemap" DockPanel.Dock="Left" Margin="4,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
+          <TextBlock Text="?" DockPanel.Dock="Left" Margin="4,0,2,2" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" ToolTipService.ShowDuration="30000">
+            <TextBlock.ToolTip>
+              <ToolTip>
+                <StackPanel MaxWidth="380">
+                  <TextBlock x:Name="TreemapTooltipTitleTextBlock" FontWeight="Bold" Margin="0,0,0,4" />
+                  <TextBlock x:Name="TreemapTooltipBodyTextBlock" TextWrapping="Wrap" />
+                </StackPanel>
+              </ToolTip>
+            </TextBlock.ToolTip>
+          </TextBlock>
+          <TextBlock Text="Repository Treemap" DockPanel.Dock="Left" Margin="2,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
           <controls:AutoTooltipTextBlock Margin="8,0,0,0" FontSize="14" VerticalAlignment="Center" x:Name="RepositoryNameTextBlock" />
         </DockPanel>
         <controls:GitPointView Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" IconMargin="2,0,2,0" x:Name="TargetReferenceGitPointView" />

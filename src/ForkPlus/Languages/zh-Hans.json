@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "仓库统计...",
     "Repository Treemap": "仓库树图",
     "Repository Treemap...": "仓库树图...",
+    "Repository Treemap Tooltip": "仓库树图说明",
+    "Repository Treemap Tooltip Body": "仓库树图用矩形面积表示每个文件/文件夹的相对大小（通常按代码行数或文件大小）。面积越大，该文件/文件夹在仓库中占比越高。双击文件夹可下钻查看其内部结构，单击可选中并查看右侧的提交与作者统计。颜色用于区分文件夹，深色边框表示当前选中项。",
     "Repository URL:": "仓库 URL：",
     "Repository Url:": "仓库 URL：",
     "Repository is in detached HEAD state": "仓库处于分离 HEAD 状态",

@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "倉庫統計...",
     "Repository Treemap": "倉庫樹狀圖",
     "Repository Treemap...": "倉庫樹狀圖...",
+    "Repository Treemap Tooltip": "倉庫樹狀圖說明",
+    "Repository Treemap Tooltip Body": "倉庫樹狀圖用矩形面積表示每個檔案/資料夾的相對大小（通常按程式碼行數或檔案大小）。面積越大，該檔案/資料夾在倉庫中佔比越高。雙擊資料夾可下鑽查看其內部結構，單擊可選中並查看右側的提交與作者統計。顏色用於區分資料夾，深色邊框表示目前選中項。",
     "Repository URL:": "倉庫 URL：",
     "Repository Url:": "倉庫 URL：",
     "Repository is in detached HEAD state": "倉庫處於分離 HEAD 狀態",

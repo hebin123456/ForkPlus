@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "Statistiques du dépôt...",
     "Repository Treemap": "Carte arborescente du dépôt",
     "Repository Treemap...": "Carte arborescente du dépôt...",
+    "Repository Treemap Tooltip": "Explication de la carte arborescente",
+    "Repository Treemap Tooltip Body": "La carte arborescente représente la taille relative de chaque fichier/dossier (généralement par nombre de lignes de code ou taille de fichier) sous forme de rectangles. Plus la zone est grande, plus le fichier/dossier occupe de place dans le dépôt. Double-cliquez sur un dossier pour explorer sa structure interne, cliquez pour le sélectionner et afficher les statistiques de commits et d'auteurs à droite. Les couleurs distinguent les dossiers, la bordure foncée indique l'élément actuellement sélectionné.",
     "Repository URL:": "URL du dépôt :",
     "Repository Url:": "URL du dépôt :",
     "Repository is in detached HEAD state": "Le dépôt est dans un état HEAD détaché",

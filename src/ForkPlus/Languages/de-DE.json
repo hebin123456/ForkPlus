@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "Repository-Statistiken...",
     "Repository Treemap": "Repository-Übersicht",
     "Repository Treemap...": "Repository-Übersicht...",
+    "Repository Treemap Tooltip": "Erklärung der Repository-Übersicht",
+    "Repository Treemap Tooltip Body": "Die Repository-Übersicht stellt die relative Größe jeder Datei/jedes Ordners (üblicherweise nach Codezeilen oder Dateigröße) als Rechteckfläche dar. Je größer die Fläche, desto höher der Anteil der Datei/des Ordners im Repository. Doppelklicken Sie auf einen Ordner, um dessen interne Struktur zu erkunden; klicken Sie, um ihn auszuwählen und rechts die Commit- und Autorenstatistiken anzuzeigen. Farben unterscheiden Ordner, ein dunkler Rand kennzeichnet das aktuell ausgewählte Element.",
     "Repository URL:": "Repository-URL:",
     "Repository Url:": "Repository-URL:",
     "Repository is in detached HEAD state": "Repository befindet sich im detached-HEAD-Zustand",

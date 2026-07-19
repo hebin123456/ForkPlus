@@ -79,6 +79,11 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			TreemapBackgroundBorder.CornerRadius = new CornerRadius(_borderRadius);
+			// 树图说明 tooltip：PreferencesLocalization.Apply 不会递归进入 ToolTip 子树，
+			// 这里显式翻译并赋值。文案解释树图是什么、面积代表什么、颜色含义等，
+			// 帮助用户第一眼看到这个视图时理解其含义。
+			TreemapTooltipTitleTextBlock.Text = Translate("Repository Treemap Tooltip");
+			TreemapTooltipBodyTextBlock.Text = Translate("Repository Treemap Tooltip Body");
 			RepositoryNameTextBlock.Text = gitModule.Path;
 			LocalBranch activeBranch = repositoryUserControl.RepositoryData.References.ActiveBranch;
 			if (activeBranch != null)

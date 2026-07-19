@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "リポジトリ統計...",
     "Repository Treemap": "リポジトリツリーマップ",
     "Repository Treemap...": "リポジトリツリーマップ...",
+    "Repository Treemap Tooltip": "リポジトリツリーマップの説明",
+    "Repository Treemap Tooltip Body": "リポジトリツリーマップは、各ファイル/フォルダの相対的なサイズ（通常はコード行数やファイルサイズ）を矩形の面積で表します。面積が大きいほど、そのファイル/フォルダがリポジトリ内で占める割合が高くなります。フォルダをダブルクリックすると内部構造をドリルダウンして表示し、シングルクリックすると選択して右側のコミットおよび作成者統計を表示します。色はフォルダの区別に使用され、濃い枠線は現在選択中の項目を示します。",
     "Repository URL:": "リポジトリ URL:",
     "Repository Url:": "リポジトリ URL:",
     "Repository is in detached HEAD state": "リポジトリはデタッチされた HEAD 状態です",

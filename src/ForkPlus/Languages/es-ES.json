@@ -1386,6 +1386,8 @@
     "Repository Statistics...": "Estadísticas del repositorio...",
     "Repository Treemap": "Mapa de árbol del repositorio",
     "Repository Treemap...": "Mapa de árbol del repositorio...",
+    "Repository Treemap Tooltip": "Explicación del mapa de árbol",
+    "Repository Treemap Tooltip Body": "El mapa de árbol representa el tamaño relativo de cada archivo/carpeta (normalmente por líneas de código o tamaño de archivo) como rectángulos. Cuanto mayor sea el área, mayor será la proporción del archivo/carpeta en el repositorio. Doble clic en una carpeta para explorar su estructura interna, clic para seleccionarla y ver las estadísticas de commits y autores a la derecha. Los colores distinguen las carpetas, el borde oscuro indica el elemento actualmente seleccionado.",
     "Repository URL:": "URL del repositorio:",
     "Repository Url:": "URL del repositorio:",
     "Repository is in detached HEAD state": "El repositorio está en estado HEAD desvinculado",

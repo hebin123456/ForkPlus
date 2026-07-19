@@ -97,6 +97,17 @@ namespace ForkPlus.UI.Dialogs
 		// 流式是否处于活动状态（完成/取消/出错后置 false，阻止已排队的渲染任务再写入 WebView）
 		private bool _streamingActive;
 
+		// 流式渲染时是否需要在 NavigateToString 完成后把 WebView 滚到底部。
+		// 用户反馈：流式输出时如果手动滚到最下面看新内容，下一个 chunk 来了 NavigateToString
+		// 会重置滚动位置到顶部，造成"弹回去"的体验。修复：渲染前检测用户是否在底部附近，
+		// 是的话渲染后自动滚到底部，保持"跟随最新内容"的体验；用户主动上滚浏览历史时不打断。
+		private bool _pendingStreamingScrollToEnd;
+
+		// 用户当前是否在 WebView 底部附近（由 HTML scroll 事件通过 postMessage 上报维护）。
+		// NavigateToString 会重置 DOM，无法从旧 DOM 查询滚动位置，所以用消息推送方式
+		// 让 C# 端持续维护这个状态。渲染前快照这个值决定是否滚到底部。
+		private bool _streamingUserAtBottom = true; // 初始为 true：首次渲染时内容很少，自动滚到底部
+
 		public AiCodeReviewWindow()
 		{
 			base.ShowInTaskbar = true;
@@ -226,6 +237,26 @@ namespace ForkPlus.UI.Dialogs
 				e.Handled = true;
 			};
 			AiResponseWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+			// 流式渲染时 NavigateToString 会重置滚动位置。这里监听导航完成事件，
+			// 如果渲染前用户在底部附近（_pendingStreamingScrollToEnd），就自动滚到底部，
+			// 保持"跟随最新内容"的体验。
+			AiResponseWebView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
+			{
+				if (!e.IsSuccess || !_pendingStreamingScrollToEnd)
+				{
+					return;
+				}
+				_pendingStreamingScrollToEnd = false;
+				try
+				{
+					// scrollHeight 在 NavigationCompleted 时已就绪，直接 scrollTo 到底部
+					AiResponseWebView.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)");
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Streaming scroll-to-end failed: " + ex.Message);
+				}
+			};
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
@@ -1213,7 +1244,33 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			string css = GetCss();
-			string html = "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + body + "\n</body>\n</html>";
+			// 注入滚动位置上报脚本：scroll 事件触发时通过 postMessage 把"是否在底部"上报给 C# 端。
+			// C# 端在 CoreWebView2_WebMessageReceived 中维护 _streamingUserAtBottom 状态。
+			// 这样在任何 NavigateToString 之前，C# 端都有最新的用户滚动状态，无竞态。
+			// 阈值 80px 容忍鼠标滚轮抖动、底部 padding 等。
+			string scrollScript = "<script>"
+				+ "(function(){"
+				+ "function sendAtBottom(){"
+				+ "var st=document.documentElement.scrollTop||document.body.scrollTop;"
+				+ "var sh=document.documentElement.scrollHeight||document.body.scrollHeight;"
+				+ "var ch=document.documentElement.clientHeight;"
+				+ "var atBottom=ch<=0||(st+ch>=sh-80);"
+				+ "window.chrome.webview.postMessage('scroll-at-bottom:'+(atBottom?'1':'0'));"
+				+ "}"
+				+ "window.addEventListener('scroll',sendAtBottom,{passive:true});"
+				+ "window.addEventListener('load',sendAtBottom);"
+				+ "if(document.readyState==='complete'||document.readyState==='interactive'){sendAtBottom();}"
+				+ "})();"
+				+ "</script>";
+			// 渲染前快照用户是否在底部。如果在底部，标记 _pendingStreamingScrollToEnd，
+			// NavigationCompleted 事件中执行 scrollTo 滚到底部（跟随最新内容）。
+			// 用户主动上滚时 _streamingUserAtBottom 为 false，不滚动，保持阅读位置。
+			bool shouldScrollToEnd = _streamingUserAtBottom;
+			if (shouldScrollToEnd)
+			{
+				_pendingStreamingScrollToEnd = true;
+			}
+			string html = "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + body + "\n" + scrollScript + "\n</body>\n</html>";
 			try
 			{
 				AiResponseWebView.NavigateToString(html);
@@ -1358,6 +1415,13 @@ namespace ForkPlus.UI.Dialogs
 				{
 					ApplySuggestion(index);
 				}
+			}
+			else if (message != null && message.StartsWith("scroll-at-bottom:", StringComparison.Ordinal))
+			{
+				// HTML scroll 事件上报的用户滚动状态：'1'=在底部附近，'0'=不在底部
+				// 用于流式渲染时决定渲染后是否自动滚到底部（跟随最新内容 vs 保持阅读位置）
+				string value = message.Substring("scroll-at-bottom:".Length);
+				_streamingUserAtBottom = value == "1";
 			}
 		}
 
