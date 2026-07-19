@@ -71,7 +71,10 @@ namespace ForkPlus.Git.Commands
 			}
 
 			// 3. 本地分支差异：删除新增的，重建被删的
-			Dictionary<string, string> currentBranches = ReadLocalBranchesMap(gitModule);
+			// v3.0.2：合并 branches + tags 到一次 for-each-ref
+			Dictionary<string, string> currentBranches;
+			Dictionary<string, string> currentTags;
+			ReadBranchesAndTagsMap(gitModule, out currentBranches, out currentTags);
 			// 3a. 删除快照里没有的分支
 			foreach (KeyValuePair<string, string> entry in currentBranches)
 			{
@@ -106,8 +109,7 @@ namespace ForkPlus.Git.Commands
 				}
 			}
 
-			// 4. tag 差异
-			Dictionary<string, string> currentTags = ReadTagsMap(gitModule);
+			// 4. tag 差异（currentTags 已在第 3 步合并读取）
 			foreach (KeyValuePair<string, string> entry in currentTags)
 			{
 				if (!target.Tags.ContainsKey(entry.Key))
@@ -184,17 +186,19 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		private static Dictionary<string, string> ReadLocalBranchesMap(GitModule gitModule)
+		/// <summary>v3.0.2：一次 for-each-ref 同时读取本地分支和 tag。</summary>
+		private static void ReadBranchesAndTagsMap(GitModule gitModule, out Dictionary<string, string> branches, out Dictionary<string, string> tags)
 		{
-			Dictionary<string, string> result = new Dictionary<string, string>();
+			branches = new Dictionary<string, string>();
+			tags = new Dictionary<string, string>();
 			try
 			{
 				GitRequestResult r = new GitRequest(gitModule)
-					.Command("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads/")
+					.Command("for-each-ref", "--format=%(refname) %(objectname)", "refs/heads/", "refs/tags/")
 					.Execute(silent: true);
 				if (!r.Success)
 				{
-					return result;
+					return;
 				}
 				foreach (string line in (r.Stdout ?? "").Split(Consts.Chars.NewLine))
 				{
@@ -207,55 +211,25 @@ namespace ForkPlus.Git.Commands
 					{
 						continue;
 					}
-					string name = line.Substring(0, space);
+					string refname = line.Substring(0, space);
 					string sha = line.Substring(space + 1).Trim();
-					if (sha.Length == 40)
+					if (sha.Length != 40)
 					{
-						result[name] = sha;
+						continue;
+					}
+					if (refname.StartsWith("refs/heads/"))
+					{
+						branches[refname.Substring("refs/heads/".Length)] = sha;
+					}
+					else if (refname.StartsWith("refs/tags/"))
+					{
+						tags[refname.Substring("refs/tags/".Length)] = sha;
 					}
 				}
 			}
 			catch
 			{
 			}
-			return result;
-		}
-
-		private static Dictionary<string, string> ReadTagsMap(GitModule gitModule)
-		{
-			Dictionary<string, string> result = new Dictionary<string, string>();
-			try
-			{
-				GitRequestResult r = new GitRequest(gitModule)
-					.Command("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/tags/")
-					.Execute(silent: true);
-				if (!r.Success)
-				{
-					return result;
-				}
-				foreach (string line in (r.Stdout ?? "").Split(Consts.Chars.NewLine))
-				{
-					if (string.IsNullOrWhiteSpace(line))
-					{
-						continue;
-					}
-					int space = line.IndexOf(' ');
-					if (space <= 0 || space >= line.Length - 1)
-					{
-						continue;
-					}
-					string name = line.Substring(0, space);
-					string sha = line.Substring(space + 1).Trim();
-					if (sha.Length == 40)
-					{
-						result[name] = sha;
-					}
-				}
-			}
-			catch
-			{
-			}
-			return result;
 		}
 
 		private static List<string> ReadStashShas(GitModule gitModule)

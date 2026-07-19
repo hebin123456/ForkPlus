@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.0.2
+
+### 修复与改进
+
+- **Undo/Redo 图标重绘**：原先的矢量图标（简单弧形 + 三角形箭头）过于粗糙。改用 Material Design 标准的 undo/redo 图标（24×24 viewBox，filled 风格，弯曲箭头更精细），在 20×20 工具栏尺寸下更清晰、与业界习惯一致。
+- **Undo/Redo 性能优化**：合并 `SnapshotGitCommand` 和 `RestoreSnapshotGitCommand` 里的冗余 git 进程调用：
+  - `git status --porcelain` 从 2 次合并为 1 次（同时拿 `IsWorkingTreeDirty` 和 `ChangedFilesCount`）
+  - `git for-each-ref` 从 2 次合并为 1 次（`refs/heads/` + `refs/tags/` 一次拿全，按 `%(refname)` 前缀分发）
+  - 每次 Undo/Redo 减少约 3 次 git 进程启动（小仓库约省 150-450ms），缓解"Redo 后状态栏转圈"的卡顿感。
+
 ## v3.0.1
 
 ### 修复与改进

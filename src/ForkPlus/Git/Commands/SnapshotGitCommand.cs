@@ -11,6 +11,7 @@ namespace ForkPlus.Git.Commands
 	/// 设计原则：抓快照本身不能阻塞主操作，任何异常都吞掉返回部分快照。
 	/// 采集内容：HEAD sha、当前分支名、HEAD reflog 前 50 条、ORIG_HEAD。
 	/// P2 阶段会扩展采集 LocalBranches / Tags / StashShas。
+	/// v3.0.2 性能优化：合并冗余 git 进程调用（status --porcelain 2次→1次，for-each-ref 2次→1次）。
 	/// </summary>
 	public class SnapshotGitCommand
 	{
@@ -28,11 +29,15 @@ namespace ForkPlus.Git.Commands
 			string currentBranchName = ReadCurrentBranch(gitModule);
 			string[] headReflog = ReadHeadReflog(gitModule);
 			string origHead = ReadRevParse(gitModule, "ORIG_HEAD");
-			Dictionary<string, string> localBranches = ReadLocalBranches(gitModule);
-			Dictionary<string, string> tags = ReadTags(gitModule);
+			// v3.0.2：合并 branches + tags 到一次 for-each-ref
+			Dictionary<string, string> localBranches;
+			Dictionary<string, string> tags;
+			ReadBranchesAndTags(gitModule, out localBranches, out tags);
 			List<string> stashShas = ReadStashShas(gitModule);
-			bool isDirty = ReadIsDirty(gitModule);
-			int changedCount = ReadChangedFilesCount(gitModule);
+			// v3.0.2：合并 isDirty + changedCount 到一次 status --porcelain
+			bool isDirty;
+			int changedCount;
+			ReadDirtyAndCount(gitModule, out isDirty, out changedCount);
 
 			RepositorySnapshot snapshot = new RepositorySnapshot(
 				operationName,
@@ -104,18 +109,22 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		private static Dictionary<string, string> ReadLocalBranches(GitModule gitModule)
+		/// <summary>
+		/// v3.0.2：一次 for-each-ref 同时读取本地分支和 tag。
+		/// 用 %(refname) 完整路径再按前缀分发，避免 short 形式无法区分 branch/tag。
+		/// </summary>
+		private static void ReadBranchesAndTags(GitModule gitModule, out Dictionary<string, string> branches, out Dictionary<string, string> tags)
 		{
-			Dictionary<string, string> result = new Dictionary<string, string>();
+			branches = new Dictionary<string, string>();
+			tags = new Dictionary<string, string>();
 			try
 			{
-				// %(refname:short) -> 分支名；%(objectname) -> sha
 				GitRequestResult r = new GitRequest(gitModule)
-					.Command("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads/")
+					.Command("for-each-ref", "--format=%(refname) %(objectname)", "refs/heads/", "refs/tags/")
 					.Execute(silent: true);
 				if (!r.Success)
 				{
-					return result;
+					return;
 				}
 				foreach (string line in (r.Stdout ?? "").Split(Consts.Chars.NewLine))
 				{
@@ -128,11 +137,19 @@ namespace ForkPlus.Git.Commands
 					{
 						continue;
 					}
-					string name = line.Substring(0, space);
+					string refname = line.Substring(0, space);
 					string sha = line.Substring(space + 1).Trim();
-					if (sha.Length == 40)
+					if (sha.Length != 40)
 					{
-						result[name] = sha;
+						continue;
+					}
+					if (refname.StartsWith("refs/heads/"))
+					{
+						branches[refname.Substring("refs/heads/".Length)] = sha;
+					}
+					else if (refname.StartsWith("refs/tags/"))
+					{
+						tags[refname.Substring("refs/tags/".Length)] = sha;
 					}
 				}
 			}
@@ -140,45 +157,6 @@ namespace ForkPlus.Git.Commands
 			{
 				// 静默
 			}
-			return result;
-		}
-
-		private static Dictionary<string, string> ReadTags(GitModule gitModule)
-		{
-			Dictionary<string, string> result = new Dictionary<string, string>();
-			try
-			{
-				GitRequestResult r = new GitRequest(gitModule)
-					.Command("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/tags/")
-					.Execute(silent: true);
-				if (!r.Success)
-				{
-					return result;
-				}
-				foreach (string line in (r.Stdout ?? "").Split(Consts.Chars.NewLine))
-				{
-					if (string.IsNullOrWhiteSpace(line))
-					{
-						continue;
-					}
-					int space = line.IndexOf(' ');
-					if (space <= 0 || space >= line.Length - 1)
-					{
-						continue;
-					}
-					string name = line.Substring(0, space);
-					string sha = line.Substring(space + 1).Trim();
-					if (sha.Length == 40)
-					{
-						result[name] = sha;
-					}
-				}
-			}
-			catch
-			{
-				// 静默
-			}
-			return result;
 		}
 
 		private static List<string> ReadStashShas(GitModule gitModule)
@@ -210,43 +188,29 @@ namespace ForkPlus.Git.Commands
 			return result;
 		}
 
-		private static bool ReadIsDirty(GitModule gitModule)
+		/// <summary>v3.0.2：一次 status --porcelain 同时拿 isDirty 和 changedCount。</summary>
+		private static void ReadDirtyAndCount(GitModule gitModule, out bool isDirty, out int changedCount)
 		{
-			try
-			{
-				// git status --porcelain 有输出即 dirty
-				GitRequestResult r = new GitRequest(gitModule).Command("status", "--porcelain").Execute(silent: true);
-				if (!r.Success)
-				{
-					return false;
-				}
-				return !string.IsNullOrWhiteSpace(r.Stdout);
-			}
-			catch
-			{
-				return false;
-			}
-		}
-
-		private static int ReadChangedFilesCount(GitModule gitModule)
-		{
+			isDirty = false;
+			changedCount = 0;
 			try
 			{
 				GitRequestResult r = new GitRequest(gitModule).Command("status", "--porcelain").Execute(silent: true);
 				if (!r.Success)
 				{
-					return 0;
+					return;
 				}
 				string stdout = r.Stdout ?? "";
 				if (string.IsNullOrWhiteSpace(stdout))
 				{
-					return 0;
+					return;
 				}
-				return stdout.Split(Consts.Chars.NewLine).Count(x => !string.IsNullOrWhiteSpace(x));
+				isDirty = true;
+				changedCount = stdout.Split(Consts.Chars.NewLine).Count(x => !string.IsNullOrWhiteSpace(x));
 			}
 			catch
 			{
-				return 0;
+				// 静默
 			}
 		}
 	}
