@@ -45,7 +45,16 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Row="1" Margin="0,4,0,4" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
+      <Grid Grid.Row="1" Margin="0,4,0,4">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
+        <Button Grid.Column="1" Margin="6,0,0,0" Padding="8,2" Height="24" FontSize="12" VerticalAlignment="Center" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <TextBlock Text="🤖 AI" FontFamily="Segoe UI, Segoe UI Emoji" />
+        </Button>
+      </Grid>
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

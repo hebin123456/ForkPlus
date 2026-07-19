@@ -55,6 +55,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			AiExplainCommitButton.Show();
 			AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
+			AiExplainCommitButtonText.Text = Preferences.PreferencesLocalization.Translate("AI Explain", ForkPlusSettings.Default.UiLanguage);
 		}
 		else
 		{

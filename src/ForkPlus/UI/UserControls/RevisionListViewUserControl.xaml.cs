@@ -807,15 +807,16 @@ namespace ForkPlus.UI.UserControls
 				RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.Execute(repositoryUserControl, gitModule, new Revision[1] { selectedRevision.ToRevision() });
 			});
 			yield return new Separator();
-			yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
-			{
-				RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(selectedRevision.Sha);
-			});
-			yield return new Separator();
-			yield return RepositoryUserControl.Commands.CopyRevisionSha.CreateMenuItem(delegate
-			{
-				RepositoryUserControl.Commands.CopyRevisionSha.Execute(new Revision[1] { selectedRevision.ToRevision() });
-			});
+		yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
+		{
+			RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(selectedRevision.Sha);
+		});
+		yield return CreateAiExplainRevisionMenuItem(repositoryUserControl, gitModule, selectedRevision.Sha);
+		yield return new Separator();
+		yield return RepositoryUserControl.Commands.CopyRevisionSha.CreateMenuItem(delegate
+		{
+			RepositoryUserControl.Commands.CopyRevisionSha.Execute(new Revision[1] { selectedRevision.ToRevision() });
+		});
 			yield return RepositoryUserControl.Commands.CopyRevisionInfo.CreateMenuItem(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(new Revision[1] { selectedRevision.ToRevision() });
@@ -1403,7 +1404,104 @@ namespace ForkPlus.UI.UserControls
 					w.OnError(ex.Message);
 				}
 			});
+	}
+
+		/// <summary>AI 解释单个 commit：拉取 commit subject/body/diff，打开 AiTextResultWindow 流式展示 AI 解释。
+		/// 供 commit 列表右键菜单和 stash 列表右键菜单共用。</summary>
+		private static void AiExplainRevision(RepositoryUserControl repositoryUserControl, GitModule gitModule, Sha sha)
+		{
+			if (gitModule == null || sha == null)
+			{
+				return;
+			}
+			if (!OpenAiService.IsAiReviewConfigured())
+			{
+				MessageBox.Show(
+					PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
+					PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+			string shaStr = sha.ToString();
+			string abbreviatedSha = sha.ToAbbreviatedString();
+
+			AiTextResultWindow window = new AiTextResultWindow();
+			window.Owner = Application.Current?.MainWindow;
+			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
+			window.Show();
+			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
+			{
+				try
+				{
+					// 拉 commit 的 subject + body（与 AiExplainCommitButton_Click 同样模式）
+					GitCommand logCmd = new GitCommand("--no-pager", "log", "-1", "--no-color", "--no-decorate", "--pretty=format:%s%n%n%b", shaStr);
+					GitRequestResult logResult = new GitRequest(gitModule).Command(logCmd).Execute();
+					string commitSubject = "";
+					string commitBody = "";
+					if (logResult.ExitCode < 2)
+					{
+						string msg = logResult.Stdout ?? "";
+						int idx = msg.IndexOf("\n\n", StringComparison.Ordinal);
+						if (idx >= 0)
+						{
+							commitSubject = msg.Substring(0, idx).Trim();
+							commitBody = msg.Substring(idx + 2).Trim();
+						}
+						else
+						{
+							commitSubject = msg.Trim();
+						}
+					}
+					// 拉 commit 的 patch（含变更文件和差异内容）
+					GitCommand showCmd = new GitCommand("--no-pager", "show", "--no-color", "--find-renames", "--submodule=short", "--unified=50", "--no-ext-diff", shaStr);
+					GitRequestResult showResult = new GitRequest(gitModule).Command(showCmd).Execute();
+					string diffSummary = "";
+					if (showResult.ExitCode < 2)
+					{
+						diffSummary = showResult.Stdout;
+						// 限制 diff 体量，避免 token 爆炸
+						const int maxDiffChars = 20000;
+						if (diffSummary.Length > maxDiffChars)
+						{
+							diffSummary = diffSummary.Substring(0, maxDiffChars) + "\n... (diff truncated)\n";
+						}
+					}
+					OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
+					ServiceResult<OpenAiResponse> response = openAiService.ExplainCommit(commitSubject, commitBody, diffSummary, monitor, w.OnChunk);
+					if (monitor.IsCanceled)
+					{
+						return;
+					}
+					if (!response.Succeeded)
+					{
+						w.OnError(response.Error.FriendlyMessage);
+					}
+					else
+					{
+						w.OnSuccess(response.Result.Message);
+					}
+				}
+				catch (Exception ex)
+				{
+					w.OnError(ex.Message);
+				}
+			});
 		}
+
+		/// <summary>创建 "AI Explain Commit..." 菜单项。仅在 AI 配置完毕时启用。</summary>
+		private static Control CreateAiExplainRevisionMenuItem(RepositoryUserControl repositoryUserControl, GitModule gitModule, Sha sha)
+		{
+			MenuItem menuItem = new MenuItem();
+			menuItem.Header = PreferencesLocalization.MenuHeader("AI Explain Commit...");
+			menuItem.IsEnabled = OpenAiService.IsAiReviewConfigured() && sha != null && gitModule != null;
+			menuItem.Click += delegate
+			{
+				AiExplainRevision(repositoryUserControl, gitModule, sha);
+			};
+			return menuItem;
+		}
+
 
 		private static Control CreateRevisionRangeAiCodeReviewMenuItem(RepositoryUserControl repositoryUserControl, DecoratedRevision[] decoratedRevisions)
 		{
@@ -1554,17 +1652,18 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowRemoveStashWindow.Execute(repositoryUserControl, new StashRevision[1] { stash });
 				});
 				yield return new Separator();
-				yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
-				{
-					RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(stash.Sha);
-				});
-				yield return new Separator();
-				yield return RepositoryUserControl.Commands.CopyRevisionSha.CreateMenuItem(delegate
-				{
-					CopyRevisionShaCommand copyRevisionSha = RepositoryUserControl.Commands.CopyRevisionSha;
-					Revision[] revisions = new StashRevision[1] { stash };
-					copyRevisionSha.Execute(revisions);
-				});
+			yield return RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.CreateMenuItem(delegate
+			{
+				RepositoryUserControl.Commands.CompareRevisionToWorkingDirectory.Execute(stash.Sha);
+			});
+			yield return CreateAiExplainRevisionMenuItem(repositoryUserControl, repositoryUserControl.GitModule, stash.Sha);
+			yield return new Separator();
+			yield return RepositoryUserControl.Commands.CopyRevisionSha.CreateMenuItem(delegate
+			{
+				CopyRevisionShaCommand copyRevisionSha = RepositoryUserControl.Commands.CopyRevisionSha;
+				Revision[] revisions = new StashRevision[1] { stash };
+				copyRevisionSha.Execute(revisions);
+			});
 				yield return RepositoryUserControl.Commands.CopyRevisionInfo.CreateMenuItem(delegate
 				{
 					CopyRevisionInfoCommand copyRevisionInfo = RepositoryUserControl.Commands.CopyRevisionInfo;

@@ -90,7 +90,7 @@
         <DockPanel Grid.Row="1" Grid.Column="1" Margin="16,2,0,0" HorizontalAlignment="Left">
           <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ShaTextBlock" />
           <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip="Use AI to explain this commit" x:Name="AiExplainCommitButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-            <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" />
+            <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" x:Name="AiExplainCommitButtonText" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
           </Button>
           <StackPanel Orientation="Horizontal" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionRemoteButtonsContainer" />
         </DockPanel>
