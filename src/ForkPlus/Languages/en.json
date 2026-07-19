@@ -1,0 +1,8 @@
+{
+  "code": "en",
+  "name": "English",
+  "translations": {
+    "Repository Treemap Tooltip": "Repository Treemap",
+    "Repository Treemap Tooltip Body": "The repository treemap shows each file and folder as a rectangle whose area is proportional to its relative size in the repository (typically by lines of code or file size). Larger areas indicate files or folders that take up more of the repository. Double-click a folder to drill down into its internal structure; single-click to select it and view the commit and author statistics on the right. Colors distinguish folders, and a darker border marks the currently selected item."
+  }
+}
