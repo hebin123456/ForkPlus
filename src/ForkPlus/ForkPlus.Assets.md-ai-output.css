@@ -9,7 +9,7 @@
 
 body {
   min-width: 200px;
-  max-width: 780px;
+  max-width: 100%;
   background-color: #fafafa;
   margin: 0;
   padding: 16px;
