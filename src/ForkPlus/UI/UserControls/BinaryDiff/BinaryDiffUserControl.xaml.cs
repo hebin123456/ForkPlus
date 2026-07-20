@@ -12,6 +12,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
+using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -47,6 +48,16 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		private BitmapSource _diffImageSource;
 
+		// v3.4.1：Hex 视图 — 存储原始字节和 ChangedFile 用于创建 HexDiffContent
+		[Null]
+		private ChangedFile _changedFile;
+		[Null]
+		private MemoryStream _hexSrcData;
+		[Null]
+		private MemoryStream _hexDstData;
+		[Null]
+		private HexDiffUserControl _hexDiffView;
+
 		[Null]
 		public BitmapSource DiffImageSource
 		{
@@ -66,6 +77,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		public BinaryDiffUserControl()
 		{
 			InitializeComponent();
+			// v3.4.1：让 RadioButton 内容（Side-by-Side/Swipe/Onion Skin/Hex）在构造时翻译
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+			// v3.4.1：Hex 视图容器初始隐藏
+			HexDiffViewContainer.Collapse();
 			BinaryContentUserControl srcFileContentUserControl = SrcFileContentUserControl;
 			srcFileContentUserControl.ShowLfsImageButtonClick = (EventHandler<EventArgs>)Delegate.Combine(srcFileContentUserControl.ShowLfsImageButtonClick, (EventHandler<EventArgs>)delegate
 			{
@@ -108,6 +123,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 										}
 									}
 									_srcImageData = ImageData.Create(result2, isLfs: true, srcLfsContent.IsTracked);
+									_hexSrcData = result2; // v3.4.1：存原始字节供 Hex 视图
 									DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 									DstFileContentUserControl.DiffImageSource = DiffImageSource;
 									SrcFileContentUserControl.SetLfsImageData(result2);
@@ -165,9 +181,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 										}
 									}
 									_dstImageData = ImageData.Create(result, isLfs: true, dstLfsContent.IsTracked);
-									DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-									DstFileContentUserControl.SetLfsImageData(result, DiffImageSource);
-									RefreshViewModes();
+									_hexDstData = result; // v3.4.1：存原始字节供 Hex 视图
+								DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
+								DstFileContentUserControl.SetLfsImageData(result, DiffImageSource);
+								RefreshViewModes();
 								}
 							});
 						}
@@ -276,6 +293,20 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			_repositoryUserControl = repositoryUserControl;
 			_showTitle = showTitle;
 			ChangedFile changedFile = diffContent.ChangedFile;
+			// v3.4.1：存储 ChangedFile 和原始字节用于 Hex 视图
+			_changedFile = changedFile;
+			_hexSrcData = null;
+			_hexDstData = null;
+			if (_hexDiffView != null)
+			{
+				HexDiffViewContainer.Content = null;
+				_hexDiffView = null;
+			}
+			if (diffContent is BinaryDiffContent binDiff)
+			{
+				_hexSrcData = binDiff.SrcData;
+				_hexDstData = binDiff.DstData;
+			}
 			if (diffContent is BinaryDiffContent binaryDiffContent)
 			{
 				ImageContent srcContent = null;
@@ -439,8 +470,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 						}
 					}
 					_srcImageData = ImageData.Create(result, isLfs: true, lfsContent.IsTracked);
-					DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-					SrcFileContentUserControl.SetLfsImageData(result);
+					_hexSrcData = result; // v3.4.1：存原始字节供 Hex 视图
+				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
+				SrcFileContentUserControl.SetLfsImageData(result);
 				}
 			}
 			if (_dstBinaryContent is LfsContent { BinaryFileType: BinaryFileType.LfsImage } lfsContent2)
@@ -462,8 +494,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 						}
 					}
 					_dstImageData = ImageData.Create(result2, isLfs: true, lfsContent2.IsTracked);
-					DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-					DstFileContentUserControl.SetLfsImageData(result2, DiffImageSource);
+					_hexDstData = result2; // v3.4.1：存原始字节供 Hex 视图
+				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
+				DstFileContentUserControl.SetLfsImageData(result2, DiffImageSource);
 				}
 			}
 			RefreshViewModes();
@@ -500,12 +533,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				DstFileContentUserControl.Show();
 				SwipeImageDiffView.Hide();
 				OnionSkinImageDiffView.Hide();
+				HexDiffViewContainer.Collapse();
 			}
 			else if (SwipeRadioButton.IsChecked.GetValueOrDefault())
 			{
 				SrcFileContentUserControl.Hide();
 				DstFileContentUserControl.Hide();
 				OnionSkinImageDiffView.Hide();
+				HexDiffViewContainer.Collapse();
 				SwipeImageDiffView.Show();
 				SwipeImageDiffView.Refresh(_srcImageData, _dstImageData, DiffImageSource, _showTitle);
 			}
@@ -514,8 +549,34 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				SrcFileContentUserControl.Hide();
 				DstFileContentUserControl.Hide();
 				SwipeImageDiffView.Hide();
+				HexDiffViewContainer.Collapse();
 				OnionSkinImageDiffView.Show();
 				OnionSkinImageDiffView.Refresh(_srcImageData, _dstImageData, DiffImageSource, _showTitle);
+			}
+			else if (HexRadioButton.IsChecked.GetValueOrDefault())
+			{
+				// v3.4.1：Hex 视图 — 显示原始字节的 side-by-side 十六进制比较
+				SrcFileContentUserControl.Hide();
+				DstFileContentUserControl.Hide();
+				SwipeImageDiffView.Hide();
+				OnionSkinImageDiffView.Hide();
+				ShowHexDiffView();
+				HexDiffViewContainer.Show();
+			}
+		}
+
+		/// <summary>v3.4.1：懒创建 HexDiffUserControl 并加载原始字节。</summary>
+		private void ShowHexDiffView()
+		{
+			if (_hexDiffView == null)
+			{
+				_hexDiffView = new HexDiffUserControl();
+				HexDiffViewContainer.Content = _hexDiffView;
+			}
+			if (_changedFile != null && (_hexSrcData != null || _hexDstData != null))
+			{
+				HexDiffContent hexContent = new HexDiffContent(_changedFile, _hexSrcData, _hexDstData);
+				_hexDiffView.SetContent(hexContent);
 			}
 		}
 

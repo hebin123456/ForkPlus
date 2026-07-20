@@ -2185,6 +2185,27 @@
     "CyanDark": "시안 어두운",
     "BlueLight": "파랑 밝은",
     "BlueDark": "파랑 어두운",
-    "Enable Undo/Redo (experimental, may impact performance on large repos)": "실행 취소/다시 실행 활성화 (실험적, 대형 저장소에서 성능에 영향을 줄 수 있음)"
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "실행 취소/다시 실행 활성화 (실험적, 대형 저장소에서 성능에 영향을 줄 수 있음)",
+    "Side-by-Side": "나란히",
+    "Swipe": "스와이프",
+    "Onion Skin": "어니언 스킨",
+    "Hex": "16진수",
+    "Before Modification": "수정 전",
+    "After Modification": "수정 후",
+    "Reflog": "Reflog",
+    "Reflog History": "Reflog 기록",
+    "View Reflog...": "Reflog 보기...",
+    "Index": "인덱스",
+    "Operation": "작업",
+    "Commit Subject": "커밋 제목",
+    "Time": "시간",
+    "Jump to...": "이동...",
+    "Jump": "이동",
+    "Double-click an entry to jump to that state.": "항목을 더블클릭하여 해당 상태로 이동합니다.",
+    "Reflog is empty.": "Reflog가 비어 있습니다.",
+    "{0} entries loaded.": "{0}개 항목을 로드했습니다.",
+    "Jump to Reflog Entry": "Reflog 항목으로 이동",
+    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "HEAD를 {0}({1})로 이동하시겠습니까?\\n\\n이렇게 하면 현재 브랜치와 작업 트리가 해당 상태로 재설정됩니다. 나중에 실행 취소할 수 있습니다.",
+    "Jump to HEAD@{{{0}}}": "HEAD@{{{0}}}로 이동"
   }
 }

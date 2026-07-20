@@ -2185,6 +2185,27 @@
     "CyanDark": "Cyan foncé",
     "BlueLight": "Bleu clair",
     "BlueDark": "Bleu foncé",
-    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Activer Annuler/Rétablir (expérimental, peut affecter les performances sur les grands dépôts)"
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Activer Annuler/Rétablir (expérimental, peut affecter les performances sur les grands dépôts)",
+    "Side-by-Side": "Côte à côte",
+    "Swipe": "Glisser",
+    "Onion Skin": "Pelure d'oignon",
+    "Hex": "Hex",
+    "Before Modification": "Avant modification",
+    "After Modification": "Après modification",
+    "Reflog": "Reflog",
+    "Reflog History": "Historique Reflog",
+    "View Reflog...": "Voir Reflog...",
+    "Index": "Index",
+    "Operation": "Opération",
+    "Commit Subject": "Sujet du commit",
+    "Time": "Heure",
+    "Jump to...": "Aller à...",
+    "Jump": "Aller",
+    "Double-click an entry to jump to that state.": "Double-cliquez sur une entrée pour aller à cet état.",
+    "Reflog is empty.": "Le Reflog est vide.",
+    "{0} entries loaded.": "{0} entrées chargées.",
+    "Jump to Reflog Entry": "Aller à l'entrée Reflog",
+    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "Aller au HEAD {0} ({1}) ?\\n\\nCela réinitialisera votre branche actuelle et votre arbre de travail à cet état. Vous pourrez annuler cela ensuite.",
+    "Jump to HEAD@{{{0}}}": "Aller à HEAD@{{{0}}}"
   }
 }

@@ -162,6 +162,19 @@
               </DropDownButton>
             </StackPanel.Children>
           </StackPanel>
+          <ToolbarButton Margin="8,3,0,3" Title="View Reflog..." xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="ReflogToolbarButton">
+            <ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+            </ToolbarButton.Style>
+            <Image xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+              <Image.Source>
+                <DynamicResource ResourceKey="RevisionListIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              </Image.Source>
+              <Image.Width>20</Image.Width>
+              <Image.Height>20</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </ToolbarButton>
         </StackPanel.Children>
       </StackPanel>
       <Canvas Grid.Column="0" IsHitTestVisible="False" x:Name="BadgesCanvas">

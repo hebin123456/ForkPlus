@@ -2185,6 +2185,27 @@
     "CyanDark": "青色深色",
     "BlueLight": "藍色淺色",
     "BlueDark": "藍色深色",
-    "Enable Undo/Redo (experimental, may impact performance on large repos)": "啟用復原/重做（實驗功能，大型倉庫可能影響效能）"
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "啟用復原/重做（實驗功能，大型倉庫可能影響效能）",
+    "Side-by-Side": "並排",
+    "Swipe": "滑動",
+    "Onion Skin": "洋蔥皮",
+    "Hex": "十六進位",
+    "Before Modification": "修改前",
+    "After Modification": "修改後",
+    "Reflog": "Reflog",
+    "Reflog History": "Reflog 歷史",
+    "View Reflog...": "檢視 Reflog...",
+    "Index": "索引",
+    "Operation": "操作",
+    "Commit Subject": "提交標題",
+    "Time": "時間",
+    "Jump to...": "跳轉到...",
+    "Jump": "跳轉",
+    "Double-click an entry to jump to that state.": "雙擊條目跳轉到該狀態。",
+    "Reflog is empty.": "Reflog 為空。",
+    "{0} entries loaded.": "已載入 {0} 條記錄。",
+    "Jump to Reflog Entry": "跳轉到 Reflog 條目",
+    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "跳轉 HEAD 到 {0}（{1}）？\\n\\n這將把目前分支和工作區重置到該狀態。之後可以撤銷此操作。",
+    "Jump to HEAD@{{{0}}}": "跳轉到 HEAD@{{{0}}}"
   }
 }

@@ -2185,6 +2185,27 @@
     "CyanDark": "シアン 暗色",
     "BlueLight": "青 明色",
     "BlueDark": "青 暗色",
-    "Enable Undo/Redo (experimental, may impact performance on large repos)": "元に戻す/やり直しを有効化（実験的、大規模リポジトリではパフォーマンスに影響する可能性があります）"
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "元に戻す/やり直しを有効化（実験的、大規模リポジトリではパフォーマンスに影響する可能性があります）",
+    "Side-by-Side": "左右",
+    "Swipe": "スワイプ",
+    "Onion Skin": "オニオンスキン",
+    "Hex": "16進数",
+    "Before Modification": "変更前",
+    "After Modification": "変更後",
+    "Reflog": "Reflog",
+    "Reflog History": "Reflog 履歴",
+    "View Reflog...": "Reflog を表示...",
+    "Index": "インデックス",
+    "Operation": "操作",
+    "Commit Subject": "コミット件名",
+    "Time": "時刻",
+    "Jump to...": "ジャンプ先...",
+    "Jump": "ジャンプ",
+    "Double-click an entry to jump to that state.": "エントリをダブルクリックしてその状態にジャンプします。",
+    "Reflog is empty.": "Reflog は空です。",
+    "{0} entries loaded.": "{0} 件のエントリを読み込みました。",
+    "Jump to Reflog Entry": "Reflog エントリにジャンプ",
+    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "HEAD を {0}（{1}）にジャンプしますか？\\n\\nこれにより、現在のブランチと作業ツリーがその状態にリセットされます。後で元に戻すことができます。",
+    "Jump to HEAD@{{{0}}}": "HEAD@{{{0}}} にジャンプ"
   }
 }

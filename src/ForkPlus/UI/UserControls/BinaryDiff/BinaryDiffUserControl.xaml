@@ -16,11 +16,13 @@
       <binaryDiff:BinaryContentUserControl Grid.Column="1" x:Name="DstFileContentUserControl" />
       <binaryDiff:SwipeImageDiffUserControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="SwipeImageDiffView" />
       <binaryDiff:OnionSkinImageDiffUserControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="OnionSkinImageDiffView" />
+      <ContentControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="HexDiffViewContainer" />
       <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Height="24" HorizontalAlignment="Center" x:Name="ViewModeButtonsContainer">
         <StackPanel.Children>
           <RadioButton Grid.Column="0" Grid.Row="0" Checked="ImageDiffSelectedItem_Changed" Unchecked="ImageDiffSelectedItem_Changed" x:Name="SideBySideRadioButton">Side-by-Side<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Style><StaticResource ResourceKey="RevisionDetailsBarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" /></RadioButton.Style></RadioButton>
           <RadioButton Grid.Column="1" Grid.Row="0" Checked="ImageDiffSelectedItem_Changed" Unchecked="ImageDiffSelectedItem_Changed" x:Name="SwipeRadioButton">Swipe<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Style><StaticResource ResourceKey="RevisionDetailsBarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" /></RadioButton.Style></RadioButton>
           <RadioButton Grid.Column="2" Grid.Row="0" Checked="ImageDiffSelectedItem_Changed" Unchecked="ImageDiffSelectedItem_Changed" x:Name="OnionSkinRadioButton">Onion Skin<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Style><StaticResource ResourceKey="RevisionDetailsBarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" /></RadioButton.Style></RadioButton>
+          <RadioButton Grid.Column="3" Grid.Row="0" Checked="ImageDiffSelectedItem_Changed" Unchecked="ImageDiffSelectedItem_Changed" x:Name="HexRadioButton">Hex<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Style><StaticResource ResourceKey="RevisionDetailsBarButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" /></RadioButton.Style></RadioButton>
         </StackPanel.Children>
       </StackPanel>
       <userControls:FallbackUserControl Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="FallbackUserControl" />

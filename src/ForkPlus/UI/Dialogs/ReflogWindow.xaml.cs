@@ -49,6 +49,14 @@ namespace ForkPlus.UI.Dialogs
 			RefreshButton.Content = PreferencesLocalization.Translate("Refresh", language);
 			JumpButton.Content = PreferencesLocalization.Translate("Jump to...", language);
 			StatusText.Text = PreferencesLocalization.Translate("Double-click an entry to jump to that state.", language);
+			// v3.4.1：翻译 GridView 列头
+			foreach (object col in ReflogListView.View.Columns)
+			{
+				if (col is GridViewColumn gvc && gvc.Header is string header)
+				{
+					gvc.Header = PreferencesLocalization.Translate(header, language);
+				}
+			}
 		}
 
 		/// <summary>读取 reflog 并填充 ListView。</summary>
@@ -116,7 +124,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			string language = ForkPlusSettings.Default.UiLanguage;
 			string message = string.Format(
-				PreferencesLocalization.Translate("Jump HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.", language),
+				PreferencesLocalization.Translate("Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.", language),
 				selected.ShaDisplay, selected.OperationName);
 			if (!new MessageBoxWindow(
 				PreferencesLocalization.Translate("Jump to Reflog Entry", language),

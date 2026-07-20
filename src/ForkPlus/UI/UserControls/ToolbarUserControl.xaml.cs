@@ -185,6 +185,15 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.Redo.Execute(repo);
 			}
 		};
+		// v3.4.1：独立 Reflog 按钮 — 始终可用，不依赖 UndoRedoStack 是否为空
+		ReflogToolbarButton.Click += delegate
+		{
+			RepositoryUserControl repo = _mainWindow?.TabManager.ActiveRepositoryUserControl;
+			if (repo != null)
+			{
+				ShowReflogWindow(repo);
+			}
+		};
 	}
 
 		public void RefreshWorkspacesButton()
@@ -202,6 +211,7 @@ namespace ForkPlus.UI.UserControls
 			StashToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Stash", language);
 		UndoToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Undo", language);
 		RedoToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Redo", language);
+		ReflogToolbarButton.Title = Preferences.PreferencesLocalization.Translate("View Reflog...", language);
 		BranchToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Branch", language);
 			AppearanceToolbarDropdownButton.Title = Preferences.PreferencesLocalization.Translate("Appearance", language);
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
@@ -329,6 +339,8 @@ namespace ForkPlus.UI.UserControls
 		UndoToolbarDropdownButton.Visibility = undoRedoVisibility;
 		RedoToolbarButton.Visibility = undoRedoVisibility;
 		RedoToolbarDropdownButton.Visibility = undoRedoVisibility;
+		// v3.4.1：独立 Reflog 按钮也跟随 UndoRedo 开关可见性，但始终可用
+		ReflogToolbarButton.Visibility = undoRedoVisibility;
 		if (!enabled)
 		{
 			return;
@@ -340,6 +352,8 @@ namespace ForkPlus.UI.UserControls
 		UndoToolbarDropdownButton.IsEnabled = canUndo;
 		RedoToolbarButton.IsEnabled = canRedo;
 		RedoToolbarDropdownButton.IsEnabled = canRedo;
+		// v3.4.1：Reflog 按钮只要有活动仓库就启用，不依赖 UndoRedoStack 是否为空
+		ReflogToolbarButton.IsEnabled = repo != null;
 		string undoLabel = Preferences.PreferencesLocalization.Current("Undo");
 		string redoLabel = Preferences.PreferencesLocalization.Current("Redo");
 		UndoToolbarButton.ToolTip = canUndo
@@ -348,6 +362,7 @@ namespace ForkPlus.UI.UserControls
 		RedoToolbarButton.ToolTip = canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
 			: redoLabel;
+		ReflogToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("View Reflog...");
 	}
 
 	/// <summary>v3.0.4：供设置变更后调用，刷新 Undo/Redo 按钮可见性。</summary>

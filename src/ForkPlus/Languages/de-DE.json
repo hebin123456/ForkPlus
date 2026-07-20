@@ -2185,6 +2185,27 @@
     "CyanDark": "Cyan Dunkel",
     "BlueLight": "Blau Hell",
     "BlueDark": "Blau Dunkel",
-    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Rückgängig/Wiederholen aktivieren (experimentell, kann bei großen Repositories die Leistung beeinträchtigen)"
+    "Enable Undo/Redo (experimental, may impact performance on large repos)": "Rückgängig/Wiederholen aktivieren (experimentell, kann bei großen Repositories die Leistung beeinträchtigen)",
+    "Side-by-Side": "Nebeneinander",
+    "Swipe": "Wischen",
+    "Onion Skin": "Zwiebelschicht",
+    "Hex": "Hex",
+    "Before Modification": "Vor Änderung",
+    "After Modification": "Nach Änderung",
+    "Reflog": "Reflog",
+    "Reflog History": "Reflog-Verlauf",
+    "View Reflog...": "Reflog anzeigen...",
+    "Index": "Index",
+    "Operation": "Vorgang",
+    "Commit Subject": "Commit-Betreff",
+    "Time": "Zeit",
+    "Jump to...": "Springen zu...",
+    "Jump": "Springen",
+    "Double-click an entry to jump to that state.": "Doppelklicken Sie auf einen Eintrag, um zu diesem Status zu springen.",
+    "Reflog is empty.": "Reflog ist leer.",
+    "{0} entries loaded.": "{0} Einträge geladen.",
+    "Jump to Reflog Entry": "Zu Reflog-Eintrag springen",
+    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "HEAD auf {0} ({1}) springen?\\n\\nDadurch werden Ihr aktueller Branch und Ihr Arbeitsverzeichnis auf diesen Status zurückgesetzt. Sie können dies danach rückgängig machen.",
+    "Jump to HEAD@{{{0}}}": "Zu HEAD@{{{0}}} springen"
   }
 }

@@ -13,6 +13,53 @@ v3.1.1 起"纯色"父菜单项设置了 `IsCheckable = true`，导致 WPF 把 Cl
 - **`ToolbarUserControl.xaml.cs`**：移除 `solidColorsParent.IsCheckable` 和 `IsChecked`，让父项纯粹作为子菜单容器，与 Git LFS / Git Flow 等二级菜单写法一致。
 - 当前是否处于某个纯色主题，由子项（红/橙/黄/绿/青/蓝/紫）的 `IsChecked` 反映，语义不变。
 
+### i18n + UX 修复：Binary Diff / Hex Diff / Reflog 界面
+
+#### 1. Binary Diff 视图模式按钮 i18n
+
+`BinaryDiffUserControl` 顶部切换图片 diff 模式的单选按钮（Side-by-Side / Swipe / Onion Skin）此前未走本地化，非英文界面下始终显示英文。
+
+- **`BinaryDiffUserControl.xaml.cs`**：构造函数加 `PreferencesLocalization.Apply(this, ...)`，递归翻译 RadioButton.Content（RadioButton 继承自 ContentControl，已支持）。
+
+#### 2. Hex Diff 标签对齐 + 改名"修改前/修改后"
+
+`HexDiffUserControl` 顶部 "Source:" / "Destination:" 标签原放在工具栏 DockPanel 里，和下方并排的两个 HexEditor 无法对齐；"Source/Destination" 也不如"修改前/修改后"直观。
+
+- **`HexDiffUserControl.cs`**：从 2-row 布局改为 3-row 布局：
+  - Row 0：工具栏（bytes per row / show ASCII / show offset / sync scroll）
+  - Row 1（新增）：列头 Grid，ColumnDefinition 与下方编辑器 Grid 完全一致（两个 `1*`），实现像素级对齐
+  - Row 2：编辑器 Grid（两个 HexEditor 并排）
+- 标签文本改为 `Before Modification:` / `After Modification:`，通过 `PreferencesLocalization.Current()` 翻译。
+
+#### 3. 图片二进制 diff 加 Hex 视图切换
+
+图片等二进制文件 diff 时原本只能用图片视图，无法看原始字节。新增 Hex 单选按钮，让用户也能用 side-by-side 十六进制对比。
+
+- **`BinaryDiffUserControl.xaml`**：新增 `HexRadioButton` + `HexDiffViewContainer`（ContentControl）。
+- **`BinaryDiffUserControl.xaml.cs`**：
+  - 新增字段 `_changedFile` / `_hexSrcData` / `_hexDstData` / `_hexDiffView`
+  - `UpdateDiff` 中存储原始字节：`BinaryDiffContent` 直接取 `SrcData`/`DstData`；LFS 图片在 smudge 回调和 cache load 回调中存解码后的 MemoryStream
+  - `ImageDiffSelectedItem_Changed` 新增 Hex 分支，懒创建 `HexDiffUserControl` 并通过 `HexDiffContent` 加载
+
+#### 4. Reflog 窗口 i18n
+
+`ReflogWindow` 此前只有 Title/Header/Buttons 走本地化，GridView 列头（Index/SHA/Operation/Commit Subject/Time）和 "View Reflog..." 菜单项始终显示英文。
+
+- **`ReflogWindow.xaml.cs`**：`ApplyLocalization` 末尾新增循环，遍历 `ReflogListView.View.Columns` 翻译每个 `GridViewColumn.Header`。
+- **`ToolbarUserControl.xaml.cs`**：Undo/Redo 下拉菜单中的 "View Reflog..." 已通过 `PreferencesLocalization.Translate` 翻译。
+- **8 个语言文件**：新增 21 个 key（Side-by-Side / Swipe / Onion Skin / Hex / Before Modification / After Modification / Reflog / Reflog History / View Reflog... / Index / Operation / Commit Subject / Time / Jump to... / Jump / Double-click an entry... / Reflog is empty. / {0} entries loaded. / Jump to Reflog Entry / Jump to HEAD to {0}... / Jump to HEAD@{{{0}}}）。
+
+#### 5. 工具栏加独立 Reflog 按钮
+
+v3.4.0 的 Reflog 入口只在 Undo/Redo 下拉菜单底部，重启 ForkPlus 后 UndoRedoStack 为空，下拉按钮 IsEnabled=false，用户无法打开 Reflog History。
+
+- **`ToolbarUserControl.xaml`**：在 Redo 按钮组之后新增独立 `ReflogToolbarButton`（用 `RevisionListIcon`）。
+- **`ToolbarUserControl.xaml.cs`**：
+  - Click 事件直接调 `ShowReflogWindow(repo)`，不依赖 UndoRedoStack
+  - `RefreshUndoRedoButtons` 中：可见性跟随 `UndoRedoEnabled` 开关；只要有活动仓库就 IsEnabled=true（不像 Undo/Redo 那样要求栈非空）
+  - `ApplyLocalization` 翻译 Title 和 ToolTip
+
+
 ## v3.4.0
 
 ### Layer 2：工作区级快照（追平 Tower）

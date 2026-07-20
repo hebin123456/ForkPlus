@@ -49,6 +49,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 
 		public HexDiffUserControl()
 		{
+			// v3.4.1：三行布局 — Row 0 工具栏，Row 1 列头（对齐编辑器），Row 2 编辑器
+			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
@@ -114,27 +116,38 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		DockPanel.SetDock(_syncScrollCheckBox, Dock.Left);
 		toolbar.Children.Add(_syncScrollCheckBox);
 
-			// Src / Dst 标签
+			Children.Add(toolbar);
+			SetRow(toolbar, 0);
+
+			// v3.4.1：列头行 — "修改前" / "修改后"，与下方编辑器左右对齐
+			Grid headerGrid = new Grid();
+			headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+			headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
 			TextBlock srcLabel = new TextBlock
 			{
-				Text = PreferencesLocalization.Current("Source") + ":",
+				Text = PreferencesLocalization.Current("Before Modification") + ":",
 				VerticalAlignment = VerticalAlignment.Center,
-				Margin = new Thickness(0, 0, 4, 0)
+				HorizontalAlignment = HorizontalAlignment.Left,
+				Margin = new Thickness(4, 2, 0, 2),
+				FontWeight = FontWeights.Medium
 			};
-			DockPanel.SetDock(srcLabel, Dock.Left);
-			toolbar.Children.Add(srcLabel);
+			headerGrid.Children.Add(srcLabel);
+			SetColumn(srcLabel, 0);
 
 			TextBlock dstLabel = new TextBlock
 			{
-				Text = PreferencesLocalization.Current("Destination") + ":",
+				Text = PreferencesLocalization.Current("After Modification") + ":",
 				VerticalAlignment = VerticalAlignment.Center,
-				Margin = new Thickness(20, 0, 4, 0)
+				HorizontalAlignment = HorizontalAlignment.Left,
+				Margin = new Thickness(4, 2, 0, 2),
+				FontWeight = FontWeights.Medium
 			};
-			DockPanel.SetDock(dstLabel, Dock.Left);
-			toolbar.Children.Add(dstLabel);
+			headerGrid.Children.Add(dstLabel);
+			SetColumn(dstLabel, 1);
 
-			Children.Add(toolbar);
-			SetRow(toolbar, 0);
+			Children.Add(headerGrid);
+			SetRow(headerGrid, 1);
 
 			// 两个 HexEditor 并排放在 Grid 里
 			Grid editorsGrid = new Grid();
@@ -156,7 +169,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		SetColumn(_dstEditor, 1);
 
 			Children.Add(editorsGrid);
-			SetRow(editorsGrid, 1);
+			SetRow(editorsGrid, 2);
 		}
 
 		public void SetContent(HexDiffContent content)
