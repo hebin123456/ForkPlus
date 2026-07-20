@@ -78,13 +78,12 @@ namespace ForkPlus.AutomationTests
 					// 主题项在 Appearance 下拉的 ContextMenu popup 里，不在主窗口视觉树，
 					// 必须从桌面根找（FindMenuItemByText 已内置桌面 fallback）。
 					string[] anyTheme = { "Dark", "Light", "深色", "浅色" };
-					bool clicked = false;
 					foreach (var name in anyTheme)
 					{
 						var item = FindMenuItemByText(app.Window, name);
 						if (item != null)
 						{
-							try { item.Click(); Thread.Sleep(1000); clicked = true; break; } catch { }
+							try { item.Click(); Thread.Sleep(1000); break; } catch { }
 						}
 					}
 					// 即使没找到主题项也不失败——本测试只验证应用不崩溃（与原行为一致）。

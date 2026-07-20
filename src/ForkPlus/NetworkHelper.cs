@@ -1,20 +1,19 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using ForkPlus.Git;
 
 namespace ForkPlus
 {
 	public static class NetworkHelper
 	{
-		private class WebClientWithTimeout : WebClient
+		// .NET 10 起 WebClient 已过时（SYSLIB0014），改用 HttpClient。
+		// 静态共享实例避免每次请求创建新的 socket 连接耗尽端口。
+		// 3 秒超时对应原 WebClientWithTimeout 的行为。
+		private static readonly HttpClient HttpClient = new HttpClient
 		{
-			protected override WebRequest GetWebRequest(Uri uri)
-			{
-				WebRequest webRequest = base.GetWebRequest(uri);
-				webRequest.Timeout = 3000;
-				return webRequest;
-			}
-		}
+			Timeout = TimeSpan.FromSeconds(3)
+		};
 
 		public static bool CheckConnection(RemoteType remoteType)
 		{
@@ -33,15 +32,15 @@ namespace ForkPlus
 		private static bool CheckConnection(string url)
 		{
 			Benchmarker benchmarker = new Benchmarker("Check internet connection: " + url);
-			WebClientWithTimeout webClientWithTimeout = new WebClientWithTimeout();
 			try
 			{
-				using (webClientWithTimeout.OpenRead(url))
+				using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, url))
+				using (HttpResponseMessage response = HttpClient.Send(request))
 				{
+					return true;
 				}
-				return true;
 			}
-			catch (WebException ex)
+			catch (HttpRequestException ex)
 			{
 				Log.Warn("Failed to check internet connection", ex);
 				return false;

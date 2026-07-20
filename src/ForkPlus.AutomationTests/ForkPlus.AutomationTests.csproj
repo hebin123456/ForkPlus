@@ -8,6 +8,9 @@
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <!-- CS0414：未使用字段（如 VK_OEM_COMMA 作为虚拟键码常量库，可能被后续测试引用）。
+         CS0219：未使用本地变量，部分测试有"先记录后断言"模式。 -->
+    <NoWarn>$(NoWarn);CS0414;CS0219</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

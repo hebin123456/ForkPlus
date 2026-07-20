@@ -271,10 +271,10 @@ namespace ForkPlus.Tests
 			UndoEntry target = stack.JumpTo(s1, null);
 
 			Assert.Same(s1, target);
-			Assert.False(stack.CanUndo);
-			// redo 栈里不应有 null
-			Assert.All(stack.RedoHistory, s => Assert.NotNull(s));
-			Assert.Equal(1, stack.RedoHistory.Count);  // 只有 s2
+		Assert.False(stack.CanUndo);
+		// redo 栈里不应有 null
+		Assert.All(stack.RedoHistory, s => Assert.NotNull(s));
+		Assert.Single(stack.RedoHistory);  // 只有 s2
 		}
 
 		[Fact]

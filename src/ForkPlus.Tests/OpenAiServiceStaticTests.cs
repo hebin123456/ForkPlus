@@ -63,7 +63,7 @@ namespace ForkPlus.Tests
 			WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(ai, staged);
 
 			Assert.NotNull(plan);
-			Assert.Equal(1, plan.Groups.Count);
+			Assert.Single(plan.Groups);
 			Assert.Equal("feat: a", plan.Groups[0].Subject);
 			Assert.Equal("details", plan.Groups[0].Body);
 			Assert.Equal("test", plan.Groups[0].Reason);
@@ -83,7 +83,7 @@ namespace ForkPlus.Tests
 			WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(ai, staged);
 
 			Assert.NotNull(plan);
-			Assert.Equal(1, plan.Groups.Count);
+			Assert.Single(plan.Groups);
 			Assert.Equal("feat: a", plan.Groups[0].Subject);
 		}
 
@@ -99,7 +99,7 @@ namespace ForkPlus.Tests
 			WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(ai, staged);
 
 			Assert.NotNull(plan);
-			Assert.Equal(1, plan.Groups.Count);
+			Assert.Single(plan.Groups);
 		}
 
 		[Fact]
@@ -156,7 +156,7 @@ namespace ForkPlus.Tests
 			WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(ai, staged);
 
 			Assert.NotNull(plan);
-			Assert.Equal(1, plan.Groups.Count);
+			Assert.Single(plan.Groups);
 			Assert.Equal("valid", plan.Groups[0].Subject);
 		}
 
@@ -198,7 +198,7 @@ namespace ForkPlus.Tests
 			WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(ai, staged);
 
 			Assert.NotNull(plan);
-			Assert.Equal(1, plan.Groups.Count);
+			Assert.Single(plan.Groups);
 			Assert.Equal("fixed [critical] bug", plan.Groups[0].Reason);
 		}
 
