@@ -43,6 +43,11 @@ namespace ForkPlus.Avalonia.Services
             // Phase 3.4：RepositoryUserControl（spike 简化版，最大最复杂的 UserControl）
             // Grid 3x3 布局 + Sidebar/Content 占位 + 33 个公共方法入口占位
             services.AddTransient<Views.UserControls.RepositoryUserControl>();
+
+            // Phase 3.5：RevisionListViewUserControl（spike 简化版）
+            // 装入 RepositoryUserControl.RepositoryContentContainer（spike 跳过 RepositoryContentUserControl 这层）
+            // GraphCellView 自绘（Phase 2.5 难点）暂用 Border 占位
+            services.AddTransient<Views.UserControls.RevisionListViewUserControl>();
         }
     }
 }

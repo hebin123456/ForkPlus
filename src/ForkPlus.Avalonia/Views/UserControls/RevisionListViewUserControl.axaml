@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionListViewUserControl">
+    <!--
+        Phase 3.5：Avalonia 版 RevisionListViewUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListViewUserControl.xaml（388 行）：
+          - 顶层 Grid ClipToBounds 2 行：
+            Row 0 (Auto): SearchPanelPlaceholder（空 Grid，RevisionSearchPanelUserControl 通过
+                          attached property 注入搜索栏）
+            Row 1 (*):    RevisionListView（DragAndDropListView + GridView，6 列：
+                          graph + upstream dot + references + subject + avatar + author + sha + date）
+          - 覆盖层：RevisionSearchPanelUserControl（Grid.RowSpan=2）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListViewUserControl.xaml.cs（1946 行）：
+          - 公共字段：RevisionsDataSource（RepositoryUserControl 大量直接访问）
+          - 公共事件：SearchQueryChanged / SelectionChanged / RevisionDoubleClick / BranchDoubleClick
+            （RepositoryContentUserControl 必须订阅）
+          - 公共方法：Initialize / UpdateRepositoryData / Select(2 重载) / FocusSelectedItem /
+            CollapseAll / ExpandAll / GetBottomShaInViewPort / GetBottomShaInSelection
+          - 5 个 CommandBindings（复制 SHA / 复制 revision info / 重命名 branch / 删除 reference /
+            在独立窗口打开 revision）
+          - PreviewKeyDown/KeyDown 处理（Ctrl+F / F3 / Esc / Left/Right / Ctrl+A）
+          - 后台 Job：_activeContextSearchJob / _activeSidebarSearchJob（git 命令调用）
+          - 约 1000 行右键菜单构造方法（CreateRevisionContextMenuItems 等）
+          - AI 集成方法（GeneratePullRequestDescription / AiExplainRevision / CreateBranchAiCodeReviewMenuItem）
+
+        GraphCellView（Phase 2.5 难点）：
+          - src/ForkPlus/UI/Controls/GraphCellView.cs（378 行）
+          - 继承 FrameworkElement + OnRender(DrawingContext) 自绘 commit graph
+          - 包含 Bezier 曲线分支 / commit 点 / 13 个硬编码分支颜色 / DispatcherTimer / Popup
+          - spike 用 Border 占位（不迁移 OnRender）
+
+        装入路径（WPF）：
+          RepositoryUserControl.RepositoryContentContainer (ContentControl)
+            → RepositoryContentUserControl → RevisionListViewUserControl (Grid.Row=1)
+          spike 阶段跳过 RepositoryContentUserControl 这层，直接装入 RepositoryContentContainer。
+
+        本 spike 版暂不迁移：
+          - 完整 Initialize(repositoryUserControl, sidebarSearchTabItem) 实现
+          - RevisionsDataSource 真实数据源（spike 用空 stub）
+          - 4 个公共事件真实触发逻辑
+          - 5 个 CommandBindings
+          - PreviewKeyDown/KeyDown 处理
+          - 后台 Job（context search / sidebar search）
+          - 约 1000 行右键菜单构造方法
+          - AI 集成方法
+          - GraphCellView 自绘（Phase 2.5 用 SkiaSharp 重写）
+          - GridView 6 列布局（Avalonia 无 GridView 概念，spike 用 ListBox + DataTemplate 占位）
+          - RevisionSearchPanelUserControl（另一个 spike）
+
+        本 spike 版验证：
+          - Grid 2 行布局正确显示
+          - 顶部 SearchPanel 占位可见
+          - 底部 ListBox 占位可见（暂用空 ListBox）
+    -->
+    <Grid ClipToBounds="True"
+          RowDefinitions="Auto,*">
+
+        <!-- Row 0: SearchPanel 占位（WPF 中由 RevisionSearchPanelUserControl 注入）-->
+        <Border Grid.Row="0"
+                Name="SearchPanelPlaceholder"
+                Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+                Padding="8,4"
+                Height="32">
+            <TextBlock Text="(search panel placeholder)"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Row 1: RevisionListView 占位（WPF 中是 DragAndDropListView + GridView 6 列）-->
+        <ListBox Grid.Row="1"
+                 Name="RevisionListView"
+                 Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+                 BorderThickness="0" />
+    </Grid>
+</UserControl>
