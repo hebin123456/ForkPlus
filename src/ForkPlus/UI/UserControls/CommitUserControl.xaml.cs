@@ -1322,6 +1322,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				Commands.Commit.Execute(this, CommitAndPush);
 			}));
+			// v3.4.1：WIP 编排为提交绑定 Ctrl+Alt+Enter，避免和 Commit 的 Ctrl+Shift+Enter / Ctrl+Enter 重叠
+			base.CommandBindings.Add(Commands.ComposeWipCommit.CreateShortcutCommandBinding(delegate
+			{
+				OpenAiCommitComposer();
+			}));
 			base.CommandBindings.Add(Commands.ToggleAllFilesStageCommand.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsUnstagedListSelected)
@@ -2271,7 +2276,8 @@ namespace ForkPlus.UI.UserControls
 			if (OpenAiService.IsAiReviewConfigured())
 			{
 				obj.Items.Add(new Separator());
-				obj.Items.Add(Commands.Commit.CreateMenuItem(PreferencesLocalization.Current("Compose WIP into commits..."), delegate
+				// v3.4.1：用独立的 ComposeWipCommit 命令，菜单显示正确的 Ctrl+Alt+Enter 快捷键
+				obj.Items.Add(Commands.ComposeWipCommit.CreateMenuItem(PreferencesLocalization.Current("Compose WIP into commits..."), delegate
 				{
 					OpenAiCommitComposer();
 				}));

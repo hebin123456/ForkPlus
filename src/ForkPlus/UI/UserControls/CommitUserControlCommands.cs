@@ -6,6 +6,8 @@ namespace ForkPlus.UI.UserControls
 	{
 		private CommitCommand _commitCommand;
 
+		private ComposeWipCommitCommand _composeWipCommitCommand;
+
 		private ResolveConflictWithExistingVersionCommand _resolveConflictWithExistingVersionCommand;
 
 		private ToggleFileStageCommand _toggleFileStageCommand;
@@ -23,6 +25,9 @@ namespace ForkPlus.UI.UserControls
 		private ShowCreatePartialStashWindowCommand _showCreatePartialStashWindowCommand;
 
 		public CommitCommand Commit => CommandContainer.Lazy(ref _commitCommand);
+
+		// v3.4.1：WIP 编排为提交独立命令，快捷键 Ctrl+Alt+Enter
+		public ComposeWipCommitCommand ComposeWipCommit => CommandContainer.Lazy(ref _composeWipCommitCommand);
 
 		public ResolveConflictWithExistingVersionCommand ResolveConflictWithExistingVersion => CommandContainer.Lazy(ref _resolveConflictWithExistingVersionCommand);
 
