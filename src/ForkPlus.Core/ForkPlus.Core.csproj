@@ -1,25 +1,37 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Phase 0.1：ForkPlus.Core 工程骨架。
+  <!-- Phase 0：ForkPlus.Core 工程。
        目标 TFM 为 net10.0（无 -windows 后缀），跨平台可编译。
-       当前仅承载 Services/ 下的 10 个抽象接口/常量文件 + 3 个新增接口
-      （ILocalizationService / IGitEnvironment / IDialogService，仅定义不实现）。
-
-       后续子阶段（0.2-0.6）会陆续把 Biturbo/、Git/、Settings/、Accounts/、
-       Jobs/、Shell/、Utils/Http/ 等纯业务逻辑迁入。
+       承载平台无关的业务逻辑：Services 抽象层、纯算法/工具类、Biturbo P/Invoke、
+       Git 命令封装、Settings、Accounts、Jobs、Shell、Utils/Http 等。
 
        重要：本工程不能引用任何 System.Windows.* / WPF / WebView2 / WinAPICodePack 等
-       Windows-only 包，否则破坏跨平台目标。 -->
+       Windows-only 包，否则破坏跨平台目标。
+
+       Windows-specific 代码（如 Kernel32 P/Invoke）如需迁入，必须加
+       [SupportedOSPlatform("Windows")] 标注，并用 RuntimeInformation.IsOSPlatform 运行时 guard。 -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ForkPlus</RootNamespace>
     <AssemblyName>ForkPlus.Core</AssemblyName>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
-    <!-- Core 工程暂时不需要 XML 文档 -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- 与主工程保持一致：允许 unsafe（Biturbo P/Invoke 后续会用到） -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- CA1416：平台兼容性分析。Core 工程 TFM 是 net10.0（无 -windows），
+         如果有 Windows-specific API 调用会触发警告。这里 NoWarn 是因为：
+         1. FileHelper.cs / ProcessExtensions.cs 等有 Kernel32 P/Invoke，已加 [SupportedOSPlatform] 标注
+         2. 后续 Biturbo P/Invoke 在非 Windows 上有 runtime guard
+         真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Log.cs / Level.cs / LevelIconLayoutRenderer.cs 需要 NLog -->
+    <PackageReference Include="NLog" Version="6.1.3" />
+    <!-- JsonExtensions.cs / Settings / Accounts 需要 Newtonsoft.Json -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
 </Project>
+
