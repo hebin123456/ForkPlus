@@ -48,6 +48,12 @@ namespace ForkPlus.Avalonia.Services
             // 装入 RepositoryUserControl.RepositoryContentContainer（spike 跳过 RepositoryContentUserControl 这层）
             // GraphCellView 自绘（Phase 2.5 难点）暂用 Border 占位
             services.AddTransient<Views.UserControls.RevisionListViewUserControl>();
+
+            // Phase 3.6：RevisionDetailsUserControl + RevisionFileTreeUserControl（spike 简化版）
+            // RevisionDetails 装入 RepositoryContentUserControl Row 2（spike 跳过这层）
+            // RevisionFileTree 装入 RevisionDetails 的 FileTree tab
+            services.AddTransient<Views.UserControls.RevisionDetailsUserControl>();
+            services.AddTransient<Views.UserControls.RevisionFileTreeUserControl>();
         }
     }
 }

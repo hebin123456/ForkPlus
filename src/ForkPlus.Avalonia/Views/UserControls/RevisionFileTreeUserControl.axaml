@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionFileTreeUserControl">
+    <!--
+        Phase 3.6：Avalonia 版 RevisionFileTreeUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.xaml（46 行）：
+          - Grid 2 列：
+            Col 0 (MinWidth=220 MaxWidth=850): MultiselectionTreeView (FilesTreeView)
+                          — 自定义 TreeView，含 ContextMenu 占位
+            Col 1 (*): FileContentControl — 自定义控件，展示选中文件内容
+            GridSplitter (Col 0 右对齐)
+          - Resources：DataTemplate for RevisionFileTreeViewItem（Grid 2 列: Image + TextBlock）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.xaml.cs（360 行）：
+          - 公共方法：Refresh(Sha sha) / ShowRevisionDetails(string filePath)
+          - 公共属性：RevisionDetailsUserControl（反向引用）
+          - 异步 Task：GetRevisionFileTreeGitCommand（git ls-tree）+ UpdateFileDetails
+          - 3 个 CommandBindings（OpenFileInDefaultEditor / CopyFilePaths / CopyAbsoluteFilePaths）
+          - CreateFileTreeViewContextMenuItems（约 100 行右键菜单，含 OpenFile/ShowFileInFileExplorer/
+            Blame/FileHistory/SaveFile/LFS/CustomCommands/Copy 路径）
+          - _pendingFilePath 竞态处理（RootItem 未就绪时缓存）
+
+        装入路径（WPF）：
+          RevisionDetailsUserControl.xaml Row 2 → RevisionFileTreeUserControl
+          由 RevisionDetails.ShowRevisionDetails → UpdateTabContent(FileTree tab) → Refresh(sha) 触发
+
+        本 spike 版暂不迁移：
+          - MultiselectionTreeView 自定义控件（用 TreeView 占位）
+          - FileContentControl 自定义控件（用 ContentControl 占位）
+          - RevisionFileTreeViewItem 自定义 TreeViewItem（不迁移）
+          - 异步 Task（GetRevisionFileTreeGitCommand + UpdateFileDetails）
+          - 3 个 CommandBindings
+          - 右键菜单构造方法（约 100 行）
+          - _pendingFilePath 竞态处理
+          - GridSplitter 持久化列宽
+
+        本 spike 版验证：
+          - Grid 2 列布局正确显示
+          - 左侧 TreeView 占位可见
+          - 右侧 FileContent 占位可见
+          - GridSplitter 可拖动
+    -->
+    <Grid Name="ContainerGrid"
+          ColumnDefinitions="MinWidth=220 MaxWidth=850,Auto,*">
+
+        <!-- Col 0: FilesTreeView 占位（WPF 中是 MultiselectionTreeView + DataTemplate）-->
+        <TreeView Grid.Column="0"
+                  Name="FilesTreeView"
+                  Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+                  BorderThickness="0,0,1,0"
+                  BorderBrush="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}" />
+
+        <!-- Col 1: GridSplitter -->
+        <GridSplitter Grid.Column="1"
+                      Name="FileTreeGridSplitter"
+                      Width="4"
+                      ResizeDirection="Columns"
+                      Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                      HorizontalAlignment="Stretch" />
+
+        <!-- Col 2: FileContentControl 占位 -->
+        <ContentControl Grid.Column="2"
+                        Name="FileContentControl"
+                        Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#252526}"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TextBlock Text="(file content placeholder)"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="8,4" />
+        </ContentControl>
+    </Grid>
+</UserControl>
