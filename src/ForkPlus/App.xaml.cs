@@ -596,14 +596,22 @@ namespace ForkPlus
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
+			// Phase 0.3a：构造 LocalizationService 并注册到 ServiceLocator。
+			// - IAppContext 提供 ForkDataDirectoryPath（用于加载用户自定义语言文件）
+			// - Func<string> 提供当前激活语言（从 ForkPlusSettings.Default.UiLanguage 取）
+			// 业务层迁移到 Core 后将通过 ServiceLocator.Localization.Xxx 调用，主工程的
+			// PreferencesLocalization 5 个字符串方法亦委托到此处（见 PreferencesLocalization.cs）。
+			WpfAppContext appContext = new WpfAppContext();
+			LocalizationService localization = new LocalizationService(appContext, () => ForkPlusSettings.Default.UiLanguage);
 			ServiceLocator.Initialize(
 				dispatcher: new WpfDispatcher(Dispatcher.CurrentDispatcher),
 				designMode: new WpfDesignModeService(),
-				appContext: new WpfAppContext(),
+				appContext: appContext,
 				clipboard: new WpfClipboardService(),
 				timer: new WpfTimerService(),
 				toast: new WpfToastNotificationService(),
-				windowManager: new WpfWindowManagerService()
+				windowManager: new WpfWindowManagerService(),
+				localization: localization
 			);
 			_ = IsDebug;
 			InitializeRenderMode();

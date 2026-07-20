@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Text.RegularExpressions;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json.Linq;
@@ -103,29 +104,50 @@ namespace ForkPlus.UI.UserControls.Preferences
 			Apply(root, ForkPlusSettings.Default.UiLanguage);
 		}
 
+		// Phase 0.3a：5 个纯字符串方法委托到 ServiceLocator.Localization（Core 的 LocalizationService）。
+		// 业务层迁入 Core 后将通过 ServiceLocator.Localization.Xxx 直接调用；
+		// 主工程现有 429 处 PreferencesLocalization.Xxx 调用零改动。
+		//
+		// null 守卫：XAML 设计器、单元测试、静态构造早于 ServiceLocator.Initialize 的极端场景下
+		// 仍回退到本地实现（依赖 ExternalDictionaries 静态字段，类加载时已初始化）。
 		public static string Translate(string text, string language)
 		{
-			return Translate(text, GetDictionary(language));
+			ILocalizationService loc = ServiceLocator.Localization;
+			return loc != null
+				? loc.Translate(text, language)
+				: Translate(text, GetDictionary(language));
 		}
 
 		public static string Current(string text)
 		{
-			return Translate(text, ForkPlusSettings.Default.UiLanguage);
+			ILocalizationService loc = ServiceLocator.Localization;
+			return loc != null
+				? loc.Current(text)
+				: Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public static string FormatCurrent(string text, params object[] args)
 		{
-			return string.Format(Current(text), args);
+			ILocalizationService loc = ServiceLocator.Localization;
+			return loc != null
+				? loc.FormatCurrent(text, args)
+				: string.Format(Current(text), args);
 		}
 
 		public static string MenuHeader(string text)
 		{
-			return Current(text).Replace("_", "__");
+			ILocalizationService loc = ServiceLocator.Localization;
+			return loc != null
+				? loc.MenuHeader(text)
+				: Current(text).Replace("_", "__");
 		}
 
 		public static string FormatMenuHeader(string text, params object[] args)
 		{
-			return FormatCurrent(text, args).Replace("_", "__");
+			ILocalizationService loc = ServiceLocator.Localization;
+			return loc != null
+				? loc.FormatMenuHeader(text, args)
+				: FormatCurrent(text, args).Replace("_", "__");
 		}
 
 		public static void ApplyElement(DependencyObject element, string language)
