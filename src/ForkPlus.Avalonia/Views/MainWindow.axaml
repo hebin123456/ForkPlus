@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ForkPlus.Avalonia.ViewModels"
         xmlns:views="using:ForkPlus.Avalonia.Views"
+        xmlns:userControls="using:ForkPlus.Avalonia.Views.UserControls"
         x:Class="ForkPlus.Avalonia.Views.MainWindow"
         Width="1000" Height="600"
         MinWidth="650" MinHeight="400"
@@ -14,7 +15,7 @@
         Closing="MainWindow_Closing"
         Activated="MainWindow_Activated">
     <!--
-        Phase 3.1：Avalonia 版 MainWindow 骨架（spike 最简版）。
+        Phase 3.1/3.2：Avalonia 版 MainWindow 骨架 + ToolbarUserControl。
 
         对照 WPF 工程 src/ForkPlus/UI/MainWindow.xaml：
           - WPF 用 ui:CustomWindow（自定义标题栏 + 系统按钮 + Menu 占位 + 通知 Popup）
@@ -22,7 +23,6 @@
             实现等价的自定义标题栏（让客户端区域延伸到标题栏，系统按钮自绘）
 
         本 spike 版暂不迁移：
-          - ToolbarUserControl（Phase 3.2）
           - ClosableTabControl + TabManager（Phase 3.4，需要先迁移 RepositoryUserControl）
           - MainWindowMenuManager（动态菜单构造，独立子任务）
           - NotificationManagerUserControl（通知中心 Popup，Phase 3.x 后期）
@@ -34,10 +34,11 @@
           - 系统按钮（最小化/最大化/关闭）能响应
           - 标题栏可拖动
           - 主题切换按钮（验证 IThemeService 工作）
+          - Phase 3.2：ToolbarUserControl 三列布局正确显示
     -->
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <!-- Row 0: 自定义标题栏（替代 WPF CustomWindow 的 ControlTemplate）-->
-        <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}"
+        <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background, FallbackValue=#2D2D30}"
                 Height="40" Padding="8,0">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <!-- Col 0: 应用图标 + 标题 -->
@@ -48,7 +49,7 @@
                                Foreground="{DynamicResource ThemeForegroundBrush}" />
                 </StackPanel>
 
-                <!-- Col 1: 中间空白（可拖动区域，Avalonia 用 IsHitTestVisible=False + 标题栏默认拖动）-->
+                <!-- Col 1: 中间空白（可拖动区域）-->
                 <Border Grid.Column="1" Background="Transparent" />
 
                 <!-- Col 2: 主题切换 + 系统按钮 -->
@@ -75,10 +76,13 @@
             </Grid>
         </Border>
 
-        <!-- Row 1: 内容区（Phase 3.2 起填充 ToolbarUserControl + ClosableTabControl）-->
-        <Grid Grid.Row="1" Background="{DynamicResource ThemeBackgroundBrush}">
+        <!-- Row 1: Phase 3.2 ToolbarUserControl（三列布局：左操作区/状态区/右操作区）-->
+        <userControls:ToolbarUserControl Grid.Row="1" />
+
+        <!-- Row 2: 内容区（Phase 3.4 起填充 ClosableTabControl + RepositoryUserControl）-->
+        <Grid Grid.Row="2" Background="{DynamicResource ThemeBackgroundBrush}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                <TextBlock Text="ForkPlus Avalonia（Phase 3.1 骨架验证）"
+                <TextBlock Text="ForkPlus Avalonia（Phase 3.1/3.2 骨架验证）"
                            FontSize="18"
                            HorizontalAlignment="Center"
                            Foreground="{DynamicResource ThemeForegroundBrush}" />

@@ -32,6 +32,9 @@ namespace ForkPlus.Avalonia.Services
             // Phase 1 的 AboutWindow 保留（通过菜单/按钮可达）
             services.AddSingleton<MainWindow>();
             services.AddTransient<AboutWindow>();
+
+            // Phase 3.2：ToolbarUserControl（spike 简化版）
+            services.AddTransient<Views.UserControls.ToolbarUserControl>();
         }
     }
 }

@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ToolbarUserControl"
+             Height="40">
+    <!--
+        Phase 3.2：Avalonia 版 ToolbarUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/ToolbarUserControl.xaml（326 行）+
+        ToolbarUserControl.xaml.cs（962 行）：
+          - WPF 三列 Grid 布局：左操作区（Quick Launch/Fetch/Pull/Push/Stash/Undo/Redo/Reflog）
+            + 中状态区（StatusUserControl）+ 右操作区（Branch/Workspaces/Appearance/Console/AI/OpenIn）
+          - 所有按钮用自定义控件 ToolbarButton/DropDownButton/ToolbarDropDownButton
+          - 43 处 DynamicResource 引用主题样式/图标/画刷
+
+        本 spike 版暂不迁移（留待 Phase 3.2 后续子阶段）：
+          - 自定义控件 ToolbarButton/DropDownButton/ToolbarDropDownButton（需先迁移这 3 个基础控件）
+          - 完整的 Initialize() 逻辑（18 个按钮 Click 挂接 + 命令路由）
+          - 主题菜单构造（InitializeAppearanceToolBarButtonContextMenu，~100 行）
+          - Undo/Redo 历史菜单
+          - Stash/Branch/OpenIn 下拉菜单（每个 ~80 行）
+          - Workspaces 工作区菜单（含路径分层）
+          - Pull/Push 数字角标定位（BadgesCanvas）
+          - 多语言（ApplyLocalization）
+          - NotificationCenter 事件订阅（ActiveTabChanged/ShellChanged/ApplicationThemeChanged）
+
+        本 spike 版验证：
+          - 三列布局正确显示
+          - 按钮 Click 事件能触发（暂用 placeholder 逻辑）
+          - Appearance 主题切换菜单可工作（验证 IThemeService）
+          - 图标能从 Assets 加载
+    -->
+    <Grid ColumnDefinitions="*,300,*"
+          Background="{DynamicResource ToolbarBackgroundBrush, FallbackValue=#1E1E1E}">
+
+        <!-- Column 0: 左侧主操作区（Quick Launch/Fetch/Pull/Push/Stash/Undo/Redo/Reflog）-->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Center" Margin="8,0">
+            <Button Name="QuickLaunchButton" Content="Quick Launch"
+                    Click="QuickLaunchButton_Click" Margin="0,0,4,0" />
+            <Button Name="FetchButton" Content="Fetch"
+                    Click="FetchButton_Click" Margin="0,0,4,0" />
+            <Button Name="PullButton" Content="Pull"
+                    Click="PullButton_Click" Margin="0,0,4,0" />
+            <Button Name="PushButton" Content="Push"
+                    Click="PushButton_Click" Margin="0,0,4,0" />
+            <Button Name="StashButton" Content="Stash"
+                    Click="StashButton_Click" Margin="0,0,4,0" />
+            <Button Name="UndoButton" Content="Undo"
+                    Click="UndoButton_Click" Margin="0,0,4,0" />
+            <Button Name="RedoButton" Content="Redo"
+                    Click="RedoButton_Click" Margin="0,0,4,0" />
+            <Button Name="ReflogButton" Content="Reflog"
+                    Click="ReflogButton_Click" />
+        </StackPanel>
+
+        <!-- Column 1: 状态区（Phase 3.10 迁移 StatusUserControl）-->
+        <Border Grid.Column="1" Padding="8,0" VerticalAlignment="Center">
+            <TextBlock Name="StatusText" Text="(no repository)"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       FontSize="11" />
+        </Border>
+
+        <!-- Column 2: 右侧次操作区（Branch/Workspaces/Appearance/Console/AI/OpenIn）-->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0">
+            <Button Name="BranchButton" Content="Branch"
+                    Click="BranchButton_Click" Margin="0,0,4,0" />
+            <Button Name="WorkspacesButton" Content="Workspaces"
+                    Click="WorkspacesButton_Click" Margin="0,0,4,0" />
+            <!-- Appearance 按钮：主题切换菜单（验证 IThemeService）-->
+            <Button Name="AppearanceButton" Content="Appearance"
+                    Click="AppearanceButton_Click" Margin="0,0,4,0" />
+            <Button Name="ConsoleButton" Content="Console"
+                    Click="ConsoleButton_Click" Margin="0,0,4,0" />
+            <Button Name="AiButton" Content="AI"
+                    Click="AiButton_Click" Margin="0,0,4,0" />
+            <Button Name="OpenInButton" Content="Open in"
+                    Click="OpenInButton_Click" />
+        </StackPanel>
+    </Grid>
+</UserControl>
