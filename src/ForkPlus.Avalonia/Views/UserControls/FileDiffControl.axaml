@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.FileDiffControl">
+    <!--
+        Phase 3.9a：Avalonia 版 FileDiffControl 容器骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Controls/FileDiffControl.cs（973 行，纯 C# 无 XAML）：
+          - 继承 DiffControlContainer : Grid（代码生成 Grid 2 行）：
+            Row 0 (Auto): FileControlHeaderUserControl（默认 Collapsed）
+            Row 1 (*):    动态切换的 _subView（ShowSubView<TChild>）
+          - 5 种 sub-view（按 DiffContent 类型路由）：
+            TextDiffControl     — 文本 diff（**AvalonEdit**，Phase 2.6 难点）
+            BinaryDiffUserControl — 图片/二进制 diff
+            HexDiffUserControl    — 16 进制 diff（**AvalonEdit** 衍生 HexEditor，Phase 2.9）
+            SubmoduleDiffUserControl — 子模块 diff
+            FallbackUserControl   — 错误/空状态
+          - 4 个 DependencyProperty：
+            Content (GitCommandResult<DiffContent>) — 核心数据入口
+            RepositoryUserControl                    — 注入父控件
+            Target (FileDiffControlTarget)           — Revision/History/Popup
+            SubControlMode (bool)                    — 嵌入式 diff（RevisionSummary 用）
+          - UpdateView(bool loadLargeDiff) 是核心调度器，根据 Content 类型路由到不同 sub-view
+          - 公共事件：ShowLargeUntrackedChanges
+
+        AvalonEdit 嵌入路径：
+          FileDiffControl → TextDiffControl → DiffCodeEditor : CodeEditor
+            （CodeEditor 是 ICSharpCode.AvalonEdit.TextEditor 子类）
+          DiffCodeEditor 用 AvalonEdit API：
+            TextArea.TextView.BackgroundRenderers / LineTransformers / LeftMargins
+          全工程 30 个文件引用 ICSharpCode.AvalonEdit
+
+        装入路径（WPF，FileDiffControl 共 7+ 处被装入）：
+          CommitUserControl.xaml → CommitFileDiffControl（commit 视图）
+          RevisionChangesUserControl.xaml → FileDiffControl（revision 详情的 Changes tab）
+          RevisionSummaryUserControl.xaml → FileDiffControl SubControlMode=True（嵌入 summary 行内）
+          MergeConflictUserControl.xaml → FileDiffControl
+          FileHistoryWindow.xaml → FileDiffControl Target=History（Phase 4）
+          AiCodeReviewWindow.xaml → CommitFileDiffControl（Phase 5）
+          AiSuggestionPreviewWindow.xaml → FileDiffControl Target=Popup（Phase 5）
+          DiffPopupWindow.xaml.cs → 代码 new FileDiffControl() / new CommitFileDiffControl()
+
+        本 spike 版策略：**不引入 AvaloniaEdit**（留给 Phase 2.6 独立 spike 验证）
+          - FileDiffControl 容器骨架（Grid 2 行 + Header + ContentControl 占位）
+          - 5 种 sub-view 用 Border + TextBlock 占位，由 .cs 的 ShowSubView 根据字符串切换
+          - 4 个 StyledProperty<T> 替代 WPF DependencyProperty.Register
+          - UpdateView stub：根据 Content 类型切换 5 个占位
+          - CommitFileDiffControl.axaml 继承 FileDiffControl + chunk stage/unstage 事件 stub
+
+        本 spike 版暂不迁移：
+          - AvalonEdit 子树（TextDiffControl / DiffCodeEditor / SideBySideTextDiffControl /
+            SplitTextDiffControl / DiffBackgroundColorizer / DiffTextColorizer /
+            DiffLineNumberMargin / DiffSelectionLayer）— Phase 2.6 + 3.9b
+          - HexEditor / HexDiffUserControl — Phase 2.9
+          - BinaryDiffUserControl 真实实现（图片 swipe / onion skin）
+          - SubmoduleDiffUserControl 真实实现
+          - PatchParser / LoadBinaryDiffContent / LoadSubmoduleDiffContent git 调用
+          - HunkHistoryCommand / CopyAsPatchCommand 等编辑器上下文菜单
+          - CommitFileDiffControl 的 ToggleStage / Stage / UnStage / Discard chunk 级 patch apply
+
+        本 spike 版验证：
+          - Grid 2 行布局正确显示
+          - FileControlHeader 占位可见（默认 Collapsed，由 Show() 触发显示）
+          - ContentControl 占位可见，文字随 Content 类型切换
+    -->
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Row 0: FileControlHeaderUserControl（默认 Collapsed，对照 WPF）-->
+        <uc:FileControlHeaderUserControl Grid.Row="0"
+                                         Name="FileControlHeader"
+                                         IsVisible="False" />
+
+        <!-- Row 1: SubView 占位（5 种 sub-view 切换）-->
+        <Border Grid.Row="1"
+                Name="SubViewContainer"
+                Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}">
+            <TextBlock Name="SubViewPlaceholder"
+                       Text="(diff placeholder)"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+    </Grid>
+</UserControl>

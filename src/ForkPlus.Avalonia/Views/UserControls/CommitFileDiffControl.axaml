@@ -1,0 +1,25 @@
+<uc:FileDiffControl xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+                    x:Class="ForkPlus.Avalonia.Views.UserControls.CommitFileDiffControl">
+    <!--
+        Phase 3.9a：Avalonia 版 CommitFileDiffControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Controls/CommitFileDiffControl.cs（继承 FileDiffControl）：
+          - 多了 chunk 级 patch apply 事件（ToggleStage / Stage / UnStage / Discard）
+          - 依赖 CommitCodeEditor.CreatePatchForSelection（AvalonEdit 衍生 API）
+          - 用于 CommitUserControl.xaml Row 2 Col 2 Row 0（commit 视图 diff 区）
+
+        spike 阶段：继承 FileDiffControl.axaml 的 Grid 2 行布局，只增加 chunk stage/unstage 事件占位。
+        Avalonia 中 axaml 继承用根元素是父类型 + x:Class 是子类型的方式。
+
+        本 spike 版暂不迁移：
+          - ToggleStage / Stage / UnStage / Discard chunk 级 patch apply 真实逻辑
+          - CommitCodeEditor.CreatePatchForSelection（AvalonEdit 衍生 API，Phase 3.9b）
+          - chunk 高亮 / stage 拖拽手势
+
+        本 spike 版验证：
+          - 继承 FileDiffControl 的 Grid 2 行布局正确显示
+          - 占位 sub-view 文字可切换
+    -->
+</uc:FileDiffControl>

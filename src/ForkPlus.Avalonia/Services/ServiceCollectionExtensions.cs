@@ -60,6 +60,15 @@ namespace ForkPlus.Avalonia.Services
             // FileControlHeader 作为 DiffUserControl / RevisionFileTreeUserControl 等的子控件
             services.AddTransient<Views.UserControls.FileListUserControl>();
             services.AddTransient<Views.UserControls.FileControlHeaderUserControl>();
+
+            // Phase 3.9a：FileDiffControl + CommitFileDiffControl 容器骨架（spike 简化版）
+            // FileDiffControl 是 diff 渲染主控件（WPF 是 FileDiffControl.cs 纯 C# Grid，无 XAML）
+            // 5 种 sub-view 占位（Text/Binary/Hex/Submodule/Fallback），不引入 AvaloniaEdit
+            // CommitFileDiffControl 继承 FileDiffControl，加 chunk stage/unstage 事件占位
+            // Phase 3.8 CommitUserControl 和 Phase 3.10 RevisionSummaryUserControl 都依赖这两个控件占位
+            // 真实 AvalonEdit 子树迁移留待 Phase 2.6 + 3.9b
+            services.AddTransient<Views.UserControls.FileDiffControl>();
+            services.AddTransient<Views.UserControls.CommitFileDiffControl>();
         }
     }
 }
