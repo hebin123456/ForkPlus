@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.StatusUserControl"
+             Width="300">
+    <!--
+        Phase 3.10：Avalonia 版 StatusUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/StatusUserControl.xaml（138 行）：
+          - 顶层 UserControl Width=300 → Border（CornerRadius=3，状态栏背景）
+          - Grid 3 列 × 3 行（20/*/20 × 18/16/2）
+          - TitleContainer（Grid 2 行，标题动画容器，含 TranslateTransform）：
+            SecondaryTitleGrid（次要标题 + SecondaryBusyIndicator 圆形进度）
+            TitleGrid（主标题 + BusyIndicator）
+          - CancelButton（16x16，默认 Collapsed）
+          - CenteredDockPanel（自定义控件，spike 用 Grid 替代）：
+            ShowActivityManagerToggleButton（ToggleButton，开关 Activity Manager）
+            Popup + ActivityManagerUserControl（作业管理器浮窗）
+            FilterButton（分支过滤按钮）
+            DescriptionIcon（分支图标）+ DescriptionTextBlock（描述文字）
+          - StatusProgressBar（底部进度条）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/StatusUserControl.xaml.cs（278 行）：
+          - 公共方法：ApplyLocalization / RunAnimation（标题切换动画）
+          - 私有 Refresh() 由 200ms DispatcherTimer 驱动
+          - 通过 MainWindow.Instance?.TabManager.ActiveRepositoryUserControl 单例式访问
+          - 无 Initialize 注入模式
+
+        装入路径（WPF）：
+          ToolbarUserControl.xaml Row 0 → StatusUserControl
+
+        本 spike 版策略：
+          - CenteredDockPanel 用 Grid 替代
+          - ActivityManagerUserControl 用空 Popup 占位
+          - 标题动画用 Avalonia TranslateTransform（API 一致，但 spike 不实现动画切换）
+          - BusyIndicator 用 ProgressBar 占位
+          - DispatcherTimer 用 Avalonia DispatcherTimer（API 一致，spike 不启用）
+          - 公共方法签名保留，body stub
+
+        本 spike 版暂不迁移：
+          - RunAnimation 标题切换动画的精确缓动（QuadraticEase）
+          - ActivityManagerPopup 真实作业列表
+          - 分支过滤逻辑（UpdateReferenceFilter.ToggleActiveBranchFilter）
+          - DispatcherTimer 200ms 刷新
+
+        本 spike 版验证：
+          - Grid 3 列 × 3 行布局正确显示
+          - 标题占位文字可见
+          - 底部进度条占位可见
+    -->
+    <Border CornerRadius="3"
+            Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+            BorderThickness="0">
+        <Grid ColumnDefinitions="20,*,20"
+              RowDefinitions="18,16,2">
+
+            <!-- Row 0 + Row 1, ColSpan 3: TitleContainer（双行标题动画容器）-->
+            <Grid Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3"
+                  Name="TitleContainer"
+                  RowDefinitions="*,*">
+                <!-- 次要标题（默认 Collapsed，动画时显示）-->
+                <TextBlock Grid.Row="0"
+                           Name="SecondaryTitleTextBlock"
+                           Text="(secondary title)"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           VerticalAlignment="Center" Margin="4,0"
+                           IsVisible="False" />
+                <!-- 主标题 -->
+                <TextBlock Grid.Row="1"
+                           Name="TitleTextBlock"
+                           Text="(no repository)"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundBrush}"
+                           VerticalAlignment="Center" Margin="4,0" />
+            </Grid>
+
+            <!-- RowSpan 3, Col 2: CancelButton（默认 Collapsed）-->
+            <Button Grid.Row="0" Grid.RowSpan="3" Grid.Column="2"
+                    Name="CancelButton"
+                    Content="✕"
+                    Width="16" Height="16"
+                    IsVisible="False"
+                    Click="CancelButton_Click" />
+
+            <!-- Row 1, ColSpan 3: CenteredDockPanel（spike 用 Grid 替代）-->
+            <Grid Grid.Row="1" Grid.ColumnSpan="3">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ToggleButton Name="ShowActivityManagerToggleButton"
+                                  Content="⚙"
+                                  ToolTip.Tip="Activity manager"
+                                  Click="ShowActivityManagerToggleButton_Click"
+                                  Margin="2,0" />
+                    <Button Name="FilterButton"
+                            Content="▼"
+                            ToolTip.Tip="Branch filter"
+                            Click="FilterButton_Click"
+                            Margin="2,0" />
+                    <TextBlock Name="DescriptionTextBlock"
+                               Text="(status)"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               VerticalAlignment="Center" Margin="4,0" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 2, ColSpan 3: StatusProgressBar -->
+            <ProgressBar Grid.Row="2" Grid.ColumnSpan="3"
+                         Name="StatusProgressBar"
+                         Height="2"
+                         IsIndeterminate="False"
+                         Minimum="0" Maximum="100" Value="0"
+                         IsVisible="False" />
+        </Grid>
+    </Border>
+</UserControl>

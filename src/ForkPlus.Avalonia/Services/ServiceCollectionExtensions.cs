@@ -75,6 +75,12 @@ namespace ForkPlus.Avalonia.Services
             // （CommitFileDiffControl + 分隔 + commit message 编辑区）
             // 装入 RepositoryContentUserControl（由 RepositoryViewMode.CommitViewMode 触发显示）
             services.AddTransient<Views.UserControls.CommitUserControl>();
+
+            // Phase 3.10：StatusUserControl + RevisionSummaryUserControl（spike 简化版）
+            // Status 装入 ToolbarUserControl Row 0（状态栏 + 标题动画 + Activity Manager）
+            // RevisionSummary 装入 RevisionDetailsUserControl Commit tab（commit 详情 + DiffList）
+            services.AddTransient<Views.UserControls.StatusUserControl>();
+            services.AddTransient<Views.UserControls.RevisionSummaryUserControl>();
         }
     }
 }
