@@ -22,14 +22,16 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- 与 ForkPlus.Tests 相同模式：引用 RI 项目，构建时把 exe 复制到测试输出目录，
-       让测试能通过 AppContext.BaseDirectory 找到 ForkPlus.RI.exe。 -->
+  <!-- 与 ForkPlus.Tests 相同模式：引用 RI 项目，构建时把 exe 与托管 dll 都复制到
+       测试输出目录。.NET 10 下 .exe 是 native apphost，启动时需要同名 .dll 才能加载
+       托管代码（缺失 .dll 时 apphost 启动失败，返回 0x8000800A）。 -->
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="CopyRIExe" AfterTargets="Build">
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
   </Target>
 
 </Project>
