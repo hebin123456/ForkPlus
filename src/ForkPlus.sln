@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Core", "ForkPlus.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Core.Tests", "ForkPlus.Core.Tests\ForkPlus.Core.Tests.csproj", "{F6E75817-63D2-4A3F-AA92-B7B223C71FE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Avalonia", "ForkPlus.Avalonia\ForkPlus.Avalonia.csproj", "{F34AEEE1-A52A-415F-B24B-74745C210AB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{F6E75817-63D2-4A3F-AA92-B7B223C71FE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6E75817-63D2-4A3F-AA92-B7B223C71FE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6E75817-63D2-4A3F-AA92-B7B223C71FE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F34AEEE1-A52A-415F-B24B-74745C210AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F34AEEE1-A52A-415F-B24B-74745C210AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F34AEEE1-A52A-415F-B24B-74745C210AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F34AEEE1-A52A-415F-B24B-74745C210AB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

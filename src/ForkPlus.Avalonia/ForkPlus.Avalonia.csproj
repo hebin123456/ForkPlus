@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Phase 1：ForkPlus.Avalonia 工程。
+       TFM 为 net10.0（无 -windows 后缀），跨平台可编译。
+       引用 ForkPlus.Core（同样 net10.0），承载 Avalonia UI 层。
+       WPF 主工程 src/ForkPlus 仍保留，两者并存（Strangler Fig 模式）。
+
+       重要：本工程不能引用任何 System.Windows.* / WPF / WebView2 / WinAPICodePack 等
+       Windows-only 包，否则破坏跨平台目标。Windows-specific 系统调用通过
+       RuntimeInformation.IsOSPlatform 运行时 guard + 条件编译处理。-->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ForkPlus.Avalonia</AssemblyName>
+    <RootNamespace>ForkPlus.Avalonia</RootNamespace>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Avalonia 自带 XAML 编译器，BuiltInComInteropAwareness 等无需启用 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Phase 1 暂不绑定 Windows app.manifest（Linux/macOS 不会识别），
+         Phase 7 切换为默认发布版本时再按平台条件加。-->
+    <!-- CA1416：平台兼容性分析。Avalonia 工程跨平台目标，部分代码可能用平台 API
+         （如 Windows 上的 INotificationService 实现），统一 NoWarn。
+         真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证。 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <Version>4.0.0-alpha1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
+    <!-- Diagnostics 仅 Debug 启用（F12 弹出 Avalonia 诊断面板）-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.18" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- DI 容器：用于注入 IMarkdownRenderer / IDialogService / INotificationService 等接口
+         （Phase 0.3-0.6 抽象的接口，Phase 1 起逐步注册实现）-->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Avalonia XAML 编译：axaml 文件由 Avalonia.Markup.Xaml AvaloniaXaml 编译器编译。
+       Project File GUID 见 .sln 中本工程的 Project 条目（Avalonia 11 用标准 SDK 工程，
+       不再需要老的 .xaml 编译 MSBuild 配置）。 -->
+
+</Project>

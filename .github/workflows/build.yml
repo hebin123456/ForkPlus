@@ -67,6 +67,15 @@ jobs:
         if: runner.os != 'Windows'
         run: dotnet test src/ForkPlus.Core.Tests/ForkPlus.Core.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
 
+      # Phase 1：ForkPlus.Avalonia 工程（net10.0 TFM + Avalonia 11.3.18）三平台构建验证。
+      # Avalonia 是跨平台 UI 框架，Linux/macOS 也能完整构建（启动桌面窗口需要 X11/Wayland，
+      # CI 上不做 GUI 运行时验证，只验证编译通过）。Windows CI 还会在 dotnet build
+      # ForkPlus.sln 步骤中构建本工程，此处专门为非 Windows 平台加 Avalonia 编译步骤。
+      # Phase 3 起会加入 Avalonia 工程的单元测试工程 ForkPlus.Avalonia.Tests。
+      - name: Build ForkPlus.Avalonia (non-Windows)
+        if: runner.os != 'Windows'
+        run: dotnet build src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj -c Release -v minimal
+
       # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
       # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
       # key 绑定 tokei 版本号，升级时自动失效重新编译。

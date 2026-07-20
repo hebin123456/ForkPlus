@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.App"
+             RequestedThemeVariant="Default">
+    <!--
+        Phase 1：Avalonia Application 资源与主题。
+        RequestedThemeVariant="Default" 跟随系统主题；后续 Phase 2 迁移 12 套主题时
+        会在这里注入主题切换逻辑（用 ThemeVariant.Light / Dark 等）。
+
+        Application.Styles 中引用 Avalonia.Themes.Fluent 的 FluentTheme，
+        以及 Avalonia.Fonts.Inter 的 Inter 字体（WithInterFont() 已在 Program.cs 启用）。
+
+        Phase 2 起，会在这里追加从 WPF 工程迁移过来的自定义 Style 资源
+        （如 Theme.xaml / Buttons.xaml / TextStyles.xaml 等共 69 个主题 XAML）。
+    -->
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>

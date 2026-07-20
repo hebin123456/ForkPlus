@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="320"
+        x:Class="ForkPlus.Avalonia.Views.AboutWindow"
+        Title="About ForkPlus"
+        Width="480" Height="320"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+    <!--
+        Phase 1：Avalonia 版 About 窗口（占位实现）。
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AboutWindow.xaml 的简化版，
+        显示 App 名称 + 版本号 + Copyright + License 链接。
+
+        Phase 4.12 会做完整迁移（含本地化字符串、Logo 资源、Legal 弹窗等），
+        当前只验证 Avalonia 工程能渲染窗口并显示版本号。
+    -->
+    <Border Padding="32">
+        <StackPanel Orientation="Vertical" Spacing="16">
+            <TextBlock Text="ForkPlus"
+                       FontSize="32" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock Name="VersionTextBlock"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource ThemeForegroundMidBrush}" />
+
+            <TextBlock Name="CopyrightTextBlock"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+            <Border Height="1" Background="{DynamicResource ThemeBorderMidBrush}" Margin="0,8" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="24">
+                <Button Content="GitHub" Click="OpenGitHub_Click" Tag="https://github.com/hebin123456/ForkPlus" />
+                <Button Content="License" Click="OpenLicense_Click" />
+            </StackPanel>
+
+            <TextBlock Text="Avalonia UI 跨平台版本（Phase 1 骨架验证）"
+                       FontSize="11"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="0,8,0,0" />
+        </StackPanel>
+    </Border>
+</Window>
