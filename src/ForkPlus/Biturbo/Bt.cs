@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace ForkPlus.Biturbo
@@ -9,6 +10,28 @@ namespace ForkPlus.Biturbo
 		public delegate void ReadLineCallback(IntPtr cb_target_ptr, byte kind, IntPtr data_ptr, long data_len);
 
 		private const string BiTurboDll = "biturbo.dll";
+
+		// .NET 10 跨平台运行时：[DllImport("biturbo.dll")] 的字面 DLL 名在
+		// Linux/macOS 上找不到（Biturbo release 发布的是 libbiturbo.so / libbiturbo.dylib）。
+		// 注册 DllImportResolver 在静态构造里按 OS 重定向到对应原生库，
+		// 51 个 [DllImport("biturbo.dll", ...)] 声明完全不用改（DllImport 的
+		// LibraryName 必须是编译期常量，故只能用 resolver 在运行时改写）。
+		static Bt()
+		{
+			NativeLibrary.SetDllImportResolver(typeof(Bt).Assembly, ResolveBiturbo);
+		}
+
+		private static IntPtr ResolveBiturbo(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+		{
+			if (libraryName != BiTurboDll)
+			{
+				return IntPtr.Zero;
+			}
+			string actual = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "biturbo.dll"
+				: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "libbiturbo.dylib"
+				: "libbiturbo.so";
+			return NativeLibrary.Load(actual, assembly, searchPath);
+		}
 
 		[DllImport("biturbo.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern BtResult bt_oid_from_str(byte[] sha_string, ref BtOid out_result);

@@ -1,14 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <!-- .NET 10 LTS + Windows 10 2004 (19041) 最低要求（WebView2 需要）。
+         WPF + WebView2 + FlaUI 都是 Windows-only，故用 -windows TFM；
+         暂未做跨平台 UI 迁移（A 方向），Linux/macOS 仍只跑 biturbo 冒烟测试。-->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>
     <RootNamespace>ForkPlus</RootNamespace>
     <Nullable>disable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>app.ico</ApplicationIcon>
@@ -69,14 +72,8 @@
     <EmbeddedResource Include="ForkPlus.Assets.md-ai-output.css" LogicalName="ForkPlus.Assets.md-ai-output.css" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-  </ItemGroup>
+  <!-- .NET 10 SDK 风格工程：PresentationCore / WindowsBase / System.* 由框架隐式提供，
+       无需显式 Reference。原 net472 时代的 6 个 Reference 节已删除。-->
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
@@ -87,6 +84,9 @@
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
+    <!-- .NET 10 上 System.Drawing.Common 是 Windows-only 包，需显式引用。
+         IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等。-->
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -127,8 +127,10 @@
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe')" />
+    <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0-windows10.0.19041.0）。
+         Exists 守卫保证非 Windows build 或子项目尚未构建时不会失败。-->
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
     <!-- biturbo 原生库按平台拷贝：Exists 守卫确保只拷实际存在的那一份 -->
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />

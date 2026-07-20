@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 using Xunit;
 
 namespace ForkPlus.AskPass.Tests
@@ -11,8 +12,8 @@ namespace ForkPlus.AskPass.Tests
 	///
 	/// 测试策略：
 	/// 1. 黑盒进程测试：启动 exe，验证 exit code（隔离环境变量，无副作用）
-	/// 2. 反射测试：通过 Assembly.LoadFrom 加载 exe，反射调用 private static 方法
-	///    （Program 是 internal，但 Assembly.LoadFrom + GetType 按名字查找可绕过访问限制）
+	/// 2. 反射测试：通过 AssemblyLoadContext.Default.LoadFromAssemblyPath 加载 exe，
+	///    反射调用 private static 方法（Program 是 internal，但反射可绕过访问限制）
 	///
 	/// AskPass.exe 的 Main 逻辑：
 	///   - 无 FORK_PLUS_PROCESS_ID → 立即返回 1
@@ -23,14 +24,17 @@ namespace ForkPlus.AskPass.Tests
 	public class AskPassProgramTests
 	{
 		private static string ExePath =>
-			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ForkPlus.AskPass.exe");
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
+			Path.Combine(AppContext.BaseDirectory, "ForkPlus.AskPass.exe");
 
 		/// <summary>
 		/// 加载 ForkPlus.AskPass.exe 程序集，反射查找 Program 类型。
+		/// .NET 10 上用 AssemblyLoadContext.Default.LoadFromAssemblyPath 替代
+		/// Assembly.LoadFrom（后者仍可用但行为略不同，ALC 是推荐方式）。
 		/// </summary>
 		private static Type LoadProgramType()
 		{
-			var assembly = Assembly.LoadFrom(ExePath);
+			var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(ExePath);
 			return assembly.GetType("ForkPlus.AskPass.Program");
 		}
 

@@ -484,11 +484,13 @@ namespace ForkPlus.AutomationTests
 				return configured;
 			}
 
-			string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory。
+			string baseDir = AppContext.BaseDirectory;
 			string[] candidates =
 			{
-				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Debug\net472\ForkPlus.exe")),
-				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Release\net472\ForkPlus.exe")),
+				// .NET 10 迁移：net472 → net10.0-windows10.0.19041.0
+				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Debug\net10.0-windows10.0.19041.0\ForkPlus.exe")),
+				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Release\net10.0-windows10.0.19041.0\ForkPlus.exe")),
 			};
 			foreach (string candidate in candidates)
 			{
