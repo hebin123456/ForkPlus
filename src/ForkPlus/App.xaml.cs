@@ -601,8 +601,11 @@ namespace ForkPlus
 			// - Func<string> 提供当前激活语言（从 ForkPlusSettings.Default.UiLanguage 取）
 			// 业务层迁移到 Core 后将通过 ServiceLocator.Localization.Xxx 调用，主工程的
 			// PreferencesLocalization 5 个字符串方法亦委托到此处（见 PreferencesLocalization.cs）。
+			// Phase 0.2c-prep：注入 WpfGitEnvironment，业务层（Git/ 等）将通过
+			// ServiceLocator.GitEnvironment.* 访问 Git 路径 / credential helper 等运行时属性。
 			WpfAppContext appContext = new WpfAppContext();
 			LocalizationService localization = new LocalizationService(appContext, () => ForkPlusSettings.Default.UiLanguage);
+			WpfGitEnvironment gitEnvironment = new WpfGitEnvironment();
 			ServiceLocator.Initialize(
 				dispatcher: new WpfDispatcher(Dispatcher.CurrentDispatcher),
 				designMode: new WpfDesignModeService(),
@@ -611,7 +614,8 @@ namespace ForkPlus
 				timer: new WpfTimerService(),
 				toast: new WpfToastNotificationService(),
 				windowManager: new WpfWindowManagerService(),
-				localization: localization
+				localization: localization,
+				gitEnvironment: gitEnvironment
 			);
 			_ = IsDebug;
 			InitializeRenderMode();

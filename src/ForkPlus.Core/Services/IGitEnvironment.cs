@@ -59,5 +59,11 @@ namespace ForkPlus.Services
 		/// 主工程实现时如需包装为 CliArguments 对象，可自行在 UI 层做。
 		/// </summary>
 		string[] CliArguments { get; }
+
+		/// <summary>sh.exe 完整路径（等价于 App.ShellPath，派生自 GitPath）。</summary>
+		string ShellPath { get; }
+
+		/// <summary>bash.exe 完整路径（等价于 App.BashPath，派生自 GitPath）。</summary>
+		string BashPath { get; }
 	}
 }
