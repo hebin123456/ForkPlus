@@ -37,4 +37,26 @@
     <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
   </ItemGroup>
 
+  <!-- biturbo 原生库（部分 Core.Tests 测试可能调用 Bt.* P/Invoke）。
+       与 ForkPlus.csproj 的 RestoreBiturbo target 同样逻辑，确保 Core.Tests 可独立构建。
+       缺失时从 Biturbo 仓库 latest release 拉取，已存在则跳过。
+       CI 上 windows-latest 会在本 target 自动下载 biturbo.dll；
+       非 Windows 由 build.yml 的 "Fetch biturbo native lib" 步骤预下载。-->
+  <Target Name="RestoreBiturbo" BeforeTargets="Build">
+    <PropertyGroup>
+      <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
+    </PropertyGroup>
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+  </Target>
+
+  <!-- 把 biturbo 原生库拷到测试输出目录，确保 DllImport 运行时能找到。-->
+  <Target Name="CopyBiturboNativeLib" AfterTargets="Build">
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+  </Target>
+
 </Project>

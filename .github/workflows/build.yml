@@ -54,6 +54,19 @@ jobs:
           ls -lh "third_party/$asset"
           echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
 
+      # Phase 0.7：非 Windows 平台跑 ForkPlus.Core.Tests（net10.0 TFM，跨平台可编译）。
+      # Core.Tests 只引用 ForkPlus.Core（同样是 net10.0），不依赖 WPF/WebView2 等
+      # Windows-only 包，故可在 Linux/macOS 上完整 build + test。
+      # 上一步已把 biturbo 原生库下载到 third_party/，Core.Tests.csproj 的 RestoreBiturbo
+      # target 会检测到已存在文件并跳过下载。
+      - name: Build Core.Tests (non-Windows)
+        if: runner.os != 'Windows'
+        run: dotnet build src/ForkPlus.Core.Tests/ForkPlus.Core.Tests.csproj -c Release -v minimal
+
+      - name: Run Core.Tests (non-Windows)
+        if: runner.os != 'Windows'
+        run: dotnet test src/ForkPlus.Core.Tests/ForkPlus.Core.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
+
       # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
       # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
       # key 绑定 tokei 版本号，升级时自动失效重新编译。
@@ -86,31 +99,22 @@ jobs:
             Write-Host "Test assembly not found at $dll — skipping tests"
             exit 0
           }
+          # Phase 0.6/0.7：33 个 Core-only 测试类已迁到 ForkPlus.Core.Tests，
+          # 此处只保留 WPF/MIXED/Windows-specific 测试类（SUT 在 ForkPlus 主工程或
+          # 依赖 WPF 框架）。Core-only 测试由后续 "Run Core.Tests unit tests" 步骤运行。
           # 用 --filter 选择性运行单元测试类，排除因 CI 工作目录与 FindRepositoryRoot
           # 路径假设不符而失败的覆盖率清单测试，以及 Markdown 断言依赖本地资源而失败的
           # GitMmReferenceWindowTests。
           $testClasses = @(
-            'ShaTests','ShaCompareTests',
             'WindowLocationStateMappingTests','WindowLocationStateCodecTests',
-            'StringExtensionsTests','FuzzySearchTests','LruCacheTests',
-            'DateTimeExtensionsTests','ArrayExtensionsTests','ArrayDiffTests',
-            'DictionaryExtensionsTests','IReadOnlyListExtensionsTests','IListExtensionsTests',
-            'RangeTests','RangeExtensionsTests',
-            'GitUrlTests','ChangeTypeHelperTests','StatusTypeHelperTests',
-            'RevisionParserTests','RevisionSearchQueryCoderTests','GitConfigTests',
-            'DiffStringHelperTests','UnifiedMergeTokenizerTests','UnifiedMergeParserTests',
-            'PathHelperTests',
-            'GitCommandTests','PipeStreamExtensionsTests','ChangedFilesDisplayNormalizerTests',
-            'AskPassParserTests','ReferenceNameValidatorTests',
-            'PerformanceTelemetryTests','GitStatusParsingTests',
+            'ChangedFilesDisplayNormalizerTests',
             'FeatureCoverageManifestTests','AssemblySmokeTests',
-            # v3.2.0：新增的单元测试类（覆盖 Undo/Redo、AI Commit Composer、Hex Viewer、Theme、JobMonitor）
+            # v3.2.0：UndoRedoStack（WPF_ONLY）/ HexFormatter（WPF_ONLY）/ Theme（MIXED）
             'UndoRedoStackTests',
-            'WipCommitGroupTests','WipCommitPlanTests','OpenAiServiceStaticTests',
-            'HexFormatterTests','ThemeTypeExtensionsTests','JobMonitorTests',
-            # v3.3.0：分层重构新增测试类（reflog 解析 + 索引文件持久化）
+            'HexFormatterTests','ThemeTypeExtensionsTests',
+            # v3.3.0：ReflogHistoryProvider（WPF_ONLY）/ UndoIndexStore（MIXED）
             'ReflogHistoryProviderTests','UndoIndexStoreTests',
-            # v3.4.0：Layer 2 工作区快照 + Reflog 视图
+            # v3.4.0：ReflogViewItem（WPF_ONLY）
             'ReflogViewItemTests'
           )
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
@@ -136,6 +140,23 @@ jobs:
             Write-Host "No result line parsed — exiting $testExit"
           }
           exit $testExit
+
+      # Phase 0.7：Windows 上跑 ForkPlus.Core.Tests（net10.0 TFM，跨平台测试集）。
+      # Build (Release) 步骤已通过 dotnet build ForkPlus.sln 构建 Core.Tests.dll，
+      # 这里用 --no-build 直接运行。Core.Tests 不依赖 WPF testhost，不会触发 hang 问题，
+      # 但仍保留 TestSessionTimeout 防御性超时。
+      - name: Run Core.Tests unit tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $dll = "src/ForkPlus.Core.Tests/bin/Release/net10.0/ForkPlus.Core.Tests.dll"
+          if (-not (Test-Path $dll)) {
+            Write-Host "Core.Tests assembly not found at $dll — skipping tests"
+            exit 0
+          }
+          dotnet test $dll --no-build --framework net10.0 `
+            --logger "console;verbosity=normal" `
+            -- RunConfiguration.TestSessionTimeout=240000
 
       # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
       # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
