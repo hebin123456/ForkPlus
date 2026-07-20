@@ -27,11 +27,11 @@ namespace ForkPlus.Services
 		/// <summary>
 		/// 显示消息框（替代 System.Windows.MessageBox.Show）。
 		/// </summary>
-		MessageBoxResult ShowMessage(
+		DialogMessageBoxResult ShowMessage(
 			string message,
 			string title = "",
-			MessageBoxButton buttons = MessageBoxButton.OK,
-			MessageBoxImage icon = MessageBoxImage.Information);
+			DialogMessageBoxButton buttons = DialogMessageBoxButton.OK,
+			DialogMessageBoxImage icon = DialogMessageBoxImage.Information);
 
 		/// <summary>
 		/// 显示文件选择对话框（替代 CommonOpenFileDialog）。
@@ -52,8 +52,9 @@ namespace ForkPlus.Services
 
 	/// <summary>
 	/// 消息框按钮选项（对应 WPF MessageBoxButton，但定义为平台无关枚举）。
+	/// 命名加 Dialog 前缀避免与 System.Windows.MessageBoxButton 在主工程中撞名（CS0104）。
 	/// </summary>
-	public enum MessageBoxButton
+	public enum DialogMessageBoxButton
 	{
 		OK,
 		OKCancel,
@@ -63,8 +64,9 @@ namespace ForkPlus.Services
 
 	/// <summary>
 	/// 消息框图标选项（对应 WPF MessageBoxImage）。
+	/// 命名加 Dialog 前缀避免与 System.Windows.MessageBoxImage 在主工程中撞名（CS0104）。
 	/// </summary>
-	public enum MessageBoxImage
+	public enum DialogMessageBoxImage
 	{
 		None,
 		Information,
@@ -75,8 +77,9 @@ namespace ForkPlus.Services
 
 	/// <summary>
 	/// 消息框返回值（对应 WPF MessageBoxResult）。
+	/// 命名加 Dialog 前缀避免与 System.Windows.MessageBoxResult 在主工程中撞名（CS0104）。
 	/// </summary>
-	public enum MessageBoxResult
+	public enum DialogMessageBoxResult
 	{
 		None,
 		OK,
