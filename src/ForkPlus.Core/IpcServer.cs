@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using ForkPlus.IO.Ipc;
+using ForkPlus.Services;
 
 namespace ForkPlus
 {
@@ -21,7 +22,7 @@ namespace ForkPlus
 		public IpcServer(string name, IpcMessageHandler messageHandler)
 		{
 			_messageHandler = messageHandler;
-			CurrentProcessPipeName = NamedPipeHelper.CreatePipeName(name, App.ProcessId.ToString());
+			CurrentProcessPipeName = NamedPipeHelper.CreatePipeName(name, ServiceLocator.AppContext.ProcessId.ToString());
 			int maxNumberOfServerInstances = 10;
 			_pipeServer = new NamedPipeServerStream(CurrentProcessPipeName, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
 			_cancellationToken = new CancellationTokenSource();

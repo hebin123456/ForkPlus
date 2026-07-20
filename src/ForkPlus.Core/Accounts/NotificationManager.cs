@@ -2,7 +2,6 @@ using ForkPlus.Services;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using CommunityToolkit.WinUI.Notifications;
 using ForkPlus.Jobs;
 using ForkPlus.Utils.Http;
 
@@ -80,7 +79,13 @@ namespace ForkPlus.Accounts
 
 		public NotificationManager()
 		{
-			ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+			// Phase 0.5：通过 IToastNotificationService.OnActivated 接收用户点击回调，
+			// 替代原 CommunityToolkit.WinUI.Notifications.ToastNotificationManagerCompat.OnActivated
+			// （Windows-only API）。WpfToastNotificationService 内部监听 WinRT 事件并转发。
+			if (ServiceLocator.Toast != null)
+			{
+				ServiceLocator.Toast.OnActivated += OnToastActivated;
+			}
 			if (Services.ServiceLocator.Timer != null)
 			{
 				Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
@@ -169,10 +174,10 @@ namespace ForkPlus.Accounts
 			Refresh();
 		}
 
-		private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+		private void OnToastActivated(string argument)
 		{
 			Log.Info("Activated toast notification");
-			string text = WebUtility.HtmlDecode(e.Argument);
+			string text = WebUtility.HtmlDecode(argument);
 			string text2 = "ai-review:";
 			if (text.StartsWith(text2))
 			{
@@ -227,26 +232,14 @@ namespace ForkPlus.Accounts
 			SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast launch=\"{text}\" >\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{text2}</text>\n        <text>{text3}</text>\n        <image placement=\"hero\" src =\"{text4}\" />\n    </binding>\n</visual>\n</toast>\n");
 		}
 
+		/// <summary>
+		/// Phase 0.5：通过 ServiceLocator.Toast.Show 显示通知。
+		/// 原 WPF 实现直接调用 Windows.UI.Notifications WinRT API，
+		/// 已迁移到 WpfToastNotificationService，本方法仅委托到接口。
+		/// </summary>
 		public static void SendWindowsNotification(string xmlString)
 		{
-			if (Services.ServiceLocator.Toast != null)
-			{
-				Services.ServiceLocator.Toast.Show(xmlString);
-				return;
-			}
-			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）
-			try
-			{
-				Windows.Data.Xml.Dom.XmlDocument document = new Windows.Data.Xml.Dom.XmlDocument();
-				document.LoadXml(xmlString);
-				Windows.UI.Notifications.ToastNotifier notifier = Windows.UI.Notifications.ToastNotificationManager.GetDefault().CreateToastNotifier("com.squirrel.ForkPlus.ForkPlus");
-				Windows.UI.Notifications.ToastNotification notification = new Windows.UI.Notifications.ToastNotification(document);
-				notifier.Show(notification);
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to show toast notification", ex);
-			}
+			Services.ServiceLocator.Toast?.Show(xmlString);
 		}
 
 		private void FindAiCodeReviewWindowAndActivate(string windowTitle)

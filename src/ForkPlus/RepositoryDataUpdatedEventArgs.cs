@@ -1,6 +1,5 @@
 using System;
 using ForkPlus.Git;
-using ForkPlus.UI.UserControls;
 
 namespace ForkPlus
 {
