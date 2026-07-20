@@ -43,19 +43,19 @@ ForkPlus/
 ### 前提条件
 
 - Windows 10 以降
-- Visual Studio 2019/2022、または .NET SDK + MSBuild
-- .NET Framework 4.7.2 ターゲットパック
+- Visual Studio 2022 17.13+、または .NET 10 SDK
+- .NET 10 SDK（Windows Desktop runtime 含む）
 - Git 2.31 以上（2.40+ 推奨、これ未満の場合は起動時に警告が表示され、一部機能が正常に動作しない可能性があります）
 - git-mm 3.0 以上（git mm ワークフロー使用時に必須、未対応バージョンや未インストール時は起動時に警告、環境設定で git-mm.exe パスを構成可能）
 
 ### ビルド手順
 
-- Visual Studio で `ForkPlus.sln` を開き、Release 構成を選択してビルド
-- またはコマンドラインから: `msbuild ForkPlus.sln /p:Configuration=Release`
+- Visual Studio 2022 17.13+ で `ForkPlus.sln` を開き、Release 構成を選択してビルド
+- またはコマンドラインから: `dotnet build ForkPlus.sln -c Release`
 
 ### 継続的インテグレーション
 
-プロジェクトには GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
+プロジェクトには GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）が設定されています。`v*` で始まる tag をプッシュすると Windows 環境で自動ビルドされ、完全なランタイム zip パッケージが GitHub Release に公開されます。
 
 ```bash
 git tag v1.3.0

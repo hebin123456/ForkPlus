@@ -1,12 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <!-- 与主工程 ForkPlus.csproj 同 TFM，便于 CopyHelperExecutables 用
+         $(TargetFramework) 定位 exe 输出路径。AskPass 是 git credential helper
+         子进程，被 ForkPlus.exe 通过 Process.Start 调用，Windows-only 使用场景。-->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <AssemblyName>ForkPlus.AskPass</AssemblyName>
     <TargetName>ForkPlus.AskPass</TargetName>
     <RootNamespace>ForkPlus.AskPass</RootNamespace>
     <Nullable>disable</Nullable>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
+    <!-- 不生成 .xml 文档注释导出文件（运行时不需要，仅供 IDE IntelliSense / API 文档用途）。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 </Project>

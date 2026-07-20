@@ -1,20 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <!-- 系统测试：通过 FlaUI UIA3 自动化驱动 ForkPlus.exe 做 GUI 测试。
+         WPF + FlaUI 都需要 windows TFM；与主工程对齐 19041（WebView2 最低要求）。-->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <!-- CS0414：未使用字段（如 VK_OEM_COMMA 作为虚拟键码常量库，可能被后续测试引用）。
+         CS0219：未使用本地变量，部分测试有"先记录后断言"模式。 -->
+    <NoWarn>$(NoWarn);CS0414;CS0219</NoWarn>
+    <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <!-- .NET 10 支持：Microsoft.NET.Test.Sdk 17.13+ 起官方支持 .NET 10。-->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlaUI.Core" Version="3.2.0" />
-    <PackageReference Include="FlaUI.UIA3" Version="3.2.0" />
+    <!-- FlaUI 5.0.0（2024-12-08）：移除 .NET Standard / netcoreapp3.1 / net5.0 支持，
+         新增 .NET 8 支持（.NET 10 二进制兼容）。API 层面相对 3.2.0 无破坏性改动，
+         仅移除旧 TFM + 添加 nullable 注解（Nullable=disable 时不影响）。
+         升级路径：3.2.0 → 4.0.0（移除 .NET Framework < 4.8）→ 5.0.0（移除旧 .NET Core）。-->
+    <PackageReference Include="FlaUI.Core" Version="5.0.0" />
+    <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
   </ItemGroup>
 </Project>

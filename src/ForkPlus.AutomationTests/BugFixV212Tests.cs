@@ -261,13 +261,13 @@ namespace ForkPlus.AutomationTests
 					bool foundEnglishHeader = FindNotificationHeaderText(app, "Notifications");
 
 					// 如果能找到任何 HeaderLabel 文本，验证它是中文（修复后）
-					// 找不到时不强制断言（popup 内容在 CI 上可能不可访问）
-					if (foundEnglishHeader && !foundChineseHeader)
-					{
-						Assert.True(false,
-							"Bug 4 未修复：通知 popup HeaderLabel 仍显示 'Notifications'（英文），" +
-							"语言切换后未实时刷新为 '通知'。NotificationManagerUserControl.ApplyLocalization 未被调用。");
-					}
+				// 找不到时不强制断言（popup 内容在 CI 上可能不可访问）
+				if (foundEnglishHeader && !foundChineseHeader)
+				{
+					Assert.Fail(
+						"Bug 4 未修复：通知 popup HeaderLabel 仍显示 'Notifications'（英文），" +
+						"语言切换后未实时刷新为 '通知'。NotificationManagerUserControl.ApplyLocalization 未被调用。");
+				}
 				}
 			}
 		}

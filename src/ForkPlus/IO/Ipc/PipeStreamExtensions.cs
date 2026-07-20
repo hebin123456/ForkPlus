@@ -36,7 +36,17 @@ namespace ForkPlus.IO.Ipc
 			intToByteLE.B3 = (byte)stream.ReadByte();
 			int intVal = intToByteLE.IntVal;
 			byte[] array = new byte[intVal];
-			stream.Read(array, 0, intVal);
+			// PipeStream.Read 可能返回少于请求的字节数（CA2022），用循环读满。
+			int offset = 0;
+			while (offset < intVal)
+			{
+				int read = stream.Read(array, offset, intVal - offset);
+				if (read <= 0)
+				{
+					break;
+				}
+				offset += read;
+			}
 			return _defaultStreamEncoding.GetString(array);
 		}
 

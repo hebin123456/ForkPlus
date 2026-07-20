@@ -1,15 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <!-- 与被测 ForkPlus.RI.csproj 同 TFM（net10.0-windows10.0.19041.0）。-->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
@@ -21,14 +24,16 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- 与 ForkPlus.Tests 相同模式：引用 RI 项目，构建时把 exe 复制到测试输出目录，
-       让测试能通过 AppDomain.CurrentDomain.BaseDirectory 找到 ForkPlus.RI.exe。 -->
+  <!-- 与 ForkPlus.Tests 相同模式：引用 RI 项目，构建时把 exe 与托管 dll 都复制到
+       测试输出目录。.NET 10 下 .exe 是 native apphost，启动时需要同名 .dll 才能加载
+       托管代码（缺失 .dll 时 apphost 启动失败，返回 0x8000800A）。 -->
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="CopyRIExe" AfterTargets="Build">
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
   </Target>
 
 </Project>

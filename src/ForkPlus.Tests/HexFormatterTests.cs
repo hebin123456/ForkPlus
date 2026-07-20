@@ -57,9 +57,9 @@ namespace ForkPlus.Tests
 		public void Format_ShowAsciiFalse_OmitsAsciiColumn()
 		{
 			string withAscii = HexFormatter.Format(new byte[] { 0x41 }, 16, false, true);
-			string withoutAscii = HexFormatter.Format(new byte[] { 0x41 }, 16, false, false);
-			Assert.Contains("A", withAscii);
-			Assert.False(withoutAscii.Contains("A"));
+		string withoutAscii = HexFormatter.Format(new byte[] { 0x41 }, 16, false, false);
+		Assert.Contains("A", withAscii);
+		Assert.DoesNotContain("A", withoutAscii);
 		}
 
 		[Fact]

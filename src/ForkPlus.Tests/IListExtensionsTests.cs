@@ -100,9 +100,9 @@ namespace ForkPlus.Tests
 
 			int? removed = source.UnstableRemoveStruct(x => x == 2);
 
-			Assert.Equal(2, removed);
-			Assert.False(source.Contains(2));
-			Assert.Equal(2, source.Count);
+		Assert.Equal(2, removed);
+		Assert.DoesNotContain(2, source);
+		Assert.Equal(2, source.Count);
 		}
 
 		[Fact]
@@ -123,9 +123,9 @@ namespace ForkPlus.Tests
 
 			string removed = source.UnstableRemoveAt(0);
 
-			Assert.Equal("a", removed);
-			Assert.Equal(2, source.Count);
-			Assert.False(source.Contains("a"));
+		Assert.Equal("a", removed);
+		Assert.Equal(2, source.Count);
+		Assert.DoesNotContain("a", source);
 		}
 	}
 }

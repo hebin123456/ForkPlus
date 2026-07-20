@@ -124,7 +124,8 @@ namespace ForkPlus.Tests
 
 		private static string FindRepositoryRoot()
 		{
-			string directory = AppDomain.CurrentDomain.BaseDirectory;
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
+			string directory = AppContext.BaseDirectory;
 			while (!string.IsNullOrWhiteSpace(directory))
 			{
 				if (File.Exists(Path.Combine(directory, "ForkPlus.sln")))

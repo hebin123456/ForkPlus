@@ -20,7 +20,8 @@ namespace ForkPlus.RI.Tests
 	public class RebaseInteractiveProgramTests
 	{
 		private static string ExePath =>
-			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ForkPlus.RI.exe");
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
+			Path.Combine(AppContext.BaseDirectory, "ForkPlus.RI.exe");
 
 		/// <summary>
 		/// 启动 ForkPlus.RI.exe，传入参数和环境变量，返回 exit code。

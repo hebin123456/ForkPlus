@@ -14,6 +14,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using ForkPlus.Git;
 
+// AvatarManager 使用 WebClient 的事件回调模式（DownloadDataCompleted）来下载头像，
+// 改写为 HttpClient + Task.Run 涉及异步逻辑重写，风险较大。.NET 10 上 WebClient
+// 已过时（SYSLIB0014）但仍可用，本地静默该警告，待后续整体重构时统一迁移到 HttpClient。
+#pragma warning disable SYSLIB0014
+
 namespace ForkPlus.UI.Controls
 {
 	public class AvatarManager

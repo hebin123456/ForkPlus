@@ -136,8 +136,8 @@ namespace ForkPlus.Tests
 			store.Record(MakeEntry("sha1", "new op"));
 
 			Dictionary<string, UndoIndexEntry> dict = store.Load();
-			Assert.Equal(1, dict.Count);
-			Assert.Equal("new op", dict["sha1"].OperationName);
+		Assert.Single(dict);
+		Assert.Equal("new op", dict["sha1"].OperationName);
 		}
 
 		[Fact]
