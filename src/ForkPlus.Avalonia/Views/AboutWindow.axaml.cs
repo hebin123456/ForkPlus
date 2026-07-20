@@ -3,25 +3,41 @@ using System.Diagnostics;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using ForkPlus.Avalonia.Services;
+using ForkPlus.UI;
 
 namespace ForkPlus.Avalonia.Views
 {
-    // Phase 1：Avalonia 版 About 窗口（占位实现）。
+    // Phase 1/2.1：Avalonia 版 About 窗口（占位实现）。
     // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AboutWindow.xaml.cs 的简化版：
     //   - 显示版本号（从 AssemblyInformationalVersionAttribute 读取，与 WPF App.Version 同样逻辑）
     //   - 显示 Copyright（"Copyright © {year} Hebin"，与 WPF AboutWindow 同样格式）
     //   - GitHub 按钮：跨平台打开 URL（Windows/macOS 用 Process.Start，Linux 用 xdg-open）
     //   - License 按钮：Phase 1 占位，仅打印日志；Phase 4.12 迁移 LegalWindow
+    //   - Phase 2.1：主题切换按钮（验证 IThemeService 工作）
     //
     // Avalonia 11：axaml 编译时由 source generator 生成 InitializeComponent() 方法（partial class），
     // 无需手写 AvaloniaXamlLoader.Load(this)（该方法在 11.x 已过时）。
     public partial class AboutWindow : Window
     {
-        public AboutWindow()
+        private readonly IThemeService _themeService;
+
+        public AboutWindow(IThemeService themeService)
         {
+            _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
             InitializeComponent();
             VersionTextBlock.Text = "Version " + GetVersion();
             CopyrightTextBlock.Text = string.Format("Copyright © {0} Hebin", DateTime.Now.Year);
+            UpdateThemeText();
+            _themeService.ThemeChanged += (_, _) => UpdateThemeText();
+        }
+
+        private void UpdateThemeText()
+        {
+            if (CurrentThemeTextBlock != null)
+            {
+                CurrentThemeTextBlock.Text = "Current: " + _themeService.CurrentTheme.SkinName();
+            }
         }
 
         private static string GetVersion()
@@ -88,6 +104,18 @@ namespace ForkPlus.Avalonia.Views
             // Phase 1 占位：不弹 Legal 窗口，仅打印。
             // Phase 4.12 迁移 LegalWindow（src/ForkPlus/UI/Dialogs/LegalWindow.xaml）
             Console.WriteLine("License button clicked — LegalWindow migration pending Phase 4.12");
+        }
+
+        // Phase 2.1：主题切换按钮事件处理（验证 IThemeService 工作）
+        // Phase 2.2-2.4 完成后，会替换为完整的 22 套主题选择菜单
+        private void SwitchThemeLight_Click(object sender, RoutedEventArgs e)
+        {
+            _themeService.ApplyTheme(ThemeType.Light);
+        }
+
+        private void SwitchThemeDark_Click(object sender, RoutedEventArgs e)
+        {
+            _themeService.ApplyTheme(ThemeType.Dark);
         }
     }
 }

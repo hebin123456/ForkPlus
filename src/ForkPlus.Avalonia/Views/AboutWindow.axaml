@@ -39,6 +39,16 @@
                 <Button Content="License" Click="OpenLicense_Click" />
             </StackPanel>
 
+            <!-- Phase 2.1：主题切换验证按钮（验证 IThemeService 工作）-->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
+                <Button Content="Light" Click="SwitchThemeLight_Click" />
+                <Button Content="Dark" Click="SwitchThemeDark_Click" />
+                <TextBlock Name="CurrentThemeTextBlock"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </StackPanel>
+
             <TextBlock Text="Avalonia UI 跨平台版本（Phase 1 骨架验证）"
                        FontSize="11"
                        HorizontalAlignment="Center"

@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views;
+using ForkPlus.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -41,6 +42,11 @@ namespace ForkPlus.Avalonia
 
             // 启动 Host（后台服务生命周期管理；Phase 1 暂无后台服务）
             _host.Start();
+
+            // Phase 2.1：应用默认主题（Light）。
+            // Phase 3 起会从 IUserSettings 读取用户上次选择的主题。
+            var themeService = _host.Services.GetRequiredService<IThemeService>();
+            themeService.ApplyTheme(ForkPlus.UI.ThemeType.Light);
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
