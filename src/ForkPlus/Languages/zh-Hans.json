@@ -2205,7 +2205,7 @@
     "Reflog is empty.": "Reflog 为空。",
     "{0} entries loaded.": "已加载 {0} 条记录。",
     "Jump to Reflog Entry": "跳转到 Reflog 条目",
-    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "跳转 HEAD 到 {0}（{1}）？\\n\\n这将把当前分支和工作区重置到该状态。之后可以撤销此操作。",
+    "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "跳转 HEAD 到 {0}（{1}）？\n\n这将把当前分支和工作区重置到该状态。之后可以撤销此操作。",
     "Jump to HEAD@{{{0}}}": "跳转到 HEAD@{{{0}}}"
   }
 }

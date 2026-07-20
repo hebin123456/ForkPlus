@@ -2205,7 +2205,7 @@
     "Reflog is empty.": "El Reflog está vacío.",
     "{0} entries loaded.": "{0} entradas cargadas.",
     "Jump to Reflog Entry": "Ir a entrada de Reflog",
-    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "¿Saltar HEAD a {0} ({1})?\\n\\nEsto restablecerá su rama actual y árbol de trabajo a ese estado. Puede deshacer esto después.",
+    "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "¿Saltar HEAD a {0} ({1})?\n\nEsto restablecerá su rama actual y árbol de trabajo a ese estado. Puede deshacer esto después.",
     "Jump to HEAD@{{{0}}}": "Ir a HEAD@{{{0}}}"
   }
 }

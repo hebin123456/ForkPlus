@@ -43,7 +43,7 @@
     "Reflog is empty.": "Reflog is empty.",
     "{0} entries loaded.": "{0} entries loaded.",
     "Jump to Reflog Entry": "Jump to Reflog Entry",
-    "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "Jump to HEAD to {0} ({1})?\\n\\nThis will reset your current branch and working tree to that state. You can undo this afterwards.",
+    "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.",
     "Jump to HEAD@{{{0}}}": "Jump to HEAD@{{{0}}}",
     "AI Commit Composer": "AI Commit Composer",
     "AI returned an invalid plan. Please retry, or compose commits manually.": "AI returned an invalid plan. Please retry, or compose commits manually.",
