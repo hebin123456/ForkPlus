@@ -54,6 +54,12 @@ namespace ForkPlus.Avalonia.Services
             // RevisionFileTree 装入 RevisionDetails 的 FileTree tab
             services.AddTransient<Views.UserControls.RevisionDetailsUserControl>();
             services.AddTransient<Views.UserControls.RevisionFileTreeUserControl>();
+
+            // Phase 3.7：FileListUserControl + FileControlHeaderUserControl（spike 简化版）
+            // FileList 装入 RevisionChangesUserControl Row 2 / StageFileUserControl / CommitUserControl
+            // FileControlHeader 作为 DiffUserControl / RevisionFileTreeUserControl 等的子控件
+            services.AddTransient<Views.UserControls.FileListUserControl>();
+            services.AddTransient<Views.UserControls.FileControlHeaderUserControl>();
         }
     }
 }

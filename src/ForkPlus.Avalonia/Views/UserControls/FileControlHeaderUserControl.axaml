@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.FileControlHeaderUserControl"
+             BorderThickness="0,0,0,1"
+             BorderBrush="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}">
+    <!--
+        Phase 3.7：Avalonia 版 FileControlHeaderUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/FileControlHeaderUserControl.xaml（304 行）：
+          - 顶层 Grid 3 列：100 / * / 140
+            Col 0: StackPanel (TextModeNavigationButtonsContainer, 默认 Collapsed)
+                   + 2 个 Button (Previous/Next，跳转上一/下一变更)
+            Col 1: DockPanel 居中：FileTypeImage + FilePathTextBlock（自定义控件）
+            Col 2: StackPanel (TextModeButtonsContainer, 默认 Collapsed)
+                   + 7 个 ToggleButton/Button：
+                     IgnoreWhitespaces / ShowHiddenSymbols / WordWrap /
+                     DecreaseVisibleLines / IncreaseVisibleLines / ShowEntireFile /
+                     DiffLayoutMode
+            Col 2: StackPanel (ImageModeButtonsContainer, 默认 Collapsed)
+                   + 1 个 ToggleButton (HighlightPixels)
+          - 大量 DataTrigger 切换 ToggleButton Image（IsChecked=true/false 用不同图标）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/FileControlHeaderUserControl.xaml.cs：
+          - 2 个 DependencyProperty：FilePath / OldFilePath
+          - 2 个公共属性：Target (FileDiffControlTarget) / HighlightPixelsToggleButtonEnabled
+          - 2 个公共方法：ApplyLocalization / Show(filePath, oldFilePath, mode)
+          - 私有 DiffLayoutMode 属性（按 Target 从 ForkPlusSettings 读写不同设置项）
+
+        装入路径（WPF）：作为 DiffUserControl / RevisionFileTreeUserControl 等的子控件
+
+        本 spike 版暂不迁移：
+          - FilePathTextBlock 自定义控件（用 TextBlock 占位）
+          - DataTrigger 切换 ToggleButton Image（Avalonia 用 Selector，spike 不迁移）
+          - 6 个 ToggleButton + 4 个 Button 的真实图标绑定（spike 用纯文字标签）
+          - TextMode/ImageMode 容器 Visibility 切换（spike 默认全部 Collapsed）
+          - DiffLayoutMode 持久化到 ForkPlusSettings
+          - ApplyLocalization
+
+        本 spike 版验证：
+          - Grid 3 列布局正确显示
+          - 中间 FilePath 显示文本占位
+    -->
+    <Grid ColumnDefinitions="100,*,140">
+
+        <!-- Col 0: TextMode 导航按钮（默认 Collapsed，spike 保留占位）-->
+        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                    Name="TextModeNavigationButtonsContainer"
+                    IsVisible="False">
+            <Button Name="PreviousButton"
+                    Click="PreviousButton_Click"
+                    Content="↑" Margin="2,0" />
+            <Button Name="NextButton"
+                    Click="NextButton_Click"
+                    Content="↓" Margin="2,0" />
+        </StackPanel>
+
+        <!-- Col 1: FilePath 居中显示（spike 用 TextBlock 替代 FilePathTextBlock 自定义控件）-->
+        <DockPanel Grid.Column="1" HorizontalAlignment="Center">
+            <Image DockPanel.Dock="Left" Name="FileTypeImage"
+                   Width="16" Height="16" Margin="2,1,2,1"
+                   VerticalAlignment="Center" HorizontalAlignment="Right" />
+            <TextBlock Name="FilePathTextBlock"
+                       Text="(file path placeholder)"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+
+        <!-- Col 2: TextMode 按钮（默认 Collapsed，spike 保留占位）-->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                    Name="TextModeButtonsContainer"
+                    IsVisible="False">
+            <ToggleButton Name="IgnoreWhitespacesToggleButton"
+                          Click="IgnoreWhitespacesToggleButton_Click"
+                          Content="WS" ToolTip.Tip="Ignore whitespaces" Margin="1,0" />
+            <ToggleButton Name="ShowHiddenSymbolsToggleButton"
+                          Click="ShowHiddenSymbolsToggleButton_Click"
+                          Content="¶" ToolTip.Tip="Show hidden symbols" Margin="1,0" />
+            <ToggleButton Name="WordWrapToggleButton"
+                          Click="WordWrapToggleButton_Click"
+                          Content="↩" ToolTip.Tip="Word wrap" Margin="1,0" />
+            <Button Name="DecreaseNumberOfVisibleLinesButton"
+                    Click="DecreaseVisibleLines_Click"
+                    Content="-" ToolTip.Tip="Decrease visible lines" Margin="1,0" />
+            <Button Name="IncreaseNumberOfVisibleLinesButton"
+                    Click="IncreaseVisibleLines_Click"
+                    Content="+" ToolTip.Tip="Increase visible lines" Margin="1,0" />
+            <ToggleButton Name="ShowEntireFileToggleButton"
+                          Click="ShowEntireFileToggleButton_Click"
+                          Content="≡" ToolTip.Tip="Show entire file" Margin="1,0" />
+            <ToggleButton Name="DiffLayoutModeToggleButton"
+                          Click="DiffLayoutModeToggleButton_Click"
+                          Content="⇆" ToolTip.Tip="Diff layout mode" Margin="1,0" />
+        </StackPanel>
+
+        <!-- Col 2: ImageMode 按钮（默认 Collapsed，spike 保留占位）-->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                    Name="ImageModeButtonsContainer"
+                    IsVisible="False">
+            <ToggleButton Name="HighlightPixelsToggleButton"
+                          Click="HighlightPixelsToggleButton_Click"
+                          Content="◕" ToolTip.Tip="Highlight pixels" Margin="1,0" />
+        </StackPanel>
+    </Grid>
+</UserControl>

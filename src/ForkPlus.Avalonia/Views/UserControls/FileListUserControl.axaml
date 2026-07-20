@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.FileListUserControl">
+    <!--
+        Phase 3.7：Avalonia 版 FileListUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/FileListUserControl.xaml（121 行）：
+          - 顶层 FileListTreeView（继承 MultiselectionTreeView，自定义 TreeView）
+            + VirtualizingPanel.IsVirtualizing=True + VirtualizationMode=Recycling
+          - TreeView.View: GridView 2 列：
+            Col "Name":    DataTemplate Grid 3 列（ChangeTypeIcon Image + FileTypeIcon Image + AutoTooltipTextBlock 绑定 FileName）
+            Col "Location": AutoTooltipTextBlock 绑定 FolderPath
+          - Resources: 2 个 DataTemplate（TreeViewTemplate + ListViewTemplate）
+            根据 FileListMode (Tree/List/CombinedList) 切换 ItemTemplate 与 Style
+          - DataTrigger: ChangeTypeIcon 为 null 时隐藏 Image（Avalonia 无 Triggers，spike 用 Selector）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/FileListUserControl.xaml.cs（847 行）：
+          - 4 个公共事件：ItemDoubleClick / ItemsDrop / SelectionChanged / ColumnHeaderSizeChanged
+          - 公共属性：EnableMultiSelection / Mode / Items / SelectedItems /
+            ExpandedSelectedItems / FilterString / ContainsVisibleItems
+          - 11 个公共方法：SetItemSource / SetItemSourceAsync / Refresh /
+            SelectFile / FocusSelectedElement / SelectPreviousFile / SelectNextFile /
+            SelectFirstAvailableFile 等
+          - 增量树构建算法（ArrayDiff.Diff + ApplyAddedEntries + ApplyRemovedEntries +
+            BinarySearch + FindOrCreateFolder + DeleteItem 递归）
+          - 大列表后台构建（>= 5000 项时 Task.Run）
+          - FileListMode 三模式切换（Tree/List/CombinedList）
+
+        装入路径（WPF）：
+          RevisionChangesUserControl.xaml Row 2 → FileListUserControl
+          StageFileUserControl.xaml / CommitUserControl.xaml.cs / AiCodeReviewWindow.xaml 也用
+
+        本 spike 版暂不迁移：
+          - FileListTreeView 自定义控件（继承 MultiselectionTreeView，用 TreeView 占位）
+          - AutoTooltipTextBlock 自定义控件（用 TextBlock 占位）
+          - GridView 2 列布局（Avalonia 无 GridView，spike 用空 TreeView）
+          - DataTrigger（ChangeTypeIcon null 时隐藏 Image，spike 用 Selector，但暂时不迁移）
+          - 增量树构建算法（ArrayDiff.Diff 等）
+          - 大列表后台构建（Task.Run）
+          - FileListMode 三模式切换
+          - 拖拽 Drop 事件
+
+        本 spike 版验证：
+          - 顶层 TreeView 占位可见
+    -->
+    <TreeView Name="TreeView"
+              Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+              BorderThickness="0" />
+</UserControl>
