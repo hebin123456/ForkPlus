@@ -81,6 +81,12 @@ namespace ForkPlus.Avalonia.Services
             // RevisionSummary 装入 RevisionDetailsUserControl Commit tab（commit 详情 + DiffList）
             services.AddTransient<Views.UserControls.StatusUserControl>();
             services.AddTransient<Views.UserControls.RevisionSummaryUserControl>();
+
+            // Phase 3.11：RepositoryContentUserControl（中间包装层，串联 Phase 3.4-3.10 所有 spike）
+            // 装入 RepositoryUserControl.RepositoryContentContainer
+            // 内含 RevisionView（RevisionListView + RevisionDetails）+ CommitView（CommitUserControl）
+            // 由 RepositoryViewMode.RevisionViewMode/CommitViewMode 切换可见性
+            services.AddTransient<Views.UserControls.RepositoryContentUserControl>();
         }
     }
 }
