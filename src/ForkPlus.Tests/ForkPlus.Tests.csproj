@@ -50,9 +50,13 @@
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
     <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM。Exists 守卫保证非 Windows
-         build 或子项目尚未构建时不会失败。-->
+         build 或子项目尚未构建时不会失败。
+         .NET 10 下 .exe 是 native apphost，托管代码在同名 .dll 中：
+         反射加载用 .dll，进程启动用 .exe，两者都要拷贝。-->
     <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
