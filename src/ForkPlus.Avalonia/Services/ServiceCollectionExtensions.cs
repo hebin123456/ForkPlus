@@ -69,6 +69,12 @@ namespace ForkPlus.Avalonia.Services
             // 真实 AvalonEdit 子树迁移留待 Phase 2.6 + 3.9b
             services.AddTransient<Views.UserControls.FileDiffControl>();
             services.AddTransient<Views.UserControls.CommitFileDiffControl>();
+
+            // Phase 3.8：CommitUserControl（spike 简化版）
+            // Grid 3 列：StageFile 占位 / GridSplitter / 嵌套 Grid 3 行
+            // （CommitFileDiffControl + 分隔 + commit message 编辑区）
+            // 装入 RepositoryContentUserControl（由 RepositoryViewMode.CommitViewMode 触发显示）
+            services.AddTransient<Views.UserControls.CommitUserControl>();
         }
     }
 }
