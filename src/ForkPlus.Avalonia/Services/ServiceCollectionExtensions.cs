@@ -27,7 +27,10 @@ namespace ForkPlus.Avalonia.Services
             // Phase 2.1：主题服务（Fluent 兜底）
             services.AddSingleton<IThemeService, AvaloniaThemeService>();
 
-            // Views（Phase 1 仅 AboutWindow；Phase 3 起逐步加 MainWindow / RepositoryUserControl 等）
+            // Views
+            // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
+            // Phase 1 的 AboutWindow 保留（通过菜单/按钮可达）
+            services.AddSingleton<MainWindow>();
             services.AddTransient<AboutWindow>();
         }
     }

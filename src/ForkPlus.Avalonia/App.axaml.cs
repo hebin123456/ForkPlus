@@ -50,10 +50,10 @@ namespace ForkPlus.Avalonia
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Phase 1：启动 AboutWindow 作为占位（端到端验证 Avalonia 骨架可启动）
-                // Phase 3 起替换为 MainWindow（迁移自 WPF 工程的 src/ForkPlus/UI/MainWindow.xaml）
-                var aboutWindow = _host.Services.GetRequiredService<AboutWindow>();
-                desktop.MainWindow = aboutWindow;
+                // Phase 3.1：启动 MainWindow 作为主窗口（spike 骨架版）
+                // Phase 1 的 AboutWindow 保留（通过菜单可达）
+                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                desktop.MainWindow = mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();
