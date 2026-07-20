@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Phase 0.6：ForkPlus.Core.Tests 工程。
+       TFM 为 net10.0（无 -windows 后缀），跨平台可编译。
+       只引用 ForkPlus.Core，承载针对 Core 业务逻辑的单元测试（已从 ForkPlus.Tests
+       拆分出来）。WPF/App.*/ForkPlusSettings 依赖的测试仍留在 ForkPlus.Tests。
+
+       重要：本工程不能引用任何 System.Windows.* / WPF / ForkPlus 主工程，否则破坏
+       跨平台目标。-->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RootNamespace>ForkPlus.Tests</RootNamespace>
+    <AssemblyName>ForkPlus.Core.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- .NET 10 支持：Microsoft.NET.Test.Sdk 17.13+ 起官方支持 .NET 10。-->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
+  </ItemGroup>
+
+</Project>

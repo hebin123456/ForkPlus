@@ -33,5 +33,12 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
+  <!-- Phase 0.6：让 ForkPlus.Core.Tests 可访问 Core 的 internal 成员。
+       与 src/ForkPlus/Properties/AssemblyInfo.cs 中 [InternalsVisibleTo("ForkPlus.Tests")]
+       的语义对齐——主工程的 internal 暴露给 ForkPlus.Tests，Core 的 internal 暴露给 ForkPlus.Core.Tests。-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ForkPlus.Core.Tests" />
+  </ItemGroup>
+
 </Project>
 
