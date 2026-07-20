@@ -1,10 +1,10 @@
+using ForkPlus.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ForkPlus.Git.Interaction;
-using ForkPlus.Settings;
 
 namespace ForkPlus.Shell.Interaction
 {
@@ -126,7 +126,7 @@ namespace ForkPlus.Shell.Interaction
 			string text = _command.ArgumentsString;
 			if (FilePath.EndsWith("git.exe"))
 			{
-				text = string.Join(" ", App.OverrideCredentialHelper) + " " + text;
+				text = string.Join(" ", ServiceLocator.GitEnvironment.OverrideCredentialHelper) + " " + text;
 			}
 			ProcessStartInfo processStartInfo = new ProcessStartInfo
 			{
@@ -143,13 +143,13 @@ namespace ForkPlus.Shell.Interaction
 				StandardErrorEncoding = Encoding.UTF8
 			};
 			processStartInfo.EnvironmentVariables["SSH_ASKPASS_REQUIRE"] = "force";
-			processStartInfo.EnvironmentVariables[Consts.Env.AskPass] = App.ForkCredentialHelperPath;
-			processStartInfo.EnvironmentVariables[Consts.Env.ForkPlusProcessId] = App.ProcessId.ToString();
+			processStartInfo.EnvironmentVariables[Consts.Env.AskPass] = ServiceLocator.AppContext.ForkCredentialHelperPath;
+			processStartInfo.EnvironmentVariables[Consts.Env.ForkPlusProcessId] = ServiceLocator.AppContext.ProcessId.ToString();
 			if (WorkingDirectory != null)
 			{
 				processStartInfo.EnvironmentVariables["FORK_REPOSITORY_PATH"] = WorkingDirectory;
 			}
-			string[] sshKeys = ForkPlusSettings.Default.SshKeys;
+			string[] sshKeys = ServiceLocator.UserSettings.SshKeys;
 			if (sshKeys != null && sshKeys.Length != 0)
 			{
 				StringBuilder stringBuilder = new StringBuilder(1024);

@@ -1,5 +1,5 @@
+using ForkPlus.Services;
 using System.Text.RegularExpressions;
-using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Git.Interaction;
 
 namespace ForkPlus.Jobs
@@ -13,14 +13,14 @@ namespace ForkPlus.Jobs
 		public static void Append(this JobMonitor monitor, [Null] string path, [Null] GitCommand command)
 		{
 			string text = command?.ArgumentsString ?? "";
-			if (App.OverrideCredentialHelperBt.Length != 0)
+			if (ServiceLocator.GitEnvironment.OverrideCredentialHelperBt.Length != 0)
 			{
-				string oldValue = string.Join(" ", App.OverrideCredentialHelperBt) + " ";
+				string oldValue = string.Join(" ", ServiceLocator.GitEnvironment.OverrideCredentialHelperBt) + " ";
 				text = text.Replace(oldValue, "");
 			}
-			if (App.OverrideCredentialHelper.Length != 0)
+			if (ServiceLocator.GitEnvironment.OverrideCredentialHelper.Length != 0)
 			{
-				string oldValue2 = string.Join(" ", App.OverrideCredentialHelper) + " ";
+				string oldValue2 = string.Join(" ", ServiceLocator.GitEnvironment.OverrideCredentialHelper) + " ";
 				text = text.Replace(oldValue2, "");
 			}
 			text = text.Replace("-c push.default=upstream ", "");
@@ -56,7 +56,7 @@ namespace ForkPlus.Jobs
 			{
 				operationName = operationName.Substring(ASCII_EL0.Length);
 			}
-			return PreferencesLocalization.Current(operationName);
+			return ServiceLocator.Localization.Current(operationName);
 		}
 	}
 }

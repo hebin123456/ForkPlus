@@ -27,5 +27,10 @@ namespace ForkPlus.Services.Wpf
 		public int CommitSubjectLowLimit => ForkPlusSettings.Default.CommitSubjectLowLimit;
 		public int CommitSubjectHighLimit => ForkPlusSettings.Default.CommitSubjectHighLimit;
 		public int MinPagesCount => ForkPlusSettings.Default.MinPagesCount;
+		public string AiReviewServiceUrl => ForkPlusSettings.Default.AiReviewServiceUrl;
+		public string AiReviewApiKey => ForkPlusSettings.Default.AiReviewApiKey;
+		public string AiReviewSelectedModel => ForkPlusSettings.Default.AiReviewSelectedModel;
+		public int AiReviewRetryCount => ForkPlusSettings.Default.AiReviewRetryCount;
+		public string CommitMessageRegex => ForkPlusSettings.Default.CommitMessageRegex;
 	}
 }

@@ -1,3 +1,4 @@
+using ForkPlus.Services;
 using System;
 using System.IO;
 using ForkPlus.Git.Commands;
@@ -19,7 +20,7 @@ namespace ForkPlus.Shell.Commands
 			try
 			{
 				string text = passphrase ?? "";
-				string path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(App.GitPath)), "usr", "bin", "ssh-keygen.exe");
+				string path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(ServiceLocator.GitEnvironment.GitPath)), "usr", "bin", "ssh-keygen.exe");
 				gitRequestResult = default(GitRequest).Path(path).Command("-y", "-P", text, "-f", keypath).ExecuteBt();
 			}
 			catch (Exception ex)

@@ -1,8 +1,8 @@
+using ForkPlus.Services;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using ForkPlus.Git;
-using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
@@ -216,13 +216,13 @@ namespace ForkPlus.Accounts
 				{
 					string string2 = json.GetString("error_description");
 					Log.Warn(@string + ": " + string2);
-					return PreferencesLocalization.FormatCurrent("GitLab error: {0}", string2 ?? @string);
+					return ServiceLocator.Localization.FormatCurrent("GitLab error: {0}", string2 ?? @string);
 				}
 				string string3 = json.GetString("message");
 				if (string3 != null)
 				{
 					Log.Warn(string3);
-					return PreferencesLocalization.FormatCurrent("GitLab error: {0}", string3);
+					return ServiceLocator.Localization.FormatCurrent("GitLab error: {0}", string3);
 				}
 				return null;
 			}
@@ -269,7 +269,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/issues/new");
 		}
@@ -281,7 +281,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest("/api/v4/projects", WebUtility.UrlEncode(slug), "issues");
 				apiRequest.AddParameter("scope", "all");
@@ -298,7 +298,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/merge_requests/new");
 		}
@@ -310,7 +310,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest("/api/v4/projects", WebUtility.UrlEncode(slug), "merge_requests");
 				apiRequest.AddParameter("scope", "all");

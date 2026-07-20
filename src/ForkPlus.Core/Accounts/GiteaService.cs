@@ -1,19 +1,18 @@
+using ForkPlus.Services;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using ForkPlus.Git;
-using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.Accounts
 {
-	public class GitHubService : GitService, INotificationGitService
+	public class GiteaService : GitService, INotificationGitService
 	{
 		private class Coder
 		{
 			[Null]
-			public static User DecodeUser(JObject json)
+			public static User DecodeUser(JObject json, string baseUrl)
 			{
 				string @string = json.GetString("login");
 				if (@string != null)
@@ -21,12 +20,9 @@ namespace ForkPlus.Accounts
 					string string2 = json.GetString("avatar_url");
 					if (string2 != null)
 					{
-						string string3 = json.GetString("html_url");
-						if (string3 != null)
-						{
-							string displayName = json.GetString("name") ?? @string;
-							return new User(@string, displayName, string2, string3);
-						}
+						string profileUrl = baseUrl + "/" + @string;
+						string displayName = json.GetString("full_name") ?? @string;
+						return new User(@string, displayName, string2, profileUrl);
 					}
 				}
 				Log.Warn("Cannot parse User json");
@@ -134,8 +130,7 @@ namespace ForkPlus.Accounts
 														Log.Warn("Cannot parse targetId in '" + string3 + "'");
 														return null;
 													}
-													string targetUrl = string3.Replace("://api.", "://").Replace("/repos/", "/").Replace("/commits/", "/commit/")
-														.Replace("/pulls/", "/pull/");
+													string targetUrl = string3.Replace("/api/v1/repos", "");
 													return new GitServiceNotification(@string, string2, date, valueOrDefault, string4, string5, valueOrDefault2, text, targetUrl);
 												}
 												return null;
@@ -171,7 +166,7 @@ namespace ForkPlus.Accounts
 					return GitServiceNotificationTargetType.Commit;
 				case "Issue":
 					return GitServiceNotificationTargetType.Issue;
-				case "PullRequest":
+				case "Pull":
 					return GitServiceNotificationTargetType.PullRequest;
 				default:
 					Log.Warn("Cannot parse notification type '" + text + "'");
@@ -180,13 +175,8 @@ namespace ForkPlus.Accounts
 			}
 
 			[Null]
-			public static IssuesResponse DecodeIssuesResponse(JObject json)
+			public static Issue[] DecodeIssueArray(JArray jArray)
 			{
-				if (!(json["items"] is JArray jArray))
-				{
-					Log.Warn("Cannot parse 'items'");
-					return null;
-				}
 				List<Issue> list = new List<Issue>(jArray.Count);
 				foreach (JToken item in jArray)
 				{
@@ -194,9 +184,11 @@ namespace ForkPlus.Accounts
 					if (issue != null)
 					{
 						list.Add(issue);
+						continue;
 					}
+					return null;
 				}
-				return new IssuesResponse(list.ToArray());
+				return list.ToArray();
 			}
 
 			[Null]
@@ -242,14 +234,8 @@ namespace ForkPlus.Accounts
 				return null;
 			}
 
-			[Null]
-			public static PullRequestsResponse DecodePullRequestsResponse(JObject json)
+			public static PullRequest[] DecodePullRequestArray(JArray jArray)
 			{
-				if (!(json["items"] is JArray jArray))
-				{
-					Log.Warn("Cannot parse 'items'");
-					return null;
-				}
 				List<PullRequest> list = new List<PullRequest>(jArray.Count);
 				foreach (JToken item in jArray)
 				{
@@ -259,7 +245,7 @@ namespace ForkPlus.Accounts
 						list.Add(pullRequest);
 					}
 				}
-				return new PullRequestsResponse(list.ToArray());
+				return list.ToArray();
 			}
 
 			[Null]
@@ -318,7 +304,7 @@ namespace ForkPlus.Accounts
 					if (@string != null)
 					{
 						Log.Warn(@string);
-						return PreferencesLocalization.FormatCurrent("GitHub Error: {0}", @string);
+						return ServiceLocator.Localization.FormatCurrent("Gitea Error: {0}", @string);
 					}
 				}
 				Log.Warn("Cannot parse Error json");
@@ -346,8 +332,6 @@ namespace ForkPlus.Accounts
 			}
 		}
 
-		private readonly bool _gitHubEnterprise;
-
 		public override Func<string, string, SearchQuery.Parameter>[] AllowedQueryParameters { get; } = new Func<string, string, SearchQuery.Parameter>[3]
 		{
 			SearchQuery.Assignee.TryCreate,
@@ -356,26 +340,25 @@ namespace ForkPlus.Accounts
 		};
 
 
-		protected override int PageSize => 70;
+		protected override int PageSize => 30;
 
-		public GitHubService(Connection connection, bool gitHubEnterprise = false)
+		public GiteaService(Connection connection)
 			: base(connection)
 		{
-			_gitHubEnterprise = gitHubEnterprise;
 		}
 
 		public override ServiceResult<User> GetUser()
 		{
-			return Request(GitHugSlug("/user"), Coder.DecodeUser);
+			return Request("/api/v1/user", (JObject jObject) => Coder.DecodeUser(jObject, Connection.ServerUrl));
 		}
 
 		public override IPaged<GitServiceRepository> GetRepositories()
 		{
 			return new Paginator<GitServiceRepository>(PageSize, delegate(int currentPage, int pageSize)
 			{
-				ApiRequest apiRequest = new ApiRequest(GitHugSlug("/user/repos"));
+				ApiRequest apiRequest = new ApiRequest("/api/v1/user/repos");
 				apiRequest.AddParameter("page", currentPage);
-				apiRequest.AddParameter("per_page", pageSize);
+				apiRequest.AddParameter("limit", pageSize);
 				return RequestArray(apiRequest, Coder.DecodeGitServiceRepositoryArray);
 			});
 		}
@@ -384,9 +367,9 @@ namespace ForkPlus.Accounts
 		{
 			return new Paginator<GitServiceNotification>(PageSize, delegate(int currentPage, int pageSize)
 			{
-				ApiRequest apiRequest = new ApiRequest("/notifications");
+				ApiRequest apiRequest = new ApiRequest("/api/v1/notifications");
 				apiRequest.AddParameter("page", currentPage);
-				apiRequest.AddParameter("per_page", pageSize);
+				apiRequest.AddParameter("limit", pageSize);
 				apiRequest.AddParameter("all", "true");
 				return RequestArray(apiRequest, Coder.DecodeGitServiceNotificationArray);
 			});
@@ -397,9 +380,9 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
-			return ServiceResult<string>.Success((_gitHubEnterprise ? Connection.ServerUrl : "https://github.com") + "/" + slug + "/issues/new");
+			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/issues/new");
 		}
 
 		public override IPaged<Issue> GetIssues(Remote remote, string queryString)
@@ -409,14 +392,15 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
-				ApiRequest apiRequest = new ApiRequest(GitHugSlug("/search/issues"));
+				ApiRequest apiRequest = new ApiRequest("/api/v1/repos/" + slug + "/issues");
+				apiRequest.AddParameter("type", "issues");
 				SearchQuery query = SearchQueryParser.Parse(queryString, AllowedQueryParameters);
-				ConfigureRequest(apiRequest, query, "repo:" + slug + " is:issue");
+				ConfigureRequest(apiRequest, query);
 				apiRequest.AddParameter("page", currentPage);
-				apiRequest.AddParameter("per_page", pageSize);
-				return RequestArray(apiRequest, Coder.DecodeIssuesResponse, (IssuesResponse x) => x.Issues);
+				apiRequest.AddParameter("limit", pageSize);
+				return RequestArray(apiRequest, Coder.DecodeIssueArray);
 			});
 		}
 
@@ -425,9 +409,9 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
-			return ServiceResult<string>.Success((_gitHubEnterprise ? Connection.ServerUrl : "https://github.com") + "/" + slug + "/compare");
+			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/compare");
 		}
 
 		public override IPaged<PullRequest> GetPullRequests(Remote remote, string queryString)
@@ -437,14 +421,15 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
-				ApiRequest apiRequest = new ApiRequest(GitHugSlug("/search/issues"));
+				ApiRequest apiRequest = new ApiRequest("/api/v1/repos/" + slug + "/issues");
+				apiRequest.AddParameter("type", "pulls");
 				SearchQuery query = SearchQueryParser.Parse(queryString, AllowedQueryParameters);
-				ConfigureRequest(apiRequest, query, "repo:" + slug + " is:pr");
+				ConfigureRequest(apiRequest, query);
 				apiRequest.AddParameter("page", currentPage);
-				apiRequest.AddParameter("per_page", pageSize);
-				return RequestArray(apiRequest, Coder.DecodePullRequestsResponse, (PullRequestsResponse x) => x.PullRequests);
+				apiRequest.AddParameter("limit", pageSize);
+				return RequestArray(apiRequest, Coder.DecodePullRequestArray);
 			});
 		}
 
@@ -458,47 +443,34 @@ namespace ForkPlus.Accounts
 			return base.DecodeJsonError<T>(jsonError);
 		}
 
-		private string GitHugSlug(string slug)
+		private static void ConfigureRequest(ApiRequest request, SearchQuery query)
 		{
-			if (_gitHubEnterprise)
-			{
-				return "/api/v3" + slug;
-			}
-			return slug;
-		}
-
-		private static void ConfigureRequest(ApiRequest request, SearchQuery query, string options)
-		{
-			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.Append(options + " sort:created-desc");
 			if (query.Parameters.Length == 0)
 			{
-				stringBuilder.Append(" state:open");
-				request.AddParameter("q", stringBuilder.ToString());
+				request.AddParameter("state", "open");
 				return;
 			}
+			request.AddParameter("state", "all");
 			SearchQuery.Parameter[] parameters = query.Parameters;
 			foreach (SearchQuery.Parameter parameter in parameters)
 			{
-				if (parameter is SearchQuery.Assignee assignee)
+				if (parameter is SearchQuery.Author author)
 				{
-					stringBuilder.Append(" assignee:" + assignee.Value);
+					request.AddParameter("created_by", author.Value);
 				}
-				else if (parameter is SearchQuery.Author author)
+				else if (parameter is SearchQuery.Assignee assignee)
 				{
-					stringBuilder.Append(" author:" + author.Value);
+					request.AddParameter("assigned_by", assignee.Value);
 				}
 				else if (parameter is SearchQuery.Milestone milestone)
 				{
-					stringBuilder.Append(" milestone:" + milestone.Value);
+					request.AddParameter("milestones", milestone.Value);
 				}
 				else if (parameter is SearchQuery.SearchString searchString)
 				{
-					stringBuilder.Append(" ");
-					stringBuilder.Append(searchString.Value);
+					request.AddParameter("q", searchString.Value);
 				}
 			}
-			request.AddParameter("q", stringBuilder.ToString());
 		}
 	}
 }

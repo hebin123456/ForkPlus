@@ -1034,7 +1034,7 @@ namespace ForkPlus
 				CredentialHelperArguments credentialHelperArguments = CredentialHelperArguments.Parse(request);
 				if (credentialHelperArguments != null)
 				{
-					Account account = AccountManager.Current.FindAccount(credentialHelperArguments.Host, credentialHelperArguments.Username);
+					Account account = AccountManager.Current.FindAccountConcrete(credentialHelperArguments.Host, credentialHelperArguments.Username);
 					if (account != null)
 					{
 						credentialHelperArguments.Username = account.Username;

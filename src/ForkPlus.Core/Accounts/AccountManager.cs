@@ -1,3 +1,4 @@
+using ForkPlus.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -233,6 +234,18 @@ namespace ForkPlus.Accounts
 		[Null]
 		public IAccount FindAccount(string host, [Null] string username)
 		{
+			return FindAccountConcrete(host, username);
+		}
+
+		/// <summary>
+		/// 返回具体 Account 类型的 FindAccount 重载。
+		/// IAccountManager.FindAccount 返回 IAccount（接口反转，便于 Core/Git/ 解耦），
+		/// 但主工程 UI 代码（App.xaml.cs、AccountsWindow 等）需要 Account 具体类型
+		/// 以访问 Service / Email 等 IAccount 未暴露的成员。Phase 0.5 完全迁移后可移除。
+		/// </summary>
+		[Null]
+		public Account FindAccountConcrete(string host, [Null] string username)
+		{
 			Account[] accounts = Accounts;
 			if (username != null)
 			{
@@ -266,10 +279,10 @@ namespace ForkPlus.Accounts
 			try
 			{
 				string content = Coder.Encode(Accounts).ToString(Formatting.Indented);
-				Directory.CreateDirectory(App.ForkDirectoryPath);
+				Directory.CreateDirectory(ServiceLocator.AppContext.ForkDataDirectoryPath);
 				try
 				{
-					FileHelper.AtomicWrite(Path.Combine(App.ForkDirectoryPath, "accounts.json"), content);
+					FileHelper.AtomicWrite(Path.Combine(ServiceLocator.AppContext.ForkDataDirectoryPath, "accounts.json"), content);
 				}
 				catch (Exception ex)
 				{
@@ -284,7 +297,7 @@ namespace ForkPlus.Accounts
 
 		private Account[] Load()
 		{
-			string path = Path.Combine(App.ForkDirectoryPath, "accounts.json");
+			string path = Path.Combine(ServiceLocator.AppContext.ForkDataDirectoryPath, "accounts.json");
 			try
 			{
 				if (File.Exists(path))

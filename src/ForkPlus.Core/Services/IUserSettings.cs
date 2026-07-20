@@ -52,5 +52,20 @@ namespace ForkPlus.Services
 
 		/// <summary>分页页数（派生：等价于 ForkPlusSettings.Default.MinPagesCount）。</summary>
 		int MinPagesCount { get; }
+
+		/// <summary>AI 代码审查服务 URL（等价于 ForkPlusSettings.Default.AiReviewServiceUrl）。</summary>
+		string AiReviewServiceUrl { get; }
+
+		/// <summary>AI 代码审查 API Key（等价于 ForkPlusSettings.Default.AiReviewApiKey）。</summary>
+		string AiReviewApiKey { get; }
+
+		/// <summary>AI 代码审查选中的模型（等价于 ForkPlusSettings.Default.AiReviewSelectedModel）。</summary>
+		string AiReviewSelectedModel { get; }
+
+		/// <summary>AI 代码审查重试次数（等价于 ForkPlusSettings.Default.AiReviewRetryCount）。</summary>
+		int AiReviewRetryCount { get; }
+
+		/// <summary>提交消息正则表达式（等价于 ForkPlusSettings.Default.CommitMessageRegex）。</summary>
+		string CommitMessageRegex { get; }
 	}
 }
