@@ -516,13 +516,14 @@ namespace ForkPlus.UI.UserControls
 			themeMenuItem.IsCheckable = true;
 			contextMenu.Items.Add(themeMenuItem);
 		}
-		// v3.1.1："纯色"二级菜单：父项 IsChecked 表示当前主题是某个纯色；子项 IsChecked 表示当前主题等于该项
-		MenuItem solidColorsParent = new MenuItem
-		{
-			Header = Preferences.PreferencesLocalization.Translate("Solid Colors", language),
-			IsCheckable = true,
-			IsChecked = !useCustom && currentTheme.IsSolidColor()
-		};
+		// v3.1.1："纯色"二级菜单：父项作为子菜单容器（不设 IsCheckable，否则 WPF 会把 Click 当作
+	// toggle IsChecked 而不是展开子菜单，且 TopLevelHeader 模板无右箭头提示，用户看不到入口）。
+	// v3.4.1：移除父项 IsCheckable/IsChecked，与 Git LFS / Git Flow 等二级菜单写法一致。
+	// 当前是否处于某个纯色主题，由子项的 IsChecked 反映。
+	MenuItem solidColorsParent = new MenuItem
+	{
+		Header = Preferences.PreferencesLocalization.Translate("Solid Colors", language)
+	};
 		foreach (ThemeType solidTheme in ThemeTypeExtensions.SolidColorThemes)
 		{
 			ThemeType solidCopy = solidTheme;

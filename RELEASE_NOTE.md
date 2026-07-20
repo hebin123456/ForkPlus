@@ -2,6 +2,17 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.4.1
+
+### Bug 修复：外观下拉"纯色"二级菜单无法展开
+
+v3.1.1 起"纯色"父菜单项设置了 `IsCheckable = true`，导致 WPF 把 Click 当作 toggle `IsChecked` 而不是展开子菜单；且 `TopLevelHeader` 模板里没有右箭头视觉提示（只有 `SubmenuHeader` 模板才有），用户完全看不到二级菜单入口。
+
+#### 修复
+
+- **`ToolbarUserControl.xaml.cs`**：移除 `solidColorsParent.IsCheckable` 和 `IsChecked`，让父项纯粹作为子菜单容器，与 Git LFS / Git Flow 等二级菜单写法一致。
+- 当前是否处于某个纯色主题，由子项（红/橙/黄/绿/青/蓝/紫）的 `IsChecked` 反映，语义不变。
+
 ## v3.4.0
 
 ### Layer 2：工作区级快照（追平 Tower）
