@@ -50,11 +50,14 @@ namespace ForkPlus.UI.Dialogs
 			JumpButton.Content = PreferencesLocalization.Translate("Jump to...", language);
 			StatusText.Text = PreferencesLocalization.Translate("Double-click an entry to jump to that state.", language);
 			// v3.4.1：翻译 GridView 列头
-			foreach (object col in ReflogListView.View.Columns)
+			if (ReflogListView.View is GridView gridView)
 			{
-				if (col is GridViewColumn gvc && gvc.Header is string header)
+				foreach (object col in gridView.Columns)
 				{
-					gvc.Header = PreferencesLocalization.Translate(header, language);
+					if (col is GridViewColumn gvc && gvc.Header is string header)
+					{
+						gvc.Header = PreferencesLocalization.Translate(header, language);
+					}
 				}
 			}
 		}
