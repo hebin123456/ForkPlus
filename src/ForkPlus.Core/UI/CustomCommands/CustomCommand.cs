@@ -158,35 +158,16 @@ namespace ForkPlus.UI.CustomCommands
 
 		private static bool ActionsAreEqual([Null] CustomCommandAction lhs, [Null] CustomCommandAction rhs)
 		{
-			if (lhs != null)
+			// Phase 0.2c：原本通过 `is ProcessCustomCommandAction` / `is ShCustomCommandAction` /
+			// `is UrlCustomCommandAction` 类型分支做相等比较。这些子类有 WPF 依赖，留在主工程，
+			// Core 不能引用。改为虚方法 CustomCommandEquals，由各子类实现具体属性比较。
+			// 不同类型比较时，子类的 CustomCommandEquals 会因为 `other is XxxAction` 为 false
+			// 而返回 false，与原逻辑等价。
+			if (lhs != null && rhs != null)
 			{
-				if (rhs != null)
-				{
-					if (lhs is ProcessCustomCommandAction processCustomCommandAction && rhs is ProcessCustomCommandAction processCustomCommandAction2)
-					{
-						if (processCustomCommandAction.Path == processCustomCommandAction2.Path && processCustomCommandAction.Parameters == processCustomCommandAction2.Parameters && processCustomCommandAction.ShowOutput == processCustomCommandAction2.ShowOutput)
-						{
-							return processCustomCommandAction.WaitForExit == processCustomCommandAction2.WaitForExit;
-						}
-						return false;
-					}
-					if (lhs is ShCustomCommandAction shCustomCommandAction && rhs is ShCustomCommandAction shCustomCommandAction2)
-					{
-						if (shCustomCommandAction.Script == shCustomCommandAction2.Script && shCustomCommandAction.ShowOutput == shCustomCommandAction2.ShowOutput)
-						{
-							return shCustomCommandAction.WaitForExit == shCustomCommandAction2.WaitForExit;
-						}
-						return false;
-					}
-					if (lhs is UrlCustomCommandAction urlCustomCommandAction && rhs is UrlCustomCommandAction urlCustomCommandAction2)
-					{
-						return urlCustomCommandAction.Url == urlCustomCommandAction2.Url;
-					}
-					return false;
-				}
-				return false;
+				return lhs.CustomCommandEquals(rhs);
 			}
-			return rhs == null;
+			return lhs == null && rhs == null;
 		}
 
 		private static bool ReferenceTargetsAreEqual(CustomCommandRefTarget[] lhs, CustomCommandRefTarget[] rhs)

@@ -46,8 +46,19 @@ namespace ForkPlus.UI.CustomCommands
 			WaitForExit = waitForExit;
 		}
 
-		public override void Execute(RepositoryUserControl repositoryUserControl, string customCommandName, CustomCommandEnvironment env)
+		// Phase 0.2c：原本由 CustomCommand.ActionsAreEqual 通过 `is ShCustomCommandAction`
+		// 类型分支做比较，逻辑迁入 Core 后改为虚方法分发。
+		public override bool CustomCommandEquals(CustomCommandAction other)
 		{
+			return other is ShCustomCommandAction s
+				&& Script == s.Script
+				&& ShowOutput == s.ShowOutput
+				&& WaitForExit == s.WaitForExit;
+		}
+
+		public override void Execute(object repositoryView, string customCommandName, CustomCommandEnvironment env)
+		{
+			RepositoryUserControl repositoryUserControl = (RepositoryUserControl)repositoryView;
 			Log.Info("Run bash custom action for '" + customCommandName + "'");
 			if (!WaitForExit)
 			{

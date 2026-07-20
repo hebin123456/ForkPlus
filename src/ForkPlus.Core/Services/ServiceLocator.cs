@@ -25,6 +25,8 @@ namespace ForkPlus.Services
 		public static ILocalizationService Localization { get; private set; }
 		public static IGitEnvironment GitEnvironment { get; private set; }
 		public static IDialogService Dialogs { get; private set; }
+		// Phase 0.2c 新增：用户设置抽象（ForkPlusSettings 暂未迁入 Core，先通过接口暴露 Git/ 所需属性）
+		public static IUserSettings UserSettings { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
 
@@ -38,7 +40,8 @@ namespace ForkPlus.Services
 			IWindowManagerService windowManager = null,
 			ILocalizationService localization = null,
 			IGitEnvironment gitEnvironment = null,
-			IDialogService dialogs = null)
+			IDialogService dialogs = null,
+			IUserSettings userSettings = null)
 		{
 			Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 			DesignMode = designMode ?? throw new ArgumentNullException(nameof(designMode));
@@ -50,6 +53,7 @@ namespace ForkPlus.Services
 			Localization = localization;
 			GitEnvironment = gitEnvironment;
 			Dialogs = dialogs;
+			UserSettings = userSettings;
 			IsInitialized = true;
 		}
 
@@ -62,6 +66,7 @@ namespace ForkPlus.Services
 			Localization = null;
 			GitEnvironment = null;
 			Dialogs = null;
+			UserSettings = null;
 			IsInitialized = false;
 		}
 	}

@@ -9,7 +9,13 @@ namespace ForkPlus.UI.CustomCommands
 			public const string Type = "cancel";
 		}
 
-		public override void Execute(RepositoryUserControl repositoryUserControl, string customCommandName, CustomCommandEnvironment env)
+		// Phase 0.2c：Cancel 动作无属性需要比较，同类型即视为相等。
+		public override bool CustomCommandEquals(CustomCommandAction other)
+		{
+			return other is CancelCustomCommandAction;
+		}
+
+		public override void Execute(object repositoryView, string customCommandName, CustomCommandEnvironment env)
 		{
 		}
 	}
