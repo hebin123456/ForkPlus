@@ -107,6 +107,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <!-- Phase 0.1：Core 工程承载平台无关的抽象接口（Services/），后续子阶段会迁入业务逻辑 -->
+    <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
   </ItemGroup>
 
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
