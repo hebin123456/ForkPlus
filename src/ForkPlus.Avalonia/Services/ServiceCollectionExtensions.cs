@@ -37,8 +37,12 @@ namespace ForkPlus.Avalonia.Services
             services.AddTransient<Views.UserControls.ToolbarUserControl>();
 
             // Phase 3.3：SidebarUserControl（spike 简化版）
-            // Phase 3.4 RepositoryUserControl 迁移时会引用
+            // Phase 3.4 RepositoryUserControl.EnsureLayoutInitialized 会注入到 Sidebar 容器
             services.AddTransient<Views.UserControls.SidebarUserControl>();
+
+            // Phase 3.4：RepositoryUserControl（spike 简化版，最大最复杂的 UserControl）
+            // Grid 3x3 布局 + Sidebar/Content 占位 + 33 个公共方法入口占位
+            services.AddTransient<Views.UserControls.RepositoryUserControl>();
         }
     }
 }

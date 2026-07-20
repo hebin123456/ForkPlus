@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryUserControl">
+    <!--
+        Phase 3.4：Avalonia 版 RepositoryUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryUserControl.xaml（24 行）：
+          - WPF 用 Grid 3 列 × 3 行：
+            Row 0: NotificationBar（跨 3 列）
+            Row 1: Sidebar 占位（RowSpan=2, Col=0）
+            Row 2: GridSplitter（Col=1）+ Content 占位（Col=2）
+          - 列宽：MinWidth=120 MaxWidth=600 / Auto / *
+          - 1 处 DynamicResource（VerticalGridSplitter 样式）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryUserControl.xaml.cs（1392 行）：
+          - 33 个公共方法（RefreshRepositoryTitle/UpdateRepositoryData/OpenRepository 等）
+          - 6 个私有字段（_isDirty/_layoutInitialized/_viewMode 等）
+          - 延迟初始化模式：EnsureLayoutInitialized() 在首次 InvalidateAndRefresh 时创建
+            Sidebar + Content 装入 RepositorySidebarContainer/RepositoryContentContainer
+
+        本 spike 版暂不迁移（留待 Phase 3.4 后续子阶段）：
+          - 完整 EnsureLayoutInitialized() 逻辑（创建 Sidebar + Content 装入容器）
+          - 33 个公共方法（OpenRepository/UpdateRepositoryData/InvalidateAndRefresh 等）
+          - NotificationCenter 事件订阅（RepositoryNameChanged/RepositoryColorChanged/
+            UpdateRepoStatusAutomaticallyChanged）
+          - Undo/Redo 子系统（v3.0.0，约 390 行）
+          - SidebarGridSplitter.DragCompleted 持久化列宽
+          - 依赖的服务：RepositoryManager.Instance / ForkPlusSettings.Default / NotificationCenter.Current /
+            MainWindow.Instance / GitModule / RepositoryData / RepositoryStatus / CommitGraphCache 等
+
+        本 spike 版验证：
+          - Grid 3 列 × 3 行布局正确显示
+          - NotificationBar 占位（暂用 Border + TextBlock）
+          - Sidebar 占位（暂用 ContentControl，Phase 3.4 后期装入 SidebarUserControl）
+          - GridSplitter 可拖动
+          - Content 占位（暂用 ContentControl，Phase 3.4 后期装入 RepositoryContentUserControl）
+    -->
+    <Grid Name="RepositoryUserControlGrid"
+          ColumnDefinitions="MinWidth=120 MaxWidth=600,Auto,*"
+          RowDefinitions="Auto,Auto,*">
+
+        <!-- Row 0: NotificationBar 占位（跨 3 列）-->
+        <Border Grid.Row="0" Grid.ColumnSpan="3"
+                Name="NotificationBarPlaceholder"
+                Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+                Padding="8,4">
+            <TextBlock Text="(no notifications)"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Border>
+
+        <!-- Row 1 + Row 2, Col 0: Sidebar 占位（Phase 3.4 后期装入 SidebarUserControl）-->
+        <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
+                        Name="RepositorySidebarContainer"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <!-- Row 2, Col 1: GridSplitter（可拖动调整 Sidebar 宽度）-->
+        <GridSplitter Grid.Row="2" Grid.Column="1"
+                      Name="SidebarGridSplitter"
+                      Width="4"
+                      ResizeDirection="Columns"
+                      Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                      HorizontalAlignment="Stretch" />
+
+        <!-- Row 2, Col 2: Content 占位（Phase 3.4 后期装入 RepositoryContentUserControl）-->
+        <ContentControl Grid.Row="2" Grid.Column="2"
+                        Name="RepositoryContentContainer"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    </Grid>
+</UserControl>
