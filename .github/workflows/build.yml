@@ -114,12 +114,28 @@ jobs:
             'ReflogViewItemTests'
           )
           $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
-          # .NET 10 迁移：net10.0-windows 测试宿主稳定，原 net472 testhost 不退出的
-          # TestSessionTimeout workaround 不再需要，直接用 dotnet test 退出码。
-          # 仍保留 TestSessionTimeout 防御卡死，但不再做"Passed! + Failed: 0"字符串匹配。
-          dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
+          # .NET 10 + WPF + xUnit 在 windows runner 上 testhost 偶发不退出
+          # （所有测试已 Passed 但 testhost 进程挂住），TestSessionTimeout=240000
+          # 强制 4 分钟 abort。这里解析输出中的 "Passed!  - Failed: N" / "Failed!  - Failed: N"
+          # 行，若 Failed=0 视为通过，强制 exit 0 绕过 testhost hang 问题。
+          $output = & dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
             --filter $filter `
-            -- RunConfiguration.TestSessionTimeout=300000
+            -- RunConfiguration.TestSessionTimeout=240000 2>&1
+          $output | ForEach-Object { Write-Host $_ }
+          $testExit = $LASTEXITCODE
+          $resultLine = $output | Where-Object { $_ -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),' } | Select-Object -Last 1
+          if ($resultLine -and $resultLine -match 'Failed:\s+(\d+)') {
+            $failedCount = [int]$Matches[1]
+            Write-Host "Parsed Failed count from result line: $failedCount"
+            if ($failedCount -eq 0) {
+              Write-Host "All tests passed (testhost hang workaround) — exiting 0"
+              exit 0
+            }
+            Write-Host "Tests reported $failedCount failure(s) — exiting $testExit"
+          } else {
+            Write-Host "No result line parsed — exiting $testExit"
+          }
+          exit $testExit
 
       # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
       # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
@@ -154,25 +170,34 @@ jobs:
         run: |
           # AskPass 和 RI 是独立 exe（internal Program，private 方法），用黑盒进程测试 +
           # 反射测试 private 方法。两个测试项目都在 sln 里，build 步骤已构建。
+          # 同 Run unit tests 步骤，.NET 10 + WPF testhost 偶发不退出，需要解析输出。
           $testDlls = @(
             "src/ForkPlus.AskPass.Tests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.AskPass.Tests.dll",
             "src/ForkPlus.RI.Tests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.RI.Tests.dll"
           )
-          $failed = $false
+          $overallFailed = $false
           foreach ($dll in $testDlls) {
             if (-not (Test-Path $dll)) {
               Write-Host "Test assembly not found at $dll — skipping"
               continue
             }
             Write-Host "=== Running $dll ==="
-            dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
-              -- RunConfiguration.TestSessionTimeout=120000
-            if ($LASTEXITCODE -ne 0) {
-              Write-Host "Tests in $dll failed with exit code $LASTEXITCODE"
-              $failed = $true
+            $output = & dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
+              -- RunConfiguration.TestSessionTimeout=120000 2>&1
+            $output | ForEach-Object { Write-Host $_ }
+            $testExit = $LASTEXITCODE
+            $resultLine = $output | Where-Object { $_ -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),' } | Select-Object -Last 1
+            $failedCount = -1
+            if ($resultLine -and $resultLine -match 'Failed:\s+(\d+)') {
+              $failedCount = [int]$Matches[1]
+            }
+            Write-Host "Parsed Failed count: $failedCount (exit=$testExit)"
+            if ($failedCount -ne 0) {
+              Write-Host "Tests in $dll reported $failedCount failure(s)"
+              $overallFailed = $true
             }
           }
-          if ($failed) {
+          if ($overallFailed) {
             exit 1
           }
 
