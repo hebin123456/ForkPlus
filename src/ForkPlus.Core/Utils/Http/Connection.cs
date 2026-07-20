@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -109,7 +110,7 @@ namespace ForkPlus.Utils.Http
 			// 确保请求和响应消息被释放，避免 socket/内存泄漏。
 			using (request)
 			{
-			request.Headers.Add("User-Agent", App.UserAgent);
+			request.Headers.Add("User-Agent", ServiceLocator.AppContext.UserAgent);
 			if (jsonRequest)
 			{
 				request.Headers.Add("Accept", "application/json; charset=utf-8");
@@ -210,7 +211,7 @@ namespace ForkPlus.Utils.Http
 			}
 			using (request)
 			{
-				request.Headers.Add("User-Agent", App.UserAgent);
+				request.Headers.Add("User-Agent", ServiceLocator.AppContext.UserAgent);
 				if (jsonRequest)
 				{
 					request.Headers.Add("Accept", "application/json; charset=utf-8");
