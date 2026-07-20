@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.SidebarUserControl"
+             Width="240">
+    <!--
+        Phase 3.3：Avalonia 版 SidebarUserControl 骨架（spike 简化版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/SidebarUserControl.xaml（105 行）+
+        SidebarUserControl.xaml.cs（2714 行）：
+          - WPF 顶层 Grid 2 行（Auto/*）：
+            Row 0: 仓库名 + 5 个 RadioButton（Changes/AllCommits/Branches/Search/Service）
+            Row 1: TabControl（Branches/Search/Service 3 个 TabItem）
+          - WPF SidebarTreeView 是 MultiselectionTreeView 自定义控件（自定义树视图）
+          - WPF FilterTextBox 是自定义控件（带过滤的 TextBox）
+
+        Sidebar 与 RepositoryUserControl 的关系（来自调研）：
+          - Sidebar 是 RepositoryUserControl 的子控件（非独立挂在 MainWindow）
+          - RepositoryUserControl.xaml.cs 行 794-798 在初始化时创建 Sidebar 装入 RepositorySidebarContainer
+          - Phase 3.3 创建骨架，等 Phase 3.4 RepositoryUserControl 迁移时引用
+
+        本 spike 版暂不迁移（留待 Phase 3.4 与 RepositoryUserControl 一起做）：
+          - 完整 Initialize(RepositoryUserControl) 逻辑
+          - SidebarTreeView + MultiselectionTreeView（需先迁移自定义控件）
+          - FilterTextBox（自定义控件）
+          - EditableTextBlock（仓库名可编辑，自定义控件）
+          - DropDownButton（Repo 设置菜单，自定义控件）
+          - UpdateRepositoryData / UpdateRepositoryStatus 等 ~15 个刷新方法
+          - 10+ 个右键菜单生成方法（CreateLocalBranchContextMenuItems 等）
+          - SearchTabItem / ServiceTabItem（自定义 TabItem）
+          - 拖拽 Drop 上下文菜单
+          - 多语言（ApplyLocalization）
+          - NotificationCenter 事件订阅
+          - 17 处 DynamicResource（主题样式/图标/画刷）
+
+        本 spike 版验证：
+          - 顶层 Grid 2 行布局正确显示
+          - 5 个 RadioButton（Changes/AllCommits/Branches/Search/Service）能切换
+          - 空 TabControl 能展示
+    -->
+    <Grid RowDefinitions="Auto,*"
+          Background="{DynamicResource Sidebar.Static.Background, FallbackValue=#252526}">
+
+        <!-- Row 0: 标题栏 + 5 个 RadioButton -->
+        <StackPanel Grid.Row="0" Margin="8,4">
+            <!-- Repo 标题栏（仓库名 + 设置按钮）-->
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                <Button Grid.Column="0" Name="RepoSettingsButton" Content="⚙"
+                        Click="RepoSettingsButton_Click"
+                        Background="Transparent"
+                        Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <TextBlock Grid.Column="1" Name="RepositoryNameText"
+                           Text="(no repository)"
+                           VerticalAlignment="Center"
+                           Margin="8,0"
+                           Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <Button Grid.Column="2" Name="RepoHideButton" Content="◀"
+                        Click="RepoHideButton_Click"
+                        Background="Transparent"
+                        Foreground="{DynamicResource ThemeForegroundBrush}" />
+            </Grid>
+
+            <!-- 视图切换 RadioButton -->
+            <StackPanel Orientation="Vertical" Spacing="2" Margin="0,4">
+                <RadioButton Name="ChangesRadioButton" Content="Changes"
+                             Click="ChangesRadioButton_Click"
+                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <RadioButton Name="AllCommitsRadioButton" Content="All Commits"
+                             IsChecked="True"
+                             Click="AllCommitsRadioButton_Click"
+                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+            </StackPanel>
+
+            <!-- 视图模式切换（Branches/Search/Service 3 个图标按钮）-->
+            <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center"
+                        Margin="0,4">
+                <RadioButton Name="BranchesRadioButton" Content="⌥"
+                             ToolTip.Tip="Branches"
+                             Click="BranchesRadioButton_Click"
+                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <RadioButton Name="SearchRadioButton" Content="🔍"
+                             ToolTip.Tip="Search Commits"
+                             Click="SearchRadioButton_Click"
+                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <RadioButton Name="ServiceRadioButton" Content="⇄"
+                             ToolTip.Tip="Pull Requests"
+                             IsVisible="False"
+                             Click="ServiceRadioButton_Click"
+                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Row 1: TabControl（Branches/Search/Service 3 个 Tab）-->
+        <TabControl Grid.Row="1" Name="SidebarTabControl"
+                    SelectionChanged="TabControl_SelectionChanged">
+            <TabItem Name="BranchesTabItem" Header="Branches">
+                <Grid RowDefinitions="Auto,*" Margin="4">
+                    <TextBox Grid.Row="0" Name="FilterTextBox"
+                             Watermark="Filter branches..."
+                             TextChanged="FilterTextBox_TextChanged"
+                             Margin="0,2" />
+                    <TextBlock Grid.Row="1" Text="(no branches)"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               FontSize="11" />
+                </Grid>
+            </TabItem>
+            <TabItem Name="SearchTabItem" Header="Search">
+                <TextBlock Text="(search not implemented in spike)"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           FontSize="11" />
+            </TabItem>
+            <TabItem Name="ServiceTabItem" Header="Service" IsVisible="False">
+                <TextBlock Text="(service not implemented in spike)"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           FontSize="11" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

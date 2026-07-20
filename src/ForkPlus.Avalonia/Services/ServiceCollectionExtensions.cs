@@ -35,6 +35,10 @@ namespace ForkPlus.Avalonia.Services
 
             // Phase 3.2：ToolbarUserControl（spike 简化版）
             services.AddTransient<Views.UserControls.ToolbarUserControl>();
+
+            // Phase 3.3：SidebarUserControl（spike 简化版）
+            // Phase 3.4 RepositoryUserControl 迁移时会引用
+            services.AddTransient<Views.UserControls.SidebarUserControl>();
         }
     }
 }
