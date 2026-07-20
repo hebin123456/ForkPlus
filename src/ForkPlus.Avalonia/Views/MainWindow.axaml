@@ -79,22 +79,11 @@
         <!-- Row 1: Phase 3.2 ToolbarUserControl（三列布局：左操作区/状态区/右操作区）-->
         <userControls:ToolbarUserControl Grid.Row="1" />
 
-        <!-- Row 2: 内容区（Phase 3.4 起填充 ClosableTabControl + RepositoryUserControl）-->
-        <Grid Grid.Row="2" Background="{DynamicResource ThemeBackgroundBrush}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                <TextBlock Text="ForkPlus Avalonia（Phase 3.1/3.2 骨架验证）"
-                           FontSize="18"
-                           HorizontalAlignment="Center"
-                           Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <TextBlock Name="StatusTextBlock"
-                           FontSize="12"
-                           HorizontalAlignment="Center"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                <TextBlock Name="ThemeInfoTextBlock"
-                           FontSize="11"
-                           HorizontalAlignment="Center"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-            </StackPanel>
-        </Grid>
+        <!-- Row 2: 内容区（Phase 3.13 起装入 RepositoryUserControl，
+             对照 WPF MainWindow.xaml 的 ClosableTabControl。
+             spike 阶段简化为单个 RepositoryUserControl，未来 Phase 3.x 后期会接入 TabManager）-->
+        <ContentControl Grid.Row="2"
+                        Name="MainContentContainer"
+                        Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}" />
     </Grid>
 </Window>
