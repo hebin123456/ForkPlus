@@ -605,6 +605,8 @@ namespace ForkPlus
 			// ServiceLocator.GitEnvironment.* 访问 Git 路径 / credential helper 等运行时属性。
 			// Phase 0.2c：注入 WpfUserSettings，业务层通过 ServiceLocator.UserSettings.Xxx
 			// 访问 ForkPlusSettings.Default 的 11 个 Git/ 所需属性（ForkPlusSettings 本身暂未迁入 Core）。
+			// Phase 0.2c：注入 AccountManager.Current 作为 IAccountManager，
+			// Core/Git/GetRemotesGitCommand 通过 ServiceLocator.AccountManager.FindAccount 查找账号。
 			WpfAppContext appContext = new WpfAppContext();
 			LocalizationService localization = new LocalizationService(appContext, () => ForkPlusSettings.Default.UiLanguage);
 			WpfGitEnvironment gitEnvironment = new WpfGitEnvironment();
@@ -619,7 +621,8 @@ namespace ForkPlus
 				windowManager: new WpfWindowManagerService(),
 				localization: localization,
 				gitEnvironment: gitEnvironment,
-				userSettings: userSettings
+				userSettings: userSettings,
+				accountManager: Accounts.AccountManager.Current
 			);
 			_ = IsDebug;
 			InitializeRenderMode();

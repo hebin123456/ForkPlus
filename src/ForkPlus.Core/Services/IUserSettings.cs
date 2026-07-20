@@ -21,11 +21,16 @@ namespace ForkPlus.Services
 		/// <summary>是否输出详细 git 命令日志（等价于 ForkPlusSettings.Default.VerboseGitOutput）。</summary>
 		bool VerboseGitOutput { get; }
 
-		/// <summary>是否显示 worktrees（等价于 ForkPlusSettings.Default.ShowWorktrees）。</summary>
-		bool ShowWorktrees { get; }
+		/// <summary>是否显示 worktrees（等价于 ForkPlusSettings.Default.ShowWorktrees）。
+		/// Phase 0.2c：RefreshRepositoryDataGitCommand 在检测到 worktrees 时会写入此属性。</summary>
+		bool ShowWorktrees { get; set; }
 
 		/// <summary>版本列表排序方式（等价于 ForkPlusSettings.Default.RevisionSortOrder）。</summary>
 		RevisionSortOrder RevisionSortOrder { get; }
+
+		/// <summary>是否记录方法执行耗时（等价于 ForkPlusSettings.Default.LogElapsedTime）。
+		/// Phase 0.2c：Benchmarker 通过此属性决定是否输出耗时日志。</summary>
+		bool LogElapsedTime { get; }
 
 		/// <summary>AI 代码审查超时秒数（等价于 ForkPlusSettings.Default.AiReviewTimeoutSeconds）。</summary>
 		int AiReviewTimeoutSeconds { get; }

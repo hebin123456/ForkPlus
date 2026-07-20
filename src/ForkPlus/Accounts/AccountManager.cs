@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.Accounts
 {
-	public class AccountManager
+	public class AccountManager : IAccountManager
 	{
 		private class Coder
 		{
@@ -231,7 +231,7 @@ namespace ForkPlus.Accounts
 		}
 
 		[Null]
-		public Account FindAccount(string host, [Null] string username)
+		public IAccount FindAccount(string host, [Null] string username)
 		{
 			Account[] accounts = Accounts;
 			if (username != null)

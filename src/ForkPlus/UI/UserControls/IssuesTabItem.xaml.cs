@@ -93,7 +93,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					RemoteDropdownButton.Collapse();
 				}
-				FilterTextBox.Hint = _selectedRemote?.Account.Service.AllowedQueryParametersHint();
+				FilterTextBox.Hint = _selectedRemote?.AccountConcrete.Service.AllowedQueryParametersHint();
 				Reset();
 			}
 		}
@@ -241,7 +241,7 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			AddSearchQueryToRecent(_searchQuery);
-			_pagedItems = _selectedRemote.Account.Service.GetIssues(_selectedRemote, _searchQuery);
+			_pagedItems = _selectedRemote.AccountConcrete.Service.GetIssues(_selectedRemote, _searchQuery);
 		}
 
 		private void LoadNext()
@@ -308,7 +308,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void NewIssueButton_Click(object sender, RoutedEventArgs e)
 		{
-			ServiceResult<string> newIssueUrl = _selectedRemote.Account.Service.GetNewIssueUrl(_selectedRemote);
+			ServiceResult<string> newIssueUrl = _selectedRemote.AccountConcrete.Service.GetNewIssueUrl(_selectedRemote);
 			if (newIssueUrl.Succeeded)
 			{
 				new Uri(newIssueUrl.Result).OpenInBrowser();

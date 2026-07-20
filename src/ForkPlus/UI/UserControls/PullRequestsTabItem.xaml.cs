@@ -94,7 +94,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					RemoteDropdownButton.Collapse();
 				}
-				FilterTextBox.Hint = _selectedRemote?.Account.Service.AllowedQueryParametersHint();
+				FilterTextBox.Hint = _selectedRemote?.AccountConcrete.Service.AllowedQueryParametersHint();
 				Reset();
 			}
 		}
@@ -116,7 +116,7 @@ namespace ForkPlus.UI.UserControls
 					FontSize = 12.0,
 					Margin = new Thickness(-10.0, 0.0, 0.0, 0.0)
 				});
-				if (_selectedRemote.Account.Service.AllowedQueryParameters.ContainsItem(SearchQuery.Author.TryCreate))
+				if (_selectedRemote.AccountConcrete.Service.AllowedQueryParameters.ContainsItem(SearchQuery.Author.TryCreate))
 				{
 					MenuItem menuItem = new MenuItem
 					{
@@ -132,7 +132,7 @@ namespace ForkPlus.UI.UserControls
 					};
 					contextMenu.Items.Add(menuItem);
 				}
-				if (_selectedRemote.Account.Service.AllowedQueryParameters.ContainsItem(SearchQuery.Assignee.TryCreate))
+				if (_selectedRemote.AccountConcrete.Service.AllowedQueryParameters.ContainsItem(SearchQuery.Assignee.TryCreate))
 				{
 					MenuItem menuItem2 = new MenuItem
 					{
@@ -248,7 +248,7 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			AddSearchQueryToRecent(_searchQuery);
-			_pagedItems = _selectedRemote.Account.Service.GetPullRequests(_selectedRemote, _searchQuery);
+			_pagedItems = _selectedRemote.AccountConcrete.Service.GetPullRequests(_selectedRemote, _searchQuery);
 		}
 
 		private void LoadNext()
@@ -314,7 +314,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void NewPullRequestButton_Click(object sender, RoutedEventArgs e)
 		{
-			ServiceResult<string> newPullRequestUrl = _selectedRemote.Account.Service.GetNewPullRequestUrl(_selectedRemote);
+			ServiceResult<string> newPullRequestUrl = _selectedRemote.AccountConcrete.Service.GetNewPullRequestUrl(_selectedRemote);
 			if (newPullRequestUrl.Succeeded)
 			{
 				new Uri(newPullRequestUrl.Result).OpenInBrowser();

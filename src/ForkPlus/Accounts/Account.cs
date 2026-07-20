@@ -6,7 +6,7 @@ using ForkPlus.Utils.Http;
 namespace ForkPlus.Accounts
 {
 	[DebuggerDisplay("{ServerUrl, nq} ({Username, nq})")]
-	public class Account
+	public class Account : IAccount
 	{
 		public static class Keys
 		{

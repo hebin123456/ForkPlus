@@ -13,8 +13,13 @@ namespace ForkPlus.Services.Wpf
 	{
 		public string UiLanguage => ForkPlusSettings.Default.UiLanguage;
 		public bool VerboseGitOutput => ForkPlusSettings.Default.VerboseGitOutput;
-		public bool ShowWorktrees => ForkPlusSettings.Default.ShowWorktrees;
+		public bool ShowWorktrees
+		{
+			get => ForkPlusSettings.Default.ShowWorktrees;
+			set => ForkPlusSettings.Default.ShowWorktrees = value;
+		}
 		public ForkPlus.Git.RevisionSortOrder RevisionSortOrder => ForkPlusSettings.Default.RevisionSortOrder;
+		public bool LogElapsedTime => ForkPlusSettings.Default.LogElapsedTime;
 		public int AiReviewTimeoutSeconds => ForkPlusSettings.Default.AiReviewTimeoutSeconds;
 		public string[] SshKeys => ForkPlusSettings.Default.SshKeys;
 		public int PageGuideLinePosition => ForkPlusSettings.Default.PageGuideLinePosition;

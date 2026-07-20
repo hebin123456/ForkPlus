@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.Accounts;
 
 namespace ForkPlus.Services
 {
@@ -27,6 +28,8 @@ namespace ForkPlus.Services
 		public static IDialogService Dialogs { get; private set; }
 		// Phase 0.2c 新增：用户设置抽象（ForkPlusSettings 暂未迁入 Core，先通过接口暴露 Git/ 所需属性）
 		public static IUserSettings UserSettings { get; private set; }
+		// Phase 0.2c 新增：Account 管理抽象（Account/AccountManager 暂未迁入 Core，先通过接口暴露 Git/ 所需方法）
+		public static IAccountManager AccountManager { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
 
@@ -41,7 +44,8 @@ namespace ForkPlus.Services
 			ILocalizationService localization = null,
 			IGitEnvironment gitEnvironment = null,
 			IDialogService dialogs = null,
-			IUserSettings userSettings = null)
+			IUserSettings userSettings = null,
+			IAccountManager accountManager = null)
 		{
 			Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 			DesignMode = designMode ?? throw new ArgumentNullException(nameof(designMode));
@@ -54,6 +58,7 @@ namespace ForkPlus.Services
 			GitEnvironment = gitEnvironment;
 			Dialogs = dialogs;
 			UserSettings = userSettings;
+			AccountManager = accountManager;
 			IsInitialized = true;
 		}
 
@@ -67,6 +72,7 @@ namespace ForkPlus.Services
 			GitEnvironment = null;
 			Dialogs = null;
 			UserSettings = null;
+			AccountManager = null;
 			IsInitialized = false;
 		}
 	}

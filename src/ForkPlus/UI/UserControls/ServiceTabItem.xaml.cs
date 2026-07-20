@@ -28,7 +28,7 @@ namespace ForkPlus.UI.UserControls
 		public void SetServices(Remote[] remotesWithService)
 		{
 			PullRequestsTabItem.SetServices(remotesWithService);
-			List<Remote> list = remotesWithService.Filter((Remote x) => x.Account.Service.SupportsIssues);
+			List<Remote> list = remotesWithService.Filter((Remote x) => x.AccountConcrete.Service.SupportsIssues);
 			if (list.Count > 0)
 			{
 				IssuesTabItem.Show();
