@@ -44,6 +44,21 @@
     <ProjectReference Include="..\ForkPlus.Core\ForkPlus.Core.csproj" />
   </ItemGroup>
 
+  <!-- Phase 2.5：Assets 资源（图标 PNG）。
+       Avalonia 用 AvaloniaResource 编译资源，编译后通过 avares:// URI 访问。
+       WPF 用 Resource + pack://application URI，Avalonia 改为 AvaloniaResource + avares://。
+       Bitmap 控件的 UriSource 在 Images.Light/Dark.axaml 中引用这些资源。 -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**\*.*" />
+  </ItemGroup>
+
+  <!-- Phase 2.5：axaml 资源（主题/样式文件）。
+       Avalonia 编译时会把 .axaml 转为 .baml 等价物，运行时通过 avares:// 加载。
+       Themes/ 下的 Colors.*.axaml / Brushes.axaml / Styles/*.axaml 都在这里。 -->
+  <ItemGroup>
+    <AvaloniaResource Include="Themes\**\*.axaml" />
+  </ItemGroup>
+
   <!-- Avalonia XAML 编译：axaml 文件由 Avalonia.Markup.Xaml AvaloniaXaml 编译器编译。
        Project File GUID 见 .sln 中本工程的 Project 条目（Avalonia 11 用标准 SDK 工程，
        不再需要老的 .xaml 编译 MSBuild 配置）。 -->

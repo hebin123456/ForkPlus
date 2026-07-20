@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Phase 2.5：FocusVisual 样式（焦点边框）。
+       来源：src/ForkPlus/Theme/Styles/Focusvisual.xaml
+       WPF 用 SystemColors.ControlTextBrushKey，Avalonia 改用 ThemeBorderHighBrush
+       （Fluent 主题提供的动态资源）。-->
+  <Style x:Key="FocusVisual" Selector="Control">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+</ResourceDictionary>
