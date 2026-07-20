@@ -24,8 +24,12 @@
          CS1522  空 switch block（已枚举所有 case 的 switch）
          CS0652  byte 与超范围常量比较
          CS8073  struct（如 Sha）与 null 比较恒为 false/true（用于 null 合并模式）
-         CS8632  代码局部用了 #nullable 注解但工程未全局启用 nullable -->
-    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632</NoWarn>
+         CS8632  代码局部用了 #nullable 注解但工程未全局启用 nullable
+         CA1416  平台兼容性分析：本工程 TFM 已是 net10.0-windows10.0.19041.0，
+                 整个工程只跑 Windows，但 AvalonEdit/OxyPlot/WebView2 等库的 API
+                 标注 [SupportedOSPlatform("Windows")]，分析器认为"call site 可达
+                 所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
