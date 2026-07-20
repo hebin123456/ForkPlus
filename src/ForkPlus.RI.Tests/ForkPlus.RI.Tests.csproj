@@ -7,6 +7,8 @@
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

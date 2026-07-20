@@ -12,6 +12,9 @@
     <Nullable>disable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
+    <!-- 不生成 .xml 文档注释导出文件（运行时不需要，仅供 IDE IntelliSense / API 文档用途）。
+         .NET SDK 默认会为 Release build 生成 *.xml，与 dll 同名，导致产物目录多出大量 xml 文件。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>app.ico</ApplicationIcon>
@@ -150,12 +153,36 @@
     <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
   </Target>
 
-  <Target Name="RemoveDuplicateWebView2Loader" AfterTargets="Build;Publish">
-    <ItemGroup>
-      <DuplicateWebView2Loader Include="$(TargetDir)runtimes\**\WebView2Loader.dll" />
-      <DuplicateWebView2Loader Include="$(PublishDir)runtimes\**\WebView2Loader.dll" Condition="'$(PublishDir)' != ''" />
-    </ItemGroup>
-    <Delete Files="@(DuplicateWebView2Loader)" />
+  <!-- WebView2Loader.dll 处理：
+       Microsoft.Web.WebView2 NuGet 包按 RID 把 native loader 放在
+         runtimes\win-x64\native\WebView2Loader.dll
+         runtimes\win-x86\native\WebView2Loader.dll
+         runtimes\win-arm64\native\WebView2Loader.dll
+       原 .NET Framework 4.7.2 设计是平铺在 bin 根目录（见 AssemblyInfo.cs 的
+       [AssemblyAssociatedContentFile("webview2loader.dll")]），WebView2 初始化时
+       从根目录加载。.NET 10 下 NuGet 不再平铺放，需手动把当前 PlatformTarget
+       对应的 WebView2Loader.dll 拷到根目录，再删 runtimes 子目录避免冗余。
+
+       $(PlatformTarget) = x64 时取 win-x64 那份；x86/arm64 同理。-->
+  <Target Name="CopyWebView2LoaderToRoot" AfterTargets="Build;Publish">
+    <PropertyGroup>
+      <!-- win-x64 / win-x86 / win-arm64 三种之一，匹配 PlatformTarget -->
+      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x64'">win-x64</WebView2RuntimeRid>
+      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x86'">win-x86</WebView2RuntimeRid>
+      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'arm64'">win-arm64</WebView2RuntimeRid>
+      <WebView2RuntimeRid Condition="'$(WebView2RuntimeRid)' == ''">win-x64</WebView2RuntimeRid>
+    </PropertyGroup>
+    <!-- Build 输出目录（$(TargetDir)）-->
+    <Copy SourceFiles="$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
+    <!-- Publish 输出目录（$(PublishDir)，仅在 publish 时有值）-->
+    <Copy SourceFiles="$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
+          DestinationFolder="$(PublishDir)"
+          SkipUnchangedFiles="true"
+          Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
+    <!-- 删 runtimes 子目录（loader 已拷到根目录，避免重复）-->
     <RemoveDir Directories="$(TargetDir)runtimes" Condition="Exists('$(TargetDir)runtimes')" />
     <RemoveDir Directories="$(PublishDir)runtimes" Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes')" />
   </Target>
