@@ -1,13 +1,24 @@
-name: Build Windows
+name: Build
 
 on:
   push:
-    tags: [ "v*" ]
+    branches: [master-update]
+    tags: ["v*"]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_suffix: windows
+          - os: ubuntu-latest
+            artifact_suffix: linux
+          - os: macos-latest
+            artifact_suffix: macos
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
     steps:
@@ -15,28 +26,58 @@ jobs:
         with:
           submodules: recursive
 
+      # ===== biturbo 原生库拉取冒烟测试（所有平台）=====
+      # 验证 ForkPlus.csproj 中 RestoreBiturbo target 描述的多平台 asset 可达：
+      #   Windows → biturbo.dll, Linux → libbiturbo.so, macOS → libbiturbo.dylib
+      # Windows 后续 build 步骤会再次走 RestoreBiturbo（命中已下载文件，跳过）；
+      # 非 Windows 暂只做这一步冒烟（WPF net472 还无法在非 Windows 上构建）。
+      - name: Fetch biturbo native lib (non-Windows smoke test)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -e
+          mkdir -p third_party
+          case "$RUNNER_OS" in
+            macOS) asset=libbiturbo.dylib ;;
+            *)     asset=libbiturbo.so ;;
+          esac
+          url="https://github.com/hebin123456/Biturbo/releases/latest/download/$asset"
+          echo "Fetching $url → third_party/$asset"
+          curl -fsSL "$url" -o "third_party/$asset"
+          ls -lh "third_party/$asset"
+          echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
+
       # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
       # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
       # key 绑定 tokei 版本号，升级时自动失效重新编译。
+      # 仅 Windows：tokei.exe 产物名带 .exe，非 Windows 上 cargo 产出无后缀。
       - name: Cache tokei
+        if: runner.os == 'Windows'
         uses: actions/cache@v4
         with:
           path: third_party/tokei.exe
           key: tokei-14.0.0-windows-x86_64
 
+      # 以下完整构建 / 测试 / 产物 / 发布仅 Windows 跑。
+      # 非 Windows 等 ForkPlus 迁移到跨平台 UI 框架后再放开。
       - name: Setup MSBuild
+        if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
+        if: runner.os == 'Windows'
         uses: nuget/setup-nuget@v2
 
       - name: Restore NuGet packages
+        if: runner.os == 'Windows'
         run: msbuild ForkPlus.sln /t:Restore /p:Configuration=Release
 
       - name: Build (Release)
+        if: runner.os == 'Windows'
         run: msbuild ForkPlus.sln /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
 
       - name: Run unit tests
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $dll = "src/ForkPlus.Tests/bin/Release/net472/ForkPlus.Tests.dll"
@@ -97,6 +138,7 @@ jobs:
       # 本地交互式桌面仍可手动运行：dotnet test src/ForkPlus.AutomationTests/...
       # 待后续接入 self-hosted runner with interactive desktop 后再启用。
       # - name: Run system tests (ST)
+      #   if: runner.os == 'Windows'
       #   continue-on-error: true
       #   shell: pwsh
       #   env:
@@ -127,6 +169,7 @@ jobs:
       #     exit $stExitCode
 
       - name: Run AskPass and RI unit tests
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           # AskPass 和 RI 是独立 exe（internal Program，private 方法），用黑盒进程测试 +
@@ -161,22 +204,23 @@ jobs:
           exit 1
 
       - name: Upload artifact
+        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: ForkPlus-windows
+          name: ForkPlus-${{ matrix.artifact_suffix }}
           path: src/ForkPlus/bin/Release/net472/
           if-no-files-found: error
 
       - name: Package release zip
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path src/ForkPlus/bin/Release/net472/* -DestinationPath ForkPlus-${{ github.ref_name }}-windows.zip -CompressionLevel Optimal
+          Compress-Archive -Path src/ForkPlus/bin/Release/net472/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
 
       - name: Release on tag
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ForkPlus-${{ github.ref_name }}-windows.zip
+            ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
           generate_release_notes: true

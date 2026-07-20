@@ -94,26 +94,46 @@
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- biturbo.dll 不再以二进制提交到仓库，改为构建期从 Biturbo 仓库最新 release 拉取。
-       缺失时下载到 third_party/；已存在则跳过（CI 每次全新 checkout 都会拉最新版）。-->
-  <Target Name="RestoreBiturbo" BeforeTargets="Build" Condition="!Exists('..\..\third_party\biturbo.dll')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri 'https://github.com/hebin123456/Biturbo/releases/latest/download/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+  <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
+       Biturbo 仓库最新 release 拉取。Biturbo v1.1.0 起发布多平台 asset：
+         Windows → biturbo.dll
+         Linux   → libbiturbo.so
+         macOS   → libbiturbo.dylib
+       本 target 按 $(OS) 选择对应 asset，缺失时下载到 third_party/；已存在则跳过。
+       CI 每次全新 checkout 都会拉最新版。-->
+  <Target Name="RestoreBiturbo" BeforeTargets="Build">
+    <PropertyGroup>
+      <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
+    </PropertyGroup>
+    <!-- Windows: PowerShell 拉取 biturbo.dll -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib。
+         用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
+         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
 
   <!-- tokei.exe（代码行数统计，MIT 协议）从源码编译。
        tokei 上游 release 只发布源码、不发布预编译二进制，故缺失时用 cargo install 从
        crates.io 拉源码编译到临时目录，再把 bin/tokei.exe 移到 third_party/tokei.exe。
        本地首次编译需 Rust 工具链（rustup）；CI 用 actions/cache 缓存 third_party/tokei.exe
-       命中后跳过编译。cargo 不可用时给出清晰错误提示。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe')">
+       命中后跳过编译。cargo 不可用时给出清晰错误提示。
+       暂仅 Windows：tokei.exe 是 Windows 产物名，非 Windows 上 cargo 产出无 .exe 后缀。
+       多平台 tokei 适配留待后续。-->
+  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $out='..\..\third_party\tokei.exe'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $cargo = Get-Command cargo -ErrorAction SilentlyContinue; if(-not $cargo){ throw &quot;tokei.exe not found at $out and cargo not on PATH. Install Rust (https://rustup.rs) and re-run, or manually build tokei from https://github.com/XAMPPRocky/tokei and place the executable at $out.&quot; }; $root='..\..\third_party\.tokei-install'; if(Test-Path $root){ Remove-Item $root -Recurse -Force }; Write-Host 'Building tokei via cargo install (first run may take a few minutes)...'; &amp; cargo install tokei --version 14.0.0 --locked --root $root --no-track; if($LASTEXITCODE -ne 0){ throw 'cargo install tokei failed with exit code ' + $LASTEXITCODE }; $built = Join-Path $root 'bin\tokei.exe'; if(-not (Test-Path $built)){ throw &quot;tokei.exe not found at $built after cargo install&quot; }; Move-Item $built $out -Force; Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue; Write-Host &quot;Built and installed tokei.exe to $out&quot;&quot;" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\net472\ForkPlus.AskPass.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\net472\ForkPlus.RI.exe')" />
+    <!-- biturbo 原生库按平台拷贝：Exists 守卫确保只拷实际存在的那一份 -->
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
   </Target>
 
   <Target Name="RemoveDuplicateWebView2Loader" AfterTargets="Build;Publish">
