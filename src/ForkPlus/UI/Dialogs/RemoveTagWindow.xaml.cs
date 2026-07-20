@@ -92,7 +92,10 @@ namespace ForkPlus.UI.Dialogs
 			bool valueOrDefault = DeleteFromRemotesCheckBox.IsChecked.GetValueOrDefault();
 			Remote[] remotes = (valueOrDefault ? _remotes.Items : new Remote[0]);
 			DisableEditableControls();
-			string name = ((tags.Length > 1) ? $"Delete {tags.Length} tags" : ("Delete '" + tags[0].Name + "'"));
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+		string name = ((tags.Length > 1)
+			? PreferencesLocalization.FormatCurrent("Delete {0} tags", tags.Length)
+			: PreferencesLocalization.FormatCurrent("Delete '{0}'", tags[0].Name));
 			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				base.Dispatcher.Async(delegate

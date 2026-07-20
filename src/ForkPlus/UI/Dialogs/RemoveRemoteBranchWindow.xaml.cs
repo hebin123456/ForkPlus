@@ -73,7 +73,10 @@ namespace ForkPlus.UI.Dialogs
 		{
 			DisableEditableControls();
 			GitModule gitModule = _repositoryUserControl.GitModule;
-			string name = ((_remoteBranches.Length > 1) ? $"Delete {_remoteBranches.Length} branches" : ("Delete '" + _remoteBranches[0].Name + "'"));
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+		string name = ((_remoteBranches.Length > 1)
+			? PreferencesLocalization.FormatCurrent("Delete {0} branches", _remoteBranches.Length)
+			: PreferencesLocalization.FormatCurrent("Delete '{0}'", _remoteBranches[0].Name));
 			// v3.4.0 Layer 2：删远程 branch 走 AddUndoable，操作前抓工作区快照。
 			// 注意：远程分支删除需 push --delete，本地 Undo 无法恢复远程，但可恢复本地 tracking ref 和设置。
 			_repositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)

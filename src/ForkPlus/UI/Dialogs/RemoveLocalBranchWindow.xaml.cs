@@ -194,7 +194,10 @@ namespace ForkPlus.UI.Dialogs
 			List<string> pinned = new List<string>(_references.PinnedReferences);
 			List<string> filtered = new List<string>(_references.FilterReferences);
 			DisableEditableControls();
-			string name = ((branchesToRemove.Length > 1) ? $"Delete {branchesToRemove.Length} branches" : ("Delete '" + branchesToRemove[0].Name + "'"));
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+		string name = ((branchesToRemove.Length > 1)
+			? string.Format(Translate("Delete {0} branches"), branchesToRemove.Length)
+			: string.Format(Translate("Delete '{0}'"), branchesToRemove[0].Name));
 			bool removeWorktree = DeleteWorktreeCheckBox.IsChecked.GetValueOrDefault();
 			Worktree? worktreeToRemove = _worktreeToRemove;
 			// v3.4.0 Layer 2：删 branch 走 AddUndoable，操作前抓工作区快照（stash create），

@@ -4,6 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -23,7 +24,8 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			string title = GetTitle(changedFiles, shaString);
-			string text = ((changedFiles.Length > 1) ? "Reset Files" : "Reset File");
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+			string text = ((changedFiles.Length > 1) ? PreferencesLocalization.Current("Reset Files") : PreferencesLocalization.Current("Reset File"));
 			if (!new MessageBoxWindow(title, "The current file changes will be discarded.", text).ShowDialog().GetValueOrDefault())
 			{
 				return;

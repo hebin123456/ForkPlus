@@ -5,6 +5,7 @@ using ForkPlus.Git.Diff;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -44,7 +45,8 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
-			string name = (staged ? "Unstage" : "Stage");
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+			string name = staged ? PreferencesLocalization.Current("Unstage") : PreferencesLocalization.Current("Stage");
 			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				if (!new ApplyGitCommand().Execute(gitModule, staged, patchData).Succeeded)

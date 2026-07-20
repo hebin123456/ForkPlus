@@ -188,9 +188,12 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void UpdateTitle(RepositoryUserControl repositoryUserControl, string newValue)
-		{
-			newValue = newValue ?? "";
-			string currentTitle = TitleTextBlock.Text ?? "";
+	{
+		newValue = newValue ?? "";
+		// v3.4.1：Job.Name 可能是调用方硬编码的英文（如 "Stage"/"Reset File"/"Delete 'X'"），
+		// 这里统一走 Translate 二次翻译，配合 PreferencesLocalization 的字典/模式匹配救回大部分情况。
+		newValue = Translate(newValue);
+		string currentTitle = TitleTextBlock.Text ?? "";
 			string currentSecondaryTitle = SecondaryTitleTextBlock.Text ?? "";
 			if (!(currentTitle == newValue) && !(currentSecondaryTitle == newValue))
 			{

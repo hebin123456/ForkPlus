@@ -163,7 +163,10 @@ namespace ForkPlus.UI.Dialogs
 			Remote remoteToEdit = _remoteToEdit;
 			bool syncWithParent = SyncCheckBox.IsChecked.GetValueOrDefault();
 			GitModule gitModule = _gitModule;
-			string name = (edit ? ("Edit remote '" + _remoteToEdit.Name + "'") : ("Add remote '" + newName + "'"));
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+		string name = (edit
+			? PreferencesLocalization.FormatCurrent("Edit remote '{0}'", _remoteToEdit.Name)
+			: PreferencesLocalization.FormatCurrent("Add remote '{0}'", newName));
 			DisableEditableControls();
 			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{

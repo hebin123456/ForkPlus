@@ -4,6 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -17,7 +18,8 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl, GitModule gitModule, LocalBranch localBranch, RemoteBranch trackingReference)
 		{
-			string name = ((trackingReference == null) ? "Remove tracking reference" : "Update tracking reference");
+			// v3.4.1：状态栏标题国际化（之前是硬编码英文）
+		string name = ((trackingReference == null) ? PreferencesLocalization.Current("Remove tracking reference") : PreferencesLocalization.Current("Update tracking reference"));
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateTrackingReferenceResult = new UpdateTrackingReferenceGitCommand().Execute(gitModule, localBranch, trackingReference, monitor);

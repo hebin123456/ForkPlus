@@ -11,6 +11,10 @@
 - 修复 Hex Diff 顶部"源/目标"标签未与下方编辑器对齐，并改名为更直观的"修改前/修改后"
 - 修复 Reflog History 窗口列头及"View Reflog..."菜单项未国际化的问题
 - 修复重启 ForkPlus 后撤销栈为空时无法打开 Reflog History 界面的问题
+- 修复 Reflog 跳转对话框（Jump to HEAD to xxxx / This will reset your xxxx）未国际化的问题
+- 修复 commit 完成后撤销按钮未激活的问题
+- 修复「Compose WIP into commits...」快捷键与「Commit & Push」重叠的问题，改为 Ctrl+Alt+Enter
+- 修复撤销/重做过程中状态栏标题（Stage / Unstage / Reset File / Delete 'X' / Add remote 'X' 等）未国际化的问题
 
 ### 新特性
 
