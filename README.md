@@ -1,7 +1,7 @@
 # ForkPlus
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build-windows.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build-windows.yml)
+[![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
 
 一款使用 Rust 重写底层引擎的高性能 Git 图形化客户端，内置 AI 辅助开发、8 种语言、12 套主题皮肤、git mm 工作流，以及贡献热力图、仓库树图等可视化能力。
@@ -51,15 +51,15 @@ ForkPlus/
 ### 环境要求
 
 - Windows 10 或更高版本
-- Visual Studio 2019/2022，或 .NET SDK + MSBuild
-- .NET Framework 4.7.2 目标包
+- Visual Studio 2022 17.13+，或 .NET 10 SDK
+- .NET 10 SDK（含 Windows Desktop runtime）
 - Git 2.31 或更高版本（推荐 2.40+，低于此版本启动时会警告，部分功能可能异常）
 - git-mm 3.0 或更高版本（使用 git mm 工作流时必需，低于此版本启动时会警告；未安装时 git mm 工作区功能不可用，可在偏好设置中配置 git-mm.exe 路径）
 
 ### 编译步骤
 
-- 用 Visual Studio 打开 `ForkPlus.sln`，选择 Release 配置编译
-- 或命令行执行：`msbuild ForkPlus.sln /p:Configuration=Release`
+- 用 Visual Studio 2022 17.13+ 打开 `ForkPlus.sln`，选择 Release 配置编译
+- 或命令行执行：`dotnet build ForkPlus.sln -c Release`
 
 ### biturbo.dll 来源
 
@@ -87,7 +87,7 @@ ForkPlus/
 
 ### 持续集成
 
-项目配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
+项目配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)），打 `v*` 开头的 tag 会自动在 Windows 环境编译，并发布完整运行时 zip 包到 GitHub Release。
 
 ```bash
 git tag v1.7.0

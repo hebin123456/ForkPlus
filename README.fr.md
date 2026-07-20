@@ -43,19 +43,19 @@ ForkPlus/
 ### Prérequis
 
 - Windows 10 ou version ultérieure
-- Visual Studio 2019/2022, ou .NET SDK + MSBuild
-- Pack de ciblage .NET Framework 4.7.2
+- Visual Studio 2022 17.13+, ou .NET 10 SDK
+- .NET 10 SDK (avec Windows Desktop runtime)
 - Git 2.31 ou version ultérieure (2.40+ recommandé ; les versions antérieures déclenchent un avertissement au démarrage et certaines fonctionnalités peuvent dysfonctionner)
 - git-mm 3.0 ou ultérieur (requis pour le workflow git mm ; un avertissement s'affiche au démarrage si la version est inférieure ou absente ; chemin git-mm.exe configurable dans les Préférences)
 
 ### Étapes de compilation
 
-- Ouvrir `ForkPlus.sln` dans Visual Studio, sélectionner la configuration Release et compiler
-- Ou exécuter en ligne de commande : `msbuild ForkPlus.sln /p:Configuration=Release`
+- Ouvrir `ForkPlus.sln` dans Visual Studio 2022 17.13+, sélectionner la configuration Release et compiler
+- Ou exécuter en ligne de commande : `dotnet build ForkPlus.sln -c Release`
 
 ### Intégration continue
 
-Le projet est configuré avec GitHub Actions ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)). Pousser un tag `v*` déclenche automatiquement une compilation sur Windows et publie un zip d'exécution complet vers GitHub Release.
+Le projet est configuré avec GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)). Pousser un tag `v*` déclenche automatiquement une compilation sur Windows et publie un zip d'exécution complet vers GitHub Release.
 
 ```bash
 git tag v1.3.0

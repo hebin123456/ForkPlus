@@ -43,19 +43,19 @@ ForkPlus/
 ### 環境要求
 
 - Windows 10 或更高版本
-- Visual Studio 2019/2022，或 .NET SDK + MSBuild
-- .NET Framework 4.7.2 目標包
+- Visual Studio 2022 17.13+，或 .NET 10 SDK
+- .NET 10 SDK（含 Windows Desktop runtime）
 - Git 2.31 或更高版本（推薦 2.40+，低於此版本啟動時會警告，部分功能可能異常）
 - git-mm 3.0 或更新版本（使用 git mm 工作流時必需，低於此版本啟動時會警告；未安裝時 git mm 工作區功能不可用，可在偏好設定中設定 git-mm.exe 路徑）
 
 ### 編譯步驟
 
-- 用 Visual Studio 開啟 `ForkPlus.sln`，選擇 Release 配置編譯
-- 或命令列執行：`msbuild ForkPlus.sln /p:Configuration=Release`
+- 用 Visual Studio 2022 17.13+ 開啟 `ForkPlus.sln`，選擇 Release 配置編譯
+- 或命令列執行：`dotnet build ForkPlus.sln -c Release`
 
 ### 持續整合
 
-專案配置了 GitHub Actions（[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)），打 `v*` 開頭的 tag 會自動在 Windows 環境編譯，並發布完整執行時 zip 包到 GitHub Release。
+專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)），打 `v*` 開頭的 tag 會自動在 Windows 環境編譯，並發布完整執行時 zip 包到 GitHub Release。
 
 ```bash
 git tag v1.3.0

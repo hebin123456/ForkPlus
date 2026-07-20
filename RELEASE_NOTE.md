@@ -2,6 +2,58 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.5.0
+
+### 框架迁移：.NET Framework 4.7.2 → .NET 10
+
+- 整个解决方案从 .NET Framework 4.7.2 迁移到 .NET 10 LTS（TFM：`net10.0-windows10.0.19041.0`，Windows-only）
+- 主工程 `ForkPlus.csproj` 改为 SDK 风格工程：`Microsoft.NET.Sdk.WindowsDesktop` → `Microsoft.NET.Sdk` + `<UseWPF>true</UseWPF>`
+- 子进程工程 `ForkPlus.AskPass` / `ForkPlus.RI` 同步迁移到 `net10.0-windows10.0.19041.0`
+- 删除 6 个旧 Reference（PresentationCore / WindowsBase / System.Core / System.Net.Http / System.IO.Compression / System.IO.Compression.FileSystem），由 SDK 隐式提供
+- 删除 `App.config`（assemblyBinding / enforceFIPSPolicy / supportedRuntime 在 .NET 10 无效）
+
+### 跨平台原生库加载
+
+- `Bt.cs` 引入 `NativeLibrary.SetDllImportResolver`：51 处 `[DllImport("biturbo.dll")]` 在静态构造里按 OS 重定向到 `biturbo.dll` / `libbiturbo.so` / `libbiturbo.dylib`
+- `RestoreBiturbo` MSBuild target 多平台化：Windows 用 PowerShell 拉 `biturbo.dll`，Unix 用 bash + curl 按 `uname -s` 选 `.so` / `.dylib`
+
+### 测试框架升级
+
+- 单元测试工程 `ForkPlus.Tests` / `ForkPlus.AskPass.Tests` / `ForkPlus.RI.Tests`：`Microsoft.NET.Test.Sdk` 升级到 17.13.0，TFM 同步迁移
+- 系统测试工程 `ForkPlus.AutomationTests`：FlaUI 从 3.2.0 升级到 5.0.0（API 无破坏性改动，仅移除旧 TFM + 添加 nullable 注解）
+- 反射加载改用 `AssemblyLoadContext.Default.LoadFromAssemblyPath` 替代 `Assembly.LoadFrom`（.NET 10 推荐方式）
+- 路径查找改用 `AppContext.BaseDirectory` 替代 `AppDomain.CurrentDomain.BaseDirectory`
+- .NET 10 下 `.exe` 是 native apphost，托管代码在同名 `.dll` 中：测试工程同时拷贝 `.exe` 和 `.dll`
+
+### 过时 API 升级
+
+- NLog：`LayoutRenderer.Register<T>(string)` → `LogManager.Setup().SetupExtensions(s => s.RegisterLayoutRenderer<T>("..."))`
+- `WebClient` → `HttpClient`（NetworkHelper.cs）；AvatarManager.cs 局部 `#pragma` 静默（事件回调模式留待后续重构）
+- `PipeStream.Read` 改循环读满（修复 CA2022 inexact read bug）
+
+### CI 工作流
+
+- GitHub Actions 改为多平台 matrix（windows / ubuntu / macos），`fail-fast: false` 并行
+- Windows runner 跑完整流程：restore → build → 单元测试 → AskPass/RI 测试 → 上传 artifact → tag 时打 release zip
+- Linux/macOS runner 暂只跑 biturbo 原生库拉取冒烟测试（WPF `net10.0-windows` 在非 Windows 上无法构建完整产物）
+- `setup-msbuild` / `setup-nuget` 替换为 `setup-dotnet@v4` 安装 .NET 10 SDK
+- `msbuild /t:Restore` → `dotnet restore`，`msbuild /p:Configuration=Release` → `dotnet build`
+- 修复 .NET 10 + WPF testhost 偶发不退出导致的 CI 误判：解析 `dotnet test` 输出中的 `Passed! - Failed: N` 判定结果
+
+### 构建产物优化
+
+- 7 个 csproj 全部加 `<GenerateDocumentationFile>false</GenerateDocumentationFile>`：不再生成 `*.xml` 文档注释导出文件
+- `RemoveDuplicateWebView2Loader` target 重写为 `CopyWebView2LoaderToRoot`：按 `$(PlatformTarget)` 选 `win-x64/win-x86/win-arm64` 对应的 `WebView2Loader.dll` 拷到 bin 根目录，再删 `runtimes\` 子目录
+- 警告清理：NoWarn 静默 WPF/INPC 模式常见无害警告（CS0067/CS0108/CS0169/CS0414/CS1522/CS0652/CS8073/CS8632/CA1416），构建日志 `0 Warning(s)`
+
+### 环境要求变更
+
+- Windows 10 或更高版本（不变）
+- **Visual Studio 2022 17.13+，或 .NET 10 SDK（含 Windows Desktop runtime）**
+- Git 2.31 或更高版本（不变）
+- git-mm 3.0 或更高版本（不变）
+
+
 ## v3.4.1
 
 ### Bug 修复
