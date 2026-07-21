@@ -1,0 +1,67 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.UpdateAvailableWindow"
+                              Title="Update Available"
+                              Width="540" MaxHeight="520"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.17b：Avalonia 版 UpdateAvailableWindow（对照 WPF UpdateAvailableWindow.xaml 18 行 + .cs 56 行）。
+
+        对照 WPF：
+          - public partial class UpdateAvailableWindow : ForkPlusDialogWindow
+          - 构造函数 (UpdateInfo updateInfo):
+            * DialogTitle = Translate("Update Available")
+            * DialogDescription = FormatTranslate("A new version {0} is available (current: {1}).", latest, current)
+            * SubmitButtonTitle = Translate("Download")
+            * CancelButtonTitle = Translate("Later")
+            * ReleaseNotesTextBox.Text = releaseNotes ?? releaseName
+          - OnSubmit: new Uri(downloadUrl).OpenInBrowser(); if (SkipVersionCheckBox.IsChecked) UpdateChecker.SkipVersion(latest); base.OnSubmit()
+          - OnCancel: if (SkipVersionCheckBox.IsChecked) UpdateChecker.SkipVersion(latest); base.OnCancel()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current/FormatCurrent → ServiceLocator.Localization.Current/FormatCurrent
+          3. UpdateChecker/UpdateInfo 已在 Phase 4.17b 移到 Core，Avalonia 工程可直接引用
+          4. UriExtensions.OpenInBrowser 已在 Phase 4.17b 改为 public，Avalonia 工程可直接调用
+          5. TextBox IsReadOnly="True" + AcceptsReturn="True" + TextWrapping="Wrap" 显示 Release Notes
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <StackPanel Grid.Row="2" Margin="0,4,0,0">
+            <TextBlock Text="Release Notes"
+                       FontWeight="Medium" FontSize="13"
+                       Margin="0,0,0,4" />
+            <TextBox Name="ReleaseNotesTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     MaxHeight="280"
+                     Padding="6" />
+            <CheckBox Name="SkipVersionCheckBox"
+                      Content="Don't remind me for this version"
+                      Margin="0,8,0,0"
+                      FontSize="13" />
+        </StackPanel>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
