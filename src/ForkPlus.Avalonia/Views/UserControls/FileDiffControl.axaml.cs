@@ -4,16 +4,16 @@ using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
 {
-    // Phase 3.9a：Avalonia 版 FileDiffControl 容器骨架（spike 简化版）。
+    // Phase 3.9a + Phase 2.6 升级：Avalonia 版 FileDiffControl 容器骨架。
     //
     // 对照 WPF 工程 src/ForkPlus/UI/Controls/FileDiffControl.cs（973 行，纯 C# 无 XAML）：
     //   - 继承 DiffControlContainer : Grid（代码生成 Grid 2 行）：
     //     Row 0 (Auto): FileControlHeaderUserControl（默认 Collapsed）
     //     Row 1 (*):    动态切换的 _subView（ShowSubView<TChild>）
     //   - 5 种 sub-view（按 DiffContent 类型路由）：
-    //     TextDiffControl     — 文本 diff（**AvalonEdit**，Phase 2.6 难点）
+    //     TextDiffControl     — 文本 diff（**AvaloniaEdit**，Phase 2.6 已迁移基础版）
     //     BinaryDiffUserControl — 图片/二进制 diff
-    //     HexDiffUserControl    — 16 进制 diff（**AvalonEdit** 衍生 HexEditor，Phase 2.9）
+    //     HexDiffUserControl    — 16 进制 diff（**AvaloniaEdit** 衍生 HexEditor，Phase 2.9）
     //     SubmoduleDiffUserControl — 子模块 diff
     //     FallbackUserControl   — 错误/空状态
     //   - 4 个 DependencyProperty：
@@ -24,10 +24,12 @@ namespace ForkPlus.Avalonia.Views.UserControls
     //   - UpdateView(bool loadLargeDiff) 是核心调度器
     //   - 公共事件：ShowLargeUntrackedChanges
     //
-    // AvalonEdit 嵌入路径（spike 不迁移）：
+    // AvaloniaEdit 嵌入路径（Phase 2.6 已打通）：
     //   FileDiffControl → TextDiffControl → DiffCodeEditor : CodeEditor
-    //     （CodeEditor 是 ICSharpCode.AvalonEdit.TextEditor 子类）
-    //   全工程 30 个文件引用 ICSharpCode.AvalonEdit
+    //     （CodeEditor 是 AvaloniaEdit.TextEditor 子类，src/ForkPlus.Avalonia/Controls/Editor/）
+    //   DiffCodeEditor spike 版用 AvaloniaEdit API：Options / TextArea.TextView.VerticalOffset
+    //     / ScrollToVerticalOffset / SearchPanel
+    //   Phase 3.9b 在此补：BackgroundRenderers / LineTransformers / LeftMargins
     //
     // 装入路径（WPF，FileDiffControl 共 7+ 处被装入）：
     //   CommitUserControl.xaml → CommitFileDiffControl（commit 视图）
@@ -39,15 +41,17 @@ namespace ForkPlus.Avalonia.Views.UserControls
     //   AiSuggestionPreviewWindow.xaml → FileDiffControl Target=Popup（Phase 5）
     //   DiffPopupWindow.xaml.cs → 代码 new FileDiffControl() / new CommitFileDiffControl()
     //
-    // 本 spike 版策略：**不引入 AvaloniaEdit**（留给 Phase 2.6 独立 spike 验证）
-    //   - FileDiffControl 容器骨架（Grid 2 行 + Header + ContentControl 占位）
-    //   - 5 种 sub-view 用 Border + TextBlock 占位，由 .cs 的 ShowSubView 根据字符串切换
+    // Phase 2.6 升级策略：**Text sub-view 改用真实 TextDiffControl**（解 Phase 3.9a 占位）
+    //   - Text 类型：editor:TextDiffControl（DiffCodeEditor 容器，承载真实 diff 文本渲染）
+    //   - Binary/Hex/Submodule/Fallback：仍用 TextBlock 占位（Phase 2.9/3.9b 迁移）
+    //   - ShowSubView 根据 subViewType 切换 TextDiffControl.IsVisible / TextBlock.IsVisible
     //   - 4 个公共属性替代 WPF DependencyProperty（spike 用 plain property，待 Phase 2.3 改 StyledProperty）
-    //   - UpdateView stub：根据 Content 类型切换 5 个占位
+    //   - UpdateView stub：根据 Content 类型路由到 5 个占位/真实控件
     //
-    // 本 spike 版暂不迁移：
-    //   - AvalonEdit 子树（TextDiffControl / DiffCodeEditor / SideBySide / Split /
-    //     DiffBackgroundColorizer / DiffTextColorizer / DiffLineNumberMargin / DiffSelectionLayer）
+    // 本 spike 版暂不迁移（留 Phase 3.9b）：
+    //   - DiffCodeEditor 的 BackgroundRenderers / LineTransformers / LeftMargins（着色器 / 行号 / 高亮）
+    //   - SplitTextDiffControl / SideBySideTextDiffControl（双布局切换）
+    //   - DiffBackgroundColorizer / DiffTextColorizer / DiffLineNumberMargin / DiffSelectionLayer
     //   - HexEditor / HexDiffUserControl（Phase 2.9）
     //   - BinaryDiffUserControl 真实实现（图片 swipe / onion skin）
     //   - SubmoduleDiffUserControl 真实实现
@@ -58,7 +62,8 @@ namespace ForkPlus.Avalonia.Views.UserControls
     // 本 spike 版验证：
     //   - Grid 2 行布局正确显示
     //   - FileControlHeader 占位可见（默认 Collapsed，由 Show() 触发显示）
-    //   - SubView 占位文字随 Content 类型切换
+    //   - Text 类型时 TextDiffControl 可见（解 Phase 3.9a 占位）
+    //   - 其他类型时 TextBlock 占位文字随 Content 类型切换
     public partial class FileDiffControl : UserControl
     {
         // ===== 公共事件（对照 WPF）=====
@@ -76,16 +81,28 @@ namespace ForkPlus.Avalonia.Views.UserControls
             InitializeComponent();
         }
 
-        // ===== ShowSubView 占位（对照 WPF ShowSubView<TChild> 动态装载）=====
-        // spike 版根据 subViewType 字符串切换 TextBlock 文字，不真实装载 UserControl
+        // ===== ShowSubView（对照 WPF ShowSubView<TChild> 动态装载）=====
+        // Phase 2.6 升级：Text 类型不再用 TextBlock 占位，改用真实 TextDiffControl。
+        // 其他类型（Binary/Hex/Submodule/Fallback）仍用 TextBlock 占位（Phase 2.9/3.9b）。
         protected void ShowSubView(string subViewType)
         {
-            Console.WriteLine($"[FileDiffControl] ShowSubView (spike placeholder): {subViewType}");
+            Console.WriteLine($"[FileDiffControl] ShowSubView: {subViewType}");
+
+            if (subViewType == "Text")
+            {
+                // Phase 2.6：显示 TextDiffControl（承载 DiffCodeEditor : CodeEditor : AvaloniaEdit.TextEditor）
+                if (SubViewPlaceholder != null) SubViewPlaceholder.IsVisible = false;
+                if (TextDiffSubView != null) TextDiffSubView.IsVisible = true;
+                return;
+            }
+
+            // 非 Text 类型：隐藏 TextDiffControl，显示 TextBlock 占位
+            if (TextDiffSubView != null) TextDiffSubView.IsVisible = false;
             if (SubViewPlaceholder != null)
             {
+                SubViewPlaceholder.IsVisible = true;
                 SubViewPlaceholder.Text = subViewType switch
                 {
-                    "Text" => "(text diff placeholder — AvalonEdit not migrated, see Phase 2.6)",
                     "Binary" => "(binary diff placeholder — image swipe/onion skin not migrated)",
                     "Hex" => "(hex diff placeholder — HexEditor not migrated, see Phase 2.9)",
                     "Submodule" => "(submodule diff placeholder)",

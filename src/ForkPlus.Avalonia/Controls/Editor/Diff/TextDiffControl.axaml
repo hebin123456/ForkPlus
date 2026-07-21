@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:editor="clr-namespace:ForkPlus.Avalonia.Controls.Editor.Diff"
+             x:Class="ForkPlus.Avalonia.Controls.Editor.Diff.TextDiffControl">
+    <!--
+        Phase 2.6：Avalonia 版 TextDiffControl spike（CodeEditor 容器）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Controls/Editor/Diff/TextDiffControl.cs（185 行）：
+          - WPF TextDiffControl : Grid, IFileDiffControlSubControl
+          - 字段：_layoutMode / _child (ITextDiffControl) / _target (FileDiffControlTarget)
+          - RefreshLayout() 根据 LayoutMode 切换 _child：
+              Split      → SplitTextDiffControl（单 editor + 行内 diff 着色）
+              SideBySide → SideBySideTextDiffControl（双 editor 并排，左 src / 右 dst）
+          - 公共：LayoutMode / PositionCache / DIff / VerticalScrollBarVisibility
+          - 公共事件：EditorContextMenuOpening
+          - 公共方法：SetDiff / ScrollToNext/PreviousCustomHunk / ControlWillBeRemovedFromFileDiffControl
+
+        Avalonia 版差异（spike 简化策略）：
+          1. UserControl 替代 WPF Grid 子类（Avalonia 习惯用 axaml UserControl 包装）
+          2. spike 版只用单个 DiffCodeEditor（不切换 Split / SideBySide，留 Phase 3.9b）
+          3. SetDiff 简化为：从 diff 字符串构造 VisualPatch 并赋给 DiffCodeEditor.VisualPatch
+          4. 跳过 NotificationCenter 订阅（DiffLayoutMode / DiffShowHiddenSymbols /
+             DiffWordWrap / CodeEditorFontSize 四个事件，留 Phase 3.9b）
+          5. 跳过 PositionCache / VerticalScrollBarVisibility 公共属性（Phase 3.9b）
+
+        本 spike 版暂不迁移（留 Phase 3.9b）：
+          - SplitTextDiffControl / SideBySideTextDiffControl（双布局切换）
+          - ITextDiffControl 接口（spike 直接用具体类）
+          - DiffLayoutMode / DiffShowHiddenSymbols / DiffWordWrap / CodeEditorFontSize
+            四个 NotificationCenter 事件订阅
+          - PositionCache（CodeEditorScrollPositionCache，滚动位置缓存）
+          - EditorContextMenuOpening 事件
+          - ScrollToNextCustomHunk / ScrollToPreviousCustomHunk（chunk 间跳转）
+
+        本 spike 版验证：
+          - DiffCodeEditor 可在 axaml 中实例化（AvaloniaEdit.TextEditor 子类树可工作）
+          - VisualPatch 可作为 TextDiffControl 的 diff 数据入口
+          - 整个 AvalonEdit → AvaloniaEdit 子树在 Avalonia 11.3.18 下可编译可运行
+    -->
+    <Grid RowDefinitions="*">
+        <!-- DiffCodeEditor：CodeEditor 子类，承载 diff 文本渲染。
+             IsReadOnly=True 防止用户编辑（diff 是只读视图）。
+             WordWrap=No 让长行横向滚动（diff 视图默认不换行）。
+             ShowLineNumbers=True 显示行号（spike 用 AvaloniaEdit 内置，Phase 3.9b 换 DiffLineNumberMargin） -->
+        <editor:DiffCodeEditor Name="DiffEditor"
+                               IsReadOnly="True"
+                               WordWrap="No"
+                               ShowLineNumbers="True"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                               FontSize="13" />
+    </Grid>
+</UserControl>

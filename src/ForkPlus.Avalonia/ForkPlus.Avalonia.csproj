@@ -34,6 +34,13 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
     <!-- Diagnostics 仅 Debug 启用（F12 弹出 Avalonia 诊断面板）-->
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.18" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- Phase 2.6：AvaloniaEdit（AvalonEdit 的 Avalonia 移植版）。
+         对照 WPF 工程 src/ForkPlus 的 ICSharpCode.AvalonEdit（30 个文件依赖）。
+         用于 CodeEditor 基类 + DiffCodeEditor / TextDiffControl / HexEditor 等编辑器子树。
+         API 与 WPF AvalonEdit 高度相似：TextEditor / TextArea / TextView /
+         BackgroundRenderers / LineTransformers / LeftMargins。
+         12.0.0 是当前最新版（.NET 8.0 + Avalonia 11.x 兼容）。 -->
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <!-- DI 容器：用于注入 IMarkdownRenderer / IDialogService / INotificationService 等接口
          （Phase 0.3-0.6 抽象的接口，Phase 1 起逐步注册实现）-->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
