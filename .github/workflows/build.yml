@@ -16,7 +16,12 @@ jobs:
             artifact_suffix: windows
           - os: ubuntu-latest
             artifact_suffix: linux
-          - os: macos-latest
+          # macos-13 = Intel (x64) runner。macos-latest 从 2024-12 起切到 ARM64 (Apple Silicon)，
+          # 但 setup-dotnet@v4 在 ARM64 runner 上默认只装 ARM64 SDK，而 dotnet test 运行
+          # AnyCPU 测试 DLL 时会尝试找 X64 host（"Could not find 'dotnet' host for the 'X64'
+          # architecture"）。用 macos-13 Intel runner 规避此问题；待 ForkPlus.Avalonia
+          # 全量迁完后再考虑 macos-14 (ARM64) + --arch arm64 的方案。
+          - os: macos-13
             artifact_suffix: macos
     runs-on: ${{ matrix.os }}
     permissions:

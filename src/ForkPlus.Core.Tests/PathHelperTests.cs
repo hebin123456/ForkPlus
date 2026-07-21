@@ -61,6 +61,16 @@ namespace ForkPlus.Tests
 		[Fact]
 		public void FindFirstDifferentComponent_ReturnsFirstDifferingComponent()
 		{
+			// PathHelper.FindFirstDifferentComponent 内部用 Path.GetFullPath + Path.DirectorySeparatorChar
+			// 做路径归一化。在 Linux/macOS 上 `\` 不是路径分隔符，Windows 风格路径
+			// "C:\repo\src\file.cs" 会被当成单个文件名，导致测试断言失败。
+			// 该方法和它的消费方（SidebarUserControl/RepositoryUserControl）都是 WPF 专属，
+			// 仅在 Windows 上运行，非 Windows 平台跳过此测试。
+			if (!OperatingSystem.IsWindows())
+			{
+				return;
+			}
+
 			var result = PathHelper.FindFirstDifferentComponent("C:\\repo\\src\\file.cs", "C:\\repo\\src\\other.cs");
 
 			Assert.Equal("file.cs", result.Item1);
