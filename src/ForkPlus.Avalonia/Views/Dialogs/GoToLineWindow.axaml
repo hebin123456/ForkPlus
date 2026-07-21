@@ -1,0 +1,32 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Views.Dialogs;assembly=ForkPlus.Avalonia"
+                             x:Class="ForkPlus.Avalonia.Views.Dialogs.GoToLineWindow"
+                             Width="250" Height="120"
+                             Title="Go To Line">
+    <!--
+        Phase 4.1：GoToLineWindow 从 WPF 迁移到 Avalonia。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GoToLineWindow.xaml（18 行）：
+          - 继承自 ForkPlusDialogWindow
+          - Grid 2 列：0 / *（logo 列 + 内容列）
+          - DockPanel：TextBlock "Line number:" + TextBox LineNumberTextBox
+          - ShowLogo=false, ShowHeader=false, IsTitleVisible=true
+          - SubmitButtonTitle="Go"
+
+        本 Avalonia 版实现：
+          - 继承自 Avalonia ForkPlusDialogWindow（简化基类）
+          - StackPanel 替代 DockPanel（Avalonia 布局一致）
+          - LineNumberTextBox 接收输入
+          - OnSubmit 解析整数，设置 LineNumber 属性
+    -->
+    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+        <TextBlock Text="Line number:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,0,8,0" />
+        <TextBox Name="LineNumberTextBox"
+                 Width="120"
+                 VerticalAlignment="Center" />
+    </StackPanel>
+</dialogs:ForkPlusDialogWindow>
