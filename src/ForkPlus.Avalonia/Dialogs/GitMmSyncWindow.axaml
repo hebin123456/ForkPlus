@@ -1,0 +1,219 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitMmSyncWindow"
+                              Title="Sync git mm"
+                              Width="560" SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.15b：Avalonia 版 GitMmSyncWindow（对照 WPF GitMmSyncWindow.xaml）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitMmSyncWindow.xaml（149 行）：
+          - Grid 2 列 3 行：Header / 内容 / Footer
+          - 内容区 Grid 2 列 9 行：
+            * Row 0: WorkspacePathTextBlock
+            * Row 1: CheckoutJobsComboBox + FetchJobsComboBox（水平排列）
+            * Row 2: Expander "Advanced Options"（自定义 ExpanderStyle）含 12 个 CheckBox + ForceSyncWarningImage
+            * Row 8: CommandPreviewTextBlock (ScrollViewer + TextBlock)
+
+        Avalonia 版差异：
+          1. WPF 自定义 ExpanderStyle 简化为 Avalonia 内置 Expander（默认样式）
+          2. Image Source 用 avares:// URI（spike 版省略 ForceSyncWarningImage，仅保留 ToolTip）
+          3. spike 版不接入 PreferencesLocalization.Apply（直接字面量英文 + cs 中显式 Translate 关键文本）
+    -->
+    <!--
+        spike 模式结构：根 Grid 4 行 = Header (TitleTextBlock + DescriptionTextBlock) / Content / Footer
+        子类构造函数通过 SetFooter/Footer 等注入基类
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock（注入基类 _titleTextBlock） -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock（注入基类 _descriptionTextBlock） -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - 内容区 -->
+        <Grid Grid.Row="2" Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Workspace path -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Workspace:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,4,8,4" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="WorkspacePathTextBlock"
+                       Margin="0,4,0,4"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+            <!-- Row 1: Checkout jobs + Fetch jobs -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Checkout jobs:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,4,8,4" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,4">
+                <ComboBox Name="CheckoutJobsComboBox" Width="70" HorizontalAlignment="Left">
+                    <ComboBoxItem Content="1" />
+                    <ComboBoxItem Content="2" />
+                    <ComboBoxItem Content="3" />
+                    <ComboBoxItem Content="4" />
+                    <ComboBoxItem Content="5" />
+                    <ComboBoxItem Content="6" />
+                    <ComboBoxItem Content="7" />
+                    <ComboBoxItem Content="8" />
+                    <ComboBoxItem Content="9" />
+                    <ComboBoxItem Content="10" />
+                </ComboBox>
+                <TextBlock Text="Fetch jobs:" Margin="16,0,6,0" FontSize="13" VerticalAlignment="Center" />
+                <ComboBox Name="FetchJobsComboBox" Width="70" HorizontalAlignment="Left">
+                    <ComboBoxItem Content="1" />
+                    <ComboBoxItem Content="2" />
+                    <ComboBoxItem Content="3" />
+                    <ComboBoxItem Content="4" />
+                    <ComboBoxItem Content="5" />
+                    <ComboBoxItem Content="6" />
+                    <ComboBoxItem Content="7" />
+                    <ComboBoxItem Content="8" />
+                    <ComboBoxItem Content="9" />
+                    <ComboBoxItem Content="10" />
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Row 2: Advanced Options expander -->
+            <Expander Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                      Name="AdvancedOptionsExpander"
+                      Margin="0,6,0,0"
+                      Header="Advanced Options"
+                      IsExpanded="False">
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <!-- Row 0: ForceSync warning + ForceSync checkbox -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Name="ForceSyncWarningImage"
+                               Margin="0,4,8,4"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Text="⚠"
+                               FontSize="14"
+                               ToolTip.Tip="Discard local sync state and force git mm to resync projects." />
+                    <CheckBox Grid.Row="0" Grid.Column="1"
+                              Name="ForceSyncCheckBox"
+                              Margin="0,4,0,0"
+                              HorizontalAlignment="Left"
+                              Content="_Force sync"
+                              ToolTip.Tip="--force-sync" />
+                    <!-- Row 1: Detach -->
+                    <CheckBox Grid.Row="1" Grid.Column="1"
+                              Name="DetachCheckBox"
+                              Margin="0,4,0,0"
+                              HorizontalAlignment="Left"
+                              Content="Detach local branches"
+                              ToolTip.Tip="-d" />
+                    <!-- Row 2: Update manifest -->
+                    <CheckBox Grid.Row="2" Grid.Column="1"
+                              Name="UpdateManifestCheckBox"
+                              Margin="0,4,0,0"
+                              HorizontalAlignment="Left"
+                              Content="Update manifest"
+                              ToolTip.Tip="--update-manifest" />
+                    <!-- Row 3: Local only / Network only / Fail fast -->
+                    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <CheckBox Name="LocalOnlyCheckBox"
+                                  Content="Local only"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="-l" />
+                        <CheckBox Name="NetworkOnlyCheckBox"
+                                  Content="Network only"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="-n" />
+                        <CheckBox Name="FailFastCheckBox"
+                                  Content="Fail fast"
+                                  ToolTip.Tip="--fail-fast" />
+                    </StackPanel>
+                    <!-- Row 4: All branches / Fetch tags / Fetch submodules -->
+                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <CheckBox Name="AllBranchesCheckBox"
+                                  Content="All branches"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="-a" />
+                        <CheckBox Name="TagsCheckBox"
+                                  Content="Fetch tags"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="--tags" />
+                        <CheckBox Name="FetchSubmodulesCheckBox"
+                                  Content="Fetch submodules"
+                                  ToolTip.Tip="--fetch-submodules" />
+                    </StackPanel>
+                    <!-- Row 5: Force checkout / Force fetch / Force remove dirty -->
+                    <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <CheckBox Name="ForceCheckoutCheckBox"
+                                  Content="Force checkout"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="--force-checkout" />
+                        <CheckBox Name="ForceFetchCheckBox"
+                                  Content="Force fetch"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="--force-fetch" />
+                        <CheckBox Name="ForceRemoveDirtyCheckBox"
+                                  Content="Remove dirty projects"
+                                  ToolTip.Tip="--force-remove-dirty" />
+                    </StackPanel>
+                </Grid>
+            </Expander>
+
+            <!-- Row 3: Command Preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command Preview:"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right"
+                       Margin="0,8,8,0" />
+            <ScrollViewer Grid.Row="3" Grid.Column="1"
+                          MaxHeight="120"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="0,8,0,0">
+                <TextBlock Name="CommandPreviewTextBlock"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 3: Footer - ForkPlusDialogFooter（Submit + Cancel） -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
