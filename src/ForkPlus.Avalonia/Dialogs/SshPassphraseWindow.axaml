@@ -1,0 +1,86 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.SshPassphraseWindow"
+                              Title="Passphrase for SSH key"
+                              Width="520" MinHeight="160"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.11b：Avalonia 版 SshPassphraseWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/SshPassphraseWindow.xaml（25 行）：
+          - <dialogs:ForkPlusDialogWindow MinHeight="160" Width="520" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: Grid 2 列 2 行（Auto/* × Auto/Auto）
+            * Row 0 Col 0: TextBlock "Passphrase:"
+            * Row 0 Col 1: PasswordBox PasswordBox（WPF）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/SshPassphraseWindow.xaml.cs（67 行）：
+          - 字段：_sshKeyPath
+          - IsSubmitAllowed override：!string.IsNullOrWhiteSpace(PasswordBox.Password)
+          - 构造函数 (sshKeyName, sshKeyPath)：
+            * DialogTitle = "Passphrase for SSH key"
+            * DialogDescription = Format("Enter passphrase for SSH key '{0}'", sshKeyName)
+            * SubmitButtonTitle = "OK"
+            * PasswordBox.PasswordChanged → UpdateSubmitButton
+            * PasswordBox.Focus()
+          - OnSubmit：
+            * password = PasswordBox.Password
+            * gitCommandResult = new ValidateSshKeyShellCommand().Execute(_sshKeyPath, password)
+            * if !Succeeded → new ErrorWindow(null, gitCommandResult.Error).ShowDialog()
+            * if Result == IncorrectPassphrase → SetStatus(Warning, "Incorrect passphrase") + Focus + SelectAll
+            * if Result == Success → WindowsCredentialManager.StoreSshPassphrase + CloseWithOk
+
+        Avalonia 版差异（spike 简化策略）：
+          1. Avalonia 11 无 PasswordBox 控件，用 TextBox + PasswordChar="●" 替代（与 AskPassWindow 一致）
+          2. .Password → .Text（与 AskPassWindow 一致）
+          3. .PasswordChanged → .TextChanged（Avalonia 11 TextBox 事件）
+          4. spike 版无 ErrorWindow，错误用 SetStatus(Error, ...) 显示在状态区
+             （WPF 调用 new ErrorWindow(null, gitCommandResult.Error).ShowDialog() — 错误对话框
+             依赖 RepositoryUserControl / GitCommandError 多种子类型 / GitOutputColorizer /
+             MessageEditor (AvalonEdit) / MainWindow.Instance / JobQueue，spike 阶段暂不迁移）
+
+        依赖：ValidateSshKeyShellCommand（Core Shell/Commands） + WindowsCredentialManager（Core） +
+             PathHelper.NormalizeUnix（Core）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: Passphrase 输入 -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="Passphrase:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,0" />
+            <!-- Avalonia 11 无 PasswordBox，用 TextBox + PasswordChar 替代 -->
+            <TextBox Grid.Column="1"
+                     Name="PasswordBox"
+                     Margin="0,4,0,4"
+                     PasswordChar="●"
+                     TextChanged="PasswordBox_TextChanged" />
+        </Grid>
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

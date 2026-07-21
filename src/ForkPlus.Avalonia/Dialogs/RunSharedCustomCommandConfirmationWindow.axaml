@@ -1,0 +1,63 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RunSharedCustomCommandConfirmationWindow"
+                              Title="Custom Command Confirmation"
+                              Width="490" MaxWidth="620"
+                              Height="150" MaxHeight="250"
+                              SizeToContent="WidthAndHeight"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.12b：Avalonia 版 RunSharedCustomCommandConfirmationWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/RunSharedCustomCommandConfirmationWindow.xaml（13 行）：
+          - <dialogs:ForkPlusDialogWindow Height="150" MaxHeight="250" Width="490" MaxWidth="620" SizeToContent="WidthAndHeight">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: CheckBox TrustThisRepositoryCheckBox
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/RunSharedCustomCommandConfirmationWindow.xaml.cs（35 行）：
+          - public bool TrustThisRepository => TrustThisRepositoryCheckBox.IsChecked.GetValueOrDefault()
+          - 构造函数 (repositoryName)：
+            * TitleTextBlock.TextTrimming/TextWrapping/MaxHeight=80
+            * DescriptionTextBlock.TextTrimming/TextWrapping/MaxHeight=80
+            * DialogTitle = FormatCurrent("The custom command has come from the '{0}' repository", repositoryName)
+            * DialogDescription = Current("You should only run custom commands from trustworthy repositories. Do you really want to run it?")
+            * SubmitButtonTitle = Current("Run")
+            * CancelButtonTitle = Current("Cancel")
+            * ShowCancelButton = true
+            * Width = 600.0（WPF 这里设置 base.Width，覆盖 axaml 中的 490）
+            * ShowWarningIcon = true
+            * TrustThisRepositoryCheckBox.Content = FormatCurrent("Trust custom commands in '{0}'", repositoryName)
+
+        依赖：仅 PreferencesLocalization（已通过 ServiceLocator.Localization 接入），无 GitModule / RepositoryUserControl / JobQueue 依赖。
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header（对照 WPF: TextTrimming/TextWrapping/MaxHeight=80） -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       MaxHeight="80" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       MaxHeight="80"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: TrustThisRepositoryCheckBox -->
+        <CheckBox Grid.Row="1"
+                  Name="TrustThisRepositoryCheckBox"
+                  Margin="0,16,0,4"
+                  HorizontalAlignment="Left" />
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
