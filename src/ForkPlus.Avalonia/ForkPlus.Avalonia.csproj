@@ -90,4 +90,48 @@
        Project File GUID 见 .sln 中本工程的 Project 条目（Avalonia 11 用标准 SDK 工程，
        不再需要老的 .xaml 编译 MSBuild 配置）。 -->
 
+  <!-- Phase 2.7b 准备：biturbo 原生库 + tokei 可执行文件拉取。
+       与 ForkPlus.csproj 的 RestoreBiturbo / RestoreTokei 同样逻辑，确保 ForkPlus.Avalonia
+       可独立构建（spike 阶段 Avalonia 不实际调用 biturbo/tokei，但 publish 产物需要包含它们
+       以便 Phase 2.7b 接入真实调用时立即可用）。
+       CI 上 windows-latest / ubuntu-latest / macos-latest runner 都会下载对应平台的二进制。 -->
+  <Target Name="RestoreBiturbo" BeforeTargets="Build">
+    <PropertyGroup>
+      <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
+    </PropertyGroup>
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+  </Target>
+
+  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe') And !Exists('..\..\third_party\tokei')">
+    <PropertyGroup>
+      <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/download/v14.0.0</TokeiBaseUrl>
+    </PropertyGroup>
+    <Exec Condition="'$(OS)' == 'Windows_NT'"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe' -OutFile '..\..\third_party\tokei.exe'; Write-Host 'Restored tokei.exe from hebin123456/tokei v14.0.0'&quot;" />
+    <Exec Condition="'$(OS)' == 'Unix'"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(TokeiBaseUrl)/tokei-aarch64-apple-darwin.tar.gz&quot;; else url=&quot;$(TokeiBaseUrl)/tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; tmpdir=`mktemp -d`; curl -fsSL &quot;$url&quot; -o &quot;$tmpdir/tokei.tar.gz&quot;; tar -xzf &quot;$tmpdir/tokei.tar.gz&quot; -C &quot;$tmpdir&quot;; mv &quot;$tmpdir/tokei&quot; &quot;../../third_party/tokei&quot;; chmod +x &quot;../../third_party/tokei&quot;; rm -rf &quot;$tmpdir&quot;; echo &quot;Restored ../../third_party/tokei from hebin123456/tokei v14.0.0&quot;'" />
+  </Target>
+
+  <!-- 把 biturbo 原生库 + tokei 可执行文件拷到产物目录，确保 publish 产物包含它们。
+       AfterTargets=Publish 确保 dotnet publish 也会拷贝（AfterTargets=Build 只拷到 bin/ 不拷到 publish 输出）。
+       Exists 守卫确保只拷实际存在的那一份。 -->
+  <Target Name="CopyHelperExecutables" AfterTargets="Build">
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+    <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
+  </Target>
+
+  <Target Name="CopyHelperExecutablesOnPublish" AfterTargets="Publish">
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+    <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
+  </Target>
+
 </Project>

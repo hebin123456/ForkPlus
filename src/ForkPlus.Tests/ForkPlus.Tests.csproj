@@ -44,10 +44,18 @@
           Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
 
-  <!-- tokei.exe（代码行数统计）缺失时用 cargo install 从源码编译。
-       仅 Windows：tokei.exe 产物名带 .exe，非 Windows 上 cargo 产出无后缀。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $out='..\..\third_party\tokei.exe'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $cargo = Get-Command cargo -ErrorAction SilentlyContinue; if(-not $cargo){ throw &quot;tokei.exe not found at $out and cargo not on PATH. Install Rust (https://rustup.rs) and re-run, or manually build tokei from https://github.com/XAMPPRocky/tokei and place the executable at $out.&quot; }; $root='..\..\third_party\.tokei-install'; if(Test-Path $root){ Remove-Item $root -Recurse -Force }; Write-Host 'Building tokei via cargo install (first run may take a few minutes)...'; &amp; cargo install tokei --version 14.0.0 --locked --root $root --no-track; if($LASTEXITCODE -ne 0){ throw 'cargo install tokei failed with exit code ' + $LASTEXITCODE }; $built = Join-Path $root 'bin\tokei.exe'; if(-not (Test-Path $built)){ throw &quot;tokei.exe not found at $built after cargo install&quot; }; Move-Item $built $out -Force; Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue; Write-Host &quot;Built and installed tokei.exe to $out&quot;&quot;" />
+  <!-- tokei（代码行数统计）从 hebin123456/tokei fork 仓库的 release 下载预编译二进制。
+       与 ForkPlus.csproj 的 RestoreTokei 同样逻辑，确保 ForkPlus.Tests 可独立构建。
+       CI 上 windows-latest / ubuntu-latest / macos-latest runner 都会下载对应平台的 tokei。
+       缺失时才下载，已存在则跳过。-->
+  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe') And !Exists('..\..\third_party\tokei')">
+    <PropertyGroup>
+      <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/download/v14.0.0</TokeiBaseUrl>
+    </PropertyGroup>
+    <Exec Condition="'$(OS)' == 'Windows_NT'"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe' -OutFile '..\..\third_party\tokei.exe'; Write-Host 'Restored tokei.exe from hebin123456/tokei v14.0.0'&quot;" />
+    <Exec Condition="'$(OS)' == 'Unix'"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(TokeiBaseUrl)/tokei-aarch64-apple-darwin.tar.gz&quot;; else url=&quot;$(TokeiBaseUrl)/tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; tmpdir=`mktemp -d`; curl -fsSL &quot;$url&quot; -o &quot;$tmpdir/tokei.tar.gz&quot;; tar -xzf &quot;$tmpdir/tokei.tar.gz&quot; -C &quot;$tmpdir&quot;; mv &quot;$tmpdir/tokei&quot; &quot;../../third_party/tokei&quot;; chmod +x &quot;../../third_party/tokei&quot;; rm -rf &quot;$tmpdir&quot;; echo &quot;Restored ../../third_party/tokei from hebin123456/tokei v14.0.0&quot;'" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
@@ -63,5 +71,6 @@
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
     <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+    <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
   </Target>
 </Project>

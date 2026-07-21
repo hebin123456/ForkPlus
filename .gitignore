@@ -22,6 +22,8 @@ third_party/biturbo.dll
 third_party/libbiturbo.so
 third_party/libbiturbo.dylib
 
-# tokei.exe 不再提交，缺失时用 cargo install 从源码编译（tokei 上游不发布预编译二进制）
+# tokei 不再提交，缺失时从 hebin123456/tokei fork 仓库 v14.0.0 release 拉取预编译二进制。
+# Windows = tokei.exe / Linux & macOS = tokei（无后缀）
 third_party/tokei.exe
+third_party/tokei
 third_party/.tokei-install/

@@ -3,13 +3,14 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 
 namespace ForkPlus.Git.Commands
 {
 	/// <summary>
-	/// 代码行数统计命令。spawn tokei.exe 扫描仓库得到按语言聚合的 code/comments/blanks。
+	/// 代码行数统计命令。spawn tokei 扫描仓库得到按语言聚合的 code/comments/blanks。
 	///
 	/// 两种模式：
 	/// - snapshot（refSpec 为 null/空，或 refSpec 指向当前工作区 HEAD）：直接在工作区目录跑 tokei。
@@ -18,13 +19,16 @@ namespace ForkPlus.Git.Commands
 	/// </summary>
 	public class GetCodeLineStatsGitCommand
 	{
-		/// <summary>tokei.exe 文件名（与 ForkPlus.exe 同目录，由构建期 RestoreTokei 拉取）。</summary>
-		private const string TokeiExeName = "tokei.exe";
+		/// <summary>tokei 可执行文件名（与 ForkPlus.exe 同目录，由构建期 RestoreTokei 拉取）。
+		/// Phase 7：跨平台支持。Windows 是 "tokei.exe"，Linux/macOS 是 "tokei"（无后缀）。
+		/// 按运行时平台选择，避免硬编码 Windows 文件名。</summary>
+		private static string TokeiExeName =>
+			RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "tokei.exe" : "tokei";
 
 		/// <summary>单次 tokei 进程执行的超时（毫秒）。大仓库也基本在 10s 内完成。</summary>
 		private const int TimeoutMs = 60_000;
 
-		/// <summary>查找 tokei.exe 路径。优先 ForkPlus.exe 同目录（构建期拉取的副本），
+		/// <summary>查找 tokei 路径。优先 ForkPlus.exe/ForkPlus.Avalonia 同目录（构建期拉取的副本），
 		/// 再退化到 PATH。</summary>
 		[Null]
 		private static string ResolveTokeiPath()
@@ -39,7 +43,7 @@ namespace ForkPlus.Git.Commands
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to resolve bundled tokei.exe path", ex);
+				Log.Error("Failed to resolve bundled tokei path", ex);
 			}
 			return null;
 		}
@@ -53,7 +57,7 @@ namespace ForkPlus.Git.Commands
 			string tokeiExe = ResolveTokeiPath();
 			if (tokeiExe == null || !File.Exists(tokeiExe))
 			{
-				return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError("tokei.exe not found (expected next to ForkPlus.exe). Code line statistics unavailable."));
+				return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError(TokeiExeName + " not found (expected next to ForkPlus executable). Code line statistics unavailable."));
 			}
 
 			if (monitor != null && monitor.IsCanceled)

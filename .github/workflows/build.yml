@@ -113,16 +113,21 @@ jobs:
           echo "..."
           echo "Total files: $(wc -l < /tmp/publish-ls.txt)"
 
-      # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
-      # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
-      # key 绑定 tokei 版本号，升级时自动失效重新编译。
-      # 仅 Windows：tokei.exe 产物名带 .exe，非 Windows 上 cargo 产出无后缀。
+      # tokei 预编译二进制缓存（三平台）。
+      # Phase 7：原方案是 Windows-only 用 cargo install 从源码编译，现已改为从
+      # hebin123456/tokei fork 仓库 v14.0.0 release 下载三平台预编译二进制：
+      #   Windows x64 → tokei.exe
+      #   Linux x64   → tokei（无后缀）
+      #   macOS arm64 → tokei（无后缀）
+      # RestoreTokei MSBuild target 在每平台 runner 上都会下载对应平台二进制到 third_party/，
+      # cache 命中后跳过下载。key 绑定版本号 + runner.os + runner.arch，升级或换 runner 时自动失效。
       - name: Cache tokei
-        if: runner.os == 'Windows'
         uses: actions/cache@v4
         with:
-          path: third_party/tokei.exe
-          key: tokei-14.0.0-windows-x86_64
+          path: |
+            third_party/tokei.exe
+            third_party/tokei
+          key: tokei-14.0.0-${{ runner.os }}-${{ runner.arch }}
 
       # 以下完整构建 / 测试 / 产物 / 发布仅 Windows 跑。
       # 非 Windows 等 ForkPlus 迁移到跨平台 UI 框架后再放开。
