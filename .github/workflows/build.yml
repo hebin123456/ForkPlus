@@ -106,7 +106,12 @@ jobs:
             -o "publish-avalonia-$RID" \
             -v minimal
           echo "✓ Published to publish-avalonia-$RID"
-          ls -lh "publish-avalonia-$RID/" | head -20
+          # 注意：不要用 `ls | head` 管道，bash pipefail + head 关闭管道会触发 broken pipe exit 2。
+          # 用 ls 重定向到文件 + head 读取文件替代。
+          ls -lh "publish-avalonia-$RID/" > /tmp/publish-ls.txt
+          head -20 /tmp/publish-ls.txt
+          echo "..."
+          echo "Total files: $(wc -l < /tmp/publish-ls.txt)"
 
       # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
       # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
