@@ -52,7 +52,11 @@ namespace ForkPlus.UI
 
 		private Thickness _tempBorderThickness;
 
-		private WindowState _tempWindowState;
+		// Phase 0.4：Core 引入了 ForkPlus.UI.WindowState 枚举。CustomWindow 继承自
+		// System.Windows.Window，bare "WindowState" 在实例方法中会被 C# 简单名查找规则
+		// 解析为继承的实例属性 this.WindowState（而非枚举类型），导致访问 .Maximized 等
+		// 静态成员时触发 CS0176。所以这里用完全限定名 System.Windows.WindowState。
+		private System.Windows.WindowState _tempWindowState;
 
 		private bool _showHeader = true;
 
@@ -183,7 +187,7 @@ namespace ForkPlus.UI
 				return;
 			}
 			AdjustButtonsVisibilityToWindowState();
-			if (base.WindowState == WindowState.Maximized)
+			if (base.WindowState == System.Windows.WindowState.Maximized)
 			{
 				WindowResizeBorderThickness = MaximizedWindowResizeBorderThickness;
 				base.BorderThickness = default(Thickness);
@@ -224,15 +228,15 @@ namespace ForkPlus.UI
 			}
 			base.CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, delegate
 			{
-				base.WindowState = WindowState.Minimized;
+				base.WindowState = System.Windows.WindowState.Minimized;
 			}));
 			base.CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, delegate
 			{
-				base.WindowState = WindowState.Maximized;
+				base.WindowState = System.Windows.WindowState.Maximized;
 			}));
 			base.CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, delegate
 			{
-				base.WindowState = WindowState.Normal;
+				base.WindowState = System.Windows.WindowState.Normal;
 			}));
 			base.CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, delegate
 			{
@@ -240,7 +244,7 @@ namespace ForkPlus.UI
 			}));
 			_tempWindowState = base.WindowState;
 			_tempBorderThickness = base.BorderThickness;
-			if (base.WindowState == WindowState.Maximized)
+			if (base.WindowState == System.Windows.WindowState.Maximized)
 			{
 				base.BorderThickness = default(Thickness);
 			}
@@ -262,11 +266,11 @@ namespace ForkPlus.UI
 			}
 			switch (base.WindowState)
 			{
-			case WindowState.Normal:
+			case System.Windows.WindowState.Normal:
 				_maximizeButton?.Show();
 				_restoreButton?.Collapse();
 				break;
-			case WindowState.Maximized:
+			case System.Windows.WindowState.Maximized:
 				_maximizeButton?.Collapse();
 				_restoreButton?.Show();
 				break;
@@ -290,11 +294,11 @@ namespace ForkPlus.UI
 			switch (msg)
 			{
 			case 71:
-				WindowResizeBorderThickness = ((base.WindowState == WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
+				WindowResizeBorderThickness = ((base.WindowState == System.Windows.WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
 				break;
 			case 36:
 				WindowLocationStateExtensions.GetMinMaxInfo(hwnd, lparam);
-				WindowResizeBorderThickness = ((base.WindowState == WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
+				WindowResizeBorderThickness = ((base.WindowState == System.Windows.WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
 				handled = true;
 				break;
 			case 132:

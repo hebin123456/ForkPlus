@@ -1,10 +1,14 @@
 using System;
-using WindowState = System.Windows.WindowState;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.Settings
 {
+	/// <summary>
+	/// Phase 0.4 从 <c>src/ForkPlus/Settings/CustomDecoders.cs</c> 迁入 Core。
+	/// 唯一变更：去掉 <c>using WindowState = System.Windows.WindowState;</c> 别名，
+	/// 改用 <see cref="ForkPlus.UI.WindowState"/> 跨平台枚举。
+	/// </summary>
 	public class CustomDecoders
 	{
 		internal static JObject Encode(MergeTool target)

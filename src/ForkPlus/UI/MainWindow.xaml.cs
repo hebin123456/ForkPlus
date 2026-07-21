@@ -22,6 +22,15 @@ using NLog.Targets;
 using ForkPlus.UI.Helpers;
 using ForkPlus.Services;
 
+// Phase 0.4：WindowLocationState 已迁入 Core，其 WindowState 属性类型也由
+// System.Windows.WindowState 改为 ForkPlus.UI.WindowState（Core 跨平台枚举，
+// 值与 System.Windows.WindowState 一致，可强转互转）。
+// 因为 MainWindow 继承自 System.Windows.Window，bare "WindowState" 在实例方法中
+// 会被解析为继承的实例属性 this.WindowState（C# 简单名查找规则：实例成员优先于
+// 类型名），无法用 using 别名覆盖。所以这里使用完全限定名 ForkPlus.UI.WindowState.X
+// 来访问 Core 枚举值；少量需要 System.Windows.WindowState 的地方（如 base.WindowState
+// 赋值）用 (System.Windows.WindowState) 显式强转。
+
 namespace ForkPlus.UI
 {
 	[TemplatePart(Name = "PART_MainMenu", Type = typeof(Menu))]
@@ -189,9 +198,9 @@ namespace ForkPlus.UI
 		{
 			base.OnSourceInitialized(e);
 			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
-			if (windowLocationState.WindowState == WindowState.Minimized)
+			if (windowLocationState.WindowState == ForkPlus.UI.WindowState.Minimized)
 			{
-				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, WindowState.Normal);
+				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, ForkPlus.UI.WindowState.Normal);
 			}
 			// 先同步 WPF 依赖属性到目标值，避免 WPF 在 Show 流程中用 XAML 默认值（Width=1000/Height=600）
 			// 覆盖 SetWindowPlacement 设置的 HWND 位置/尺寸，导致窗口位置/大小不恢复。
@@ -201,9 +210,10 @@ namespace ForkPlus.UI
 			base.Height = windowLocationState.Height;
 			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
 			this.SetWindowLocationState(windowLocationState);
-			if (windowLocationState.WindowState == WindowState.Maximized)
+			if (windowLocationState.WindowState == ForkPlus.UI.WindowState.Maximized)
 			{
-				base.WindowState = WindowState.Maximized;
+				// base.WindowState 期望 System.Windows.WindowState；用强转从 Core 枚举转回（值一致）。
+				base.WindowState = (System.Windows.WindowState)ForkPlus.UI.WindowState.Maximized;
 			}
 		}
 

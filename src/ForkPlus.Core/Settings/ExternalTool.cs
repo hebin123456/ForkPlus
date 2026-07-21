@@ -2,6 +2,12 @@ using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.Settings
 {
+	/// <summary>
+	/// 用户配置中外部工具的序列化模型（JSON 持久化用）。
+	/// Phase 0.4 从 <c>src/ForkPlus/Settings/ExternalTool.cs</c> 迁入 Core。
+	/// 注意：本类与 <c>ForkPlus.Core/ExternalTool.cs</c> 中的 struct <see cref="ForkPlus.ExternalTool"/>
+	/// 是不同类型——后者是运行时 UI 用的工具集合元素，本类仅用于 JSON 编解码。
+	/// </summary>
 	public class ExternalTool
 	{
 		public static class Coder
@@ -10,17 +16,17 @@ namespace ForkPlus.Settings
 			{
 				return target switch
 				{
-					ToolType.Custom => new JValue("Custom"), 
-					ToolType.AraxisMerge => new JValue("AraxisMerge"), 
-					ToolType.BeyondCompare => new JValue("BeyondCompare"), 
-					ToolType.Cursor => new JValue("Cursor"), 
-					ToolType.KDiff3 => new JValue("KDiff3"), 
-					ToolType.P4Merge => new JValue("P4Merge"), 
-					ToolType.VSCode => new JValue("VSCode"), 
-					ToolType.VisualStudio => new JValue("VisualStudio"), 
-					ToolType.Unity3d => new JValue("Unity3d"), 
-					ToolType.WinMerge => new JValue("WinMerge"), 
-					_ => null, 
+					ToolType.Custom => new JValue("Custom"),
+					ToolType.AraxisMerge => new JValue("AraxisMerge"),
+					ToolType.BeyondCompare => new JValue("BeyondCompare"),
+					ToolType.Cursor => new JValue("Cursor"),
+					ToolType.KDiff3 => new JValue("KDiff3"),
+					ToolType.P4Merge => new JValue("P4Merge"),
+					ToolType.VSCode => new JValue("VSCode"),
+					ToolType.VisualStudio => new JValue("VisualStudio"),
+					ToolType.Unity3d => new JValue("Unity3d"),
+					ToolType.WinMerge => new JValue("WinMerge"),
+					_ => null,
 				};
 			}
 
@@ -33,17 +39,17 @@ namespace ForkPlus.Settings
 				}
 				return text switch
 				{
-					"Custom" => ToolType.Custom, 
-					"AraxisMerge" => ToolType.AraxisMerge, 
-					"BeyondCompare" => ToolType.BeyondCompare, 
-					"Cursor" => ToolType.Cursor, 
-					"KDiff3" => ToolType.KDiff3, 
-					"P4Merge" => ToolType.P4Merge, 
-					"VSCode" => ToolType.VSCode, 
-					"VisualStudio" => ToolType.VisualStudio, 
-					"Unity3d" => ToolType.Unity3d, 
-					"WinMerge" => ToolType.WinMerge, 
-					_ => null, 
+					"Custom" => ToolType.Custom,
+					"AraxisMerge" => ToolType.AraxisMerge,
+					"BeyondCompare" => ToolType.BeyondCompare,
+					"Cursor" => ToolType.Cursor,
+					"KDiff3" => ToolType.KDiff3,
+					"P4Merge" => ToolType.P4Merge,
+					"VSCode" => ToolType.VSCode,
+					"VisualStudio" => ToolType.VisualStudio,
+					"Unity3d" => ToolType.Unity3d,
+					"WinMerge" => ToolType.WinMerge,
+					_ => null,
 				};
 			}
 

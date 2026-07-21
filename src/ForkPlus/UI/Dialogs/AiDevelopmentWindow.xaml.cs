@@ -226,9 +226,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (Application.Current?.MainWindow?.WindowState == WindowState.Maximized)
+			// Phase 0.4：本类继承自 CustomWindow → System.Windows.Window，bare "WindowState"
+			// 在实例方法中被解析为继承的实例属性 this.WindowState，无法用于访问枚举常量。
+			// 这里用完全限定名 System.Windows.WindowState。
+			if (Application.Current?.MainWindow?.WindowState == System.Windows.WindowState.Maximized)
 			{
-				WindowState = WindowState.Maximized;
+				WindowState = System.Windows.WindowState.Maximized;
 			}
 		}
 

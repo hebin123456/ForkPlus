@@ -3,13 +3,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Windows;
 using ForkPlus.Git;
 using ForkPlus.Services;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+// Phase 0.4：本文件从 src/ForkPlus/Settings/ForkPlusSettings.cs 迁入 Core。
+// 原来的 WPF 依赖：
+//   1) using System.Windows; —— 仅用于 WindowState 枚举（Normal/Minimized/Maximized），
+//      现替换为 ForkPlus.UI.WindowState（Core 跨平台枚举，值与 System.Windows.WindowState 一致，
+//      可强转互转），由 using ForkPlus.UI; 引入到作用域。
+//   2) App.ForkDirectoryPath —— WPF 静态属性，迁入 Core 后改用
+//      ServiceLocator.AppContext.ForkDirectoryPath（同样指向 %LOCALAPPDATA%\ForkPlus，
+//      WPF 工程启动时通过 WpfAppContext 注入相同的值）。
+//   3) ExternalToolManager —— 已同步迁入 Core，命名空间仍是 ForkPlus，无需修改引用。
 
 namespace ForkPlus.Settings
 {
@@ -3488,7 +3497,10 @@ namespace ForkPlus.Settings
 				Log.Info("Use design-time settings");
 				return Decode(new JObject());
 			}
-			string path = Path.Combine(App.ForkDirectoryPath, "settings.json");
+			// Phase 0.4：原 WPF 调用 App.ForkDirectoryPath，迁入 Core 后改走 ServiceLocator.AppContext。
+			// AppContext 由 WPF 工程启动时通过 WpfAppContext 注入（值与原 App.ForkDirectoryPath 一致）。
+			// 这里的 ?. 是防御性的——理论上 ServiceLocator 已 Initialize，AppContext 不会为 null。
+			string path = Path.Combine(ServiceLocator.AppContext?.ForkDirectoryPath ?? string.Empty, "settings.json");
 			try
 			{
 				if (File.Exists(path))
@@ -3528,11 +3540,16 @@ namespace ForkPlus.Settings
 			try
 			{
 				string content = Encode(this).ToString(Formatting.Indented);
-				Directory.CreateDirectory(App.ForkDirectoryPath);
-				_fsMutex.WaitOne();
-				try
-				{
-					FileHelper.AtomicWrite(Path.Combine(App.ForkDirectoryPath, "settings.json"), content);
+			// Phase 0.4：与 Load() 同步，App.ForkDirectoryPath → ServiceLocator.AppContext.ForkDirectoryPath。
+			string directoryPath = ServiceLocator.AppContext?.ForkDirectoryPath;
+			if (!string.IsNullOrEmpty(directoryPath))
+			{
+				Directory.CreateDirectory(directoryPath);
+			}
+			_fsMutex.WaitOne();
+			try
+			{
+				FileHelper.AtomicWrite(Path.Combine(directoryPath ?? string.Empty, "settings.json"), content);
 				}
 				catch (Exception ex)
 				{

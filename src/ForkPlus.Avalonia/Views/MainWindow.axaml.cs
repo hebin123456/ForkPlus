@@ -128,16 +128,23 @@ namespace ForkPlus.Avalonia.Views
 
         // ===== 系统按钮（对照 WPF ControlTemplate 中的 SystemCommands 绑定）=====
 
+        // Phase 0.4：Core 引入了 ForkPlus.UI.WindowState 枚举。MainWindow 继承自
+        // global::Avalonia.Controls.Window，bare "WindowState" 在实例方法中会被解析为继承的
+        // 实例属性 this.WindowState（Avalonia.Controls.WindowState 类型），无法用于
+        // 访问枚举常量。又因本文件位于 namespace ForkPlus.Avalonia.Views，bare
+        // "Avalonia.Controls.WindowState" 会被解析为 ForkPlus.Avalonia.Controls.WindowState
+        // （不存在），所以必须用 global:: 前缀。
+
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState.Minimized;
+            WindowState = global::Avalonia.Controls.WindowState.Minimized;
         }
 
         private void MaximizeButton_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
+            WindowState = WindowState == global::Avalonia.Controls.WindowState.Maximized
+                ? global::Avalonia.Controls.WindowState.Normal
+                : global::Avalonia.Controls.WindowState.Maximized;
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

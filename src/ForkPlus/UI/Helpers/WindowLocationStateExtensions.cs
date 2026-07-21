@@ -5,6 +5,14 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using ForkPlus.Settings;
 
+// Phase 0.4：WindowLocationState 已迁入 Core，其 WindowState 属性类型也由
+// System.Windows.WindowState 改为 ForkPlus.UI.WindowState（Core 跨平台枚举，
+// 值与 System.Windows.WindowState 一致，可强转互转）。本文件大量访问
+// System.Windows.WindowState（来自 Window.WindowState 属性），同时 ToShowCmd/
+// FromShowCmd 需要消费/产出 Core 枚举值。这里用别名让 bare "WindowState" 解析到
+// Core 枚举；少量需要 System.Windows.WindowState 的地方用强转 (System.Windows.WindowState)。
+using WindowState = ForkPlus.UI.WindowState;
+
 namespace ForkPlus.UI.Helpers
 {
 	public static class WindowLocationStateExtensions
@@ -169,7 +177,8 @@ namespace ForkPlus.UI.Helpers
 			WindowPlacement windowPlacement = ToWindowPlacement(state, window);
 			windowPlacement.Length = Marshal.SizeOf(typeof(WindowPlacement));
 			windowPlacement.Flags = 0;
-			if (window.WindowState != WindowState.Minimized)
+			// Phase 0.4：window.WindowState 是 System.Windows.WindowState，强转到 Core 枚举后再比较（值一致）。
+			if ((WindowState)window.WindowState != WindowState.Minimized)
 			{
 				SetWindowPlacement(windowInteropHelper.Handle, ref windowPlacement);
 			}
