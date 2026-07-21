@@ -51,7 +51,7 @@
           - DiffPopupWindow 弹窗
           - UpdateDiff / LoadWorkingDirectoryDiff / LoadRawWorkingDirectoryDiff git diff 调用
           - RecentCommitMessagesContextMenu_Opened（AI commit 生成菜单）
-          - Amend / Commit 真实逻辑（git commit --amend / git commit）
+          - Amend / Commit 真实逻辑（git commit amend / git commit）
 
         本 spike 版验证：
           - Grid 3 列布局正确显示
