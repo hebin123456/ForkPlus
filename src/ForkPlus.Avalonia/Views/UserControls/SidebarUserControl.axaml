@@ -3,7 +3,7 @@
              x:Class="ForkPlus.Avalonia.Views.UserControls.SidebarUserControl"
              Width="240">
     <!--
-        Phase 3.3：Avalonia 版 SidebarUserControl 骨架（spike 简化版）。
+        Phase 5.2 完整迁移版：Avalonia 版 SidebarUserControl。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/SidebarUserControl.xaml（105 行）+
         SidebarUserControl.xaml.cs（2714 行）：
@@ -11,32 +11,35 @@
             Row 0: 仓库名 + 5 个 RadioButton（Changes/AllCommits/Branches/Search/Service）
             Row 1: TabControl（Branches/Search/Service 3 个 TabItem）
           - WPF SidebarTreeView 是 MultiselectionTreeView 自定义控件（自定义树视图）
+            spike 版用 Avalonia 原生 TreeView + TreeDataTemplate 替代
           - WPF FilterTextBox 是自定义控件（带过滤的 TextBox）
+            spike 版用普通 TextBox + TextChanged 事件替代
 
-        Sidebar 与 RepositoryUserControl 的关系（来自调研）：
-          - Sidebar 是 RepositoryUserControl 的子控件（非独立挂在 MainWindow）
-          - RepositoryUserControl.xaml.cs 行 794-798 在初始化时创建 Sidebar 装入 RepositorySidebarContainer
-          - Phase 3.3 创建骨架，等 Phase 3.4 RepositoryUserControl 迁移时引用
+        Avalonia 11 适配：
+          - TreeView 用 TreeDataTemplate + ItemsSource="{Binding Children}" 绑定
+          - HierarchicalDataTemplate → TreeDataTemplate
+          - Visibility.Collapsed/Visible → IsVisible = false/true
+          - MouseDoubleClick → DoubleTapped
 
-        本 spike 版暂不迁移（留待 Phase 3.4 与 RepositoryUserControl 一起做）：
-          - 完整 Initialize(RepositoryUserControl) 逻辑
-          - SidebarTreeView + MultiselectionTreeView（需先迁移自定义控件）
-          - FilterTextBox（自定义控件）
-          - EditableTextBlock（仓库名可编辑，自定义控件）
-          - DropDownButton（Repo 设置菜单，自定义控件）
-          - UpdateRepositoryData / UpdateRepositoryStatus 等 ~15 个刷新方法
-          - 10+ 个右键菜单生成方法（CreateLocalBranchContextMenuItems 等）
-          - SearchTabItem / ServiceTabItem（自定义 TabItem）
-          - 拖拽 Drop 上下文菜单
-          - 多语言（ApplyLocalization）
-          - NotificationCenter 事件订阅
-          - 17 处 DynamicResource（主题样式/图标/画刷）
-
-        本 spike 版验证：
-          - 顶层 Grid 2 行布局正确显示
-          - 5 个 RadioButton（Changes/AllCommits/Branches/Search/Service）能切换
-          - 空 TabControl 能展示
+        spike 简化策略：
+          - 图标用 emoji TextBlock（绑定 Icon 属性）
+          - 普通 TextBox 过滤（替代自定义 FilterTextBox）
+          - 不迁移 MultiselectionTreeView（用原生 TreeView）
     -->
+    <UserControl.Resources>
+        <!--
+            树节点模板（对照 WPF HierarchicalDataTemplate）：
+              ItemsSource="{Binding Children}" → 递归显示子节点
+              Icon + Name → 横向排列 emoji 图标 + 名称
+        -->
+        <TreeDataTemplate x:Key="SidebarNodeTemplate" ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,1">
+                <TextBlock Text="{Binding Icon}" FontSize="12" />
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
+        </TreeDataTemplate>
+    </UserControl.Resources>
+
     <Grid RowDefinitions="Auto,*"
           Background="{DynamicResource Sidebar.Static.Background}">
 
@@ -61,9 +64,15 @@
 
             <!-- 视图切换 RadioButton -->
             <StackPanel Orientation="Vertical" Spacing="2" Margin="0,4">
-                <RadioButton Name="ChangesRadioButton" Content="Changes"
+                <!--
+                    ChangesRadioButton：对照 WPF ChangesRadioButton + ChangesTextBlock
+                    用 TextBlock 名为 ChangesTextBlock 作 Content（供 ApplyLocalization 更新文本）
+                -->
+                <RadioButton Name="ChangesRadioButton"
                              Click="ChangesRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}" />
+                             Foreground="{DynamicResource ThemeForegroundBrush}">
+                    <TextBlock Name="ChangesTextBlock" Text="Changes" />
+                </RadioButton>
                 <RadioButton Name="AllCommitsRadioButton" Content="All Commits"
                              IsChecked="True"
                              Click="AllCommitsRadioButton_Click"
@@ -94,15 +103,20 @@
                     SelectionChanged="TabControl_SelectionChanged">
             <TabItem Name="BranchesTabItem" Header="Branches">
                 <Grid RowDefinitions="Auto,*" Margin="4">
+                    <!-- 过滤框（对照 WPF FilterTextBox，spike 用普通 TextBox）-->
                     <TextBox Grid.Row="0" Name="FilterTextBox"
                              Watermark="Filter branches..."
                              TextChanged="FilterTextBox_TextChanged"
                              Margin="0,2" />
-                    <TextBlock Grid.Row="1" Text="(no branches)"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                               FontSize="11" />
+                    <!--
+                        树视图（对照 WPF SidebarTreeView = MultiselectionTreeView）
+                        spike 版用 Avalonia 原生 TreeView + TreeDataTemplate
+                        ItemsSource 绑定 _rootNodes（在 OnLoaded / Initialize 中赋值）
+                    -->
+                    <TreeView Grid.Row="1" Name="SidebarTreeView"
+                              ItemTemplate="{StaticResource SidebarNodeTemplate}"
+                              Background="Transparent"
+                              BorderThickness="0" />
                 </Grid>
             </TabItem>
             <TabItem Name="SearchTabItem" Header="Search">

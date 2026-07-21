@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.StageFileUserControl">
+    <!--
+        Phase 3.8：Avalonia 版 StageFileUserControl（完整迁移版 — 单文件行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/StageFileUserControl.xaml（80 行）：
+          WPF 版是双列表控件（unstaged + staged 两个 FileListUserControl + 拖拽 + 过滤）。
+          本 Avalonia 版按 task spec 简化为单文件行控件：
+          复选框 + 文件名 + 状态图标 emoji。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/StageFileUserControl.xaml.cs（498 行）：
+          WPF 版核心是 SetData(unstagedFiles, stagedFiles) 双列表数据绑定 + 拖拽 stage/unstage。
+          本 Avalonia 版核心是 SetFile(ChangedFile) 单文件显示 + IsStaged 复选框 + IsStagedChanged 事件。
+
+        Avalonia 版差异（spike 简化）：
+          - 双列表（unstaged + staged FileListUserControl）→ 单文件行（CheckBox + TextBlock + TextBlock）
+          - 状态图标 PNG（StageAllIcon/UnstageAllIcon 等资源）→ emoji TextBlock
+            （M=📝 / A=✨ / D=🗑 / R=🔀 / C=📋 / T=🔄 / U=⚠ / Untracked=❓ / Ignored=🚫）
+          - 拖拽 stage/unstage（ItemsDrop）→ 不迁移（单行无需拖拽）
+          - FilterTextBox 过滤 → 不迁移（单行无需过滤）
+          - FileListMode 三模式切换 → 不迁移
+          - DelayedAction + KeyboardHelper → 不迁移
+          - NotificationCenter.FileListModeChanged 订阅 → 不迁移（NotificationCenter 不可访问）
+
+        本 spike 版验证：
+          - Grid 3 列布局正确显示（CheckBox / FileName / StatusIcon）
+          - CheckBox 勾选触发 IsStagedChanged 事件
+          - 状态图标 emoji 按 ChangeType 切换
+    -->
+    <Grid Name="StageFileGrid"
+          ColumnDefinitions="Auto,*,Auto"
+          Background="{DynamicResource ThemeCardBackgroundBrush}">
+
+        <!-- Col 0: 暂存复选框（对照 WPF 双列表的 stage/unstage 操作，spike 简化为单行 checkbox）-->
+        <CheckBox Grid.Column="0"
+                  Name="StagedCheckBox"
+                  Margin="6,2,4,2"
+                  VerticalAlignment="Center"
+                  IsCheckedChanged="StagedCheckBox_IsCheckedChanged" />
+
+        <!-- Col 1: 文件名（对照 WPF FileListUserControl 内的文件路径显示）-->
+        <TextBlock Grid.Column="1"
+                   Name="FileNameTextBlock"
+                   Margin="0,2,4,2"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   TextTrimming="CharacterEllipsis"
+                   Text="(no file)" />
+
+        <!-- Col 2: 状态图标 emoji（对照 WPF FileListUserControl 内的 ChangeTypeIcon PNG）-->
+        <TextBlock Grid.Column="2"
+                   Name="StatusIconTextBlock"
+                   Margin="0,2,8,2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontSize="14"
+                   Text="" />
+    </Grid>
+</UserControl>

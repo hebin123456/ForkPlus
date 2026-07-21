@@ -1,78 +1,110 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+             xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              x:Class="ForkPlus.Avalonia.Views.UserControls.CommitUserControl">
     <!--
-        Phase 3.8：Avalonia 版 CommitUserControl 骨架（spike 简化版）。
+        Phase 5.3 完整迁移版：Avalonia 版 CommitUserControl。
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/CommitUserControl.xaml（79 行）：
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/CommitUserControl.xaml（79 行）+
+        CommitUserControl.xaml.cs（2339 行）：
           - 顶层 Grid 3 列：280 / 1 / *
-            Col 0: StageFileUserControl（自嵌套子控件，staged/unstaged 文件列表）
+            Col 0: StageFileUserControl（staged/unstaged 文件列表）
             Col 1: GridSplitter
-            Col 2: 嵌套 Grid 3 行：
-              Row 0: CommitFileDiffControl（diff 渲染，依赖 AvalonEdit，Phase 3.9a 已占位）
-              Row 1: Border（分隔线）
-              Row 2: commit message 编辑区：
-                - SpellingPlaceholderTextBox（subject 输入框，自定义控件）
-                - CommitDescriptionTextBox（description，自定义控件）
-                - DropDownButton（最近消息下拉，自定义控件）
-                - CheckBox（Amend）
-                - Button（Commit 按钮）
-                - DropDownButton（Commit 设置下拉，自定义控件）
+            Col 2: 嵌套 Grid 3 行：CommitFileDiffControl / 分隔线 / commit message 编辑区
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/CommitUserControl.xaml.cs（2339 行）：
-          - 18 个公共方法/属性
-          - 关键公共方法：Initialize(repo) / ApplyLocalization / Refresh(SubDomain) /
-            StageSelectedFiles / LoadCommitMessage / SaveCommitMessage / EraseSavedCommitMessage
-          - 公共属性：RepositoryUserControl / FullCommitMessage / AmendMode / IsCommitAllowed /
+        Avalonia 版差异（Phase 5.3 完整迁移）：
+          - StageFileUserControl 双列表 → 内联 ItemsControl + DataTemplate（CheckBox + emoji + 文件名）
+          - SpellingPlaceholderTextBox / CommitDescriptionTextBox → 单个 AvaloniaEdit.TextEditor
+            （CommitMessageTextBox，Document.Text 替代 .Text，Document.TextChanged 替代 TextChanged）
+          - DropDownButton（最近消息/Commit 设置下拉）→ 普通 Button（spike 不实现下拉）
+          - CommitMessageAutocompleteProvider / GitmojiAutocompleteProvider → 省略自动补全（保留注释）
+          - 拼写检查 → 省略（Avalonia 不原生支持）
+          - 状态图标 PNG → emoji（M=📝 / A=✨ / D=🗑 / R=🔀 / Untracked=❓）
+          - JobQueue → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          - PreferencesLocalization → ServiceLocator.Localization
+          - Application.Current.Resources[key] → Application.Current!.TryGetResource(key, null, out var v)
+          - Visibility.Collapsed/Visible → IsVisible = false/true
+
+        公共 API（对照 WPF 18 个公共方法/属性 + task spec 简化 API）：
+          - Initialize / ApplyLocalization / Refresh(ChangedFile[], string[]) / Refresh(SubDomain)
+          - StageSelectedFiles / LoadCommitMessage / SaveCommitMessage / EraseSavedCommitMessage
+          - UpdateCommitMode / RefreshStageControls / UpdateCommitSection / FocusCommitMessageField
+          - ToggleShowIgnoredFiles
+          - task spec: SetCommitMessage / GetCommitMessage / StageFile / UnstageFile /
+            StageAll / UnstageAll / DiscardChanges / Commit / CommitAndPush / AmendCommit
+          - task spec 属性: CommitMessage / StagedFiles / UnstagedFiles / SelectedFile
+          - WPF 属性: RepositoryUserControl / FullCommitMessage / AmendMode / IsCommitAllowed /
             CommittingInProgress / StageJob / ShowIgnoredFiles / DontRefreshOnAmend
-          - 无公共事件（用 NotificationCenter WeakEventManager 事件总线替代）
-          - Initialize 注入模式：Initialize(RepositoryUserControl) 注入父控件，
-            并向下注入 FileDiffControl.RepositoryUserControl
-
-        装入路径（WPF）：
-          RepositoryContentUserControl.xaml → CommitUserControl
-          （由 RepositoryViewMode.CommitViewMode 触发显示，RevisionListViewUserControl 是 RevisionViewMode）
-
-        本 spike 版策略：
-          - StageFileUserControl 用 Border + TextBlock 占位（不创建独立 axaml）
-          - CommitFileDiffControl 用 Phase 3.9a 的占位 UserControl
-          - SpellingPlaceholderTextBox / CommitDescriptionTextBox 用 Avalonia TextBox 占位
-          - DropDownButton 用 Avalonia Button 占位（不实现下拉）
-          - 公共方法签名保留，body stub
-          - 公共属性用 object/string/bool 等简单类型占位
-
-        本 spike 版暂不迁移：
-          - StageFileUserControl 真实实现（staged/unstaged 文件列表 + 拖拽 stage/unstage）
-          - SpellingPlaceholderTextBox / CommitDescriptionTextBox 自定义控件（拼写检查 + 自动补全）
-          - DropDownButton 自定义控件（最近消息下拉 + Commit 设置下拉）
-          - GitmojiAutocompleteProvider / CommitMessageAutocompleteProvider 自动补全
-          - NotificationCenter WeakEventManager 事件订阅
-          - DiffPopupWindow 弹窗
-          - UpdateDiff / LoadWorkingDirectoryDiff / LoadRawWorkingDirectoryDiff git diff 调用
-          - RecentCommitMessagesContextMenu_Opened（AI commit 生成菜单）
-          - Amend / Commit 真实逻辑（git commit amend / git commit）
-
-        本 spike 版验证：
-          - Grid 3 列布局正确显示
-          - Col 0 stage files 占位可见
-          - Col 2 Row 0 diff 占位可见
-          - Col 2 Row 2 commit message 编辑区可见（subject + description + Amend + Commit button）
     -->
     <Grid Name="CommitGrid"
-          ColumnDefinitions="280,Auto,*"
+          ColumnDefinitions="300,Auto,*"
           Background="{DynamicResource ThemeBackgroundBrush}">
 
-        <!-- Col 0: StageFileUserControl 占位（WPF 是自嵌套子控件）-->
+        <!-- Col 0: 文件列表面板（staged/unstaged 文件列表，内联 ItemsControl + DataTemplate） -->
         <Border Grid.Column="0"
-                Name="StageFileContainer"
-                Background="{DynamicResource ThemeCardBackgroundBrush}"
-                BorderThickness="0,0,1,0"
-                BorderBrush="{DynamicResource ThemeBorderMidBrush}">
-            <TextBlock Text="(stage files placeholder)"
-                       FontSize="11"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                       Margin="8,4" />
+                 Name="StageFileContainer"
+                 Background="{DynamicResource ThemeCardBackgroundBrush}"
+                 BorderThickness="0,0,1,0"
+                 BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+            <Grid RowDefinitions="Auto,Auto,*">
+
+                <!-- Row 0: 文件过滤搜索框 -->
+                <TextBox Grid.Row="0"
+                         Name="FileFilterTextBox"
+                         Watermark="Filter files..."
+                         Margin="6,4,6,2"
+                         TextChanged="FileFilterTextBox_TextChanged" />
+
+                <!-- Row 1: 工具栏按钮（Stage All / Unstage All / Discard） -->
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
+                            Margin="6,2,6,4">
+                    <Button Name="StageAllButton"
+                            Content="Stage All"
+                            Margin="0,0,4,0"
+                            Click="StageAllButton_Click" />
+                    <Button Name="UnstageAllButton"
+                            Content="Unstage All"
+                            Margin="0,0,4,0"
+                            Click="UnstageAllButton_Click" />
+                    <Button Name="DiscardButton"
+                            Content="Discard"
+                            Click="DiscardButton_Click" />
+                </StackPanel>
+
+                <!-- Row 2: 可滚动文件列表（CheckBox + emoji + 文件名） -->
+                <ScrollViewer Grid.Row="2"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Name="FileListItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,Auto,*"
+                                      Margin="6,1"
+                                      Background="Transparent">
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsStaged, Mode=OneWay}"
+                                              Click="FileRowStaged_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,4,0" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding StatusEmoji}"
+                                               Margin="0,0,4,0"
+                                               FontSize="13"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding Path}"
+                                               TextTrimming="CharacterEllipsis"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               PointerPressed="FileRow_PointerPressed" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
 
         <!-- Col 1: GridSplitter -->
@@ -83,11 +115,11 @@
                       Background="{DynamicResource ThemeBorderMidBrush}"
                       HorizontalAlignment="Stretch" />
 
-        <!-- Col 2: 嵌套 Grid 3 行（diff + 分隔 + commit message 编辑区）-->
+        <!-- Col 2: 嵌套 Grid 3 行（diff / 分隔线 / commit message 编辑区） -->
         <Grid Grid.Column="2"
               RowDefinitions="*,Auto,Auto">
 
-            <!-- Row 0: CommitFileDiffControl（Phase 3.9a 占位 UserControl）-->
+            <!-- Row 0: CommitFileDiffControl（diff 预览，Phase 3.9a 占位 UserControl） -->
             <uc:CommitFileDiffControl Grid.Row="0"
                                       Name="CommitFileDiffControl" />
 
@@ -98,34 +130,78 @@
 
             <!-- Row 2: commit message 编辑区 -->
             <Grid Grid.Row="2"
-                  RowDefinitions="Auto,Auto,Auto"
+                  RowDefinitions="Auto,Auto,Auto,Auto"
                   Margin="8,4">
-                <TextBox Grid.Row="0"
-                         Name="CommitSubjectTextBox"
-                         Watermark="Commit subject"
-                         Margin="0,2" />
-                <TextBox Grid.Row="1"
-                         Name="CommitDescriptionTextBox"
-                         Watermark="Commit description"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         Height="80"
-                         Margin="0,2" />
+
+                <!-- Row 0: 提交消息编辑器（AvaloniaEdit TextEditor，多行） -->
+                <Border Grid.Row="0"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1"
+                        Height="120">
+                    <avalonedit:TextEditor Name="CommitMessageTextBox"
+                                           ShowLineNumbers="False"
+                                           IsReadOnly="False"
+                                           FontFamily="Consolas,Menlo,monospace"
+                                           FontSize="13"
+                                           WordWrap="True" />
+                </Border>
+
+                <!-- Row 1: subject 长度计数器 + 警告消息 -->
+                <Grid Grid.Row="1"
+                      ColumnDefinitions="Auto,*,Auto"
+                      Margin="0,2">
+                    <TextBlock Grid.Column="0"
+                               Name="SubjectLengthLimitTextBlock"
+                               Text=""
+                               FontSize="11"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Name="WarningTextBlock"
+                               Text=""
+                               FontSize="11"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                    <TextBlock Grid.Column="2"
+                               Name="StagedDiffStatsTextBlock"
+                               Text=""
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0" />
+                </Grid>
+
+                <!-- Row 2: 工具按钮行（Clear / Co-authored-by 模板） -->
                 <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            Margin="0,2">
+                    <Button Name="ClearCommitMessageButton"
+                            Content="Clear"
+                            Margin="0,0,4,0"
+                            Click="ClearCommitMessageButton_Click" />
+                    <Button Name="InsertCoAuthoredButton"
+                            Content="Co-authored-by"
+                            ToolTip.Tip="Insert Co-authored-by template"
+                            Margin="0,0,4,0"
+                            Click="InsertCoAuthoredButton_Click" />
+                </StackPanel>
+
+                <!-- Row 3: Amend + Recent + Settings + Commit 按钮 -->
+                <StackPanel Grid.Row="3"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             Margin="0,4,0,0">
                     <CheckBox Name="AmendCheckBox"
                               Content="Amend"
                               VerticalAlignment="Center"
-                              Margin="0,0,8,0" />
+                              Margin="0,0,8,0"
+                              Click="AmendCheckBox_Click" />
                     <Button Name="RecentCommitMessagesButton"
-                            Content="▾"
+                            Content="Recent"
                             ToolTip.Tip="Recent commit messages"
                             Margin="0,0,4,0"
                             Click="RecentCommitMessagesButton_Click" />
                     <Button Name="CommitSettingsButton"
-                            Content="⚙"
+                            Content="Settings"
                             ToolTip.Tip="Commit settings"
                             Margin="0,0,4,0"
                             Click="CommitSettingsButton_Click" />

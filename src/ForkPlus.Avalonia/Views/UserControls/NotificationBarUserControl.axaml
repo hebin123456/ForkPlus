@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.NotificationBarUserControl">
+    <!--
+        Phase 3.4：Avalonia 版 NotificationBarUserControl（完整迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/NotificationBarUserControl.xaml（49 行）：
+          - 顶层 Border（BorderBrush=BorderBrush / Background=BackgroundBrush / BorderThickness=0,0,0,1）
+          - 内部 Grid 3 列：Auto / * / Auto
+            Col 0: Image（StatusImage，Warning.png，18x18）
+            Col 1: TextBlock（NotificationTextBlock）
+                   + Grid（RebaseContainer，Collapsed）含 RebaseNotificationTextBlock +
+                         RebaseProgressBar（100x5）+ RebaseAdditionalNotificationTextBlock
+            Col 2: StackPanel horizontal：Button1 / Button2 / Button3 / AbortButton
+
+        Avalonia 版差异（spike 简化）：
+          - Image PNG（Warning.png）→ TextBlock emoji（ℹ/⚠/✗/✓，按 NotificationType 切换）
+          - Visibility.Collapsed/Visible → IsVisible=false/true
+          - DynamicResource BorderBrush/BackgroundBrush → ThemeCardBackgroundBrush/ThemeBorderMidBrush
+            （Avalonia 工程主题资源 key 与 WPF 不同）
+          - 动画 CollapseAnimation → 简化 IsVisible 切换（spike 不迁移缓动动画）
+          - 整体可见性由 IsControlVisible 属性驱动（绑定到 Border.IsVisible）
+
+        本 spike 版验证：
+          - Grid 3 列布局正确显示
+          - 状态图标 emoji 按 NotificationType 切换
+          - Button1/Button2/Button3/AbortButton 4 个按钮可见性可控
+          - RebaseContainer + ProgressBar 占位可见
+    -->
+    <Border Name="NotificationBorder"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            Background="{DynamicResource ThemeCardBackgroundBrush}"
+            BorderThickness="0,0,0,1"
+            IsVisible="False">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Col 0: 状态图标 emoji（对照 WPF StatusImage PNG）-->
+            <TextBlock Grid.Column="0"
+                       Name="StatusIconTextBlock"
+                       Margin="8,4,8,4"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Text="⚠" />
+
+            <!-- Col 1: 通知文本 + Rebase 容器（对照 WPF NotificationTextBlock + RebaseContainer）-->
+            <TextBlock Grid.Column="1"
+                       Name="NotificationTextBlock"
+                       Margin="0,4,0,4"
+                       VerticalAlignment="Center"
+                       FontSize="13"
+                       TextWrapping="NoWrap"
+                       TextTrimming="CharacterEllipsis" />
+
+            <Grid Grid.Column="1"
+                  Name="RebaseContainer"
+                  IsVisible="False"
+                  ColumnDefinitions="Auto,Auto,Auto,*">
+                <TextBlock Grid.Column="0"
+                           Name="RebaseNotificationTextBlock"
+                           Margin="0,4,0,4"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis" />
+                <ProgressBar Grid.Column="1"
+                             Name="RebaseProgressBar"
+                             Height="5"
+                             Width="100"
+                             Margin="8,8,0,4"
+                             VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2"
+                           Name="RebaseAdditionalNotificationTextBlock"
+                           Margin="14,4,0,4"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+            <!-- Col 2: 按钮组（对照 WPF StackPanel horizontal：Button1/Button2/Button3/AbortButton）-->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center">
+                <Button Name="Button1"
+                        VerticalAlignment="Center"
+                        Margin="2,0,2,0"
+                        Height="22"
+                        IsVisible="False" />
+                <Button Name="Button2"
+                        VerticalAlignment="Center"
+                        Margin="2,0,2,0"
+                        Height="22"
+                        IsVisible="False" />
+                <Button Name="Button3"
+                        VerticalAlignment="Center"
+                        Margin="2,0,2,0"
+                        Height="22"
+                        IsVisible="False" />
+                <Button Name="AbortButton"
+                        VerticalAlignment="Center"
+                        Margin="2,0,2,0"
+                        Height="22"
+                        Content="Abort" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

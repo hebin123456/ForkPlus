@@ -39,15 +39,10 @@
           ColumnDefinitions="120,Auto,*"
           RowDefinitions="Auto,Auto,*">
 
-        <!-- Row 0: NotificationBar 占位（跨 3 列）-->
-        <Border Grid.Row="0" Grid.ColumnSpan="3"
-                Name="NotificationBarPlaceholder"
-                Background="{DynamicResource ThemeCardBackgroundBrush}"
-                Padding="8,4">
-            <TextBlock Text="(no notifications)"
-                       FontSize="11"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-        </Border>
+        <!-- Row 0: NotificationBar 容器（跨 3 列，Phase 5.1 完整迁移版装入 NotificationBarUserControl）-->
+        <ContentControl Grid.Row="0" Grid.ColumnSpan="3"
+                        Name="NotificationBarContainer"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
         <!-- Row 1 + Row 2, Col 0: Sidebar 占位（Phase 3.4 后期装入 SidebarUserControl）-->
         <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"

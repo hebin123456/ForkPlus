@@ -176,6 +176,29 @@ namespace ForkPlus.Avalonia.Services
             // 由 RepositoryViewMode.RevisionViewMode/CommitViewMode 切换可见性
             services.AddTransient<Views.UserControls.RepositoryContentUserControl>();
 
+            // Phase 3.4b：NotificationBarUserControl（完整迁移版）
+            // 对照 WPF 工程 src/ForkPlus/UI/UserControls/NotificationBarUserControl.xaml.cs（395 行）。
+            // 仓库顶部通知栏（推送/拉取/冲突/状态条），可折叠。
+            // spike 简化：MainWindow.Instance → onRepositoryRefresh 回调，PNG 图标 → emoji，
+            // 动画 → IsVisible 切换，Inline 列表 → NotificationViewModel POCO。
+            // 装入 RepositoryUserControl Row 0（NotificationBar 区域）。
+            services.AddTransient<Views.UserControls.NotificationBarUserControl>();
+
+            // Phase 3.5b：RevisionListStatusBarUserControl（完整迁移版）
+            // 对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListStatusBarUserControl.xaml.cs（110 行）。
+            // commit 列表底部的状态栏（显示总数、过滤结果数、loading 指示器）。
+            // spike 简化：NotificationCenter 不可访问 → SetStatus/ShowLoading/SetCount API，
+            // 保留 ToFriendlyName + InvalidateStatusBarTextBlockMeasurement 完整逻辑。
+            // 装入 RevisionListViewUserControl 底部。
+            services.AddTransient<Views.UserControls.RevisionListStatusBarUserControl>();
+
+            // Phase 3.8b：StageFileUserControl（完整迁移版 — 单文件行）
+            // 对照 WPF 工程 src/ForkPlus/UI/UserControls/StageFileUserControl.xaml.cs（498 行）。
+            // WPF 版是双列表控件，spike 版按 task spec 简化为单文件行：
+            // 复选框 + 文件名 + 状态图标 emoji（M=📝 / A=✨ / D=🗑 / R=🔀）。
+            // 装入 CommitUserControl Col 0（staged/unstaged 文件列表区域）。
+            services.AddTransient<Views.UserControls.StageFileUserControl>();
+
             // Phase 5.2a：AiTextResultWindow（spike 骨架版，通用 AI 文本结果流式显示窗口）
             // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiTextResultWindow.xaml.cs（483 行）。
             // 功能1（AI 解释 commit）和功能3（AI 生成 PR 描述）共用。
