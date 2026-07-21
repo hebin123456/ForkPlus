@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ForkPlus.Git.Diff;
-using ICSharpCode.AvalonEdit.Document;
 
 namespace ForkPlus.Git.Merge.Presentation
 {
@@ -54,19 +53,13 @@ namespace ForkPlus.Git.Merge.Presentation
 			}
 		}
 
-		public class Line : ISegment
+		public class Line
 		{
 			public Range Range { get; }
 
 			public int LineNumber { get; }
 
 			public MergeConflict.Line Node { get; }
-
-			int ISegment.Offset => Range.Start;
-
-			int ISegment.Length => Range.Length - 1;
-
-			int ISegment.EndOffset => Range.End - 1;
 
 			public Line(Range range, int lineNumber, MergeConflict.Line node)
 			{

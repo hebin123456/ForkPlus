@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.Git.Commands
 {

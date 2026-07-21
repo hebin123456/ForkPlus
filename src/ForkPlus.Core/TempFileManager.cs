@@ -1,12 +1,13 @@
 using System;
-using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ForkPlus
 {
 	public class TempFileManager : IDisposable
 	{
-		private readonly TempFileCollection _tempFileCollection = new TempFileCollection();
+		private readonly List<string> _tempFiles = new List<string>();
+		private bool _disposed;
 
 		public static string MakeFilePath(string path)
 		{
@@ -30,26 +31,44 @@ namespace ForkPlus
 
 		public void AddFilePath(string absolutePath)
 		{
-			foreach (object item in _tempFileCollection)
+			if (_tempFiles.Contains(absolutePath))
 			{
-				if (item as string == absolutePath)
-				{
-					return;
-				}
+				return;
 			}
-			try
-			{
-				_tempFileCollection.AddFile(absolutePath, keepFile: false);
-			}
-			catch (ArgumentException ex)
-			{
-				Log.Warn("Failed to add temp file path", ex);
-			}
+			_tempFiles.Add(absolutePath);
 		}
 
 		public void Dispose()
 		{
-			((IDisposable)_tempFileCollection).Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+			if (disposing)
+			{
+				foreach (string path in _tempFiles)
+				{
+					try
+					{
+						if (File.Exists(path))
+						{
+							File.Delete(path);
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to delete temp file: " + path, ex);
+					}
+				}
+				_tempFiles.Clear();
+			}
+			_disposed = true;
 		}
 	}
 }
