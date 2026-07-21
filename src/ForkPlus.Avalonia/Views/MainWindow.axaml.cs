@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views.UserControls;
+using ForkPlus.Settings;
 using ForkPlus.UI;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -56,6 +57,24 @@ namespace ForkPlus.Avalonia.Views
             InitializeComponent();
             RefreshTitle();
             _themeService.ThemeChanged += (_, _) => { /* Phase 3.13 暂不更新 ThemeInfo，原 TextBlock 已移除 */ };
+
+            // Phase 3.1b：从 ForkPlusSettings.Default 恢复窗口位置/大小/状态。
+            // 对照 WPF MainWindow.OnSourceInitialized：从 ForkPlusSettings.Default.MainWindowLocationState
+            // 读取 Left/Top/Width/Height/WindowState，应用到 Avalonia 窗口。
+            // 注意：ForkPlusSettings 的 WindowState 是 Core 跨平台枚举（ForkPlus.UI.WindowState），
+            // Avalonia 窗口用 global::Avalonia.Controls.WindowState，值与 Core 枚举一致（Normal=0/Minimized=1/Maximized=2）。
+            WindowLocationState saved = ForkPlusSettings.Default.MainWindowLocationState;
+            // 如果上次关闭时是最小化，恢复为 Normal（避免启动就最小化，用户找不到窗口）
+            ForkPlus.UI.WindowState restoreState = saved.WindowState == ForkPlus.UI.WindowState.Minimized
+                ? ForkPlus.UI.WindowState.Normal
+                : saved.WindowState;
+            if (saved.Width > 0 && saved.Height > 0)
+            {
+                Position = new PixelPoint((int)saved.Left, (int)saved.Top);
+                Width = saved.Width;
+                Height = saved.Height;
+            }
+            WindowState = (global::Avalonia.Controls.WindowState)restoreState;
         }
 
         private void RefreshTitle()
@@ -119,6 +138,23 @@ namespace ForkPlus.Avalonia.Views
         {
             // 对照 WPF Window_Closing：保存窗口状态 + 关闭 NotificationManager
             Console.WriteLine("[MainWindow] Closing");
+            SaveWindowLocationState();
+        }
+
+        // Phase 3.1b：窗口位置/大小/状态变化时保存到 ForkPlusSettings（对照 WPF
+        // MainWindow.OnSizeChanged/OnLocationChanged/OnStateChanged → ForkPlusSettings.Default.MainWindowLocationState = ...）。
+        // 仅在 _startupFinished 后保存，避免初始恢复阶段的双向赋值循环。
+        private void SaveWindowLocationState()
+        {
+            if (!_startupFinished)
+            {
+                return;
+            }
+            ForkPlus.UI.WindowState coreState = (ForkPlus.UI.WindowState)WindowState;
+            var state = new WindowLocationState(
+                Position.X, Position.Y, Width, Height, coreState);
+            ForkPlusSettings.Default.MainWindowLocationState = state;
+            ForkPlusSettings.Default.Save();
         }
 
         private void MainWindow_Activated(object sender, EventArgs e)
