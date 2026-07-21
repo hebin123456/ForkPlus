@@ -22,7 +22,8 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 6.2（已完成）：IToastNotificationService
     //   - Phase 6.3（已完成）：IDialogService
     //   - Phase 6.4a（已完成）：IUserSettings（spike stub，所有属性返回默认值；Phase 0.4 + 6.4b 升级为真实持久化实现）
-    //   - Phase 6.5+：IProcessLauncher
+    //   - Phase 6.5（已完成）：IWindowManagerService
+    //   - Phase 6.6+：IGitEnvironment / IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -61,6 +62,15 @@ namespace ForkPlus.Avalonia.Services
             // Phase 0.4 把 ForkPlusSettings 从 WPF 工程迁入 Core（替换 System.Windows.WindowState 为
             // 自定义枚举）后，升级为真实实现（Phase 6.4b：委托到迁移后的 ForkPlusSettings.Default）。
             services.AddSingleton<IUserSettings, AvaloniaUserSettings>();
+
+            // Phase 6.5：IWindowManagerService 的 Avalonia 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfWindowManagerService.cs（44 行）：
+            //   - ActivateAndShowNotifications → 取 Avalonia 主窗口调用 Activate() + 最小化恢复
+            //     （Avalonia 工程暂未集成 NotificationManager 面板，spike 阶段只激活窗口）
+            //   - TryActivateWindowByTitle → 遍历 IClassicDesktopStyleApplicationLifetime.Windows
+            //   - DispatchToUiThread → Avalonia.Threading.Dispatcher.UIThread.Post
+            // 调用方：ForkPlus.Core.Accounts.NotificationManager（仅 2 处，Toast 点击回调）。
+            services.AddSingleton<IWindowManagerService, AvaloniaWindowManagerService>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
