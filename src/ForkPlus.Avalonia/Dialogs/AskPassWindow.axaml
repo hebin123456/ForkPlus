@@ -1,0 +1,106 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AskPassWindow"
+                              Title="Credentials Required"
+                              Width="520" MinHeight="170"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.3b：Avalonia 版 AskPassWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AskPassWindow.xaml（26 行）：
+          - <dialogs:ForkPlusDialogWindow MinHeight="170" Width="520" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: Grid 2 列 2 行（Auto/* × Auto/Auto）
+            * Row 0 Col 0: TextBlock InputTextBlock "Password:"
+            * Row 0 Col 1: TextBox InputTextBox + PasswordBox InputPasswordBox（叠加，按需显隐）
+            * Row 1 Col 1: CheckBox RememberCheckBox "Remember in Credential Manager"
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AskPassWindow.xaml.cs（105 行）：
+          - 构造函数 (arguments, repositoryPath):
+            * AskPassRequest.Parse(arguments)
+            * 按 _arguments 内容分支：
+              - StartsWith("Username for") → TextBox 显示，PasswordBox 隐藏，InputTextBlock="User Name:"
+              - SshPassphrase → PasswordBox 显示，TextBox 隐藏，InputTextBlock="Passphrase:"，Remember 显示
+              - StartsWith("Enter passphrase") → PasswordBox 显示，TextBox 隐藏，InputTextBlock="Passphrase:"
+              - SshUserPassword → PasswordBox 显示，TextBox 隐藏，InputTextBlock="Password:"，Remember 显示
+              - fallback → PasswordBox 显示，TextBox 隐藏，InputTextBlock="Password:"
+            * DialogTitle = repositoryPath 文件名 或 "Credentials Required"
+            * SubmitButtonTitle = "OK"
+          - OnSubmit:
+            * Result = InputTextBox.Text 或 InputPasswordBox.Password（按 _arguments 分支）
+            * 按 _askPassRequest 类型 + RememberCheckBox.IsChecked：
+              - SshPassphrase + Remember → WindowsCredentialManager.StoreSshPassphrase
+              - StartsWith("Enter passphrase") + 解析出 KeyPath → WindowsCredentialManager.StoreSshPassphrase
+              - SshUserPassword + Remember → WindowsCredentialManager.StoreSshUserPassword
+            * Close()
+
+        Avalonia 版差异：
+          1. 使用 Phase 4.0b spike 模式：子类 axaml 自带 Header + Content + Footer
+          2. .Show() / .Hide() 改为 IsVisible = true / false（Avalonia 11 API）
+          3. PasswordBox.Password 与 WPF 一致
+          4. .Focus() 与 WPF 一致（Avalonia 11 API）
+          5. PreferencesLocalization.Current → ServiceLocator.Localization.Current(text)
+             PreferencesLocalization.FormatCurrent → ServiceLocator.Localization.FormatCurrent(text, args)
+          6. WindowsCredentialManager 已在 Core 工程（src/ForkPlus.Core/WindowsCredentialManager.cs），
+             可直接调用（Windows-only 实现，Linux/macOS 上为 stub）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - Title + Description -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: Content - InputTextBlock + (TextBox | PasswordBox) + RememberCheckBox -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Name="InputTextBlock"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,0"
+                       Text="Password:" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="InputTextBox"
+                     Margin="0,4,0,4"
+                     IsVisible="False" />
+            <!-- Avalonia 11 没有 PasswordBox 控件，用 TextBox + PasswordChar 实现密码掩码 -->
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="InputPasswordBox"
+                     Margin="0,4,0,4"
+                     PasswordChar="●"
+                     IsVisible="True" />
+            <CheckBox Grid.Row="1" Grid.Column="1"
+                      Name="RememberCheckBox"
+                      Margin="0,6,0,0"
+                      HorizontalAlignment="Left"
+                      Content="Remember in Credential Manager"
+                      IsVisible="False"
+                      ToolTip.Tip="Remember in Windows Credential Manager" />
+        </Grid>
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

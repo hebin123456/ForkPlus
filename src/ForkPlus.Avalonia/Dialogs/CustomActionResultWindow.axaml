@@ -1,0 +1,63 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CustomActionResultWindow"
+                              Title="Custom Action Result"
+                              Width="740" Height="370"
+                              MinWidth="420" MinHeight="320"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.5b：Avalonia 版 CustomActionResultWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/CustomActionResultWindow.xaml（15 行）：
+          - <dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" Height="370" Width="740">
+          - Grid 2 列 4 行（80/* × Auto/Auto/*/Auto）
+          - Row 1 Col 1: TextBlock "Details:"
+          - Row 2 Col 1: TextBox OutputTextBox（IsReadOnly, AcceptsReturn, VerticalScrollBarVisibility=Auto）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/CustomActionResultWindow.xaml.cs（23 行）：
+          - 构造函数 (customActionName, output):
+            * DialogTitle = customActionName
+            * DialogDescription = FormatCurrent("{0} completed", customActionName)
+            * OutputTextBox.Text = output
+            * CancelButtonTitle = "Close"
+            * ShowSubmitButton = false
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: "Details:" label -->
+        <TextBlock Grid.Row="1"
+                   Text="Details:"
+                   Margin="0,0,0,4" />
+
+        <!-- Row 2: Output TextBox -->
+        <TextBox Grid.Row="2"
+                 Name="OutputTextBox"
+                 Margin="0,0,0,10"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"
+                 IsReadOnly="True"
+                 FontFamily="Consolas,Monospace"
+                 FontSize="13" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

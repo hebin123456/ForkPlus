@@ -1,0 +1,70 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AddCustomRefspecWindow"
+                              Title="Custom Remote Branch Name"
+                              Width="500"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.8b：Avalonia 版 AddCustomRefspecWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AddCustomRefspecWindow.xaml（21 行）：
+          - <dialogs:ForkPlusDialogWindow Width="500" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: Grid 2 列（Auto/*）- TextBlock RemoteNameTextBlock + ReferenceTextBox BranchNameTextBox
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AddCustomRefspecWindow.xaml.cs（40 行）：
+          - public partial class AddCustomRefspecWindow : ForkPlusDialogWindow
+          - 字段：_remoteName / _localBranchName
+          - public string OutRefspec { get; private set; }
+          - 构造函数 (remoteName, localBranchName):
+            * DialogTitle = "Custom Remote Branch Name"
+            * DialogDescription = "Enter custom destination"
+            * SubmitButtonTitle = "Add"
+            * RemoteNameTextBlock.Text = remoteName + "/"
+            * BranchNameTextBox.Text = localBranchName
+            * BranchNameTextBox.Focus() + SelectAll()
+          - OnSubmit: OutRefspec = BranchNameTextBox.Text; CloseWithOk();
+
+        Avalonia 版差异：
+          1. 使用 Phase 4.0b spike 模式
+          2. WPF ReferenceTextBox（自定义控件，带 autocomplete）spike 阶段用普通 TextBox + Watermark 替代
+             （ReferenceNameAutocompleteProvider 依赖 RepositoryReferences，跨 dialog 上下文暂不接入）
+          3. .Focus() + .SelectAll() 在 Avalonia 11 API 一致
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: Content - RemoteName + BranchName TextBox -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Name="RemoteNameTextBlock"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Column="1"
+                     Name="BranchNameTextBox"
+                     Margin="8,4,0,4"
+                     Watermark="Remote Branch Name" />
+        </Grid>
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

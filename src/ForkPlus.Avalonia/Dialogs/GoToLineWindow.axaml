@@ -1,0 +1,63 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GoToLineWindow"
+                              Title="Go To Line"
+                              Width="300" Height="160"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.1b：Avalonia 版 GoToLineWindow（真实迁移版，替换 Phase 4.0+ 失败的 axaml 继承方案）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GoToLineWindow.xaml（17 行）：
+          - <dialogs:ForkPlusDialogWindow Height="120" Width="250">
+          - Grid 2 列 4 行（0/* × Auto/Auto/*/Auto）
+          - Row 1 Col 1: DockPanel - TextBlock "Line number:" + TextBox LineNumberTextBox
+          - 其余行留空（WPF ForkPlusDialogWindow 基类动态塞 Header + Footer）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GoToLineWindow.xaml.cs（38 行）：
+          - ShowLogo=false, ShowHeader=false, IsTitleVisible=true
+          - Title = PreferencesLocalization.Current("Go To Line")
+          - SubmitButtonTitle = PreferencesLocalization.Current("Go")
+          - OnSubmit: int.TryParse(LineNumberTextBox.Text) → LineNumber; CloseWithOk()
+
+        Avalonia 版差异：
+          1. 使用现有 Phase 4.0b spike 模式：基类无 axaml（纯 C#），子类 axaml 自带 Header + Footer
+          2. ShowHeader=true（保留标题区，IsTitleVisible=true 让 CustomWindow 标题可见）
+          3. Footer 用 <dialogs:ForkPlusDialogFooter Name="Footer" />，构造函数 SetFooter(Footer)
+          4. 暂不接入 PreferencesLocalization.Translate（直接字面量英文，Phase 4 后期统一接入）
+          5. TextBox 用 Avalonia 内置（API 与 WPF 一致：.Text 属性）
+          6. Submit 按钮文案 "Go" 通过 SubmitButtonTitle 设置（基类注入 Footer.SubmitButton.Content）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock（注入基类 _titleTextBlock） -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Text="Go To Line"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 1: Content - "Line number:" + TextBox -->
+        <Grid Grid.Row="1" Margin="0,4,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"
+                       Text="Line number:" />
+            <TextBox Grid.Column="1"
+                     Name="LineNumberTextBox"
+                     Height="26"
+                     VerticalContentAlignment="Center"
+                     Watermark="Enter line number" />
+        </Grid>
+
+        <!-- Row 2: Footer - ForkPlusDialogFooter（Submit="Go" + Cancel） -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

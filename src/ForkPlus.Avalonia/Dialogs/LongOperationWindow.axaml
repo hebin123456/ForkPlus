@@ -1,0 +1,58 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.LongOperationWindow"
+                              Title="Please wait"
+                              Width="520"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.7b：Avalonia 版 LongOperationWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/LongOperationWindow.xaml（16 行）：
+          - <dialogs:ForkPlusDialogWindow Height="180" Width="520" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/Auto/Auto）
+          - Row 1 Col 1: StackPanel - MessageTextBlock + ProgressBar (IsIndeterminate)
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/LongOperationWindow.xaml.cs（83 行）：
+          - 2 个构造函数 (title, description, Action) 和 (title, description, Func<Task>)
+          - 字段：Func<Task> _operation / Exception _exception
+          - 静态 Run / RunAsync 方法：show dialog 后若有异常则重抛
+          - Loaded 事件：Dispatcher.BeginInvoke(Idle, async delegate { try await _operation(); catch _exception; finally CloseWithOk(); })
+
+        Avalonia 版差异：
+          1. 使用 Phase 4.0b spike 模式
+          2. base(preventMainWindowRefresh: false) 参数 spike 基类不支持，直接跳过
+          3. Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, ...) → Dispatcher.UIThread.Post(async () => ..., DispatcherPriority.ApplicationIdle)
+          4. ShowDialog() 在 Avalonia 中是 async Task<object>，不能像 WPF 那样同步阻塞
+             → Run/RunAsync 静态方法签名改为 async Task RunAsync，调用方 await
+             → 保留 Run 同步包装（Task.Run + Wait）仅在 UI 线程外的场景，不推荐
+    -->
+    <Grid RowDefinitions="Auto,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: Content - MessageTextBlock + ProgressBar -->
+        <StackPanel Grid.Row="1" Margin="0,8,0,10">
+            <TextBlock Name="MessageTextBlock"
+                       TextWrapping="Wrap"
+                       FontSize="13"
+                       Text="This operation is taking longer than usual. Please wait." />
+            <ProgressBar Margin="0,14,0,0"
+                         Height="6"
+                         IsIndeterminate="True" />
+        </StackPanel>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,59 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.OpenRepositoryAlertWindow"
+                              Title="Open Repository"
+                              Width="620"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.6b：Avalonia 版 OpenRepositoryAlertWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/OpenRepositoryAlertWindow.xaml（13 行）：
+          - <dialogs:ForkPlusDialogWindow Width="620" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 2 Col 1: Button FirstButton（"Initialize git repository here"）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/OpenRepositoryAlertWindow.xaml.cs（36 行）：
+          - 构造函数 (repositoryDirectory):
+            * DescriptionTextBlock.TextTrimming + MaxHeight
+            * DialogTitle = "The directory is not under git source control"
+            * DialogDescription = FormatCurrent("The '{0}' directory is not a git repository", repositoryDirectory)
+            * ShowSubmitButton = false
+            * FirstButton.Content = "Initialize git repository here"
+            * CancelButtonTitle = "Close"
+            * Footer.CancelButton.IsDefault = true（默认按 Enter 触发 Cancel）
+            * Footer.CancelButton.Focus()
+          - FirstButton_Click: CloseWithOk()（用户点 "Initialize" 按钮 → 返回 OK）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       MaxHeight="80"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: 占位（WPF 版无内容）-->
+        <TextBlock Grid.Row="1" Text="" />
+
+        <!-- Row 2: FirstButton + Footer -->
+        <StackPanel Grid.Row="2">
+            <Button Name="FirstButton"
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Left"
+                    Click="FirstButton_Click" />
+            <dialogs:ForkPlusDialogFooter Name="Footer" />
+        </StackPanel>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

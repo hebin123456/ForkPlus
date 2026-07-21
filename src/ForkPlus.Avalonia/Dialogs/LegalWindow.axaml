@@ -1,0 +1,63 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.LegalWindow"
+                              Title="Legal"
+                              Width="770" Height="500"
+                              MinWidth="450" MinHeight="250"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.4b：Avalonia 版 LegalWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/LegalWindow.xaml（13 行）：
+          - <dialogs:ForkPlusDialogWindow Height="500" Width="770" MinHeight="250" MinWidth="450" ResizeMode="CanResizeWithGrip">
+          - Grid 2 列 3 行（0/* × Auto/*/Auto）
+          - Row 1 Col 1: TextBox LicencesTextBox（IsReadOnly, AcceptsReturn, VerticalScrollBarVisibility=Auto）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/LegalWindow.xaml.cs（46 行）：
+          - 构造函数：
+            * ShowLogo=false, ShowHeader=false
+            * InitializeComponent()
+            * CancelButtonTitle = "Close"
+            * ShowSubmitButton = false
+            * LicencesTextBox.Text = GetLicences()
+          - GetLicences():
+            * 读嵌入资源 "ForkPlus.Assets.Legal.txt" → 全文返回
+            * 异常时 Log.Error 并返回空字符串
+
+        Avalonia 版差异：
+          1. 使用 Phase 4.0b spike 模式：子类 axaml 自带 Header + Content + Footer
+          2. ShowSubmitButton=false（只有 Close 按钮）— 通过 SubmitButton.IsVisible=false 实现
+          3. CancelButtonTitle="Close" — 通过 CancelButton.Content="Close" 实现
+          4. TextBox IsReadOnly + AcceptsReturn + TextWrapping=Wrap + ScrollViewer.VerticalScrollBarVisibility=Auto
+             这些 API 在 Avalonia 中名称一致
+          5. EmbeddedResource 通过 Assembly.GetManifestResourceStream 读取（API 与 WPF 一致）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Text="Legal"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 1: Content - TextBox LicencesTextBox -->
+        <TextBox Grid.Row="1"
+                 Name="LicencesTextBox"
+                 Margin="0,0,0,10"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"
+                 FontSize="13"
+                 IsReadOnly="True" />
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

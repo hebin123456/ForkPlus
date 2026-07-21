@@ -1,0 +1,64 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.MessageBoxWindow"
+                              Title="Message"
+                              Width="600" MinHeight="150" MaxHeight="320"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.2b：Avalonia 版 MessageBoxWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/MessageBoxWindow.xaml（13 行）：
+          - <dialogs:ForkPlusDialogWindow Height="150" MaxHeight="250" Width="490" SizeToContent="Height">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: TextBlock 占位（实际由基类 TitleTextBlock + DescriptionTextBlock 注入）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/MessageBoxWindow.xaml.cs（36 行）：
+          - 构造函数 (title, description, submitTitle, cancelTitle="Cancel",
+            showCancelButton=true, width=600.0, showWarningIcon=false):
+            * InitializeComponent()
+            * TitleTextBlock.TextTrimming = CharacterEllipsis + TextWrapping = Wrap + MaxHeight = 80
+            * DescriptionTextBlock.TextTrimming = CharacterEllipsis + TextWrapping = Wrap + MaxHeight = 80
+            * DialogTitle = Translate(title)
+            * DialogDescription = Translate(description)
+            * SubmitButtonTitle = Translate(submitTitle)
+            * CancelButtonTitle = Translate(cancelTitle)
+            * ShowCancelButton = showCancelButton
+            * Width = width
+            * ShowWarningIcon = showWarningIcon
+
+        Avalonia 版差异：
+          1. 使用 Phase 4.0b spike 模式：子类 axaml 自带 Header + Content + Footer
+          2. 暂不接入 PreferencesLocalization.Translate（直接用调用方传入的字符串）
+          3. ShowWarningIcon 暂不实际显示图标（spike 基类的 ShowWarningIcon 是属性，不自动渲染 Image；
+             子类自己在 axaml 中放 Warning Image 并绑定；本 spike 版暂不实现，仅存属性值）
+          4. Translate() 方法保留为静态方法（直接返回原文本），供未来 Phase 4 后期接入本地化
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock + DescriptionTextBlock（注入基类） -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       MaxHeight="80" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       MaxHeight="80"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: 空（占位）-->
+        <TextBlock Grid.Row="1" Text="" />
+
+        <!-- Row 2: Footer - ForkPlusDialogFooter -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

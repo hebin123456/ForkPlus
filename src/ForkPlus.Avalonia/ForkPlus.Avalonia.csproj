@@ -79,6 +79,13 @@
     <AvaloniaResource Include="Assets\**\*.*" />
   </ItemGroup>
 
+  <!-- Phase 4.4b：Legal.txt 嵌入资源（LegalWindow 显示第三方许可证）。
+       对照 WPF 工程 src/ForkPlus/ForkPlus.csproj 的 EmbeddedResource 配置。
+       LogicalName 与 WPF 一致（"ForkPlus.Assets.Legal.txt"），代码无需改动。 -->
+  <ItemGroup>
+    <EmbeddedResource Include="ForkPlus.Assets.Legal.txt" LogicalName="ForkPlus.Assets.Legal.txt" />
+  </ItemGroup>
+
   <!-- Phase 2.5：axaml 资源（主题/样式文件）。
        Avalonia 编译时会把 .axaml 转为 .baml 等价物，运行时通过 avares:// 加载。
        Themes/ 下的 Colors.*.axaml / Brushes.axaml / Styles/*.axaml 都在这里。 -->
