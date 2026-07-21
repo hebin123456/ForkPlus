@@ -1,0 +1,65 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitFlowStartHotfixWindow"
+                              Title="Start Git Flow hotfix"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 GitFlowStartHotfixWindow（对照 WPF GitFlowStartHotfixWindow.xaml 40 行 + .cs 121 行）。
+
+        对照 WPF：
+          - public partial class GitFlowStartHotfixWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / LocalBranch[] _localBranches / GitFlowSettings _gitFlowSettings（无 UnfinishedBranchName）
+          - 构造函数 (GitModule gitModule) → spike 改为 (GitModule, GitFlowSettings, LocalBranch[])
+          - IsSubmitAllowed: ValidateGitFlow 失败 Error（注意是 Error 不是 Warning）/ 重复分支 Warning
+          - GetCommandPreview: "git flow hotfix start {name} {baseBranch.Name}"
+          - OnSubmit: StartGitFlowHotfixGitCommand().Execute(...) → Close(result)
+          - Refresh: 选 MasterBranch ?? active，回填 HotfixPrefix
+
+        Avalonia 版差异（spike）：同 GitFlowStartFeatureWindow。
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - ComboBox + TextBox + CommandPreview -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Base branch:" FontSize="13"
+                       VerticalAlignment="Center" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Name="BranchesComboBox"
+                      HorizontalAlignment="Stretch" Margin="0,4,0,4"
+                      SelectionChanged="BranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Hotfix name:" FontSize="13"
+                       VerticalAlignment="Center" Margin="0,0,8,4" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,4">
+                <TextBlock Name="HotfixPrefixTextBlock" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <TextBox Name="HotfixNameTextBox" Watermark="Hotfix name" MinWidth="280"
+                         TextChanged="HotfixName_TextChanged" />
+            </StackPanel>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,0,4" />
+            <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox" IsReadOnly="True" FontFamily="Consolas"
+                     FontSize="12" TextWrapping="Wrap" Padding="6" Margin="0,0,0,0" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

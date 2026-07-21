@@ -1,0 +1,115 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitFlowFinishFeatureWindow"
+                              Title="Finish Git Flow Feature"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.33b：Avalonia 版 GitFlowFinishFeatureWindow（对照 WPF GitFlowFinishFeatureWindow.xaml + .cs 106 行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitFlowFinishFeatureWindow.xaml.cs：
+          - public partial class GitFlowFinishFeatureWindow : ForkPlusDialogWindow
+          - 字段: GitModule / LocalBranch _featureBranch / RepositoryData / GitFlowSettings / IReadOnlyList<LocalBranch>
+          - 构造函数 (GitModule, RepositoryData, LocalBranch featureBranch)
+          - GetCommandPreview override: "git flow feature finish [optional -r / no-ff flags] <feature>"
+          - OnSubmit: FinishGitFlowFeatureGitCommand().Execute(gitModule, feature, rebase, deleteBranches, noFastForward, monitor)
+            → Close(result)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header (TitleTextBlock + DescriptionTextBlock) / Content / Footer
+          2. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          4. spike 基类不提供 DisableEditableControls → 手动禁用 BranchesComboBox + 3 个 CheckBox
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          7. RepositoryData.References.LocalBranches.Filter / .FirstItem → LINQ Where().ToList() / FirstOrDefault()
+          8. ComboBox TextSearch.TextPath + ItemTemplate (Image + TextBlock) → 简化 ItemTemplate（仅 TextBlock 显示 Name）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Row 0: Feature label + BranchesComboBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Feature:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,4" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      Name="BranchesComboBox"
+                      HorizontalAlignment="Stretch"
+                      Margin="0,4,0,4"
+                      SelectionChanged="BranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="13"
+                                   Margin="0,0,4,0"
+                                   Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Row 1: 3 个 CheckBox（Feature 特有） -->
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        Orientation="Vertical" Margin="0,4,0,4">
+                <CheckBox Name="DeleteBranchesCheckBox"
+                          Content="Delete branch"
+                          FontSize="13"
+                          ToolTip.Tip="--keep (when unchecked)"
+                          IsCheckedChanged="CheckBox_Changed" />
+                <CheckBox Name="RebaseInsteadOfMergeCheckBox"
+                          Content="Rebase instead of merge"
+                          FontSize="13"
+                          ToolTip.Tip="-r"
+                          IsCheckedChanged="CheckBox_Changed" />
+                <CheckBox Name="NoFastForwardCheckBox"
+                          Content="No fast forward"
+                          FontSize="13"
+                          ToolTip.Tip="--no-ff"
+                          IsCheckedChanged="CheckBox_Changed" />
+            </StackPanel>
+
+            <!-- Row 2: (Feature 无 TagMessageTextBox，留空) -->
+
+            <!-- Row 3: Command label -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       FontWeight="Medium"
+                       Margin="0,8,0,4" />
+
+            <!-- Row 4: Command preview -->
+            <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

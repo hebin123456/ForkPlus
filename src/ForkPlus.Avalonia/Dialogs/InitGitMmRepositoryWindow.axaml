@@ -1,0 +1,163 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.InitGitMmRepositoryWindow"
+                              Title="Initialize git mm Repository"
+                              Width="590"
+                              MinHeight="260"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.38b：Avalonia 版 InitGitMmRepositoryWindow（对照 WPF InitGitMmRepositoryWindow.xaml + .cs 210 行）。
+
+        对照 WPF：
+          - public partial class InitGitMmRepositoryWindow : ForkPlusDialogWindow
+          - 字段：6 个 TextBox + CommandPreviewTextBlock
+          - 构造函数 ()：默认值来自 RepositoryManager.Instance.DefaultSourceDir() / ForkPlusSettings.Default.GitMm
+          - IsSubmitAllowed: 3 个必填字段非空
+          - OnSubmit: Task.Run(RunInit) → 成功后 Application.Current.TabManager().OpenRepository(destinationDirectory)
+          - GetCommandPreview: GitMmCommandPreviewHelper.Format(args)
+          - BrowseButton_Click: OpenDialog.SelectDirectory
+
+        Avalonia 版差异：
+          1. spike 模式：4 行 Grid = Header / Description / Content / Footer
+          2. spike 基类不提供 GetCommandPreview → 自行维护 CommandPreviewTextBox + RefreshCommandPreview()
+          3. RepositoryManager.Instance.DefaultSourceDir() → 注入 Func<string>? defaultSourceDirProvider
+          4. Application.Current.TabManager().OpenRepository(path) → 注入 Action<string>? onRepositoryInitialized
+          5. OpenDialog.SelectDirectory → TopLevel.StorageProvider.OpenFolderPickerAsync（直接内联实现）
+          6. MessageBoxWindow.ShowDialog → await ShowDialog<bool?>(owner)
+          7. PreferencesLocalization.Apply / Translate → ServiceLocator.Localization
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Manifest Repository Url:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="ManifestUrlTextBox"
+                     Watermark="Manifest repository URL"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Parent Folder:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <Grid Grid.Row="1" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Name="ParentDirectoryTextBox"
+                         Watermark="Parent folder path"
+                         Margin="8,4,0,4"
+                         TextChanged="TextBox_TextChanged" />
+                <Button Grid.Column="1"
+                        Content="..."
+                        Click="BrowseButton_Click"
+                        Margin="4,4,0,4" />
+            </Grid>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Name:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="RepositoryNameTextBox"
+                     Watermark="Repository name"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Manifest File:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="ManifestFileTextBox"
+                     Watermark="Manifest file"
+                     Text="dependency.xml"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Manifest Branch:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Name="ManifestBranchTextBox"
+                     Watermark="Manifest branch"
+                     Text="master"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="5" Grid.Column="0"
+                       Text="Manifest Group:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Name="ManifestGroupTextBox"
+                     Watermark="Manifest group"
+                     Text="default"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       Text="Command Preview:"
+                       FontSize="13" VerticalAlignment="Top"
+                       HorizontalAlignment="Right"
+                       Margin="0,8,0,0" />
+            <ScrollViewer Grid.Row="6" Grid.Column="1"
+                          MaxHeight="120"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="8,8,0,0">
+                <TextBox Name="CommandPreviewTextBox"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         TextWrapping="Wrap"
+                         Padding="6" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

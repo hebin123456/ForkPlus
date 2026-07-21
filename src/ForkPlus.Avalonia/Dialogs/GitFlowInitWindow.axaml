@@ -1,0 +1,144 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitFlowInitWindow"
+                              Title="Initialize Git Flow"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.33b：Avalonia 版 GitFlowInitWindow（对照 WPF GitFlowInitWindow.xaml 41 行 + .cs 185 行）。
+
+        对照 WPF：
+          - public partial class GitFlowInitWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule
+          - 构造函数 (GitModule gitModule)
+          - IsSubmitAllowed: 6 个 TextBox 校验非空（5 个非空检查）+ ReferenceNameValidator 校验
+          - GetCommandPreview override: "git flow init"
+          - OnSubmit: DisableEditableControls + SetStatus(InProgress) + JobQueue.Add
+            → InitGitFlowGitCommand().Execute(_gitModule, gitFlowSettings, monitor) → Dispatcher.Async(Close(result))
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 基类不提供 GetCommandPreview → 自行维护 CommandPreviewTextBox
+          3. spike 基类不提供 DisableEditableControls → 手动禁用 6 个 TextBox
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+          6. MainWindow.ActiveRepositoryUserControl?.RepositoryData?.References?.LocalBranches 查找 "main"
+             → 注入 Func<string>? mainBranchProvider
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - 6 个 TextBox + 命令预览 -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" ColumnDefinitions="Auto,*">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Production Branch:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="MasterBranchTextBox"
+                     Watermark="master"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Development Branch:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="DevelopBranchTextBox"
+                     Watermark="develop"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Feature Prefix:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="FeaturePrefixTextBox"
+                     Watermark="feature/"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Release Prefix:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="ReleasePrefixTextBox"
+                     Watermark="release/"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Hotfix Prefix:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Name="HotfixPrefixTextBox"
+                     Watermark="hotfix/"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="5" Grid.Column="0"
+                       Text="Version Tag Prefix:"
+                       FontSize="13" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Name="VersionTagPrefixTextBox"
+                     Margin="8,4,0,4"
+                     TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       Text="Command Preview:"
+                       FontSize="13" VerticalAlignment="Top"
+                       HorizontalAlignment="Right"
+                       Margin="0,8,0,0" />
+            <ScrollViewer Grid.Row="6" Grid.Column="1"
+                           MaxHeight="120"
+                           HorizontalScrollBarVisibility="Disabled"
+                           VerticalScrollBarVisibility="Auto"
+                           Margin="8,8,0,0">
+                <TextBox Name="CommandPreviewTextBox"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         TextWrapping="Wrap"
+                         Padding="6" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

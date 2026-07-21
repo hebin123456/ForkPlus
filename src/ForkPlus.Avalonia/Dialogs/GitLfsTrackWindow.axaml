@@ -1,0 +1,118 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitLfsTrackWindow"
+                              Title="Add Git LFS Tracking Patterns"
+                              Width="640"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.37b：Avalonia 版 GitLfsTrackWindow（对照 WPF GitLfsTrackWindow.xaml + .cs 105 行）。
+
+        对照 WPF：
+          - public partial class GitLfsTrackWindow : ForkPlusDialogWindow
+          - 字段: DelayedAction<string> _updatePreviewAction / GitModule _gitModule / string _initialPattern
+          - IsSubmitAllowed = !string.IsNullOrWhiteSpace(PatternTextBox.Text)
+          - GetCommandPreview override: "git lfs track pattern1 pattern2 ..."
+          - OnSubmit: AddGitLfsTrackPatternGitCommand().Execute(_gitModule, patterns) → Close(result)
+          - PatternTextBox_TextChanged: _updatePreviewAction.InvokeWithDelay + UpdateSubmitButton + RefreshCommandPreview
+          - UpdatePreview: Task<GitCommandResult<string[]>> + TaskScheduler.FromCurrentSynchronizationContext()
+
+        Avalonia 版差异：
+          1. spike 模式：4 行 Grid = Header / Description / Content / Footer
+          2. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox + RefreshCommandPreview()
+          3. spike 基类不提供 UpdateSubmitButton → 通过 UpdateSubmitButton() 调用基类
+          4. TaskScheduler.FromCurrentSynchronizationContext() → Dispatcher.UIThread.Post
+          5. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+          6. PlaceholderTextBox.Placeholder → TextBox Watermark
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Pattern label + count text -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Pattern:"
+                       FontSize="13"
+                       Margin="0,0,8,4" />
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       Name="PatternLabelTextBlock"
+                       FontSize="11"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,0,4" />
+
+            <!-- Pattern input: multi-line TextBox -->
+            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                     Name="PatternTextBox"
+                     Watermark="*.psd; *.zip; ..."
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Height="70"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Margin="0,0,0,4"
+                     TextChanged="PatternTextBox_TextChanged" />
+
+            <!-- Preview label + count text -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Preview:"
+                       FontSize="13"
+                       Margin="0,8,0,4" />
+            <TextBlock Grid.Row="2" Grid.Column="2"
+                       Name="PreviewLabelTextBlock"
+                       FontSize="11"
+                       HorizontalAlignment="Right"
+                       Margin="0,8,0,4" />
+
+            <!-- Preview output: read-only TextBox -->
+            <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
+                     Name="PreviewTextBox"
+                     Height="140"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Margin="0,0,0,8" />
+
+            <!-- Command preview label -->
+            <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                       Text="Command:"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,4,0,4" />
+
+            <!-- Command preview: read-only TextBox -->
+            <TextBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Padding="6"
+                     Margin="0,0,0,0" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

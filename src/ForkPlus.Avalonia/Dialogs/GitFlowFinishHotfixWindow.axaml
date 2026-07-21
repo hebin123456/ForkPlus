@@ -1,0 +1,121 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitFlowFinishHotfixWindow"
+                              Title="Finish Git Flow Hotfix"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.33b：Avalonia 版 GitFlowFinishHotfixWindow（对照 WPF GitFlowFinishHotfixWindow.xaml + .cs 92 行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitFlowFinishHotfixWindow.xaml.cs：
+          - public partial class GitFlowFinishHotfixWindow : ForkPlusDialogWindow
+          - 字段: GitModule / LocalBranch _hotfixBranch / RepositoryData / GitFlowSettings / IReadOnlyList<LocalBranch>
+          - 构造函数 (GitModule, RepositoryData, LocalBranch hotfixBranch)
+          - GetCommandPreview override: "git flow hotfix finish <hotfix>"
+          - OnSubmit: FinishGitFlowHotfixGitCommand().Execute(gitModule, hotfix, deleteBranches, tagMessage, monitor)
+            → Close(result)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header (TitleTextBlock + DescriptionTextBlock) / Content / Footer
+          2. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          4. spike 基类不提供 DisableEditableControls → 手动禁用 BranchesComboBox + DeleteBranchesCheckBox + TagMessageTextBox
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          7. RepositoryData.References.LocalBranches.Filter / .FirstItem → LINQ Where().ToList() / FirstOrDefault()
+          8. ComboBox TextSearch.TextPath + ItemTemplate (Image + TextBlock) → 简化 ItemTemplate（仅 TextBlock 显示 Name）
+          9. PlaceholderTextBox.Placeholder → TextBox Watermark
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Row 0: Hotfix label + BranchesComboBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Hotfix:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,4" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      Name="BranchesComboBox"
+                      HorizontalAlignment="Stretch"
+                      Margin="0,4,0,4"
+                      SelectionChanged="BranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="13"
+                                   Margin="0,0,4,0"
+                                   Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Row 1: Delete branch CheckBox（Hotfix 特有：仅 1 个 CheckBox） -->
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        Orientation="Vertical" Margin="0,4,0,4">
+                <CheckBox Name="DeleteBranchesCheckBox"
+                          Content="Delete branch"
+                          FontSize="13"
+                          ToolTip.Tip="--keep (when unchecked)"
+                          IsCheckedChanged="CheckBox_Changed" />
+            </StackPanel>
+
+            <!-- Row 2: Tag message label + TextBox（Hotfix 特有） -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Tag message:"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       Margin="0,4,8,4" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="TagMessageTextBox"
+                     Watermark="Tag message (optional)"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     Height="80"
+                     Margin="0,4,0,4"
+                     Padding="4,2"
+                     FontSize="13"
+                     TextChanged="TagMessage_TextChanged" />
+
+            <!-- Row 3: Command label -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       FontWeight="Medium"
+                       Margin="0,8,0,4" />
+
+            <!-- Row 4: Command preview -->
+            <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
