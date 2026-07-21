@@ -1,0 +1,62 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.KeyboardShortcutsWindow"
+                              Title="Keyboard Shortcuts"
+                              Width="720" Height="620"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.19b：Avalonia 版 KeyboardShortcutsWindow（对照 WPF KeyboardShortcutsWindow.cs 270 行）。
+
+        对照 WPF：
+          - public class KeyboardShortcutsWindow : ForkPlusDialogWindow（纯代码构造 UI，无 .xaml）
+          - 静态数据：5 个 ShortcutSection，约 50 个 ShortcutRow（keys + description）
+          - 构造函数: Width=720, Height=620, ShowLogo=false
+                     Title = "Keyboard Shortcuts"
+                     DialogTitle = Translate("Keyboard Shortcuts")
+                     DialogDescription = Translate("Available keyboard shortcuts")
+                     SubmitButtonTitle = Translate("Close")
+                     ShowCancelButton = false
+          - CreateContent: ScrollViewer + StackPanel（每个 Section 一个 SectionHeader + N 个 ShortcutRow）
+          - CreateShortcutRow: Grid 2 列 (230, *)，左列 WrapPanel 显示按键 badge，右列 TextBlock 显示描述
+          - CreateKeyBadge: Border (CornerRadius=3, BorderThickness=1, Padding) + TextBlock(Monospace)
+          - CreateSeparatorText: TextBlock (margin 3,0,3,0)，显示 "+" / "," / "/"
+          - keys 字符串解析: ',' 拆替代 → " / " 拆 chord → '+' 拆按键
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current/Translate → ServiceLocator.Localization.Translate
+          3. SetResourceReference → DynamicResource (axaml 中绑定) 或直接绑 DynamicResource
+          4. FontConstants.MonospaceFontFamily → FontFamily="Consolas"
+          5. Thickness / CornerRadius / GridLength / ScrollBarVisibility — Avalonia API 同名
+          6. Grid.SetRow / Grid.SetColumn — Avalonia 同名静态方法
+          7. 保留 WPF 原版代码动态构造 UI 的方式（axaml 中放 ScrollViewer 占位，cs 中填充）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - ScrollViewer 占位，cs 中填充 StackPanel -->
+        <ScrollViewer Grid.Row="2"
+                      Name="ContentScrollViewer"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="0,4,0,0">
+            <StackPanel Name="ContentStackPanel" />
+        </ScrollViewer>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
