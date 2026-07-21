@@ -102,13 +102,40 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, Brush brush)
+		private static void DrawRectangle(DrawingContext context, TextView textView, MergeConflictView.Line line, Brush brush)
 		{
-			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, range, extendToFullWidthAtLineEnd: true))
+			// 原 WPF 工程中 MergeConflictView.Line : ISegment（显式实现 Offset/Length/EndOffset），
+			// Phase 0.2c 把 MergeConflictView.cs 迁到 Core 后去掉 ISegment 实现（Core 不能引用 AvalonEdit）。
+			// 这里用 LineSegment 包装 Line.Range，按原公式还原 ISegment 三元组：
+			//   Offset    = Range.Start
+			//   Length    = Range.Length - 1  （减 1 去掉末尾换行符）
+			//   EndOffset = Range.End - 1
+			LineSegment segment = new LineSegment(line);
+			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, segment, extendToFullWidthAtLineEnd: true))
 			{
 				Rect rectangle = new Rect(item.X, item.Y, textView.ActualWidth + textView.HorizontalOffset, item.Height);
 				context.DrawRectangle(brush, null, rectangle);
 			}
+		}
+
+		/// <summary>
+		/// 把 MergeConflictView.Line 的 Range 包装成 AvalonEdit ISegment。
+		/// 替代原 MergeConflictView.Line : ISegment 的显式实现（迁 Core 后已移除）。
+		/// </summary>
+		private readonly struct LineSegment : ISegment
+		{
+			private readonly int _offset;
+			private readonly int _length;
+
+			public LineSegment(MergeConflictView.Line line)
+			{
+				_offset = line.Range.Start;
+				_length = line.Range.Length - 1;
+			}
+
+			public int Offset => _offset;
+			public int Length => _length;
+			public int EndOffset => _offset + _length;
 		}
 	}
 }
