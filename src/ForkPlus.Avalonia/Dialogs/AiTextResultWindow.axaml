@@ -1,0 +1,130 @@
+<dialogs:CustomWindow xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                      xmlns:md="https://github.com/whistyun/Markdown.Avalonia.Tight"
+                      x:Class="ForkPlus.Avalonia.Dialogs.AiTextResultWindow"
+                      Title="AI Result"
+                      Width="820" Height="640"
+                      MinWidth="480" MinHeight="360"
+                      CanResize="True"
+                      WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.2a：Avalonia 版 AiTextResultWindow（spike 骨架版，验证 Markdown.Avalonia 替代 WebView2 流式渲染）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiTextResultWindow.xaml（46 行）：
+          - <ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="640" Width="820 MinHeight=360 MinWidth=480>
+          - Grid 4 行：
+            * Row 0: DockPanel 标题栏 (Retry + Stop + Copy + ModelComboBox + TitleTextBlock) + Separator
+            * Row 1: DockPanel 状态栏 (StatusProgressBar + StatusTextBlock)
+            * Row 2: Grid 内容区 (AiResponseWebView + BusyIndicator + FallbackUserControl)
+          - WebView2 渲染 markdown（先 Bt.bt_md_to_html 转 HTML，再 NavigateToString 包 CSS）
+          - 流式渲染：OnChunk 累积 StringBuilder，节流 400ms 调 RenderMarkdown 刷新 WebView
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 用 Markdown.Avalonia.Tight 的 MarkdownScrollViewer 替代 WebView2
+             - 直接渲染 markdown 字符串（无需 Bt.bt_md_to_html + HTML + CSS）
+             - 内置 GFM 表格、代码块、链接、列表支持
+             - 内置 light/dark 主题检测（无需 CSS @media prefers-color-scheme）
+             - 内置滚动条（无需 WebView2 内部滚动 + scroll-at-bottom postMessage）
+          2. 跳过 WebView2EnvironmentHelper（WebView2-only，Avalonia 不需要）
+          3. 跳过 Bt.bt_md_to_html P/Invoke（Markdown.Avalonia 用 Markdig 跨平台）
+          4. 跳过 GetCss / md-ai-output.css 资源加载（Markdown.Avalonia 内置 GithubLike 样式）
+          5. 跳过 CoreWebView2.ContextMenuRequested（无浏览器右键菜单）
+          6. 跳过 CoreWebView2.WebMessageReceived scroll-at-bottom 协议
+             （spike 用 MarkdownScrollViewer 原生 ScrollViewer，无需 postMessage）
+          7. 跳过 FallbackUserControl（spike 用 TextBlock 占位）
+          8. spike 版简化顶部按钮栏：仅保留 Copy + Close（WPF 有 Retry/Stop/Copy/ModelComboBox，
+             Phase 5.2b 接入 OpenAiService / JobMonitor 后再恢复 Retry/Stop/ModelComboBox）
+          9. spike 版流式渲染：OnChunk 直接刷 viewer.Markdown（Phase 5.2b 再做节流）
+         10. spike 版用 DynamicResource 引用主题 brush（不硬编码颜色），主题切换自动跟随
+
+        本 spike 版暂不迁移（留 Phase 5.2b 或更后）：
+          - OpenAiService.ListModels 后台拉取模型列表（InitializeModelComboBox）
+          - PreferencesLocalization 翻译按钮文案（spike 用字面量英文）
+          - JobMonitor + 后台 Task.Run 调用 _requestAction（spike StartStreaming 仅 stub）
+          - Retry / Stop 按钮完整行为（spike 不显示，Phase 5.2b 接入）
+          - ModelComboBox 模型切换 + ForkPlusSettings 持久化（Phase 5.2b）
+          - PreferencesLocalization.Translate / ILocalizableControl.ApplyLocalization
+            （Phase 0 抽 ILocalizationService 后接入）
+          - NotificationCenter.ApplicationThemeChanged 主题切换订阅
+            （NotificationCenter 在 WPF 工程，Phase 0 后接入）
+
+        本 spike 版验证：
+          - Markdown.Avalonia.Tight 11.0.3 可在 Avalonia 11.3.18 axaml 中实例化
+          - MarkdownScrollViewer.Markdown 可接收流式 chunk 更新
+          - GFM 表格 + 代码块 + 链接渲染正常
+          - 主题自动检测 light/dark（DynamicResource 跟随主题切换）
+          - 整个 WebView2 替代链路工作（markdown → Avalonia 控件树，无浏览器内核）
+          - StartStreaming / OnChunk / OnSuccess / OnError 公共方法签名与 WPF 版一致
+            （调用方可零改动切换到 Avalonia 版）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Row 0: 标题栏（标题 + Copy + Close） -->
+        <Grid Grid.Row="0" Margin="10,8,10,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Name="TitleTextBlock"
+                       FontSize="16" FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource LabelBrush}" />
+            <Button Grid.Column="1"
+                    Name="CopyButton"
+                    Content="Copy"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Copy result to clipboard"
+                    Click="CopyButton_Click" />
+            <Button Grid.Column="2"
+                    Name="CloseButton"
+                    Content="Close"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Close"
+                    Click="CloseButton_Click" />
+        </Grid>
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />
+
+        <!-- Row 1: 状态栏（进度条 + 状态文本，对照 WPF StatusProgressBar + StatusTextBlock） -->
+        <Grid Grid.Row="1" Margin="10,4,10,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0"
+                         Name="StatusProgressBar"
+                         Width="120" Height="3"
+                         IsIndeterminate="True"
+                         IsVisible="False"
+                         Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Grid.Column="1"
+                       Name="StatusTextBlock"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+        </Grid>
+
+        <!-- Row 2: Markdown 渲染区 + 错误占位（对照 WPF AiResponseWebView + BusyIndicator + Fallback） -->
+        <Grid Grid.Row="2" Margin="10,0,10,4">
+            <!-- Markdown.Avalonia MarkdownScrollViewer，GithubLike 主题。
+                 Markdown 属性由 code-behind 在 OnChunk / OnSuccess 中直接设置。 -->
+            <md:MarkdownScrollViewer Name="AiResponseMarkdownViewer" />
+
+            <!-- 错误占位（spike 版用 TextBlock，对照 WPF FallbackUserControl） -->
+            <TextBlock Name="AiResponseFallback"
+                       IsVisible="False"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+    </Grid>
+</dialogs:CustomWindow>

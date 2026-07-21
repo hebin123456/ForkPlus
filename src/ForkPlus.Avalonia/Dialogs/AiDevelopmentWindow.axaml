@@ -1,0 +1,213 @@
+<dialogs:CustomWindow xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                      xmlns:md="https://github.com/whistyun/Markdown.Avalonia.Tight"
+                      x:Class="ForkPlus.Avalonia.Dialogs.AiDevelopmentWindow"
+                      Title="AI-Assisted Development"
+                      Width="1080" Height="720"
+                      MinWidth="560" MinHeight="400"
+                      CanResize="True"
+                      WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.3a：Avalonia 版 AiDevelopmentWindow（spike 骨架版，验证 Markdown.Avalonia 替代 WebView2
+        在多轮对话 + 流式渲染 + 文件变更场景下的可行性）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.xaml（67 行）：
+          - <ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="720" Width="1080"
+              MinHeight="400" MinWidth="560">
+          - Grid 4 行：
+            * Row 0 (Auto): DockPanel 标题栏 (TitleTextBlock + ModelComboBox 右上角)
+            * Row 1 (Auto): Separator
+            * Row 2 (*):    ScrollViewer + StackPanel (MessagePanel) - 动态追加 user/ai 消息气泡
+            * Row 3 (Auto): 底部 Grid 3 行
+              - Row 0: ProgressBar + StopButton (Visibility=Collapsed)
+              - Row 1: PlaceholderTextBox + ClearConversationButton + SendButton + SendModeDropDownButton
+              - Row 2: HintTextBlock
+          - WebView2 渲染 markdown（先 Bt.bt_md_to_html 转 HTML，再 NavigateToString 包 CSS）
+          - 流式渲染：OnChunk 累积 _streamingMarkdown (StringBuilder)，节流 400ms 调
+            TryRenderStreamingPreview → RenderMarkdownToWebView 刷新流式 WebView2
+          - C# ↔ JS 双向通信：
+            * NavigationCompleted 后 ExecuteScriptAsync("document.documentElement.scrollHeight")
+              测量内容高度，回调 C# 调整 WebView2.Height（自动高度）
+            * 无 WebMessageReceived / PostWebMessageAsString 双向消息（WPF 版仅用 ExecuteScriptAsync
+              单向调 JS，无 JS → C# 回调；AiDevelopmentWebView_MarkdownRequested 这类回调在本窗口
+              不存在，AiCodeReviewWindow 才有）
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 完全弃用 WebView2，改用 Markdown.Avalonia.Tight 的 MarkdownScrollViewer
+             - 直接渲染 markdown 字符串（无需 Bt.bt_md_to_html + HTML + CSS）
+             - 内置 GFM 表格、代码块、链接、列表、emoji 支持
+             - 内置 light/dark 主题检测（无需 CSS @media prefers-color-scheme）
+             - 内置 ScrollViewer（无需 WebView2 内部滚动 + ExecuteScriptAsync scrollHeight）
+          2. WPF 版的 C# ↔ JS 双向通信（ExecuteScriptAsync / NavigationCompleted 自动高度）
+             改为简单的 C# 方法直接调用：
+             - WPF: ExecuteScriptAsync("document.documentElement.scrollHeight") → 调整 webView.Height
+               Avalonia spike: MarkdownScrollViewer 自带 ScrollViewer，内容自动撑开，无需测高度
+             - WPF: RenderMarkdownToWebView(webView, markdown) → NavigateToString(html)
+               Avalonia spike: RenderMarkdownToViewer(markdown) → viewer.Markdown = markdown
+             - spike 阶段无 JS 引擎，所有原 JS 逻辑（scroll-at-bottom / 高度测量）由 Avalonia
+               原生控件自动处理
+          3. spike 版简化底部输入区：
+             - 保留 InputTextBox + SendButton + StopButton + ClearButton
+             - 跳过 SendModeDropDownButton + SendModeContextMenu（Enter/Ctrl+Enter 切换，Phase 5.3b 接入）
+             - 跳过 PlaceholderTextBox（用普通 TextBox + Watermark）
+          4. spike 版简化标题栏：保留 TitleTextBlock + ModelComboBox（占位，不后台拉取模型列表）
+          5. spike 版用单一 MarkdownScrollViewer 渲染整段对话（user 问题用 blockquote，
+             AI 响应用普通 markdown），替代 WPF 版的 StackPanel 动态追加气泡 + 多个 WebView2
+          6. spike 版用 DynamicResource 引用主题 brush（不硬编码颜色），主题切换自动跟随
+          7. 跳过 WebView2EnvironmentHelper（WebView2-only，Avalonia 不需要）
+          8. 跳过 Bt.bt_md_to_html P/Invoke（Markdown.Avalonia 用 Markdig 跨平台）
+          9. 跳过 GetCss / md-ai-output.css 资源加载（Markdown.Avalonia 内置 GithubLike 样式）
+         10. 跳过 CoreWebView2.ContextMenuRequested（无浏览器右键菜单）
+
+        本 spike 版暂不迁移（留 Phase 5.3b 或更后）：
+          - OpenAiService.CreateFromAiReviewSettings / OpenAiRequestStreamingWithRetry
+            （spike ProcessRequest 仅 stub，不真正请求 AI）
+          - JobQueue / JobMonitor / Job / JobFlags.Hidden（spike 不入队后台任务）
+          - RepositoryUserControl.JobQueue / InvalidateAndRefresh（spike 不刷新仓库状态）
+          - 多轮对话 _conversationHistory (List<JObject>) + CompressHistoryIfNeeded 上下文压缩
+            （spike 仅累积 markdown 显示，不维护历史消息列表）
+          - ParseAiResponse / ApplyFileChanges / ShowDiffResults / UndoAiChanges 文件变更应用
+            （spike 不解析 ===FILE:=== 块，不写文件，不显示 diff）
+          - GetAllowedDirectories / IsPathInAllowedDirectories 路径安全检查（spike 不写文件）
+          - GetCurrentFileContents / GetIndexContent / DetectLineEnding / NormalizeLineEndings
+            （spike 不读/写文件）
+          - InitializeModelComboBox 后台拉取 OpenAiService.ListModels（spike 下拉为空占位）
+          - ModelComboBox_SelectionChanged 持久化 ForkPlusSettings.Default.AiReviewSelectedModel
+          - LoadSkillList / SaveSkillList / BuildSystemPrompt（spike 不加载 skills）
+          - DispatcherTimer StatusTimer_Tick 轮询 JobStatus（spike 无 Job）
+          - SendMode Enter/Ctrl+Enter 切换 + 持久化（spike 固定 Enter 发送）
+          - PreferencesLocalization / ILocalizableControl 翻译
+          - NotificationCenter.ApplicationThemeChanged 主题切换订阅
+          - GenerateUnifiedDiffText LCS diff 生成（spike 无文件变更）
+          - 完整的 400ms 节流渲染 TryRenderStreamingPreview（spike 直接刷新 viewer.Markdown）
+
+        本 spike 版验证：
+          - Markdown.Avalonia.Tight 11.0.3 可在 Avalonia 11.3.18 axaml 中实例化
+          - MarkdownScrollViewer.Markdown 可接收流式 chunk 更新（多轮对话场景）
+          - GFM 表格 + 代码块 + 链接 + 列表渲染正常
+          - 主题自动检测 light/dark（DynamicResource 跟随主题切换）
+          - 整个 WebView2 替代链路工作（markdown → Avalonia 控件树，无浏览器内核）
+          - 公共构造函数签名与 WPF 版一致（RepositoryUserControl + GitModule）
+            （调用方可零改动切换到 Avalonia 版，类型为 Avalonia 等价物）
+          - 标题栏 / 状态栏 / Markdown 渲染区 / 输入框 / 发送+停止按钮 布局正确
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+        <!-- Row 0: 标题栏（TitleTextBlock + ModelComboBox 占位） -->
+        <Grid Grid.Row="0" Margin="12,8,12,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Name="TitleTextBlock"
+                       FontSize="16" FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Text="AI-Assisted Development"
+                       Foreground="{DynamicResource LabelBrush}" />
+            <!-- 模型下拉（spike 占位，不后台拉取 /v1/models；Phase 5.3b 接入） -->
+            <ComboBox Grid.Column="1"
+                      Name="ModelComboBox"
+                      FontSize="11"
+                      MinWidth="160" MaxWidth="320"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      Margin="8,0,0,0"
+                      ToolTip.Tip="Select AI model"
+                      SelectionChanged="ModelComboBox_SelectionChanged" />
+        </Grid>
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />
+
+        <!-- Row 1: 状态栏（ProgressBar + StatusTextBlock，对照 WPF 底部 ProgressBar + AddStatusMessage） -->
+        <Grid Grid.Row="1" Margin="12,4,12,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0"
+                         Name="ProgressBar"
+                         Width="120" Height="3"
+                         IsIndeterminate="True"
+                         IsVisible="False"
+                         Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Grid.Column="1"
+                       Name="StatusTextBlock"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+        </Grid>
+
+        <!-- Row 2: Markdown 渲染区（对照 WPF ScrollViewer + MessagePanel 动态气泡）。
+             spike 版用单一 MarkdownScrollViewer 渲染整段对话（user 问题用 blockquote，
+             AI 响应用普通 markdown），替代 WPF 版 StackPanel 动态追加多个 WebView2。 -->
+        <md:MarkdownScrollViewer Grid.Row="2"
+                                 Name="ConversationMarkdownViewer"
+                                 Margin="12,0,12,4" />
+
+        <!-- Row 3: 输入区（InputTextBox + Clear + Send + Stop） -->
+        <Grid Grid.Row="3" Margin="12,4,12,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Name="InputTextBox"
+                     FontSize="13"
+                     Padding="6,4"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     MinHeight="28" MaxHeight="80"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     VerticalAlignment="Stretch"
+                     Watermark="Enter your development requirement..."
+                     KeyDown="InputTextBox_KeyDown"
+                     TextChanged="InputTextBox_TextChanged" />
+            <Button Grid.Column="1"
+                    Name="ClearConversationButton"
+                    Content="Clear"
+                    FontSize="13"
+                    Padding="10,4"
+                    Margin="4,0,0,0"
+                    MinHeight="28"
+                    VerticalAlignment="Bottom"
+                    ToolTip.Tip="Clear conversation history"
+                    Click="ClearConversationButton_Click" />
+            <Button Grid.Column="2"
+                    Name="SendButton"
+                    Content="Send (Enter)"
+                    FontSize="13"
+                    Padding="10,4"
+                    Margin="4,0,0,0"
+                    MinHeight="28"
+                    VerticalAlignment="Bottom"
+                    IsEnabled="False"
+                    ToolTip.Tip="Send requirement to AI"
+                    Click="SendButton_Click" />
+            <Button Grid.Column="3"
+                    Name="StopButton"
+                    Content="Stop"
+                    FontSize="11"
+                    Padding="8,1"
+                    Margin="6,0,0,0"
+                    MinHeight="28"
+                    VerticalAlignment="Bottom"
+                    IsVisible="False"
+                    ToolTip.Tip="Stop the current AI task and abort its request"
+                    Click="StopButton_Click" />
+        </Grid>
+
+        <!-- Row 4: 操作提示（对照 WPF HintTextBlock） -->
+        <TextBlock Grid.Row="4"
+                   Name="HintTextBlock"
+                   FontSize="11"
+                   Margin="12,0,12,10"
+                   TextWrapping="Wrap"
+                   Text="Press Enter to send, Shift+Enter for new line. The AI remembers previous conversation in this session."
+                   Foreground="{DynamicResource SecondaryLabelBrush}" />
+    </Grid>
+</dialogs:CustomWindow>

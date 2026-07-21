@@ -1,5 +1,6 @@
 using System;
 using ForkPlus.Avalonia.Views;
+using ForkPlus.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ForkPlus.Avalonia.Services
@@ -15,9 +16,10 @@ namespace ForkPlus.Avalonia.Services
     //   - IThemeService → AvaloniaThemeService（Fluent 兜底，22 套主题变体迁移在 Phase 2.2-2.4）
     //
     // 后续 Phase 会逐步注册：
-    //   - Phase 3：IGitEnvironment / IUserSettings / IAppContext / ILocalizationService
+    //   - Phase 3：IGitEnvironment / ILocalizationService
     //   - Phase 5：IMarkdownRenderer（替换 WebView2 渲染）
-    //   - Phase 6：IDialogService / INotificationService / IClipboardService / IProcessLauncher
+    //   - Phase 6.1（已完成）：IClipboardService / IDispatcher / IAppContext / IDesignModeService
+    //   - Phase 6.2+：IDialogService / IToastNotificationService / IUserSettings / IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -26,6 +28,14 @@ namespace ForkPlus.Avalonia.Services
 
             // Phase 2.1：主题服务（Fluent 兜底）
             services.AddSingleton<IThemeService, AvaloniaThemeService>();
+
+            // Phase 6.1：4 个简单 Core 接口的 Avalonia 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/Wpf*.cs（9 个 Wpf 实现中的 4 个简单项）。
+            // 复杂项（IToastNotificationService / IDialogService / IUserSettings）留待后续 Phase。
+            services.AddSingleton<IClipboardService, AvaloniaClipboardService>();
+            services.AddSingleton<IDispatcher, AvaloniaDispatcher>();
+            services.AddSingleton<IAppContext, AvaloniaAppContext>();
+            services.AddSingleton<IDesignModeService, AvaloniaDesignModeService>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
@@ -87,6 +97,22 @@ namespace ForkPlus.Avalonia.Services
             // 内含 RevisionView（RevisionListView + RevisionDetails）+ CommitView（CommitUserControl）
             // 由 RepositoryViewMode.RevisionViewMode/CommitViewMode 切换可见性
             services.AddTransient<Views.UserControls.RepositoryContentUserControl>();
+
+            // Phase 5.2a：AiTextResultWindow（spike 骨架版，通用 AI 文本结果流式显示窗口）
+            // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiTextResultWindow.xaml.cs（483 行）。
+            // 功能1（AI 解释 commit）和功能3（AI 生成 PR 描述）共用。
+            // spike 版用 Markdown.Avalonia.Tight 替代 WebView2，保留公共方法签名（StartStreaming /
+            // OnChunk / OnSuccess / OnError / ApplyLocalization）。RunRequest / JobMonitor /
+            // OpenAiService 等完整迁移留 Phase 5.2b。
+            services.AddTransient<Dialogs.AiTextResultWindow>();
+
+            // Phase 5.3a：AiDevelopmentWindow（spike 骨架版，AI 辅助开发多轮对话窗口）
+            // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.xaml.cs（1906 行）。
+            // spike 版用 Markdown.Avalonia.Tight 替代 WebView2（C#↔JS 双向通信改为简单 C# 方法调用），
+            // 保留构造函数签名 AiDevelopmentWindow(RepositoryUserControl, GitModule)。
+            // ProcessRequest / OpenAiRequestStreamingWithRetry / JobQueue / ParseAiResponse /
+            // ApplyFileChanges / ShowDiffResults / UndoAiChanges 等完整迁移留 Phase 5.3b。
+            services.AddTransient<Dialogs.AiDevelopmentWindow>();
         }
     }
 }
