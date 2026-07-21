@@ -1,0 +1,79 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.PerformanceDiagnosticsWindow"
+                              Title="Performance Diagnostics"
+                              Width="760" Height="520"
+                              MinWidth="520" MinHeight="320"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.9b：Avalonia 版 PerformanceDiagnosticsWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/PerformanceDiagnosticsWindow.xaml（20 行）：
+          - <dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" Height="520" Width="760" MinHeight="320" MinWidth="520">
+          - Grid 2 列 4 行（80/* × Auto/Auto/*/Auto）
+          - Row 1 Col 1: DockPanel（右：CopyButton + RefreshButton，左："Recent samples" TextBlock）
+          - Row 2 Col 1: TextBox SamplesTextBox（IsReadOnly, Consolas, NoWrap, 双向 ScrollBar）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/PerformanceDiagnosticsWindow.xaml.cs（74 行）：
+          - 构造函数：
+            * DialogTitle = "Performance Diagnostics"
+            * DialogDescription = "Recent Git and UI operation timings."
+            * CancelButtonTitle = "Close"
+            * ShowSubmitButton = false
+            * RefreshSamples()
+          - RefreshButton_Click / CopyButton_Click
+          - RefreshSamples() → FormatSamples() → SamplesTextBox.Text
+          - FormatSamples() 读 PerformanceTelemetry.SlowestSamples(20) + RecentSamples().Reverse().Take(80)
+          - ServiceLocator.Clipboard.SetText(SamplesTextBox.Text)
+
+        依赖：PerformanceTelemetry / PerformanceSample（Core internal，已通过 InternalsVisibleTo 暴露）。
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: Toolbar（Refresh + Copy 按钮 + 标题） -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,6">
+            <Button DockPanel.Dock="Right"
+                    Name="CopyButton"
+                    Margin="6,0,0,0"
+                    Content="Copy"
+                    Click="CopyButton_Click" />
+            <Button DockPanel.Dock="Right"
+                    Name="RefreshButton"
+                    Content="Refresh"
+                    Click="RefreshButton_Click" />
+            <TextBlock Text="Recent samples"
+                       FontWeight="Medium"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+
+        <!-- Row 2: Samples TextBox（只读，等宽字体，双向滚动） -->
+        <TextBox Grid.Row="2"
+                 Name="SamplesTextBox"
+                 FontFamily="Consolas,Monospace"
+                 FontSize="12"
+                 IsReadOnly="True"
+                 TextWrapping="NoWrap"
+                 AcceptsReturn="True"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

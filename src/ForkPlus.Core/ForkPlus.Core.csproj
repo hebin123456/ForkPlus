@@ -46,6 +46,10 @@
     <!-- Phase 0.2c-r6：ReflogHistoryProvider.ParseLine 等从 WPF 迁入 Core 后仍为 internal，
          原 ForkPlus.Tests 测试工程需访问 Core 的 internal 成员。 -->
     <InternalsVisibleTo Include="ForkPlus.Tests" />
+    <!-- Phase 4.9b：PerformanceTelemetry / PerformanceSample 等 internal 类型从 WPF 迁入 Core
+         后保持 internal。Avalonia 工程的 PerformanceDiagnosticsWindow 是这些 API 的第二个 UI 消费者
+         （与 WPF 的 PerformanceDiagnosticsWindow 并存），需要 internals 访问权限。 -->
+    <InternalsVisibleTo Include="ForkPlus.Avalonia" />
   </ItemGroup>
 
 </Project>

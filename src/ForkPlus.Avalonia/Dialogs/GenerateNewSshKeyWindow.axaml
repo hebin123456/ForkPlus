@@ -1,0 +1,108 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GenerateNewSshKeyWindow"
+                              Title="Generate new SSH Key"
+                              Width="490"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner"
+                              ShowHeader="True"
+                              IsTitleVisible="True">
+    <!--
+        Phase 4.10b：Avalonia 版 GenerateNewSshKeyWindow（真实迁移版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GenerateNewSshKeyWindow.xaml（26 行）：
+          - <dialogs:ForkPlusDialogWindow ResizeMode="NoResize" SizeToContent="Height" Width="490">
+          - Grid 2 列 3 行（80/* × Auto/*/Auto）
+          - Row 1 Col 1: Grid 2 列 2 行（Auto/* × Auto/Auto）
+            * Row 0 Col 0: TextBlock "Key File Name:"
+            * Row 0 Col 1: PlaceholderTextBox KeyFileNameTextBox（Placeholder="For example: fork_ssh_key"）
+            * Row 1 Col 0: TextBlock "Email:"
+            * Row 1 Col 1: PlaceholderTextBox EmailTextBox（Placeholder="email@domain.com"）
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GenerateNewSshKeyWindow.xaml.cs（122 行）：
+          - IsSubmitAllowed override：KeyFileName 非空 + 不与 _existingSshKeys 重名 + Email 非空
+          - 构造函数：
+            * DialogTitle = "Generate new SSH Key"
+            * DialogDescription = "Generate new ED25519 key"
+            * SubmitButtonTitle = "Generate"
+            * _existingSshKeys = new GetLocalSshKeysCommand().Execute()
+          - GetCommandPreview() override："ssh-keygen -t ed25519 -C ... -f ..."
+          - OnSubmit：
+            * DisableEditableControls + SetStatus(InProgress, "Generating...")
+            * await Task.Run(() => new GenerateSshKeyShellCommand().Execute(email, keyName))
+            * 成功 → ResultKey = keyName
+            * Close(gitCommandResult)
+          - TextChanged → UpdateSubmitButton + RefreshCommandPreview
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 版用普通 TextBox + Watermark 替代 WPF controls:PlaceholderTextBox
+          2. spike 版基类无 GetCommandPreview / RefreshCommandPreview / DisableEditableControls 支持
+             （参见 ForkPlusDialogWindow.cs spike 注释）：
+             - CommandPreview：直接在 axaml 中放 CommandPreviewTextBlock，TextChanged 时手动更新
+             - DisableEditableControls：手动禁用 KeyFileNameTextBox / EmailTextBox
+          3. Close(GitCommandResult) → CloseWithOk()（spike 基类仅提供 CloseWithOk）
+
+        依赖：GetLocalSshKeysCommand / GenerateSshKeyShellCommand / SshKey / SystemEnvironment.LocalSSHDirectory
+             （均在 ForkPlus.Core/Shell/）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Name="TitleTextBlock"
+                       FontSize="14" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="DescriptionTextBlock"
+                       FontSize="12"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 1: 表单 -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Key File Name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,0" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="KeyFileNameTextBox"
+                     Margin="0,4,0,4"
+                     Watermark="For example: fork_ssh_key"
+                     TextChanged="KeyFileNameTextBox_TextChanged" />
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Email:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,0" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="EmailTextBox"
+                     Margin="0,4,0,4"
+                     Watermark="email@domain.com"
+                     TextChanged="EmailTextBox_TextChanged" />
+        </Grid>
+
+        <!-- Row 2: Command Preview（spike 版手动维护，非基类提供） -->
+        <TextBlock Grid.Row="2"
+                   Name="CommandPreviewTextBlock"
+                   Margin="0,8,0,0"
+                   FontFamily="Consolas,Monospace"
+                   FontSize="11"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
