@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ServiceTabItem">
+    <!--
+        Avalonia 版 ServiceTabItem（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/ServiceTabItem.xaml.cs（59 行）：
+          - TabItem 基类
+          - 属性：RepositoryUserControl
+          - 构造函数：InitializeComponent
+          - Initialize(RepositoryUserControl)：注入父控件 + PullRequestsTabItem.Initialize +
+            IssuesTabItem.Initialize
+          - SetServices(Remote[])：PullRequestsTabItem.SetServices + IssuesTabItem.SetServices
+            （IssuesTabItem 仅在 service 支持 issues 时显示）
+          - TabControl_SelectionChanged：切到 PR/Issues tab 时触发 OnActivated
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF TabItem 基类 → Avalonia UserControl
+          - WPF TabControl（嵌套 PR/Issues）→ Avalonia TabControl
+          - WPF IssuesTabItem.Show/Collapse → IsVisible = true/false
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+
+        spike 简化（task spec 关键 API）：
+          - task spec 关键 API：Initialize(Account, Repository) / Refresh()
+          - WPF Initialize(RepositoryUserControl) → spike Initialize(Account, Repository)
+            （task spec 简化策略 #3：Account / Repository 类型直接使用）
+          - WPF SetServices(Remote[]) → spike SetServices(string[] remoteNames)
+          - GitHub API 调用简化为占位 TextBlock
+          - PullRequestsTabItem + IssuesTabItem 嵌入（spike 复用已迁移的子控件）
+    -->
+    <Grid RowDefinitions="*">
+        <TabControl Name="ServiceTabControl"
+                    SelectionChanged="TabControl_SelectionChanged">
+            <!-- Tab 1: Pull Requests（嵌入 PullRequestsTabItem）-->
+            <TabItem Name="PullRequestsTab"
+                     Header="Pull Requests">
+                <!-- spike 版：PullRequestsTabItem 由 code-behind 注入或绑定 -->
+                <ContentControl Name="PullRequestsContainer" />
+            </TabItem>
+
+            <!-- Tab 2: Issues（嵌入 IssuesTabItem，支持 issues 时显示）-->
+            <TabItem Name="IssuesTab"
+                     Header="Issues"
+                     IsVisible="True">
+                <ContentControl Name="IssuesContainer" />
+            </TabItem>
+        </TabControl>
+
+        <!-- Fallback 占位（未初始化时显示）-->
+        <Border Name="FallbackPanel"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                IsVisible="True">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="36"
+                           Text="🔌" />
+                <TextBlock Name="FallbackMessage"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           TextWrapping="Wrap"
+                           Text="Select a repository to view services" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,144 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.IssuesTabItem">
+    <!--
+        Avalonia 版 IssuesTabItem（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/IssuesTabItem.xaml.cs（374 行）：
+          - TabItem 基类，含 MultiselectionTreeView + FilterTextBox + RemoteDropdownButton +
+            BusyIndicator + RefreshButton + NewIssueButton + FallbackUserControl
+          - Initialize(RepositoryUserControl) 注入父控件
+          - SetServices(Remote[]) 选择默认 remote + 设置 FilterTextBox.Hint
+          - Reset() + LoadNext() 分页加载 issues（IPaged<Issue>）
+          - IssueButton_Click 打开 issue 浏览器
+          - NewIssueButton_Click 调用 service.GetNewIssueUrl
+          - RemoteDropdownButton 切换 remote（多 remote 时显示）
+          - FilterTextBox.KeyDown 回车 + DropdownContextMenuOpened 历史/筛选菜单
+          - ScrollViewer_ScrollChanged 滚动到底自动加载下一页
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF TabItem 基类 → Avalonia UserControl（spike 不嵌套 TabControl）
+          - WPF MultiselectionTreeView → Avalonia ListBox（spike 简化，无需多选树）
+          - WPF FilterTextBox 自定义控件 → Avalonia TextBox + Watermark
+          - WPF RemoteDropdownButton（自定义按钮 + ContextMenu）→ spike ComboBox
+          - WPF Image PNG remote 图标 → TextBlock emoji
+          - WPF BusyIndicator.Show/Hide → ProgressBar.IsVisible = true/false
+          - WPF RefreshButton.Show/Hide → Button.IsVisible = true/false
+          - WPF FallbackUserControl.Show/Hide → Border.IsVisible = true/false
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+
+        spike 简化（GitHub API 调用简化为占位）：
+          - account.Service.GetIssues() 真实调用留待后续 Phase（需 Git 服务网络层），
+            spike 版用 SetIssues(IEnumerable<Issue>) 公共方法允许外部直接注入数据
+          - IPaged<Issue> 分页加载 → spike 一次性加载全部
+          - ScrollViewer 滚动加载下一页 → spike 不实现
+          - RemoteDropdownButton 多 remote 切换 → spike ComboBox 占位
+          - FilterTextBox.DropdownContextMenuOpened 历史/筛选菜单 → spike 不迁移
+          - JobQueue → spike 不使用
+    -->
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Row 0: 工具栏（Remote 选择 + 过滤框 + 刷新按钮 + New Issue 按钮）-->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto,Auto"
+              Margin="4">
+            <!-- Col 0: Remote 选择（spike 用 ComboBox，多 remote 时显示）-->
+            <ComboBox Grid.Column="0"
+                      Name="RemoteDropdownButton"
+                      Margin="0,0,4,0"
+                      IsVisible="False"
+                      SelectionChanged="RemoteDropdownButton_SelectionChanged" />
+            <!-- Col 1: 过滤输入框 -->
+            <TextBox Grid.Column="1"
+                     Name="FilterTextBox"
+                     Watermark="Filter issues..."
+                     KeyDown="FilterTextBox_KeyDown"
+                     TextChanged="FilterTextBox_TextChanged" />
+            <!-- Col 2: 刷新按钮（emoji 🔄 替代 PNG refresh.png）-->
+            <Button Grid.Column="2"
+                    Name="RefreshButton"
+                    Content="🔄"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="RefreshButton_Click"
+                    ToolTip.Tip="Refresh" />
+            <!-- Col 3: New Issue 按钮（emoji ➕ 替代 PNG add.png）-->
+            <Button Grid.Column="3"
+                    Name="NewIssueButton"
+                    Content="➕ New"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="NewIssueButton_Click"
+                    ToolTip.Tip="New Issue" />
+        </Grid>
+
+        <!-- Row 1: BusyIndicator + 结果计数 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="4,0">
+            <ProgressBar Name="BusyIndicator"
+                         IsIndeterminate="True"
+                         Width="14" Height="14"
+                         Margin="0,0,6,0"
+                         IsVisible="False" />
+            <TextBlock Name="ResultCountTextBlock"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 2: issues 列表 + fallback 占位 -->
+        <Grid Grid.Row="2">
+            <ListBox Name="IssuesListBox"
+                     BorderThickness="0"
+                     SelectionMode="Single"
+                     DoubleTapped="IssueItem_DoubleTapped">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="8,4" ColumnDefinitions="Auto,*,Auto">
+                            <!-- Col 0: 状态 emoji（Open=🟢 / Closed=🔴）-->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding StateEmoji}"
+                                       Margin="0,0,6,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="14" />
+                            <!-- Col 1: 标题 + ID -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="13"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding IdLine}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                            </StackPanel>
+                            <!-- Col 2: assignee emoji（👤）-->
+                            <TextBlock Grid.Column="2"
+                                       Text="👤"
+                                       Margin="6,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding HasAssignee}"
+                                       FontSize="12" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- fallback 占位（对照 WPF FallbackUserControl）-->
+            <Border Name="FallbackPanel"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    IsVisible="True">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Name="FallbackTitle"
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Margin="0,0,0,4" />
+                    <TextBlock Name="FallbackMessage"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

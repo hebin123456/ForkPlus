@@ -1,0 +1,134 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryManagerUserControl">
+    <!--
+        Avalonia 版 RepositoryManagerUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryManagerUserControl.xaml.cs（594 行）：
+          - UserControl + ILocalizableControl
+          - 静态 Commands：RepositoryManagerUserControlCommands（OpenRepository/RenameRepository/
+            RemoveRepository/RescanRepositories/OpenRepositoriesCommand）
+          - 字段：JobQueue / _root / _recent / _repositories (RepositoryManagerTreeViewItem)
+          - 属性：SelectedRepository / SelectedItems
+          - 构造函数：InitializeComponent + RepositoryDetailsUserControl.RepositoryManagerUserControl=this +
+            RepositoriesTreeView.AllowDragDrop + 创建 _root/_recent/_repositories 树结构 +
+            ApplyLocalization + Refresh + Loaded 事件 + GridSplitter.DragCompleted +
+            CommandBindings + ContextMenuOpening + NotificationCenter 订阅 + RescanUserRepositoriesCommand
+          - ApplyLocalization()：翻译标题 + RepositoryDetailsUserControl.ApplyLocalization
+          - Refresh(bool restoreSelection)：ImportKnownGitMmWorkspaces + 重建树 +
+            恢复展开状态 + 恢复选中状态
+          - ImportKnownGitMmWorkspaces：导入 git mm workspace
+          - CreateRecentRepositories：最近 5 个仓库
+          - CreateRepositoryItems：按 SourceDir 分组创建仓库树
+          - OnDirectoryItemIsExpandedChanged：保存展开状态
+          - OnDrop：拖拽添加仓库
+          - IsRepositoryManagerPathValid：验证仓库路径
+          - FindOrCreateFolder：创建文件夹节点
+          - RepositoryNameChanged/RepositoryColorChanged/RepositoriesChanged：NotificationCenter 回调
+          - RepositoriesListBox_ContextMenuOpening/MouseDoubleClick/SelectionChanged：右键菜单/双击/选中
+          - SelectRepositoryWithPath/SelectFirstRepository/SelectFirstRecent/SelectItem
+          - CreateRepositoryContextMenuItems：右键菜单生成
+          - RestoreTreeViewColumnWidth/SaveTreeViewColumnWidth：列宽持久化
+          - RemoveCommonPrefix：SourceDir 路径去公共前缀
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF UserControl + ILocalizableControl → Avalonia UserControl
+          - WPF MultiselectionTreeView → Avalonia TreeView（task spec 简化策略）
+          - WPF RepositoryManagerTreeViewItem（继承 MultiselectionTreeViewItem）→ spike POCO
+          - WPF RepositoryManager.Instance 单例 → spike 注入回调 + 内部 ObservableCollection
+          - WPF JobQueue → spike 不使用
+          - WPF NotificationCenter 订阅 → spike 不接入（NotificationCenter 在 WPF 工程）
+          - WPF DragDrop → spike 不实现（Avalonia 11 拖拽 API 不同）
+          - WPF CommandBindings → spike 不迁移（用 Button.Click 替代）
+          - WPF ContextMenu → spike 顶部按钮 + 右键菜单简化
+          - WPF Image PNG repository 图标 → TextBlock emoji
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+          - WPF MouseDoubleClick → DoubleTapped
+
+        spike 简化（task spec 关键 API）：
+          - task spec 关键 API：Initialize() / Refresh() / AddRepository(Repository) /
+            RemoveRepository(Repository) / RepositorySelected 事件
+          - task spec 简化：用 TreeView 显示仓库列表，RepositoryManagerTreeViewItem POCO
+          - WPF Refresh(restoreSelection) → spike Refresh()（无 restoreSelection 参数）
+          - WPF RepositoryManager.Instance 单例 → spike 内部 ObservableCollection
+          - 仓库操作（Open/Rename/Remove）→ 注入回调
+          - git mm workspace 特殊处理 → spike 不实现
+          - RescanRepositories → spike 不实现
+          - 列宽持久化 → spike 不实现
+    -->
+    <Grid RowDefinitions="Auto,*">
+        <!-- Row 0: 标题 + 工具栏 -->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto,Auto"
+              Margin="8,6,8,4">
+            <TextBlock Grid.Column="0"
+                       Name="RepositoryManagerTitleTextBlock"
+                       VerticalAlignment="Center"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Text="Repository Manager" />
+            <!-- 添加仓库按钮（emoji ➕ 替代 PNG add.png）-->
+            <Button Grid.Column="1"
+                    Name="AddRepositoryButton"
+                    Content="➕ Add"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="AddRepositoryButton_Click"
+                    ToolTip.Tip="Add repository" />
+            <!-- 刷新按钮（emoji 🔄 替代 PNG refresh.png）-->
+            <Button Grid.Column="2"
+                    Name="RefreshButton"
+                    Content="🔄"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="RefreshButton_Click"
+                    ToolTip.Tip="Refresh" />
+        </Grid>
+
+        <!-- Row 1: 仓库树 + Fallback 占位 -->
+        <Grid Grid.Row="1">
+            <TreeView Name="RepositoriesTreeView"
+                      BorderThickness="0"
+                      SelectionChanged="RepositoriesTreeView_SelectionChanged"
+                      DoubleTapped="RepositoriesTreeView_DoubleTapped">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <!-- Col 0: 图标 emoji（对照 WPF: RepositoryIcon/RepositoryWarningIcon PNG）-->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding IconEmoji}"
+                                       Margin="0,0,4,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="12" />
+                            <!-- Col 1: 标题 -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Title}"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <!-- Fallback 占位（对照 WPF: FallbackView + FallbackMessage "Drop repository here to add"）-->
+            <Border Name="FallbackPanel"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    IsVisible="False">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="36"
+                               Text="📂" />
+                    <TextBlock Name="FallbackMessage"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap"
+                               Text="Drop repository here to add" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

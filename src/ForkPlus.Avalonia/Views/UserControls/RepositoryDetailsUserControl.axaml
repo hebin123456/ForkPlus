@@ -1,0 +1,291 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:stats="clr-namespace:ForkPlus.Avalonia.Controls.Statistics;assembly=ForkPlus.Avalonia"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryDetailsUserControl">
+    <!--
+        Avalonia 版 RepositoryDetailsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryDetailsUserControl.xaml.cs（393 行）：
+          - UserControl + ILocalizableControl
+          - 嵌套类：RemoteViewModel / ReferenceViewModel / RevisionViewModel（INPC）
+          - 字段：_updatePreviewAction (DelayedAction) / _selectedRepository
+          - 属性：RepositoryManagerUserControl
+          - 构造函数：InitializeComponent + _updatePreviewAction + ApplyLocalization
+          - ApplyLocalization()：PreferencesLocalization.Apply + StatisticsUserControl.ApplyLocalization
+          - ShowDetails(Repository?)：触发 _updatePreviewAction 延迟更新预览
+          - RefreshRepositoryName()：更新 RepositoryName.Text
+          - UpdatePreview(Repository?)：异步执行多个 git 命令（OpenGitRepository /
+            GetChangedFilesCount / GetRevisionCount / GetInitialRevisionDate /
+            GetLastRevisionDate / GetRemotes / GetRecentReferences / GetRecentRevisions）
+            填充统计字段 + Remotes/Branches/Tags/Commits ItemsControl + ReadmeTextBox
+          - ShowGitMmDetails(Repository)：git mm workspace 特殊处理
+          - OpenRepositoryButton_Click / Hyperlink_RequestNavigate / FallbackUserControl_Button1Click /
+            UnsafeRepositoryFallbackUserControl_Button1Click / ModernTabControl_SelectionChanged /
+            OpeneInFileExplorerButton_Click 事件处理
+          - FallbackUserControl / DirectoryFallbackUserControl / UnsafeRepositoryFallbackUserControl
+            三种 fallback 状态
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF UserControl + ILocalizableControl → Avalonia UserControl
+          - WPF DelayedAction → spike 直接调用（无延迟）
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+          - WPF Image.Show/Hide → IsVisible = true/false
+          - WPF Hyperlink.RequestNavigate → Button.Click（spike 简化）
+          - WPF ModernTabControl → Avalonia TabControl
+          - WPF FallbackUserControl → spike Border 占位
+
+        spike 简化（task spec 关键 API）：
+          - task spec 关键 API：Initialize(RepositoryUserControl) / Refresh() / SetRepository(Repository?)
+          - WPF ShowDetails(Repository?) → spike SetRepository(Repository?)
+          - WPF UpdatePreview 多个 git 命令 → spike 占位（需 GitModule，真实调用留待后续 Phase）
+          - git mm workspace 特殊处理 → spike 不实现
+          - Remotes/Branches/Tags/Commits ItemsControl → spike 占位 TextBlock
+          - ReadmeTextBox → spike 不实现
+          - FallbackUserControl 三种状态 → spike 统一一个 FallbackPanel
+          - StatisticsUserControl 嵌入（spike 复用已有 StatisticsUserControl.axaml）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Row 0: 仓库标题区（RepositoryName + RepositoryPath + 操作按钮）-->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto,Auto,Auto"
+              Margin="10,8,10,4">
+            <StackPanel Grid.Column="0">
+                <TextBlock Name="RepositoryName"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock Name="RepositoryPath"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <!-- 对照 WPF: OpenRepositoryButton -->
+            <Button Grid.Column="1"
+                    Name="OpenRepositoryButton"
+                    Content="📂 Open"
+                    Margin="4,0"
+                    Padding="8,2"
+                    Click="OpenRepositoryButton_Click"
+                    ToolTip.Tip="Open repository" />
+            <!-- 对照 WPF: OpeneInFileExplorerButton -->
+            <Button Grid.Column="2"
+                    Name="OpenInFileExplorerButton"
+                    Content="📁 Explorer"
+                    Margin="4,0"
+                    Padding="8,2"
+                    Click="OpenInFileExplorerButton_Click"
+                    ToolTip.Tip="Open in file explorer" />
+            <!-- 对照 WPF: RefreshRepositoryName -->
+            <Button Grid.Column="3"
+                    Name="RefreshButton"
+                    Content="🔄"
+                    Margin="4,0"
+                    Padding="6,2"
+                    Click="RefreshButton_Click"
+                    ToolTip.Tip="Refresh" />
+        </Grid>
+
+        <!-- Row 1: TabControl（Overview / Statistics）+ Fallback 占位 -->
+        <Grid Grid.Row="1">
+            <TabControl Name="ModernTabControl"
+                        SelectionChanged="ModernTabControl_SelectionChanged">
+                <!-- Tab 1: Overview（仓库基本信息 + 统计 + remotes/branches/tags/commits）-->
+                <TabItem Name="OverviewTabItem"
+                         Header="Overview">
+                    <ScrollViewer Padding="10,8">
+                        <StackPanel Spacing="12">
+                            <!-- 统计区（对照 WPF: ChangedFilesTextBlock / CommitsTextBlock /
+                                 InitialCommitDateTextBlock / LastCommitDateTextBlock）-->
+                            <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*,Auto,*" Margin="0,4,0,0">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Changed files" FontSize="11"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    <TextBlock Name="ChangedFilesTextBlock" FontSize="14" FontWeight="Medium" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Commits" FontSize="11"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    <TextBlock Name="CommitsTextBlock" FontSize="14" FontWeight="Medium" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="First commit" FontSize="11"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    <TextBlock Name="InitialCommitDateTextBlock" FontSize="13" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="6">
+                                    <TextBlock Text="Last commit" FontSize="11"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    <TextBlock Name="LastCommitDateTextBlock" FontSize="13" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Remotes 列表（对照 WPF: RemotesItemsControl）-->
+                            <StackPanel>
+                                <TextBlock Text="Remotes"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,4" />
+                                <ItemsControl Name="RemotesItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2" ColumnDefinitions="Auto,Auto,Auto,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="🌐"
+                                                           Margin="0,0,4,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Name}"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="12" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding WebsiteName}"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                                           IsVisible="{Binding IsWebsiteVisible}" />
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding WebsiteUrl}"
+                                                           Margin="0,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource ThemeAccentBrush}"
+                                                           IsVisible="{Binding IsWebsiteVisible}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Branches 列表（对照 WPF: BranchesItemsControl）-->
+                            <StackPanel>
+                                <TextBlock Text="Branches"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,4" />
+                                <ItemsControl Name="BranchesItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2" ColumnDefinitions="Auto,*,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="🌿"
+                                                           Margin="0,0,4,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Name}"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding RelativeDate}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Tags 列表（对照 WPF: TagsItemsControl）-->
+                            <StackPanel>
+                                <TextBlock Text="Tags"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,4" />
+                                <ItemsControl Name="TagsItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2" ColumnDefinitions="Auto,*,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="🏷"
+                                                           Margin="0,0,4,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Name}"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding RelativeDate}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Recent Commits 列表（对照 WPF: CommitsItemsControl）-->
+                            <StackPanel>
+                                <TextBlock Text="Recent commits"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,4" />
+                                <ItemsControl Name="CommitsItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2" ColumnDefinitions="Auto,*,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="📝"
+                                                           Margin="0,0,4,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding RevisionSubject}"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding RelativeDate}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Tab 2: Statistics（嵌入已有 StatisticsUserControl）-->
+                <TabItem Name="StatisticsTabItem"
+                         Header="Statistics">
+                    <stats:StatisticsUserControl Name="StatisticsUserControl" />
+                </TabItem>
+            </TabControl>
+
+            <!-- Fallback 占位（对照 WPF: DirectoryFallbackUserControl + FallbackUserControl）-->
+            <Border Name="FallbackPanel"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    IsVisible="True">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="36"
+                               Text="📦" />
+                    <TextBlock Name="FallbackTitle"
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               FontWeight="Medium" />
+                    <TextBlock Name="FallbackMessage"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

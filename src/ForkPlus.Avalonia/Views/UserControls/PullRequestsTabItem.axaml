@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.PullRequestsTabItem">
+    <!--
+        Avalonia 版 PullRequestsTabItem（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/PullRequestsTabItem.xaml.cs（398 行）：
+          - TabItem 基类，含 MultiselectionTreeView + FilterTextBox + RemoteDropdownButton +
+            BusyIndicator + RefreshButton + NewPullRequestButton + FallbackUserControl
+          - Initialize(RepositoryUserControl) 注入父控件
+          - SetServices(Remote[]) 选择默认 remote + 设置 FilterTextBox.Hint
+          - Reset() + LoadNext() 分页加载 pull requests（IPaged<PullRequest>）
+          - PullRequestButton_Click 打开 PR 浏览器
+          - NewPullRequestButton_Click 调用 service.GetNewPullRequestUrl
+          - SourceBranchButton_Click 选中 source branch 对应的 remote branch
+          - RemoteDropdownButton 切换 remote（多 remote 时显示）
+          - FilterTextBox.KeyDown 回车 + DropdownContextMenuOpened 历史/筛选菜单
+          - ScrollViewer_ScrollChanged 滚动到底自动加载下一页
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF TabItem 基类 → Avalonia UserControl
+          - WPF MultiselectionTreeView → Avalonia ListBox
+          - WPF FilterTextBox 自定义控件 → Avalonia TextBox + Watermark
+          - WPF RemoteDropdownButton → spike ComboBox
+          - WPF Image PNG remote 图标 → TextBlock emoji
+          - WPF BusyIndicator.Show/Hide → ProgressBar.IsVisible = true/false
+          - WPF RefreshButton.Show/Hide → Button.IsVisible = true/false
+          - WPF FallbackUserControl.Show/Hide → Border.IsVisible = true/false
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+          - WPF MouseDoubleClick → DoubleTapped
+
+        spike 简化（GitHub API 调用简化为占位）：
+          - account.Service.GetPullRequests() 真实调用留待后续 Phase，
+            spike 版用 SetPullRequests(IEnumerable<PullRequest>) 公共方法
+          - IPaged<PullRequest> 分页加载 → spike 一次性加载全部
+          - SourceBranchButton_Click 选中 remote branch → spike 不实现（依赖 RepositoryUserControl）
+          - ScrollViewer 滚动加载下一页 → spike 不实现
+          - RemoteDropdownButton 多 remote 切换 → spike ComboBox 占位
+          - FilterTextBox.DropdownContextMenuOpened 历史/筛选菜单 → spike 不迁移
+          - JobQueue → spike 不使用
+    -->
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Row 0: 工具栏（Remote 选择 + 过滤框 + 刷新按钮 + New PR 按钮）-->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto,Auto"
+              Margin="4">
+            <!-- Col 0: Remote 选择（spike 用 ComboBox，多 remote 时显示）-->
+            <ComboBox Grid.Column="0"
+                      Name="RemoteDropdownButton"
+                      Margin="0,0,4,0"
+                      IsVisible="False"
+                      SelectionChanged="RemoteDropdownButton_SelectionChanged" />
+            <!-- Col 1: 过滤输入框 -->
+            <TextBox Grid.Column="1"
+                     Name="FilterTextBox"
+                     Watermark="Filter pull requests..."
+                     KeyDown="FilterTextBox_KeyDown"
+                     TextChanged="FilterTextBox_TextChanged" />
+            <!-- Col 2: 刷新按钮（emoji 🔄 替代 PNG refresh.png）-->
+            <Button Grid.Column="2"
+                    Name="RefreshButton"
+                    Content="🔄"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="RefreshButton_Click"
+                    ToolTip.Tip="Refresh" />
+            <!-- Col 3: New PR 按钮（emoji ➕ 替代 PNG add.png）-->
+            <Button Grid.Column="3"
+                    Name="NewPullRequestButton"
+                    Content="➕ New PR"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="NewPullRequestButton_Click"
+                    ToolTip.Tip="New Pull Request" />
+        </Grid>
+
+        <!-- Row 1: BusyIndicator + 结果计数 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="4,0">
+            <ProgressBar Name="BusyIndicator"
+                         IsIndeterminate="True"
+                         Width="14" Height="14"
+                         Margin="0,0,6,0"
+                         IsVisible="False" />
+            <TextBlock Name="ResultCountTextBlock"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 2: PR 列表 + fallback 占位 -->
+        <Grid Grid.Row="2">
+            <ListBox Name="PullRequestsListBox"
+                     BorderThickness="0"
+                     SelectionMode="Single"
+                     DoubleTapped="PullRequestItem_DoubleTapped">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="8,4" ColumnDefinitions="Auto,*,Auto">
+                            <!-- Col 0: 状态 emoji（Open=🟢 / Closed=🔴 / Merged=🟣）-->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding StateEmoji}"
+                                       Margin="0,0,6,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="14" />
+                            <!-- Col 1: 标题 + ID + source branch -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="13"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding IdLine}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                            </StackPanel>
+                            <!-- Col 2: source branch 显示（🌿 emoji 替代 SourceBranchButton）-->
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding SourceBranchEmoji}"
+                                       Margin="6,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding HasSourceBranch}"
+                                       FontSize="11"
+                                       ToolTip.Tip="{Binding SourceBranch}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- fallback 占位（对照 WPF FallbackUserControl）-->
+            <Border Name="FallbackPanel"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    IsVisible="True">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Name="FallbackTitle"
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Margin="0,0,0,4" />
+                    <TextBlock Name="FallbackMessage"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

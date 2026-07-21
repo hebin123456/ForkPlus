@@ -315,6 +315,45 @@ namespace ForkPlus.Avalonia.Services
             services.AddTransient<Views.UserControls.ExternalToolsUserControl>();
             services.AddTransient<Views.UserControls.NotificationManagerUserControl>();
             services.AddTransient<Views.UserControls.ActivityManagerUserControl>();
+
+            // Phase 4.0c：9 个剩余 UserControl 迁移（完整迁移 spike 版，对照 WPF 工程
+            // src/ForkPlus/UI/UserControls/ 下 9 个文件）
+            //   - IssuesTabItem（374 行 xaml.cs）：Issues Tab 页（GitHub issues 列表 + 过滤 + 分页）
+            //     spike 简化：MultiselectionTreeView → ListBox，account.Service.GetIssues() → SetIssues 注入，
+            //     PNG 图标 → emoji，JobQueue → 不使用
+            //   - PullRequestsTabItem（398 行 xaml.cs）：Pull Requests Tab 页（PR 列表 + 过滤 + 分页）
+            //     spike 简化：同 IssuesTabItem
+            //   - RepositoryDetailsUserControl（393 行 xaml.cs）：仓库详情面板（仓库信息 + 统计 + remotes/branches/tags/commits）
+            //     spike 简化：UpdatePreview 多个 git 命令 → Set* 方法注入，嵌入 StatisticsUserControl，
+            //     MainWindow.Instance → 注入回调
+            //   - RepositoryManagerUserControl（594 行 xaml.cs）：仓库管理器（左侧仓库列表树）
+            //     spike 简化：MultiselectionTreeView → TreeView，RepositoryManagerTreeViewItem POCO，
+            //     RepositoryManager.Instance 单例 → 内部 ObservableCollection，拖拽 → 不实现
+            //   - SearchTabItem（368 行 xaml.cs）：搜索 Tab 页（全局搜索 commits/files）
+            //     spike 简化：MultiselectionTreeView → ListBox，4 种搜索类型 → ComboBox，
+            //     AddMatch(RevisionWithFiles) → AddMatch(SearchResult) POCO
+            //   - ServiceTabItem（59 行 xaml.cs）：服务 Tab 页（GitHub/GitLab 服务集成）
+            //     spike 简化：嵌入 PullRequestsTabItem + IssuesTabItem，
+            //     Initialize(RepositoryUserControl) → Initialize(Account, Repository)
+            //   - TooltipRevisionDetailsUserControl（99 行 xaml.cs）：commit 详情 tooltip（悬浮显示）
+            //     spike 简化：Border + TextBlock 显示 commit 信息，
+            //     SetRevision(RevisionViewModel) 方法，AuthorAvatarImage → emoji 👤
+            //   - ForkPlusDialogFooter（已存在，升级）：对话框底部栏（Submit/Cancel 按钮 + 状态消息）
+            //     升级：新增 StatusMessage / ShowSubmitButton / ShowCancelButton /
+            //     SubmitButtonTitle / CancelButtonTitle / SetStatus 便捷 API
+            //   - StatisticsUserControl（已存在，升级）：仓库统计控件
+            //     升级：新增 ShowStatistics(GitModule, string?, bool) 方法（task spec 关键 API）
+            services.AddTransient<Views.UserControls.IssuesTabItem>();
+            services.AddTransient<Views.UserControls.PullRequestsTabItem>();
+            services.AddTransient<Views.UserControls.RepositoryDetailsUserControl>();
+            services.AddTransient<Views.UserControls.RepositoryManagerUserControl>();
+            services.AddTransient<Views.UserControls.SearchTabItem>();
+            services.AddTransient<Views.UserControls.ServiceTabItem>();
+            services.AddTransient<Views.UserControls.TooltipRevisionDetailsUserControl>();
+            // ForkPlusDialogFooter 已在 Dialogs 命名空间，由 ForkPlusDialogWindow 子类在 axaml 中声明使用，
+            // 不需要单独 DI 注册（每个对话框窗口实例化时自动创建 Footer）
+            // StatisticsUserControl 已在 Controls/Statistics 命名空间，由 RepositoryDetailsUserControl
+            // 在 axaml 中嵌入使用，不需要单独 DI 注册
         }
     }
 }

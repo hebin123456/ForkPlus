@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.TooltipRevisionDetailsUserControl">
+    <!--
+        Avalonia 版 TooltipRevisionDetailsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/TooltipRevisionDetailsUserControl.xaml.cs（99 行）：
+          - UserControl 基类
+          - 字段：_repositoryUserControl / _sha
+          - 事件：ShowRevisionInSeparateWindowButtonClicked
+          - 构造函数 TooltipRevisionDetailsUserControl(RepositoryUserControl, Sha)：
+            InitializeComponent + RefreshControls
+          - RefreshControls()：异步加载 Revision（GetRevisionHeader git 命令）→
+            填充 AuthorAvatarImage / AuthorTextBlock / AuthorDateTextBlock / ShaTextBlock /
+            SubjectTextBlock / ReferencePanel + 错误 fallback
+          - GetRevisionHeader(GitModule, Sha)：调 GetRevisionsGitCommand 获取 Revision
+          - ShowRevisionInSeparateWindowButton_Click：触发事件 + Commands.ShowRevisionInSeparateWindow
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF UserControl → Avalonia UserControl
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+          - WPF Image.Show/Hide → IsVisible = true/false
+          - WPF AuthorAvatarImage（自定义控件）→ spike TextBlock emoji 👤
+          - WPF ReferencePanel（自定义控件）→ spike TextBlock 占位
+          - WPF SubjectTextBlock.ApplySearchAndButrackerHighlighting → spike 纯文本
+          - task spec 简化：用 Border + TextBlock 显示 commit 信息
+
+        spike 简化（task spec 关键 API）：
+          - task spec 关键 API：SetRevision(RevisionViewModel revision)
+          - task spec 简化：用 Border + TextBlock 显示 commit 信息
+          - WPF 构造函数(RepositoryUserControl, Sha) → spike 无参构造 + SetRevision
+          - WPF GetRevisionHeader git 命令 → spike 不调（数据由 SetRevision 注入）
+          - WPF ShowRevisionInSeparateWindowButton → spike 保留按钮（回调注入）
+          - WPF ReferencePanel → spike 不迁移（spike 用占位 TextBlock）
+    -->
+    <Border Background="{DynamicResource ThemeCardBackgroundBrush}"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="12"
+            MaxWidth="450">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+
+            <!-- Row 0: loading 指示器（对照 WPF: 无，spike 新增）-->
+            <ProgressBar Grid.Row="0"
+                         Name="BusyIndicator"
+                         IsIndeterminate="True"
+                         Width="16" Height="16"
+                         HorizontalAlignment="Left"
+                         Margin="0,0,0,6"
+                         IsVisible="False" />
+
+            <!-- Row 1: 错误/fallback 消息（对照 WPF: FallbackMessageTextBlock）-->
+            <TextBlock Grid.Row="1"
+                       Name="FallbackMessageTextBlock"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeErrorBrush}"
+                       Margin="0,0,0,6"
+                       IsVisible="False" />
+
+            <!-- Row 2: DetailsContainer（对照 WPF: DetailsContainer）-->
+            <Grid Grid.Row="2"
+                  Name="DetailsContainer"
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+                <!-- Details Row 0: 作者头像 emoji + 作者名 -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                    <!-- 对照 WPF: AuthorAvatarImage（自定义控件）→ spike TextBlock emoji 👤 -->
+                    <TextBlock Text="👤"
+                               FontSize="16"
+                               VerticalAlignment="Center" />
+                    <TextBlock Name="AuthorTextBlock"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <!-- Details Row 1: 作者日期（对照 WPF: AuthorDateTextBlock）-->
+                <TextBlock Grid.Row="1"
+                           Name="AuthorDateTextBlock"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Margin="0,0,0,6" />
+
+                <!-- Details Row 2: SHA（对照 WPF: ShaTextBlock）-->
+                <TextBlock Grid.Row="2"
+                           Name="ShaTextBlock"
+                           FontFamily="Cascadia Mono,Consolas,monospace"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeAccentBrush}"
+                           Margin="0,0,0,6" />
+
+                <!-- Details Row 3: commit 主题（对照 WPF: SubjectTextBlock）-->
+                <TextBlock Grid.Row="3"
+                           Name="SubjectTextBlock"
+                           TextWrapping="Wrap"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,6" />
+
+                <!-- Details Row 4: commit body（spike 新增，对照 WPF: 无，显示完整 message）-->
+                <TextBlock Grid.Row="4"
+                           Name="BodyTextBlock"
+                           TextWrapping="Wrap"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundMidBrush}"
+                           Margin="0,0,0,6"
+                           IsVisible="False" />
+
+                <!-- Details Row 5: ShowRevisionInSeparateWindowButton -->
+                <Button Grid.Row="5"
+                        Name="ShowRevisionInSeparateWindowButton"
+                        Content="🗗 Open in separate window"
+                        Margin="0,4,0,0"
+                        Padding="6,2"
+                        HorizontalAlignment="Left"
+                        FontSize="11"
+                        Click="ShowRevisionInSeparateWindowButton_Click" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

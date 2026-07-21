@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using ForkPlus.Git;
 using OxyPlot;
 
 namespace ForkPlus.Avalonia.Controls.Statistics
@@ -107,6 +108,43 @@ namespace ForkPlus.Avalonia.Controls.Statistics
             // DayHourPlot.Model = ...
             // CodeLinesPiePlot.Model = ...
         }
+
+        // ===== ShowStatistics（task spec 关键 API）=====
+        // 对照 WPF: public void ShowStatistics(GitModule gitModule) : this(gitModule, null, false)
+        //   WPF: ShowStatistics(gitModule, null, false);
+        // spike 版：实例方法（与 WPF 一致），转发到三参重载
+        public void ShowStatistics(GitModule gitModule)
+        {
+            ShowStatistics(gitModule, null, false);
+        }
+
+        // 对照 WPF: public void ShowStatistics(GitModule gitModule, [Null] string initialRef, bool scrollToCodeLines)
+        //   WPF: _gitModule = gitModule + _initialRef = initialRef + _scrollToCodeLinesRequest = scrollToCodeLines +
+        //         ResetDateRange + LoadStatistics + (scrollToCodeLines ? 滚动到 CodeLinesSection)
+        // spike 版：实例方法，仅记录 gitModule 引用（真实统计计算留待 Phase 2.7b）
+        // task spec 标注为"静态方法"，但 WPF 实际是实例方法（通过 x:Name 实例调用），
+        // spike 保持与 WPF 一致的实例方法签名，确保 RepositoryStatisticsWindow /
+        // RepositoryDetailsUserControl 等调用方可直接使用。
+        public void ShowStatistics(GitModule gitModule, string? initialRef, bool scrollToCodeLines)
+        {
+            // spike 版：仅记录参数，真实 PlotModel 填充 + 统计计算留待 Phase 2.7b
+            // 对照 WPF: _gitModule = gitModule
+            GitModule = gitModule;
+            InitialRef = initialRef;
+            ScrollToCodeLines = scrollToCodeLines;
+
+            // spike 版：在 CodeLinesSummary 显示占位文本（Phase 2.7b 替换为真实统计）
+            if (CodeLinesSummary != null)
+            {
+                string refSuffix = string.IsNullOrEmpty(initialRef) ? "" : " @ " + initialRef;
+                CodeLinesSummary.Text = "Statistics loaded for " + (gitModule?.Path ?? "(null)") + refSuffix + " (spike: Phase 2.7b will populate plots)";
+            }
+        }
+
+        // spike 新增：当前统计上下文（Phase 2.7b PlotHelper 填充时使用）
+        public GitModule? GitModule { get; private set; }
+        public string? InitialRef { get; private set; }
+        public bool ScrollToCodeLines { get; private set; }
 
         // 对照 WPF: private void CodeLinesRefButton_Click(object sender, RoutedEventArgs e)
         // spike 版：stub，Phase 2.7b 接入 CodeLinesRefPopup

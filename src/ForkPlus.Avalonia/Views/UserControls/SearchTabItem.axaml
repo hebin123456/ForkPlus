@@ -1,0 +1,140 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.SearchTabItem">
+    <!--
+        Avalonia 版 SearchTabItem（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/SearchTabItem.xaml.cs（368 行）：
+          - TabItem + ILocalizableControl
+          - 字段：_isSearchInProgress / _searchType / _searchScope / _root (MultiselectionTreeViewItem)
+          - 属性：SearchQuery / RepositoryUserControl / IsSearchInProgress
+          - 事件：SearchQueryChanged
+          - 构造函数：InitializeComponent + RefreshSearchControls + TreeView.RootItem=_root +
+            TreeView.SelectionChanged + FilterTextBox 多事件订阅 + KeyDown 处理（Enter/Escape/Delete）
+          - Initialize(RepositoryUserControl) 注入父控件
+          - ApplyLocalization()：PreferencesLocalization.Apply + RefreshSearchControls + RefreshResultCount
+          - OnActivated()：FilterTextBox.FocusAndSelectAllText
+          - ClearMatches()：清空选中 + _root.Children + FoundCommitsTextBlock
+          - AddMatch(RevisionWithFiles)：添加 SidebarSearchItem 到 _root + RefreshResultCount
+          - TreeView_SelectionChanged：选中搜索结果 → RepositoryUserControl.SelectRevisions
+          - SearchDropdownButtonContextMenu_Opened：搜索类型/scope 菜单
+          - FilterTextBox_DropdownContextMenuOpened：历史查询菜单
+          - RefreshBusyIndicator / RefreshResultCount / GetQueryTypeName
+          - CreateSearchDropdownMenuItems：4 种搜索类型 + 2 种 scope
+          - RefreshSearchControls：更新 SearchDropdownButton + FilterTextBox.Placeholder
+          - RemoveSelectedMatch：删除选中匹配
+          - AddSearchQueryToRecent：保存到 GitModule.Settings
+          - SearchMenuItemHeader / SearchPlaceholder / Translate
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF TabItem 基类 → Avalonia UserControl
+          - WPF MultiselectionTreeView → Avalonia ListBox（spike 简化，无需多选树）
+          - WPF FilterTextBox 自定义控件 → Avalonia TextBox + Watermark
+          - WPF SearchDropdownButton + ContextMenu → spike ComboBox（搜索类型选择）
+          - WPF Image PNG search 图标 → TextBlock emoji 🔍
+          - WPF BusyIndicator.Show/Collapse → ProgressBar.IsVisible = true/false
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF Visibility.Collapsed/Visible → IsVisible = false/true
+          - WPF PreferencesLocalization → ServiceLocator.Localization
+          - WPF Key.Return/Delete/Escape → Avalonia Key 同名
+
+        spike 简化（task spec 关键 API）：
+          - task spec 关键 API：Initialize(RepositoryUserControl) / Search(string) / Clear()
+          - WPF AddMatch(RevisionWithFiles) → spike AddMatch(SearchResult) POCO
+          - WPF SearchQueryChanged 事件 + Search(string) 方法 → spike Search(string) 直接调用
+          - WPF 4 种搜索类型（Message/Author/DiffPath/DiffContent）→ spike ComboBox 占位
+          - WPF 2 种 scope（Repository/CurrentBranch）→ spike 不迁移
+          - WPF RemoveSelectedMatch → spike RemoveSelected 按钮
+          - WPF AddSearchQueryToRecent → spike 不实现（依赖 GitModule.Settings）
+          - WPF FilterTextBox.DropdownContextMenuOpened 历史菜单 → spike 不迁移
+          - JobQueue → spike 不使用
+    -->
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Row 0: 搜索类型 + 搜索框 + 清除按钮 -->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto,Auto"
+              Margin="4">
+            <!-- Col 0: 搜索类型选择（spike 用 ComboBox，对照 WPF SearchDropdownButton + ContextMenu）-->
+            <ComboBox Grid.Column="0"
+                      Name="SearchTypeComboBox"
+                      Margin="0,0,4,0"
+                      MinWidth="120"
+                      SelectionChanged="SearchTypeComboBox_SelectionChanged">
+                <ComboBoxItem Content="Commit Message" IsSelected="True" />
+                <ComboBoxItem Content="Author" />
+                <ComboBoxItem Content="Path" />
+                <ComboBoxItem Content="Diff Content" />
+            </ComboBox>
+            <!-- Col 1: 搜索输入框 -->
+            <TextBox Grid.Column="1"
+                     Name="FilterTextBox"
+                     Watermark="Search commits..."
+                     KeyDown="FilterTextBox_KeyDown" />
+            <!-- Col 2: 搜索按钮（emoji 🔍 替代 PNG search.png）-->
+            <Button Grid.Column="2"
+                    Name="SearchButton"
+                    Content="🔍"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="SearchButton_Click"
+                    ToolTip.Tip="Search" />
+            <!-- Col 3: 清除按钮（emoji ✖ 替代 PNG cancel.png）-->
+            <Button Grid.Column="3"
+                    Name="ClearButton"
+                    Content="✖"
+                    Margin="2,0"
+                    Padding="6,2"
+                    Click="ClearButton_Click"
+                    ToolTip.Tip="Clear" />
+        </Grid>
+
+        <!-- Row 1: BusyIndicator + 结果计数 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="4,0">
+            <ProgressBar Name="BusyIndicator"
+                         IsIndeterminate="True"
+                         Width="14" Height="14"
+                         Margin="0,0,6,0"
+                         IsVisible="False" />
+            <TextBlock Name="FoundCommitsTextBlock"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+
+        <!-- Row 2: 搜索结果列表 -->
+        <ListBox Name="SearchResultsListBox"
+                 Grid.Row="2"
+                 BorderThickness="0"
+                 SelectionMode="Single"
+                 SelectionChanged="SearchResultsListBox_SelectionChanged"
+                 DoubleTapped="SearchResultsListBox_DoubleTapped">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="8,4" ColumnDefinitions="Auto,*,Auto">
+                        <!-- Col 0: 图标 emoji（commit=📝）-->
+                        <TextBlock Grid.Column="0"
+                                   Text="📝"
+                                   Margin="0,0,6,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12" />
+                        <!-- Col 1: 标题 + 作者 -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Subject}"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding AuthorLine}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                        </StackPanel>
+                        <!-- Col 2: 日期 -->
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding RelativeDate}"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
