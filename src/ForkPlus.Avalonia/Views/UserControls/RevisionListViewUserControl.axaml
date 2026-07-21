@@ -2,77 +2,192 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionListViewUserControl">
     <!--
-        Phase 3.5：Avalonia 版 RevisionListViewUserControl 骨架（spike 简化版）。
+        Phase 5.4 完整迁移版：Avalonia 版 RevisionListViewUserControl。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListViewUserControl.xaml（388 行）：
           - 顶层 Grid ClipToBounds 2 行：
-            Row 0 (Auto): SearchPanelPlaceholder（空 Grid，RevisionSearchPanelUserControl 通过
-                          attached property 注入搜索栏）
-            Row 1 (*):    RevisionListView（DragAndDropListView + GridView，6 列：
-                          graph + upstream dot + references + subject + avatar + author + sha + date）
-          - 覆盖层：RevisionSearchPanelUserControl（Grid.RowSpan=2）
+            Row 0 (Auto): SearchPanel（WPF 中由 RevisionSearchPanelUserControl 注入搜索栏；
+                      spike 改为内联 TextBox + 匹配计数 + loading 指示）
+            Row 1 (*):    RevisionListView（WPF DragAndDropListView + GridView 6 列；
+                      spike 改为 ListBox + VirtualizingStackPanel + DataTemplate）
+          - 覆盖层：WPF RevisionSearchPanelUserControl（Grid.RowSpan=2）；spike 内联到 Row 0
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListViewUserControl.xaml.cs（1946 行）：
-          - 公共字段：RevisionsDataSource（RepositoryUserControl 大量直接访问）
+          - 公共字段：RevisionsDataSource（RepositoryUserControl 大量直接访问；spike 保留 object 占位）
           - 公共事件：SearchQueryChanged / SelectionChanged / RevisionDoubleClick / BranchDoubleClick
-            （RepositoryContentUserControl 必须订阅）
+            （RepositoryContentUserControl 必须订阅，本版本真实触发）
           - 公共方法：Initialize / UpdateRepositoryData / Select(2 重载) / FocusSelectedItem /
             CollapseAll / ExpandAll / GetBottomShaInViewPort / GetBottomShaInSelection
+            + task spec 新增：Refresh / SelectRevision / SelectRevisions / Filter /
+            ClearSelection / FetchRevisionsUntilSha / FetchNextPage
+          - 公共属性：SelectedRevision / SelectedRevisions / SelectedIndex /
+            RepositoryUserControl / SidebarSearchTabItem / AllRevisions / IsFiltering / IsLoading
           - 5 个 CommandBindings（复制 SHA / 复制 revision info / 重命名 branch / 删除 reference /
-            在独立窗口打开 revision）
-          - PreviewKeyDown/KeyDown 处理（Ctrl+F / F3 / Esc / Left/Right / Ctrl+A）
+            在独立窗口打开 revision）→ spike 简化为右键菜单 MenuItem.Click
+          - PreviewKeyDown/KeyDown 处理（Ctrl+F / F3 / Esc / Left/Right / Ctrl+A）→ spike 暂不迁移
           - 后台 Job：_activeContextSearchJob / _activeSidebarSearchJob（git 命令调用）
+            → spike 用 Task.Run + Dispatcher.UIThread.Post + JobMonitor
           - 约 1000 行右键菜单构造方法（CreateRevisionContextMenuItems 等）
-          - AI 集成方法（GeneratePullRequestDescription / AiExplainRevision / CreateBranchAiCodeReviewMenuItem）
+            → spike 简化为 ContextMenu.Opening 动态构造核心动作
+          - AI 集成方法（GeneratePullRequestDescription / AiExplainRevision 等）→ spike 暂不迁移
 
         GraphCellView（Phase 2.5 难点）：
           - src/ForkPlus/UI/Controls/GraphCellView.cs（378 行）
           - 继承 FrameworkElement + OnRender(DrawingContext) 自绘 commit graph
           - 包含 Bezier 曲线分支 / commit 点 / 13 个硬编码分支颜色 / DispatcherTimer / Popup
-          - spike 用 Border 占位（不迁移 OnRender）
+          - spike 用 Canvas + Line + Ellipse 简化（每个 lane 一条彩色线 + commit 点，8 色调色板循环）
 
         装入路径（WPF）：
           RepositoryUserControl.RepositoryContentContainer (ContentControl)
             → RepositoryContentUserControl → RevisionListViewUserControl (Grid.Row=1)
           spike 阶段跳过 RepositoryContentUserControl 这层，直接装入 RepositoryContentContainer。
 
-        本 spike 版暂不迁移：
+        本 spike 版迁移：
           - 完整 Initialize(repositoryUserControl, sidebarSearchTabItem) 实现
-          - RevisionsDataSource 真实数据源（spike 用空 stub）
+          - ObservableCollection<RevisionEntryViewModel> 真实数据源（从 RevisionStorage 提取 Sha+Parents，
+            异步 git log 补全 author/date/subject）
           - 4 个公共事件真实触发逻辑
-          - 5 个 CommandBindings
-          - PreviewKeyDown/KeyDown 处理
-          - 后台 Job（context search / sidebar search）
-          - 约 1000 行右键菜单构造方法
-          - AI 集成方法
-          - GraphCellView 自绘（Phase 2.5 用 SkiaSharp 重写）
-          - GridView 6 列布局（Avalonia 无 GridView 概念，spike 用 ListBox + DataTemplate 占位）
-          - RevisionSearchPanelUserControl（另一个 spike）
+          - 右键菜单动态构造（Checkout / Revert / Cherry-pick / Rebase / Merge / Reset / Tag / Branch / Diff / Copy SHA）
+          - 搜索框过滤（TextBox + TextChanged + 0.1s debounce）
+          - 虚拟化（ListBox + VirtualizingStackPanel）
+          - commit graph 简化绘制（Canvas + Line + Ellipse，8 色调色板）
+          - ToolTip 简化（DataTemplate 中绑定 ToolTip.Tip）
 
-        本 spike 版验证：
-          - Grid 2 行布局正确显示
-          - 顶部 SearchPanel 占位可见
-          - 底部 ListBox 占位可见（暂用空 ListBox）
+        本 spike 版暂不迁移（留待 Phase 2.5 GraphCellView + 后续子阶段）：
+          - GraphCellView 自绘（Bezier 曲线 / lane 交叉 / 合并 / 分叉）→ Phase 2.5 用 SkiaSharp 重写
+          - 5 个 CommandBindings 快捷键
+          - PreviewKeyDown/KeyDown 处理（Ctrl+F / F3 / Esc / Left/Right / Ctrl+A）
+          - sidebar search 后台 Job（RevisionSearchGitCommand）
+          - AI 集成方法（GeneratePullRequestDescription / AiExplainRevision）
+          - DragAndDrop 拖拽排序（ValidateDrag / RevisionListViewItem_Drop）
+          - RevisionListOrientation 切换（SingleRowGridView / DoubleRowGridView）
+          - NotificationCenter WeakEventManager 事件订阅
     -->
     <Grid ClipToBounds="True"
           RowDefinitions="Auto,*">
 
-        <!-- Row 0: SearchPanel 占位（WPF 中由 RevisionSearchPanelUserControl 注入）-->
+        <!-- Row 0: 搜索栏（WPF 中由 RevisionSearchPanelUserControl 注入；spike 改为内联 TextBox） -->
         <Border Grid.Row="0"
-                Name="SearchPanelPlaceholder"
                 Background="{DynamicResource ThemeCardBackgroundBrush}"
-                Padding="8,4"
-                Height="32">
-            <TextBlock Text="(search panel placeholder)"
-                       FontSize="11"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                       VerticalAlignment="Center" />
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <!-- Col 0: 搜索 TextBox（对照 WPF RevisionSearchPanelUserControl.SearchString） -->
+                <TextBox Grid.Column="0"
+                         Name="SearchTextBox"
+                         Watermark="Search commits..."
+                         Padding="6,3" />
+                <!-- Col 1: 匹配计数（对照 WPF RevisionSearchPanelUserControl.UpdateMatchesCount） -->
+                <TextBlock Grid.Column="1"
+                           Name="MatchCountTextBlock"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           IsVisible="False" />
+                <!-- Col 2: loading 指示（对照 WPF RevisionSearchPanelUserControl.IsBusyIndicatorVisible） -->
+                <Border Grid.Column="2"
+                        Name="LoadingIndicator"
+                        Margin="8,0,0,0"
+                        Padding="6,2"
+                        Background="{DynamicResource ThemeAccentBrush}"
+                        CornerRadius="3"
+                        IsVisible="False">
+                    <TextBlock Text="Loading..."
+                               Foreground="White"
+                               FontSize="11" />
+                </Border>
+            </Grid>
         </Border>
 
-        <!-- Row 1: RevisionListView 占位（WPF 中是 DragAndDropListView + GridView 6 列）-->
+        <!-- Row 1: RevisionListView（WPF 中是 DragAndDropListView + GridView 6 列；
+             spike 改为 ListBox + VirtualizingStackPanel + DataTemplate） -->
         <ListBox Grid.Row="1"
                  Name="RevisionListView"
                  Background="{DynamicResource ThemeBackgroundBrush}"
-                 BorderThickness="0" />
+                 BorderThickness="0"
+                 SelectionMode="Multiple">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="48,Auto,*,90,70,90,4"
+                          Height="24"
+                          Background="Transparent"
+                          ToolTip.Tip="{Binding ToolTipText}">
+                        <!-- Col 0: commit graph（对照 WPF GraphCellView，spike 用 Canvas + Line + Ellipse 简化） -->
+                        <Canvas Width="48"
+                                Height="24"
+                                ClipToBounds="True"
+                                Background="Transparent">
+                            <!-- lane 彩色线（8 色调色板循环分配） -->
+                            <Line StartPoint="24,0"
+                                  EndPoint="24,24"
+                                  Stroke="{Binding GraphBrush}"
+                                  StrokeThickness="2" />
+                            <!-- commit 点 -->
+                            <Ellipse Width="10"
+                                     Height="10"
+                                     Canvas.Left="19"
+                                     Canvas.Top="7"
+                                     Fill="{Binding GraphBrush}" />
+                        </Canvas>
+
+                        <!-- Col 1: references（branch/tag 标签，对照 WPF References ItemsControl） -->
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ReferencesText}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,6,0"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ThemeAccentBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <!-- Col 2: subject（对照 WPF RevisionSubjectTextField） -->
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Subject}"
+                                   VerticalAlignment="Center"
+                                   Margin="2,0,0,0"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <!-- Col 3: author（对照 WPF AuthorTextBlock） -->
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding Author}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ThemeForegroundMidBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <!-- Col 4: short sha（对照 WPF AbbreviatedSha） -->
+                        <TextBlock Grid.Column="4"
+                                   Text="{Binding ShortSha}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"
+                                   FontSize="11"
+                                   FontFamily="Consolas,Menlo,monospace"
+                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+                        <!-- Col 5: author date（对照 WPF AuthorDateLongString） -->
+                        <TextBlock Grid.Column="5"
+                                   Text="{Binding AuthorDate}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <!-- Col 6: 搜索匹配指示条（对照 WPF SearchMatchBorder） -->
+                        <Border Grid.Column="6"
+                                Width="4"
+                                Background="{DynamicResource ThemeAccentBrush}"
+                                IsVisible="{Binding IsSearchMatch}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>

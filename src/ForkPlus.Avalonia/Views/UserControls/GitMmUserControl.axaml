@@ -1,0 +1,136 @@
+<!--
+  Phase 5.3：Avalonia 版 GitMmUserControl（完整业务逻辑迁移 spike 版）。
+
+  对照 WPF 工程 src/ForkPlus/UI/UserControls/GitMmUserControl.xaml（139 行）：
+    - Grid 3 行：Subrepo 区（Border+DockPanel）/ GridSplitter / Command Output 区
+    - 顶部 DockPanel：Help 按钮 + Filter 按钮 + 标题 TextBlock + Summary WrapPanel
+    - 命令按钮行：3 个 ToolbarButton（Start/Sync/Upload），WPF 用 PNG 图标
+    - 子仓 TabControl（ModernTabControl 自定义样式，带拖拽排序）
+    - Command Output 区：ProgressBar + 按钮行 + UploadLinks + RichTextBox + Status
+
+  Avalonia 版差异（spike 简化）：
+    1. PNG 图标 → emoji（Start=🚀 / Sync=🔄 / Upload=⬆ / Help=?）
+    2. ModernTabControl → 原生 TabControl（spike 阶段不迁移自定义 TabItem 样式）
+    3. RichTextBox（WPF FlowDocument）→ TextBox（Avalonia 纯文本，ANSI 转义剥离）
+    4. ToolbarButton → 原生 Button + emoji Content
+    5. Visibility.Collapsed/Visible → IsVisible=False/True
+    6. DynamicResource 键名：BorderBrush → ThemeBorderMidBrush，
+       BackgroundBrush → ThemeBackgroundBrush（Avalonia 主题键名）
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.GitMmUserControl">
+    <Grid Name="RootGrid" Margin="10"
+          RowDefinitions="*,Auto,150">
+
+        <!-- Row 0: Sub repositories area -->
+        <Border Grid.Row="0"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                Background="{DynamicResource ThemeBackgroundBrush}">
+            <DockPanel>
+                <!-- Title bar: Help + Filter + Title + Summary -->
+                <DockPanel DockPanel.Dock="Top" Margin="8,6,8,4">
+                    <Button DockPanel.Dock="Right" Name="GitMmHelpButton"
+                            Click="GitMmHelpButton_Click"
+                            Content="?" Margin="4,-2,0,-2" Padding="6,0"
+                            Width="24" Height="24"
+                            ToolTip.Tip="git mm help" />
+                    <Button DockPanel.Dock="Right" Name="SubrepoFilterButton"
+                            Click="SubrepoFilterButton_Click"
+                            Margin="8,-2,0,-2" Padding="8,1"
+                            ToolTip.Tip="Filter repositories" />
+                    <TextBlock Name="SubreposTitleTextBlock"
+                               Text="Sub repositories"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center" />
+                    <WrapPanel Name="SubrepoSummaryPanel" Margin="10,0,0,0" />
+                </DockPanel>
+
+                <!-- Command buttons with emoji icons -->
+                <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,6">
+                    <Button Name="StartButton" Click="StartButton_Click"
+                            Margin="0,3,6,3" Padding="8,3"
+                            Content="🚀 Start" />
+                    <Button Name="SyncButton" Click="SyncButton_Click"
+                            Margin="0,3,6,3" Padding="8,3"
+                            Content="🔄 Sync" />
+                    <Button Name="UploadButton" Click="UploadButton_Click"
+                            Margin="0,3,6,3" Padding="8,3"
+                            Content="⬆ Upload" />
+                </WrapPanel>
+
+                <!-- Sub repositories tabs -->
+                <TabControl Name="SubreposTabControl"
+                            SelectionChanged="SubreposTabControl_SelectionChanged"
+                            BorderThickness="0" />
+            </DockPanel>
+        </Border>
+
+        <!-- Row 1: GridSplitter + Expand button -->
+        <GridSplitter Grid.Row="1" Name="CommandOutputGridSplitter"
+                      Height="6" Margin="0,4,0,0"
+                      ResizeDirection="Rows"
+                      Background="Transparent" />
+        <Button Grid.Row="1" Name="ExpandCommandOutputButton"
+                Click="ToggleCommandOutputButton_Click"
+                Content="Expand Command Output" IsVisible="False"
+                HorizontalAlignment="Right" Padding="8,1" />
+
+        <!-- Row 2: Command output area -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" Name="CommandOutputPanel"
+              RowDefinitions="Auto,Auto,Auto,*,Auto">
+            <ProgressBar Grid.Row="0" Name="BusyProgressBar"
+                         Height="4" IsIndeterminate="True" IsVisible="False" />
+            <DockPanel Grid.Row="1" Margin="0,6,0,4">
+                <Button DockPanel.Dock="Right" Name="ToggleCommandOutputButton"
+                        Click="ToggleCommandOutputButton_Click"
+                        Content="Collapse" Margin="8,-2,0,-2" Padding="8,1" />
+                <Button DockPanel.Dock="Right" Name="CancelCommandButton"
+                        Click="CancelCommandButton_Click"
+                        Content="Cancel" IsVisible="False" Margin="8,-2,0,-2" Padding="8,1" />
+                <Button DockPanel.Dock="Right" Name="ShowUploadLinksButton"
+                        Click="ShowUploadLinksButton_Click"
+                        Content="Uploads" IsVisible="False" Margin="8,-2,0,-2" Padding="8,1" />
+                <Button DockPanel.Dock="Right" Name="CommandHistoryButton"
+                        Click="CommandHistoryButton_Click"
+                        Content="History" Margin="8,-2,0,-2" Padding="8,1" />
+                <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+            <Border Grid.Row="2" Name="UploadLinksContainer" IsVisible="False"
+                    Margin="0,0,0,4" Padding="8,5"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Name="HideUploadLinksButton"
+                            Click="HideUploadLinksButton_Click"
+                            Content="Hide" Margin="8,-2,0,-2" Padding="6,1" />
+                    <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:"
+                               Margin="0,1,10,1" FontSize="12" FontWeight="Medium"
+                               VerticalAlignment="Center" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <WrapPanel Name="UploadLinksPanel" />
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+            <Border Grid.Row="3"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ThemeBackgroundBrush}">
+                <TextBox Name="OutputTextBox"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                         FontSize="12"
+                         BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </Border>
+            <TextBlock Grid.Row="4" Name="StatusTextBlock"
+                       Margin="0,4,0,0" TextWrapping="Wrap"
+                       VerticalAlignment="Center" />
+        </Grid>
+    </Grid>
+</UserControl>

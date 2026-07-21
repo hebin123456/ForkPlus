@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RewordUserControl">
+    <!--
+        Avalonia 版 RewordUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RewordUserControl.xaml.cs（147 行）：
+          - 构造函数 RewordUserControl(string subject, string description)
+          - 公共属性：Message（合并 subject + description）
+          - 公共事件：RewordCancelled / MessageChanged
+          - 公共方法：RaiseRewordCancelled / RaiseMessageChanged / Refresh(subject, description)
+          - CommitSubjectTextBox + CommitDescriptionTextBox（两个 TextBox）
+          - SubjectLengthLimitTextBlock（字数限制提示，变色）
+          - CommitMessageOkButton / CommitMessageCancelButton
+          - 键盘快捷键：Ctrl+Enter=提交 / Escape=取消
+          - OnCommitSubjectPaste 粘贴时分拆 subject + description
+
+        Avalonia 版差异：
+          - WPF TextBox → AvaloniaEdit.TextEditor（spike 用 TextEditor 作为 commit message 编辑框）
+          - WPF Key.Return + Keyboard.IsKeyDown → Avalonia KeyGesture
+          - WPF DataObject.AddPastingHandler → spike 不实现粘贴分拆
+          - WPF Application.TryFindResource → spike 用硬编码颜色
+          - 构造函数签名：(IServiceProvider serviceProvider)
+
+        spike 简化：
+          - 用 AvaloniaEdit.TextEditor 显示 commit message 编辑框
+          - SetCommit(sha, message) / GetMessage() / ApplyReword() 公共方法
+          - Initialize(RepositoryUserControl) 注入父控件
+          - Ctrl+Enter=提交 / Escape=取消 键盘快捷键
+          - 字数限制提示用 TextBlock 占位
+          - 粘贴分拆 / 颜色资源暂不实现
+    -->
+    <Grid RowDefinitions="Auto,*,Auto"
+          Margin="4">
+
+        <!-- Row 0: SHA 标签 + 字数提示 -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,2">
+            <TextBlock Grid.Column="0" Name="ShaLabel"
+                       Text="Reword commit message:"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundBrush}" />
+            <TextBlock Grid.Column="1" Name="SubjectLengthLimitTextBlock"
+                       Text=""
+                       FontSize="11"
+                       Margin="8,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+
+        <!-- Row 1: commit message 编辑区（spike 用 AvaloniaEdit.TextEditor）-->
+        <avalonEdit:TextEditor Grid.Row="1"
+                              Name="CommitMessageEditor"
+                              IsReadOnly="False"
+                              ShowLineNumbers="False"
+                              WordWrap="True"
+                              FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                              FontSize="13"
+                              Margin="0,2"
+                              Background="{DynamicResource ThemeBackgroundBrush}" />
+
+        <!-- Row 2: 操作按钮 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,4,0,0">
+            <Button Name="CommitMessageCancelButton"
+                    Content="Cancel"
+                    Click="CommitMessageCancelButton_Click"
+                    Margin="0,0,8,0" />
+            <Button Name="CommitMessageOkButton"
+                    Content="OK"
+                    Click="CommitMessageOkButton_Click" />
+        </StackPanel>
+    </Grid>
+</UserControl>

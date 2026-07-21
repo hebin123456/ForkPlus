@@ -176,6 +176,16 @@ namespace ForkPlus.Avalonia.Services
             // 由 RepositoryViewMode.RevisionViewMode/CommitViewMode 切换可见性
             services.AddTransient<Views.UserControls.RepositoryContentUserControl>();
 
+            // spike 新建控件 DI 注册：
+            // RewordUserControl：commit message 重新编辑（用于 interactive rebase）
+            //   对照 WPF 工程 src/ForkPlus/UI/UserControls/RewordUserControl.xaml.cs（147 行）
+            //   spike 版用 AvaloniaEdit.TextEditor 显示 commit message 编辑框
+            // RevisionChangesUserControl：commit 变更列表（文件 + diff）
+            //   对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionChangesUserControl.xaml.cs（619 行）
+            //   spike 版用 ListBox 显示文件列表 + AvaloniaEdit.TextEditor 显示 diff
+            services.AddTransient<Views.UserControls.RewordUserControl>();
+            services.AddTransient<Views.UserControls.RevisionChangesUserControl>();
+
             // Phase 3.4b：NotificationBarUserControl（完整迁移版）
             // 对照 WPF 工程 src/ForkPlus/UI/UserControls/NotificationBarUserControl.xaml.cs（395 行）。
             // 仓库顶部通知栏（推送/拉取/冲突/状态条），可折叠。
@@ -231,6 +241,17 @@ namespace ForkPlus.Avalonia.Services
             // ExtractSuggestions / ApplySuggestion 文件写入 / PreviewSuggestion + AiSuggestionPreviewWindow
             // 等完整迁移留 Phase 5.4b。
             services.AddTransient<Dialogs.AiCodeReviewWindow>();
+
+            // Phase 5.3：GitMmUserControl（完整业务逻辑迁移 spike 版）
+            // 对照 WPF 工程 src/ForkPlus/UI/UserControls/GitMmUserControl.xaml.cs（2787 行）+
+            //               src/ForkPlus/UI/UserControls/GitMmUserControl.Output.cs（471 行）。
+            // 迁移全部公共 API（IsGitMmWorkspace/FindAncestorGitMmWorkspace/CountSubrepos/
+            // Refresh/Save/ApplyLocalization/ContainsSubrepoPath/RunGitMm/RefreshSubrepos/
+            // ScanSubrepos/GetSubrepoRuntimeState 等）+ 输出处理 + Settings 管理。
+            // spike 简化：Dispatcher.Async → Dispatcher.UIThread.Post，
+            // RichTextBox → TextBox（纯文本 + ANSI 剥离），PNG → emoji，
+            // MainWindow.Instance → OnOpenStandaloneRepository 回调。
+            services.AddTransient<Views.UserControls.GitMmUserControl>();
         }
     }
 }

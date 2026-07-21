@@ -3,49 +3,32 @@
              x:Class="ForkPlus.Avalonia.Views.UserControls.StatusUserControl"
              Width="300">
     <!--
-        Phase 3.10：Avalonia 版 StatusUserControl 骨架（spike 简化版）。
+        Avalonia 版 StatusUserControl（spike 简化升级版）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/StatusUserControl.xaml（138 行）：
           - 顶层 UserControl Width=300 → Border（CornerRadius=3，状态栏背景）
           - Grid 3 列 × 3 行（20/*/20 × 18/16/2）
-          - TitleContainer（Grid 2 行，标题动画容器，含 TranslateTransform）：
-            SecondaryTitleGrid（次要标题 + SecondaryBusyIndicator 圆形进度）
-            TitleGrid（主标题 + BusyIndicator）
-          - CancelButton（16x16，默认 Collapsed）
-          - CenteredDockPanel（自定义控件，spike 用 Grid 替代）：
-            ShowActivityManagerToggleButton（ToggleButton，开关 Activity Manager）
-            Popup + ActivityManagerUserControl（作业管理器浮窗）
-            FilterButton（分支过滤按钮）
-            DescriptionIcon（分支图标）+ DescriptionTextBlock（描述文字）
+          - TitleContainer（双行标题动画容器，含 TranslateTransform）
+          - CancelButton / ShowActivityManagerToggleButton / FilterButton
           - StatusProgressBar（底部进度条）
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/StatusUserControl.xaml.cs（278 行）：
           - 公共方法：ApplyLocalization / RunAnimation（标题切换动画）
           - 私有 Refresh() 由 200ms DispatcherTimer 驱动
           - 通过 MainWindow.Instance?.TabManager.ActiveRepositoryUserControl 单例式访问
-          - 无 Initialize 注入模式
 
-        装入路径（WPF）：
-          ToolbarUserControl.xaml Row 0 → StatusUserControl
+        Avalonia 版差异：
+          - WPF Visibility.Collapsed/Visible → Avalonia IsVisible=false/true
+          - WPF Dispatcher.Invoke → Dispatcher.UIThread.Post
+          - WPF Image.Show()/Hide()/Collapse() → IsVisible=true/false/false
+          - CenteredDockPanel（自定义控件）→ Grid 替代
+          - 标题动画用 TranslateTransform（API 一致，spike 不实现缓动）
 
-        本 spike 版策略：
-          - CenteredDockPanel 用 Grid 替代
-          - ActivityManagerUserControl 用空 Popup 占位
-          - 标题动画用 Avalonia TranslateTransform（API 一致，但 spike 不实现动画切换）
-          - BusyIndicator 用 ProgressBar 占位
-          - DispatcherTimer 用 Avalonia DispatcherTimer（API 一致，spike 不启用）
-          - 公共方法签名保留，body stub
-
-        本 spike 版暂不迁移：
-          - RunAnimation 标题切换动画的精确缓动（QuadraticEase）
-          - ActivityManagerPopup 真实作业列表
-          - 分支过滤逻辑（UpdateReferenceFilter.ToggleActiveBranchFilter）
-          - DispatcherTimer 200ms 刷新
-
-        本 spike 版验证：
-          - Grid 3 列 × 3 行布局正确显示
-          - 标题占位文字可见
-          - 底部进度条占位可见
+        spike 简化：
+          - 用 TextBlock 显示状态文本 + emoji（Clean=✓ / Dirty=⚠ / Ahead=⬆ / Behind=⬇）
+          - ActivityManagerPopup 用空 Popup 占位
+          - DispatcherTimer 200ms 刷新暂不启用
+          - RunAnimation 只切换文字，不做 QuadraticEase 缓动
     -->
     <Border CornerRadius="3"
             Background="{DynamicResource ThemeCardBackgroundBrush}"
@@ -57,7 +40,7 @@
             <Grid Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3"
                   Name="TitleContainer"
                   RowDefinitions="*,*">
-                <!-- 次要标题（默认 Collapsed，动画时显示）-->
+                <!-- 次要标题（默认不可见，动画时显示）-->
                 <TextBlock Grid.Row="0"
                            Name="SecondaryTitleTextBlock"
                            Text="(secondary title)"
@@ -65,16 +48,22 @@
                            Foreground="{DynamicResource ThemeForegroundLowBrush}"
                            VerticalAlignment="Center" Margin="4,0"
                            IsVisible="False" />
-                <!-- 主标题 -->
-                <TextBlock Grid.Row="1"
-                           Name="TitleTextBlock"
-                           Text="(no repository)"
-                           FontSize="12"
-                           Foreground="{DynamicResource ThemeForegroundBrush}"
-                           VerticalAlignment="Center" Margin="4,0" />
+                <!-- 主标题（含 emoji 状态前缀）-->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
+                    <TextBlock Name="StatusEmojiTextBlock"
+                               Text=""
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0" />
+                    <TextBlock Name="TitleTextBlock"
+                               Text="(no repository)"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
             </Grid>
 
-            <!-- RowSpan 3, Col 2: CancelButton（默认 Collapsed）-->
+            <!-- RowSpan 3, Col 2: CancelButton（默认不可见）-->
             <Button Grid.Row="0" Grid.RowSpan="3" Grid.Column="2"
                     Name="CancelButton"
                     Content="✕"
@@ -82,7 +71,7 @@
                     IsVisible="False"
                     Click="CancelButton_Click" />
 
-            <!-- Row 1, ColSpan 3: CenteredDockPanel（spike 用 Grid 替代）-->
+            <!-- Row 1, ColSpan 3: 状态操作区（spike 用 Grid 替代 CenteredDockPanel）-->
             <Grid Grid.Row="1" Grid.ColumnSpan="3">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center" VerticalAlignment="Center">

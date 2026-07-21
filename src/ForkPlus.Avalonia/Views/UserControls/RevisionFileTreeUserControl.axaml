@@ -1,14 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionFileTreeUserControl">
     <!--
-        Phase 3.6：Avalonia 版 RevisionFileTreeUserControl 骨架（spike 简化版）。
+        Avalonia 版 RevisionFileTreeUserControl（spike 简化升级版）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.xaml（46 行）：
           - Grid 2 列：
             Col 0 (MinWidth=220 MaxWidth=850): MultiselectionTreeView (FilesTreeView)
-                          — 自定义 TreeView，含 ContextMenu 占位
-            Col 1 (*): FileContentControl — 自定义控件，展示选中文件内容
+                          自定义 TreeView，含 ContextMenu
+            Col 1 (*): FileContentControl 自定义控件
             GridSplitter (Col 0 右对齐)
           - Resources：DataTemplate for RevisionFileTreeViewItem（Grid 2 列: Image + TextBlock）
 
@@ -16,40 +17,41 @@
           - 公共方法：Refresh(Sha sha) / ShowRevisionDetails(string filePath)
           - 公共属性：RevisionDetailsUserControl（反向引用）
           - 异步 Task：GetRevisionFileTreeGitCommand（git ls-tree）+ UpdateFileDetails
-          - 3 个 CommandBindings（OpenFileInDefaultEditor / CopyFilePaths / CopyAbsoluteFilePaths）
-          - CreateFileTreeViewContextMenuItems（约 100 行右键菜单，含 OpenFile/ShowFileInFileExplorer/
-            Blame/FileHistory/SaveFile/LFS/CustomCommands/Copy 路径）
-          - _pendingFilePath 竞态处理（RootItem 未就绪时缓存）
+          - 3 个 CommandBindings + 右键菜单 ~100 行 + _pendingFilePath 竞态处理
 
-        装入路径（WPF）：
-          RevisionDetailsUserControl.xaml Row 2 → RevisionFileTreeUserControl
-          由 RevisionDetails.ShowRevisionDetails → UpdateTabContent(FileTree tab) → Refresh(sha) 触发
+        Avalonia 版差异：
+          - WPF MultiselectionTreeView → 原生 TreeView + HierarchicalDataTemplate
+          - WPF RevisionFileTreeViewItem : MultiselectionTreeViewItem → POCO（RevisionFileTreeViewItem.cs）
+          - WPF FileContentControl 自定义控件 → ContentControl 占位
+          - WPF Image PNG 图标 → emoji TextBlock
+          - WPF MouseDoubleClick → DoubleTapped
 
-        本 spike 版暂不迁移：
-          - MultiselectionTreeView 自定义控件（用 TreeView 占位）
-          - FileContentControl 自定义控件（用 ContentControl 占位）
-          - RevisionFileTreeViewItem 自定义 TreeViewItem（不迁移）
-          - 异步 Task（GetRevisionFileTreeGitCommand + UpdateFileDetails）
-          - 3 个 CommandBindings
-          - 右键菜单构造方法（约 100 行）
-          - _pendingFilePath 竞态处理
-          - GridSplitter 持久化列宽
-
-        本 spike 版验证：
-          - Grid 2 列布局正确显示
-          - 左侧 TreeView 占位可见
-          - 右侧 FileContent 占位可见
-          - GridSplitter 可拖动
+        spike 简化：
+          - 用 TreeView 显示文件树，TreeViewItem 绑定 RevisionFileTreeViewItem POCO
+          - Refresh(sha) 用 ObservableCollection 填充 TreeView 根节点
+          - ShowRevisionDetails(filePath) 展开到指定文件
+          - 右键菜单 / CommandBindings / git ls-tree 异步加载暂不实现
     -->
+    <UserControl.DataTemplates>
+        <TreeDataTemplate DataType="uc:RevisionFileTreeViewItem"
+                          ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding IconEmoji}" Margin="0,0,4,0" />
+                <TextBlock Text="{Binding Title}" />
+            </StackPanel>
+        </TreeDataTemplate>
+    </UserControl.DataTemplates>
+
     <Grid Name="ContainerGrid"
           ColumnDefinitions="220,Auto,*">
 
-        <!-- Col 0: FilesTreeView 占位（WPF 中是 MultiselectionTreeView + DataTemplate）-->
+        <!-- Col 0: FilesTreeView（绑定 RevisionFileTreeViewItem POCO）-->
         <TreeView Grid.Column="0"
                   Name="FilesTreeView"
                   Background="{DynamicResource ThemeBackgroundBrush}"
                   BorderThickness="0,0,1,0"
-                  BorderBrush="{DynamicResource ThemeBorderMidBrush}" />
+                  BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                  DoubleTapped="FilesTreeView_DoubleTapped" />
 
         <!-- Col 1: GridSplitter -->
         <GridSplitter Grid.Column="1"
@@ -64,7 +66,7 @@
                         Name="FileContentControl"
                         Background="{DynamicResource ThemeBackgroundBrush}"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <TextBlock Text="(file content placeholder)"
+            <TextBlock Text="(select a file to view content)"
                        FontSize="11"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}"
                        Margin="8,4" />

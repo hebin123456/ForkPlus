@@ -1,46 +1,38 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionDetailsUserControl">
     <!--
-        Phase 3.6：Avalonia 版 RevisionDetailsUserControl 骨架（spike 简化版）。
+        Avalonia 版 RevisionDetailsUserControl（spike 简化升级版）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.xaml（40 行）：
-          - 顶层 ContentContainer（自定义控件，spike 用 Grid 替代）
+          - 顶层 ContentContainer（自定义控件）→ spike 用 Grid 替代
           - Grid 3 行：
-            Row 0 (Auto): TabHeaderContainer — 3 个 RadioButton (Commit/Changes/FileTree)
-                          + Canvas 中 Border 指示器（动画，spike 不迁移）
-                          + ShowRevisionInSeparateWindowButton
-            Row 1 (Auto): RevisionsHeaderUserControl（自定义，spike 用 ContentControl 占位）
-            Row 2 (*):    Border 包 Grid，同时装入 3 个子 UserControl 用 Visibility 切换：
-                          - RevisionSummaryUserControl（Commit tab，默认 Visible）
-                          - RevisionChangesUserControl（Changes tab，默认 Collapsed）
-                          - RevisionFileTreeUserControl（FileTree tab，默认 Collapsed）
+            Row 0 (Auto): TabHeaderContainer - 3 个 RadioButton (Commit/Changes/FileTree)
+            Row 1 (Auto): RevisionsHeaderUserControl（自定义）→ spike 用 ContentControl 占位
+            Row 2 (*):    Border 包 Grid，同时装入 3 个子 UserControl 用 Visibility 切换
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.xaml.cs（595 行）：
           - 公共方法：Initialize(repo, mode) / ShowRevisionDetails(target, fileToSelect) /
             ShowInFileTreeTab(filePath) / HighlightSearchMatches(query) / ApplyLocalization
           - 公共事件：RevisionDetailsUpdated
           - 异步 Job：_loadFullRevisionDetailsJob（git 命令取 FullRevisionDetails）
-          - Tab 切换动画（DoubleAnimation + TranslateTransform，spike 不迁移）
+          - Tab 切换动画（DoubleAnimation + TranslateTransform）
 
-        装入路径（WPF）：
-          RepositoryContentUserControl.xaml Row 2 → RevisionDetailsUserControl
-          由 RevisionListViewUserControl.SelectionChanged 触发刷新链
+        Avalonia 版差异：
+          - WPF Visibility.Collapsed/Visible → Avalonia IsVisible=false/true
+          - WPF ContentContainer（自定义控件）→ Grid 替代
+          - WPF RevisionsHeaderUserControl → ContentControl 占位
+          - WPF Dispatcher.Invoke → Dispatcher.UIThread.Post
+          - WPF JobQueue → Task.Run + Dispatcher.UIThread.Post
+          - WPF AvalonEdit.TextEditor → AvaloniaEdit.TextEditor
+          - WPF Tab 切换动画 → spike 不迁移（DoubleAnimation + TranslateTransform）
 
-        本 spike 版暂不迁移：
-          - ContentContainer 自定义控件（用 Grid 替代）
-          - RevisionsHeaderUserControl（自定义，用 ContentControl 占位）
-          - RevisionSummaryUserControl / RevisionChangesUserControl / RevisionFileTreeUserControl
-            完整实现（3 个都是独立 spike，用 ContentControl 占位）
-          - Tab 指示器动画（DoubleAnimation + TranslateTransform）
-          - ShowRevisionInSeparateWindowButton 命令绑定
-          - 异步 Job（_loadFullRevisionDetailsJob）
-          - ApplyLocalization（多语言）
-
-        本 spike 版验证：
-          - Grid 3 行布局正确显示
-          - 3 个 RadioButton (Commit/Changes/FileTree) 可切换
-          - 3 个子 UserControl 占位容器可见性随 RadioButton 切换
+        spike 简化：
+          - 用 Grid 显示作者/日期/message（Commit tab）
+          - 用 AvaloniaEdit.TextEditor 显示 diff（Changes tab）
+          - FileTree tab 用 ContentControl 占位（RevisionFileTreeUserControl 独立 spike）
+          - Tab 指示器动画 / 异步 Job / ApplyLocalization 暂不迁移
     -->
     <Grid RowDefinitions="Auto,Auto,*">
 
@@ -68,39 +60,89 @@
                     Margin="8,0" />
         </Grid>
 
-        <!-- Row 1: RevisionsHeaderUserControl 占位（自定义 UserControl，spike 用 ContentControl）-->
+        <!-- Row 1: RevisionsHeaderUserControl 占位 -->
         <ContentControl Grid.Row="1"
                         Name="RevisionsHeaderContainer"
                         Background="{DynamicResource ThemeBackgroundBrush}"
                         Padding="8,4">
-            <TextBlock Text="(revision header placeholder)"
+            <TextBlock Text="(revision header)"
                        FontSize="11"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}" />
         </ContentControl>
 
-        <!-- Row 2: 3 个子 UserControl 占位（用 Visibility 切换）-->
-        <Grid Grid.Row="2">
-            <ContentControl Name="RevisionSummaryContainer"
-                            IsVisible="True">
-                <TextBlock Text="(Commit tab: RevisionSummaryUserControl placeholder)"
-                           FontSize="11"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                           Margin="8,4" />
-            </ContentControl>
-            <ContentControl Name="RevisionChangesContainer"
-                            IsVisible="False">
-                <TextBlock Text="(Changes tab: RevisionChangesUserControl placeholder)"
-                           FontSize="11"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                           Margin="8,4" />
-            </ContentControl>
-            <ContentControl Name="RevisionFileTreeContainer"
-                            IsVisible="False">
-                <TextBlock Text="(FileTree tab: RevisionFileTreeUserControl placeholder)"
-                           FontSize="11"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                           Margin="8,4" />
-            </ContentControl>
+        <!-- Row 2: 3 个子面板（用 IsVisible 切换）-->
+
+        <!-- Commit tab: 作者/日期/message + diff（spike 用 Grid + AvaloniaEdit.TextEditor）-->
+        <ScrollViewer Grid.Row="2" Name="RevisionSummaryContainer" IsVisible="True">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+                  Margin="8,4">
+                <!-- Author -->
+                <Grid Grid.Row="0" ColumnDefinitions="80,*" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="Author:"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <TextBlock Grid.Column="1" Name="AuthorTextBlock"
+                               Text="(author)"
+                               FontSize="11" />
+                </Grid>
+                <!-- Date -->
+                <Grid Grid.Row="1" ColumnDefinitions="80,*" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="Date:"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <TextBlock Grid.Column="1" Name="DateTextBlock"
+                               Text="(date)"
+                               FontSize="11" />
+                </Grid>
+                <!-- SHA -->
+                <Grid Grid.Row="2" ColumnDefinitions="80,*" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="SHA:"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <SelectableTextBlock Grid.Column="1" Name="ShaTextBlock"
+                                          Text="(sha)"
+                                          FontSize="11"
+                                          FontFamily="Consolas,Menlo,monospace" />
+                </Grid>
+                <!-- Message Subject -->
+                <Grid Grid.Row="3" ColumnDefinitions="80,*" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="Subject:"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <TextBlock Grid.Column="1" Name="SubjectTextBlock"
+                               Text="(subject)"
+                               FontSize="12" TextWrapping="Wrap" />
+                </Grid>
+                <!-- Message Body -->
+                <Grid Grid.Row="4" ColumnDefinitions="80,*" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="Message:"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <TextBlock Grid.Column="1" Name="MessageTextBlock"
+                               Text="(message body)"
+                               FontSize="11" TextWrapping="Wrap" />
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Changes tab: diff（spike 用 AvaloniaEdit.TextEditor）-->
+        <Grid Grid.Row="2" Name="RevisionChangesContainer" IsVisible="False">
+            <avalonEdit:TextEditor Name="DiffEditor"
+                                   IsReadOnly="True"
+                                   ShowLineNumbers="True"
+                                   WordWrap="False"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                                   FontSize="13" />
         </Grid>
+
+        <!-- FileTree tab: RevisionFileTreeUserControl 占位 -->
+        <ContentControl Grid.Row="2"
+                        Name="RevisionFileTreeContainer"
+                        IsVisible="False">
+            <TextBlock Text="(file tree tab placeholder)"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="8,4" />
+        </ContentControl>
     </Grid>
 </UserControl>

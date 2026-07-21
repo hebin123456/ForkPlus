@@ -1,11 +1,11 @@
 using System;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
 {
-    // Phase 3.10：Avalonia 版 RevisionSummaryUserControl 骨架（spike 简化版）。
+    // Avalonia 版 RevisionSummaryUserControl（spike 简化升级版）。
     //
     // 对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.xaml.cs（625 行）：
     //   - 公共方法：Refresh(Sha, BugtrackerLinkDefinition[], UserColors) / ApplyLocalization /
@@ -17,34 +17,23 @@ namespace ForkPlus.Avalonia.Views.UserControls
     // 装入路径（WPF）：
     //   RevisionDetailsUserControl.xaml Row 2 → RevisionSummaryUserControl（Commit tab）
     //
-    // 本 spike 版策略：
+    // Avalonia 版差异：
+    //   - WPF SelectableTextBlock → Avalonia SelectableTextBlock（API 对应）
+    //   - WPF Image avatar → Avalonia Image（spike 不加载真实 avatar）
+    //   - WPF ReferencePanel（自定义控件）→ ItemsControl + TextBlock
+    //   - WPF PreferencesLocalization → ServiceLocator.Localization（spike 用硬编码字符串）
+    //
+    // spike 简化：
+    //   - 用 ItemsControl 显示文件变更统计（Path / Status / Additions / Deletions）
     //   - AvatarImage 用 Avalonia Image 占位（默认不显示）
-    //   - SelectableTextBlock 用 Avalonia SelectableTextBlock（API 对应）
     //   - ReferencePanel 用 ItemsControl + TextBlock 占位
     //   - AiExplainCommitButton 保留（Button + emoji 文本）
-    //   - DiffList 用 ItemsControl + Expander + DataTemplate，Expander 内容用 Phase 3.9a 的 FileDiffControl 占位
-    //     （SubControlMode=True，嵌入式 diff）
-    //   - 公共方法签名保留，body stub
-    //
-    // 本 spike 版暂不迁移：
-    //   - AvatarImage 真实 avatar 加载
-    //   - ReferencePanel 真实 reference 渲染
-    //   - ApplySearchAndButrackerHighlighting（搜索高亮）
-    //   - CreateColorsPopup（用户颜色配置浮窗）
-    //   - AiExplainCommitButton_Click（AI 调用，Phase 5）
-    //   - CreateFileContextMenuItems（右键菜单，30+ 项）
-    //   - LoadDiffEntryContent（git diff 调用）
-    //
-    // 本 spike 版验证：
-    //   - Grid 2 行布局正确显示
-    //   - Row 0 ScrollViewer + Grid 2 行 × 4 列布局
-    //   - Author/Committer 区占位可见
-    //   - commit 详情区（REFS/SHA/PARENTS/Subject/Description）占位可见
-    //   - DiffList 用空 ItemsControl 占位
+    //   - DiffList 用 ItemsControl + Expander + FileDiffControl SubControlMode=True
+    //   - AvatarImage 真实加载 / 搜索高亮 / 右键菜单 / AI 调用暂不实现
     public partial class RevisionSummaryUserControl : UserControl
     {
         // ===== 公共属性（对照 WPF）=====
-        // spike 版用 object 占位，真实类型 RevisionDetailsUserControl 待 Phase 3.10 后续子阶段补
+        // spike 版用 object 占位，真实类型 RevisionDetailsUserControl 待后续阶段补
         public object RevisionDetailsUserControl { get; set; }
 
         public RevisionSummaryUserControl()
@@ -52,13 +41,41 @@ namespace ForkPlus.Avalonia.Views.UserControls
             InitializeComponent();
         }
 
-        // ===== 公共方法（对照 WPF 3 个公共方法签名，body stub）=====
+        // ===== 公共方法（对照 WPF）=====
 
         // 对照 WPF: public void Refresh(Sha sha, BugtrackerLinkDefinition[] bugtrackers, UserColors userColors)
-        //   主入口：刷新 Author/Committer/REFS/SHA/PARENTS/Subject/Description/DiffList
+        //   主入口：刷新 Author/Committer/REFS/SHA/PARENTS/Subject/Description/FileChangeStatistics
+        //   spike 版：用 object 占位参数，从传入对象反射读取属性
         public void Refresh(object sha, object bugtrackers, object userColors)
         {
-            Console.WriteLine($"[RevisionSummary] Refresh (spike placeholder): sha={sha}");
+            Console.WriteLine($"[RevisionSummary] Refresh: sha={sha}");
+
+            // spike 版：更新 SHA 文本
+            if (ShaTextBlock != null)
+            {
+                ShaTextBlock.Text = sha?.ToString() ?? "(no sha)";
+            }
+
+            // spike 版：更新文件变更统计（真实数据来自 FullRevisionDetails.ChangedFiles）
+            // 暂用示例数据占位
+            if (FileChangeStatistics != null)
+            {
+                FileChangeStatistics.Items.Clear();
+                FileChangeStatistics.Items.Add(new FileChangeStatItem
+                {
+                    Path = "src/Program.cs",
+                    Status = "Modified",
+                    Additions = "+12",
+                    Deletions = "-3"
+                });
+                FileChangeStatistics.Items.Add(new FileChangeStatItem
+                {
+                    Path = "README.md",
+                    Status = "Added",
+                    Additions = "+45",
+                    Deletions = "-0"
+                });
+            }
         }
 
         // 对照 WPF: public void ApplyLocalization()
@@ -71,7 +88,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
         //   委托 ApplySearchAndButrackerHighlighting（spike 不迁移高亮逻辑）
         public void HighlightSearchMatches(object searchQuery)
         {
-            Console.WriteLine($"[RevisionSummary] HighlightSearchMatches (spike placeholder): {searchQuery}");
+            Console.WriteLine($"[RevisionSummary] HighlightSearchMatches: {searchQuery}");
         }
 
         // ===== Button 事件占位（对照 WPF click handler）=====
@@ -86,6 +103,24 @@ namespace ForkPlus.Avalonia.Views.UserControls
         private void ExpandAllButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionSummary] ExpandAllButton_Click (spike placeholder)");
+            // spike 版：展开所有 DiffList 中的 Expander
+            if (DiffList != null)
+            {
+                foreach (var item in DiffList.Items)
+                {
+                    // Expander 展开逻辑（spike 占位）
+                }
+            }
         }
+    }
+
+    // spike POCO：文件变更统计项（Path / Status / Additions / Deletions）
+    // 对照 WPF 的 ChangedFile + DiffEntry 统计数据
+    public class FileChangeStatItem
+    {
+        public string Path { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Additions { get; set; } = string.Empty;
+        public string Deletions { get; set; } = string.Empty;
     }
 }

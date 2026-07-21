@@ -106,7 +106,7 @@
 
                 <!-- Row 1, ColSpan 4: commit 详情区 -->
                 <Grid Grid.Row="1" Grid.ColumnSpan="4"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                       Margin="4,8,4,4">
 
                     <!-- REFS -->
@@ -194,7 +194,27 @@
                                    Foreground="{DynamicResource ThemeForegroundLowBrush}" />
                     </StackPanel>
 
+                    <!-- File Change Statistics（spike 新增：Path / Status / Additions / Deletions）-->
                     <ItemsControl Grid.Row="6"
+                                  Name="FileChangeStatistics">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="{Binding Path}" FontSize="11"
+                                               FontFamily="Consolas,Menlo,monospace" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11"
+                                               Margin="8,0" Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Additions}" FontSize="11"
+                                               Margin="8,0" Foreground="#22AA22" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Deletions}" FontSize="11"
+                                               Margin="8,0" Foreground="#AA2222" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- DiffList（ItemsControl + Expander + FileDiffControl SubControlMode=True）-->
+                    <ItemsControl Grid.Row="7"
                                   Name="DiffList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
