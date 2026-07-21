@@ -16,12 +16,13 @@ jobs:
             artifact_suffix: windows
           - os: ubuntu-latest
             artifact_suffix: linux
-          # macos-13 = Intel (x64) runner。macos-latest 从 2024-12 起切到 ARM64 (Apple Silicon)，
-          # 但 setup-dotnet@v4 在 ARM64 runner 上默认只装 ARM64 SDK，而 dotnet test 运行
-          # AnyCPU 测试 DLL 时会尝试找 X64 host（"Could not find 'dotnet' host for the 'X64'
-          # architecture"）。用 macos-13 Intel runner 规避此问题；待 ForkPlus.Avalonia
-          # 全量迁完后再考虑 macos-14 (ARM64) + --arch arm64 的方案。
-          - os: macos-13
+          # Phase 7：macos-latest = ARM64 (Apple Silicon) runner，从 2024-12 起取代 macos-13。
+          # 原 macos-13 (Intel x64) runner 已退役/排队严重，切到 macos-latest。
+          # 配合 Core.Tests.csproj 改 AnyCPU（不再硬编码 x64），ARM64 .NET host 可直接跑测试。
+          # biturbo native lib 仍是 x64，但 Core.Tests 不实际调用 biturbo P/Invoke（lazy-load），
+          # 故 ARM64 host 不会尝试加载 x64 native lib，测试可正常通过。
+          # ForkPlus.Avalonia 是 .NET 10 + Avalonia，纯托管，ARM64 可直接 publish 出可执行产物。
+          - os: macos-latest
             artifact_suffix: macos
     runs-on: ${{ matrix.os }}
     permissions:
@@ -81,6 +82,32 @@ jobs:
         if: runner.os != 'Windows'
         run: dotnet build src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj -c Release -v minimal
 
+      # Phase 7：非 Windows 平台 publish ForkPlus.Avalonia 为 self-contained 可执行产物。
+      # Avalonia 是跨平台 UI，Linux/macOS 都能 publish 出原生可执行文件（无需用户装 .NET runtime）。
+      # 用 self-contained + net10.0 + RuntimeIdentifier（linux-x64 / osx-arm64）。
+      # 产物路径：src/ForkPlus.Avalonia/bin/Release/net10.0/<RID>/publish/
+      # 产物上传在后续步骤 "Upload Avalonia artifact (non-Windows)" 中完成。
+      # Windows 不跑此步骤（Windows 用 ForkPlus.sln 构建 WPF 主工程产物）。
+      - name: Publish ForkPlus.Avalonia (non-Windows)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -e
+          case "$RUNNER_OS" in
+            Linux)   RID="linux-x64" ;;
+            macOS)   RID="osx-arm64" ;;
+            *)       echo "Unsupported runner OS: $RUNNER_OS"; exit 1 ;;
+          esac
+          echo "Publishing ForkPlus.Avalonia for $RID (self-contained)"
+          dotnet publish src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj \
+            -c Release \
+            -r "$RID" \
+            --self-contained true \
+            -o "publish-avalonia-$RID" \
+            -v minimal
+          echo "✓ Published to publish-avalonia-$RID"
+          ls -lh "publish-avalonia-$RID/" | head -20
+
       # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
       # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
       # key 绑定 tokei 版本号，升级时自动失效重新编译。
@@ -103,6 +130,19 @@ jobs:
       - name: Build (Release)
         if: runner.os == 'Windows'
         run: dotnet build ForkPlus.sln -c Release --no-restore -p:Platform="Any CPU" -v minimal
+
+      # Phase 7：Windows self-contained publish，产出可独立运行的 ForkPlus.exe。
+      # 原 CI 只用 dotnet build，产物是 framework-dependent，用户机器缺 .NET 10 Desktop Runtime
+      # 时 exe 无法启动（apphost 找不到 runtime 直接退出）。改用 dotnet publish --self-contained
+      # 把 .NET 10 Desktop Runtime 打包进产物，用户无需装任何 .NET 即可运行。
+      # -r win-x64：ForkPlus.csproj 已硬编码 <PlatformTarget>x64</PlatformTarget>，故用 win-x64 RID。
+      # -p:Platform=x64：与 csproj 的 PlatformTarget 一致（避免 Any CPU + x64 不一致问题）。
+      # 不用 --no-build：publish 需要 RID-specific build，与前一步 dotnet build ForkPlus.sln 的
+      # Any CPU 输出不同，必须重新 build ForkPlus 工程（但只 build ForkPlus，不 rebuild 整个 sln）。
+      # 产物路径：publish-windows/，会在后续 Upload artifact 步骤上传。
+      - name: Publish ForkPlus (Windows, self-contained)
+        if: runner.os == 'Windows'
+        run: dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -r win-x64 --self-contained true -p:Platform=x64 -o publish-windows -v minimal
 
       - name: Run unit tests
         if: runner.os == 'Windows'
@@ -236,24 +276,45 @@ jobs:
             exit 1
           }
 
-      - name: Upload artifact
+      # Phase 7：产物上传。
+      # Windows：上传 self-contained publish 产物（publish-windows/），包含 ForkPlus.exe + .NET runtime。
+      # Linux/macOS：上传 Avalonia self-contained publish 产物（publish-avalonia-<RID>/）。
+      - name: Upload artifact (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: ForkPlus-${{ matrix.artifact_suffix }}
-          path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/
+          path: publish-windows/
           if-no-files-found: error
 
-      - name: Package release zip
+      - name: Upload artifact (Linux/macOS Avalonia)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ForkPlus.Avalonia-${{ matrix.artifact_suffix }}
+          path: publish-avalonia-*/
+          if-no-files-found: error
+
+      - name: Package release zip (Windows)
         if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
+          Compress-Archive -Path publish-windows/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
+
+      - name: Package release zip (Linux/macOS Avalonia)
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os != 'Windows'
+        shell: bash
+        run: |
+          RID=$(ls -d publish-avalonia-* | head -1 | sed 's/publish-avalonia-//')
+          zip -r -q "ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip" "publish-avalonia-$RID/"
+          echo "✓ Packaged ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip"
+          ls -lh "ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip"
 
       - name: Release on tag
-        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
+            ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
           generate_release_notes: true

@@ -12,7 +12,11 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PlatformTarget>x64</PlatformTarget>
+    <!-- Phase 7：不再硬编码 x64。AnyCPU 让测试 DLL 在 ARM64 macOS runner（macos-latest）
+         上能用 ARM64 .NET host 直接运行，不再触发 "Could not find 'dotnet' host for
+         the 'X64' architecture"。Core.Tests 的 434 个测试不直接调用 biturbo P/Invoke
+         （biturbo 在 ForkPlus.Core 里是 lazy-load），故 AnyCPU + ARM64 host 不会
+         尝试加载 x64 native lib，测试可正常通过。 -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RootNamespace>ForkPlus.Tests</RootNamespace>
     <AssemblyName>ForkPlus.Core.Tests</AssemblyName>
