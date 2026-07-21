@@ -1,0 +1,395 @@
+<dialogs:CustomWindow xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                      xmlns:md="https://github.com/whistyun/Markdown.Avalonia.Tight"
+                      x:Class="ForkPlus.Avalonia.Dialogs.AiCodeReviewWindow"
+                      Title="AI Code Review"
+                      Width="1080" Height="720"
+                      MinWidth="560" MinHeight="400"
+                      CanResize="True"
+                      WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.4a：Avalonia 版 AiCodeReviewWindow（spike 骨架版，3 个 AI 窗口中最复杂的一个）。
+        验证 Markdown.Avalonia.Tight 替代 WebView2 + C#↔JS 双向通信简化为 C# 直接调用。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml（73 行）：
+          - <ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="720" Width="1080"
+              MinHeight="400" MinWidth="560">
+          - Grid 3 行 3 列：
+            * Row 0 (Auto): DockPanel 标题栏 (Retry + Stop + ModelComboBox + TitleTextBlock)
+                            + Separator (VerticalAlignment=Bottom)
+            * Row 1 (Auto): DockPanel 状态栏 (StatusProgressBar + StatusTextBlock)
+            * Row 2 (*):    Grid 3 列：
+              - Col 0 (* MinWidth=365): RevisionDetails（Branch/ShaRange target）或
+                FileReviewGrid（Files target，3 列：FileListUserControl 320 +
+                GridSplitter 5 + CommitFileDiffControl *）
+              - Col 1 (Auto): GridSplitter（垂直，VerticalGridSplitter 样式）
+              - Col 2 (350 MinWidth=120): Grid 4 层：
+                * WebView2（AiResponseWebView）
+                * ProgressBar（BusyIndicator，CircularProgressBar 样式）
+                * FallbackUserControl（AiResponseFallback）
+          - WebView2 渲染 markdown（Bt.bt_md_to_html 转 HTML + 拼 CSS + NavigateToString）
+          - C# ↔ JS 双向通信：
+            * JS → C#（CoreWebView2.WebMessageReceived）：3 种 postMessage：
+              - "preview-suggestion:<i>"  → PreviewSuggestion(i)
+              - "apply-suggestion:<i>"     → ApplySuggestion(i)
+              - "scroll-at-bottom:1|0"     → _streamingUserAtBottom = (value=="1")
+            * C# → JS（ExecuteScriptAsync）：1 种调用：
+              - ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight)")
+                在 NavigationCompleted 后执行，流式渲染时滚到底部跟随最新内容
+            * JS 函数（注入到 HTML）：
+              - previewSuggestion(i)  → postMessage("preview-suggestion:" + i)
+              - applySuggestion(i)     → postMessage("apply-suggestion:" + i)
+              - sendAtBottom()         → scroll 事件 → postMessage("scroll-at-bottom:" + (1|0))
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml.cs（1758 行）：
+          - 依赖：RepositoryUserControl _repositoryUserControl + AiCodeReviewTarget _target +
+            AiAgent _aiAgent + Job _aiReviewJob + Job _fileReviewDiffJob
+          - 字段：List<AiReviewSuggestion> _suggestions / string _aiReviewMarkdown /
+            string _aiReviewHtml / string _selectedFileReviewPath / string _aiReviewStatusMessage /
+            Dictionary<string,string> _fileReviewHtmlCache / bool _startUpFinished / bool _isClosed /
+            AiCodeReviewTarget.Files _fileReviewTarget / string _cachedCss / bool _modelListLoaded /
+            StringBuilder _streamingMarkdown / object _streamingLock /
+            DateTime _lastStreamingRenderUtc / StreamingRenderIntervalMs (400ms) /
+            bool _streamingActive / bool _pendingStreamingScrollToEnd / bool _streamingUserAtBottom
+          - 构造函数：InitializeComponent + ApplyLocalization + Loaded += InitializeWebView +
+            SizeChanged += Window_SizeChanged + Activated += Window_Activated +
+            RetryAiReview(target, replaceAll: true) + RestoreAiResultColumnWidth +
+            按 target 类型初始化 RevisionDetails / FileReviewGrid + GridSplitter.DragCompleted 保存列宽 +
+            NotificationCenter.ApplicationThemeChanged += ApplicationThemeChanged +
+            InitializeModelComboBox
+          - ApplyLocalization (ILocalizableControl)：RetryButton/StopButton 文案翻译 +
+            ApplyTargetTitleLocalization + RevisionDetails.ApplyLocalization +
+            FileReviewDiffControl.ApplyLocalization + WebView 重新渲染
+          - InitializeWebView：WebView2.EnsureCoreWebView2Async +
+            CoreWebView2.ContextMenuRequested (禁用右键菜单) +
+            CoreWebView2.WebMessageReceived (3 种 postMessage) +
+            CoreWebView2.NavigationCompleted (流式渲染后 scrollTo 底部)
+          - RetryAiReview：取消旧 job + PrepareAiReviewUi + 按 _aiAgent/OpenAiService.IsAiReviewConfigured
+            走 ReviewWithAiAgent 或 ReviewWithOpenAi 或 ShowError
+          - PrepareAiReviewUi：BusyIndicator.Show + RetryButton.Disable + StopButton.Visible +
+            StatusProgressBar.Visible + 重置 _streamingMarkdown + 状态文字 "Queued..."
+          - ReviewWithOpenAi：JobQueue.Add + monitor.SetProgressAction(UpdateStatus) +
+            GetRangePatchGitCommand.Execute → OpenAiService.CodeReview(onChunk: OnStreamingChunk) →
+            RemoveSuggestionBlocks + ConvertMarkdownToHtml + ApplyAiReviewResult
+          - ReviewFilesWithOpenAi：BuildFileReviewContext（每文件 diff + full file）→
+            OpenAiService.CodeReviewFiles → 同上
+          - ReviewWithAiAgent：MakeCodeReviewShellCommand.Execute + 同上转换渲染
+          - OnStreamingChunk：lock _streamingMarkdown.Append(chunk) +
+            Dispatcher.Async TryRenderStreamingPreview
+          - TryRenderStreamingPreview：节流 400ms + ConvertMarkdownToHtml +
+            注入 scrollScript (postMessage scroll-at-bottom) + NavigateToString +
+            快照 _streamingUserAtBottom 决定 _pendingStreamingScrollToEnd
+          - StopStreamingRender：_streamingActive = false
+          - ApplyAiReviewResult：ClearStatus + ExtractSuggestions(rawMarkdown) +
+            若 Files target + !replaceAll 合并 markdown/suggestions → ShowMarkdownOutput
+          - ShowMarkdownOutput：缓存 _aiReviewMarkdown + _aiReviewHtml → RenderAiReviewOutput
+          - RenderAiReviewOutput：拼 HTML 文档（CSS + CreateStatusHtml + CreateReviewBodyHtml +
+            CreateSuggestionsHtml + CreateAllReviewResultsHtml + previewSuggestion/applySuggestion
+            JS 脚本）→ NavigateToString
+          - CreateSuggestionsHtml：为每个 suggestion 生成 <div class='ai-suggestion'> +
+            <button onclick='previewSuggestion(i)'> + <button onclick='applySuggestion(i)'>
+          - ShowFileDiff：JobQueue.Add(JobFlags.Hidden) + GetWorkingDirectoryFileChangesGitCommand →
+            FileReviewDiffControl.Content = diff
+          - PreviewSuggestion(i)：AiSuggestionPreviewWindow.ShowDialog → 若 OK ApplySuggestion
+          - ApplySuggestion(i)：读文件 + 找 OldText + 替换 + 写文件 +
+            _suggestions.RemoveAt(i) + RenderAiReviewOutput + InvalidateAndRefresh
+          - ExtractSuggestions：解析 ```forkplus-ai-suggestions JSON 块
+          - RemoveSuggestionBlocks：Regex 删除 suggestion JSON 块（不显示给用户）
+          - ConvertMarkdownToHtml：Bt.bt_md_to_html P/Invoke
+          - GetCss：读嵌入资源 ForkPlus.Assets.md-ai-output.css（缓存）
+          - CoreWebView2_WebMessageReceived：解析 preview-suggestion / apply-suggestion /
+            scroll-at-bottom 三种 postMessage
+          - InitializeModelComboBox：后台 ThreadPool 拉取 OpenAiService.ListModels
+          - ModelComboBox_SelectionChanged：保存 ForkPlusSettings.Default.AiReviewSelectedModel
+          - SendAiReviewCompletedNotification：NotificationManager.SendWindowsNotification
+          - OnKeyDown (Esc 关闭) + OnClosed (取消 job + Dispose WebView2)
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 完全弃用 WebView2，改用 Markdown.Avalonia.Tight 的 MarkdownScrollViewer
+             - markdown → viewer.Markdown = markdown（Markdig 解析 → Avalonia 控件树）
+             - 无需 Bt.bt_md_to_html P/Invoke
+             - 无需 GetCss / md-ai-output.css 资源加载（Markdown.Avalonia 内置 GithubLike）
+             - 无需 HTML 文档拼接（CreateStatusHtml / CreateReviewBodyHtml / CreateSuggestionsHtml
+               / CreateAllReviewResultsHtml / scrollScript / previewSuggestion/applySuggestion JS 函数）
+             - 内置 light/dark 主题检测（无需 CSS @media prefers-color-scheme）
+             - 内置 ScrollViewer（无需 WebView2 内部滚动 + scroll-at-bottom postMessage）
+
+          2. WPF 版的 C# ↔ JS 双向通信（最复杂部分）改为简单的 C# 方法直接调用：
+             - JS → C# 的 3 种 postMessage 简化为：
+               * preview-suggestion:<i>  → PreviewSuggestion(i)（C# 按钮点击事件直接调）
+               * apply-suggestion:<i>     → ApplySuggestion(i)（C# 按钮点击事件直接调）
+               * scroll-at-bottom:1|0     → 删除（MarkdownScrollViewer 原生 ScrollViewer 自动管理滚动位置，
+                 流式渲染时无需 postMessage 维护 _streamingUserAtBottom）
+             - C# → JS 的 ExecuteScriptAsync("window.scrollTo(...)") 简化为：
+               * spike 阶段不实现自动滚动到底部（Phase 5.4b 接入 ScrollViewer.ScrollToEnd）
+             - 注入到 HTML 的 previewSuggestion(i) / applySuggestion(i) / sendAtBottom() JS 函数
+               完全删除，改为在 suggestion 列表区放原生 Avalonia Button（Click 事件 → C# 方法）
+             - CoreWebView2_WebMessageReceived / CoreWebView2.NavigationCompleted /
+               CoreWebView2.ContextMenuRequested 全部删除（无 WebView2）
+
+             简化后的双向通信链路：
+               WPF:  用户点 HTML <button onclick='previewSuggestion(i)'>
+                       → JS postMessage("preview-suggestion:" + i)
+                       → C# CoreWebView2_WebMessageReceived 解析
+                       → PreviewSuggestion(i)
+               Avalonia spike: 用户点 Avalonia <Button Click="PreviewSuggestionButton_Click">
+                                 → C# 直接 PreviewSuggestion(i)
+
+          3. spike 版构造函数保留 WPF 签名（RepositoryUserControl + AiCodeReviewTarget + AiAgent），
+             但仅暂存字段 + InitializeComponent + 占位渲染，不真正调 RetryAiReview
+          4. spike 版布局简化：
+             - 标题栏：TitleTextBlock + ModelComboBox + StopButton + RetryButton（保留 WPF 完整）
+             - 状态栏：ProgressBar + StatusTextBlock（保留 WPF）
+             - 主体：左 ListBox（占位文件列表）+ GridSplitter + 右 MarkdownScrollViewer
+               （spike 用 ListBox 替代 WPF FileListUserControl + RevisionDetailsUserControl，
+               因为 spike 不实现树形增量构建算法；左侧仅展示选中文件名列表）
+             - 建议操作区：spike 新增（对照 WPF 在 WebView HTML 内的 Preview/Apply 按钮，
+               spike 改为原生 Avalonia Button + ListBox 列出 _suggestions）
+             - 输入区：spike 新增（WPF 版无输入区，spike 加一个 TextBox + Send 按钮用于
+               未来"对检视结果提问"或"补充上下文重试"等场景；Phase 5.4b 接入实际功能）
+          5. 跳过 WebView2EnvironmentHelper（WebView2-only，Avalonia 不需要）
+          6. 跳过 Bt.bt_md_to_html P/Invoke（Markdown.Avalonia 用 Markdig 跨平台）
+          7. 跳过 GetCss / md-ai-output.css 资源加载
+          8. 跳过 CoreWebView2.ContextMenuRequested / WebMessageReceived / NavigationCompleted
+          9. 跳过 InitializeModelComboBox 后台拉取 OpenAiService.ListModels（spike 下拉为空占位）
+         10. 跳过 ModelComboBox_SelectionChanged 持久化 ForkPlusSettings
+         11. 跳过 400ms 节流渲染 TryRenderStreamingPreview（spike 直接刷新 viewer.Markdown）
+         12. 跳过 SendAiReviewCompletedNotification（NotificationManager 是 WPF-only）
+         13. 跳过 GridSplitter 列宽持久化（ForkPlusSettings.AiResultColumnWidth 等）
+         14. 跳过 FileReviewGrid / FileReviewFileListUserControl / FileReviewDiffControl
+             切换（spike 用单一 ListBox + MarkdownScrollViewer）
+         15. 跳过 AiSuggestionPreviewWindow（spike 仅在状态栏打印 "Preview suggestion #i"）
+         16. 跳过 ApplySuggestion 写文件（spike 仅打印 "Apply suggestion #i"）
+         17. 跳过 ExtractSuggestions JSON 解析（spike 仅维护空 _suggestions 列表）
+         18. 跳过 NotificationCenter.ApplicationThemeChanged 主题切换订阅
+         19. 跳过 PreferencesLocalization / ILocalizableControl 翻译
+         20. 用 Dispatcher.UIThread.Post 替代 WPF Dispatcher.Async / BeginInvoke
+
+        本 spike 版暂不迁移（留 Phase 5.4b 或更后）：
+          - OpenAiService.CreateFromAiReviewSettings / CodeReview / CodeReviewFiles
+            （spike RetryAiReview 仅 stub，不真正请求 AI）
+          - JobQueue / JobMonitor / Job / JobFlags.Hidden（spike 不入队后台任务）
+          - RepositoryUserControl.JobQueue / InvalidateAndRefresh（spike 不刷新仓库状态）
+          - ReviewWithAiAgent / MakeCodeReviewShellCommand（spike 不调 AI agent）
+          - ReviewWithOpenAi / ReviewFilesWithOpenAi（spike 不调 OpenAI）
+          - BuildFileReviewContext / ReadFileForReview / TrimForPrompt（spike 不构建上下文）
+          - GetRangePatchGitCommand / GetWorkingDirectoryFileChangesGitCommand（spike 不取 diff）
+          - ShowFileDiff（spike 不显示 diff，仅在 markdown viewer 显示"diff placeholder"）
+          - 完整的 OnStreamingChunk + TryRenderStreamingPreview 节流渲染
+            （spike 用 OnChunk 直接刷新 viewer.Markdown）
+          - ApplySuggestion 文件写入 + InvalidateAndRefresh
+          - PreviewSuggestion + AiSuggestionPreviewWindow（spike 仅状态栏打印）
+          - ExtractSuggestions + RemoveSuggestionBlocks + MergeSuggestions + MergeFileReviewMarkdown
+          - ConvertMarkdownToHtml + GetCss + RenderAiReviewOutput HTML 拼接
+          - CreateStatusHtml / CreateReviewBodyHtml / CreateAllReviewResultsHtml /
+            CreateSuggestionsHtml / CreateSelectedFileReviewHtml / ExtractFileReviewMarkdown
+          - TryParseMarkdownHeading / HeadingMatchesReviewFile / NormalizeReviewPath 等
+          - InitializeModelComboBox + ModelComboBox_SelectionChanged
+          - SendAiReviewCompletedNotification（NotificationManager.SendWindowsNotification）
+          - OnSourceInitialized / OnLocationChanged / Window_SizeChanged / Window_Activated
+            窗口状态持久化（ForkPlusSettings.AiResultWindowLocationState）
+          - RestoreAiResultColumnWidth / SaveAiResultColumnWidth / SaveFileReviewTreeColumnWidth
+          - FileReviewFileListUserControl_ContextMenuOpening（右键菜单 retry 单文件）
+          - ClickedFileReviewItems / ExpandFileListItems / AppendFileListItemFiles
+          - FileReviewGrid_SizeChanged（约束文件树最大宽度）
+          - ApplicationThemeChanged / UpdateWebViewTheme（WebView2 PreferredColorScheme）
+          - 滚动到底部 _pendingStreamingScrollToEnd / _streamingUserAtBottom
+
+        本 spike 版验证：
+          - Markdown.Avalonia.Tight 11.0.3 可在 Avalonia 11.3.18 axaml 中实例化
+          - MarkdownScrollViewer.Markdown 可接收流式 chunk 更新（多 chunk 累积场景）
+          - GFM 表格 + 代码块（含 diff ```diff 块）+ 链接渲染正常
+          - 主题自动检测 light/dark（DynamicResource 跟随主题切换）
+          - 整个 WebView2 替代链路工作（markdown → Avalonia 控件树，无浏览器内核）
+          - C#↔JS 双向通信简化为 C# 直接调用工作（按钮 Click → C# 方法）
+          - 公共构造函数签名与 WPF 版一致
+            （调用方可零改动切换到 Avalonia 版，类型为 Avalonia 等价物）
+          - 标题栏 / 文件列表 / Markdown 渲染区 / 状态栏 / 输入区 布局正确
+    -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+        <!-- Row 0: 标题栏（TitleTextBlock + ModelComboBox + Stop + Retry） -->
+        <Grid Grid.Row="0" Margin="12,8,12,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Name="TitleTextBlock"
+                       FontSize="16" FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Text="AI Code Review"
+                       Foreground="{DynamicResource LabelBrush}" />
+            <!-- 模型下拉（spike 占位，不后台拉取 /v1/models；Phase 5.4b 接入） -->
+            <ComboBox Grid.Column="1"
+                      Name="ModelComboBox"
+                      FontSize="11"
+                      MinWidth="160" MaxWidth="320"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      Margin="6,0,6,0"
+                      ToolTip.Tip="Select AI model"
+                      SelectionChanged="ModelComboBox_SelectionChanged" />
+            <!-- Stop 按钮（spike 仅切 UI 状态，不取消后台 Job） -->
+            <Button Grid.Column="2"
+                    Name="StopButton"
+                    Content="Stop"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    IsVisible="False"
+                    ToolTip.Tip="Stop the current AI task and abort its request"
+                    Click="StopButton_Click" />
+            <!-- Retry 按钮（spike 仅触发 RetryAiReview stub） -->
+            <Button Grid.Column="3"
+                    Name="RetryButton"
+                    Content="Retry"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Retry AI Review"
+                    Click="RetryButton_Click" />
+        </Grid>
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />
+
+        <!-- Row 1: 状态栏（ProgressBar + StatusTextBlock，对照 WPF StatusProgressBar + StatusTextBlock） -->
+        <Grid Grid.Row="1" Margin="12,4,12,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0"
+                         Name="StatusProgressBar"
+                         Width="120" Height="3"
+                         IsIndeterminate="True"
+                         IsVisible="False"
+                         Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Grid.Column="1"
+                       Name="StatusTextBlock"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+        </Grid>
+        <Separator Grid.Row="1" VerticalAlignment="Bottom" Margin="0" />
+
+        <!-- Row 2: 文件列表（左侧，占位）+ GridSplitter + Markdown 渲染区（右侧）
+             对照 WPF Col 0 (FileListUserControl / RevisionDetails) + Col 1 (GridSplitter) + Col 2 (WebView2)。 -->
+        <Grid Grid.Row="2" Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="160" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Col 0: 文件列表占位（对照 WPF FileListUserControl，spike 用 ListBox）。
+                 spike 仅展示 _target.Files.ChangedFiles 的 Path，无 TreeView 增量构建、
+                 无右键菜单 retry 单文件、无多选 -->
+            <Border Grid.Column="0" BorderBrush="{DynamicResource ThemeBorderMidBrush}" BorderThickness="0,0,1,0">
+                <ListBox Name="FileReviewListBox"
+                         Background="{DynamicResource ThemeBackgroundBrush}"
+                         BorderThickness="0"
+                         SelectionChanged="FileReviewListBox_SelectionChanged" />
+            </Border>
+
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="{DynamicResource ThemeBorderMidBrush}" />
+
+            <!-- Col 2: Markdown 渲染区（对照 WPF AiResponseWebView + BusyIndicator + Fallback）。
+                 spike 用 MarkdownScrollViewer 直接渲染 markdown 字符串，无需 Bt.bt_md_to_html + HTML + CSS。 -->
+            <Grid Grid.Column="2">
+                <!-- Markdown.Avalonia MarkdownScrollViewer，GithubLike 主题。
+                     Markdown 属性由 code-behind 在 OnChunk / OnSuccess / RenderAiReviewOutput 中直接设置。 -->
+                <md:MarkdownScrollViewer Name="AiResponseMarkdownViewer" Margin="8,4" />
+
+                <!-- 错误占位（spike 用 TextBlock，对照 WPF FallbackUserControl） -->
+                <TextBlock Name="AiResponseFallback"
+                           IsVisible="False"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </Grid>
+        </Grid>
+
+        <!-- Row 3: 建议操作区（spike 新增 - 对照 WPF 在 WebView HTML 内的 Preview/Apply 按钮，
+             spike 改为原生 Avalonia Button + ListBox 列出 _suggestions，按钮 Click 直接调 C# 方法）。
+             WPF 版的 C#↔JS 双向通信（postMessage preview-suggestion/apply-suggestion）简化为 C# 直接调用。 -->
+        <Expander Grid.Row="3" Name="SuggestionsExpander"
+                  Header="Applicable suggestions"
+                  Margin="12,4,12,4"
+                  IsExpanded="False">
+            <Grid Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <!-- suggestions 列表（spike 占位，对照 WPF HTML <div class='ai-suggestion'> 动态生成） -->
+                <ListBox Grid.Column="0"
+                         Name="SuggestionsListBox"
+                         MinHeight="60" MaxHeight="120"
+                         SelectionChanged="SuggestionsListBox_SelectionChanged" />
+                <!-- Preview 按钮（对照 WPF HTML <button onclick='previewSuggestion(i)'>） -->
+                <Button Grid.Column="1"
+                        Name="PreviewSuggestionButton"
+                        Content="Preview replacement"
+                        Padding="10,2"
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Bottom"
+                        IsEnabled="False"
+                        ToolTip.Tip="Preview the suggested code replacement"
+                        Click="PreviewSuggestionButton_Click" />
+                <!-- Apply 按钮（对照 WPF HTML <button onclick='applySuggestion(i)'>） -->
+                <Button Grid.Column="2"
+                        Name="ApplySuggestionButton"
+                        Content="Apply suggestion"
+                        Padding="10,2"
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Bottom"
+                        IsEnabled="False"
+                        ToolTip.Tip="Apply the suggested code replacement"
+                        Click="ApplySuggestionButton_Click" />
+            </Grid>
+        </Expander>
+
+        <!-- Row 4: 输入区（spike 新增 - WPF 版无输入区；spike 加 TextBox + Send 按钮用于未来
+             "对检视结果提问"或"补充上下文重试"等场景；Phase 5.4b 接入实际功能） -->
+        <Grid Grid.Row="4" Margin="12,4,12,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Name="FollowUpTextBox"
+                     FontSize="13"
+                     Padding="6,4"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     MinHeight="28" MaxHeight="80"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     VerticalAlignment="Stretch"
+                     Watermark="Ask a follow-up question or add context for retry..."
+                     TextChanged="FollowUpTextBox_TextChanged"
+                     KeyDown="FollowUpTextBox_KeyDown" />
+            <Button Grid.Column="1"
+                    Name="FollowUpSendButton"
+                    Content="Send (Enter)"
+                    FontSize="13"
+                    Padding="10,4"
+                    Margin="6,0,0,0"
+                    MinHeight="28"
+                    VerticalAlignment="Bottom"
+                    IsEnabled="False"
+                    ToolTip.Tip="Send follow-up to AI"
+                    Click="FollowUpSendButton_Click" />
+        </Grid>
+    </Grid>
+</dialogs:CustomWindow>

@@ -19,7 +19,8 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 3：IGitEnvironment / ILocalizationService
     //   - Phase 5：IMarkdownRenderer（替换 WebView2 渲染）
     //   - Phase 6.1（已完成）：IClipboardService / IDispatcher / IAppContext / IDesignModeService
-    //   - Phase 6.2+：IDialogService / IToastNotificationService / IUserSettings / IProcessLauncher
+    //   - Phase 6.2（已完成）：IToastNotificationService
+    //   - Phase 6.3+：IDialogService / IUserSettings / IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -31,11 +32,17 @@ namespace ForkPlus.Avalonia.Services
 
             // Phase 6.1：4 个简单 Core 接口的 Avalonia 实现
             // 对照 WPF 工程 src/ForkPlus/Services/Wpf/Wpf*.cs（9 个 Wpf 实现中的 4 个简单项）。
-            // 复杂项（IToastNotificationService / IDialogService / IUserSettings）留待后续 Phase。
+            // 复杂项（IDialogService / IUserSettings）留待后续 Phase。
             services.AddSingleton<IClipboardService, AvaloniaClipboardService>();
             services.AddSingleton<IDispatcher, AvaloniaDispatcher>();
             services.AddSingleton<IAppContext, AvaloniaAppContext>();
             services.AddSingleton<IDesignModeService, AvaloniaDesignModeService>();
+
+            // Phase 6.2：IToastNotificationService 的 Avalonia 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfToastNotificationService.cs（WinRT Toast，Windows-only）。
+            // 用 Avalonia.Controls.Notifications.WindowNotificationManager（三平台统一，无 OSPlatform 分支），
+            // 首次 Show() 时懒加载注入主窗口可视树（不改 MainWindow.axaml）。
+            services.AddSingleton<IToastNotificationService, AvaloniaToastNotificationService>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
@@ -113,6 +120,23 @@ namespace ForkPlus.Avalonia.Services
             // ProcessRequest / OpenAiRequestStreamingWithRetry / JobQueue / ParseAiResponse /
             // ApplyFileChanges / ShowDiffResults / UndoAiChanges 等完整迁移留 Phase 5.3b。
             services.AddTransient<Dialogs.AiDevelopmentWindow>();
+
+            // Phase 5.4a：AiCodeReviewWindow（spike 骨架版，3 个 AI 窗口中最复杂的一个，
+            // 因为 WPF 版有真实的 C# ↔ JS 双向通信）。
+            // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml.cs（1758 行）。
+            // spike 版完全弃用 WebView2，改用 Markdown.Avalonia.Tight 的 MarkdownScrollViewer：
+            //   - WPF 版的 C#↔JS 双向通信（CoreWebView2.WebMessageReceived 处理
+            //     preview-suggestion/apply-suggestion/scroll-at-bottom 三种 postMessage，
+            //     C# → JS ExecuteScriptAsync window.scrollTo 自动滚动）改为简单的 C# 方法直接调用
+            //     （PreviewSuggestionButton_Click → PreviewSuggestion、ApplySuggestionButton_Click → ApplySuggestion）
+            //   - HTML 文档拼接（CSS + CreateStatusHtml + CreateReviewBodyHtml + CreateSuggestionsHtml +
+            //     CreateAllReviewResultsHtml + previewSuggestion/applySuggestion JS 函数注入）全部跳过，
+            //     markdown 文档直接用 GFM 写出，suggestion 操作改用原生 Avalonia Button + ListBox
+            // 保留构造函数签名 AiCodeReviewWindow(RepositoryUserControl, AiCodeReviewTarget, AiAgent)。
+            // ReviewWithAiAgent / ReviewWithOpenAi / ReviewFilesWithOpenAi / JobQueue / OpenAiService /
+            // ExtractSuggestions / ApplySuggestion 文件写入 / PreviewSuggestion + AiSuggestionPreviewWindow
+            // 等完整迁移留 Phase 5.4b。
+            services.AddTransient<Dialogs.AiCodeReviewWindow>();
         }
     }
 }
