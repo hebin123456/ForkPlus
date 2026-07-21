@@ -4,6 +4,10 @@ using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
+// Phase 0.4：CustomDecoders 已迁入 Core，使用 ForkPlus.UI.WindowState（Core 跨平台枚举）。
+// 本测试类不继承自 Window，using 别名可正常工作（不会被实例成员查找覆盖）。
+using WindowState = ForkPlus.UI.WindowState;
+
 namespace ForkPlus.Tests
 {
 	/// <summary>
