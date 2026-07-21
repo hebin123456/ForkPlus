@@ -624,6 +624,9 @@ namespace ForkPlus
 				userSettings: userSettings,
 				accountManager: Accounts.AccountManager.Current
 			);
+			// Phase 0.2c：注册 CLI 命令解析器，让 Core 端的 CliCommand.CreateCliCommand
+			// 能委派到主工程的 OpenRepositoryCliCommand.Parse（强 WPF 依赖，留在主工程）。
+			CliCommand.SetParser(OpenRepositoryCliCommand.Parse);
 			_ = IsDebug;
 			InitializeRenderMode();
 			InitializeTheme();

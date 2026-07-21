@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI
 {
@@ -17,7 +18,8 @@ namespace ForkPlus.UI
 			{
 				get
 				{
-					string directoryName = Path.GetDirectoryName(App.GitPath);
+					// Phase 0.2c：App.GitPath → ServiceLocator.GitEnvironment.GitPath（App 留在 WPF 主工程）
+					string directoryName = Path.GetDirectoryName(ServiceLocator.GitEnvironment?.GitPath);
 					if (directoryName == null)
 					{
 						Log.Error("Cannot find git directory '" + directoryName + "'");

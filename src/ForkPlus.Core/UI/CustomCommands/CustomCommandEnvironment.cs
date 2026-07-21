@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -244,10 +245,13 @@ namespace ForkPlus.UI.CustomCommands
 					}
 				}
 			}
-			target = Replace(target, "${git}", App.GitPath, urlEncode);
-			target = Replace(target, "$git", App.GitPath, urlEncode);
-			target = Replace(target, "${sh}", App.ShellPath, urlEncode);
-			return Replace(target, "$sh", App.ShellPath, urlEncode);
+			// Phase 0.2c：App.GitPath/ShellPath → ServiceLocator.GitEnvironment（App 留在 WPF 主工程）
+			string gitPath = ServiceLocator.GitEnvironment?.GitPath;
+			string shellPath = ServiceLocator.GitEnvironment?.ShellPath;
+			target = Replace(target, "${git}", gitPath, urlEncode);
+			target = Replace(target, "$git", gitPath, urlEncode);
+			target = Replace(target, "${sh}", shellPath, urlEncode);
+			return Replace(target, "$sh", shellPath, urlEncode);
 		}
 
 		protected string Replace(string target, string oldValue, string newValue, bool urlEncode)

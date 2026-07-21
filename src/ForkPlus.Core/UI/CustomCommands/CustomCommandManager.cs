@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ForkPlus.Git;
+using ForkPlus.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -772,7 +773,8 @@ namespace ForkPlus.UI.CustomCommands
 
 		private CustomCommand[] Load()
 		{
-			string text = Path.Combine(App.ForkDirectoryPath, "custom-commands.json");
+			// Phase 0.2c：App.ForkDirectoryPath → ServiceLocator.AppContext.ForkDirectoryPath
+			string text = Path.Combine(ServiceLocator.AppContext.ForkDirectoryPath, "custom-commands.json");
 			try
 			{
 				if (File.Exists(text))
@@ -789,7 +791,7 @@ namespace ForkPlus.UI.CustomCommands
 
 		public static string GlobalPath()
 		{
-			return Path.Combine(App.ForkDirectoryPath, "custom-commands.json");
+			return Path.Combine(ServiceLocator.AppContext.ForkDirectoryPath, "custom-commands.json");
 		}
 
 		public static string LocalPath(GitModule gitModule)

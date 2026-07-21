@@ -14,6 +14,7 @@ namespace ForkPlus.Services.Wpf
 		public string ProcessIdString => App.ProcessIdString;
 		public string UserAgent => App.UserAgent;
 		public string ForkCredentialHelperPath => App.ForkCredentialHelperPath;
+		public string ForkDirectoryPath => App.ForkDirectoryPath;
 
 		public void Shutdown()
 		{

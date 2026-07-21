@@ -21,6 +21,8 @@ namespace ForkPlus.Services
 		string UserAgent { get; }
 		/// <summary>Fork 内置 credential helper 可执行文件路径（等价于 App.ForkCredentialHelperPath）。</summary>
 		string ForkCredentialHelperPath { get; }
+		/// <summary>Fork 应用安装目录（等价于 App.ForkDirectoryPath），用于读取 custom-commands.json 等全局配置。</summary>
+		string ForkDirectoryPath { get; }
 		void Shutdown();
 	}
 }

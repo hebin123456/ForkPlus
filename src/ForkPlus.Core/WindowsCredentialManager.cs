@@ -3,11 +3,23 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace ForkPlus
 {
+	/// <summary>
+	/// Windows Credential Manager P/Invoke 封装。
+	///
+	/// Phase 0.2c：从 ForkPlus WPF 主工程迁入 Core，便于 Accounts/PrivateAccessTokenAuthentication
+	/// 与 BitbucketOAuthAuthentication 等业务类型在 Core 中消费。
+	///
+	/// 跨平台说明：本类仅 Windows 可用，已加 [SupportedOSPlatform("Windows")] 标注。
+	/// 非平台调用方应在调用前用 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) guard；
+	/// 后续 Phase 6.x 将提供 macOS Keychain / Linux Secret Service 实现并通过 ICredentialManager 抽象注入。
+	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public static class WindowsCredentialManager
 	{
 		private enum CredentialPersistence : uint

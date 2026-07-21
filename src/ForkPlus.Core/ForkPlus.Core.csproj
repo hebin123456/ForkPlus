@@ -38,6 +38,11 @@
        的语义对齐——主工程的 internal 暴露给 ForkPlus.Tests，Core 的 internal 暴露给 ForkPlus.Core.Tests。-->
   <ItemGroup>
     <InternalsVisibleTo Include="ForkPlus.Core.Tests" />
+    <!-- Phase 0.2c：BiturboExtensions / CustomCommandManager 等从 WPF 主工程迁入 Core 后
+         保持 internal 访问性。主工程仍大量消费这些扩展方法（BtRepositoryManagerExtensions /
+         CommitGraphHelper / Treemap / AiDevelopmentWindow 等 18+ 文件），
+         故暴露 internals 给 ForkPlus 主工程。 -->
+    <InternalsVisibleTo Include="ForkPlus" />
   </ItemGroup>
 
 </Project>
