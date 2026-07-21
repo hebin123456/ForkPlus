@@ -60,11 +60,10 @@ namespace ForkPlus.Avalonia.Services
             // 用 Avalonia 11 StorageProvider API（三平台统一，不引入任何 Windows-only 包）。
             services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
-            // Phase 6.4a：IUserSettings 的 Avalonia spike stub 实现
+            // Phase 6.4b：IUserSettings 的 Avalonia 真实实现
             // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfUserSettings.cs（委托到 ForkPlusSettings.Default）。
-            // spike stub 所有 17 个属性返回 ForkPlusSettings.Decode 方法的默认值，不读 settings.json，不持久化。
-            // Phase 0.4 把 ForkPlusSettings 从 WPF 工程迁入 Core（替换 System.Windows.WindowState 为
-            // 自定义枚举）后，升级为真实实现（Phase 6.4b：委托到迁移后的 ForkPlusSettings.Default）。
+            // Phase 0.4 已把 ForkPlusSettings 从 WPF 迁入 Core，所有 17 个属性委托到
+            // ForkPlusSettings.Default.Xxx（读 settings.json，写入持久化）。
             services.AddSingleton<IUserSettings, AvaloniaUserSettings>();
 
             // Phase 6.5：IWindowManagerService 的 Avalonia 实现
@@ -76,18 +75,15 @@ namespace ForkPlus.Avalonia.Services
             // 调用方：ForkPlus.Core.Accounts.NotificationManager（仅 2 处，Toast 点击回调）。
             services.AddSingleton<IWindowManagerService, AvaloniaWindowManagerService>();
 
-            // Phase 6.6a：IGitEnvironment 的 Avalonia spike 实现
+            // Phase 6.6b：IGitEnvironment 的 Avalonia 真实实现
             // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfGitEnvironment.cs（34 行，纯转发壳）。
-            // WPF 版所有属性委托到 App 静态属性，App 在启动时从 ForkPlusSettings + PATH 计算。
-            // spike 阶段采用跨平台策略：
-            //   - GitPath：which/where 命令查找 PATH 中的 git（懒加载缓存）
+            // Phase 0.4 已把 ForkPlusSettings 迁入 Core，git 路径解析升级为：
+            //   - GitPath：环境变量 forkgitinstance → ForkPlusSettings.Default.GitInstancePath → ForkGitInstancePath
             //   - ShellPath / BashPath：从 GitPath 派生（Windows）/ 返回 "sh"/"bash"（Unix）
-            //   - OverrideCredentialHelper / OverrideCredentialHelperBt：null（无 ForkPlusSettings）
-            //   - ForkGitInstancePath：null（spike 不打包便携 git）
+            //   - OverrideCredentialHelper / OverrideCredentialHelperBt：null（依赖 AccountManager，待 Phase 6.7+ 接入）
+            //   - ForkGitInstancePath：Windows 用 ForkDirectoryPath/gitInstance/2.50.1/bin/git.exe，Unix null
             //   - AppName："ForkPlus" / CliArguments：Environment.GetCommandLineArgs()
-            // Core 工程中 95 处引用 ServiceLocator.GitEnvironment.Xxx（遍布 Git/Shell/Jobs/UI/Accounts），
-            // spike 确保所有调用拿到非 null 值避免 NRE。
-            // Phase 0.4 把 ForkPlusSettings 迁入 Core 后升级为真实持久化实现（Phase 6.6b）。
+            // Core 工程中 95 处引用 ServiceLocator.GitEnvironment.Xxx（遍布 Git/Shell/Jobs/UI/Accounts）。
             services.AddSingleton<IGitEnvironment, AvaloniaGitEnvironment>();
 
             // Phase 6.7：ITimerService 的 Avalonia 实现
@@ -102,14 +98,14 @@ namespace ForkPlus.Avalonia.Services
             // 对照 WPF 工程 src/ForkPlus/App.xaml.cs:613 注入 LocalizationService(appContext, () => ForkPlusSettings.Default.UiLanguage)。
             // LocalizationService 已在 Core 工程中（src/ForkPlus.Core/Services/LocalizationService.cs），
             // 完全平台无关，依赖 IAppContext（取 ForkDataDirectoryPath 加载用户语言文件）+ Func<string>（当前语言 provider）。
-            // spike 阶段语言 provider 返回 "zh-Hans"（与 AvaloniaUserSettings.UiLanguage 默认值一致），
-            // Phase 0.4 ForkPlusSettings 迁入 Core 后改为 () => ForkPlusSettings.Default.UiLanguage。
+            // Phase 0.4 已把 ForkPlusSettings 迁入 Core，语言 provider 升级为 () => ForkPlusSettings.Default.UiLanguage
+            // （之前 spike 阶段硬编码返回 "zh-Hans"）。
             // 调用方：Core 工程中 100+ 文件 / 433+ 处调用 ServiceLocator.Localization.Xxx
             // （OpenAiService / Accounts/* / Git/Commands/* / Utils/Http/ServiceError 等最大耦合点）。
             services.AddSingleton<ILocalizationService>(sp =>
                 new LocalizationService(
                     sp.GetRequiredService<IAppContext>(),
-                    () => "zh-Hans"));
+                    () => ForkPlus.Settings.ForkPlusSettings.Default.UiLanguage));
 
             // Phase 6.9：IAccountManager 直接复用 Core 的 AccountManager.Current 静态单例
             // 对照 WPF 工程 src/ForkPlus/App.xaml.cs:627 注入 AccountManager.Current。
