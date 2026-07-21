@@ -43,6 +43,9 @@
          CommitGraphHelper / Treemap / AiDevelopmentWindow 等 18+ 文件），
          故暴露 internals 给 ForkPlus 主工程。 -->
     <InternalsVisibleTo Include="ForkPlus" />
+    <!-- Phase 0.2c-r6：ReflogHistoryProvider.ParseLine 等从 WPF 迁入 Core 后仍为 internal，
+         原 ForkPlus.Tests 测试工程需访问 Core 的 internal 成员。 -->
+    <InternalsVisibleTo Include="ForkPlus.Tests" />
   </ItemGroup>
 
 </Project>
