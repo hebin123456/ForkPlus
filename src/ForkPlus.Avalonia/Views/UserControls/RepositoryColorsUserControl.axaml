@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryColorsUserControl">
+    <!--
+        Avalonia 版 RepositoryColorsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryColorsUserControl.xaml（70 行）：
+          - 7 个 RadioButton 水平排列：Color0~5 + NoColor
+          - 每个 RadioButton.Background 设置为对应颜色（红/橙/黄/绿/蓝/紫）
+          - Checked/Unchecked 事件触发 ColorButton_Changed
+          - NoColor 显示 CancelSearchIcon 图标
+          - 顶层 StackPanel + Style="RepositoryColorRadioButton"
+
+        Avalonia 版差异（spike 简化）：
+          - WPF RadioButton.Checked/Unchecked → Avalonia RadioButton.IsCheckedChanged
+            （Avalonia 11 用 IsCheckedChanged 事件统一替代 Checked/Unchecked）
+          - WPF DynamicResource RepositoryColorRadioButton 样式 → 内联 Padding/Width/Height
+            （Avalonia 工程未迁移此样式 key）
+          - WPF Image + CancelSearchIcon → TextBlock "✕"（PNG → emoji）
+          - WPF SolidColorBrush hex 值保留（红/橙/黄/绿/蓝/紫 6 色 + NoColor 透明）
+          - 静态 _repositoryBrushes[7] 数组（Transparent + Red/Orange/Yellow/Green/Blue/Violet）
+
+        spike 简化：
+          - RepositoryManager.Instance.UpdateRepositoryColor → 注入 Action<RepositoryColor> 回调
+            （RepositoryManager 在 Avalonia 工程是 stub，spike 不直接依赖单例）
+          - NotificationCenter.Current.RaiseRepositoryColorChanged → 注入 Action 回调
+          - 构造函数接受 RepositoryColor 初始选中项 + onSave 回调
+    -->
+    <StackPanel Orientation="Horizontal" Spacing="2">
+        <RadioButton Name="Color0Button"
+                     Width="18" Height="18" Padding="0"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="Color1Button"
+                     Width="18" Height="18" Padding="0"
+                     Background="#FF3B30"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="Color2Button"
+                     Width="18" Height="18" Padding="0"
+                     Background="#FF9502"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="Color3Button"
+                     Width="18" Height="18" Padding="0"
+                     Background="#FFCC00"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="Color4Button"
+                     Width="18" Height="18" Padding="0"
+                     Background="#64DA38"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="Color5Button"
+                     Width="18" Height="18" Padding="0"
+                     Background="#1CADF8"
+                     IsCheckedChanged="ColorButton_Changed" />
+        <RadioButton Name="NoColorButton"
+                     Width="18" Height="18" Padding="0"
+                     Background="Transparent"
+                     IsCheckedChanged="ColorButton_Changed"
+                     Content="✕"
+                     FontSize="11"
+                     Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+    </StackPanel>
+</UserControl>

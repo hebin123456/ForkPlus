@@ -1,0 +1,201 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ActivityManagerUserControl">
+    <!--
+        Avalonia 版 ActivityManagerUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/ActivityManagerUserControl.xaml（152 行）+
+        ActivityManagerUserControl.xaml.cs（485 行）：
+          - Border 1024x440 + DropShadowEffect
+          - Grid 2 列 2 行：ViewModeTabControl + JobDetailsNameTextBlock + JobListBox + JobDetailsOutputEditor
+          - JobListBox ItemTemplate: 复杂 DataTemplate（GitMm badge + Name + FinishTime + Warning + CancelButton + Message + JobProgressProgressBar）
+          - ViewModeTabControl（All/User/Background 三个 TabItem）
+          - JobListFallBack（无活动时显示 "No Activities"）
+          - JobDetailsFallBack（无选中活动时显示 "No Selected Activity"）
+          - JobDetailsOutputEditor: AvalonEdit.TextEditor
+
+        Avalonia 版差异（spike 简化）：
+          - WPF Border + DropShadowEffect → Avalonia Border + BoxShadow
+          - WPF editor:CodeEditor → spike TextBox（spike 不实现 AvalonEdit 语法高亮）
+          - WPF Image PNG（Console/Warning/Cancel 等）→ TextBlock emoji
+          - WPF DataTemplate Triggers（IsSelected 高亮）→ spike 简化（无选中高亮）
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+          - WPF ProgressBar CircularProgressBar 样式 → 默认 ProgressBar
+          - WPF ViewModeTabControl（ModernTabControl）→ Avalonia 原生 TabControl
+
+        spike 简化：
+          - JobViewModel : INotifyPropertyChanged → spike POCO
+          - MainWindow.Instance?.TabManager.ActiveGitMmUserControl?.JobQueue → 注入回调（getJobQueue）
+          - DispatcherTimer 200ms 刷新 → spike 用 DispatcherTimer（保留）
+          - GitOutputColorizer → spike 跳过（纯文本输出）
+          - Theme.ApplicationColors.RedBrush / GreenBrush → 内联 SolidColorBrush
+          - NotificationCenter.ApplicationThemeChanged 事件 → spike 跳过（主题切换时无需刷新编辑器）
+    -->
+    <Border Width="1024" Height="440"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            Background="{DynamicResource ThemeBackgroundBrush}"
+            Margin="10,5,10,10"
+            CornerRadius="6"
+            BoxShadow="0 2 10 0 DimGray">
+        <Grid ColumnDefinitions="320,*" RowDefinitions="28,*">
+
+            <!-- Row 0, Col 0: ViewMode 标签栏 -->
+            <Border Grid.Row="0" Grid.Column="0"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <TabControl Name="ViewModeTabControl"
+                            HorizontalAlignment="Center"
+                            BorderThickness="0"
+                            SelectionChanged="ViewModeTabControl_SelectionChanged">
+                    <TabItem Header="All" Tag="All" />
+                    <TabItem Header="User" Tag="User" />
+                    <TabItem Header="Background" Tag="Background" />
+                </TabControl>
+            </Border>
+
+            <!-- Row 0, Col 1: Job 详情标题 -->
+            <Border Grid.Row="0" Grid.Column="1"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Name="JobDetailsNameTextBlock"
+                               FontSize="14"
+                               Margin="10,4,0,0"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                    <TextBlock Grid.Column="1"
+                               Name="JobDetailsFinishTimeTextBlock"
+                               HorizontalAlignment="Right"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               Margin="0,6,10,0" />
+                </Grid>
+            </Border>
+
+            <!-- Row 1, Col 0: Job 列表 -->
+            <ListBox Grid.Row="1" Grid.Column="0"
+                     Name="JobListBox"
+                     SelectionMode="Single"
+                     BorderThickness="0"
+                     SelectionChanged="JobListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="0,0,0,1"
+                                BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                            <Grid Margin="4,2,4,2"
+                                  ColumnDefinitions="*,Auto"
+                                  RowDefinitions="16,16">
+                                <!-- Row 0, Col 0: 名称 -->
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                           FontSize="13"
+                                           Margin="0,-2,2,0"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           FontWeight="Medium"
+                                           Text="{Binding Name}" />
+
+                                <!-- Row 0, Col 1: 完成时间 + Warning emoji + Cancel 按钮 -->
+                                <StackPanel Grid.Row="0" Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <TextBlock FontSize="11"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                               Margin="0,-1,0,0"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding FinishTimeText}"
+                                               IsVisible="{Binding FinishTimeVisible}" />
+                                    <TextBlock Text="⚠"
+                                               Margin="4,0,2,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="11"
+                                               IsVisible="{Binding WarningVisible}" />
+                                    <Button Margin="4,0,0,0"
+                                            Padding="2"
+                                            Height="16" Width="16"
+                                            VerticalAlignment="Center"
+                                            Click="CancelButton_Click"
+                                            Content="✕"
+                                            IsVisible="{Binding CancelVisible}" />
+                                </StackPanel>
+
+                                <!-- Row 1, Col 0-1: 详情消息 + 进度条 -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           FontSize="12"
+                                           Margin="0,-2,2,0"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Text="{Binding Message}" />
+                                <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                             Height="2"
+                                             Margin="0,0,0,-3"
+                                             Minimum="0" Maximum="100"
+                                             VerticalAlignment="Bottom"
+                                             HorizontalAlignment="Stretch"
+                                             Value="{Binding CurrentProgress}"
+                                             IsVisible="{Binding ProgressVisible}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Row 1, Col 1: Job 详情输出 -->
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="JobDetailsOutputEditor"
+                     Margin="10,5,2,2"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     Background="{DynamicResource ThemeCardBackgroundBrush}"
+                     BorderThickness="0"
+                     Text="" />
+
+            <!-- Row 1, Col 0: 无活动时占位（对照 WPF JobListFallBack）-->
+            <Border Grid.Row="1" Grid.Column="0"
+                     Name="JobListFallBack"
+                     Margin="2,2,0,2"
+                     Background="{DynamicResource ThemeBackgroundBrush}"
+                     IsVisible="True">
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="18"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Text="No Activities" />
+            </Border>
+
+            <!-- Row 0-1, Col 1: 无选中活动时占位（对照 WPF JobDetailsFallBack）-->
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                     Name="JobDetailsFallBack"
+                     Margin="0,2,2,2"
+                     Background="{DynamicResource ThemeCardBackgroundBrush}"
+                     IsVisible="True">
+                <Grid RowDefinitions="*,*">
+                    <TextBlock Grid.Row="0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               FontSize="36"
+                               Text="📋" />
+                    <TextBlock Grid.Row="1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Top"
+                               FontSize="18"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               Text="No Selected Activity" />
+                </Grid>
+            </Border>
+
+            <!-- Col 0/1 之间的分隔线 -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}" />
+        </Grid>
+    </Border>
+</UserControl>

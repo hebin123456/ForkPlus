@@ -252,6 +252,69 @@ namespace ForkPlus.Avalonia.Services
             // RichTextBox → TextBox（纯文本 + ANSI 剥离），PNG → emoji，
             // MainWindow.Instance → OnOpenStandaloneRepository 回调。
             services.AddTransient<Views.UserControls.GitMmUserControl>();
+
+            // Phase 3.9c：10 个 Diff/File/Merge/Submodule/Tooltip 相关 UserControl（spike 简化新建版）
+            // 对照 WPF 工程 src/ForkPlus/UI/UserControls/ 下 10 个控件：
+            //   - DiffEntryRowUserControl（132 行）：diff 条目行（文件路径 + 增删行数 + 展开/折叠）
+            //   - MergeConflictUserControl（491 行）：合并冲突解决面板（冲突文件列表 + Local/Remote 选择）
+            //   - SubmoduleDiffUserControl（161 行）：子模块 diff 显示（ahead/behind + 未提交文件）
+            //   - CodeEditorSearchPanelUserControl（313 行）：代码编辑器搜索面板（查找/替换）
+            //   - FallbackUserControl（164 行）：fallback 显示控件（无法渲染某文件类型时）
+            //   - PathTextBoxUserControl（81 行）：路径输入控件（TextBox + Browse 按钮）
+            //   - ReferenceDropdownUserControl（95 行）：引用下拉选择（分支/tag 选择器）
+            //   - RevisionGraphTooltipUserControl（132 行）：commit graph 悬浮提示
+            //   - RevisionSearchPanelUserControl（162 行）：commit 搜索面板
+            //   - RevisionsHeaderUserControl（123 行）：commit 列表表头（列标题 + 排序）
+            // spike 简化策略：
+            //   - WPF-only 类型（DiffEntry / RevisionViewModel）→ spike POCO（DiffEntrySpike.cs / RevisionViewModelSpike.cs）
+            //   - PNG 图标 → emoji TextBlock
+            //   - AvalonEdit.TextEditor → AvaloniaEdit.TextEditor（包已引用）
+            //   - Popup → ToolTip / Flyout
+            //   - PreferencesLocalization → ServiceLocator.Localization
+            //   - RepositoryUserControl → object 占位（spike 策略 #1）
+            // 注：DiffEntryRowUserControl / SubmoduleDiffUserControl / FallbackUserControl
+            //     三个 UserControl 文件未提交且存在编译错误，临时注释避免阻塞构建。
+            // services.AddTransient<Views.UserControls.DiffEntryRowUserControl>();
+            services.AddTransient<Views.UserControls.MergeConflictUserControl>();
+            // services.AddTransient<Views.UserControls.SubmoduleDiffUserControl>();
+            services.AddTransient<Views.UserControls.CodeEditorSearchPanelUserControl>();
+            // services.AddTransient<Views.UserControls.FallbackUserControl>();
+            services.AddTransient<Views.UserControls.PathTextBoxUserControl>();
+            services.AddTransient<Views.UserControls.ReferenceDropdownUserControl>();
+            services.AddTransient<Views.UserControls.RevisionGraphTooltipUserControl>();
+            services.AddTransient<Views.UserControls.RevisionSearchPanelUserControl>();
+            services.AddTransient<Views.UserControls.RevisionsHeaderUserControl>();
+
+            // Phase 3.12：9 个 Account/Tab/Notification/ExternalTool/Color/Calendar 相关 UserControl
+            // （完整迁移 spike 版，对照 WPF 工程 src/ForkPlus/UI/UserControls/ 下 9 个文件）
+            //   - CalendarDateRangUserControl（120 行 xaml.cs）：日期范围选择器（Start/End + MinDate/MaxDate）
+            //     对照 WPF Calendar → Avalonia CalendarDatePicker（事件参数 SelectionChangedEventArgs）
+            //     spike 简化：Calendar.DisplayDateStart/End（不是 MinDate/MaxDate）
+            //   - RepositoryColorsUserControl（150 行 xaml.cs）：7 个 RadioButton 仓库颜色配置
+            //     spike 简化：RepositoryManager.Instance.UpdateRepositoryColor → 注入回调
+            //   - UserColorsUserControl（76 行 xaml.cs）：48 色 4×12 ToggleButton 网格用户颜色配置
+            //     spike 简化：UserColorBrushes → 静态 PaletteHex 数组
+            //   - AccountTabItem（109 行 xaml.cs）：账户详情 Tab 页（ServerType/AuthType/Username/Status/Token/Notifications）
+            //     spike 简化：Image PNG → emoji；JobQueue + GetUser → SetStatus 公共方法
+            //   - AccountRepositoriesTabItem（106 行 xaml.cs）：账户仓库 Tab 页（Filter + ListBox + CloneButton）
+            //     spike 简化：JobQueue + GetRepositories → SetRepositories 公共方法
+            //   - AccountDetailsUserControl（64 行 xaml.cs）：账户详情面板（Avatar + UserName + ModernTabControl）
+            //     spike 简化：AvatarImage.Url → emoji 占位；ModernTabControl → Avalonia TabControl
+            //   - ExternalToolsUserControl（193 行 xaml.cs）：外部工具配置（ToolsListBox + 详情面板 + 右键菜单）
+            //     spike 简化：右键菜单 → 顶部 3 按钮（Primary/Visible/Reset）
+            //   - NotificationManagerUserControl（164 行 xaml.cs）：通知管理器（Popup + ListBox + NotificationViewModel）
+            //     spike 简化：Popup + ToggleButton parent → IsVisible 控制；OpenInBrowser → 回调注入
+            //   - ActivityManagerUserControl（485 行 xaml.cs）：活动管理器（JobListBox + JobDetailsOutputEditor + ViewModeTabControl）
+            //     spike 简化：JobViewModel : INotifyPropertyChanged → POCO；CodeEditor → TextBox
+            services.AddTransient<Views.UserControls.CalendarDateRangUserControl>();
+            services.AddTransient<Views.UserControls.RepositoryColorsUserControl>();
+            services.AddTransient<Views.UserControls.UserColorsUserControl>();
+            services.AddTransient<Views.UserControls.AccountTabItem>();
+            services.AddTransient<Views.UserControls.AccountRepositoriesTabItem>();
+            services.AddTransient<Views.UserControls.AccountDetailsUserControl>();
+            services.AddTransient<Views.UserControls.ExternalToolsUserControl>();
+            services.AddTransient<Views.UserControls.NotificationManagerUserControl>();
+            services.AddTransient<Views.UserControls.ActivityManagerUserControl>();
         }
     }
 }

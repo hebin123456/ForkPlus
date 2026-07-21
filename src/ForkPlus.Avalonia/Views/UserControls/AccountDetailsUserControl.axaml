@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.AccountDetailsUserControl">
+    <!--
+        Avalonia 版 AccountDetailsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/AccountDetailsUserControl.xaml（37 行）：
+          - Border BorderBrush + Background + BorderThickness="0,1,1,1"
+          - Grid: 头像区 + 用户名/链接 + ModernTabControl（AccountTabItem + AccountRepositoriesTabItem）
+          - AvatarImage 自定义控件（按 Url 加载远程头像）
+          - HeaderUserNameTextBlock + HeaderLoginTextBlock（用户名 + 登录名）
+          - HeaderProfileUrlHyperlink（点击打开浏览器）
+          - ModernTabControl（含 AccountTabItem + AccountRepositoriesTabItem）
+          - FallbackUserControl（错误占位）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF controls:AvatarImage → spike TextBlock emoji 占位（真实头像加载留待后续 Phase）
+          - WPF controls:ModernTabControl → Avalonia 原生 TabControl
+          - WPF Hyperlink RequestNavigate → Button Click（spike 用 Button 替代超链接）
+          - WPF Separator → Border BorderThickness="0,1,0,0"
+          - WPF FallbackUserControl → spike Border 占位
+          - WPF DynamicResource BorderBrush/BackgroundBrush → ThemeBorderMidBrush/ThemeBackgroundBrush
+
+        spike 简化：
+          - AvatarImage.Url → 不真实加载（spike 用 emoji 占位）
+          - ServerUrl.OpenInBrowser → onOpenProfileUrl 回调注入
+    -->
+    <Border Background="{DynamicResource ThemeBackgroundBrush}"
+            BorderThickness="0,1,1,1"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+        <Grid>
+            <Grid ZIndex="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="62" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="26" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <!-- Row 0-1, Col 0: 头像 emoji 占位 -->
+                <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                           Name="AvatarImage"
+                           Margin="20,0,8,0"
+                           Width="32" Height="32"
+                           VerticalAlignment="Center"
+                           FontSize="28"
+                           TextAlignment="Center"
+                           Text="👤" />
+
+                <!-- Row 0-1, Col 1: 用户名 + 登录名 -->
+                <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                            Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBlock Name="HeaderUserNameTextBlock"
+                               FontSize="13"
+                               Margin="4,0,4,0" />
+                    <TextBlock Name="HeaderLoginTextBlock"
+                               Margin="4,0,4,0"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <!-- Row 1, Col 1: 个人主页链接（spike 用 Button 替代 Hyperlink） -->
+                <Button Grid.Row="1" Grid.Column="1"
+                        Name="HeaderProfileUrlButton"
+                        FontSize="13"
+                        Margin="4,0,8,0"
+                        Padding="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="HeaderProfileUrlButton_Click">
+                    <TextBlock Name="HeaderProfileUrlTextBlock" />
+                </Button>
+
+                <!-- Row 2, Col 0-1: 分隔线 -->
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="0,1,0,0"
+                        VerticalAlignment="Top" />
+
+                <!-- Row 2, Col 0-1: TabControl（含 AccountTabItem + AccountRepositoriesTabItem） -->
+                <TabControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                            Name="AccountDetailsTabControl"
+                            SelectionChanged="TabControl_SelectionChanged">
+                    <TabItem Name="AccountTabItem"
+                             Header="Account">
+                        <uc:AccountTabItem x:Name="AccountTabItemContent" />
+                    </TabItem>
+                    <TabItem Name="AccountRepositoriesTabItem"
+                             Header="Repositories">
+                        <uc:AccountRepositoriesTabItem x:Name="AccountRepositoriesTabItemContent" />
+                    </TabItem>
+                </TabControl>
+            </Grid>
+
+            <!-- Fallback 占位（对照 WPF FallbackUserControl） -->
+            <Border Grid.Row="0" Grid.RowSpan="2"
+                     Name="FallbackPanel"
+                     Background="{DynamicResource ThemeBackgroundBrush}"
+                     IsVisible="False">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Name="FallbackTitle"
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Margin="0,0,0,4" />
+                    <TextBlock Name="FallbackMessage"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

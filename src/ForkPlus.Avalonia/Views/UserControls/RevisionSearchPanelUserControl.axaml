@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionSearchPanelUserControl">
+    <!--
+        Avalonia 版 RevisionSearchPanelUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.xaml.cs（162 行）：
+          - SearchPanelPlaceholder DependencyProperty（Grid，滑入/滑出容器）
+          - SearchString 属性（SearchTextBox.Text.Trim()）
+          - IsTextBoxFocused / IsBusyIndicatorVisible / IsSearchBarVisible 属性
+          - 4 个事件：SearchQueryChanged / JumpToPreviousSearchResult / JumpToNextSearchResult / Closed
+          - ShowSearchBar / HideSearchBar / UpdateMatchesCount 方法
+          - SlidingPanelHelper.ShowPanel/HidePanel（TranslateTransform 动画）
+          - SearchTextBox.PreviewKeyDown：Return/F3 → FindNext/Previous（Shift 区分方向）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF DependencyProperty SearchPanelPlaceholder → 直接 Grid 控件
+          - WPF SlidingPanelHelper + TranslateTransform 动画 → IsVisible 切换（spike 简化）
+          - WPF PreviewKeyDown → KeyDown（Avalonia API）
+          - WPF KeyboardHelper.IsShiftDown → KeyModifiers.Shift（Avalonia API）
+          - task spec 关键 API：Initialize(RepositoryUserControl) / Search(string) / Clear() / SearchChanged
+
+        spike 简化：
+          - Initialize(object repositoryUserControl) 方法（task spec 关键 API）
+          - Search(string) 方法（task spec 关键 API）
+          - Clear() 方法（task spec 关键 API）
+          - SearchChanged 事件（task spec 关键 API）
+          - IsVisible 切换替代滑入/滑出动画
+          - Return/F3 → JumpToNext/Previous（保留键盘快捷键）
+    -->
+    <Grid Name="SearchPanelContainer"
+          ColumnDefinitions="*,Auto,Auto,Auto"
+          IsVisible="False"
+          Background="{DynamicResource ThemeCardBackgroundBrush}"
+          Margin="0,2">
+
+        <!-- Col 0: 搜索 TextBox（对照 WPF: SearchTextBox）-->
+        <TextBox Grid.Column="0"
+                 Name="SearchTextBox"
+                 Watermark="Search revisions..."
+                 KeyDown="SearchTextBox_KeyDown"
+                 TextChanged="SearchTextBox_TextChanged"
+                 Margin="0,0,4,0" />
+
+        <!-- Col 1: 匹配计数（对照 WPF: MatchesTextBlock）-->
+        <TextBlock Grid.Column="1"
+                   Name="MatchesTextBlock"
+                   Text=""
+                   VerticalAlignment="Center"
+                   Margin="4,0"
+                   FontSize="12" />
+
+        <!-- Col 2: loading 指示器（对照 WPF: BusyIndicator）-->
+        <ProgressBar Grid.Column="2"
+                     Name="BusyIndicator"
+                     IsIndeterminate="True"
+                     Width="16"
+                     Height="16"
+                     VerticalAlignment="Center"
+                     Margin="4,0"
+                     IsVisible="False" />
+
+        <!-- Col 3: 关闭 + 上一个 + 下一个按钮 -->
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2">
+            <Button Name="JumpToPreviousSearchResultButton"
+                    Content="▲"
+                    Click="JumpToPreviousSearchResultButton_Click"
+                    Padding="6,2" />
+            <Button Name="JumpToNextSearchResultButton"
+                    Content="▼"
+                    Click="JumpToNextSearchResultButton_Click"
+                    Padding="6,2" />
+            <Button Name="CloseSearchContainerButton"
+                    Content="✕"
+                    Click="CloseSearchContainerButton_Click"
+                    Padding="6,2" />
+        </StackPanel>
+    </Grid>
+</UserControl>

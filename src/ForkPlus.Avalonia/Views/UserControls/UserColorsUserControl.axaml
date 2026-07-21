@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.UserColorsUserControl">
+    <!--
+        Avalonia 版 UserColorsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/UserColorsUserControl.xaml（27 行）：
+          - Border BorderBrush=BorderBrush + Background=BackgroundBrush + CornerRadius=6
+          - ItemsControl ItemsPanel=UniformGrid Rows=4 Columns=12
+          - ItemTemplate: ToggleButton Background={Binding Brush} IsChecked={Binding IsSelected}
+            Checked/Unchecked=ColorButton_Changed
+
+        Avalonia 版差异（spike 简化）：
+          - WPF ToggleButton.Checked/Unchecked → Avalonia ToggleButton.IsCheckedChanged
+          - WPF DynamicResource MenuShadowBorderStyle/BorderBrush/BackgroundBrush →
+            Avalonia DynamicResource ThemeBorderMidBrush/ThemeCardBackgroundBrush
+          - WPF UniformGrid（ItemsPanelTemplate）→ Avalonia.Controls.Primitives.UniformGrid
+            （Avalonia 11 中 UniformGrid 在 Primitives 命名空间）
+          - WPF SolidColorBrush Binding → 同样 Binding（spike POCO 保留 Brush 属性）
+          - spike 简化：PaletteHex 数组（48 色 4×12 grid，index 0 占位）替代 UserColorBrushes 类
+            （UserColorBrushes 在 WPF 工程中，依赖 ThemeType + 颜色混合，spike 用静态 hex 数组简化）
+
+        本 spike 版验证：
+          - 48 色 4×12 ToggleButton 网格正确显示
+          - 选中色高亮 + 触发 SelectedColorChanged 事件
+    -->
+    <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            Background="{DynamicResource ThemeCardBackgroundBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="4">
+        <ItemsControl Name="Colors">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="4" Columns="12" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="1">
+                        <ToggleButton Name="UserColorRadioButton"
+                                      Width="16" Height="16" Padding="0"
+                                      Background="{Binding Brush}"
+                                      IsChecked="{Binding IsSelected}"
+                                      IsCheckedChanged="ColorButton_Changed" />
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Border>
+</UserControl>

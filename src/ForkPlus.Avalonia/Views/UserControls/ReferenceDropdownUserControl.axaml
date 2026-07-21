@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ReferenceDropdownUserControl">
+    <!--
+        Avalonia 版 ReferenceDropdownUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/ReferenceDropdownUserControl.xaml.cs（95 行）：
+          - 内部 DropdownItem 类（INotifyPropertyChanged）：Reference + Icon + Title
+          - 构造函数 ReferenceDropdownUserControl(RepositoryData, CustomCommandUI.Control.Dropdown)
+          - CreateItemsSource：按 filter 过滤 references，分支/tag/remote 分配图标
+          - GetRemoteIcon：按 remote name 匹配 Remote.GetIconImage()
+          - SelectedReference 属性（ComboBox.SelectedItem as DropdownItem）?.Reference
+
+        Avalonia 版差异（spike 简化）：
+          - WPF ImageSource Icon → string IconEmoji（spike 用 emoji：🌿 分支 / 🏷 tag / 📡 remote）
+          - WPF RepositoryData / CustomCommandUI.Control.Dropdown → task spec API
+          - WPF Theme.BranchIcon/TagIcon/RemoteIcon → emoji TextBlock
+          - task spec 关键 API：SetReferences(Reference[]) / SelectedReference / SelectionChanged
+
+        spike 简化：
+          - SetReferences(Reference[]) 公共方法（task spec 关键 API）
+          - SelectedReference 属性（task spec 关键 API）
+          - SelectionChanged 事件（task spec 关键 API）
+          - DropdownItem POCO：Reference + IconEmoji + Title
+          - ComboBox 显示 emoji + 名称
+    -->
+    <Grid ColumnDefinitions="*">
+        <!-- Col 0: 引用下拉框（对照 WPF: ReferenceComboBox）-->
+        <ComboBox Grid.Column="0"
+                  Name="ReferenceComboBox"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="ReferenceComboBox_SelectionChanged">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding IconEmoji}" FontSize="13" />
+                        <TextBlock Text="{Binding Title}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    </Grid>
+</UserControl>

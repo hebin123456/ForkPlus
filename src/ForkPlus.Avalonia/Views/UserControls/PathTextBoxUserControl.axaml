@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.PathTextBoxUserControl">
+    <!--
+        Avalonia 版 PathTextBoxUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/PathTextBoxUserControl.xaml.cs（81 行）：
+          - 构造函数 PathTextBoxUserControl(ForkPlusDialogWindow parentWindow, DialogType dialogType)
+          - StringValue 属性（PathTextBox.Text 读写）
+          - BrowseButton_Click → SaveFile/OpenFile/OpenDirectory（OpenDialog 弹窗）
+          - 依赖 ForkPlusDialogWindow + OpenDialog（WPF WindowsAPICodePack）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF ForkPlusDialogWindow → object parentWindow（spike 占位）
+          - WPF OpenDialog.SelectFileSaveLocation/SelectFile/SelectDirectory →
+            spike 用 BrowseClicked 事件回调（调用方通过 IDialogService 处理）
+          - task spec 关键 API：Path 属性 / BrowseClicked 事件 / SetPath(string)
+          - WPF DialogType 枚举 → 内部保留（SaveFile/OpenFile/OpenDirectory）
+
+        spike 简化：
+          - Path 属性（读写 PathTextBox.Text）
+          - BrowseClicked 事件（task spec 关键 API）
+          - SetPath(string) 方法（task spec 关键 API）
+          - Browse 按钮点击触发事件，由调用方处理实际弹窗
+    -->
+    <Grid ColumnDefinitions="*,Auto"
+          Margin="0,2">
+        <!-- Col 0: 路径输入框（对照 WPF: PathTextBox）-->
+        <TextBox Grid.Column="0"
+                 Name="PathTextBox"
+                 Watermark="Enter path..."
+                 Margin="0,0,4,0" />
+
+        <!-- Col 1: Browse 按钮（对照 WPF: BrowseButton）-->
+        <Button Grid.Column="1"
+                Name="BrowseButton"
+                Content="Browse..."
+                Click="BrowseButton_Click" />
+    </Grid>
+</UserControl>

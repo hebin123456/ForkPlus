@@ -1,0 +1,175 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ExternalToolsUserControl">
+    <!--
+        Avalonia 版 ExternalToolsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/ExternalToolsUserControl.xaml（130 行）：
+          - Grid 3 列：ToolsListBox（160） + 工具详情面板（*）+ RemoveButton（Auto）
+          - ToolsListBox 含 ItemTemplate（PrimaryLabel + Image + Name + DockPanel）
+          - AddToolButton + RemoveToolButton（底部）
+          - 工具详情面板：Name TextBox / Path TextBox + BrowseButton / Arguments TextBox
+          - FallbackUserControl 占位（无选中项时显示）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF DockPanel → Grid ColumnDefinitions
+          - WPF controls:PlaceholderTextBox → Avalonia TextBox + Watermark
+          - WPF Image Source={Binding Icon} → TextBlock emoji（🛠）
+          - WPF InverseBooleanConverter / InverseBooleanToVisibilityConverter →
+            spike 用 IsVisible Binding（直接绑定到 IsPredefined 的反值，spike 简化为代码控制）
+          - WPF BooleanToVisibilityConverter → spike IsVisible Binding
+          - WPF FallbackUserControl → spike Border 占位
+          - WPF ContextMenu Opening → spike 用 Button 替代右键菜单（Primary/Visible/Reset 三个按钮）
+
+        spike 简化：
+          - ForkPlusDialogWindow → object 占位（spike 不依赖具体 Window 类型）
+          - OpenDialog.SelectFile → onBrowse 回调注入
+          - MessageBoxWindow.Show (删除确认) → spike 直接删除（无确认对话框）
+          - ContextMenu 右键菜单 → spike 简化为顶部三个按钮 Primary/Visible/Reset
+          - ToolDefinition.ExternalToolManager.GetPredefinedToolPath → spike 不调用（ResetToDefault 留空实现）
+    -->
+    <Grid ColumnDefinitions="160,*,Auto">
+        <!-- Col 0: 工具列表 + 添加/删除按钮 -->
+        <Grid Grid.Column="0" RowDefinitions="*,17">
+            <ListBox Grid.Row="0"
+                     Name="ToolsListBox"
+                     VerticalAlignment="Stretch"
+                     BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                     SelectionChanged="ToolsListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       FontSize="13"
+                                       Margin="4,1,2,1"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="★"
+                                       FontSize="10"
+                                       Margin="2,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                       IsVisible="{Binding IsPrimary}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Border Grid.Row="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    BorderThickness="1,0,1,1">
+                <StackPanel Orientation="Horizontal">
+                    <Button Name="AddToolButton"
+                            Height="18" Width="18"
+                            Margin="-1,-1,0,-1"
+                            Click="AddToolButton_Click"
+                            Content="+" />
+                    <Button Name="RemoveToolButton"
+                            Height="18" Width="18"
+                            Margin="0,-1,0,-1"
+                            Click="RemoveToolButton_Click"
+                            Content="-" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Col 1-2: 工具详情面板 -->
+        <Border Grid.Column="1" Grid.ColumnSpan="2"
+                CornerRadius="4"
+                Margin="10,0,0,0"
+                Height="102"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                Background="{DynamicResource ThemeCardBackgroundBrush}">
+            <Grid Margin="8,8,8,8"
+                  ColumnDefinitions="68,*,Auto"
+                  RowDefinitions="24,Auto,Auto,*">
+
+                <!-- Row 0: Name -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Margin="0"
+                           Text="Name:"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right" />
+                <TextBox Grid.Row="0" Grid.Column="1"
+                         Name="NameTextBox"
+                         Margin="10,0,0,0"
+                         Width="195"
+                         HorizontalAlignment="Left"
+                         Padding="4,2,4,2"
+                         Watermark="External tool name"
+                         Text="{Binding SelectedItem.Name, ElementName=ToolsListBox, Mode=TwoWay}" />
+
+                <!-- Row 1: Path -->
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Path:"
+                           FontSize="13"
+                           Margin="0,6,0,0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right" />
+                <TextBox Grid.Row="1" Grid.Column="1"
+                         Name="ToolPathTextBox"
+                         Margin="10,6,0,0"
+                         Padding="4,2,4,2"
+                         IsReadOnly="True"
+                         Watermark="External tool location"
+                         Text="{Binding SelectedItem.Path, ElementName=ToolsListBox, Mode=TwoWay}" />
+                <Button Grid.Row="1" Grid.Column="2"
+                        Name="BrowseButton"
+                        Margin="2,6,0,0"
+                        Click="BrowseButton_Click"
+                        Content="..." />
+
+                <!-- Row 2: Arguments -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Arguments:"
+                           FontSize="13"
+                           Margin="0,6,0,0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right" />
+                <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                         Name="ArgumentsTextBox"
+                         Margin="10,6,0,0"
+                         Padding="4,2,4,2"
+                         Watermark="External tool arguments"
+                         Text="{Binding SelectedItem.Arguments, ElementName=ToolsListBox, Mode=TwoWay}" />
+
+                <!-- Row 3: Primary/Visible/Reset 按钮（spike 简化替代 WPF ContextMenu 右键菜单） -->
+                <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+                            Orientation="Horizontal"
+                            Margin="10,6,0,0"
+                            Spacing="4">
+                    <Button Name="PrimaryButton"
+                            Click="PrimaryButton_Click"
+                            Padding="4,2"
+                            Content="Primary" />
+                    <Button Name="VisibleButton"
+                            Click="VisibleButton_Click"
+                            Padding="4,2"
+                            Content="Visible" />
+                    <Button Name="ResetButton"
+                            Click="ResetButton_Click"
+                            Padding="4,2"
+                            Content="Reset to default" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Col 1-2: Fallback 占位 -->
+        <Border Grid.Column="1" Grid.ColumnSpan="2"
+                Name="ToolsFallback"
+                Margin="10,0,0,0"
+                Height="102"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                IsVisible="False">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="14"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Text="No external tool selected" />
+        </Border>
+    </Grid>
+</UserControl>

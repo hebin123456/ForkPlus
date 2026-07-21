@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.SubmoduleDiffUserControl">
+    <!--
+        Avalonia 版 SubmoduleDiffUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/SubmoduleDiffUserControl.xaml.cs（161 行）：
+          - Update(RepositoryUserControl, SubmoduleDiffContent, ViewMode)
+          - RevisionListView（自定义 RevisionListView，显示 submodule commit 列表）
+          - RevisionHeaderUserControl（显示 src/dst revision 详情）
+          - OpenSubmoduleButton / UpdateSubmoduleButton
+          - BehindAheadTextBlock（↓/↑ ahead/behind 计数）
+          - UncommittedFilesTextBlock（未提交文件数）
+          - GetBehindAheadString：格式化 ahead/behind 计数
+          - RefreshUncommittedChangesTextBlock：显示未提交文件列表
+          - ApplicationThemeChanged 订阅
+          - DiffControlContainer.IFileDiffControlSubControl 接口
+
+        Avalonia 版差异（spike 简化）：
+          - WPF RepositoryUserControl → object（spike 占位）
+          - WPF RevisionListView + RevisionsDataSource → 不迁移（spike 用 TextBlock 占位）
+          - WPF RevisionHeaderUserControl → 不迁移（spike 用 TextBlock 占位）
+          - WPF SubmoduleDiffContent → task spec 用 Submodule
+          - WPF Dispatcher.Invoke → Dispatcher.UIThread.Post（Avalonia API 规则）
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+          - WPF Image.Show()/Hide()/Collapse() → IsVisible=true/false/false
+          - task spec 关键 API：Initialize(RepositoryUserControl) / SetSubmodule(Submodule) / Refresh()
+
+        spike 简化：
+          - Initialize(object) 方法（task spec 关键 API）
+          - SetSubmodule(Submodule) 方法（task spec 关键 API，替代 WPF Update 的 SubmoduleDiffContent）
+          - Refresh() 方法（task spec 关键 API）
+          - 显示 submodule 名称 + ahead/behind + 未提交文件数
+          - Open/Update 按钮触发事件回调（调用方处理实际 git 命令）
+    -->
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+          Background="{DynamicResource ThemeBackgroundBrush}"
+          Margin="8">
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center" />
+            <TextBlock Name="TitleTextBlock"
+                       Text="Submodule"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Name="BehindAheadTextBlock"
+                   Text=""
+                   FontFamily="Cascadia Mono,Consolas,monospace"
+                   FontSize="12"
+                   Margin="0,0,0,4"
+                   Foreground="{DynamicResource ThemeAccentBrush}" />
+
+        <TextBlock Grid.Row="2"
+                   Name="UncommittedFilesTextBlock"
+                   Text=""
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,4"
+                   IsVisible="False" />
+
+        <Border Grid.Row="3"
+                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="0,8,0,4">
+            <TextBlock Name="RevisionListPlaceholder"
+                       Text="(submodule commit list not migrated)"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Border>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+            <Button Name="OpenSubmoduleButton"
+                    Content="📂 Open Submodule"
+                    Click="OpenSubmoduleButton_Click"
+                    Padding="12,4" />
+            <Button Name="UpdateSubmoduleButton"
+                    Content="⬆ Update Submodule"
+                    Click="UpdateSubmoduleButton_Click"
+                    IsVisible="False"
+                    Padding="12,4" />
+        </StackPanel>
+    </Grid>
+</UserControl>

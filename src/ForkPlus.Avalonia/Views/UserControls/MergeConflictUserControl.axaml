@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.MergeConflictUserControl">
+    <!--
+        Avalonia 版 MergeConflictUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/MergeConflictUserControl.xaml.cs（491 行）：
+          - SetConflict(RepositoryUserControl, DiffContent, RepositoryState, ChangedFile, bool resolved)
+          - ConflictVersionsContainer + ConflictResolvedContainer（两态切换）
+          - LocalCheckBox + RemoteCheckBox（选择解决版本）
+          - ResolveButton / ResolveInExternalMergerButton / AiResolveButton
+          - UpdateResolveButton：按勾选状态切换按钮文本/启用状态
+          - FileDiffControl（内嵌 diff 显示）
+          - DstRevisionsListBox / SrcRevisionsListBox（冲突双方的 commit 列表）
+          - AiResolveButton_Click：AI 解决冲突（OpenAiService 流式请求）
+          - ResolveButton_Click：按 Local/Remote/Both 选择解决方式
+          - ResolveInExternalMergerButton_Click：调外部 merge 工具
+
+        Avalonia 版差异（spike 简化）：
+          - WPF RepositoryUserControl → object（spike 占位）
+          - WPF Image FileIcon → emoji TextBlock（📄 文件图标）
+          - WPF DiffContent/RepositoryState → 不迁移（spike 用 ChangedFile）
+          - WPF AiResolveButton（OpenAiService）→ 不迁移 AI 逻辑（spike 占位按钮）
+          - WPF FileDiffControl 内嵌 → 不迁移（spike 用 TextBlock 占位）
+          - WPF DstRevisionsListBox/SrcRevisionsListBox → 不迁移（spike 用 TextBlock 占位）
+          - task spec 关键 API：Initialize(RepositoryUserControl) / SetConflicts(ChangedFile[]) /
+            ResolveConflict(ChangedFile) / FileSelected 事件
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+
+        spike 简化：
+          - Initialize(object) 方法（task spec 关键 API）
+          - SetConflicts(ChangedFile[]) 方法（task spec 关键 API，替代 WPF SetConflict 单文件）
+          - ResolveConflict(ChangedFile) 方法（task spec 关键 API）
+          - FileSelected 事件（task spec 关键 API）
+          - 冲突文件列表用 ListBox 显示
+          - 解决选项用 CheckBox + Button（Local/Remote/Both）
+    -->
+    <Grid RowDefinitions="Auto,*,Auto"
+          Background="{DynamicResource ThemeBackgroundBrush}">
+
+        <!-- Row 0: 标题栏（对照 WPF: ConflictVersionsContainer 头部）-->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto"
+              Background="{DynamicResource ThemeCardBackgroundBrush}"
+              Margin="0,0,0,4">
+            <!-- Col 0: 文件图标 emoji（对照 WPF: FileIcon Image）-->
+            <TextBlock Grid.Column="0"
+                       Name="FileIconTextBlock"
+                       Text="📄"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <!-- Col 1: 文件名（对照 WPF: FileNameTextBlock）-->
+            <TextBlock Grid.Column="1"
+                       Name="FileNameTextBlock"
+                       Text="(no conflict file)"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       FontSize="13" />
+            <!-- Col 2: 冲突计数（spike 新增）-->
+            <TextBlock Grid.Column="2"
+                       Name="ConflictCountTextBlock"
+                       Text=""
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeAccentBrush}" />
+        </Grid>
+
+        <!-- Row 1: 冲突文件列表（spike 新增，task spec: SetConflicts(ChangedFile[])）-->
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="0,0,0,1"
+                Margin="0,0,0,4">
+            <ListBox Name="ConflictFilesListBox"
+                     SelectionChanged="ConflictFilesListBox_SelectionChanged"
+                     Background="Transparent"
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="⚠" FontSize="13" />
+                            <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- Row 2: 解决选项（对照 WPF: LocalCheckBox + RemoteCheckBox + ResolveButton）-->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+              Background="{DynamicResource ThemeCardBackgroundBrush}">
+
+            <!-- Col 0: Local 复选框（对照 WPF: LocalCheckBox）-->
+            <CheckBox Grid.Column="0"
+                      Name="LocalCheckBox"
+                      Content="Local"
+                      IsCheckedChanged="MergeCheckBox_Changed"
+                      Margin="0,0,8,0" />
+
+            <!-- Col 1: Remote 复选框（对照 WPF: RemoteCheckBox）-->
+            <CheckBox Grid.Column="1"
+                      Name="RemoteCheckBox"
+                      Content="Remote"
+                      IsCheckedChanged="MergeCheckBox_Changed"
+                      Margin="0,0,8,0" />
+
+            <!-- Col 2: 占位 -->
+            <TextBlock Grid.Column="2" />
+
+            <!-- Col 3: 解决按钮（对照 WPF: ResolveButton）-->
+            <Button Grid.Column="3"
+                    Name="ResolveButton"
+                    Content="Resolve"
+                    Click="ResolveButton_Click"
+                    Margin="0,0,4,0"
+                    Padding="12,4" />
+
+            <!-- Col 4: AI 解决按钮（对照 WPF: AiResolveButton，spike 占位）-->
+            <Button Grid.Column="4"
+                    Name="AiResolveButton"
+                    Content="🤖 AI Resolve"
+                    Click="AiResolveButton_Click"
+                    IsVisible="False"
+                    Padding="12,4" />
+        </Grid>
+    </Grid>
+</UserControl>

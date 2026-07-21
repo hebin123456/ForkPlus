@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.CalendarDateRangUserControl">
+    <!--
+        Avalonia 版 CalendarDateRangUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/CalendarDateRangUserControl.xaml（7 行）+
+        CalendarDateRangUserControl.xaml.cs（120 行）：
+          - 两个 WPF Calendar（SelectionMode=SingleDate + SelectedDatesChanged + GotMouseCapture）
+          - StartCalendar + EndCalendar 水平排列
+          - Start/End/MinDate/MaxDate 公共属性驱动 Refresh()
+          - Refresh() 用 DisplayDateStart/DisplayDateEnd 限制可选范围，DisplayDate 同步月份
+          - DateRangeChanged 事件
+
+        Avalonia 版差异（spike 简化）：
+          - WPF Calendar → Avalonia.Controls.CalendarDatePicker（更紧凑的下拉日期选择器）
+          - WPF Calendar.SelectedDatesChanged → CalendarDatePicker.SelectedDateChanged
+            （事件参数实际是 SelectionChangedEventArgs，不是 CalendarDatePickerDateChangedEventArgs）
+          - WPF Calendar.DisplayDateStart/DisplayDateEnd → CalendarDatePicker.DisplayDateStart/DisplayDateEnd
+            （CalendarDatePicker 在 Avalonia 11 公共属性是 DisplayDateStart/DisplayDateEnd，无 MinDate/MaxDate）
+          - WPF Calendar.SelectedDate → CalendarDatePicker.SelectedDate
+          - WPF Calendar.DisplayDate → CalendarDatePicker.DisplayDate
+          - WPF GotMouseCapture 释放（避免 Calendar 捕获鼠标导致拖拽异常）→ spike 简化跳过
+          - spike 简化：Start/End 初始值 = Today.AddDays(-30) / Today
+
+        本 spike 版验证：
+          - 两个 CalendarDatePicker 水平排列
+          - Start/End 双向同步
+          - DateRangeChanged 事件可被外部订阅
+          - MinDate/MaxDate 限制可选范围
+    -->
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <CalendarDatePicker Name="StartCalendar"
+                            Watermark="Start date"
+                            SelectedDateChanged="StartCalendar_SelectedDateChanged" />
+        <CalendarDatePicker Name="EndCalendar"
+                            Watermark="End date"
+                            SelectedDateChanged="EndCalendar_SelectedDateChanged" />
+    </StackPanel>
+</UserControl>

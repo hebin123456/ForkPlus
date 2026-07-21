@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.FallbackUserControl">
+    <!--
+        Avalonia 版 FallbackUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/FallbackUserControl.xaml.cs（164 行）：
+          - 5 个 DependencyProperty（FallbackTitle/HideFallbackImage/FallbackMessage/
+            IsMonospace/Button1Title）
+          - OnPropertyChanged 分发：设置各 TextBlock/Button 显隐 + 文本
+          - FallbackMessageFontSize 属性
+          - Button1Click 事件 + ResetEvents 方法
+          - FontConstants.MonospaceFontFamily（IsMonospace 时切换字体）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF DependencyProperty.RegisterAttached → Avalonia StyledProperty（spike 用 plain property）
+          - WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → 直接 property setter
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+          - WPF Image FallbackImage → emoji TextBlock（📦 fallback 图标）
+          - WPF FontConstants.MonospaceFontFamily → 硬编码 "Cascadia Mono,Consolas,monospace"
+          - task spec 关键 API：SetContent(string text) / SetFile(string path)
+
+        spike 简化：
+          - SetContent(string text) / SetFile(string path) 公共方法（task spec 关键 API）
+          - FallbackTitle / FallbackMessage / Button1Title plain property
+          - HideFallbackImage / IsMonospace plain property
+          - Button1Click 事件 + ResetEvents 方法
+    -->
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+          Margin="16"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+
+        <TextBlock Grid.Row="0"
+                   Name="FallbackImage"
+                   Text="📦"
+                   FontSize="48"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,8" />
+
+        <TextBlock Grid.Row="1"
+                   Name="FallbackTitleTextBlock"
+                   Text=""
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,4"
+                   IsVisible="False" />
+
+        <TextBlock Grid.Row="2"
+                   Name="FallbackMessageTextBlock"
+                   Text=""
+                   FontSize="13"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"
+                   MaxWidth="400"
+                   Margin="0,0,0,8"
+                   IsVisible="False" />
+
+        <Button Grid.Row="3"
+                Name="Button1"
+                Content=""
+                HorizontalAlignment="Center"
+                Click="Button1_Click"
+                IsVisible="False" />
+    </Grid>
+</UserControl>

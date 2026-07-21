@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.CodeEditorSearchPanelUserControl">
+    <!--
+        Avalonia 版 CodeEditorSearchPanelUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/CodeEditorSearchPanelUserControl.xaml.cs（313 行）：
+          - SearchResultBackgroundRenderer（IBackgroundRenderer，高亮搜索结果）
+          - SearchResult（TextSegment，搜索匹配区间）
+          - Attach(TextArea) / ShowSearchBar / HideSearchBar / FindNext / FindPrevious
+          - DoSearch（遍历文档全文搜索，IgnoreCase）
+          - SelectResult（选中 + 滚动到可视区）
+          - SlidingPanelHelper + TranslateTransform（滑入/滑出动画）
+          - SearchTextBox.PreviewKeyDown：Return/F3 → FindNext/Previous
+
+        Avalonia 版差异（spike 简化）：
+          - WPF AvalonEdit.TextEditor → AvaloniaEdit.TextEditor（包已引用）
+          - WPF IBackgroundRenderer 自定义高亮 → AvaloniaEdit SearchPanel 内置高亮
+          - WPF SlidingPanelHelper + TranslateTransform → IsVisible 切换（spike 简化）
+          - WPF PreviewKeyDown → KeyDown（Avalonia API）
+          - task spec 关键 API：Initialize(TextEditor) / Show() / Hide() / Search(string) / Replace(string, string)
+          - spike 简化：使用 AvaloniaEdit.TextEditor 的 SearchReplacePanel API
+
+        spike 简化：
+          - Initialize(TextEditor editor) 方法（task spec 关键 API）
+          - Show() / Hide() 方法（task spec 关键 API）
+          - Search(string) 方法（task spec 关键 API）
+          - Replace(string, string) 方法（task spec 关键 API）
+          - 用 AvaloniaEdit.Search.SearchPanel 内置 API 替代自定义高亮渲染器
+          - IsVisible 切换替代滑入/滑出动画
+    -->
+    <Grid Name="SearchPanelContainer"
+          ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+          IsVisible="False"
+          Background="{DynamicResource ThemeCardBackgroundBrush}"
+          Margin="0,2">
+
+        <!-- Col 0: 搜索 TextBox（对照 WPF: SearchTextBox）-->
+        <TextBox Grid.Column="0"
+                 Name="SearchTextBox"
+                 Watermark="Find..."
+                 KeyDown="SearchTextBox_KeyDown"
+                 TextChanged="SearchTextBox_TextChanged"
+                 Margin="0,0,4,0" />
+
+        <!-- Col 1: 替换 TextBox（spike 新增，task spec 要求 Replace）-->
+        <TextBox Grid.Column="1"
+                 Name="ReplaceTextBox"
+                 Watermark="Replace..."
+                 IsVisible="False"
+                 Margin="0,0,4,0" />
+
+        <!-- Col 2: 替换按钮（spike 新增，task spec 要求 Replace）-->
+        <Button Grid.Column="2"
+                Name="ReplaceButton"
+                Content="Replace"
+                Click="ReplaceButton_Click"
+                IsVisible="False"
+                Padding="6,2" />
+
+        <!-- Col 3: 上一个/下一个按钮 -->
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2">
+            <Button Name="JumpToPreviousSearchResultButton"
+                    Content="▲"
+                    Click="JumpToPreviousSearchResultButton_Click"
+                    Padding="6,2" />
+            <Button Name="JumpToNextSearchResultButton"
+                    Content="▼"
+                    Click="JumpToNextSearchResultButton_Click"
+                    Padding="6,2" />
+        </StackPanel>
+
+        <!-- Col 4: 关闭按钮 -->
+        <Button Grid.Column="4"
+                Name="CloseSearchContainerButton"
+                Content="✕"
+                Click="CloseSearchContainerButton_Click"
+                Padding="6,2" />
+    </Grid>
+</UserControl>

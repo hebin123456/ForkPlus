@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionGraphTooltipUserControl">
+    <!--
+        Avalonia 版 RevisionGraphTooltipUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionGraphTooltipUserControl.xaml.cs（132 行）：
+          - 构造函数 RevisionGraphTooltipUserControl(RepositoryUserControl, Sha)
+          - Refresh()：异步加载 RevisionStorage + RevisionsDataSource.Reload
+          - RefreshHeight()：DoubleAnimation 高度动画（QuadraticEase）
+          - RevisionListView（自定义 RevisionListView，显示 commit 列表）
+          - GraphCellView_ExpandToggle：折叠/展开 merge commit
+          - ApplicationThemeChanged 订阅
+          - FallbackMessageTextBlock + BusyIndicator（错误/加载状态）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF 自定义 Popup + DoubleAnimation 高度动画 → ToolTip.SetTip（task spec 简化）
+          - WPF RevisionsDataSource + RevisionListView → 简化 TextBlock 显示 commit 详情
+          - WPF GraphCellView_ExpandToggle → 不迁移（spike 无 graph cell）
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post（Avalonia API 规则）
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+          - WPF BeginAnimation(DoubleAnimation) → 不迁移（spike 无高度动画）
+          - task spec 关键 API：SetRevision(RevisionViewModel revision)
+
+        spike 简化：
+          - SetRevision(RevisionViewModel revision) 方法（task spec 关键 API）
+          - 用 ToolTip.SetTip 替代自定义 Popup（task spec 简化策略）
+          - 简化 TextBlock 显示 commit 详情（SHA + 作者 + 日期 + 主题）
+          - BusyIndicator + FallbackMessage 保留（加载/错误状态）
+    -->
+    <Border Background="{DynamicResource ThemeCardBackgroundBrush}"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="10"
+            MaxWidth="400">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+            <!-- Row 0: loading 指示器（对照 WPF: BusyIndicator）-->
+            <ProgressBar Grid.Row="0"
+                         Name="BusyIndicator"
+                         IsIndeterminate="True"
+                         Width="16"
+                         Height="16"
+                         HorizontalAlignment="Left"
+                         Margin="0,0,0,6"
+                         IsVisible="False" />
+
+            <!-- Row 1: 错误/fallback 消息（对照 WPF: FallbackMessageTextBlock）-->
+            <TextBlock Grid.Row="1"
+                       Name="FallbackMessageTextBlock"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeErrorBrush}"
+                       Margin="0,0,0,6"
+                       IsVisible="False" />
+
+            <!-- Row 2: commit 主题（对照 WPF: RevisionListView 显示的 subject）-->
+            <TextBlock Grid.Row="2"
+                       Name="SubjectTextBlock"
+                       TextWrapping="Wrap"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 3: SHA + 作者 -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" Margin="0,0,0,2">
+                <TextBlock Name="ShaTextBlock"
+                           FontFamily="Cascadia Mono,Consolas,monospace"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeAccentBrush}" />
+                <TextBlock Name="AuthorTextBlock"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundBrush}" />
+            </StackPanel>
+
+            <!-- Row 4: 日期 -->
+            <TextBlock Grid.Row="4"
+                       Name="DateTextBlock"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 5: commit body（spike 新增，显示完整 message）-->
+            <TextBlock Grid.Row="5"
+                       Name="BodyTextBlock"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundMidBrush}"
+                       IsVisible="False" />
+        </Grid>
+    </Border>
+</UserControl>

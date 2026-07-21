@@ -1,0 +1,141 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.NotificationManagerUserControl">
+    <!--
+        Avalonia 版 NotificationManagerUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/NotificationManagerUserControl.xaml（80 行）：
+          - Border Width=350 Height=460 + DropShadowEffect
+          - Grid: HeaderLabel + BusyIndicator + RefreshButton + ListBox
+          - ListBox ItemTemplate：Grid 4 列 2 行（未读圆点 + Avatar + Title/TargetId + DateTime + TargetTypeIcon + Description）
+          - AvatarImage 自定义控件
+
+        Avalonia 版差异（spike 简化）：
+          - WPF Border + DropShadowEffect → Avalonia Border + BoxShadow
+          - WPF controls:AvatarImage → spike TextBlock emoji 占位（🪪 / 📦）
+          - WPF Image Source={Binding TargetTypeIcon} → spike TextBlock emoji（PR=🔀 / Issue=📝 / Commit=✓）
+          - WPF Ellipse Fill={DynamicResource AccentBrush} → 内联 SolidColorBrush
+          - WPF ProgressBar CircularProgressBar 样式 → 默认 ProgressBar
+          - WPF BooleanToVisibilityConverter → spike IsVisible Binding
+
+        spike 简化：
+          - NotificationManager.Current 单例依赖 → 注入回调（onRefreshNotifications + notificationsChanged event）
+          - Popup parent + ToggleButton parentButton → spike 简化（用 IsVisible 控制）
+          - new Uri(url).OpenInBrowser() → onOpenUrl 回调注入
+    -->
+    <Border Width="350" Height="460"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            Background="{DynamicResource ThemeCardBackgroundBrush}"
+            Margin="10,0,10,10"
+            BoxShadow="0 2 10 0 DimGray">
+        <Grid RowDefinitions="26,*">
+            <!-- Row 0: 标题 + BusyIndicator + RefreshButton -->
+            <TextBlock Grid.Row="0"
+                       Name="HeaderLabel"
+                       Text="Notifications"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ThemeForegroundBrush}"
+                       FontWeight="Medium" />
+
+            <ProgressBar Grid.Row="0"
+                         Name="BusyIndicator"
+                         HorizontalAlignment="Right"
+                         Margin="0,0,5,0"
+                         Width="14" Height="14"
+                         IsVisible="False"
+                         IsIndeterminate="True" />
+
+            <Button Grid.Row="0"
+                    Name="RefreshButton"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,5,0"
+                    Click="RefreshButton_Click"
+                    Content="🔄"
+                    ToolTip.Tip="Refresh" />
+
+            <!-- Row 1: 通知列表 -->
+            <ListBox Grid.Row="1"
+                     Name="ListBox"
+                     SelectionMode="Single"
+                     BorderThickness="1"
+                     Margin="-1"
+                     SelectionChanged="ListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Height="42" BorderThickness="0">
+                            <Grid Margin="0,0,0,2"
+                                  ColumnDefinitions="14,26,*,Auto"
+                                  RowDefinitions="*,*">
+
+                                <!-- 未读圆点 -->
+                                <Ellipse Grid.Row="0" Grid.Column="0"
+                                         Margin="4,4,4,0"
+                                         Width="6" Height="6"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Fill="{DynamicResource ThemeAccentBrush}"
+                                         IsVisible="{Binding Unread}" />
+
+                                <!-- 仓库头像 emoji -->
+                                <TextBlock Grid.Column="1"
+                                           Width="16" Height="16"
+                                           Margin="3,3,7,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="13"
+                                           TextAlignment="Center"
+                                           Text="🪪" />
+
+                                <!-- 标题 + TargetId -->
+                                <StackPanel Grid.Column="2" Grid.Row="0" Orientation="Horizontal">
+                                    <TextBlock FontSize="13"
+                                               Margin="0,0,2,0"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               FontWeight="Medium"
+                                               Text="{Binding Title}" />
+                                    <TextBlock FontSize="11"
+                                               Margin="2,2,2,0"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                               Text="{Binding TargetId}" />
+                                </StackPanel>
+
+                                <!-- DateTime -->
+                                <TextBlock Grid.Column="3" Grid.Row="0"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                           Margin="2,2,0,0"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding DateTime}" />
+
+                                <!-- TargetType emoji -->
+                                <TextBlock Grid.Column="1" Grid.Row="1"
+                                           Width="16" Height="16"
+                                           Margin="3,3,7,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="13"
+                                           TextAlignment="Center"
+                                           Text="{Binding TargetTypeIcon}" />
+
+                                <!-- Description -->
+                                <TextBlock Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2"
+                                           Margin="0,0,2,0"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           FontSize="13"
+                                           TextTrimming="CharacterEllipsis"
+                                           Text="{Binding Description}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</UserControl>

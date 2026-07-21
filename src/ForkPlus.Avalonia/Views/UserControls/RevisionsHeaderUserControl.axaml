@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionsHeaderUserControl">
+    <!--
+        Avalonia 版 RevisionsHeaderUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.xaml.cs（123 行）：
+          - SetSubmoduleRevisions(SubmoduleDiffContent)：显示 src/dst revision 详情
+          - SetRevisions(Revision, BugtrackerLinkDefinition[], RevisionDetails, bool)：显示 revision 对比
+          - UpdateControls：更新 AvatarImage/AuthorTextBlock/ShaTextBlock/SubjectTextBlock 等
+          - GetCustomLabelString：Sha → 缩写字符串
+          - SwapRevisionsButton：交换 src/dst 顺序
+          - 依赖 AvatarImage / Theme.Diff.AddedBrush/RemovedBrush（WPF-only）
+
+        Avalonia 版差异（spike 简化）：
+          - task spec 作用：commit 列表表头（列标题 + 排序），与 WPF 源（revision 详情对比）不同
+          - task spec 关键 API：Initialize(RepositoryUserControl) / SetSortColumn(string) / SortChanged
+          - WPF AvatarImage → emoji TextBlock（👤 作者）
+          - WPF Theme.Diff.AddedBrush/RemovedBrush → 硬编码颜色
+          - spike 简化：复杂控件简化为基本按钮（task spec 简化策略）
+
+        spike 简化：
+          - Initialize(object repositoryUserControl) 方法（task spec 关键 API）
+          - SetSortColumn(string) 方法（task spec 关键 API）
+          - SortChanged 事件（task spec 关键 API）
+          - 列标题用 Button（点击切换排序方向）
+          - 当前排序列显示 ▲/▼ 箭头
+    -->
+    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+          Background="{DynamicResource ThemeCardBackgroundBrush}"
+          Margin="0,1">
+
+        <!-- Col 0: SHA 列标题（可点击排序）-->
+        <Button Grid.Column="0"
+                Name="ShaColumnButton"
+                Content="SHA"
+                Click="ColumnButton_Click"
+                Tag="Sha"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="8,4"
+                FontSize="12"
+                FontWeight="SemiBold" />
+
+        <!-- Col 1: 作者列标题（可点击排序）-->
+        <Button Grid.Column="1"
+                Name="AuthorColumnButton"
+                Content="Author"
+                Click="ColumnButton_Click"
+                Tag="Author"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="8,4"
+                FontSize="12"
+                FontWeight="SemiBold" />
+
+        <!-- Col 2: 主题列标题（可点击排序）-->
+        <Button Grid.Column="2"
+                Name="SubjectColumnButton"
+                Content="Subject"
+                Click="ColumnButton_Click"
+                Tag="Subject"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="8,4"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left"
+                FontSize="12"
+                FontWeight="SemiBold" />
+
+        <!-- Col 3: 日期列标题（可点击排序）-->
+        <Button Grid.Column="3"
+                Name="DateColumnButton"
+                Content="Date"
+                Click="ColumnButton_Click"
+                Tag="Date"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="8,4"
+                FontSize="12"
+                FontWeight="SemiBold" />
+
+        <!-- Col 4: 排序方向指示器（spike 新增）-->
+        <TextBlock Grid.Column="4"
+                   Name="SortDirectionTextBlock"
+                   Text=""
+                   VerticalAlignment="Center"
+                   Margin="4,0,8,0"
+                   FontSize="12" />
+    </Grid>
+</UserControl>

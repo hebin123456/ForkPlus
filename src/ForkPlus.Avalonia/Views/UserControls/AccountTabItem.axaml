@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.AccountTabItem">
+    <!--
+        Avalonia 版 AccountTabItem（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/AccountTabItem.xaml（53 行）：
+          - Grid 6 行 2 列（ServerType / AuthenticationType / Username / Status / UpdateToken / Notifications）
+          - ServerTypeImage（PNG 图标） + ServerTypeTextBlock
+          - AuthenticationTypeTextBlock
+          - UserNameTextBlock
+          - Status：ProgressBar（busy indicator） + Ellipse（绿/红圆点） + StatusTextBlock
+          - UpdateTokenButton 按钮
+          - NotificationsCheckBox 复选框（启用通知）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF TabItem → Avalonia UserControl（spike 不嵌套 TabControl）
+          - WPF Image PNG → TextBlock emoji（GitHub=🐙 / GitLab=🦊 / Bitbucket=🪣 / Gitea=🍵）
+          - WPF Visibility.Hidden/Visible → IsVisible=false/true
+          - WPF ProgressBar (CircularProgressBar 样式) → ProgressBar (默认样式)
+          - WPF Ellipse.Fill = DynamicResource → 内联 SolidColorBrush
+          - WPF Dispatcher.Async → Dispatcher.UIThread.Post
+          - WPF CheckBox.Checked/Unchecked → IsCheckedChanged 事件
+          - WPF PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+
+        spike 简化：
+          - account.Service.GetUser() → spike 不调用（需要网络请求），用占位 SetStatus 状态
+          - JobQueue → spike 不使用
+          - INotificationGitService 检查 → 由调用方在 Refresh 时传入 supportsNotifications 标志
+    -->
+    <Grid Margin="0,10,0,0"
+          RowDefinitions="24,24,24,24,28,28"
+          ColumnDefinitions="150,*">
+
+        <!-- Row 0: Server Type -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Margin="0,0,12,0"
+                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Text="Server Type:" FontSize="13" />
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <TextBlock Name="ServerTypeImage"
+                       Margin="0,0,4,0"
+                       VerticalAlignment="Center"
+                       FontSize="14"
+                       Text="🐙" />
+            <TextBlock Name="ServerTypeTextBlock"
+                       HorizontalAlignment="Left"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Row 1: Authentication Type -->
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Margin="0,0,12,0"
+                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Text="Authentication Type:" FontSize="13" />
+        <TextBlock Name="AuthenticationTypeTextBlock"
+                   Grid.Row="1" Grid.Column="1"
+                   Margin="0,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="13" />
+
+        <!-- Row 2: Username -->
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Margin="0,0,12,0"
+                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Text="Username:" FontSize="13" />
+        <TextBlock Name="UserNameTextBlock"
+                   Grid.Row="2" Grid.Column="1"
+                   Margin="0,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="13" />
+
+        <!-- Row 3: Status -->
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Margin="0,0,12,0"
+                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Text="Status:" FontSize="13" />
+        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+            <ProgressBar Name="StatusBusyIndicator"
+                         Margin="1,0,6,-1"
+                         Width="14" Height="14"
+                         IsVisible="False"
+                         IsIndeterminate="True" />
+            <Ellipse Name="StatusEllipse"
+                     Margin="1,0,6,-1"
+                     Width="10" Height="10"
+                     VerticalAlignment="Center"
+                     Fill="Green"
+                     IsVisible="False" />
+            <TextBlock Name="StatusTextBlock"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"
+                       FontSize="13"
+                       TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+
+        <!-- Row 4: Update Token Button -->
+        <Button Name="UpdateTokenButton"
+                Grid.Row="4" Grid.Column="1"
+                Margin="0,2"
+                Padding="4,0"
+                Height="20"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left"
+                Click="UpdateTokenButton_Click"
+                Content="Update token..." />
+
+        <!-- Row 5: Notifications CheckBox -->
+        <CheckBox Name="NotificationsCheckBox"
+                  Grid.Row="5" Grid.Column="1"
+                  VerticalAlignment="Center"
+                  FontSize="13"
+                  Content="Enable Notifications"
+                  IsCheckedChanged="NotificationsCheckBox_IsCheckedChanged"
+                  IsVisible="False" />
+    </Grid>
+</UserControl>

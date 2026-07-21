@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.DiffEntryRowUserControl">
+    <!--
+        Avalonia 版 DiffEntryRowUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/DiffEntryRowUserControl.xaml（41 行）：
+          - Border 外框 + Grid 2 行（header toggle + diff content host）
+          - ToggleButton 自定义模板（含 IsMouseOver → Cursor=Hand）
+          - Path ArrowGeometry（折叠/展开箭头，Geometry.Parse）
+          - Image ChangeTypeIcon + Image FileTypeIcon + TextBlock FilePath
+          - SeparatorBorder + DiffContentHost（Border，MinHeight=180/MaxHeight=420）
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/DiffEntryRowUserControl.xaml.cs（132 行）：
+          - 构造函数 DiffEntryRowUserControl(DiffEntry entry)
+          - Entry 属性 + IsExpanded 属性 + SelectionChanged 事件
+          - SetDiffContent(FrameworkElement) / ClearDiffContent / BringDiffContentIntoView
+          - HeaderToggleButton_CheckedChanged / OnPreviewMouseLeftButtonUp
+          - Entry_PropertyChanged → UpdateExpansionVisualState
+          - CollapsedArrowGeometry / ExpandedArrowGeometry（Geometry.Parse）
+
+        Avalonia 版差异（spike 简化）：
+          - WPF ToggleButton → Avalonia ToggleButton（IsCheckedChanged 事件）
+          - WPF Geometry.Parse Path → emoji TextBlock（▶ 折叠 / ▼ 展开）
+          - WPF Image ChangeTypeIcon/FileTypeIcon → emoji TextBlock
+          - WPF OnPreviewMouseLeftButtonUp → PointerReleased
+          - WPF FrameworkElement content → Control content（Avalonia API 规则）
+          - WPF Visibility.Collapsed/Visible → IsVisible=false/true
+          - WPF VisualTreeAttachmentHelper.TrySetChild → 直接 Content 属性设置
+          - task spec：显示文件路径 + 增删行数（+N -M）
+
+        spike 简化：
+          - SetDiffEntry(DiffEntry entry) 公共方法（task spec 关键 API）
+          - 展开箭头用 emoji（▶/▼）替代 Path Geometry
+          - 增删行数显示（+N 绿色 / -M 红色）
+          - diff content host 用 ContentControl 占位
+    -->
+    <Border BorderBrush="#00FFFFFF" BorderThickness="1"
+            Background="#00FFFFFF" Margin="4,0,4,0">
+        <Grid RowDefinitions="Auto,Auto">
+
+            <ToggleButton Grid.Row="0"
+                          Name="HeaderToggleButton"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          HorizontalContentAlignment="Stretch"
+                          Padding="0"
+                          MinHeight="0"
+                          IsCheckedChanged="HeaderToggleButton_IsCheckedChanged">
+                <Grid ColumnDefinitions="20,20,20,*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Name="ArrowTextBlock"
+                               Text="▶"
+                               FontSize="10"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Name="ChangeTypeIconTextBlock"
+                               Text="📝"
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2"
+                               Name="FileTypeIconTextBlock"
+                               Text="📄"
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="3"
+                               Name="FilePathTextBlock"
+                               Margin="8,0,0,0"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"
+                               Text="(no file)" />
+                    <StackPanel Grid.Column="4"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Spacing="6">
+                        <TextBlock Name="AddedLinesTextBlock"
+                                   Text=""
+                                   Foreground="#22AA22"
+                                   FontFamily="Cascadia Mono,Consolas,monospace"
+                                   FontSize="12" />
+                        <TextBlock Name="DeletedLinesTextBlock"
+                                   Text=""
+                                   Foreground="#AA2222"
+                                   FontFamily="Cascadia Mono,Consolas,monospace"
+                                   FontSize="12" />
+                    </StackPanel>
+                </Grid>
+            </ToggleButton>
+
+            <Border Grid.Row="0"
+                    Name="SeparatorBorder"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Background="{DynamicResource ThemeBorderMidBrush}"
+                    IsVisible="False" />
+
+            <Border Grid.Row="1"
+                    Name="DiffContentHost"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="0,1,0,1"
+                    MinHeight="120"
+                    IsVisible="False">
+                <ContentControl Name="DiffContentContainer"
+                                IsVisible="False" />
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
