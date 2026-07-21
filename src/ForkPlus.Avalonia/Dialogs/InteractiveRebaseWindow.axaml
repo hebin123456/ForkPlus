@@ -1,0 +1,222 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.InteractiveRebaseWindow"
+                              Title="Interactive Rebase"
+                              Width="780" Height="560"
+                              MinWidth="520" MinHeight="360"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.6a：Avalonia 版 InteractiveRebaseWindow（spike 骨架版）。
+        验证 ListBox + DataTemplate + ComboBox 替代 WPF 自定义 ListView + Adorner 拖拽 + IpcServer 通信。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/InteractiveRebaseWindow.xaml.cs（919 行）：
+          - public partial class InteractiveRebaseWindow : ForkPlusDialogWindow, IDisposable
+          - 静态字段：InteractiveRebaseComboBoxItem[] InteractiveRebaseComboBoxItems（8 项：
+            Pick/Edit/Reword/Squash/Fixup/Drop/Move Up/Move Down）
+          - 字段：
+            * GitModule _gitModule
+            * LocalBranch _sourceBranch
+            * IGitPoint _destination
+            * IrAction _initialAction
+            * IpcServer _riIpcServer
+            * Task _riProcessRunner / Semaphore _finishRiProcessSemaphore
+            * ObservableCollection<RevisionEntry> _todoList
+            * DelayedAction<string> _refreshRevisionDetails
+            * (InteractiveRebaseAction, string)[] _initialTodoList
+            * bool _closing / _rebaseProcessRunning / _suppressRewordDialog / _updateInProgress
+            * string _response / _todoListPath
+            * CheckBox _backupCurrentStateCheckBox
+            * RepositoryReferences _references
+            * RewordAdorner _adorner
+          - 构造函数 (RepositoryUserControl, GitModule, LocalBranch sourceBranch, IGitPoint destination, IrAction initialAction)：
+            * UpdateRefsCheckBox.IsChecked = ForkPlusSettings.Default.InteractiveRebase_UpdateRefs
+            * _backupCurrentStateCheckBox = new CheckBox（动态加到 Footer.CustomSection）
+            * ShowCancelButton = true; SubmitButtonTitle = "Rebase"
+            * SourceGitPointView.Value = _sourceBranch
+            * DestinationGitPointView.Value = _destination
+            * RevisionListView.ItemsSource = _todoList
+            * RevisionDetails.Initialize(repositoryUserControl, InteractiveRebase)
+            * RevisionListFallbackUserControl.Show() + FallbackMessage = "Loading..."
+            * SetStatus(InProgress, "")
+            * _refreshRevisionDetails = new DelayedAction<string>(...)
+            * _rebaseProcessRunning = true
+            * _riProcessRunner = Task.Run 调用 RebaseInteractiveGitCommand().Execute(gitModule, destination)
+              成功后 UpdateSubmodulesGitCommand（若有）+ Dispatcher.Async Close(rebaseResult)
+            * RefreshCommandPreview()
+          - GetCommandPreview: "git rebase -i <destination>"
+          - OnClosing: 若 _rebaseProcessRunning 则 e.Cancel=true + StopRebaseInteractiveProcess("cancel")
+          - IsTodoListChanged / IrCancelConfirmed (MessageBoxWindow.ShowDialog)
+          - StopRebaseInteractiveProcess(response)：_response = response + _finishRiProcessSemaphore.Release()
+          - CreateBackupBranch: new CreateNewBranchGitCommand().Execute("backup/...")
+          - OnSubmit:
+            * SetStatus(InProgress, "Rebasing...")
+            * contents = string.Concat(_todoList.Reverse().Select(x => x.AsTodoListString(updateRefs)))
+            * File.WriteAllText(_todoListPath, contents)
+            * SaveMessageArchiveForTodoList(_todoListPath)（JsonConvert.SerializeObject）
+            * ForkPlusSettings.Default.InteractiveRebase_UpdateRefs = updateRefs
+            * ForkPlusSettings.Default.InteractiveRebase_CreateBackup = ...
+            * if (backup) CreateBackupBranch()
+            * StopRebaseInteractiveProcess("start")
+          - OnPreviewKeyDown: P/E/R/S/F/D 单键 + Ctrl+Up/Down（修改选中项 Action 或移动）
+          - RevisionListView_SizeChanged: UpdateListViewColumnsWidth
+          - RevisionListView_SelectionChanged: _refreshRevisionDetails.InvokeWithDelay(sha)
+          - RevisionListView_MouseDoubleClick: ShowRewordPopup (Drop/Fixup/Squash 除外)
+          - ComboBox_SelectionChanged: 选中 Move Up/Down 时调用 MoveUp/MoveDown，
+            选中 Reword 时 ShowRewordPopup，其他设置 Action
+          - PerformAction(IrAction): 根据 IrAction 类型（Squash/Fixup/Move/Drop/Reword/Edit）
+            修改 _todoList + MoveItemToRow + SelectAndScrollIntoView
+          - MoveItemToRow / GetRevisionBySha / GetRowBySha
+          - MoveUp / MoveDown (reorder in _todoList)
+          - ShowRewordPopup (RewordAdorner + RewordUserControl) + UpdateAdornerMargin + CloseRewordPopup
+          - IpcMessageHandler: 解析 "prepareTodoListForRebase <path>" → PrepareTodoListForRebase
+            + _finishRiProcessSemaphore.WaitOne(Timeout) + pipeServer.WriteString(_response)
+          - PrepareTodoListForRebase: GetRebaseTodoListCommand().Execute(gitModule, todoListPath, _references)
+            + _todoList.Clear + Populate RevisionEntry + PerformAction(_initialAction)
+          - UpdateTodoList: 重算 GraphType / GroupMessage / CustomMessage 等
+          - RevisionListViewItem_Drop: 拖拽重排 _todoList
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 构造函数重写：解耦 RepositoryUserControl，改为
+             (GitModule, string upstreamRef, string? ontoRef, Action? onCompleted)
+             * 不再依赖 RepositoryUserControl / LocalBranch sourceBranch / IGitPoint destination / IrAction
+             * upstreamRef/ontoRef 用 string 表达（spike 不依赖 IGitPoint 转换）
+             * onCompleted 回调替代 Close(GitCommandResult) 退出协议
+          2. spike 版用 ListBox + DataTemplate 显示 commit 列表（替代 WPF MultiselectionListView + GridView）
+             * 每个 item 一个 ComboBox 选择 action + TextBlock 显示 message + 颜色标识 Border
+             * 内部定义 IrAction 枚举（Pick/Reword/Squash/Fixup/Edit/Drop/Skip）
+             * 内部定义 InteractiveRebaseItemViewModel 类（Sha/Message/Action/IsEditable）
+          3. 拖拽重排 spike 版省略（保留注释说明）
+             * WPF 版 RevisionListViewItem_Drop + MoveUp/MoveDown + Adorner 拖拽视觉反馈
+             * spike 版不实现 DragDrop.DropEvent + Adorner
+          4. IpcServer 通信 spike 版省略（保留注释说明）
+             * WPF 版用 IpcServer 等 git rebase -i 调起外部编辑器（RIHelperFilename）后回填 todo list
+             * spike 版 OnSubmit 直接构造 rebase 命令序列（不通过 IpcServer）
+          5. spike 版省略 OnPreviewKeyDown 单键 + Ctrl+Up/Down（无 Keyboard.IsKeyDown 等价 API）
+          6. spike 版省略 ShowRewordPopup（RewordAdorner + RewordUserControl，Adorner 在 Avalonia 11 不可用）
+             * Reword action 仍可选，但不弹窗编辑 message
+          7. spike 版省略 UpdateRefsCheckBox + _backupCurrentStateCheckBox（不动态加到 Footer.CustomSection）
+          8. spike 版省略 GetCommandPreview / RefreshCommandPreview（spike 用 StatusTextBlock 显示）
+          9. spike 版省略 RevisionDetails / RevisionListFallbackUserControl（不显示 commit diff 详情）
+         10. spike 版省略 CreateBackupBranch + SaveMessageArchiveForTodoList（不写 fork-message-archive）
+         11. spike 版省略 Dispose (IpcServer.Dispose)
+         12. OnSubmit 直接调用 InteractiveRebaseGitCommand（若存在且 API 匹配）
+             * 若 InteractiveRebaseGitCommand 不存在或 API 不匹配（实际只有 RebaseInteractiveGitCommand
+               且签名 Execute(GitModule, IGitPoint) 不匹配 spike 的 (gitModule, upstreamRef, ontoRef, todoFile, monitor)）
+             * 则 spike 版直接调用 onCompleted?.Invoke() 并 Close
+
+        本 spike 版暂不迁移（留 Phase 5.6b 或更后）：
+          - 自定义 MultiselectionListView + GridView（spike 用 ListBox + DataTemplate）
+          - 拖拽重排（RevisionListViewItem_Drop + MoveUp/MoveDown + Adorner）
+          - IpcServer 通信（_riIpcServer + _finishRiProcessSemaphore + IpcMessageHandler）
+          - RewordAdorner + RewordUserControl 双击编辑 commit message
+          - OnPreviewKeyDown 单键 P/E/R/S/F/D + Ctrl+Up/Down 快捷键
+          - UpdateRefsCheckBox / _backupCurrentStateCheckBox（不动态加到 Footer.CustomSection）
+          - GetCommandPreview / RefreshCommandPreview（命令预览）
+          - RevisionDetailsUserControl commit diff 详情
+          - CreateBackupBranch + SaveMessageArchiveForTodoList
+          - RebaseInteractiveGitCommand 真实调用（需 IpcServer 配合）
+          - NotificationCenter.ApplicationThemeChanged 主题切换订阅
+
+        本 spike 版验证：
+          - ListBox + DataTemplate + ComboBox 渲染 commit 列表正常
+          - IrAction 枚举（Pick/Reword/Squash/Fixup/Edit/Drop/Skip）选择切换正常
+          - 颜色标识 Border 按 Action 类型着色
+          - OnSubmit 回调链路工作（onCompleted?.Invoke + Close）
+          - spike 版不实际执行 git rebase -i（依赖 IpcServer + RebaseInteractiveGitCommand，
+            spike 简化为仅 UI 验证 + 回调通知）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 上游 / 目标 ref 信息（对照 WPF SourceGitPointView + DestinationGitPointView） -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,*" Margin="0,0,0,8">
+                <TextBlock Grid.Column="0"
+                           Text="Upstream:"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0" />
+                <TextBlock Grid.Column="1"
+                           Name="UpstreamRefTextBlock"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource LabelBrush}" />
+                <TextBlock Grid.Column="2"
+                           Text="Onto:"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Margin="12,0,6,0" />
+                <TextBlock Grid.Column="3"
+                           Name="OntoRefTextBlock"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource LabelBrush}" />
+            </Grid>
+
+            <!-- commit 列表（spike 版 ListBox + DataTemplate，对照 WPF MultiselectionListView + GridView） -->
+            <Border Grid.Row="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <ListBox Name="CommitListBox"
+                         Background="Transparent"
+                         BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="6,140,*" Margin="0,2">
+                                <!-- 颜色标识（按 Action 类型着色） -->
+                                <Border Grid.Column="0"
+                                        Width="4"
+                                        Background="{Binding ActionBrush}"
+                                        CornerRadius="2" />
+                                <!-- ComboBox 选择 action（spike 版用枚举绑定） -->
+                                <ComboBox Grid.Column="1"
+                                          Name="ActionComboBox"
+                                          Margin="6,0,6,0"
+                                          ItemsSource="{Binding AvailableActions}"
+                                          SelectedItem="{Binding Action, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch"
+                                          IsEnabled="{Binding IsEditable}" />
+                                <!-- commit message + sha -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{Binding Message}"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource LabelBrush}" />
+                                    <TextBlock Text="{Binding ShaShort}"
+                                               FontSize="10"
+                                               FontFamily="Consolas"
+                                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

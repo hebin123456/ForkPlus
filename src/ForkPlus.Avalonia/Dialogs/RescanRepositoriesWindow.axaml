@@ -1,0 +1,73 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RescanRepositoriesWindow"
+                              Title="Rescan repositories in source folder"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 RescanRepositoriesWindow（对照 WPF RescanRepositoriesWindow.xaml 67 行 + .cs 67 行）。
+
+        对照 WPF：
+          - public partial class RescanRepositoriesWindow : ForkPlusDialogWindow
+          - 字段: bool _isCloseAllowed = true
+          - 构造函数 (): DialogTitle / DialogDescription / SubmitButtonTitle 翻译
+            * text = RepositoryManager.Instance.SourceDirs.Map(x => "'" + x + "'").Joined(", ")
+            * DialogDescription = PreferencesLocalization.FormatCurrent("Do you want to rescan repositories in '{0}'?", text)
+            * ResetDeletedCheckbox.IsChecked = false
+          - OnSubmit:
+            * _isCloseAllowed = false
+            * reset = ResetDeletedCheckbox.IsChecked.GetValueOrDefault()
+            * DisableEditableControls()
+            * SetStatus(InProgress, "Scanning repositories...")
+            * await Task.Run(() => new RescanUserRepositoriesCommand().Execute(reset))
+            * if (reset) ForkPlusSettings.Default.RepositoryManagerTreeViewExpandedItems = null
+            * _isCloseAllowed = true
+            * SetStatus(Success, "Done")
+            * await Task.Delay(1500)
+            * CloseWithOk()
+          - OnClosing: if (!_isCloseAllowed) e.Cancel = true
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 版注入 string[]? sourceDirs 参数替代 RepositoryManager.Instance.SourceDirs
+             （RepositoryManager 在 WPF 工程，Avalonia 工程不可访问；null 时用空数组）
+          3. RescanUserRepositoriesCommand 在 WPF 工程 ForkPlus.UI.Commands，spike 版接受
+             Action<bool>? onRescan 回调替代（调用方决定具体 rescan 逻辑）
+          4. spike 基类不提供 DisableEditableControls，手动禁用 ResetDeletedCheckbox
+          5. ForkPlusSettings.Default.RepositoryManagerTreeViewExpandedItems = null 步骤省略
+             （WPF-only 设置，spike 不接入）
+          6. PreferencesLocalization.Current/FormatCurrent → ServiceLocator.Localization.Translate/FormatCurrent
+          7. OnClosing override → Closing += 事件（Avalonia 11 用事件而非 override，参数 CancelEventArgs）
+          8. CheckBox Checked/Unchecked → IsCheckedChanged（事件参数 RoutedEventArgs）
+          9. async void OnSubmit → spike 版保留 async void（基类 OnSubmit 非 async，子类重写时可 async）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+            <CheckBox Name="ResetDeletedCheckbox"
+                      Content="Reset deleted repositories"
+                      FontSize="13"
+                      Margin="0,0,0,4"
+                      IsCheckedChanged="ResetDeletedCheckbox_Changed" />
+        </StackPanel>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

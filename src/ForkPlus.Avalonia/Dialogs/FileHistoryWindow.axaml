@@ -1,0 +1,161 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                              x:Class="ForkPlus.Avalonia.Dialogs.FileHistoryWindow"
+                              Title="File History"
+                              Width="900"
+                              Height="640"
+                              MinWidth="600"
+                              MinHeight="400"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 FileHistoryWindow（spike 简化版，对照 WPF FileHistoryWindow.xaml + .cs 661 行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/FileHistoryWindow.xaml.cs：
+          - public partial class FileHistoryWindow : CustomWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / Sha? _revisionToSelect
+                  Reference _targetReference / Mode _mode / DelayedAction<HistoryEntryViewModel[]> _delayedAction
+                  RevisionWithFiles[] _revisions / string[] _patches
+                  HistoryEntryViewModel[] _selectedHistoryEntries / MultiselectionTreeViewItem _root
+                  Job _showDiffJob
+          - 构造函数 (RepositoryUserControl repositoryUserControl, Mode mode, Sha? revisionToSelect, Reference targetReference)
+            * TreeView.SelectionMode = Single / Extended
+            * FileDiffControl.Target = HunkHistory / History
+            * NotificationCenter.DiffContextSizeChanged / DiffIgnoreWhitespacesChanged / DiffShowEntireFileChanged
+              → _delayedAction.ReinvokeNow()
+            * CommandBindings: OpenFileInDefaultEditor / CopyRevisionSha / CopyRevisionInfo / RunExternalDiffTool
+          - OnInitialized: 异步调 GetFileHistoryGitCommand → _revisions / TreeView.RootItem = _root
+            + HistoryEntryViewModel / FolderHistoryEntryViewModel / SubItemFileHistoryEntryViewModel
+            + 按 _revisionToSelect 选中
+          - TreeView_SelectionChanged: _selectedHistoryEntries + _delayedAction.InvokeWithDelay
+          - TreeView_ContextMenuOpening: ShowRevisionInSeparateWindow / Reveal in Fork / OpenFileInDefaultEditor /
+            ShowFileInFileExplorer / ResetFileToStateAtRevision / SaveFile / CustomCommand / External Diff 菜单项
+          - TreeView_MouseDoubleClick: RevealRevision(historyEntryViewModel.Sha)
+          - RefreshDiff(HistoryEntryViewModel[] historyEntries):
+            * historyEntries.Length > 2 → FallbackUserControl "Select two commits"
+            * Hunk mode → ParsePatch(diffString, changedFile, gitModule, tabWidth)
+            * File mode → GetRevisionFileChangesGitCommand → FileDiffControl.Content
+          - OnKeyDown: Escape → Close
+          - OnSourceInitialized / OnLocationChanged / Window_SizeChanged → ForkPlusSettings.HistoryWindowLocationState
+
+        Avalonia 版 spike 简化项（与 WPF 行为差异）：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. 构造函数签名：(GitModule gitModule, string filePath, Action<string>? onCommitSelected = null)
+             替代 (RepositoryUserControl, Mode, Sha?, Reference)
+          3. MultiselectionTreeView + HistoryEntryViewModel / FolderHistoryEntryViewModel /
+             SubItemFileHistoryEntryViewModel + RevisionTimeLine + FallbackUserControl →
+             spike 版用 ListBox 显示 HistoryEntryViewModel 列表（spike 版内联 POCO，无 Folder/Hunk 模式）
+          4. FileDiffControl（WPF 自定义 UserControl，承载 diff 渲染）→ AvaloniaEdit.TextEditor（只读）
+             spike 版不渲染 diff，仅显示选中 commit 的该文件内容（git show <sha>:<path>）
+          5. GetFileHistoryGitCommand → spike 版直接调
+             git log (follow 模式, format="%H|%an|%ae|%ad|%s", date=iso) 加文件路径 一次性获取
+          6. 选中 commit 时后台执行 `git show <sha>:<path>` 获取该版本文件内容并显示
+          7. TreeView_SelectionChanged 多选 → spike 版仅支持单选
+          8. CommandBindings 快捷键 → spike 版省略
+          9. ContextMenu 菜单项 → spike 版省略
+         10. ForkPlusSettings.HistoryWindowLocationState 持久化 → spike 版跳过
+         11. TreeView_MouseDoubleClick → onCommitSelected 回调通知调用方
+         12. Dispatcher.Async → Dispatcher.UIThread.Post
+         13. await Task.Run(...) → Task.Run + Dispatcher.UIThread.Post
+         14. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+            <!-- Row 0: File path header -->
+            <TextBlock Grid.Row="0"
+                       Name="FilePathTextBlock"
+                       FontSize="12"
+                       FontFamily="Consolas,Menlo,monospace"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,0,6"
+                       Foreground="{DynamicResource ThemeForegroundMidBrush}" />
+
+            <!-- Row 1: History content (commit list on left, file content on right) -->
+            <Grid Grid.Row="1" ColumnDefinitions="360,4,*">
+                <!-- Column 0: Commit list (HistoryEntryViewModel) -->
+                <Border Grid.Column="0"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2">
+                    <ListBox Name="HistoryListBox"
+                             SelectionChanged="HistoryListBox_SelectionChanged"
+                             DoubleTapped="HistoryListBox_DoubleTapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4,2">
+                                    <TextBlock Text="{Binding Subject}"
+                                               FontSize="12"
+                                               FontWeight="Medium"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding Author}"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text=" &lt;"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                        <TextBlock Text="{Binding AuthorEmail}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="&gt;"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding ShaDisplay}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas,Menlo,monospace"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                        <TextBlock Text="  "
+                                                   FontSize="11" />
+                                        <TextBlock Text="{Binding AuthorDateDisplay}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <!-- Column 2: File content (AvaloniaEdit.TextEditor, read-only) -->
+                <Border Grid.Column="2"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1">
+                    <avalonedit:TextEditor Name="FileContentEditor"
+                                           ShowLineNumbers="True"
+                                           IsReadOnly="True"
+                                           FontFamily="Consolas,Menlo,monospace"
+                                           FontSize="13"
+                                           WordWrap="False" />
+                </Border>
+            </Grid>
+
+            <!-- Row 2: Status text -->
+            <TextBlock Grid.Row="2"
+                       Name="StatusText"
+                       Margin="0,6,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,141 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ErrorWindow"
+                              Title="Git Error"
+                              Width="640"
+                              Height="420"
+                              MinWidth="480" MinHeight="280"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 ErrorWindow（对照 WPF ErrorWindow.xaml + .cs 415 行）。
+
+        对照 WPF：
+          - public partial class ErrorWindow : ForkPlusDialogWindow
+          - 字段：RepositoryUserControl _repositoryUserControl, GitCommandError GitCommandError
+          - 构造函数 ()：DialogTitle="Git Error" / Description="An unexpected error occured..."
+            / CancelButtonTitle="Close" / ShowSubmitButton=false / ShowWarningIcon=true /
+            MessageEditor（AvalonEdit TextEditor）配置 EnableHyperlinks=true / WordWrap=true /
+            LineTransformers.Add(GitOutputColorizer) / RefreshTheme()
+          - 构造函数 (string message): this() + MessageEditor.Text = message + ScrollToEnd
+          - 构造函数 (RepositoryUserControl, GitCommandError): this() + 复杂分支按 GitCommandError 子类型
+            设置 DialogTitle/Description/FirstButton：
+            * AutomaticMergeFailed → Merge Conflict
+            * TagMismatch → FirstButton "Force Fetch"
+            * RepositoryIsLocked → FirstButton "Remove .git/index.lock"
+            * LfsFileIsLocked → FirstButton "Force Unlock {N} Files" / "Force Unlock"
+            * PatchDoesNotApply → text += "fork: try to disable 'ignore whitespaces'"
+            * AuthenticationFailed (Generic) → FirstButton "Credential Manager"
+            * AuthenticationFailed (GitHubConnectionError) → text + org access 提示
+            * UnsafeRepository → FirstButton "Mark repository as safe"
+            * MergeUnrelatedHistory → FirstButton "Merge unrelated history"
+            * CommitFailed + hooks 存在 → FirstButton "Skip pre-commit hooks and commit"
+          - FirstButton_Click：分支调用 ForceFetch / RemoveLockIndexFile / ForceUnlock /
+            AddRepositoryToSafeDirectoriesList / MergeUnrelatedHistory / CommitWithoutHooksAndClose /
+            OpenCredentialManager
+          - RefreshTheme：MessageEditor.TextArea.TextView.LinkTextForegroundBrush = TryFindResource("CodeEditorLinkForeground")
+          - OpenCredentialManager: Process.Start rundll32.exe keymgr.dll
+          - AddRepositoryToSafeDirectoriesList: AddRepositoryToSafeDirectoriesListGitCommand + MainWindow.Instance.TabManager.OpenRepository
+          - CommitWithoutHooksAndClose: JobQueue + CommitGitCommand(noVerify:true) + QuickPush + InvalidateAndRefresh
+          - ForceFetch / ForceUnlock / MergeUnrelatedHistory: JobQueue + 对应 GitCommand + InvalidateAndRefresh
+          - ContainsHooks / GetGitConfigHooksPath / HookExists
+          - Translate: PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 构造函数 (Exception? exception = null, GitCommandError? error = null,
+             string? title = null, string? message = null) 解耦 RepositoryUserControl
+          3. spike 版省略 FirstButton（依赖 RepositoryUserControl + JobQueue，spike 简化为仅显示错误）
+          4. spike 版省略 GitOutputColorizer（依赖 AvalonEdit LineTransformer，spike 简化为普通 TextBox）
+          5. MessageEditor (AvalonEdit TextEditor) → 普通 TextBox（IsReadOnly + AcceptsReturn + WordWrap）
+          6. 复制按钮用 TopLevel.GetTopLevel(this).Clipboard.SetTextAsync（Avalonia 11 跨平台 API，
+             Clipboard 在 TopLevel 上不在 Application 上）
+          7. 折叠详细信息用 Expander 控件（Avalonia 原生 Expander）
+          8. spike 版 ShowWarningIcon=true 改为在 TitleTextBlock 旁加 emoji "⚠" TextBlock
+          9. spike 版省略 OpenCredentialManager / ForceFetch / RemoveLockIndexFile / ForceUnlock /
+             AddRepositoryToSafeDirectoriesList / MergeUnrelatedHistory / CommitWithoutHooksAndClose
+             （依赖 RepositoryUserControl + JobQueue + MainWindow.Instance，spike 不迁移）
+         10. spike 版省略 ContainsHooks / GetGitConfigHooksPath / HookExists
+             （依赖 GitModule + GitConfig，spike 不迁移）
+         11. spike 版省略 RefreshTheme（依赖 AvalonEdit LineTransformer，spike 简化）
+         12. PreferencesLocalization → ServiceLocator.Localization.Translate
+         13. spike 版 GitCommandError 子类型仅用于显示 FriendlyDescription（不分支弹按钮）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,4">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                <TextBlock Name="WarningIconTextBlock"
+                           Text="⚠"
+                           FontSize="16"
+                           Margin="0,0,6,0"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="TitleTextBlock"
+                           FontSize="14" FontWeight="Medium"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </StackPanel>
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Toolbar - Copy button -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right"
+                        Name="CopyButton"
+                        Content="Copy"
+                        Margin="6,0,0,0"
+                        Click="CopyButton_Click" />
+                <TextBlock Text="Error details"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+
+            <!-- Row 1: Message TextBox -->
+            <TextBox Grid.Row="1"
+                     Name="MessageTextBox"
+                     FontFamily="Consolas,Monospace"
+                     FontSize="12"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch" />
+
+            <!-- Row 2: Expander for stack trace / details -->
+            <Expander Grid.Row="2"
+                      Name="DetailsExpander"
+                      Header="Stack trace"
+                      Margin="0,8,0,0"
+                      IsExpanded="False">
+                <TextBox Name="DetailsTextBox"
+                         FontFamily="Consolas,Monospace"
+                         FontSize="11"
+                         IsReadOnly="True"
+                         TextWrapping="NoWrap"
+                         AcceptsReturn="True"
+                         Height="120"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+            </Expander>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

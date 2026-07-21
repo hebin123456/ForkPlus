@@ -1,0 +1,71 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AiSuggestionPreviewWindow"
+                              Title="Suggestion Preview"
+                              Width="720"
+                              Height="520"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 AiSuggestionPreviewWindow（对照 WPF AiSuggestionPreviewWindow.xaml 134 行 + .cs 134 行）。
+
+        对照 WPF：
+          - public partial class AiSuggestionPreviewWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / string _file / string _oldText / string _newText
+          - 构造函数 (RepositoryUserControl, string file, string comment, string oldText, string newText):
+            * DialogTitle = Translate("Suggestion Preview")
+            * DialogDescription = string.IsNullOrWhiteSpace(comment) ? file : file + "\n" + comment
+            * SubmitButtonTitle = Translate("Apply suggestion")
+            * CancelButtonTitle = Translate("Close")
+            * Loaded += AiSuggestionPreviewWindow_Loaded
+          - AiSuggestionPreviewWindow_Loaded:
+            * try PreviewDiffControl.RepositoryUserControl = _repositoryUserControl;
+                  PreviewDiffControl.Content = GitCommandResult<DiffContent>.Success(CreateDiffContent(...))
+            * catch (fallback) PreviewDiffControl.Hide(); FallbackTextBox.Text = CreateFallbackText(...); FallbackTextBox.Show()
+          - OnSubmit: CloseWithOk()
+          - CreateDiffContent: ChangedFile + CreateUnifiedDiff + TextDiffContent (tabWidth from gitModule.Settings.TabWidth)
+          - CreateUnifiedDiff: 构造 unified diff 字符串（diff header / index / 源目标行 / @@ range / +/- 行）
+          - SplitDiffLines / AppendLines / DiffRangeStart / EscapeDiffPath / CreateFallbackText 静态方法
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. PreviewDiffControl 是 WPF 自定义控件，spike 版用 TextBox（只读 + 等宽字体 + Wrap + AcceptsReturn）
+             直接显示 CreateUnifiedDiff 生成的字符串
+          3. 移除 RepositoryUserControl 依赖（spike 版构造函数不接受 RepositoryUserControl）
+          4. 移除 try/catch fallback 逻辑（直接显示 unified diff 字符串，无需 fallback）
+          5. tabWidth 用参数传入（默认 4），不依赖 gitModule.Settings.TabWidth
+          6. 完整移植 CreateUnifiedDiff / SplitDiffLines / AppendLines / DiffRangeStart / EscapeDiffPath / CreateFallbackText 静态方法
+             （CreateFallbackText 保留以备 Phase 4.x.c 接入 fallback 控件时复用）
+          7. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+          8. Loaded += （Avalonia 同名事件，参数 EventArgs）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content (spike: 用 TextBox 显示 unified diff) -->
+        <TextBox Grid.Row="2"
+                 Name="DiffPreviewTextBox"
+                 IsReadOnly="True"
+                 FontFamily="Consolas"
+                 FontSize="12"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 Margin="0,4,0,0"
+                 Padding="6" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

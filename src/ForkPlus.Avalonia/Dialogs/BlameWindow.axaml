@@ -1,0 +1,154 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                              x:Class="ForkPlus.Avalonia.Dialogs.BlameWindow"
+                              Title="Blame"
+                              Width="900"
+                              Height="640"
+                              MinWidth="600"
+                              MinHeight="400"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 BlameWindow（spike 简化版，对照 WPF BlameWindow.xaml + .cs 647 行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/BlameWindow.xaml.cs：
+          - public partial class BlameWindow : CustomWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / DelayedAction<BlameArgs> _refreshBlame
+                  RevisionViewModel[] _revisions / RevisionViewModel _selectedRevision
+                  bool _initialized / bool _startUpFinished / UndoManager _undoManager
+          - 构造函数 (RepositoryUserControl repositoryUserControl, string filePath, Sha? shaToSelect, Reference targetReference)
+            * TextDiffControl.FontSize = 14.0; TextDiffControl.ScrollOffsetChanged += SplitTextDiffControl_ScrollOffsetChanged
+            * RevisionListFallbackUserControl 显示 "Loading..."
+            * Initialize(filePath, shaToSelect, targetReference) → Task 启动 GetFirstRevisionGitCommand
+              + GetFileHistoryGitCommand → RevisionsComboBox.ItemsSource + RevisionTimeLine.Revisions
+              + _refreshBlame.InvokeNow(BlameArgs)
+          - RefreshBlame(BlameArgs args):
+            * Task 启动 GetRevisionFileChangesGitCommand → TextDiffControl.SetDiff(diff, tabWidth, entireFile, DiffLocation.Revision)
+            * GetBlameGitCommand.Execute(gitModule, args.Filepath, $"args.Sha~")
+            * CreateBlameItems(blameChunks, visualPatch, newCommit) → BlameListBox.ItemsSource
+            * BlameListBox 行高亮：同一 commit 的行通过 BlameItemViewModel/BlameItemBodyViewModel 共享 Revision
+          - OnKeyDown: Escape → Close; Ctrl+G → ShowGoToLineWindow; Alt+Left/Right → Undo/Redo
+          - RevisionsComboBox_SelectionChanged: _refreshBlame.InvokeWithDelay(BlameArgs)
+          - UndoButton/RedoButton: _undoManager.Undo()/Redo() → RevisionsComboBox.SelectedItem 同步
+          - BlameListBox_ContextMenuOpening: ShowRevisionInSeparateWindow / Reveal in Fork / SaveFile /
+            CopyRevisionSha / CopyRevisionInfo / 自定义 CustomCommand 菜单项
+          - ShaButton_Click / OpenRevisionInSeparateWindowButton_Click / RevisionsListBoxItem_MouseDoubleClick
+          - OnSourceInitialized / OnLocationChanged / Window_SizeChanged → ForkPlusSettings.BlameWindowLocationState
+          - RevisionListScrollViewer_ScrollChanged → TextDiffControl.ScrollToVerticalOffset（双向同步滚动）
+
+        Avalonia 版 spike 简化项（与 WPF 行为差异）：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. TextDiffControl（WPF 自定义 UserControl） → AvaloniaEdit.TextEditor（只读 + 行号）
+             spike 版不做 diff 着色 / 双向滚动同步 / 滚动条 diff map
+          3. RepositoryUserControl 参数 → GitModule + string filePath + string? refSpec
+             + Action<string>? onCommitSelected 回调
+          4. RevisionTimeLine / RevisionsComboBox / BlameListBox / CodeEditorFallbackUserControl /
+             RevisionListFallbackUserControl → spike 版用 ItemsControl 显示 commit 列表
+          5. GetFirstRevisionGitCommand / GetFileHistoryGitCommand / GetRevisionFileChangesGitCommand
+             → spike 版直接调 git blame (porcelain 模式) 带 refSpec 和文件路径 一次性获取
+          6. CreateBlameItems + VisualPatch + VisualChunk 对齐 → spike 版仅内联 BlameLine POCO
+             并按 LineNumber 顺序渲染到 ItemsControl
+          7. 行高亮：WPF 用 BlameItemViewModel + Background renderer 高亮同一 commit 的所有行
+             spike 版仅更新选中项的 Background（AvaloniaEdit LineTransformers 的 ColorizeAvaloniaEditLine
+             API 在 spike 阶段不确定是否可用，若不可用则跳过高亮）
+          8. UndoManager / UndoButton / RedoButton → spike 版省略（不做 undo/redo 历史）
+          9. ContextMenu 菜单项（ShowRevisionInSeparateWindow / Reveal in Fork / SaveFile /
+             CopyRevisionSha / CopyRevisionInfo / CustomCommand）→ spike 版省略
+         10. ForkPlusSettings.BlameWindowLocationState 持久化 → spike 版跳过（WPF-only WindowLocationState）
+         11. GoToLineWindow (Ctrl+G) → spike 版省略（依赖 GoToLineWindow 对话框未迁移）
+         12. RevisionsListBoxItem_MouseDoubleClick → onCommitSelected 回调通知调用方
+         13. Dispatcher.Async → Dispatcher.UIThread.Post
+         14. new Task().Start() → Task.Run
+         15. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+            <!-- Row 0: File path header -->
+            <TextBlock Grid.Row="0"
+                       Name="FilePathTextBlock"
+                       FontSize="12"
+                       FontFamily="Consolas,Menlo,monospace"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,0,6"
+                       Foreground="{DynamicResource ThemeForegroundMidBrush}" />
+
+            <!-- Row 1: Blame content (commit list on left, file content on right) -->
+            <Grid Grid.Row="1" ColumnDefinitions="320,4,*">
+                <!-- Column 0: Commit list (BlameLines grouped by Sha) -->
+                <Border Grid.Column="0"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl Name="BlameItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Name="CommitBorder"
+                                            Background="Transparent"
+                                            Padding="6,4"
+                                            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                            BorderThickness="0,0,0,1">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Author}"
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding AuthorDateDisplay}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                            <TextBlock Text="{Binding ShaDisplay}"
+                                                       FontSize="11"
+                                                       FontFamily="Consolas,Menlo,monospace"
+                                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                            <TextBlock Text="{Binding Summary}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Column 2: File content (AvaloniaEdit.TextEditor, read-only) -->
+                <Border Grid.Column="2"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1">
+                    <avalonedit:TextEditor Name="FileContentEditor"
+                                           ShowLineNumbers="True"
+                                           IsReadOnly="True"
+                                           FontFamily="Consolas,Menlo,monospace"
+                                           FontSize="13"
+                                           WordWrap="False" />
+                </Border>
+            </Grid>
+
+            <!-- Row 2: Status text -->
+            <TextBlock Grid.Row="2"
+                       Name="StatusText"
+                       Margin="0,6,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

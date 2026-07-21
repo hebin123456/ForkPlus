@@ -1,0 +1,171 @@
+<dialogs:CustomWindow xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                      xmlns:md="https://github.com/whistyun/Markdown.Avalonia.Tight"
+                      x:Class="ForkPlus.Avalonia.Dialogs.AiCommitComposerWindow"
+                      Title="AI Commit Composer"
+                      Width="820" Height="640"
+                      MinWidth="480" MinHeight="360"
+                      CanResize="True"
+                      WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.3a：Avalonia 版 AiCommitComposerWindow（spike 骨架版）。
+        验证 Markdown.Avalonia 替代 WebView2 流式渲染 commit message 生成 + Accept/Reject 回调链路。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AiCommitComposerWindow.xaml.cs（542 行）：
+          - public partial class AiCommitComposerWindow : CustomWindow, ILocalizableControl
+          - 构造函数 (GitModule gitModule, ChangedFile[] stagedFiles, bool amend)
+            * InitializeComponent + PreferencesLocalization.ApplyCurrent + Loaded += AiCommitComposerWindow_Loaded
+          - AiCommitComposerWindow_Loaded: InitializeModelComboBox + ApplyLocalizationToButtons + StartAiRequest
+          - InitializeModelComboBox: 后台 ThreadPool 拉取 OpenAiService.ListModels
+          - ModelComboBox_SelectionChanged: 保存 ForkPlusSettings.Default.AiReviewSelectedModel
+          - ApplyLocalizationToButtons: Retry/Stop/ModelComboBox/ApplyAllButton/CancelButton 文案翻译
+          - StartAiRequest:
+            * 校验 OpenAiService.IsAiReviewConfigured + _stagedFiles.Length > 0
+            * JobQueue.Add 调用 GetWorkingDirectoryFileChangesGitCommand.GetStagedPatch 拿 staged diff
+            * OpenAiService.GenerateWipCommitSplits(patch, filePaths, gitModule, monitor, onChunk)
+            * OpenAiService.ParseWipCommitPlan(response.Message, stagedFiles) → WipCommitPlan
+            * PopulateGroupsListBox 填左侧分组 ListBox（每组一个 ListBoxItem.Tag = WipCommitGroup）
+            * GroupsListBox_SelectionChanged → DisplayGroupDetails 写中间 FilesListBox + 右侧 SubjectTextBox/BodyTextBox
+            * SubjectTextBox_TextChanged / BodyTextBox_TextChanged 回写 group.Subject/Body
+          - ApplyAllButton_Click:
+            * 校验每个 group.Subject 非空
+            * AddUndoable("Compose WIP commits") + ComposeWipCommitsGitCommand.Execute
+            * 成功后 InvalidateAndRefresh(SubDomain.All) + Close
+          - RetryButton_Click: StartAiRequest 重试
+          - StopButton_Click: _currentMonitor.Cancel()
+          - CancelButton_Click: applying 时 cancel，否则 Close
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 构造函数签名重写：解耦 RepositoryUserControl，改为
+             (GitModule, string stagedDiff, Action<string>? onAccept, Action? onReject)
+             * 不再持有 ChangedFile[] stagedFiles / bool amend / RepositoryUserControl
+             * staged diff 由调用方预先计算后传入（spike 不做 GetStagedPatch）
+             * onAccept(finalMarkdown) / onReject() 回调由调用方提供（spike 不做 ComposeWipCommits）
+          2. 不再做多分组 WIP 拆分 UI（左侧 GroupsListBox + 中间 FilesListBox + 右侧 Subject/Body）
+             spike 版用单一 Markdown 流式渲染区替代（参考 AiTextResultWindow 模式）
+             调用方拿到 final markdown 后自行解析为 WipCommitPlan（保留解析能力在 OpenAiService 静态方法）
+          3. 流式渲染模式参考 AiTextResultWindow.axaml.cs：
+             * StringBuilder _streamingMarkdown + object _streamingLock
+             * 节流计时器 _streamingRenderTimer（400ms 间隔，对照 WPF TryRenderStreamingPreview）
+             * OnChunk(chunk) 追加 + 节流刷新 MarkdownScrollViewer
+             * OnSuccess(finalMarkdown) 渲染最终 + 切 UI 状态
+             * OnError(errorMessage) 显示错误
+          4. 公共方法签名（与 WPF 一致语义，调用方可零改动切换）：
+             * StartStreaming(string title, Action<JobMonitor>? requestAction)
+               启动一次 AI 请求，requestAction 内调用 OnChunk/OnSuccess/OnError
+             * OnChunk(string chunk) / OnSuccess(string finalMarkdown) / OnError(string errorMessage)
+          5. 按钮简化为 Retry / Stop / Accept / Reject（WPF 用 ApplyAllButton + CancelButton）
+             * Retry：重新调用 StartStreaming（用同一 _requestAction）
+             * Stop：_currentMonitor.Cancel()
+             * Accept：onAccept?.Invoke(finalMarkdown) + Close
+             * Reject：onReject?.Invoke() + Close
+          6. 跳过 InitializeModelComboBox（spike 无模型下拉框，模型由调用方决定）
+          7. 跳过 PreferencesLocalization.ApplyCurrent / ApplyLocalization（用 ServiceLocator.Localization.Translate）
+          8. 跳过 AddUndoable（Avalonia spike 无 Undo/Redo 栈接入）
+          9. 跳过 InvalidateAndRefresh（spike 版由调用方在 onAccept 回调里自行刷新）
+
+        本 spike 版暂不迁移（留 Phase 5.3b 或更后）：
+          - 多分组 WIP 拆分 UI（GroupsListBox + FilesListBox + SubjectTextBox/BodyTextBox）
+          - ComposeWipCommitsGitCommand 调用链（spike 版交给调用方在 onAccept 里执行）
+          - OpenAiService.ListModels 后台拉取（InitializeModelComboBox）
+          - AddUndoable / InvalidateAndRefresh（spike 不接 Undo/Redo 栈）
+          - PreferencesLocalization / ILocalizableControl.ApplyLocalization
+          - NotificationCenter.ApplicationThemeChanged 主题切换订阅
+
+        本 spike 版验证：
+          - Markdown.Avalonia.Tight MarkdownScrollViewer 流式渲染 commit message 正常
+          - 公共方法签名与 AiTextResultWindow 一致（StartStreaming / OnChunk / OnSuccess / OnError）
+          - Retry / Stop / Accept / Reject 按钮行为正确
+          - onAccept / onReject 回调链路工作
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Row 0: 标题栏（标题 + Retry + Stop + Accept + Reject） -->
+        <Grid Grid.Row="0" Margin="10,8,10,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Name="TitleTextBlock"
+                       FontSize="16" FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource LabelBrush}" />
+            <Button Grid.Column="1"
+                    Name="RetryButton"
+                    Content="Retry"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Retry AI request"
+                    Click="RetryButton_Click" />
+            <Button Grid.Column="2"
+                    Name="StopButton"
+                    Content="Stop"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    IsVisible="False"
+                    ToolTip.Tip="Stop the current AI task"
+                    Click="StopButton_Click" />
+            <Button Grid.Column="3"
+                    Name="AcceptButton"
+                    Content="Accept"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    IsEnabled="False"
+                    ToolTip.Tip="Accept generated commit message"
+                    Click="AcceptButton_Click" />
+            <Button Grid.Column="4"
+                    Name="RejectButton"
+                    Content="Reject"
+                    MinWidth="64"
+                    Padding="10,2"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Reject and close"
+                    Click="RejectButton_Click" />
+        </Grid>
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0" />
+
+        <!-- Row 1: 状态栏（进度条 + 状态文本，对照 WPF StatusProgressBar + StatusTextBlock） -->
+        <Grid Grid.Row="1" Margin="10,4,10,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0"
+                         Name="StatusProgressBar"
+                         Width="120" Height="3"
+                         IsIndeterminate="True"
+                         IsVisible="False"
+                         Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Grid.Column="1"
+                       Name="StatusTextBlock"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+        </Grid>
+
+        <!-- Row 2: Markdown 渲染区 + 错误占位（对照 WPF AiResponseWebView + Fallback） -->
+        <Grid Grid.Row="2" Margin="10,0,10,4">
+            <!-- Markdown.Avalonia MarkdownScrollViewer，GithubLike 主题。
+                 Markdown 属性由 code-behind 在 OnChunk / OnSuccess 中直接设置。 -->
+            <md:MarkdownScrollViewer Name="AiResponseMarkdownViewer" />
+
+            <!-- 错误占位（spike 版用 TextBlock，对照 WPF FallbackUserControl） -->
+            <TextBlock Name="AiResponseFallback"
+                       IsVisible="False"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+    </Grid>
+</dialogs:CustomWindow>

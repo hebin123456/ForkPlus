@@ -1,0 +1,151 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.PreferencesWindow"
+                              Title="Preferences"
+                              Width="720" Height="560"
+                              MinWidth="520" MinHeight="380"
+                              SizeToContent="Width"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 PreferencesWindow（对照 WPF PreferencesWindow.xaml + .cs 117 行）。
+
+        对照 WPF：
+          - public partial class PreferencesWindow : ForkPlusDialogWindow, ILocalizableControl
+          - 字段：bool _initialised / string _appliedLanguage /
+            Dictionary<TabItem, string> _localizedTabLanguages
+          - ApplyAutomaticLocalization = false
+          - 构造函数：
+            * ShowLogo=false
+            * ShowCancelButton=false
+            * SubmitButtonTitle=PreferencesLocalization.Current("Close")
+            * SizeToContent=WidthAndHeight
+            * Initialize() 调用各 UserControl 的 Initialize / Save 方法
+              （GeneralUserControl / CommitUserControl / AiReviewPreferencesUserControl /
+              IntegrationUserControl / GitUserControl / CustomCommandsUserControl）
+          - OnKeyDown: ESC → OnCancel + e.Handled=true
+          - OnSubmit: 调用各 UserControl 的 Save() + ForkPlusSettings.Default.Save()
+          - Initialize: 调用各 UserControl 的 Initialize(this) / InitializeGlobal(this)
+          - ApplyLocalization: 翻译 Title + SubmitButtonTitle + 6 个 TabItem.Header
+          - TabControl_SelectionChanged: SetStatus(None, "") + ApplySelectedTabLocalization
+          - ApplySelectedTabLocalization: 对选中 Tab 的 Content 调 PreferencesLocalization.Apply
+            （IntegrationUserControl 还需 integrationUserControl.ApplyLocalization()）
+          - Translate: PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 构造函数注入 (Action? onSavePreferences) 替代直接调用 6 个子 UserControl 的 Save
+          3. spike 版用 TabControl + 6 个空 TabItem（General / Commit / AI Enhancement / Git /
+             Integration / Custom Commands），每个 Tab 内容用占位 TextBlock "Configure ..."
+             （实际 UserControl 留待迁移）
+          4. spike 版 OnSubmit 调用注入的 onSavePreferences?.Invoke() +
+             ForkPlusSettings.Default.Save()
+          5. spike 版完整保留 ApplyLocalization / TabControl_SelectionChanged /
+             ApplySelectedTabLocalization 逻辑
+          6. spike 版省略 ApplyAutomaticLocalization=false（基类无此属性，spike 不接入）
+          7. spike 版省略 ILocalizableControl 接口（依赖 PreferencesLocalization.Apply，
+             spike 不迁移 Apply，子类自己 Translate）
+          8. spike 版省略 IntegrationUserControl.ApplyLocalization()（依赖 IntegrationUserControl，
+             spike 不迁移）
+          9. SizeToContent=WidthAndHeight → Avalonia SizeToContent="Width"（Height 不与 TabControl
+             兼容，spike 版固定 Height=560）
+         10. OnKeyDown ESC → OnCancel（spike 版用 KeyDown 事件，Key.Escape）
+         11. SelectionChangedEventArgs → Avalonia.Controls.SelectionChangedEventArgs
+         12. PreferencesLocalization → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: TabControl 6 个 Tab -->
+        <TabControl Grid.Row="2" Name="PreferencesTabControl" Margin="0,4,0,0"
+                    SelectionChanged="TabControl_SelectionChanged">
+            <TabItem Name="GeneralTabItem" Header="General">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure general preferences"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="General application preferences such as language, theme, and default clone location will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="CommitTabItem" Header="Commit">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure commit preferences"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Commit message template, spellcheck, and signature settings will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="AiReviewTabItem" Header="AI Enhancement">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure AI Enhancement preferences"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="AI code review, commit message generation, and provider settings will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="GitTabItem" Header="Git">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure Git preferences"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Git executable path, default merge tool, and other Git-related settings will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="IntegrationTabItem" Header="Integration">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure integration preferences"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="External integrations (issue trackers, shell, editor) will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="CustomCommandsTabItem" Header="Custom Commands">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Configure custom commands"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="User-defined git commands and shortcuts will be available here."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

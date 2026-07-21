@@ -1,0 +1,139 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.WelcomeWindow"
+                              Title="User information"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 WelcomeWindow（对照 WPF WelcomeWindow.xaml + .cs 137 行）。
+
+        对照 WPF：
+          - public partial class WelcomeWindow : ForkPlusDialogWindow
+          - 构造函数：
+            * ShowLogo=false
+            * TitleTextBlock.FontSize=18
+            * TitleTextBlock.Foreground=TryFindResource("ForegroundBrush.WindowsInfo") as Brush
+            * DialogTitle/Description/SubmitButtonTitle 翻译
+            * ProgressBarContainer.Collapse()
+            * Refresh() 调用 new GetGlobalUserIdentityGitCommand().Execute().Result
+              填充 UserNameTextBox/EmailNameTextBox
+            * DefaultCloneDirectoryTextBox.Text = Environment.ExpandEnvironmentVariables("%userprofile%")
+          - IsSubmitAllowed: text 非空 + 非 c:\ + Directory.Exists
+          - OnSubmit: 取 username/email/text + RepositoryManager.Instance.SetSourceDirs(new[]{text})
+            + DisableEditableControls + Task.Run 调用 SetGlobalUserIdentityGitCommand
+            + new RescanUserRepositoriesCommand().Execute(reset:true) + 设置 ForkPlusSettings.Default.Guid
+            + EnableEditableControls + CloseWithOk()
+            失败时: new ErrorWindow(null, gitCommandResult.Error).ShowDialog() + Application.Current.Shutdown()
+          - 三个 TextBox TextChanged → UpdateSubmitButton()
+          - BrowseButton_Click: OpenDialog.SelectDirectory 选目录
+          - Translate: PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 构造函数注入 (Action<string>? onSetSourceDir, Action? onRescanRepositories,
+             Action? onShutdown) 解耦 RepositoryManager / Application.Current.Shutdown
+          3. spike 版保留 GetGlobalUserIdentityGitCommand 调用（在 ForkPlus.Git.Commands 命名空间，
+             Core 工程已通过 InternalsVisibleTo 暴露给 ForkPlus.Avalonia）
+          4. Environment.ExpandEnvironmentVariables("%userprofile%") 跨平台替换：
+             Windows 用 %userprofile%，Unix 用 Environment.GetFolderPath(SpecialFolder.UserProfile)
+          5. spike 版 SetGlobalUserIdentityGitCommand 通过 Task.Run 调用，成功后调用注入的
+             onSetSourceDir?.Invoke(text) 和 onRescanRepositories?.Invoke() 回调
+          6. 失败时显示 ErrorWindow 替换为：在 DialogDescription 中显示错误 + 不调用 CloseWithOk；
+             onShutdown 在错误时调用
+          7. TitleTextBlock.Foreground 用 Application.Current!.TryGetResource(
+             "ForegroundBrush.WindowsInfo", null, out var brush) as IBrush
+          8. Visibility.Collapsed → IsVisible = false（spike 版 ProgressBarContainer 省略，
+             直接用 ForkPlusDialogFooter 的 BusyIndicator 替代）
+          9. OpenDialog.SelectDirectory → TopLevel.GetTopLevel(this).StorageProvider.OpenFolderPickerAsync
+         10. TextChanged 事件参数 TextChangedEventArgs（需 using Avalonia.Controls;）
+         11. Click 事件参数 RoutedEventArgs（需 using Avalonia.Interactivity;）
+         12. PreferencesLocalization → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="18" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: User name -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="User name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="UserNameTextBox"
+                     Watermark="Enter your name"
+                     Margin="8,4,0,4"
+                     TextChanged="UserNameTextBox_TextChanged" />
+
+            <!-- Row 1: Email -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Email:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="EmailNameTextBox"
+                     Watermark="Enter your email"
+                     Margin="8,4,0,4"
+                     TextChanged="EmailNameTextBox_TextChanged" />
+
+            <!-- Row 2: Default clone directory -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Default clone location:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="8,4,0,4">
+                <TextBox Grid.Column="0"
+                         Name="DefaultCloneDirectoryTextBox"
+                         Watermark="Select a folder"
+                         TextChanged="DefaultCloneDirectoryTextBox_TextChanged" />
+                <Button Grid.Column="1"
+                        Name="BrowseButton"
+                        Content="Browse..."
+                        Margin="6,0,0,0"
+                        Click="BrowseButton_Click" />
+            </Grid>
+
+            <!-- Row 3: Hint -->
+            <TextBlock Grid.Row="3" Grid.Column="1"
+                       Name="HintTextBlock"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       TextWrapping="Wrap"
+                       Margin="8,4,0,0" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

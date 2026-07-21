@@ -1,0 +1,69 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RepositoryStatisticsWindow"
+                              Title="Repository Statistics"
+                              Width="640"
+                              Height="480"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 RepositoryStatisticsWindow（对照 WPF RepositoryStatisticsWindow.xaml 47 行 + .cs 47 行）。
+
+        对照 WPF：
+          - public partial class RepositoryStatisticsWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / string _initialRef / bool _scrollToCodeLines
+          - 构造函数 (GitModule gitModule) 转调 (GitModule, string? initialRef, bool scrollToCodeLines)
+          - ShowLogo = false / ShowHeader = false / ShowCancelButton = false
+          - SubmitButtonTitle = PreferencesLocalization.Current("Close")
+          - ResizeMode = CanResizeWithGrip
+          - RepositoryNameTextBlock.Text = gitModule.Path
+          - Loaded += RepositoryStatisticsWindow_Loaded 调用
+            StatisticsUserControl.ShowStatistics(_gitModule, _initialRef, _scrollToCodeLines)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. StatisticsUserControl 是 WPF 自定义控件，spike 版用 TextBlock 显示 "Statistics - loading..." 占位
+             （实际统计功能留待迁移）
+          3. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          4. ResizeMode.CanResizeWithGrip → CanResize="True"（Avalonia 11 无 Grip 模式）
+          5. spike 基类不提供 ShowLogo/ShowHeader，子类 axaml 中不放 Logo Image 即等价
+          6. Loaded += （Avalonia 同名事件，参数 EventArgs）
+          7. spike 保留 RepositoryNameTextBlock 显示 gitModule.Path
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,*">
+            <!-- Row 0: Repository name -->
+            <TextBlock Grid.Row="0"
+                       Name="RepositoryNameTextBlock"
+                       FontSize="13" FontWeight="Medium"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,0,8" />
+            <!-- Row 1: Statistics placeholder (spike: 实际统计功能留待迁移) -->
+            <TextBlock Grid.Row="1"
+                       Name="StatisticsPlaceholderTextBlock"
+                       Text="Statistics - loading..."
+                       FontSize="13"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="0,4,0,0" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

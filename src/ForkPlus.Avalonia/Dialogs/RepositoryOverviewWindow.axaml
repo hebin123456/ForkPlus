@@ -1,0 +1,232 @@
+<dialogs:CustomWindow xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                      x:Class="ForkPlus.Avalonia.Dialogs.RepositoryOverviewWindow"
+                      Title="Repository Overview"
+                      Width="900" Height="640"
+                      MinWidth="560" MinHeight="400"
+                      CanResize="True"
+                      WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.5a：Avalonia 版 RepositoryOverviewWindow（spike 骨架版）。
+        验证 ItemsControl + DataTemplate 替代 WPF 自绘 Treemap 图 + 文件树聚合统计链路。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.xaml.cs（412 行）：
+          - public partial class RepositoryOverviewWindow : CustomWindow, ITreemapDelegate
+          - 字段：
+            * JobQueue _jobQueue
+            * GitModule _gitModule
+            * ITreemapDataSource _dataSource
+            * RepositoryOverviewData _repositoryOverviewData
+            * 静态 Typeface / Brush / Pen / BitmapImage FolderIcon
+            * TextDrawer _titleGlyphDrawer / _secondaryLabelGlyphDrawer
+            * Brush _labelBrush / _secondaryLabelBrush
+            * Pen _borderPen / _selectedBorderPen / _hoverBorderPen
+            * double _borderRadius = 3.0 / _headerHeight = 20.0
+            * Size _itemPadding = new Size(2.0, 2.0)
+          - 构造函数 (RepositoryUserControl, GitModule gitModule)：
+            * Title = "{repoName} - Repository Overview"
+            * RepositoryNameTextBlock.Text = gitModule.Path
+            * TargetReferenceGitPointView.Value = activeBranch
+            * CommitsUserControl.Initialize(repositoryUserControl)
+            * Treemap.Delegate = this
+            * Treemap.SelectionChanged += delegate { ... }
+              （树图点击：从 CommitsCountDataSource.GetPath 取路径 →
+                GetRepositoryOverviewData.GetShas(dateRange, path) →
+                GetRevisionHeadersGitCommand.Execute → Revision[] →
+                CommitsUserControl.UpdateData(path, revisions) +
+                AuthorsUserControl.UpdateData(authorStats, userIdentities) +
+                SelectedFileNameTextBlock / SelectedFileIcon / SelectedFilePathTextBlock）
+            * DateRangeButton.DateRangeChanged += delegate { RefreshData(dateRange); }
+            * Fallback.Show() + FallbackTitle = "Loading..."
+            * JobQueue.Add("Read repository overview") 调
+              GetRepositoryOverviewDataGitCommand().Execute(gitModule, monitor)
+              成功后设置 DateRangeButton.MinDate/MaxDate/DateRange + Fallback.Hide()
+            * RefreshBrushes() + WeakEventManager ApplicationThemeChanged
+          - RefreshData(CalendarDateRange)：
+            * repositoryOverviewData.Files.Map(...) → files 字典
+            * ReadCommitsCountDataSourceItems 递归构建 CommitsCountDataSource.Item 层级
+            * Treemap.DataSource = dataSource
+            * Treemap.SelectedIndexPath = dataSource.FirstVisualItem()
+          - ITreemapDelegate.GetItemTitle / DrawChildInRect / CreateTooltip：
+            * 自绘 Treemap：DrawRoundedRectangle + DrawImage(FolderIcon/FileIcon) +
+              TextDrawer.DrawText（按 rect 大小区分 folder/file 渲染策略）
+          - ApplicationThemeChanged → RefreshBrushes + InvalidateVisual
+          - OnKeyDown: Esc → Close
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 构造函数重写：解耦 RepositoryUserControl，改为 (GitModule gitModule)
+             * 不再依赖 RepositoryUserControl.RepositoryData.References
+             * branches/tags count 用 GitRequest("for-each-ref", "refs/heads/") 直接 git 拉取
+          2. 不实现自绘 Treemap 图（ITreemapDelegate.DrawChildInRect + DrawingContext）
+             spike 版用 ItemsControl + WrapPanel + Border 网格布局替代
+             （每个 contributor 一个 Border，Background=颜色块，Width/Height 按比例绑定）
+             对照 WPF DrawRoundedRectangle + DrawImage + TextDrawer 自绘
+          3. 不实现 Treemap.SelectionChanged 文件路径点击链路（spike 版不显示文件级 Treemap）
+             * 不调用 CommitsUserControl / AuthorsUserControl / SelectedFileNameTextBlock
+             * 不调用 GetRepositoryOverviewData.GetShas / GetRevisionHeadersGitCommand
+             * spike 版只显示 contributor 维度的统计（Name + CommitCount + 百分比 + 颜色块）
+          4. 不实现 DateRangeButton 日期范围切换（spike 版无日期筛选）
+             * 显示全仓库范围统计（不限日期范围）
+          5. 不实现 Fallback Loading 状态（spike 版用 StatusTextBlock 显示进度）
+          6. spike 版新增：顶部摘要栏（总 commit 数 / contributors 数 / branches 数 / tags 数）
+             WPF 版无此栏（只有 Treemap 主视图 + 右侧 Commits/Authors 列表）
+          7. spike 版新增：Contributor ItemsControl + DataTemplate
+             （Name + CommitCount + 百分比 + 颜色块，水平布局）
+          8. spike 版用 Task.Run + Dispatcher.UIThread.Post 后台计算统计
+             （对照 WPF JobQueue.Add + Dispatcher.Async）
+          9. 跳过 RefreshBrushes / ApplicationThemeChanged（用 DynamicResource 主题 brush 自动跟随）
+         10. 跳过 IconTools.GetImageSourceForPath（spike 版无文件图标）
+         11. 跳过 TargetReferenceGitPointView（spike 版用 TextBlock 显示 active branch）
+         12. 跳过 OnKeyDown Esc 关闭（CustomWindow 默认行为已足够，spike 不强加）
+
+        本 spike 版暂不迁移（留 Phase 5.5b 或更后）：
+          - 自绘 Treemap 图（ITreemapDelegate + DrawingContext + TextDrawer）
+          - 文件路径聚合统计（CommitsCountDataSource.Item 递归层级）
+          - Treemap.SelectionChanged 文件点击 → revisions + authors 详情
+          - DateRangeButton 日期范围切换
+          - CommitsUserControl / AuthorsUserControl 列表
+          - Fallback Loading 进度遮罩
+          - IconTools.GetImageSourceForPath 文件图标
+          - TargetReferenceGitPointView GitPoint 选择器
+          - NotificationCenter.ApplicationThemeChanged 主题切换订阅
+          - RefreshBrushes 主题 brush 刷新
+
+        本 spike 版验证：
+          - GetRepositoryOverviewDataGitCommand 后台调用工作（拿 Shas + UserIdentities）
+          - contributor 维度统计（Name + CommitCount + 百分比 + 颜色块）渲染正常
+          - 顶部摘要栏（commits / contributors / branches / tags）显示正确
+          - Task.Run + Dispatcher.UIThread.Post 异步链路工作
+          - DynamicResource 主题 brush 跟随主题切换
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: 标题栏（仓库名 + active branch） -->
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Name="RepositoryNameTextBlock"
+                           FontSize="16" FontWeight="Medium"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource LabelBrush}" />
+                <TextBlock Name="RepositoryPathTextBlock"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource SecondaryLabelBrush}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Name="ActiveBranchTextBlock"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       Margin="12,0,0,0"
+                       Foreground="{DynamicResource AccentBrush}" />
+        </Grid>
+
+        <!-- Row 1: 摘要栏（总 commit 数 / contributors / branches / tags） -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,0,0,8">
+            <Border Grid.Column="0" Padding="8,6" Margin="0,0,4,0"
+                    Background="{DynamicResource ThemeControlMidBrush}"
+                    CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="Commits"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <TextBlock Name="CommitCountTextBlock"
+                               FontSize="18" FontWeight="Medium"
+                               Foreground="{DynamicResource LabelBrush}" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Padding="8,6" Margin="4,0,4,0"
+                    Background="{DynamicResource ThemeControlMidBrush}"
+                    CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="Contributors"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <TextBlock Name="ContributorCountTextBlock"
+                               FontSize="18" FontWeight="Medium"
+                               Foreground="{DynamicResource LabelBrush}" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Padding="8,6" Margin="4,0,4,0"
+                    Background="{DynamicResource ThemeControlMidBrush}"
+                    CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="Branches"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <TextBlock Name="BranchCountTextBlock"
+                               FontSize="18" FontWeight="Medium"
+                               Foreground="{DynamicResource LabelBrush}" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="3" Padding="8,6" Margin="4,0,0,0"
+                    Background="{DynamicResource ThemeControlMidBrush}"
+                    CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="Tags"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <TextBlock Name="TagCountTextBlock"
+                               FontSize="18" FontWeight="Medium"
+                               Foreground="{DynamicResource LabelBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Row 2: Treemap 简化版（每个 contributor 一个 Border，按 commit 数比例） -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="4">
+            <!-- spike 版用 ItemsControl + WrapPanel + Border 网格布局替代自绘 Treemap -->
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl Name="TreemapItemsControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding ColorBrush}"
+                                    BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Margin="2"
+                                    MinWidth="80" MinHeight="48"
+                                    Width="{Binding Width}"
+                                    Height="{Binding Height}"
+                                    Padding="6"
+                                    ToolTip.Tip="{Binding Tooltip}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}"
+                                               FontSize="12" FontWeight="Medium"
+                                               Foreground="White"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding CommitCountText}"
+                                               FontSize="11"
+                                               Foreground="White"
+                                               Opacity="0.85" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Row 3: 状态栏（进度文本，对照 WPF Fallback.FallbackMessage） -->
+        <TextBlock Grid.Row="3"
+                   Name="StatusTextBlock"
+                   FontSize="11"
+                   Margin="0,8,0,0"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource SecondaryLabelBrush}" />
+    </Grid>
+</dialogs:CustomWindow>

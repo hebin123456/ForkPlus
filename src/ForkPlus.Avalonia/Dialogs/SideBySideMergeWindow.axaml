@@ -1,0 +1,139 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                              x:Class="ForkPlus.Avalonia.Dialogs.SideBySideMergeWindow"
+                              Title="Resolve Merge Conflicts"
+                              Width="900"
+                              Height="640"
+                              MinWidth="600"
+                              MinHeight="400"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 SideBySideMergeWindow（spike 简化版，对照 WPF SideBySideMergeWindow.xaml + .cs 1049 行）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/SideBySideMergeWindow.xaml.cs：
+          - public partial class SideBySideMergeWindow : ForkPlusDialogWindow
+          - 内部 enum MergeMode { Undefined, Text, Binary }
+          - 静态字段: UnifiedMergeParser _mergeConflictParser
+          - 字段: GitModule _gitModule / RepositoryState _repositoryState / ChangedFile _changedFile
+                  MergeConflict _mergeConflict / bool _stopCheckBoxEvents / bool _startUpFinished
+                  MergeMode _mergeMode / DiffContent _fileContent
+                  DateTime _lastLastScrollTime / MergeCodeEditor _lastUpdatedEditor / bool _refreshInProgress
+                  bool _aiResolving
+          - IsSubmitAllowed:
+            * Text mode: _mergeConflict != null && _mergeConflict.IsResolved
+            * Binary mode: AllLocal / AllRemote 单选互斥
+          - 构造函数 (RepositoryUserControl, RepositoryState, ChangedFile)
+            * FileMergeControl.RepositoryUserControl / LocalMergeEditor.ViewMode = Local
+            * RemoteMergeEditor.ViewMode = Remote / MergedMergeEditor.ViewMode = Merged
+            * MergeCodeEditor 事件: MergeLineAdded / MergeLineRemoved / MergeChunkAdded / MergeChunkRemoved
+            * TextArea.TextView.ScrollOffsetChanged → OnScrollOffsetChanged（三向同步滚动）
+            * MergedMergeEditor.IsReadOnly = false / MergedMergeEditor.Document.Changing → Document_Changing
+            * NotificationCenter.CodeEditorFontSizeChanged → RefreshCodeEditorFontSize
+            * Loaded → Refresh()
+          - OnSubmit:
+            * Text: MergeConflictView.Create(Merged).StringValue → ResolveMergeConflictGitCommand → Close(gitResult)
+            * Binary: AllLocal → ResolveConflictGitCommand(Local) / AllRemote → ResolveConflictGitCommand(Remote)
+          - Document_Changing: 合并内容编辑校验（防止删除对齐行 / 内容不匹配）
+          - AllRemoteCheckBox_Changed / AllLocalCheckBox_Changed: SelectAll(select, origin)
+          - MergeEditor_MergeLineAdded / MergeLineRemoved / MergeChunkAdded / MergeChunkRemoved
+          - Refresh: GetWorkingDirectoryFileChangesGitCommand → UnmergedDiffContent
+            * Text: UnifiedMergeParser.TryParse → _mergeConflict + RefreshMergeEditorViews + SelectFirstConflictedChunk
+            * Binary: FileMergeControl.Content = gitCommandResult
+          - RefreshTopCheckBoxButtons: GetRevisionDetailsGitCommand → LocalSubjectTextBlock / RemoteSubjectTextBlock
+          - RefreshMergeEditorViews: SetMergeConflictView(Local/Remote/Merged)
+          - RefreshMergedView / RefreshMergeStatusControls: ConflictStatus 显示 resolved/total
+          - RefreshCheckboxes: AllRemote / AllLocal 三态复选框同步
+          - NextChunkButton_Click / PreviousChunkButton_Click: 滚动到下一个/上一个冲突块
+          - LayoutOrientationToggleButton_Changed: 切换 Horizontal / Vertical 布局
+          - AiResolveButton_Click: OpenAiService 解决冲突（流式响应 + 用户确认）
+          - OnClosed: ForkPlusSettings.Default.Save()
+
+        Avalonia 版 spike 简化项（与 WPF 行为差异）：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. 构造函数签名：(GitModule gitModule, string filePath, Action<string>? onResolved = null)
+             替代 (RepositoryUserControl, RepositoryState, ChangedFile)
+          3. 三向合并视图（左/中/右 MergeCodeEditor）→ spike 版用单个 AvaloniaEdit.TextEditor
+             通过顶部 ComboBox 切换 Current / Ours / Theirs / Merged 视图模式
+          4. MergeCodeEditor + MergeConflictView + MergeConflict + UnifiedMergeParser →
+             spike 版内联 MergeViewMode 枚举 + 简单冲突标记解析（<<<<<<< / ======= / >>>>>>>）
+          5. ResolveMergeConflictGitCommand → spike 版直接写文件 + git add + onResolved 回调
+          6. RepositoryState / ChangedFile / DiffContent / UnmergedDiffContent → spike 版直接读磁盘文件
+          7. AI Resolve (OpenAiService) → spike 版省略
+          8. LayoutOrientationToggleButton（Horizontal/Vertical 切换）→ spike 版省略（单 editor 无需布局切换）
+          9. NextChunkButton / PreviousChunkButton → spike 版省略
+         10. RefreshTopCheckBoxButtons（本地/远程 commit 信息面板）→ spike 版省略
+         11. AllLocalCheckBox / AllRemoteCheckBox → spike 版用 ComboBox 视图模式替代（Ours/Theirs）
+         12. ForkPlusSettings.SideBySideMergeWindowLocationState 持久化 → spike 版跳过
+         13. NotificationCenter.CodeEditorFontSizeChanged 订阅 → spike 版省略
+         14. Dispatcher.Invoke / Dispatcher.BeginInvoke → Dispatcher.UIThread.Post
+         15. PreferencesLocalization.Current / FormatCurrent → ServiceLocator.Localization.Translate / FormatCurrent
+         16. OnClosed override → Closed += 事件
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+            <!-- Row 0: Toolbar (file path + view mode combo + extra action buttons) -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,6">
+                <TextBlock Grid.Column="0"
+                           Name="FilePathTextBlock"
+                           FontSize="12"
+                           FontFamily="Consolas,Menlo,monospace"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundMidBrush}" />
+                <TextBlock Grid.Column="1"
+                           Text="View:"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0" />
+                <ComboBox Grid.Column="2"
+                          Name="ViewModeComboBox"
+                          MinWidth="120"
+                          Margin="0,0,6,0"
+                          SelectionChanged="ViewModeComboBox_SelectionChanged" />
+                <TextBlock Grid.Column="3"
+                           Name="ConflictStatusTextBlock"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </Grid>
+
+            <!-- Row 1: Merged content editor (single AvaloniaEdit.TextEditor) -->
+            <Border Grid.Row="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1">
+                <avalonedit:TextEditor Name="MergeEditor"
+                                       ShowLineNumbers="True"
+                                       IsReadOnly="False"
+                                       FontFamily="Consolas,Menlo,monospace"
+                                       FontSize="13"
+                                       WordWrap="False" />
+            </Border>
+
+            <!-- Row 2: Status text -->
+            <TextBlock Grid.Row="2"
+                       Name="StatusText"
+                       Margin="0,6,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+
+        <!-- Row 3: Footer (Save / Mark Resolved / Cancel via Footer buttons) -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
