@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
   <!-- Phase 2.2：TransparentPatternImage 移除（Avalonia 不支持控件作为资源）-->
   <Color x:Key="LabelColor">#D6E8DC</Color>
   <Color x:Key="SecondaryLabelColor">#C4C0C0</Color>
@@ -117,7 +118,7 @@
   <Color x:Key="ClosableTabItem.Disabled.BorderColor">DarkGray</Color>
   <Color x:Key="ClosableTabItem.TopBorderColor">#282828</Color>
   <Color x:Key="ClosableTabItem.SeparatorBorderColor">#404040</Color>
-  <system:Double x:Key="ClosableTabItem.ShadowOpacity" xmlns:system="clr-namespace:System;assembly=mscorlib">0.8</system:Double>
+  <system:Double x:Key="ClosableTabItem.ShadowOpacity">0.8</system:Double>
   <Color x:Key="AddButtonBackgroundColor">Transparent</Color>
   <Color x:Key="CloseButton.Static.BackgroundColor">Transparent</Color>
   <Color x:Key="CloseButton.MouseOver.BackgroundColor">#303030</Color>

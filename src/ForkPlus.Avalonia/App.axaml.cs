@@ -54,17 +54,21 @@ namespace ForkPlus.Avalonia
                 // Phase 1 的 AboutWindow 保留（通过菜单可达）
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                 desktop.MainWindow = mainWindow;
+
+                // Avalonia 11 的 Application 基类没有 OnExit 虚方法（WPF 才有
+                // OnExit(ApplicationShutdownEventArgs)）。Exit 事件由 IControlledApplicationLifetime
+                // 暴露，订阅后在应用退出时优雅关闭 Host，确保后台服务
+                // （如 GitOperationQueue）正确释放资源。
+                desktop.Exit += OnDesktopExit;
             }
 
             base.OnFrameworkInitializationCompleted();
         }
 
-        protected override void OnExit(ApplicationShutdownEventArgs e)
+        private void OnDesktopExit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            // 优雅关闭 Host，确保后台服务（如 GitOperationQueue）正确释放资源
             _host?.StopAsync(TimeSpan.FromSeconds(5));
             _host?.Dispose();
-            base.OnExit(e);
         }
     }
 }

@@ -1,8 +1,11 @@
 using System;
 using Avalonia.Controls;
-using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI;
+// 当前命名空间 ForkPlus.Avalonia.Controls.Editor.Diff 的末段 "Diff" 与
+// ForkPlus.Git.Diff.Diff 类型名冲突（编译器优先把 Diff 解析为当前命名空间），
+// 用类型别名显式指向 ForkPlus.Git.Diff.Diff。
+using Diff = ForkPlus.Git.Diff.Diff;
 
 namespace ForkPlus.Avalonia.Controls.Editor.Diff
 {

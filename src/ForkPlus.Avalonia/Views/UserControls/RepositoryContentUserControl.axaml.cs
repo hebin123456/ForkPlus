@@ -141,15 +141,11 @@ namespace ForkPlus.Avalonia.Views.UserControls
             RevisionListViewUserControl?.UpdateRepositoryData(repositoryData);
         }
 
-        // 对照 WPF: public void SelectRevisions(IReadOnlyList<Sha> shas, NoUIAutomationListView.SelectOptions selectOptions, string filePath = null)
-        //   按 SHA 数量构造 RevisionDiffTarget（1=Revision / 2=Range / >2=MultipleRevisions）
-        public void SelectRevisions(object shas, object selectOptions, string filePath = null)
-        {
-            Console.WriteLine($"[RepositoryContent] SelectRevisions(shas) (spike placeholder): filePath={filePath}");
-        }
-
         // 对照 WPF: public void SelectRevisions(RevisionDiffTarget target, NoUIAutomationListView.SelectOptions selectOptions, string filePath = null)
         //   按 target 调用 RevisionListView.Select + RevisionDetails.ShowRevisionDetails
+        // WPF 原有两个 SelectRevisions 重载（IReadOnlyList<Sha> 和 RevisionDiffTarget），
+        // spike 版统一用 object 占位（两个签名会冲突 CS0111），故只保留 target 版本。
+        // Phase 3 后期接入 RevisionDiffTarget 类型后再恢复 IReadOnlyList<Sha> 重载。
         public void SelectRevisions(object target, object selectOptions, string filePath = null)
         {
             Console.WriteLine($"[RepositoryContent] SelectRevisions(target) (spike placeholder): target={target}, filePath={filePath}");
