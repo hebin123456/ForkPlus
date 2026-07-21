@@ -1,0 +1,129 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AddSubmoduleWindow"
+                              Title="Add Submodule"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.39b：Avalonia 版 AddSubmoduleWindow（对照 WPF AddSubmoduleWindow.xaml 31 行 + .cs 211 行）。
+
+        对照 WPF：
+          - public partial class AddSubmoduleWindow : ForkPlusDialogWindow
+          - 构造函数 (GitModule gitModule, SubmodulesToUpdate submodulesToUpdate)
+          - IsSubmitAllowed: url + path 非空 && _repositoryPathValid
+          - GetCommandPreview: "git submodule add <url> <path>"
+          - OnSubmit: AddSubmoduleGitCommand().Execute(_gitModule, url, path, monitor)
+            → 成功后可选 UpdateSubmodulesGitCommand().Execute(_gitModule, submodulesToUpdate, monitor)
+            → Close(result)
+          - PathTextBox_TextChanged: 更新 FinalPathHint + _repositoryPathValid
+          - RepositoryUrlTextBox_TextChanged: 更新 SubmitButton + CommandPreview
+          - TryGetClipboardRepositoryUrl: ServiceLocator.Clipboard.GetText() + GitUrl.IsValid + LooksLikeRepositoryReference
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          3. spike 基类不提供 DisableEditableControls → 手动禁用 RepositoryUrlTextBox + PathTextBox + FetchNestedSubmodulesCheckBox
+          4. JobQueue + Dispatcher.Async 替换为 Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. MainWindow.ActiveRepositoryUserControl.JobQueue.Add 替换为注入 Action<GitCommandResult>? onCompleted 回调
+          6. PlaceholderTextBox.Placeholder 替换为 TextBox Watermark
+          7. Collapse()/Show() 扩展方法替换为 IsVisible = false/true
+          8. TextChangedEventArgs 使用 Avalonia 同名类型
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Repository URL -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Repository URL:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="RepositoryUrlTextBox"
+                     Watermark="Git Repository Url"
+                     Margin="8,4,0,4"
+                     TextChanged="RepositoryUrlTextBox_TextChanged" />
+
+            <!-- Row 1: Folder -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Folder:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="PathTextBox"
+                     Watermark="Relative Local Path"
+                     Margin="8,4,0,4"
+                     TextChanged="PathTextBox_TextChanged" />
+
+            <!-- Row 2: Final path hint -->
+            <TextBlock Grid.Row="2" Grid.Column="1"
+                       Name="FinalPathHintTextBlock"
+                       FontSize="12"
+                       Margin="8,4,0,0"
+                       IsVisible="False"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+            <!-- Row 3: Fetch nested submodules checkbox -->
+            <CheckBox Grid.Row="3" Grid.Column="1"
+                      Name="FetchNestedSubmodulesCheckBox"
+                      Content="Fetch nested submodules"
+                      Margin="8,6,0,0"
+                      HorizontalAlignment="Left"
+                      IsChecked="False" />
+
+            <!-- Row 4: Command preview label -->
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+
+            <!-- Row 5: Command preview textbox -->
+            <ScrollViewer Grid.Row="5" Grid.Column="1"
+                          MaxHeight="100"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="8,8,0,4">
+                <TextBox Name="CommandPreviewTextBox"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         TextWrapping="Wrap"
+                         Padding="6" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

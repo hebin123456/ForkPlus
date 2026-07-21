@@ -1,0 +1,113 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CreatePartialStashWindow"
+                              Title="Save Partial Stash"
+                              Width="590"
+                              Height="370"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 CreatePartialStashWindow（对照 WPF CreatePartialStashWindow.xaml + .cs 278 行）。
+
+        对照 WPF：
+          - public partial class CreatePartialStashWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / bool _aiGenerating
+          - 构造函数 (GitModule gitModule, ChangedFile[] filesToStash, ChangedFile[] allChangedFiles)
+          - IsSubmitAllowed: GetFirstSelectedFile() != null
+          - GetCommandPreview: git stash push [-m "msg"] followed by file paths
+          - OnSubmit: SaveStashGitCommand().Execute(_gitModule, msg, filesToStash.ToArray(), monitor) then Close(result)
+          - AiGenerateStashNameButton_Click: 读选中文件 diff → OpenAiService.GenerateStashName → 流式写 TextBox
+
+        Avalonia 版差异：
+          1. spike 模式：4 行 Grid = Header / Description / Content / Footer
+          2. ResizeMode.CanResizeWithGrip → CanResize="True"
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          4. spike 基类不提供 DisableEditableControls → 手动禁用
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. PlaceholderTextBox.Placeholder → TextBox Watermark
+          7. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          8. PartialStashFileViewModel (WPF) → Avalonia 工程内同名 stub（省略 FileTypeIcon）
+          9. ListBox ScrollIntoView → ScrollIntoView (Avalonia ListBox 支持)
+         10. Image (FileTypeIcon) → spike 省略不显示
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: File list -->
+            <ListBox Grid.Row="0"
+                     Name="PartialStashListBox"
+                     Margin="0,0,0,4">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <CheckBox Grid.Column="0"
+                                      Margin="8,0,4,0"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding Selected}"
+                                      IsCheckedChanged="FileCheckBox_Changed" />
+                            <TextBlock Grid.Column="1"
+                                       Margin="4,0,4,0"
+                                       Text="{Binding FilePath}"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontSize="13"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- Row 1: Stash message + AI button -->
+            <Grid Grid.Row="1" Margin="0,4,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Name="StashMessageTextBox"
+                         Watermark="Stash message (optional)"
+                         Padding="4,2,4,2"
+                         FontSize="13"
+                         TextChanged="StashMessage_TextChanged" />
+                <Button Grid.Column="1"
+                        Name="AiGenerateStashNameButton"
+                        Content="🤖 AI"
+                        Margin="6,0,0,0"
+                        Padding="8,2"
+                        Height="24"
+                        FontSize="12"
+                        VerticalAlignment="Center"
+                        Click="AiGenerateStashNameButton_Click" />
+            </Grid>
+            <!-- Row 2: Command preview -->
+            <TextBox Grid.Row="2"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="0,4,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

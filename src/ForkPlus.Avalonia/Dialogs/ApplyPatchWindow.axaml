@@ -1,0 +1,101 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ApplyPatchWindow"
+                              Title="Apply Patch"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 ApplyPatchWindow（对照 WPF ApplyPatchWindow.xaml + .cs 207 行）。
+
+        对照 WPF：
+          - public partial class ApplyPatchWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / byte[] _patchData / bool _patchContainsCommitHeader
+          - 两个构造函数：
+            * (RepositoryUserControl, string patchPath) - 文件路径模式（显示 Location 行 + Browse 按钮）
+            * (RepositoryUserControl, byte[] patchData) - 剪贴板模式（隐藏 Location 行 + Browse 按钮）
+          - IsSubmitAllowed: _patchData != null || File.Exists(PathTextBox.Text.Trim())
+          - GetCommandPreview: git am|apply [path]
+          - OnSubmit: AmGitCommand/ApplyPatchGitCommand().Execute(gitModule, patchData|filePath, monitor) → Close(result)
+          - BrowseButton_Click: OpenDialog.SelectFile → PathTextBox.Text
+          - TestForConflicts: ApplyPatchTestGitCommand.Execute → SetStatus(Success|Warning)
+          - RefreshCreateCommitsCheckBoxVisibility: 根据 _patchContainsCommitHeader 切换 CheckBox 可见性
+
+        Avalonia 版差异：
+          1. spike 模式：4 行 Grid = Header / Description / Content / Footer
+          2. RepositoryUserControl → GitModule + Action<GitCommandResult>? onCompleted 回调
+          3. OpenDialog.SelectFile → TopLevel.StorageProvider.OpenFilePickerAsync
+          4. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          5. spike 基类不提供 DisableEditableControls → 手动禁用
+          6. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          7. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          8. Collapse()/Show() → IsVisible = false/true
+          9. AmGitCommand/ApplyPatchGitCommand 为 internal，依赖 ForkPlus.Core 的 InternalsVisibleTo("ForkPlus.Avalonia")
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Location label + TextBox + Browse button -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Name="LocationLabel"
+                       Text="Location:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="PathTextBox"
+                     Watermark="Select patch to apply"
+                     Margin="0,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="PathTextBox_TextChanged" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Name="BrowseButton"
+                    Content="..."
+                    Click="BrowseButton_Click"
+                    Margin="4,4,0,4" />
+            <!-- Row 1: Create commits checkbox -->
+            <CheckBox Grid.Row="1" Grid.Column="1"
+                      Name="CreateCommitsCheckBox"
+                      Content="Create commit"
+                      Margin="0,6,0,0"
+                      HorizontalAlignment="Left"
+                      FontSize="13"
+                      IsCheckedChanged="CreateCommitsCheckBox_Changed"
+                      IsVisible="False" />
+            <!-- Row 2: Command preview -->
+            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="0,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

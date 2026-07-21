@@ -1,0 +1,138 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CreateWorktreeWindow"
+                              Title="Create Worktree"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 CreateWorktreeWindow（对照 WPF CreateWorktreeWindow.xaml 55 行 + .cs 220 行）。
+
+        对照 WPF：
+          - public partial class CreateWorktreeWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / GitModule _gitModule
+                  RepositoryWorktrees _worktrees / RepositoryReferences _repositoryReferences
+                  string _worktreesContainerPath
+          - 构造函数 (RepositoryUserControl, LocalBranch startBranch)
+            * _worktreesContainerPath = Path.Combine(parentDir, repoName + "-worktrees")
+            * LocalBranchesComboBox.ItemsSource = _repositoryReferences.LocalBranches
+            * LocalBranchesComboBox.SelectedItem = startBranch
+            * BranchNameTextBox.SetAutocompleteProvider(new ReferenceNameAutocompleteProvider(references))
+          - IsSubmitAllowed: branchName 非空 + ReferenceNameValidator.Validate == null
+            + _worktrees.WorktreesByFullReference 不含 key + 本地分支不重名 + PathTextBox 非空
+          - GetCommandPreview: "git worktree add <quotedPath> <branchName>"
+          - OnSubmit: AddWorktreeGitCommand().Execute(_gitModule, path, branchName, selectedBranch.Sha, monitor)
+            → OpenGitRepositoryGitCommand().Execute(worktreePath)
+            → 可选 UpdateSubmodules(result, submodulesToUpdate, _gitModule.CommonGitDir, monitor)
+            → MainWindow.Instance.TabManager.OpenRepository(worktreePath) + Close(result)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. RepositoryUserControl 参数 → GitModule + RepositoryReferences? + RepositoryWorktrees?
+             + LocalBranch? startBranch + SubmodulesToUpdate + Action<string>? onRepositoryOpened
+             + Action<GitCommandResult>? onCompleted 回调
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          4. spike 基类不提供 DisableEditableControls → 手动禁用 ComboBox + TextBox + BrowseButton
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. MainWindow.Instance.TabManager.OpenRepository(path) → 注入 Action<string>? onRepositoryOpened
+          7. PlaceholderTextBox.Placeholder → TextBox Watermark
+          8. ReferenceTextBox → 普通 TextBox（spike 不迁移 ReferenceNameAutocompleteProvider）
+          9. OpenDialog.SelectDirectory → StorageProvider.OpenFolderPickerAsync
+         10. TextChangedEventArgs 使用 Avalonia 同名类型
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Start from ComboBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Start from:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      Name="LocalBranchesComboBox"
+                      HorizontalAlignment="Stretch"
+                      Margin="8,4,0,4"
+                      SelectionChanged="LocalBranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" FontSize="13" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Row 1: Branch name -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Branch name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="BranchNameTextBox"
+                     Watermark="Enter branch name"
+                     Margin="8,4,0,4"
+                     TextChanged="BranchName_TextChanged" />
+
+            <!-- Row 2: Location + Browse button -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Location:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="8,4,0,4">
+                <TextBox Grid.Column="0"
+                         Name="PathTextBox"
+                         TextChanged="PathTextBox_TextChanged" />
+                <Button Grid.Column="1"
+                        Name="BrowseButton"
+                        Content="Browse"
+                        Margin="4,0,0,0"
+                        Click="BrowseButton_Click" />
+            </Grid>
+
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

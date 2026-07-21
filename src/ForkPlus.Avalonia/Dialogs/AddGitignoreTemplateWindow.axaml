@@ -1,0 +1,79 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:editor="clr-namespace:ForkPlus.Avalonia.Controls.Editor;assembly=ForkPlus.Avalonia"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AddGitignoreTemplateWindow"
+                              Title="Add .gitignore Template"
+                              Width="750"
+                              Height="650"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.41b：Avalonia 版 AddGitignoreTemplateWindow（对照 WPF AddGitignoreTemplateWindow.xaml 28 行 + .cs 357 行）。
+
+        对照 WPF：
+          - public partial class AddGitignoreTemplateWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / string[] _untrackedFiles
+                 / List<(string Name, string Content)> _templates
+                 / List<string> _selectedTemplateNames / Dictionary<string, CheckBox> _checkboxes
+          - 构造函数 (RepositoryUserControl repositoryUserControl, string[] untrackedFiles)
+          - 静态数据: TemplateMarkers / AlwaysEnabledTemplates / TemplateGroups
+          - IsSubmitAllowed: _selectedTemplateNames.Count > 0
+          - OnSubmit: File.WriteAllText(gitModule.MakePath(".gitignore"), CombinedSelectedContent())
+                     → CloseWithOk()
+          - LoadTemplates: 从 ForkPlus.Assets.gitignore.txt 嵌入资源解析模板分块
+          - BuildTemplateList: 按 TemplateGroups 分组渲染 CheckBox 到 TemplateListPanel
+          - PreselectTemplates: 根据 _untrackedFiles 后缀 + 路径组件预选模板
+          - Checkbox_Toggled: 维护 _selectedTemplateNames + UpdatePreview + UpdateSubmitButton
+          - UpdatePreview: PreviewCodeEditor.Text = CombinedSelectedContent()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. RepositoryUserControl 参数 → GitModule + Action<GitCommandResult>? onCompleted 回调
+          3. spike 基类不提供 GetCommandPreview（本对话框无命令预览）
+          4. spike 基类不提供 DisableEditableControls（本对话框无可编辑文本控件）
+          5. Description 用纯文本替代 WPF Run+Hyperlink+Run（Avalonia TextBlock.Inlines
+             API 与 WPF 差异较大，spike 简化）
+          6. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          7. CodeEditor（AvaloniaEdit.TextEditor 子类）替代 WPF ICSharpCode.AvalonEdit.TextEditor
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="180,12,*" Margin="0,4,0,0">
+            <!-- Column 0: Template list -->
+            <Border Grid.Column="0"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    CornerRadius="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Name="TemplateListPanel" />
+                </ScrollViewer>
+            </Border>
+
+            <!-- Column 2: Preview CodeEditor -->
+            <Border Grid.Column="2"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1">
+                <editor:CodeEditor Name="PreviewCodeEditor"
+                                   IsReadOnly="True"
+                                   WordWrap="True" />
+            </Border>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

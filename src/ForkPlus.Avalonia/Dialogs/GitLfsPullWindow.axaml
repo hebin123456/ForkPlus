@@ -1,0 +1,90 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitLfsPullWindow"
+                              Title="Git LFS Pull"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.43b：Avalonia 版 GitLfsPullWindow（对照 WPF GitLfsPullWindow.xaml 38 行 + .cs 107 行）。
+
+        对照 WPF：
+          - public partial class GitLfsPullWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / GitModule _gitModule
+          - 构造函数 (RepositoryUserControl, GitModule) → 从 MainWindow.ActiveRepositoryUserControl.RepositoryData 取 remotes
+          - IsSubmitAllowed: RemotesComboBox.SelectedItem is Remote
+          - GetCommandPreview: "git lfs pull " + remote.Name
+          - OnSubmit: GitLfsPullGitCommand().Execute(_gitModule, remote, monitor) → Close()
+          - Refresh: 排序 Remotes，按 upstream 或 default 选择
+
+        Avalonia 版差异：
+          1. spike 模式：构造函数 SetFooter/Footer 注入
+          2. RepositoryUserControl 参数 → GitModule + RepositoryRemotes + RepositoryReferences? + Action onCompleted 回调
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBlock
+          4. spike 基类不提供 DisableEditableControls → 手动禁用 RemotesComboBox
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. ErrorWindow + InvalidateAndRefresh → spike 由 onCompleted 回调由调用方处理
+          7. ComboBox ItemTemplate 用 Image + TextBlock → spike 版用 TextBlock 显示 Remote.Name 简化
+          8. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Remote: ComboBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Remote:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      Name="RemotesComboBox"
+                      HorizontalAlignment="Stretch"
+                      Margin="8,4,0,4"
+                      SelectionChanged="RemotesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 1: Command preview -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       FontWeight="Medium"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

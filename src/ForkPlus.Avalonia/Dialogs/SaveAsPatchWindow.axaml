@@ -1,0 +1,92 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.SaveAsPatchWindow"
+                              Title="Create Patch"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 SaveAsPatchWindow（对照 WPF SaveAsPatchWindow.xaml + .cs 115 行）。
+
+        对照 WPF：
+          - public partial class SaveAsPatchWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / GitModule _gitModule / Revision _revision / Sha _src / Sha? _dst
+          - 构造函数 (RepositoryUserControl, GitModule, Revision, Sha?)
+          - OnInitialized: async 加载 GetRevisionsInRangeGitCommand → RevisionsItemsControl.ItemsSource
+          - GetCommandPreview: git format-patch <range> [-o <dir>]
+          - OnSubmit: OpenDialog.SelectPatchSaveLocation → ExportPatchGitCommand.Execute → Close
+
+        Avalonia 版差异：
+          1. spike 模式：4 行 Grid = Header / Description / Content / Footer
+          2. RepositoryUserControl → GitModule + Func<string>? defaultSourceDirProvider + Action<GitCommandResult>? onCompleted 回调
+          3. RepositoryManager.Instance.DefaultSourceDir() → 注入 Func<string>? defaultSourceDirProvider
+          4. OpenDialog.SelectPatchSaveLocation → TopLevel.StorageProvider.SaveFilePickerAsync
+          5. ErrorWindow → MessageBoxWindow.ShowDialog
+          6. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          7. spike 基类不提供 DisableEditableControls → 手动禁用
+          8. BindableGitPointView (ItemsControl.ItemTemplate) → spike 用 ItemsControl + TextBlock 显示 SHA + message
+          9. OnInitialized (WPF 事件) → Loaded 事件 (Avalonia 等价)
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Revisions label -->
+            <TextBlock Grid.Row="0"
+                       Name="RevisionsTextBlock"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,0,0,4" />
+            <!-- Row 1: Revisions list -->
+            <Border Grid.Row="1"
+                    Height="120"
+                    Margin="0,0,0,4"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Name="RevisionsItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Margin="6,2"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
+                                           Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <!-- Row 2: Command preview -->
+            <TextBox Grid.Row="2"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="0,4,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

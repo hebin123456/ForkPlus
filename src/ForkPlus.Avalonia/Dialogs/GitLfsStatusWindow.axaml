@@ -1,0 +1,91 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitLfsStatusWindow"
+                              Title="LFS Files Status"
+                              Width="700"
+                              Height="400"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.45b：Avalonia 版 GitLfsStatusWindow（对照 WPF GitLfsStatusWindow.xaml 85 行 + .cs 265 行）。
+
+        对照 WPF：
+          - public partial class GitLfsStatusWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / DelayedAction<bool> _refreshLfsFilesList /
+                  string[] _lfsFiles / Dictionary<string,string> _lfsLocks / LfsFileViewModel[] _selectedItems /
+                  Job _activeRefresLocksJob
+          - 构造函数 (RepositoryUserControl) → JobQueue.Add 拉 GetLfsFilesGitCommand → Refresh 拉 GetLfsLocksGitCommand
+          - ShowSubmitButton = false / CancelButtonTitle = "Close"
+          - FilterTextBox (custom) + LfsFilesListBox + Lock/Unlock 按钮
+          - LfsFilesListBox_SelectionChanged / LockButton_Click / UnlockButton_Click
+          - Refresh: JobQueue.Add GetLfsLocksGitCommand → _refreshLfsFilesList.InvokeNow
+          - RefreshLfsFilesList: 按 filter 过滤 + 排序 + 还原选中
+          - CreateViewModels: 合并 lfsFiles + lfsLocks → LfsFileViewModel[]
+          - Unlock/Lock: JobQueue.Add GitLfsUnlock/LockGitCommand → Refresh
+
+        Avalonia 版差异：
+          1. spike 模式：构造函数 SetFooter/Footer 注入
+          2. RepositoryUserControl 参数 → GitModule + Action onCompleted 回调
+          3. FilterTextBox (WPF 自定义控件) → 普通 TextBox + TextChanged + DelayedAction
+          4. LfsFileViewModel (WPF, 依赖 ImageSource/INotifyPropertyChanged) → spike 内嵌简化版（只有 Path/Owner）
+          5. ListBox 复杂 ItemTemplate (Image + AutoTooltipTextBlock + Lock icon) → spike 用 TextBlock 显示 "path  (owner)"
+          6. FallbackUserControl → spike 用 SetStatus 表达 loading/error，不弹 ErrorWindow
+          7. Keyboard.IsKeyDown (Ctrl+F) → spike 不接入快捷键（Avalonia KeyModifiers 检测可后续补）
+          8. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          9. Job _activeRefresLocksJob + Monitor.Cancel → spike 用 _activeRefreshCancellationTokenSource
+         10. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,*,Auto">
+            <!-- Row 0: Filter TextBox -->
+            <TextBox Grid.Row="0"
+                     Name="FilterTextBox"
+                     Watermark="Filter..."
+                     FontSize="12"
+                     Margin="0,0,0,4"
+                     TextChanged="FilterTextBox_TextChanged" />
+
+            <!-- Row 1: LFS Files ListBox -->
+            <ListBox Grid.Row="1"
+                     Name="LfsFilesListBox"
+                     SelectionMode="Multiple"
+                     Margin="0,0,0,4"
+                     SelectionChanged="LfsFilesListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayText}" FontSize="12" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Row 2: Lock / Unlock buttons -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,4,0,0">
+                <Button Name="LockButton"
+                        Content="Lock"
+                        Margin="0,0,4,0"
+                        Click="LockButton_Click" />
+                <Button Name="UnlockButton"
+                        Content="Unlock"
+                        Click="UnlockButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
