@@ -1,0 +1,93 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.UpdateCheckWindow"
+                              Title="Check for Updates"
+                              Width="540" MaxHeight="520"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.18b：Avalonia 版 UpdateCheckWindow（对照 WPF UpdateCheckWindow.xaml 27 行 + .cs 161 行）。
+
+        对照 WPF：
+          - public partial class UpdateCheckWindow : ForkPlusDialogWindow
+          - 字段：UpdateChecker _checker / CancellationTokenSource _cts / UpdateInfo _result
+          - 构造函数:
+            * DialogTitle = "Check for Updates"
+            * DialogDescription = "Checking for updates..."
+            * SubmitButtonTitle = "Download"
+            * CancelButtonTitle = "Close"
+            * ShowSubmitButton = false  （检测完成前隐藏）
+            * Loaded += UpdateCheckWindow_Loaded → StartCheck()
+          - StartCheck: Task.Run(_checker.CheckLatestRelease) → Dispatcher.Invoke(OnCheckCompleted)
+          - OnCheckCompleted: 切换 CheckingPanel/ResultPanel 可见性，根据 info.HasUpdate / ErrorMessage 设置 UI
+          - OnSubmit: new Uri(downloadUrl).OpenInBrowser(); if (SkipVersion) UpdateChecker.SkipVersion
+          - OnCancel: _cts.Cancel(); if (SkipVersion && HasUpdate) UpdateChecker.SkipVersion
+          - OnClosed: _cts.Cancel(); _cts.Dispose()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current/FormatCurrent → ServiceLocator.Localization.Translate/FormatCurrent
+          3. Dispatcher.Invoke → Dispatcher.UIThread.Post
+          4. Visibility.Collapsed/Visible → IsVisible = false/true
+          5. Loaded += → Loaded += （Avalonia 同名事件）
+          6. OnClosed override → Closed += （Avalonia 事件，不是 override）
+          7. UpdateChecker/UpdateInfo 已在 Core（Phase 4.17b）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <StackPanel Grid.Row="2" Margin="0,4,0,0">
+            <!-- 检查中：进度条 + 状态文本 -->
+            <StackPanel Name="CheckingPanel" Margin="0,4,0,8">
+                <ProgressBar IsIndeterminate="True"
+                             Height="3"
+                             Foreground="{DynamicResource ThemeAccentBrush}" />
+                <TextBlock Name="StatusTextBlock"
+                           Text="Checking for updates..."
+                           FontSize="13"
+                           Margin="0,8,0,0"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+            <!-- 结果区：版本信息 + Release Notes + 跳过勾选（默认隐藏，检测完成后再显示） -->
+            <StackPanel Name="ResultPanel" IsVisible="False">
+                <TextBlock Name="VersionInfoTextBlock"
+                           FontSize="13" FontWeight="Medium"
+                           Margin="0,0,0,6"
+                           TextWrapping="Wrap" />
+                <TextBlock Name="ReleaseNotesLabel"
+                           Text="Release Notes"
+                           FontWeight="Medium" FontSize="13"
+                           Margin="0,4,0,4" />
+                <TextBox Name="ReleaseNotesTextBox"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MaxHeight="220"
+                         Padding="6" />
+                <CheckBox Name="SkipVersionCheckBox"
+                          Content="Don't remind me for this version"
+                          Margin="0,8,0,0"
+                          FontSize="13" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
