@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.Accounts;
 using ForkPlus.Avalonia.Views;
 using ForkPlus.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,9 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 6.4a（已完成）：IUserSettings（spike stub，所有属性返回默认值；Phase 0.4 + 6.4b 升级为真实持久化实现）
     //   - Phase 6.5（已完成）：IWindowManagerService
     //   - Phase 6.6a（已完成）：IGitEnvironment（spike stub，which/where 查找 git 路径）
-    //   - Phase 6.7+：IProcessLauncher
+    //   - Phase 6.7（已完成）：ITimerService（Avalonia DispatcherTimer）
+    //   - Phase 6.8（已完成）：ILocalizationService（复用 Core 的 LocalizationService）
+    //   - Phase 6.9（已完成）：IAccountManager（复用 Core 的 AccountManager.Current 静态单例）
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -86,6 +89,35 @@ namespace ForkPlus.Avalonia.Services
             // spike 确保所有调用拿到非 null 值避免 NRE。
             // Phase 0.4 把 ForkPlusSettings 迁入 Core 后升级为真实持久化实现（Phase 6.6b）。
             services.AddSingleton<IGitEnvironment, AvaloniaGitEnvironment>();
+
+            // Phase 6.7：ITimerService 的 Avalonia 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfTimerService.cs（封装 System.Windows.Threading.DispatcherTimer）。
+            // Avalonia.Threading.DispatcherTimer API 与 WPF 几乎对称（Interval / IsEnabled / Tick / Start / Stop）。
+            // 注册为 Transient：调用方 NotificationManager 每次构造新实例时都创建新的 DispatcherTimer，
+            // 避免多个 NotificationManager 共用一个 Timer 互相干扰。
+            // 调用方：ForkPlus.Core.Accounts.NotificationManager（仅 1 处，通知轮询定时器）。
+            services.AddTransient<ITimerService, AvaloniaTimerService>();
+
+            // Phase 6.8：ILocalizationService 直接复用 Core 的 LocalizationService（平台无关）
+            // 对照 WPF 工程 src/ForkPlus/App.xaml.cs:613 注入 LocalizationService(appContext, () => ForkPlusSettings.Default.UiLanguage)。
+            // LocalizationService 已在 Core 工程中（src/ForkPlus.Core/Services/LocalizationService.cs），
+            // 完全平台无关，依赖 IAppContext（取 ForkDataDirectoryPath 加载用户语言文件）+ Func<string>（当前语言 provider）。
+            // spike 阶段语言 provider 返回 "zh-Hans"（与 AvaloniaUserSettings.UiLanguage 默认值一致），
+            // Phase 0.4 ForkPlusSettings 迁入 Core 后改为 () => ForkPlusSettings.Default.UiLanguage。
+            // 调用方：Core 工程中 100+ 文件 / 433+ 处调用 ServiceLocator.Localization.Xxx
+            // （OpenAiService / Accounts/* / Git/Commands/* / Utils/Http/ServiceError 等最大耦合点）。
+            services.AddSingleton<ILocalizationService>(sp =>
+                new LocalizationService(
+                    sp.GetRequiredService<IAppContext>(),
+                    () => "zh-Hans"));
+
+            // Phase 6.9：IAccountManager 直接复用 Core 的 AccountManager.Current 静态单例
+            // 对照 WPF 工程 src/ForkPlus/App.xaml.cs:627 注入 AccountManager.Current。
+            // AccountManager 已在 Core 工程中（src/ForkPlus.Core/Accounts/AccountManager.cs），
+            // 完全平台无关，已实现 IAccountManager 接口。注入时用静态单例 Current。
+            // 调用方：ForkPlus.Core/Git/Commands/GetRemotesGitCommand.cs:89
+            // （按 host + username 查找已配置账号用于区分同 host 不同账号、附加 credential helper）。
+            services.AddSingleton<IAccountManager>(AccountManager.Current);
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
