@@ -56,7 +56,7 @@ namespace ForkPlus.UI.Dialogs
 				BranchName = localBranch.Name;
 				UpstreamName = remoteBranch?.Name;
 				RemoteName = remote?.Name;
-				RemoteIcon = remote?.Icon;
+				RemoteIcon = remote?.GetIconImage();
 				RefreshUpstreamVisibility(showUpstream);
 			}
 
@@ -136,7 +136,7 @@ namespace ForkPlus.UI.Dialogs
 					DeleteRemoteBranchCheckBoxUpstream.Show();
 					DeleteRemoteBranchCheckBoxUpstreamIcon.Show();
 					DeleteRemoteBranchCheckBoxUpstream.Text = remoteBranch.Name ?? "";
-					DeleteRemoteBranchCheckBoxUpstreamIcon.Source = GetRemote(remoteBranch, _remotes)?.Icon;
+					DeleteRemoteBranchCheckBoxUpstreamIcon.Source = GetRemote(remoteBranch, _remotes)?.GetIconImage();
 				}
 				else
 				{

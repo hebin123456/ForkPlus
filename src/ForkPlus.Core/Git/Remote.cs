@@ -75,6 +75,17 @@ namespace ForkPlus.Git
 		[Null]
 		public IAccount Account { get; }
 
+		/// <summary>
+		/// Remote.Account 类型为 IAccount（接口反转，让 Core 不依赖具体 Account 类）。
+		/// UI 层需要访问 Account.Service / Account.Email 等 IAccount 未暴露的成员时，
+		/// 通过此属性强转回具体 Account 类型。
+		/// 放在 Core 端而非 WPF 端 partial：因为 Account 具体类本身就在 Core（Accounts/Account.cs），
+		/// partial class 跨工程不合并，原 WPF 端的 partial 在 XAML 临时工程视角下会找不到
+		/// Core 端的 Account/IconKey/IconGeometryKey 成员，导致 540 个 CS0117/CS1061/CS0029 错误。
+		/// </summary>
+		[Null]
+		public Account AccountConcrete => (Account)Account;
+
 		public GitUrl GitUrl { get; }
 
 		public RemoteType RemoteType { get; }

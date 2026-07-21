@@ -28,6 +28,7 @@ using ForkPlus.UI;
 using ForkPlus.UI.Dialogs;
 using Microsoft.Win32;
 using NLog;
+using Newtonsoft.Json.Linq;
 using ForkPlus.UI.CustomCommands;
 
 namespace ForkPlus

@@ -27,7 +27,7 @@ namespace ForkPlus.UI.Dialogs
 
 			public string Name => Remote?.Name;
 
-			public ImageSource RemoteIcon => Remote?.Icon;
+			public ImageSource RemoteIcon => Remote?.GetIconImage();
 
 			public Visibility IconVisibility
 			{

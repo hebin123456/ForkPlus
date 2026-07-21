@@ -5,9 +5,9 @@ namespace ForkPlus.UI.QuickLaunch
 {
 	public class RemoteItem : CommandProviderItem
 	{
-		public override ImageSource Icon => Remote.Icon;
+		public override ImageSource Icon => Remote.GetIconImage();
 
-		public override ImageSource SelectedIcon => Remote.Icon;
+		public override ImageSource SelectedIcon => Remote.GetIconImage();
 
 		public Remote Remote { get; }
 

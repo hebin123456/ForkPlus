@@ -2036,7 +2036,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				Remote remote = array[0];
 				ServiceRadioButton.Show();
-				ServiceRadioButton.Content = remote.IconGeometry;
+				ServiceRadioButton.Content = remote.GetIconGeometryShape();
 				ServiceTabItem.SetServices(array);
 			}
 			else

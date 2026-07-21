@@ -432,7 +432,7 @@ namespace ForkPlus.UI.Dialogs
 				base.SubmitButtonTitle = PreferencesLocalization.Current("Edit");
 				RepositoryUrlTextBox.Text = _remoteToEdit.Url;
 				RemoteNameTextBox.Text = _remoteToEdit.Name;
-				RemoteNameTextBox.Icon = _remoteToEdit.Icon;
+				RemoteNameTextBox.Icon = _remoteToEdit.GetIconImage();
 				RemoteNameTextBox.SelectAll();
 				RefreshAccountsComboBox();
 				return;

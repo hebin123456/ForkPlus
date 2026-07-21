@@ -875,9 +875,9 @@ namespace ForkPlus.UI.UserControls
 						{
 							MainWindow.Commands.OpenUrl.Execute(repositoryWebpageUrl);
 						}, isEnabled: true, new Image
-						{
-							Source = remote.Icon
-						}));
+					{
+						Source = remote.GetIconImage()
+					}));
 					}
 				}
 			}

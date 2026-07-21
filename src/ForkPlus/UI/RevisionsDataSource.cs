@@ -699,7 +699,7 @@ namespace ForkPlus.UI
 					}
 					else
 					{
-						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes.Items, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
+						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes.Items, (Remote x) => x.Name == remoteBranch.Remote)?.GetIconImage();
 						list.Add(new RemoteBranchViewModel(graphColumn, remoteBranch, remoteIcon));
 					}
 				}

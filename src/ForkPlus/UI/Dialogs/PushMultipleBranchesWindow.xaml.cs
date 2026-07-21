@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -22,6 +23,9 @@ namespace ForkPlus.UI.Dialogs
 			public string UpstreamName { get; }
 
 			public Remote Remote { get; }
+
+			/// <summary>供 PushMultipleBranchesWindow.xaml DataTemplate 绑定使用（替代已删除的 Remote.Icon 实例属性）。</summary>
+			public ImageSource RemoteIcon => Remote?.GetIconImage();
 
 			public PushBranchItem(LocalBranch localBranch, [Null] RemoteBranch remoteBranch, Remote remote)
 			{

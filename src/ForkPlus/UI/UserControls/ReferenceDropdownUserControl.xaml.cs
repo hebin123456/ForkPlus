@@ -88,7 +88,7 @@ namespace ForkPlus.UI.UserControls
 
 		private ImageSource GetRemoteIcon(string remoteName)
 		{
-			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? Theme.RemoteIcon;
+			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.GetIconImage() ?? Theme.RemoteIcon;
 		}
 
 	}

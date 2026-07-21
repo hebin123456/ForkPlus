@@ -32,7 +32,7 @@ namespace ForkPlus.UI.Controls
 					}
 					else
 					{
-						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
+						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes, (Remote x) => x.Name == remoteBranch.Remote)?.GetIconImage();
 						array[i] = new ReferencePanelRemoteBranchViewModel(remoteBranch, remoteIcon);
 					}
 				}

@@ -22,7 +22,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			private readonly Remote _remote;
 
-			public ImageSource RemoteIcon => _remote.Icon;
+			public ImageSource RemoteIcon => _remote.GetIconImage();
 
 			public string Name => _remote.Name;
 

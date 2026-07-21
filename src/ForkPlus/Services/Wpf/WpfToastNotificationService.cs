@@ -13,14 +13,13 @@ namespace ForkPlus.Services.Wpf
 	/// </summary>
 	public class WpfToastNotificationService : IToastNotificationService
 	{
-		private readonly Action<string> _onActivatedHandler;
-
 		public event Action<string> OnActivated;
 
 		public WpfToastNotificationService()
 		{
-			_onActivatedHandler = OnActivatedInternal;
-			ToastNotificationManagerCompat.OnActivated += _onActivatedHandler;
+			// ToastNotificationManagerCompat.OnActivated 是 CommunityToolkit 自定义委托类型
+			// OnActivated，不能直接用 Action<string> 注册；OnActivatedInternal 签名与之匹配。
+			ToastNotificationManagerCompat.OnActivated += OnActivatedInternal;
 		}
 
 		private void OnActivatedInternal(ToastNotificationActivatedEventArgsCompat e)

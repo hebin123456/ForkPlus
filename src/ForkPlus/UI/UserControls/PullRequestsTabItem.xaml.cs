@@ -87,8 +87,8 @@ namespace ForkPlus.UI.UserControls
 				if (_remotes.Length > 1)
 				{
 					RemoteDropdownButton.Show();
-					RemoteDropdownButtonImage.Source = _selectedRemote.Icon;
-					RemoteDropdownButtonTitle.Text = _selectedRemote.Name;
+					RemoteDropdownButtonImage.Source = _selectedRemote.GetIconImage();
+				RemoteDropdownButtonTitle.Text = _selectedRemote.Name;
 				}
 				else
 				{
@@ -348,7 +348,7 @@ namespace ForkPlus.UI.UserControls
 						if (gitModule != null)
 						{
 							_selectedRemote = remote;
-							RemoteDropdownButtonImage.Source = remote.Icon;
+							RemoteDropdownButtonImage.Source = remote.GetIconImage();
 							RemoteDropdownButtonTitle.Text = remote.Name;
 							Reset();
 							LoadNext();
@@ -357,9 +357,9 @@ namespace ForkPlus.UI.UserControls
 						}
 					}
 				}, _selectedRemote.DataEquals(remote), new Image
-				{
-					Source = remote.Icon
-				});
+			{
+				Source = remote.GetIconImage()
+			});
 			}
 		}
 
