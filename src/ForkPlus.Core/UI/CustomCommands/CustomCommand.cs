@@ -52,6 +52,15 @@ namespace ForkPlus.UI.CustomCommands
 			Version = version;
 		}
 
+		/// <summary>
+		/// Phase 0.2c-r2：原为 ForkPlus 主工程的 CustomCommandExtensions.IsVersionSupported 扩展方法，
+		/// CustomCommandManager（Core）需要调用，迁入 Core 作为实例方法。WPF 端扩展方法保留为转发调用。
+		/// </summary>
+		public bool IsVersionSupported()
+		{
+			return Version <= SupportedSchemaVersion;
+		}
+
 		public bool CustomCommandEquals(CustomCommand customCommand)
 		{
 			if (Target == customCommand.Target && ReferenceTargetsAreEqual(ReferenceTargets, customCommand.ReferenceTargets) && Name == customCommand.Name && ActionsAreEqual(Action, customCommand.Action) && UIsAreEqual(UI, customCommand.UI) && OS == customCommand.OS && Shared == customCommand.Shared)

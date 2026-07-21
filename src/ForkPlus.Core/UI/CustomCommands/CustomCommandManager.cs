@@ -61,39 +61,15 @@ namespace ForkPlus.UI.CustomCommands
 			[Null]
 			private static JToken Encode([Null] CustomCommandAction action)
 			{
+				// Phase 0.2c-r2：原 if/else if (action is XxxAction) 类型分支改为
+				// 基类虚方法 TypeKey + WriteProperties。子类在主工程实现，Core 不再直接引用。
 				if (action == null)
 				{
 					return null;
 				}
 				JObject jObject = new JObject();
-				if (action is ProcessCustomCommandAction processCustomCommandAction)
-				{
-					jObject.Add("type", new JValue("process"));
-					jObject.Add("path", new JValue(processCustomCommandAction.Path));
-					jObject.Add("args", new JValue(processCustomCommandAction.Parameters));
-					jObject.Add("showOutput", new JValue(processCustomCommandAction.ShowOutput));
-					jObject.Add("waitForExit", new JValue(processCustomCommandAction.WaitForExit));
-				}
-				else if (action is ShCustomCommandAction shCustomCommandAction)
-				{
-					jObject.Add("type", new JValue("sh"));
-					jObject.Add("script", new JValue(shCustomCommandAction.Script));
-					jObject.Add("showOutput", new JValue(shCustomCommandAction.ShowOutput));
-					jObject.Add("waitForExit", new JValue(shCustomCommandAction.WaitForExit));
-				}
-				else if (action is UrlCustomCommandAction urlCustomCommandAction)
-				{
-					jObject.Add("type", new JValue("url"));
-					jObject.Add("url", new JValue(urlCustomCommandAction.Url));
-				}
-				else
-				{
-					if (!(action is CancelCustomCommandAction))
-					{
-						throw new CannotReachHereException();
-					}
-					jObject.Add("type", new JValue("cancel"));
-				}
+				jObject.Add(CustomCommandAction.Keys.Type, new JValue(action.TypeKey));
+				action.WriteProperties(jObject);
 				return jObject;
 			}
 
@@ -342,36 +318,16 @@ namespace ForkPlus.UI.CustomCommands
 			[Null]
 			private static CustomCommandAction DecodeCustomCommandAction([Null] JToken json)
 			{
+				// Phase 0.2c-r2：原 switch (type) case "process"/"sh"/... 改为
+				// 基类静态 CustomCommandAction.Decode 查表分发。主工程启动时通过
+				// CustomCommandAction.RegisterDecoder 注册各子类的 decoder 委托。
 				if (json == null)
 				{
 					return null;
 				}
 				try
 				{
-					switch (json["type"].Value<string>())
-					{
-					case "process":
-					{
-						string? path = json["path"].Value<string>();
-						string parameters = json["args"].Value<string>();
-						bool showOutput2 = json["showOutput"].Value<bool>();
-						bool waitForExit2 = json["waitForExit"].Value<bool>();
-						return new ProcessCustomCommandAction(path, parameters, showOutput2, waitForExit2);
-					}
-					case "sh":
-					{
-						string? script = json["script"].Value<string>();
-						bool showOutput = json["showOutput"].Value<bool>();
-						bool waitForExit = json["waitForExit"].Value<bool>();
-						return new ShCustomCommandAction(script, showOutput, waitForExit);
-					}
-					case "url":
-						return new UrlCustomCommandAction(json["url"].Value<string>());
-					case "cancel":
-						return new CancelCustomCommandAction();
-					default:
-						throw new ParseException();
-					}
+					return CustomCommandAction.Decode(json as JObject);
 				}
 				catch
 				{

@@ -1,5 +1,6 @@
 using System;
 using ForkPlus.UI.UserControls;
+using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -10,6 +11,14 @@ namespace ForkPlus.UI.CustomCommands
 			public const string Type = "url";
 
 			public const string Url = "url";
+		}
+
+		public override string TypeKey => Keys.Type;
+
+		public override void WriteProperties(JObject jObject)
+		{
+			// Phase 0.2c-r2：原 CustomCommandManager.Encode 改为子类虚方法。
+			jObject.Add(Keys.Url, new JValue(Url));
 		}
 
 		public string Url { get; }

@@ -7,6 +7,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -23,6 +24,18 @@ namespace ForkPlus.UI.CustomCommands
 			public const string ShowOutput = "showOutput";
 
 			public const string WaitForExit = "waitForExit";
+		}
+
+		public override string TypeKey => Keys.Type;
+
+		public override void WriteProperties(JObject jObject)
+		{
+			// Phase 0.2c-r2：原 CustomCommandManager.Encode 中的 jObject.Add("path", ...) 等
+			// 改为子类虚方法，避免 Core 直接引用 ProcessCustomCommandAction。
+			jObject.Add(Keys.Path, new JValue(Path));
+			jObject.Add(Keys.Arguments, new JValue(Parameters));
+			jObject.Add(Keys.ShowOutput, new JValue(ShowOutput));
+			jObject.Add(Keys.WaitForExit, new JValue(WaitForExit));
 		}
 
 		public string Path { get; }

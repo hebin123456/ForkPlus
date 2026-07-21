@@ -5,6 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -30,6 +31,16 @@ namespace ForkPlus.UI.CustomCommands
 		private static readonly string RepositoryDefaultScript = "echo ${repo:name} status:\n\ngit status --porcelain";
 
 		private static readonly string SubmoduleDefaultScript = "echo ${submodule} status:\n\ngit submodule update --remote -- ${submodule}";
+
+		public override string TypeKey => Keys.Type;
+
+		public override void WriteProperties(JObject jObject)
+		{
+			// Phase 0.2c-r2：原 CustomCommandManager.Encode 改为子类虚方法。
+			jObject.Add(Keys.Script, new JValue(Script));
+			jObject.Add(Keys.ShowOutput, new JValue(ShowOutput));
+			jObject.Add(Keys.WaitForExit, new JValue(WaitForExit));
+		}
 
 		public string Script { get; }
 

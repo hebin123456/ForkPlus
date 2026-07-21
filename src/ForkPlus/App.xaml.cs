@@ -28,6 +28,7 @@ using ForkPlus.UI;
 using ForkPlus.UI.Dialogs;
 using Microsoft.Win32;
 using NLog;
+using ForkPlus.UI.CustomCommands;
 
 namespace ForkPlus
 {
@@ -627,6 +628,10 @@ namespace ForkPlus
 			// Phase 0.2c：注册 CLI 命令解析器，让 Core 端的 CliCommand.CreateCliCommand
 			// 能委派到主工程的 OpenRepositoryCliCommand.Parse（强 WPF 依赖，留在主工程）。
 			CliCommand.SetParser(OpenRepositoryCliCommand.Parse);
+			// Phase 0.2c-r2：注册 CustomCommandAction 的 4 个子类 decoder。
+			// Core 端 CustomCommandManager.DecodeCustomCommandAction 通过基类静态
+			// CustomCommandAction.Decode 查表分发，主工程启动时注入各子类的反序列化委托。
+			RegisterCustomCommandActionDecoders();
 			_ = IsDebug;
 			InitializeRenderMode();
 			InitializeTheme();
@@ -822,6 +827,32 @@ namespace ForkPlus
 			{
 				Log.Error(ex.Message);
 			}
+		}
+
+		/// <summary>
+		/// Phase 0.2c-r2：注册 4 个 CustomCommandAction 子类的反序列化 decoder。
+		/// Core 端 CustomCommandManager.DecodeCustomCommandAction 通过基类静态
+		/// CustomCommandAction.Decode(JObject) 查表分发；本方法把每个子类的构造逻辑
+		/// 以委托形式注入字典。子类本身有强 WPF 依赖（Execute 方法访问 RepositoryUserControl /
+		/// ErrorWindow 等），留在主工程，Core 不直接引用。
+		/// </summary>
+		private static void RegisterCustomCommandActionDecoders()
+		{
+			CustomCommandAction.RegisterDecoder(ProcessCustomCommandAction.Keys.Type, json =>
+				new ProcessCustomCommandAction(
+					json["path"].Value<string>(),
+					json["args"].Value<string>(),
+					json["showOutput"].Value<bool>(),
+					json["waitForExit"].Value<bool>()));
+			CustomCommandAction.RegisterDecoder(ShCustomCommandAction.Keys.Type, json =>
+				new ShCustomCommandAction(
+					json["script"].Value<string>(),
+					json["showOutput"].Value<bool>(),
+					json["waitForExit"].Value<bool>()));
+			CustomCommandAction.RegisterDecoder(UrlCustomCommandAction.Keys.Type, json =>
+				new UrlCustomCommandAction(json["url"].Value<string>()));
+			CustomCommandAction.RegisterDecoder(CancelCustomCommandAction.Keys.Type, json =>
+				new CancelCustomCommandAction());
 		}
 
 		private void RefreshTheme()

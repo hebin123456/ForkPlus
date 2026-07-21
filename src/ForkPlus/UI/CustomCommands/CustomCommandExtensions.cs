@@ -8,10 +8,8 @@ namespace ForkPlus.UI.CustomCommands
 {
 	public static class CustomCommandExtensions
 	{
-		public static bool IsVersionSupported(this CustomCommand command)
-		{
-			return command.Version <= 2;
-		}
+		// Phase 0.2c-r2：IsVersionSupported 已迁入 Core 作为 CustomCommand.IsVersionSupported()
+		// 实例方法。此处删除原扩展方法（避免与实例方法冲突），调用方直接用实例方法。
 
 		public static void AddCustomCommandItem(this CustomCommand command, RepositoryUserControl repositoryUserControl, CustomCommandEnvironment env, string[] path, int pathIndex, IList menuItems, int startIndex = 0)
 		{
