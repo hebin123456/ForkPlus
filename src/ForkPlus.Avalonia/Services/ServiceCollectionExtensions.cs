@@ -23,7 +23,8 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 6.3（已完成）：IDialogService
     //   - Phase 6.4a（已完成）：IUserSettings（spike stub，所有属性返回默认值；Phase 0.4 + 6.4b 升级为真实持久化实现）
     //   - Phase 6.5（已完成）：IWindowManagerService
-    //   - Phase 6.6+：IGitEnvironment / IProcessLauncher
+    //   - Phase 6.6a（已完成）：IGitEnvironment（spike stub，which/where 查找 git 路径）
+    //   - Phase 6.7+：IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -71,6 +72,20 @@ namespace ForkPlus.Avalonia.Services
             //   - DispatchToUiThread → Avalonia.Threading.Dispatcher.UIThread.Post
             // 调用方：ForkPlus.Core.Accounts.NotificationManager（仅 2 处，Toast 点击回调）。
             services.AddSingleton<IWindowManagerService, AvaloniaWindowManagerService>();
+
+            // Phase 6.6a：IGitEnvironment 的 Avalonia spike 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfGitEnvironment.cs（34 行，纯转发壳）。
+            // WPF 版所有属性委托到 App 静态属性，App 在启动时从 ForkPlusSettings + PATH 计算。
+            // spike 阶段采用跨平台策略：
+            //   - GitPath：which/where 命令查找 PATH 中的 git（懒加载缓存）
+            //   - ShellPath / BashPath：从 GitPath 派生（Windows）/ 返回 "sh"/"bash"（Unix）
+            //   - OverrideCredentialHelper / OverrideCredentialHelperBt：null（无 ForkPlusSettings）
+            //   - ForkGitInstancePath：null（spike 不打包便携 git）
+            //   - AppName："ForkPlus" / CliArguments：Environment.GetCommandLineArgs()
+            // Core 工程中 95 处引用 ServiceLocator.GitEnvironment.Xxx（遍布 Git/Shell/Jobs/UI/Accounts），
+            // spike 确保所有调用拿到非 null 值避免 NRE。
+            // Phase 0.4 把 ForkPlusSettings 迁入 Core 后升级为真实持久化实现（Phase 6.6b）。
+            services.AddSingleton<IGitEnvironment, AvaloniaGitEnvironment>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
