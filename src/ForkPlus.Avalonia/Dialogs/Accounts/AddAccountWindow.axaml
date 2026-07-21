@@ -1,0 +1,94 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:accounts="clr-namespace:ForkPlus.Avalonia.Dialogs.Accounts"
+                              x:Class="ForkPlus.Avalonia.Dialogs.Accounts.AddAccountWindow"
+                              Title="Add Account"
+                              Width="450" Height="380"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.29b：Avalonia 版 AddAccountWindow（对照 WPF AddAccountWindow.xaml 52 行 + .cs 89 行）。
+
+        对照 WPF：
+          - public partial class AddAccountWindow : ForkPlusDialogWindow
+          - 嵌套 ServiceViewModel: RemoteType / ServiceName / ImageSource Icon
+          - 静态 _servicesViewModels: 7 个 RemoteType（Bitbucket/BitbucketServer/Gitea/Github/GithubEnterprise/Gitlab/GitlabServer）
+          - IsSubmitAllowed override: SelectedService != null
+          - OnSubmit: SelectedService.ServiceType.GetLoginWindow().ShowDialog() → 成功则 CloseWithOk()
+          - ServicesListBox_MouseDoubleClick: 同 OnSubmit
+          - ServicesListBox_SelectionChanged: UpdateSubmitButton()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. ServiceViewModel.Icon (ImageSource) → ServiceViewModel.IconKey (string)
+             spike 版省略 PNG 资源，用 IconKey 显示文字标识（Phase 4.0c 加回图标）
+          3. ShowDialog().GetValueOrDefault() → await ShowDialog<bool?>(owner)
+          4. MouseDoubleClick → DoubleTapped 事件（Avalonia 同名）
+          5. ItemContainerStyle / DataTemplate.Triggers → spike 版省略选中态边框样式
+          6. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="6,0,4,0">
+            <TextBlock Text="Add Account"
+                       FontSize="15" FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+        </StackPanel>
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - ListBox + WrapPanel + DataTemplate -->
+        <ListBox Grid.Row="2"
+                 Name="ServicesListBox"
+                 Padding="4,5,5,0"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 SelectionChanged="ServicesListBox_SelectionChanged"
+                 DoubleTapped="ServicesListBox_DoubleTapped">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="5"
+                            BorderThickness="3"
+                            CornerRadius="3"
+                            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                            Background="{DynamicResource ThemeControlMidBrush}"
+                            Padding="0">
+                        <StackPanel Height="85" Width="75">
+                            <!-- spike 版：用 IconKey 文字替代 PNG 图标 -->
+                            <TextBlock Text="{Binding IconKey}"
+                                       FontSize="11"
+                                       FontWeight="Medium"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Margin="4,18,4,0"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center" />
+                            <TextBlock FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       Margin="4,8,4,2"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Text="{Binding ServiceName}" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
