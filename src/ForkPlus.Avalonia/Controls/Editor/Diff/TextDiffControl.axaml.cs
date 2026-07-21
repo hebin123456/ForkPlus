@@ -2,10 +2,6 @@ using System;
 using Avalonia.Controls;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI;
-// 当前命名空间 ForkPlus.Avalonia.Controls.Editor.Diff 的末段 "Diff" 与
-// ForkPlus.Git.Diff.Diff 类型名冲突（编译器优先把 Diff 解析为当前命名空间），
-// 用类型别名显式指向 ForkPlus.Git.Diff.Diff。
-using Diff = ForkPlus.Git.Diff.Diff;
 
 namespace ForkPlus.Avalonia.Controls.Editor.Diff
 {
@@ -81,7 +77,10 @@ namespace ForkPlus.Avalonia.Controls.Editor.Diff
         // 注意：VisualPatch.CreateVisualPatch 在 Core 工程，需要真实 Diff 对象；
         //       spike 阶段 diff 通常为 null，会触发 VisualPatch.CreateVisualPatch(null, ...) 返回 null，
         //       DiffCodeEditor.VisualPatch setter 会清空 Text，editor 显示空白。
-        public void SetDiff(Diff diff, int tabWidth, bool entireFile, DiffLocation location)
+        // 当前命名空间 ForkPlus.Avalonia.Controls.Editor.Diff 末段 "Diff" 与
+        // ForkPlus.Git.Diff.Diff 类型名冲突，using 别名无法覆盖当前命名空间名，
+        // 故方法签名用完全限定名 ForkPlus.Git.Diff.Diff。
+        public void SetDiff(ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location)
         {
             Console.WriteLine($"[TextDiffControl] SetDiff (spike): diff={diff?.ToString() ?? "null"}, tabWidth={tabWidth}, entireFile={entireFile}, location={location}");
 
