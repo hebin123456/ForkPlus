@@ -41,6 +41,23 @@
          BackgroundRenderers / LineTransformers / LeftMargins。
          12.0.0 是当前最新版（.NET 8.0 + Avalonia 11.x 兼容）。 -->
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <!-- Phase 2.7：OxyPlot.Avalonia（OxyPlot.Wpf 的 Avalonia 移植版）。
+         对照 WPF 工程 src/ForkPlus 的 OxyPlot.Wpf 2.2.0（仅 StatisticsUserControl 使用）。
+         用于 RepositoryStatisticsWindow 内的 5 个 PlotView：
+         LinePlot (LineSeries + DateTimeAxis) / PiePlot (PieSeries) /
+         WeekDayPlot + DayHourPlot (BarSeries + CategoryAxis) / CodeLinesPiePlot (PieSeries)。
+         PlotModel / Series / Axis 核心模型来自 OxyPlot.Core（平台无关），可零改动复用。
+         2.1.2 是当前 Avalonia 11 兼容版（OxyPlot.Avalonia 已停滞维护，需 spike 验证）。 -->
+    <PackageReference Include="OxyPlot.Avalonia" Version="2.1.2" />
+    <!-- Phase 5.1：Markdown.Avalonia.Tight（whistyun 社区版，无 AvaloniaEdit 依赖的轻量版）。
+         对照 WPF 工程 src/ForkPlus 用 native Bt.bt_md_to_html P/Invoke + WebView2 渲染 markdown。
+         用于 GitMmReferenceWindow（git mm 命令参考手册静态 markdown 文档）。
+         选 Tight 版而非完整 Markdown.Avalonia 是因为：
+         - 完整版依赖 AvaloniaEdit 11.0.x 做语法高亮（与我们已用的 AvaloniaEdit 12.0.0 版本冲突）
+         - Tight 版无 AvaloniaEdit 依赖，体积更小，spike 验证足够
+         基于 Markdig，完整支持 GFM 表格 / 任务列表 / 脚注，5 个内置主题（GithubLike 等），
+         自动检测 light/dark。Phase 5.2 AiTextResultWindow 改用 LiveMarkdown.Avalonia 处理流式 chunk。 -->
+    <PackageReference Include="Markdown.Avalonia.Tight" Version="11.0.3" />
     <!-- DI 容器：用于注入 IMarkdownRenderer / IDialogService / INotificationService 等接口
          （Phase 0.3-0.6 抽象的接口，Phase 1 起逐步注册实现）-->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />

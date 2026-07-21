@@ -1,0 +1,88 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AboutDialogWindow"
+                              Title="About ForkPlus"
+                              Width="320" MinHeight="348"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.12a：Avalonia 版 AboutDialogWindow（第一个对话框 spike，验证 ForkPlusDialogWindow 基类）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/AboutWindow.xaml（43 行）：
+          - <dialogs:ForkPlusDialogWindow> 根元素，MinHeight=348 Width=240 SizeToContent=Height
+          - Resources：HyperlinkStyle（基于默认 Hyperlink，FocusVisualStyle=null，Foreground=ReferenceBrush）
+          - Grid 2 列 3 行：
+            * Row 1: Image 90x90 ForkPlusIcon.png (HorizontalAlignment=Center)
+            * Row 2: DockPanel 内容：ForkPlus 大字 + VersionTextBlock + hebin.me Hyperlink +
+              "Designed and implemented by" + "Hebin" + CopyrightTextBlock
+          - code-behind: ShowLogo=false / ShowFooter=false / Translate("About " + AppName) /
+            VersionTextBlock.Text = Translate("Version {0}") / CopyrightTextBlock.Text =
+            Translate("Copyright © {0} Hebin")
+          - Hyperlink_RequestNavigate: e.Uri.OpenInBrowser()
+          - LegalHyperlink_RequestNavigate: new LegalWindow().ShowDialog()
+
+        Avalonia 版差异（spike 简化策略）：
+          1. axaml 根元素继承 ForkPlusDialogWindow（CustomWindow 子类）
+          2. spike 版 ShowFooter=false（WPF 也是 false），不调 SetFooter，仅显示内容
+          3. spike 版不迁移 HyperlinkStyle（用 Avalonia 内置 LinkTextBox 按钮）
+          4. spike 版用 Avalonia Button + Click 替代 Hyperlink（Avalonia 11 也有 Hyperlink 但
+             不像 WPF 那样直观，Button 更稳）
+          5. spike 版不迁移 LegalWindow（"License" 按钮 spike 打印日志，Phase 4.12b 再迁）
+          6. spike 版不接入 PreferencesLocalization.Translate（直接用字面量英文）
+          7. spike 版图片用 Avalonia Assets 加载（IAssetLoader）
+
+        本 spike 版验证：
+          - ForkPlusDialogWindow 基类可被 axaml 继承（继承链 CustomWindow → Window 可工作）
+          - 子类无需 SetFooter 即可工作（ShowFooter=false 时 ESC 不会触发 OnCancel）
+          - 子类可访问 DialogTitle 属性（在 code-behind 中设置）
+          - AboutDialogWindow 可独立 Show() 显示
+    -->
+    <Grid Margin="20,0,20,20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 1: Logo -->
+        <Image Grid.Row="1" Grid.Column="1"
+               HorizontalAlignment="Center"
+               Source="/Assets/ForkPlusIcon.png"
+               Width="90" Height="90" />
+
+        <!-- Row 2: 内容 -->
+        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,8,0,0">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="ForkPlus"
+                       FontSize="32" />
+            <TextBlock Name="VersionTextBlock"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,8" />
+            <Button Name="AuthorLinkButton"
+                    Content="hebin.me"
+                    HorizontalAlignment="Center"
+                    Margin="0,4,0,0"
+                    Padding="4,2"
+                    Click="AuthorLinkButton_Click"
+                    Tag="https://hebin.me" />
+            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,8,0,0"
+                       Text="Designed and implemented by"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,4,0,4"
+                       Text="Hebin" />
+            <TextBlock Name="CopyrightTextBlock"
+                       HorizontalAlignment="Center"
+                       FontSize="11"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </StackPanel>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

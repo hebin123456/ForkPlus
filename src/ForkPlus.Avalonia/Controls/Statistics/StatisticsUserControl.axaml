@@ -1,0 +1,265 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:oxy="http://oxyplot.org/avalonia"
+             x:Class="ForkPlus.Avalonia.Controls.Statistics.StatisticsUserControl">
+    <!--
+        Phase 2.7a：Avalonia 版 StatisticsUserControl（spike 骨架版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml（176 行）：
+          - 5 个 oxy:PlotView：LinePlot (350h) / PiePlot (450x450) /
+            WeekDayPlot (300h) / DayHourPlot (300h) / CodeLinesPiePlot (350x350)
+          - 1 个 TrackerControlDataTemplate ControlTemplate（5 个 PlotView 共享 DefaultTrackerTemplate）
+          - 1 个 DateRangeButton（自定义控件）
+          - 1 个 ContributionHeatmap（自定义控件，github-style 贡献热力图）
+          - 2 个 ListBox：AuthorStatListBox + CodeLinesListBox
+          - 1 个 CodeLinesRefButton + Popup（ref 选择下拉）
+          - 1 个 CodeLinesRefreshButton
+          - 1 个 FallbackUserControl（失败回退）
+
+        Avalonia 版差异（spike 简化策略）：
+          1. xmlns:oxy 从 http://oxyplot.org/wpf 改为 http://oxyplot.org/avalonia
+          2. 跳过 TrackerControlDataTemplate ControlTemplate（OxyPlot.Avalonia 2.x 的
+             TrackerControl API 与 WPF 略有差异，spike 用默认 tracker，Phase 2.7b 再补）
+          3. 跳过 DateRangeButton（自定义 WPF 控件，spike 用 TextBlock 占位）
+          4. 跳过 ContributionHeatmap（自定义 WPF 控件，spike 用 TextBlock 占位）
+          5. 跳过 CodeLinesRefButton + Popup（自定义下拉，spike 用 Button 占位）
+          6. 跳过 FallbackUserControl（失败回退，spike 不迁移）
+          7. spike 版所有 PlotView.Model = null（Phase 2.7b 迁移 PlotHelper 时填充）
+          8. AuthorStatListBox + CodeLinesListBox 用 Avalonia ListBox（API 一致）
+          9. 跳过 ItemContainerStyle 的 NoSelectionListBoxStyle（WPF 自定义样式，spike 不迁）
+
+        本 spike 版暂不迁移（留 Phase 2.7b）：
+          - PlotHelper 5 个静态方法（CreateLinePlotModel / CreatePiePlotModel /
+            CreateWeekDayPlotModel / CreateDayHourPlotModel / RefreshPlotColors）
+          - UpdatePlots / UpdateCommitsPerWeekDayPlot / UpdateCommitsPerDayHourPlot /
+            UpdateCodeLinesPlot 业务方法
+          - DateRangeButton / ContributionHeatmap / PlaceholderTextBox / FallbackUserControl
+          - TrackerControlDataTemplate ControlTemplate
+          - NotificationCenter.ApplicationThemeChanged 订阅
+
+        本 spike 版验证：
+          - OxyPlot.Avalonia 2.1.2 PlotView 可在 Avalonia 11.3 axaml 中实例化
+          - 5 个 PlotView 控件树可正常渲染（Model=null 显示空图）
+          - AuthorStatListBox + CodeLinesListBox 数据绑定可工作
+    -->
+    <Grid>
+        <Grid Margin="30,15,20,15" Name="StatsContainer"
+              MinWidth="900">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: DateRangeButton 占位 -->
+            <TextBlock Grid.Row="0"
+                       Margin="0,10,0,10"
+                       HorizontalAlignment="Left"
+                       Text="(DateRangeButton placeholder — Phase 2.10)"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+            <!-- Row 1: LinePlot 标题 -->
+            <TextBlock Grid.Row="1"
+                       Text="Commits per month"
+                       Margin="10,0,0,0"
+                       FontSize="16"
+                       FontWeight="Medium" />
+
+            <!-- Row 2: LinePlot (350h) — Commits per month -->
+            <oxy:PlotView Grid.Row="2"
+                          Name="LinePlot"
+                          Height="350"
+                          Margin="4,10,0,0"
+                          HorizontalAlignment="Stretch" />
+
+            <!-- Row 3: Contributions 标题 -->
+            <TextBlock Grid.Row="3"
+                       Text="Contributions"
+                       Margin="10,20,0,0"
+                       FontSize="16"
+                       FontWeight="Medium" />
+
+            <!-- Row 4: ContributionHeatmap 占位 -->
+            <TextBlock Grid.Row="4"
+                       Margin="10,10,0,0"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Text="(ContributionHeatmap placeholder — Phase 2.10)"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+            <!-- Row 5: 左 AuthorStatListBox + 右 Pie/WeekDay/DayHour 三个 PlotView -->
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：All contributors ListBox -->
+                <StackPanel Grid.Column="0" Margin="0,20,0,0">
+                    <TextBlock Text="All contributors"
+                               Margin="10,0,0,10"
+                               FontSize="16"
+                               FontWeight="Medium" />
+                    <ListBox Name="AuthorStatListBox"
+                             Width="350"
+                             Margin="35,0,0,0"
+                             HorizontalContentAlignment="Stretch"
+                             VerticalAlignment="Top">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Height="18">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="45" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Margin="4,0,4,0"
+                                               TextTrimming="CharacterEllipsis"
+                                               Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="1"
+                                               Margin="4,0,0,0"
+                                               Text="{Binding TotalCommits}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+
+                <!-- 右侧：PiePlot + WeekDayPlot + DayHourPlot 三个 PlotView 纵向 -->
+                <StackPanel Grid.Column="1" Margin="50,20,0,0">
+                    <TextBlock Text="Top contributors"
+                               FontSize="16"
+                               Margin="10,0,0,0"
+                               FontWeight="Medium" />
+                    <oxy:PlotView Name="PiePlot"
+                                  Height="450"
+                                  Width="450"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top" />
+                    <TextBlock Text="Commits per weekday"
+                               FontSize="16"
+                               Margin="10,0,0,0"
+                               FontWeight="Medium" />
+                    <oxy:PlotView Name="WeekDayPlot"
+                                  Height="300"
+                                  HorizontalAlignment="Stretch" />
+                    <TextBlock Text="Commits per day hour"
+                               FontSize="16"
+                               Margin="10,10,0,0"
+                               FontWeight="Medium" />
+                    <oxy:PlotView Name="DayHourPlot"
+                                  Height="300"
+                                  HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 6: Code lines 统计区 -->
+            <StackPanel Grid.Row="6" Margin="0,30,0,0" Name="CodeLinesSection">
+                <Grid Margin="10,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="Code lines"
+                               FontSize="16"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Ref:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <Button Name="CodeLinesRefButton"
+                                Content="(ref)"
+                                Margin="0,0,8,0"
+                                Padding="10,2"
+                                Click="CodeLinesRefButton_Click" />
+                        <Button Name="CodeLinesRefreshButton"
+                                Content="Refresh"
+                                Padding="10,2"
+                                Click="CodeLinesRefreshButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Name="CodeLinesSummary"
+                           Margin="10,8,0,0"
+                           TextWrapping="Wrap" />
+                <TextBlock Name="CodeLinesError"
+                           Margin="10,8,0,0"
+                           TextWrapping="Wrap"
+                           Foreground="#FFCC0000"
+                           IsVisible="False" />
+
+                <Grid Margin="10,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <oxy:PlotView Grid.Column="0"
+                                  Name="CodeLinesPiePlot"
+                                  Height="350"
+                                  Width="350"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top" />
+
+                    <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="70" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1" Text="Language" FontWeight="Medium" />
+                            <TextBlock Grid.Column="2" Text="Files" FontWeight="Medium" TextAlignment="Right" />
+                            <TextBlock Grid.Column="3" Text="Code" FontWeight="Medium" TextAlignment="Right" />
+                            <TextBlock Grid.Column="4" Text="Comments" FontWeight="Medium" TextAlignment="Right" />
+                            <TextBlock Grid.Column="5" Text="Blanks" FontWeight="Medium" TextAlignment="Right" />
+                        </Grid>
+                        <ListBox Name="CodeLinesListBox"
+                                 BorderThickness="1,1,1,0"
+                                 HorizontalContentAlignment="Stretch"
+                                 VerticalAlignment="Top">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Height="20">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="10" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="70" />
+                                            <ColumnDefinition Width="70" />
+                                            <ColumnDefinition Width="70" />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Grid.Column="0"
+                                                   Width="8" Height="8"
+                                                   VerticalAlignment="Center"
+                                                   Fill="{Binding Color}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Margin="4,0,8,0"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Text="{Binding Name}" />
+                                        <TextBlock Grid.Column="2" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Files}" />
+                                        <TextBlock Grid.Column="3" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Code}" />
+                                        <TextBlock Grid.Column="4" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Comments}" />
+                                        <TextBlock Grid.Column="5" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Blanks}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

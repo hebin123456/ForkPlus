@@ -1,0 +1,69 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitMmReferenceWindow"
+                              Title="git mm Reference"
+                              Width="860" Height="680"
+                              MinWidth="560" MinHeight="420"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 5.1a：Avalonia 版 GitMmReferenceWindow（spike 骨架版，验证 Markdown.Avalonia 替代 WebView2）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitMmReferenceWindow.xaml（21 行）：
+          - <dialogs:ForkPlusDialogWindow> 根元素，860x680 CanResizeWithGrip
+          - Grid 2 列 3 行（80px logo 列 + * 内容列）
+          - Row 1 Col 1：WebView2 (Name=ManualWebView) + FallbackUserControl (Collapsed)
+          - code-behind 加载 Docs/gitmm.*.md → 自写 GFM 表格解析 → Bt.bt_md_to_html →
+            NavigateToString(CreateHtmlDocument(bodyHtml))
+          - WebView2 禁用右键菜单（ContextMenuRequested += Handled=true）
+
+        Avalonia 版差异（spike 简化策略）：
+          1. 用 Markdown.Avalonia.Tight 的 MarkdownScrollViewer 替代 WebView2
+             - 直接渲染 markdown 字符串（无需 HTML 转换）
+             - 内置 GFM 表格支持（无需自写表格解析）
+             - 内置主题切换（无需 CSS @media prefers-color-scheme）
+             - 内置滚动条（无需 NavigateToString + WebView2 内部滚动）
+          2. 跳过 FallbackUserControl（WPF 自定义控件，spike 用 TextBlock 占位显示错误）
+          3. 跳过 Bt.bt_md_to_html P/Invoke（Markdown.Avalonia 用 Markdig 跨平台）
+          4. 跳过 CreateHtmlDocument / AppendHtmlTable / ConvertInlineMarkdownToHtml /
+             IsTableRow / IsTableSeparator / SplitTableRow 等 markdown→HTML 转换逻辑
+             （全部由 Markdown.Avalonia 内部处理）
+          5. 跳过 ContextMenuRequested 禁用右键（Markdown.Avalonia 是 Avalonia 控件，
+             无浏览器右键菜单，无需处理）
+          6. 跳过 WebView2EnvironmentHelper（WebView2-only，Avalonia 不需要）
+          7. spike 版用 GithubLike 主题（接近 WPF 的 CSS 样式风格）
+
+        本 spike 版暂不迁移（留 Phase 5.1b 或更后）：
+          - 主题切换订阅（NotificationCenter.ApplicationThemeChanged，Phase 0 抽
+            INotificationService 后接入）
+          - PreferencesLocalization.Translate（spike 用字面量英文）
+          - 多语言 Docs/gitmm.*.md 加载（spike 仅加载英文版，Phase 5.1b 接入本地化）
+          - FallbackUserControl 失败回退（spike 用 TextBlock 占位）
+
+        本 spike 版验证：
+          - Markdown.Avalonia.Tight 11.0.3 可在 Avalonia 11.3.18 axaml 中实例化
+          - MarkdownScrollViewer 可加载 markdown 字符串
+          - GFM 表格 + 代码块 + 链接渲染正常
+          - 主题自动检测 light/dark
+          - 整个 WebView2 替代链路工作（markdown → Avalonia 控件树，无浏览器内核）
+    -->
+    <Grid ColumnDefinitions="80,*"
+          RowDefinitions="Auto,*,Auto">
+        <!-- Row 1 Col 1: Markdown 渲染区 + 错误占位 -->
+        <Grid Grid.Row="1" Grid.Column="1" Margin="0,12,0,4">
+            <!-- Markdown.Avalonia MarkdownScrollViewer，GithubLike 主题。
+                 Markdown 属性由 code-behind 在 InitializeManualView() 中直接设置。 -->
+            <md:MarkdownScrollViewer Name="ManualMarkdownViewer" />
+
+            <!-- 错误占位（spike 版用 TextBlock，对照 WPF FallbackUserControl） -->
+            <TextBlock Name="ManualFallback"
+                       IsVisible="False"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
