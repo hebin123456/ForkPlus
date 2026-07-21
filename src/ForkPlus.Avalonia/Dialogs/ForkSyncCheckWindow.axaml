@@ -1,0 +1,70 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ForkSyncCheckWindow"
+                              Title="Remote Sync Status"
+                              Width="560"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.20b：Avalonia 版 ForkSyncCheckWindow（对照 WPF ForkSyncCheckWindow.xaml 19 行 + .cs 138 行）。
+
+        对照 WPF：
+          - public partial class ForkSyncCheckWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl / Remote / LocalBranch / string branchName / ForkSyncStatus? _status
+          - 构造函数 (RepositoryUserControl, Remote, LocalBranch, string branchName, ForkSyncStatus? status)
+          - IsSubmitAllowed override: _status.HasValue && base.IsSubmitAllowed
+          - UpdateResult(ForkSyncStatus): 刷新状态并 UpdateSubmitButton
+          - ConfigureForStatus: 根据 status 切换 StatusIcon/StatusText/DetailText/SubmitButtonTitle/CancelButtonTitle
+          - OnSubmit: 根据 status 决定关闭 or 打开 Pull 窗口
+            * SafeToPush/NoUpstreamBranch/Unknown → 直接关闭
+            * ShouldSyncNoConflict / MustSyncWithConflict → RepositoryUserControl.Commands?.ShowPullWindow?.Execute(...)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current/FormatCurrent → ServiceLocator.Localization.Translate/FormatCurrent
+          3. RepositoryUserControl 参数 → Action? onPullRequested 回调（解耦，调用方注入）
+          4. BitmapImage(SuccessIcon/WarningIcon/ErrorIcon) → emoji TextBlock（"✓"/"⚠"/"✗"）
+             （参考 ForkPlusDialogWindow.SetStatus 的 spike 做法）
+          5. Foreground={DynamicResource SecondaryLabelBrush} → ThemeForegroundLowBrush（Avalonia 主题资源名）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - StatusIcon emoji + StatusText + DetailText -->
+        <Grid Grid.Row="2" ColumnDefinitions="50,*" Margin="0,4,0,0">
+            <TextBlock Grid.Column="0"
+                       Name="StatusIcon"
+                       FontSize="32"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Margin="0,2,14,0" />
+            <StackPanel Grid.Column="1">
+                <TextBlock Name="StatusText"
+                           FontSize="14" FontWeight="Medium"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8" />
+                <TextBlock Name="DetailText"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
