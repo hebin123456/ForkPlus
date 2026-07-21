@@ -1,0 +1,64 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.DiffPopupWindow"
+                              Title="File Preview"
+                              Width="720" Height="500"
+                              MinWidth="480" MinHeight="320"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.43b：Avalonia 版 DiffPopupWindow（对照 WPF DiffPopupWindow.xaml 24 行 + .cs 118 行）。
+
+        对照 WPF：
+          - public partial class DiffPopupWindow : CustomWindow
+          - 字段: FileDiffControl (FileDiffControl / CommitFileDiffControl)
+          - 静态 CreateRevisionDiff / CreateCommitDiff 工厂方法
+          - UpdateDiff(GitCommandResult<DiffContent> fileContent) → FileDiffControl.Content + Title
+          - KeyDown: Space (close) / PreviewKeyDown: Esc (close) / Up (SelectPrevious) / Down (SelectNext)
+          - Deactivated → CloseWindow()
+          - HideMinimizeMaximizeButtons = true / ResizeMode = CanResizeWithGrip
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. FileDiffControl 嵌入式 UserControl（spike 版未迁移）→ 用只读 TextBox 显示 diff 文本（spike 简化）
+          3. UpdateDiff(GitCommandResult<DiffContent>) → spike 版接受 (string filePath, string diffText)
+          4. SelectNext / SelectPrevious 事件 → spike 版仅保留 EventHandler 声明（不实际驱动 FileDiffControl）
+          5. KeyDown / PreviewKeyDown → Avalonia KeyDown + KeyEventArgs.Handled
+          6. Deactivated → Avalonia Window.Deactivated 事件
+          7. HideMinimizeMaximizeButtons → spike 版跳过（用系统标题栏，spike 不自定义 chrome）
+          8. ResizeMode = CanResizeWithGrip → CanResize = True（Avalonia 11 标准）
+          9. ShowLargeUntrackedChanges 事件转发 → spike 版保留事件声明
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - diff text -->
+        <TextBox Grid.Row="2"
+                 Name="DiffContentTextBox"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="Consolas,Monospace"
+                 FontSize="12"
+                 Padding="6"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

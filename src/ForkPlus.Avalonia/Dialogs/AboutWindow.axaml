@@ -1,0 +1,87 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.AboutWindow"
+                              Title="About ForkPlus"
+                              Width="320" MinHeight="348"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 AboutWindow（对照 WPF AboutWindow.xaml 43 行 + .cs 44 行）。
+
+        注意：本工程已存在 AboutDialogWindow.axaml（Phase 4.12a 迁移版），两者均迁移自 WPF
+        src/ForkPlus/UI/Dialogs/AboutWindow.xaml.cs。本 AboutWindow 是任务要求单独创建的
+        窗口（路径 /workspace/src/ForkPlus.Avalonia/Dialogs/AboutWindow.axaml），与
+        AboutDialogWindow 并存（不同 x:Class），由调用方按需选用。
+
+        对照 WPF：
+          - public partial class AboutWindow : ForkPlusDialogWindow
+          - 构造函数：base.ShowLogo=false / base.ShowFooter=false / InitializeComponent() /
+            Translate("About " + App.AppName) → base.Title / base.DialogTitle /
+            VersionTextBlock.Text = string.Format(Translate("Version {0}"), App.Version) /
+            CopyrightTextBlock.Text = string.Format(Translate("Copyright © {0} Hebin"), DateTime.Now.Year)
+          - Hyperlink_RequestNavigate: e.Uri.OpenInBrowser()
+          - LegalHyperlink_RequestNavigate: new LegalWindow().ShowDialog()
+          - Translate: PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage)
+
+        Avalonia 版差异：
+          1. ShowFooter=false（与 WPF 一致，没有 Submit/Cancel 按钮）
+          2. 集成 ServiceLocator.Localization（PreferencesLocalization.Translate → ServiceLocator.Localization.Translate）
+          3. 用 Button + Click 替代 Hyperlink.RequestNavigate（Avalonia 11 跨平台更稳）
+          4. LegalButton 点击弹出 LegalWindow（已在 Phase 4.4b 迁移）
+          5. 版本号读取 AssemblyInformationalVersionAttribute（fallback 到 GetName().Version）
+    -->
+    <Grid Margin="20,0,20,20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 1: Logo -->
+        <Image Grid.Row="1" Grid.Column="1"
+               HorizontalAlignment="Center"
+               Source="/Assets/ForkPlusIcon.png"
+               Width="90" Height="90" />
+
+        <!-- Row 2: 内容 -->
+        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,8,0,0">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="ForkPlus"
+                       FontSize="32" />
+            <TextBlock Name="VersionTextBlock"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,8" />
+            <Button Name="AuthorLinkButton"
+                    Content="hebin.me"
+                    HorizontalAlignment="Center"
+                    Margin="0,4,0,0"
+                    Padding="4,2"
+                    Click="AuthorLinkButton_Click"
+                    Tag="https://hebin.me" />
+            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,8,0,0"
+                       Text="Designed and implemented by"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,4,0,4"
+                       Text="Hebin" />
+            <TextBlock Name="CopyrightTextBlock"
+                       HorizontalAlignment="Center"
+                       FontSize="11"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            <!-- 对照 WPF: LegalHyperlink → 弹出 LegalWindow 显示第三方许可证 -->
+            <Button Name="LegalButton"
+                    HorizontalAlignment="Center"
+                    Margin="0,12,0,0"
+                    Padding="4,2"
+                    Click="LegalButton_Click" />
+        </StackPanel>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

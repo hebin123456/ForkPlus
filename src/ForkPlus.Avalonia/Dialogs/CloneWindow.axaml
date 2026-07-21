@@ -1,0 +1,142 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CloneWindow"
+                              Title="Clone"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 CloneWindow（对照 WPF CloneWindow.xaml 106 行 + .cs 550 行）。
+
+        对照 WPF：
+          - public partial class CloneWindow : ForkPlusDialogWindow
+          - 嵌套 AccountItem / AccountItemType（Default/Account/Separator/Custom）
+          - 字段: Account _account / bool _refreshingUrl / AccountItem[] AccountItems
+          - 构造函数 (string url, Account account)
+            * DialogTitle/Description = Translate("Clone") / Translate("Clone a remote repository into a local folder")
+            * SubmitButtonTitle = Translate("Clone")
+            * Refresh(url) → RepositoryUrlTextBox + ParentDirectoryTextBox（默认 RepositoryManager.Instance.DefaultSourceDir）
+            * RefreshNetworkProtocolButton / UpdateSubmitButton / RefreshAccountsComboBox / HideStatusControls
+            * Loaded → 若 URL 非空，RepositoryNameTextBox.Focus().SelectAll()
+          - OnActivated: 若 _account == null 则 TryParseUrlFromClipboard + HideStatusControls + RefreshAccountsComboBox
+          - OnSubmit:
+            * 若 MainWindow.ActiveRepositoryUserControl != null: JobQueue.Add(RunClone foreground:false) + Close()
+            * 否则: DisableEditableControls + SetStatus(InProgress) + Task.Run(RunClone foreground:true) + Close()
+          - TestButton_Click: TestRemoteRepositoryConnectionGitCommand + 状态显示 + ConfigureSSHKeyButton 显示
+          - NetworkProtocolContextMenu_Opened: 根据 URL 动态构造 HTTPS/SSH 切换菜单
+          - ConfigureSSHKeyButton_Click: MainWindow.Commands.ShowConfigureSSHKeysWindow.Execute()
+          - HideStatusControls / RunClone (foreground:progress + Application.TabManager().OpenRepository)
+          - Refresh / RepositoryUrlTextBox_TextChanged / AccountsComboBox_SelectionChanged
+          - ParentDirectoryTextBox_TextChanged / RepositoryNameTextBox_TextChanged / BrowseButton_Click
+          - RefreshNetworkProtocolButton / TryParseUrlFromClipboard / RemoveGitClonePrefix
+          - RefreshRepositoryNameTextBox / RefreshAccountsComboBox / SelectAccount / RefreshUrlUserName
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 省略 Test Connection / Network Protocol / SSH Key / Accounts ComboBox
+             （需要额外基础设施，spike 版仅保留核心 URL + ParentDirectory + RepositoryName + Browse + CommandPreview）
+          3. RepositoryManager.Instance.DefaultSourceDir() → 注入 Func<string>? defaultSourceDirProvider
+          4. RepositoryManager.Instance.SetSourceDirs(...) → 注入 Action<string>? onCloneCompleted 回调
+          5. Application.Current.TabManager().OpenRepository(path) → 注入 Action<string>? onRepositoryOpened 回调
+          6. MainWindow.ActiveRepositoryUserControl.JobQueue.Add(...) → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          7. OpenDialog.SelectDirectory → StorageProvider.OpenFolderPickerAsync
+          8. PlaceholderTextBox.Placeholder → TextBox Watermark
+          9. spike 基类不提供 DisableEditableControls → 手动禁用 3 个 TextBox + Browse 按钮
+         10. TextChanged 事件参数：Avalonia.Controls.TextChangedEventArgs
+         11. Button Click 事件参数：RoutedEventArgs
+         12. ServiceLocator.Clipboard.GetText() → spike 省略 TryParseUrlFromClipboard（依赖剪贴板服务）
+         13. PreferencesLocalization → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,8,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Repository Url -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Repository Url:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="RepositoryUrlTextBox"
+                     Watermark="Git Repository Url"
+                     Margin="8,4,0,4"
+                     TextChanged="RepositoryUrlTextBox_TextChanged" />
+
+            <!-- Row 1: Parent Folder + Browse -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Parent Folder:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0"
+                         Name="ParentDirectoryTextBox"
+                         Watermark="Parent folder path"
+                         Margin="8,4,0,4"
+                         TextChanged="ParentDirectoryTextBox_TextChanged" />
+                <Button Grid.Column="1"
+                        Name="BrowseButton"
+                        Content="Browse"
+                        Margin="4,4,0,4"
+                        Click="BrowseButton_Click" />
+            </Grid>
+
+            <!-- Row 2: Name -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,8,4" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="RepositoryNameTextBox"
+                     Watermark="Repository name"
+                     Margin="8,4,0,4"
+                     TextChanged="RepositoryNameTextBox_TextChanged" />
+
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

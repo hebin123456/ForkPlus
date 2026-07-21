@@ -1,0 +1,67 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CustomCommandUIWindow"
+                              Title="Custom Command"
+                              Width="550"
+                              SizeToContent="Height"
+                              MinHeight="150"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.45b：Avalonia 版 CustomCommandUIWindow（对照 WPF CustomCommandUIWindow.xaml 21 行 + .cs 294 行）。
+
+        对照 WPF：
+          - public partial class CustomCommandUIWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / string _customCommandName /
+            CustomCommandUI _customCommandUI / CustomCommandEnvironment _env /
+            CustomCommandUI.Button button1 / CustomCommandUI.Button button2
+          - 构造函数：
+            * DialogTitle = _env.ReplaceVariablesWithValues(customCommandUI.Title)
+            * DialogDescription = _env.ReplaceVariablesWithValues(customCommandUI.Description)
+            * ShowSubmitButton = false / ShowCancelButton = false（按 Buttons 数量动态显示）
+            * CreateControls(customCommandUI.Controls)：遍历 4 种 Control 类型动态构造
+              - GenericTextBox → PlaceholderTextBox（Text + Placeholder）
+              - PathTextBox → PathTextBoxUserControl（SaveFile/OpenFile/OpenDirectory dialog）
+              - Dropdown → ReferenceDropdownUserControl
+              - CheckBox → CustomCommandCheckBox（CheckedValue/UncheckedValue）
+            * Buttons[0] → button1 = SubmitButton；Buttons[1] → button2 = CancelButton
+          - OnSubmit / OnCancel：遍历 ControlsContainer.Children 按 num 索引读取值
+            → List<CustomCommandEnvironment.Parameter> → CustomCommandEnvironment env → button.Action.Execute
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. RepositoryUserControl 参数 → 注入 GitModule + RepositoryReferences? +
+            Action<GitCommandResult>? onCompleted 回调
+          3. PlaceholderTextBox.Placeholder → TextBox Watermark
+          4. PathTextBoxUserControl → spike 版用 TextBox + 浏览按钮简化
+          5. ReferenceDropdownUserControl → spike 版用 ComboBox 占位
+             （spike 不接入 RepositoryData，用空 ComboBox 占位）
+          6. CustomCommandCheckBox → Avalonia CheckBox + CheckedValue/UncheckedValue 跟踪
+          7. ControlsContainer.Children 按索引访问 → spike 版用 List 跟踪 (Control 实例 + 值读取 Func)
+          8. SubmitButtonTitle / CancelButtonTitle → 同步注入的 button1/button2.Title
+          9. spike 版：OnSubmit/OnCancel 末尾调 onCompleted 回调通知调用方
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - dynamic controls container -->
+        <StackPanel Grid.Row="2"
+                    Name="ControlsContainer"
+                    Margin="0,4,0,0" />
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

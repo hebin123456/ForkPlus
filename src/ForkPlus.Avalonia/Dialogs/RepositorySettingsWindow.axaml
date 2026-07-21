@@ -1,0 +1,103 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RepositorySettingsWindow"
+                              Title="Repository Settings"
+                              Width="640" Height="520"
+                              MinWidth="480" MinHeight="320"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.42b：Avalonia 版 RepositorySettingsWindow（对照 WPF RepositorySettingsWindow.xaml 22 行 + .cs 56 行）。
+
+        对照 WPF：
+          - public partial class RepositorySettingsWindow : ForkPlusDialogWindow
+          - 构造函数 (GitModule gitModule, RepositoryData repositoryData)
+          - 4 个 Tab: General / Commit / Issue Tracker / Custom Commands
+            * GeneralUserControl.Initialize(_gitModule)
+            * IssueTrackerUserControl.Initialize(this, _gitModule)
+            * CommitTemplateUserControl.Initialize(_gitModule)
+            * CustomCommandsUserControl.InitializeLocal(this, _gitModule, _repositoryData)
+          - OnSubmit / OnClosing: 调用各子控件的 Save() 方法
+          - SubmitButtonTitle = "Close" / ShowCancelButton = false / SizeToContent = WidthAndHeight
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. 4 个 RepositorySettings 子 UserControl（GeneralUserControl / IssueTrackerUserControl /
+             CommitTemplateUserControl / CustomCommandsUserControl）spike 版未迁移，
+             用 TextBlock 占位说明 Phase 4 后续迁移
+          3. ModernTabControl → Avalonia 原生 TabControl
+          4. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          5. OnSubmit / OnClosing 调用各子控件的 Save() → spike 版无子控件，跳过
+          6. SubmitButtonTitle = "Close" / ShowCancelButton = false（与 WPF 一致）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - TabControl 4 个 Tab -->
+        <TabControl Grid.Row="2" Name="SettingsTabControl" Margin="0,4,0,0">
+            <TabItem Name="GeneralTab" Header="General">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="General repository settings"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Configure default branch, auto-fetch interval, etc."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="CommitTemplateTab" Header="Commit">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Commit message template"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Customize the default commit message template for this repository."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="IssueTrackerTab" Header="Issue Tracker">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Issue tracker integration"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Configure the issue tracker URL pattern for this repository."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Name="CustomCommandsTab" Header="Custom Commands">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Repository-specific custom commands"
+                               FontSize="13"
+                               FontWeight="Medium"
+                               Margin="0,0,0,6" />
+                    <TextBlock Text="Manage custom git commands specific to this repository."
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,260 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CustomColorsDialog"
+                              Title="Custom Colors"
+                              Width="600" Height="680"
+                              MinWidth="520" MinHeight="540"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 CustomColorsDialog（对照 WPF CustomColorsDialog.xaml 213 行 + .cs 966 行）。
+
+        对照 WPF：
+          - public partial class CustomColorsDialog : ForkPlusDialogWindow
+          - ShowHeader=false / ShowLogo=false / ShowFooter=false（自定义布局）
+          - 颜色列表 ItemsControl + DataTemplate（颜色名 + 预览块 + hex 输入 + Reset 按钮）
+          - 底部按钮：Import/Export + Random Palette + Reset All
+          - Popup 颜色选择器：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 + hex 输入
+          - LoadItems / InitializeSwatches / ApplyAndRefresh / ApplyPopupColor
+          - Import/Export JSON 配置（schema="ForkPlus.CustomColors/v1"）
+          - RandomPalette_Click：基于主色相派生整套配色
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 模式：根 Grid 自定义布局，无 TitleTextBlock/DescriptionTextBlock（不调 SetTitle/SetDescription）
+          2. ShowFooter=false（与 WPF 一致，无 Submit/Cancel footer）
+          3. MouseLeftButtonUp/Down/Move → PointerPressed/Released/Moved（Avalonia 11）
+          4. CaptureMouse/ReleaseMouseCapture → e.Pointer.Capture(control)/e.Pointer.Capture(null)
+          5. Line X1/Y1/X2/Y2 → StartPoint/EndPoint（Avalonia Shapes.Line API）
+          6. System.Windows.Media.Color → Avalonia.Media.Color
+          7. ColorConverter.ConvertFromString → Avalonia.Media.Color.Parse
+          8. Application.Current.Resources[key] → Avalonia Application.Current.Resources[key]（API 兼容）
+          9. App.ApplyCustomColors() → spike 不接入（Avalonia 工程暂无该方法，留 Phase 2.5 后接入）
+          10. SaveFileDialog/OpenFileDialog → StorageProvider.SaveFilePickerAsync/OpenFilePickerAsync
+          11. MessageBox.Show → MessageBoxWindow.ShowDialog
+          12. Cursors.Hand → Cursor.Parse / new Cursor(StandardCursorType.Hand)
+          13. CustomColorItem → 嵌套类（spike 不引入 WPF 工程 CustomColorsDialog.cs 内嵌类）
+    -->
+    <Grid Margin="20,16,20,20" RowDefinitions="Auto,*,Auto">
+        <!-- Row 0: 标题区 -->
+        <TextBlock Grid.Row="0"
+                   Name="HeaderTextBlock"
+                   Margin="0,0,0,12"
+                   FontSize="14" FontWeight="SemiBold" />
+
+        <!-- Row 1: 颜色列表 -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="0,0,0,12">
+            <ItemsControl Name="ColorListControl">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,4" Height="28" ColumnDefinitions="200,44,100,*">
+                            <!-- 颜色名 -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding DisplayName}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <!-- 颜色预览（点击弹出颜色选择器） -->
+                            <Border Grid.Column="1"
+                                    Name="ColorPreviewBorder"
+                                    Width="32" Height="22"
+                                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                                    BorderThickness="1"
+                                    HorizontalAlignment="Left"
+                                    Tag="{Binding}"
+                                    ToolTip.Tip="{Binding Key}"
+                                    PointerReleased="ColorPreview_Click">
+                                <Rectangle Fill="{Binding PreviewBrush}" />
+                            </Border>
+                            <!-- hex 输入 -->
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding HexValue, Mode=TwoWay}"
+                                     Margin="8,0,0,0"
+                                     VerticalAlignment="Center"
+                                     Tag="{Binding}"
+                                     TextChanged="HexTextBox_TextChanged" />
+                            <!-- 重置按钮 -->
+                            <Button Grid.Column="3"
+                                    Content="{Binding ResetLabel}"
+                                    Padding="12,2"
+                                    Margin="8,0,0,0"
+                                    Tag="{Binding}"
+                                    IsEnabled="{Binding IsCustomized}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Click="ResetItem_Click" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Row 2: 底部按钮（换色已实时落盘，无需 OK/Cancel 确认） -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+            <!-- 左侧：导入/导出颜色 -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Button Name="ImportColorsButton"
+                        Content="Import Colors"
+                        Padding="20,4"
+                        Margin="0,0,12,0"
+                        Click="ImportColors_Click" />
+                <Button Name="ExportColorsButton"
+                        Content="Export Colors"
+                        Padding="20,4"
+                        Click="ExportColors_Click" />
+            </StackPanel>
+            <!-- 右侧：随机配色 + 全部重置 -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="RandomPaletteButton"
+                        Content="Random Palette"
+                        Padding="20,4"
+                        Margin="0,0,12,0"
+                        Click="RandomPalette_Click" />
+                <Button Name="ResetAllButton"
+                        Content="Reset All"
+                        Padding="20,4"
+                        Click="ResetAll_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
+        <Popup Name="ColorPickerPopup"
+               Grid.RowSpan="3"
+               Placement="Pointer"
+               IsLightDismissEnabled="True">
+            <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    Padding="16"
+                    Width="340">
+                <StackPanel>
+                    <TextBlock Name="PopupTitleText"
+                               Text="Color Picker"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,12" />
+
+                    <!-- HSV 2D 调色盘 + 色相条 -->
+                    <Grid Margin="0,0,0,12" ColumnDefinitions="*,20">
+                        <!-- 饱和度 x 明度 2D 方块 -->
+                        <Canvas Grid.Column="0"
+                                Name="HsvCanvas"
+                                Width="240" Height="160"
+                                ClipToBounds="True"
+                                Cursor="Hand"
+                                PointerPressed="HsvCanvas_PointerPressed"
+                                PointerReleased="HsvCanvas_PointerReleased"
+                                PointerMoved="HsvCanvas_PointerMoved">
+                            <!-- 背景纯色（当前色相，动态替换） -->
+                            <Rectangle Name="HsvBaseRect"
+                                       Width="240" Height="160"
+                                       Fill="Red" />
+                            <!-- 白色横向渐变（饱和度 0 to 100 percent） -->
+                            <Rectangle Name="HsvSatRect"
+                                       Width="240" Height="160">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="White" />
+                                        <GradientStop Offset="1" Color="Transparent" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <!-- 黑色纵向渐变（明度 100 to 0 percent） -->
+                            <Rectangle Name="HsvValRect"
+                                       Width="240" Height="160">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                        <GradientStop Offset="0" Color="Transparent" />
+                                        <GradientStop Offset="1" Color="Black" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <!-- 选中指示器 -->
+                            <Ellipse Name="HsvIndicator"
+                                     Width="10" Height="10"
+                                     Stroke="White"
+                                     StrokeThickness="1.5" />
+                        </Canvas>
+                        <!-- 色相条（垂直彩虹） -->
+                        <Canvas Grid.Column="1"
+                                Name="HueCanvas"
+                                Width="20" Height="160"
+                                ClipToBounds="True"
+                                Cursor="Hand"
+                                PointerPressed="HueCanvas_PointerPressed"
+                                PointerReleased="HueCanvas_PointerReleased"
+                                PointerMoved="HueCanvas_PointerMoved">
+                            <Rectangle Width="20" Height="160">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                        <GradientStop Offset="0.000" Color="Red" />
+                                        <GradientStop Offset="0.167" Color="Yellow" />
+                                        <GradientStop Offset="0.333" Color="Lime" />
+                                        <GradientStop Offset="0.500" Color="Cyan" />
+                                        <GradientStop Offset="0.667" Color="Blue" />
+                                        <GradientStop Offset="0.833" Color="Magenta" />
+                                        <GradientStop Offset="1.000" Color="Red" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Line Name="HueIndicator"
+                                  StartPoint="0,0" EndPoint="20,0"
+                                  Stroke="White" StrokeThickness="2" />
+                        </Canvas>
+                    </Grid>
+
+                    <!-- 预设色板 -->
+                    <TextBlock Name="SwatchLabelText"
+                               Text="Presets"
+                               FontSize="11"
+                               Margin="0,0,0,4" />
+                    <WrapPanel Name="SwatchPanel"
+                               Margin="0,0,0,12" />
+
+                    <!-- RGB 滑块 -->
+                    <Grid Margin="0,0,0,8" ColumnDefinitions="16,*">
+                        <TextBlock Grid.Column="0" Text="R" FontSize="11" VerticalAlignment="Center" />
+                        <Slider Grid.Column="1"
+                                Name="RSlider"
+                                Minimum="0" Maximum="255"
+                                SmallChange="1" LargeChange="16"
+                                Margin="4,0,0,0"
+                                ValueChanged="RgbSlider_ValueChanged" />
+                    </Grid>
+                    <Grid Margin="0,0,0,8" ColumnDefinitions="16,*">
+                        <TextBlock Grid.Column="0" Text="G" FontSize="11" VerticalAlignment="Center" />
+                        <Slider Grid.Column="1"
+                                Name="GSlider"
+                                Minimum="0" Maximum="255"
+                                SmallChange="1" LargeChange="16"
+                                Margin="4,0,0,0"
+                                ValueChanged="RgbSlider_ValueChanged" />
+                    </Grid>
+                    <Grid Margin="0,0,0,12" ColumnDefinitions="16,*">
+                        <TextBlock Grid.Column="0" Text="B" FontSize="11" VerticalAlignment="Center" />
+                        <Slider Grid.Column="1"
+                                Name="BSlider"
+                                Minimum="0" Maximum="255"
+                                SmallChange="1" LargeChange="16"
+                                Margin="4,0,0,0"
+                                ValueChanged="RgbSlider_ValueChanged" />
+                    </Grid>
+
+                    <!-- hex 预览 + 输入 -->
+                    <Grid Margin="0,0,0,0" ColumnDefinitions="40,*">
+                        <Rectangle Name="PopupPreviewRect"
+                                   Width="36" Height="24"
+                                   Stroke="{DynamicResource ThemeBorderMidBrush}"
+                                   StrokeThickness="1" />
+                        <TextBox Grid.Column="1"
+                                 Name="PopupHexBox"
+                                 Margin="8,0,0,0"
+                                 VerticalAlignment="Center"
+                                 TextChanged="PopupHex_TextChanged" />
+                    </Grid>
+                    <!-- 选色实时落盘，点 Popup 外部即关闭，无需 OK/Cancel 按钮 -->
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,115 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ReflogWindow"
+                              Title="Reflog"
+                              Width="700" Height="500"
+                              MinWidth="500" MinHeight="300"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.40b：Avalonia 版 ReflogWindow（对照 WPF ReflogWindow.xaml 61 行 + .cs 203 行）。
+
+        对照 WPF：
+          - public partial class ReflogWindow : CustomWindow
+          - 构造函数 (RepositoryUserControl repositoryUserControl)
+          - LoadReflog: ReflogHistoryProvider.ReadHeadReflog(gitModule) + UndoIndexStore.Load() join
+          - 双击 / Jump to... 按钮: MessageBoxWindow 确认 + _repositoryUserControl.AddUndoable("Jump to HEAD@{N}", reset (hard) <sha>)
+          - RefreshButton_Click: 重新 LoadReflog
+          - ReflogListView_SelectionChanged: JumpButton.IsEnabled 同步选中态
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. RepositoryUserControl 参数 → 注入 GitModule + Action<GitCommandResult>? onCompleted 回调
+          3. spike 基类不提供 AddUndoable → 用 ResetCurrentBranchToRevisionGitCommand + Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          4. WPF ListView+GridView → Avalonia ListBox + DataTemplate（Avalonia 11 无内置 GridView，
+             且 Avalonia.Controls.DataGrid 包未引入 csproj；spike 用 ListBox + 网格行模板替代）
+          5. MouseDoubleClick → DoubleTapped 事件（Avalonia 同名）
+          6. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+          7. MessageBoxWindow 确认弹窗 → spike 版省略确认步骤（直接执行），onCompleted 回调通知调用方
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+            <!-- Row 0: Toolbar -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right"
+                        Name="RefreshButton"
+                        Margin="6,0,0,0"
+                        Content="Refresh"
+                        Click="RefreshButton_Click" />
+                <Button DockPanel.Dock="Right"
+                        Name="JumpButton"
+                        Margin="6,0,0,0"
+                        Content="Jump to..."
+                        IsEnabled="False"
+                        Click="JumpButton_Click" />
+                <TextBlock Name="HeaderTitle"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+
+            <!-- Row 1: Reflog ListBox with headered row template -->
+            <Border Grid.Row="1"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <ScrollViewer>
+                    <ListBox Name="ReflogItemsControl"
+                             SelectionChanged="ReflogItemsControl_SelectionChanged"
+                             DoubleTapped="ReflogItemsControl_DoubleTapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="90,90,*,240,160"
+                                      Margin="4,2"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding IndexDisplay}"
+                                               FontFamily="Consolas,Monospace"
+                                               FontSize="12" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding ShaDisplay}"
+                                               FontFamily="Consolas,Monospace"
+                                               FontSize="12" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding OperationName}"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding CommitSubject}"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="4"
+                                               Text="{Binding TimeDisplay}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Row 2: Status text -->
+            <TextBlock Grid.Row="2"
+                       Name="StatusText"
+                       Margin="0,6,0,0"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,189 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ConfigureSshKeysWindow"
+                              Title="Configure SSH Keys"
+                              Width="650"
+                              MaxHeight="400"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 ConfigureSshKeysWindow（对照 WPF ConfigureSshKeysWindow.xaml 127 行 + .cs 260 行）。
+
+        对照 WPF：
+          - public partial class ConfigureSshKeysWindow : ForkPlusDialogWindow
+          - ListBox + DataTemplate(DockPanel: CheckBox + Image + TextBlock)
+          - FallbackUserControl（spike 简化为 TextBlock）
+          - DropDownButton + ContextMenu：New SSH Key... / Open Existing SSH Key...
+            （spike 简化为两个独立 Button，Avalonia 工程暂无 DropDownButton 控件）
+          - Details 网格：Location / SHA256 / Public Key + Hyperlink "Copy to clipboard"
+          - OnSubmit：把激活的 SSH key 写入 ForkPlusSettings.Default.SshKeys + Save
+          - Refresh / RefreshConfigurationTextBlock / RefreshStatus / RefreshDetails
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 模式 4 行 Grid = Header / Description / Content / Footer
+          2. FallbackUserControl → TextBlock + IsVisible 切换
+          3. DropDownButton + ContextMenu → 两个独立 Button
+          4. Image Source={DynamicResource KeyIcon} → spike 用 emoji TextBlock "🔑"
+          5. Hyperlink RequestNavigate → Button + Click 调 Clipboard.SetText
+          6. Borderbrush + SelectableTextBlock → TextBlock + TextTrimming
+          7. SshKeyViewModel → 嵌套类（spike 不引入 WPF 工程 SshKeyViewModel.cs）
+          8. ValidateSshKeyShellCommand.Execute → 直接调用（Core 已迁）
+          9. GetLocalSshKeysCommand.Execute → 直接调用（Core 已迁）
+          10. GenerateNewSshKeyWindow → 已迁移，使用 ShowDialog(this)
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: SSH configuration summary -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,2,0,10">
+                <TextBlock Text="SSH configuration: " FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
+                <TextBlock Name="SshConfigurationIcon"
+                           Text="🔑"
+                           FontSize="13"
+                           Margin="2,0,4,0"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="SshConfigurationTextBlock"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+
+            <!-- Row 1: List + Details side by side -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <!-- Left: SSH key list + add/browse buttons -->
+                <Grid Grid.Column="0" Margin="0,0,8,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListBox Grid.Row="0"
+                             Name="SshKeyListBox"
+                             SelectionChanged="SshKeyListBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,Auto,*">
+                                    <CheckBox Grid.Column="0"
+                                              Margin="2,2,4,2"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding IsActive}"
+                                              IsCheckedChanged="SshKeyCheckBox_Changed" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="🔑"
+                                               FontSize="13"
+                                               Margin="2,0,4,0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding KeyFileName}"
+                                               FontSize="13"
+                                               Margin="2,0,4,0"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Grid.Row="0"
+                               Name="FallbackTextBlock"
+                               IsVisible="False"
+                               Text="No SSH keys"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Name="GenerateNewSshKeyButton"
+                                Content="New SSH Key..."
+                                Click="GenerateNewSSHKeyButton_Click"
+                                Margin="0,0,4,0"
+                                Padding="6,2" />
+                        <Button Name="BrowseKeyButton"
+                                Content="Open Existing..."
+                                Click="BrowseKeyButton_Click"
+                                Padding="6,2" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Right: Details panel -->
+                <Grid Grid.Column="1" Name="SshKeyDetailsContainer">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Margin="14,0,0,4"
+                               FontSize="13"
+                               HorizontalAlignment="Right"
+                               Text="Location:" />
+                    <TextBlock Grid.Row="0" Grid.Column="1"
+                               Name="SshKeyPathTextBlock"
+                               Margin="8,0,0,4"
+                               FontSize="13"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Margin="14,4,0,4"
+                               FontSize="13"
+                               HorizontalAlignment="Right"
+                               Text="SHA256:" />
+                    <TextBlock Grid.Row="1" Grid.Column="1"
+                               Name="SshKeySha256TextBox"
+                               Margin="8,4,1,4"
+                               FontSize="13"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Margin="18,4,0,0"
+                               FontSize="13"
+                               Text="Public Key:" />
+                    <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                             Name="SshKeyPublicKeyTextBox"
+                             Margin="14,4,0,0"
+                             FontSize="13"
+                             IsReadOnly="True"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             MinHeight="60" />
+                    <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                            Name="CopyPublicKeyButton"
+                            Content="Copy to clipboard"
+                            Click="CopyPublicKey_Click"
+                            HorizontalAlignment="Center"
+                            Margin="14,4,0,0"
+                            Padding="12,2" />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

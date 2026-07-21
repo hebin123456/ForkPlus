@@ -1,0 +1,209 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.BenchmarkWindow"
+                              Title="Performance Benchmark"
+                              Width="480" Height="380"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.44b：Avalonia 版 BenchmarkWindow（对照 WPF BenchmarkWindow.xaml 59 行 + .cs 168 行）。
+
+        对照 WPF：
+          - public partial class BenchmarkWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / Job _activeJob / string _benchmarkLog
+          - 构造函数：ShowLogo=false / ShowFooter=false / ShowHeader=false / MeasurementsContainer.Hide()
+          - StartButton_Click → StartButton.Collapse() + MeasurementsContainer.Show() + Refresh()
+          - RefreshButton_Click → Refresh()
+          - CopyResultButton_Click → ServiceLocator.Clipboard.SetText(_benchmarkLog)
+          - Refresh():
+            * _activeJob?.Monitor.Cancel()
+            * _repositoryUserControl.JobQueue.Add("Benchmark", delegate(JobMonitor monitor) {
+                Action<BenchmarkResult> callback = benchmark => Dispatcher.Async(RefreshControls(monitor, benchmark));
+                GitCommandResult<BenchmarkResult> response = new BenchmarkGitCommand().Execute(gitModule, monitor, callback);
+                if (response.Succeeded) Dispatcher.Async(更新 ScoreTextBlock / ScoreProgressBar / RefreshButton / CopyReportButton)
+                else if (!monitor.IsCanceled) Dispatcher.Async(new ErrorWindow(...).ShowDialog())
+              })
+          - RefreshControls(monitor, benchmark): 更新 SystemLatencyTextBlock / StatusTextBlock /
+            ReferencesTextBlock / RevisionsTextBlock / ProgressBar / ScoreTextBlock / ScoreProgressBar
+          - GetElapsedBrush / GetScoreBrush: < low → Green / < high → Yellow / >= → Red
+          - OnClosing: _activeJob?.Monitor.Cancel()
+
+        Avalonia 版差异：
+          1. spike 模式：构造函数 SetFooter/Footer 注入（保留 Footer 显示 Close 按钮便于关闭）
+          2. RepositoryUserControl 参数 → 注入 GitModule + Action<GitCommandResult>? onCompleted 回调
+          3. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          4. Image.Show()/Hide() → IsVisible = true/false
+          5. Collapse()/Show() → IsVisible = false/true
+          6. Theme.ApplicationColors.GreenBrush / YellowBrush / RedBrush → spike 用 Foreground 直接 hex 颜色
+             （WPF Theme 在 ForkPlus 工程，Avalonia Theme 工程已抽 IThemeService 但 spike 版暂未接入）
+          7. ProgressBar Value 用 double? 转 double（GetValueOrDefault）
+          8. OnClosing → Avalonia Closed 事件（取消 _activeJob.Monitor.Cancel）
+          9. spike 版省略 ErrorWindow 弹窗（用 SetStatus Error 显示错误信息）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Toolbar -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right"
+                        Name="CopyReportButton"
+                        Margin="6,0,0,0"
+                        Content="Copy report"
+                        IsVisible="False"
+                        Click="CopyReportButton_Click" />
+                <Button DockPanel.Dock="Right"
+                        Name="RefreshButton"
+                        Margin="6,0,0,0"
+                        Content="Refresh"
+                        IsVisible="False"
+                        Click="RefreshButton_Click" />
+                <TextBlock Text="Measure repository performance"
+                           FontSize="12"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+
+            <!-- Row 1: Measurements container + Start button -->
+            <Border Grid.Row="1"
+                    Padding="2"
+                    CornerRadius="4"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    Background="{DynamicResource ThemeControlMidBrush}">
+                <Grid>
+                    <!-- MeasurementsContainer (Hidden until Start) -->
+                    <Grid Name="MeasurementsContainer"
+                          Margin="20,5,20,0"
+                          IsVisible="False"
+                          ColumnDefinitions="*,Auto">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: System latency -->
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Text="System latency"
+                                   ToolTip.Tip="git rev-parse HEAD" />
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Name="SystemLatencyTextBlock"
+                                   Margin="0,10,0,0"
+                                   FontSize="16" FontWeight="Medium"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Text="--" />
+
+                        <!-- Row 1: Reading changed files -->
+                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Text="Reading changed files"
+                                   ToolTip.Tip="git status --porcelain" />
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Name="StatusTextBlock"
+                                   Margin="0,10,0,0"
+                                   FontSize="16" FontWeight="Medium"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Text="--" />
+
+                        <!-- Row 2: Reading branches and tags -->
+                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Text="Reading branches and tags"
+                                   ToolTip.Tip="git for-each-ref" />
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Name="ReferencesTextBlock"
+                                   Margin="0,10,0,0"
+                                   FontSize="16" FontWeight="Medium"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Text="--" />
+
+                        <!-- Row 3: Reading commits -->
+                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Text="Reading commits"
+                                   ToolTip.Tip="git log --oneline --all" />
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Name="RevisionsTextBlock"
+                                   Margin="0,10,0,0"
+                                   FontSize="16" FontWeight="Medium"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Text="--" />
+
+                        <!-- Row 4: ProgressBar -->
+                        <ProgressBar Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                     Name="ProgressBar"
+                                     Margin="0,10,0,0"
+                                     Minimum="0" Maximum="100"
+                                     Height="4"
+                                     VerticalAlignment="Bottom" />
+
+                        <!-- Row 5: SCORE label + score text -->
+                        <TextBlock Grid.Row="5" Grid.Column="0"
+                                   Margin="0,16,0,0"
+                                   Text="SCORE"
+                                   FontSize="20" FontWeight="Medium"
+                                   VerticalAlignment="Bottom" />
+                        <TextBlock Grid.Row="5" Grid.Column="1"
+                                   Name="ScoreTextBlock"
+                                   Margin="-2,0,0,0"
+                                   FontSize="32"
+                                   VerticalAlignment="Bottom"
+                                   HorizontalAlignment="Right"
+                                   Text="--" />
+
+                        <!-- Row 6: ScoreProgressBar -->
+                        <ProgressBar Grid.Row="6" Grid.Column="1"
+                                     Name="ScoreProgressBar"
+                                     Margin="-2,0,0,3"
+                                     Height="4"
+                                     HorizontalAlignment="Right"
+                                     Minimum="0" Maximum="100"
+                                     IsVisible="False"
+                                     Width="100" />
+                    </Grid>
+
+                    <!-- Start button (centered) -->
+                    <Button Name="StartButton"
+                            Content="Start"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Click="StartButton_Click" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

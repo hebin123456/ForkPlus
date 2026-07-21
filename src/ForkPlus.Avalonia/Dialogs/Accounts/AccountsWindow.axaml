@@ -1,0 +1,148 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.Accounts.AccountsWindow"
+                              Title="Accounts"
+                              Width="700" Height="500"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 AccountsWindow（对照 WPF AccountsWindow.xaml 94 行 + .cs 102 行）。
+
+        对照 WPF：
+          - public partial class AccountsWindow : ForkPlusDialogWindow
+          - 字段: ObservableCollection<AccountViewModel> _accountViewModels
+          - 构造函数 ()
+            * base.ShowLogo=false / base.ShowHeader=false
+            * InitializeComponent()
+            * base.ResizeMode = CanResizeWithGrip
+            * Refresh() + AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault()
+            * base.CancelButtonTitle = Translate("Close")
+            * base.ShowSubmitButton = false
+            * AccountDetailsUserControl.AccountTabItem.UpdateTokenButtonClicked += ...
+          - AccountsListBox_SelectionChanged: AccountDetailsUserControl.ShowDetails(account)
+          - AddAccountButton_Click: new AddAccountWindow { Owner = this }.ShowDialog() → Refresh() + Select last
+            + MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes)
+          - LogOutButton_Click: MessageBoxWindow 确认 → AccountManager.Current.LogOut(account)
+            + Refresh() + Select first + InvalidateAndRefresh(SubDomain.Remotes)
+          - AccountDetailsUserControl_UpdateTokenButtonClicked: value.ServiceType.GetLoginWindow(value).ShowDialog()
+            → 替换 _accountViewModels 中对应项
+          - Refresh: AccountManager.Current.Accounts → ObservableCollection<AccountViewModel>
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. spike 省略 ShowLogo / ShowHeader（spike 基类不强制 Logo/Header）
+          3. spike 省略 AccountDetailsUserControl（未迁移），用 TextBlock 简化显示账户详情
+          4. spike 省略 AccountDetailsUserControl_UpdateTokenButtonClicked（依赖未迁移控件）
+          5. ResizeMode.CanResizeWithGrip → CanResize=True（Avalonia 11 用 CanResize）
+          6. ShowSubmitButton=false / CancelButtonTitle=Translate("Close")
+          7. MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh → 注入 Action? onAccountChanged 回调
+          8. new AddAccountWindow { Owner = this }.ShowDialog() → await AddAccountWindow.ShowDialog<bool?>(this)
+          9. MessageBoxWindow.ShowDialog() → await MessageBoxWindow.ShowDialog<bool?>(this)
+         10. Image (Account.ServiceType.Icon()) → TextBlock (IconKey)（spike 版省略 PNG）
+         11. PreferencesLocalization → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   Text="Accounts"
+                   FontSize="15" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="220,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Column 0, Row 0: Accounts ListBox -->
+            <ListBox Grid.Row="0" Grid.Column="0"
+                     Name="AccountsListBox"
+                     VerticalAlignment="Stretch"
+                     HorizontalAlignment="Stretch"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     SelectionChanged="AccountsListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <!-- spike 版：用 IconKey 文字替代 PNG 图标 -->
+                            <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                       Text="{Binding IconKey}"
+                                       FontSize="11" FontWeight="Medium"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center" />
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       FontSize="13"
+                                       Margin="4,4,4,0"
+                                       Text="{Binding ServiceName}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       FontSize="13"
+                                       Margin="4,0,4,4"
+                                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                       Text="{Binding UserName}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Column 0, Row 1: Add / LogOut buttons -->
+            <StackPanel Grid.Row="1" Grid.Column="0"
+                        Orientation="Horizontal"
+                        Margin="0,4,0,0">
+                <Button Name="AddAccountButton"
+                        Content="+"
+                        Width="28" Height="24"
+                        Margin="0,0,4,0"
+                        Click="AddAccountButton_Click"
+                        ToolTip.Tip="Add account" />
+                <Button Name="LogOutButton"
+                        Content="−"
+                        Width="28" Height="24"
+                        Click="LogOutButton_Click"
+                        ToolTip.Tip="Log out" />
+            </StackPanel>
+
+            <!-- Column 1: Account details panel (spike 版简化) -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                    Margin="8,0,0,0"
+                    Padding="12"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ThemeControlMidBrush}">
+                <StackPanel>
+                    <TextBlock Text="Account Details"
+                               FontSize="14" FontWeight="Medium"
+                               Margin="0,0,0,8" />
+                    <TextBlock Name="AccountDetailsTextBlock"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

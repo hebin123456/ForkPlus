@@ -1,0 +1,93 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ConfigureWorkspacesWindow"
+                              Title="Workspaces"
+                              Width="330" Height="370"
+                              MinWidth="250" MinHeight="300"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 ConfigureWorkspacesWindow（对照 WPF ConfigureWorkspacesWindow.xaml 80 行 + .cs 156 行）。
+
+        对照 WPF：
+          - public partial class ConfigureWorkspacesWindow : ForkPlusDialogWindow
+          - 字段: ObservableCollection<WorkspaceViewModel> _workspaceViewModels
+          - 构造函数：从 ForkPlusSettings.Default.Workspaces.All 加载 + ShowSubmitButton=false +
+            CancelButtonTitle="Close" + WorkspacesListBox.SelectedIndex=0 + UpdateDeleteButtonState +
+            ShowWorkspaceInTitleCheckBox.IsChecked
+          - OnClosing：_workspaceViewModels.Count > 1 时持久化到 ForkPlusSettings.Default.Workspaces.Update + Save
+            + MainWindow.Instance.TabManager.RestoreSession() + Toolbar.RefreshWorkspacesButton() + RefreshTitle()
+          - WorkspacesListBox_ContextMenuOpening → 动态构造 Add/Rename/Delete 菜单
+          - WorkspacesListBox_KeyDown(F2) → IsInEditMode = true
+          - AddWorkspaceButton_Click / RemoveWorkspaceButton_Click → AddNewWorkspace / RemoveWorkspace
+          - ShowWorkspaceInTitleCheckBox_Changed → ForkPlusSettings.Default.Workspaces.ShowInTitle 更新
+
+        Avalonia 版差异（spike 简化策略）：
+          1. spike 模式 4 行 Grid = Header / Description / Content / Footer
+          2. ContextMenu / F2 rename → spike 简化（仅保留 Add/Remove 按钮，无 inline rename）
+          3. EditableTextBlock → TextBlock 显示 Name（spike 不支持 inline 编辑）
+          4. Image Source={DynamicResource AddIcon/RemoveIcon} → spike 用 emoji TextBlock "➕"/"➖"
+          5. OnClosing → Closed 事件（Avalonia 11 等价）
+          6. MainWindow.Instance.* → spike 不接入（无 MainWindow 引用，留 Phase 5 接入）
+          7. WorkspaceViewModel → 嵌套类（spike 不引入 WPF 工程 WorkspaceViewModel.cs）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,6,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Workspaces list -->
+            <ListBox Grid.Row="0"
+                     Name="WorkspacesListBox"
+                     VerticalAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"
+                                   FontSize="13"
+                                   Height="22"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- Row 1: Add / Remove buttons -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                <Button Name="AddWorkspaceButton"
+                        Click="AddWorkspaceButton_Click"
+                        Padding="6,2"
+                        Margin="0,0,4,0"
+                        Content="➕" />
+                <Button Name="RemoveWorkspaceButton"
+                        Click="RemoveWorkspaceButton_Click"
+                        Padding="6,2"
+                        Content="➖" />
+            </StackPanel>
+            <!-- Row 2: Show in title checkbox -->
+            <CheckBox Grid.Row="2"
+                      Name="ShowWorkspaceInTitleCheckBox"
+                      Content="Show workspace name in title bar"
+                      Margin="0,8,0,0"
+                      IsCheckedChanged="ShowWorkspaceInTitleCheckBox_Changed" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,160 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RevisionDetailsWindow"
+                              Title="Revision Details"
+                              Width="640" Height="480"
+                              MinWidth="480" MinHeight="320"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.41b：Avalonia 版 RevisionDetailsWindow（对照 WPF RevisionDetailsWindow.xaml 12 行 + .cs 107 行）。
+
+        对照 WPF：
+          - public partial class RevisionDetailsWindow : CustomWindow
+          - 构造函数 (RepositoryUserControl repositoryUserControl, GitModule gitModule, RevisionDiffTarget target, string fileToSelect)
+          - 内嵌 RevisionDetailsUserControl（spike 版未迁移，用静态布局替代）
+          - RevisionDetails.ShowRevisionDetails(target, fileToSelect)
+          - RevisionDetails.RevisionDetailsUpdated → RefreshTitle（SHA + subject）
+          - ShowInTaskbar = true, WindowStartupLocation = CenterScreen
+          - SizeChanged / Activated / LocationChanged → ForkPlusSettings.Default.RevisionWindowLocationState 持久化
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Description / Content / Footer
+          2. RepositoryUserControl 参数 → 注入 GitModule + Sha（spike 简化，不传 RevisionDiffTarget）
+          3. RevisionDetailsUserControl 嵌入式 UserControl → spike 版用静态 Grid 显示 SHA/Author/Date/Message/Parents
+          4. RefreshTitle 用 GetRevisionDetailsGitCommand().Execute(gitModule, sha, monitor) 拿 RevisionDetails
+          5. ForkPlusSettings.RevisionWindowLocationState 持久化跳过（WPF-only WindowLocationState）
+          6. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          7. ESC 关闭由基类 ForkPlusDialogWindow 处理
+          8. 只读对话框：ShowSubmitButton = false（只保留 Close 按钮）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: SHA -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="SHA:"
+                       FontSize="13"
+                       Margin="0,0,8,4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="ShaTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Margin="8,0,0,4"
+                     Padding="4,2,4,2" />
+
+            <!-- Row 1: Author -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Author:"
+                       FontSize="13"
+                       Margin="0,0,8,4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,4">
+                <TextBlock Name="AuthorNameTextBlock"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="AuthorEmailTextBlock"
+                           Margin="8,0,0,0"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Row 2: Date -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Date:"
+                       FontSize="13"
+                       Margin="0,0,8,4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="2" Grid.Column="1"
+                       Name="AuthorDateTextBlock"
+                       Margin="8,0,0,4"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+
+            <!-- Row 3: Committer -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Committer:"
+                       FontSize="13"
+                       Margin="0,0,8,4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,4">
+                <TextBlock Name="CommitterNameTextBlock"
+                           FontSize="13"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="CommitterDateTextBlock"
+                           Margin="8,0,0,0"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Row 4: Parents -->
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Parents:"
+                       FontSize="13"
+                       Margin="0,0,8,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Name="ParentsTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Margin="8,0,0,4"
+                     Padding="4,2,4,2" />
+
+            <!-- Row 5: Message -->
+            <TextBlock Grid.Row="5" Grid.Column="0"
+                       Text="Message:"
+                       FontSize="13"
+                       Margin="0,4,8,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Name="MessageTextBox"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Margin="8,4,0,4"
+                     Padding="6"
+                     VerticalAlignment="Stretch"
+                     HorizontalAlignment="Stretch" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
