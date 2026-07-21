@@ -1,0 +1,108 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.TagDetailsWindow"
+                              Title="Tag Details"
+                              Width="650" Height="380"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.30b：Avalonia 版 TagDetailsWindow（对照 WPF TagDetailsWindow.xaml 35 行 + .cs 45 行）。
+
+        对照 WPF：
+          - public partial class TagDetailsWindow : ForkPlusDialogWindow
+          - 构造函数 (GitModule gitModule, Tag tag)
+          - 只读对话框，无 OnSubmit
+          - 调用 GetTagMessageGitCommand().Execute(gitModule, tagSha) 获取 AnnotatedTagDetails
+          - 显示: TaggerAvatarImage / TaggerTextBlock / TaggerEmailTextBlock / TaggerDateTextBlock / GitPointView / TagDetailsTextBox
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. AvatarImage 自定义控件 → spike 版用 TextBlock 显示 tagger name 首字母占位
+          3. SelectableTextBlock → Avalonia TextBlock（原生支持文本选择）
+          4. GitPointView 自定义控件 → spike 版用 TextBlock 显示 tag name 简化
+          5. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          6. ShowSubmitButton = false（只读对话框，只有 Close 按钮）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="60,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <!-- Row 0-1: Tagger info (avatar + name + email) -->
+            <!-- spike 版：省略 AvatarImage，用 TextBlock 占位 -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                    Width="42" Height="42"
+                    CornerRadius="21"
+                    Background="{DynamicResource ThemeAccentBrush}"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right">
+                <TextBlock Name="TaggerAvatarPlaceholder"
+                           Foreground="White"
+                           FontSize="18" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="16,1,4,0">
+                <TextBlock Name="TaggerTextBlock"
+                           FontSize="14" FontWeight="Medium"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="TaggerEmailTextBlock"
+                           Margin="8,0,4,-1"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </StackPanel>
+            <TextBlock Grid.Row="1" Grid.Column="1"
+                       Name="TaggerDateTextBlock"
+                       Margin="16,2,4,6"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            <!-- Row 2: Tag label + (spike) tag name 文本 -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Tag:"
+                       Margin="0,4,0,0"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="2" Grid.Column="1"
+                       Name="TagNameTextBlock"
+                       Margin="16,4,0,0"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+            <!-- Row 3: Message label + read-only TextBox -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Message:"
+                       Margin="0,6,0,0"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="TagDetailsTextBox"
+                     Margin="16,7,0,4"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Stretch"
+                     HorizontalAlignment="Stretch" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

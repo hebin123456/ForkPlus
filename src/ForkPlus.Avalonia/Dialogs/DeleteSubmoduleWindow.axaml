@@ -1,0 +1,59 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.DeleteSubmoduleWindow"
+                              Title="Delete Submodule"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.31b：Avalonia 版 DeleteSubmoduleWindow（对照 WPF DeleteSubmoduleWindow.xaml 13 行 + .cs 56 行）。
+
+        对照 WPF：
+          - public partial class DeleteSubmoduleWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / Submodule _submodule
+          - 构造函数 (GitModule gitModule, Submodule submodule)
+          - GetCommandPreview override: "git submodule deinit -f {path} && git rm -f {path}"
+          - OnSubmit: DisableEditableControls + SetStatus(InProgress) + JobQueue.Add
+            → DeleteSubmoduleGitCommand().Execute(_gitModule, path, monitor) → Dispatcher.Async(Close(result))
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. spike 基类不提供 GetCommandPreview → 自行维护 CommandPreviewTextBlock
+          3. spike 基类不提供 DisableEditableControls/EnableEditableControls → 手动禁用
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - 命令预览 + 提示 -->
+        <StackPanel Grid.Row="2" Margin="0,4,0,0">
+            <TextBlock Text="Command:"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+            <TextBox Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Padding="6"
+                     Margin="0,0,0,8" />
+        </StackPanel>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
