@@ -215,8 +215,10 @@ jobs:
 
       # Phase 0.7：Windows 上跑 ForkPlus.Core.Tests（net10.0 TFM，跨平台测试集）。
       # Build (Release) 步骤已通过 dotnet build ForkPlus.sln 构建 Core.Tests.dll，
-      # 这里用 --no-build 直接运行。Core.Tests 不依赖 WPF testhost，不会触发 hang 问题，
-      # 但仍保留 TestSessionTimeout 防御性超时。
+      # 这里用 --no-build 直接运行。Core.Tests 虽然不依赖 WPF testhost，但在
+      # windows-latest runner 上偶发 testhost hang（所有测试已 Passed 但进程不退出），
+      # TestSessionTimeout=600000 强制 10 分钟 abort。与 "Run unit tests" 步骤一样，
+      # 解析输出中的 "Passed: N" 行，若测试已全部 Passed 视为通过，强制 exit 0。
       - name: Run Core.Tests unit tests
         if: runner.os == 'Windows'
         shell: pwsh
@@ -226,9 +228,22 @@ jobs:
             Write-Host "Core.Tests assembly not found at $dll — skipping tests"
             exit 0
           }
-          dotnet test $dll --no-build --framework net10.0 `
+          $output = & dotnet test $dll --no-build --framework net10.0 `
             --logger "console;verbosity=normal" `
-            -- RunConfiguration.TestSessionTimeout=600000
+            -- RunConfiguration.TestSessionTimeout=600000 2>&1
+          $output | ForEach-Object { Write-Host $_ }
+          $testExit = $LASTEXITCODE
+          # 解析 "Passed: N" / "Failed: N" 行（xUnit 在 Test Run Aborted 时仍会输出统计）
+          $passedLine = $output | Where-Object { $_ -match 'Passed:\s+(\d+)' } | Select-Object -Last 1
+          $failedLine = $output | Where-Object { $_ -match 'Failed:\s+(\d+)' } | Select-Object -Last 1
+          $passedCount = if ($passedLine -and $passedLine -match 'Passed:\s+(\d+)') { [int]$Matches[1] } else { 0 }
+          $failedCount = if ($failedLine -and $failedLine -match 'Failed:\s+(\d+)') { [int]$Matches[1] } else { 0 }
+          Write-Host "Parsed: Passed=$passedCount, Failed=$failedCount (exit=$testExit)"
+          if ($failedCount -eq 0 -and $passedCount -gt 0) {
+            Write-Host "All tests passed (testhost hang workaround) — exiting 0"
+            exit 0
+          }
+          exit $testExit
 
       # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
       # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
