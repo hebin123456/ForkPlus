@@ -116,9 +116,10 @@ namespace ForkPlus.Avalonia.Controls.Editor.Hex
             try
             {
                 // 对照 WPF: Clipboard.SetData(DataFormats.Serializable, bytes) + SetData(Text, hex string)
-                // Avalonia 版：IClipboard 只支持 SetTextAsync（不支持二进制格式），spike 仅写入文本
+                // Avalonia 11 的 Clipboard 通过 TopLevel.GetTopLevel 获取（不是 Application.Clipboard）。
+                // IClipboard 只支持 SetTextAsync（不支持二进制格式），spike 仅写入文本。
                 string hexText = BitConverter.ToString(bytes).Replace("-", " ");
-                Application.Current?.Clipboard?.SetTextAsync(hexText);
+                TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(hexText);
             }
             catch { }
         }

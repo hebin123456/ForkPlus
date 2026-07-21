@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 
@@ -196,8 +197,8 @@ namespace ForkPlus.Avalonia.Controls.Editor.Hex
                     try
                     {
                         // 对照 WPF: System.Windows.Clipboard.SetText(selectedText)（同步）
-                        // Avalonia: Application.Current.Clipboard.SetTextAsync（异步，fire-and-forget）
-                        Application.Current?.Clipboard?.SetTextAsync(selectedText);
+                        // Avalonia 11 的 Clipboard 通过 TopLevel.GetTopLevel 获取（不是 Application.Clipboard）。
+                        TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(selectedText);
                         e.Handled = true;
                     }
                     catch { }

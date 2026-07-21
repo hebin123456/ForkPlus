@@ -243,7 +243,8 @@ namespace ForkPlus.Avalonia.Dialogs
             // spike 版：StatusMessageTextBlock 直接显示原文（WPF 调 PreferencesLocalization.Translate）
             // Phase 0 抽 ILocalizationService 后再接入
             _footer.StatusMessageTextBlock.Text = message;
-            _footer.StatusMessageTextBlock.ToolTip = message;
+            // Avalonia 11 的 ToolTip 是附加属性，用 ToolTip.SetTip 设置（不是实例属性）。
+            ToolTip.SetTip(_footer.StatusMessageTextBlock, message);
             _footer.StatusMessageTextBlock.IsVisible = true;
 
             if (status == ForkPlusDialogStatus.InProgress)

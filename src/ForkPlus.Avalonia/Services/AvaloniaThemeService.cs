@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Styling;
 using ForkPlus.UI;
 
@@ -52,26 +53,27 @@ namespace ForkPlus.Avalonia.Services
 
             try
             {
-                // 加载 Colors 资源字典
-                var colorsRd = new ResourceDictionary
+                // Avalonia 11 加载外部 axaml 资源字典用 ResourceInclude（不是 WPF 的 ResourceDictionary.Source）。
+                // ResourceInclude 实现 IResourceProvider，可直接加入 MergedDictionaries。
+                var colorsRd = new ResourceInclude
                 {
                     Source = new Uri(colorsUri)
                 };
 
-                // 加载共享 Brushes 资源字典
-                var brushesRd = new ResourceDictionary
+                var brushesRd = new ResourceInclude
                 {
                     Source = new Uri(brushesUri)
                 };
 
                 // 移除已有的主题资源字典（避免重复加载）
-                // 标记：用 [0] 是 Colors，[1] 是 Brushes（约定）
-                var existing = new System.Collections.Generic.List<ResourceDictionary>();
+                // MergedDictionaries 元素是 IResourceProvider，只有 ResourceInclude 有 Source 属性。
+                var existing = new System.Collections.Generic.List<IResourceProvider>();
                 foreach (var rd in app.Resources.MergedDictionaries)
                 {
-                    if (rd.Source != null &&
-                        (rd.Source.OriginalString.Contains("/Themes/Brushes/Colors.") ||
-                         rd.Source.OriginalString.Contains("/Themes/Brushes/Brushes.axaml")))
+                    if (rd is ResourceInclude include &&
+                        include.Source != null &&
+                        (include.Source.OriginalString.Contains("/Themes/Brushes/Colors.") ||
+                         include.Source.OriginalString.Contains("/Themes/Brushes/Brushes.axaml")))
                     {
                         existing.Add(rd);
                     }
