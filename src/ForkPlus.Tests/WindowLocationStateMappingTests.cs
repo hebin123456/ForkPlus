@@ -2,6 +2,10 @@ using System.Windows;
 using ForkPlus.UI.Helpers;
 using Xunit;
 
+// Phase 0.4：WindowLocationStateExtensions 已迁入 Core，使用 ForkPlus.UI.WindowState
+// （Core 跨平台枚举）。本测试类不继承自 Window，using 别名可正常工作。
+using WindowState = ForkPlus.UI.WindowState;
+
 namespace ForkPlus.Tests
 {
 	/// <summary>

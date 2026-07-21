@@ -73,11 +73,19 @@ jobs:
         if: runner.os != 'Windows'
         run: dotnet test src/ForkPlus.Core.Tests/ForkPlus.Core.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
 
+      # Phase 7.1+7.4：非 Windows 平台跑整个 ForkPlus.sln 构建（跨平台编译验证）。
+      # sln 已包含 ForkPlus.Avalonia + ForkPlus.Core.Tests + WPF 工程（net10.0-windows TFM）。
+      # 非 Windows 构建需要 -p:EnableWindowsTargeting=true（允许在 Linux/macOS 上编译 net*-windows TFM）。
+      # 这步能提前发现像 WindowLocationStateCodecTests 那样的歧义引用问题（bare WindowState
+      # 在 ForkPlus.UI.WindowState 和 System.Windows.WindowState 之间的歧义）。
+      # 不跑 test：ForkPlus.Tests 依赖 WPF testhost，只能在 Windows 上跑。
+      - name: Build ForkPlus.sln (non-Windows, cross-platform validation)
+        if: runner.os != 'Windows'
+        run: dotnet build ForkPlus.sln -c Release -p:EnableWindowsTargeting=true -p:Platform="Any CPU" -v minimal
+
       # Phase 1：ForkPlus.Avalonia 工程（net10.0 TFM + Avalonia 11.3.18）三平台构建验证。
-      # Avalonia 是跨平台 UI 框架，Linux/macOS 也能完整构建（启动桌面窗口需要 X11/Wayland，
-      # CI 上不做 GUI 运行时验证，只验证编译通过）。Windows CI 还会在 dotnet build
-      # ForkPlus.sln 步骤中构建本工程，此处专门为非 Windows 平台加 Avalonia 编译步骤。
-      # Phase 3 起会加入 Avalonia 工程的单元测试工程 ForkPlus.Avalonia.Tests。
+      # 上一步 Build ForkPlus.sln 已构建本工程，此步骤保留作为独立 Avalonia 编译验证
+      # （sln build 失败时仍能定位是 Avalonia 工程还是其他工程的问题）。
       - name: Build ForkPlus.Avalonia (non-Windows)
         if: runner.os != 'Windows'
         run: dotnet build src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj -c Release -v minimal
