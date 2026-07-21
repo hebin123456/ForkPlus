@@ -1,0 +1,98 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.Accounts.OpenAiLoginWindow"
+                              Title="Log in to OpenAI"
+                              Width="450"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.22b：Avalonia 版 OpenAiLoginWindow（对照 WPF OpenAiLoginWindow.xaml 33 行 + .cs 80 行）。
+
+        对照 WPF：
+          - public partial class OpenAiLoginWindow : ForkPlusDialogWindow
+          - 字段: JobQueue _jobQueue
+          - 构造函数 ():
+            * ShowLogo=false / ShowHeader=false
+            * SubmitButtonTitle = "Sign In"
+            * TokenTextBox.TextChanged → UpdateSubmitButton
+          - IsSubmitAllowed override: SetStatus(None, ""); return !IsNullOrEmpty(TokenTextBox.Text)
+          - OnSubmit:
+            * 构造 PrivateAccessTokenAuthentication / Connection / OpenAiService
+            * DisableEditableControls + SetStatus(InProgress, "Signing in...")
+            * _jobQueue.Add("Signing in...", () => {
+                service.Test() → Dispatcher.Async(() => {
+                  if (!result.Succeeded) EnableEditableControls + SetStatus(Error)
+                  else if (!authentication.Save()) SetStatus(Error, "Cannot save authentication")
+                  else { ForkPlusSettings.OpenAiLoggedIn = true; CloseWithOk() }
+                })
+              })
+          - TokenConfigurationUrlButton_Click: new Uri("https://platform.openai.com/api-keys").OpenInBrowser()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          3. PlaceholderTextBox.Placeholder="Token" → TextBox Watermark="Token"
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post
+          5. DisableEditableControls/EnableEditableControls（spike 基类不提供）
+             → 手动禁用/启用 TokenTextBox 和 SubmitButton
+          6. TextButtonStyle（WPF）→ Avalonia 原生 Button + 简化样式（spike 版用普通 Button）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="16" FontWeight="Medium"
+                   Margin="6,0,4,0"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Text="Log in to OpenAI" />
+        <!-- Row 1: DescriptionTextBlock（本对话框无描述） -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="140,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Separator (Row 0, span 2 columns) -->
+            <Separator Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8" />
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Personal Access Token:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="TokenTextBox"
+                     Watermark="Token"
+                     Margin="10,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13" />
+            <StackPanel Grid.Row="2" Grid.Column="1"
+                        Orientation="Horizontal"
+                        Margin="0,-6,0,0">
+                <TextBlock Name="StatusTextBlock"
+                           Margin="8,4,0,0"
+                           FontSize="12"
+                           Text="Manage " />
+                <Button Name="TokenConfigurationUrlButton"
+                        Content="personal access tokens"
+                        Margin="0"
+                        HorizontalAlignment="Left"
+                        Click="TokenConfigurationUrlButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
