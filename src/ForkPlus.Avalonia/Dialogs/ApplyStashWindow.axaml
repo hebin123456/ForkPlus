@@ -1,0 +1,79 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.ApplyStashWindow"
+                              Title="Apply Stash"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.35b：Avalonia 版 ApplyStashWindow（对照 WPF ApplyStashWindow.xaml + .cs 82 行）。
+        GitPointView → TextBlock 显示 reflog name；DeleteStashWarningImage → emoji 占位。
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Stash reflog name (GitPointView 替代) -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Stash:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="StashNameTextBlock"
+                       Margin="8,4,0,4"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+            <!-- Row 1: Delete after apply checkbox + warning -->
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,6,0,4">
+                <CheckBox Name="DeleteStashAfterApplyCheckBox"
+                          Content="Delete stash after apply"
+                          FontSize="13"
+                          IsCheckedChanged="DeleteStashAfterApplyCheckBox_Changed" />
+                <TextBlock Name="DeleteStashWarningText"
+                           Text="⚠"
+                           FontSize="14"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"
+                           IsVisible="False" />
+            </StackPanel>
+            <!-- Row 2: Command preview -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
