@@ -1,0 +1,200 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitMmStartWindow"
+                              Title="Start git mm"
+                              Width="490" SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.16b：Avalonia 版 GitMmStartWindow（对照 WPF GitMmStartWindow.xaml）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitMmStartWindow.xaml（128 行）：
+          - Grid 2 列 9 行：
+            * Row 0: BranchNameTextBox (PlaceholderTextBox)
+            * Row 1: SubreposDropDownButton
+            * Row 2: Expander "Advanced Options"（自定义 ExpanderStyle）含
+                    JobsComboBox + GrepModeComboBox + AllSubreposCheckBox + 4 个 CheckBox
+            * Row 8: CommandPreviewTextBlock (ScrollViewer + TextBlock)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header (TitleTextBlock + DescriptionTextBlock) / Content / Footer
+          2. PlaceholderTextBox → Avalonia TextBox + Watermark
+          3. WPF 自定义 ExpanderStyle 简化为 Avalonia 内置 Expander
+          4. PreferencesLocalization.Apply 不接入（cs 中显式 Translate）
+          5. SubreposDropDownButton 使用 Avalonia Button + 动态 ContextMenu + MenuItem ToggleType=CheckBox
+             （WPF 的 IsCheckable=true 在 Avalonia 11 中用 ToggleType=CheckBox + IsChecked）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header - TitleTextBlock -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Branch name -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Branch name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,4,8,4" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="BranchNameTextBox"
+                     Margin="0,4,0,4"
+                     Padding="4,2"
+                     Watermark="Branch name"
+                     TextChanged="BranchNameTextBox_TextChanged" />
+
+            <!-- Row 1: Sub repositories drop-down button -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Sub repositories:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,4,8,4" />
+            <Button Grid.Row="1" Grid.Column="1"
+                    Name="SubreposDropDownButton"
+                    Margin="0,4,0,4"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Click="SubreposDropDownButton_Click" />
+
+            <!-- Row 2: Advanced Options expander -->
+            <Expander Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                      Name="AdvancedOptionsExpander"
+                      Margin="0,6,0,0"
+                      Header="Advanced Options"
+                      IsExpanded="False">
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0: Jobs -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Jobs:"
+                               FontSize="13"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Margin="0,4,8,4" />
+                    <ComboBox Grid.Row="0" Grid.Column="1"
+                              Name="JobsComboBox"
+                              Margin="0,4,0,4"
+                              Width="70" HorizontalAlignment="Left">
+                        <ComboBoxItem Content="1" />
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="3" />
+                        <ComboBoxItem Content="4" />
+                        <ComboBoxItem Content="5" />
+                        <ComboBoxItem Content="6" />
+                        <ComboBoxItem Content="7" />
+                        <ComboBoxItem Content="8" />
+                        <ComboBoxItem Content="9" />
+                        <ComboBoxItem Content="10" />
+                    </ComboBox>
+
+                    <!-- Row 1: Search mode -->
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Search mode:"
+                               FontSize="13"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Margin="0,4,8,4" />
+                    <ComboBox Grid.Row="1" Grid.Column="1"
+                              Name="GrepModeComboBox"
+                              Margin="0,4,0,4"
+                              Width="120" HorizontalAlignment="Left">
+                        <ComboBoxItem Content="mixed" />
+                        <ComboBoxItem Content="name" />
+                        <ComboBoxItem Content="path" />
+                        <ComboBoxItem Content="namereg" />
+                        <ComboBoxItem Content="pathreg" />
+                        <ComboBoxItem Content="mixedreg" />
+                        <ComboBoxItem Content="underpath" />
+                    </ComboBox>
+
+                    <!-- Row 2: All sub repositories -->
+                    <CheckBox Grid.Row="2" Grid.Column="1"
+                              Name="AllSubreposCheckBox"
+                              Margin="0,4,0,0"
+                              HorizontalAlignment="Left"
+                              Content="_All sub repositories"
+                              IsChecked="True"
+                              IsCheckedChanged="AllSubreposCheckBox_Changed" />
+
+                    <!-- Row 3: Allow tag / Allow commit -->
+                    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <CheckBox Name="AllowTagCheckBox"
+                                  Content="Allow tag"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="--allow-tag" />
+                        <CheckBox Name="AllowCommitCheckBox"
+                                  Content="Allow commit"
+                                  ToolTip.Tip="--allow-commit" />
+                    </StackPanel>
+
+                    <!-- Row 4: Allow no tracking / Start from HEAD -->
+                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,0">
+                        <CheckBox Name="AllowNoTrackCheckBox"
+                                  Content="Allow no tracking branch"
+                                  Margin="0,0,16,0"
+                                  ToolTip.Tip="--allow-no-track" />
+                        <CheckBox Name="HeadCheckBox"
+                                  Content="Start from HEAD"
+                                  ToolTip.Tip="--head" />
+                    </StackPanel>
+                </Grid>
+            </Expander>
+
+            <!-- Row 3: Command Preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command Preview:"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right"
+                       Margin="0,8,8,0" />
+            <ScrollViewer Grid.Row="3" Grid.Column="1"
+                          MaxHeight="120"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="0,8,0,0">
+                <TextBlock Name="CommandPreviewTextBlock"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
