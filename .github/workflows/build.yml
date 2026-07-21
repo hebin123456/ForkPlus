@@ -39,24 +39,24 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # ===== biturbo 原生库拉取冒烟测试（所有平台）=====
-      # 验证 ForkPlus.csproj 中 RestoreBiturbo target 描述的多平台 asset 可达：
+      # ===== biturbo 原生库预下载（所有平台）=====
+      # 预先下载 biturbo 原生库到 third_party/，这样 csproj 中的 RestoreBiturbo target
+      # 会检测到文件已存在并跳过下载（Windows 上 Invoke-WebRequest 在 PowerShell 中
+      # 下载大文件偶发 System.IO.IOException，预下载用 curl 更稳定）。
       #   Windows → biturbo.dll, Linux → libbiturbo.so, macOS → libbiturbo.dylib
-      # Windows 后续 build 步骤会再次走 RestoreBiturbo（命中已下载文件，跳过）；
-      # 非 Windows 暂只做这一步冒烟（WPF net10.0-windows 还无法在非 Windows 上构建）。
-      - name: Fetch biturbo native lib (non-Windows smoke test)
-        if: runner.os != 'Windows'
+      - name: Fetch biturbo native lib (all platforms)
         shell: bash
         run: |
           set -e
           mkdir -p third_party
           case "$RUNNER_OS" in
-            macOS) asset=libbiturbo.dylib ;;
-            *)     asset=libbiturbo.so ;;
+            Windows) asset=biturbo.dll ;;
+            macOS)   asset=libbiturbo.dylib ;;
+            *)       asset=libbiturbo.so ;;
           esac
           url="https://github.com/hebin123456/Biturbo/releases/latest/download/$asset"
           echo "Fetching $url → third_party/$asset"
-          curl -fsSL "$url" -o "third_party/$asset"
+          curl -fsSL --retry 3 --retry-delay 5 "$url" -o "third_party/$asset"
           ls -lh "third_party/$asset"
           echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
 
