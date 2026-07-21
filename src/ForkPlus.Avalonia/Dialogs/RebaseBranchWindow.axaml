@@ -1,0 +1,50 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RebaseBranchWindow"
+                              Title="Rebase"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Rebase:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="SourceTextBlock" FontSize="13"
+                       Margin="8,4,0,4" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="On:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="DestinationTextBlock" FontSize="13"
+                       Margin="8,4,0,4" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <CheckBox Grid.Row="2" Grid.Column="1" Name="UpdateRefsCheckBox"
+                      Content="Update dependent branches"
+                      FontSize="13" Margin="8,6,0,4" HorizontalAlignment="Left"
+                      IsCheckedChanged="UpdateRefsCheckBox_Changed" />
+            <CheckBox Grid.Row="3" Grid.Column="1" Name="AutostashCheckBox"
+                      Content="Stash and reapply local changes"
+                      FontSize="13" Margin="8,4,0,4" HorizontalAlignment="Left"
+                      IsCheckedChanged="AutostashCheckBox_Changed" />
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,0,4" />
+            <TextBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox" IsReadOnly="True" FontFamily="Consolas"
+                     FontSize="12" TextWrapping="Wrap" Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

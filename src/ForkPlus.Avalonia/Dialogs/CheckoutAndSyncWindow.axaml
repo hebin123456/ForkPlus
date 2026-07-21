@@ -1,0 +1,91 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CheckoutAndSyncWindow"
+                              Title="Checkout Branch"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 CheckoutAndSyncWindow（对照 WPF CheckoutAndSyncWindow.xaml 73 行 + .cs 280 行）。
+
+        对照 WPF：
+          - public partial class CheckoutAndSyncWindow : ForkPlusDialogWindow
+          - 嵌套类 CheckoutSyncOptionComboBoxItem (ActionType / Title / Description / IsSeparator)
+          - 字段: RepositoryUserControl _repositoryUserControl / LocalBranch _localBranch / RemoteBranch _remoteBranch
+                  CheckoutSyncOptionComboBoxItem[] _checkoutSyncOptionComboBoxItems / CheckoutActionType _actionType
+          - 构造函数 (RepositoryUserControl, LocalBranch, RemoteBranch) → 构建 6 个 ComboBoxItem
+          - GetCommandPreview: 多行 "git checkout branch" + 可选 rebase/merge/reset
+          - OnSubmit: 复杂多阶段 - SaveStash + CheckoutBranch + PerformAction(rebase/merge/reset) + ApplyStash + UpdateSubmodules
+            → Close(result)
+          - RefreshTitle: 根据 _actionType 切换 SubmitButtonTitle
+
+        Avalonia 版差异（spike）：
+          1. 构造函数注入 GitModule + LocalBranch + RemoteBranch + RepositoryReferences + Action 回调替代 RepositoryUserControl
+          2. CheckoutActionType 枚举从 WPF ForkPlus.UI.Dialogs 命名空间迁入 Avalonia 命名空间（WPF 工程不引用）
+          3. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBlock
+          4. spike 基类不提供 DisableEditableControls → 手动禁用 ComboBox + CheckBox
+          5. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          6. GitPointView 自定义控件 → spike 版用 TextBlock 显示 branch Name 简化
+          7. SubmodulesToUpdate 依赖暂不接入（OnSubmit 简化为只跑 SaveStash + Checkout + Action + ApplyStash）
+          8. PreferencesLocalization.Current/FormatCurrent → ServiceLocator.Localization.Current/FormatCurrent
+          9. ComboBoxItem Separator 样式 → spike 简化为 IsEnabled=false 的占位项（不显示分隔线）
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - Branch / Action ComboBox / Autostash CheckBox -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Branch (LocalBranch) -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="GitPointTextBlock"
+                       Margin="8,4,0,4" FontSize="13" VerticalAlignment="Center" />
+            <!-- Row 1: Action ComboBox -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Action:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Name="CheckoutActionTypeComboBox"
+                      HorizontalAlignment="Stretch" Margin="0,4,0,4"
+                      SelectionChanged="CheckoutActionTypeComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" FontSize="13"
+                                       FontWeight="Medium" Margin="0,0,8,0"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Description}" FontSize="12"
+                                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 2: Autostash checkbox -->
+            <CheckBox Grid.Row="2" Grid.Column="1" Name="AutostashCheckBox"
+                      Margin="0,4,0,4" HorizontalAlignment="Left" FontSize="13"
+                      Content="Stash and reapply local changes" />
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,8,4"
+                       VerticalAlignment="Top" HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1" Name="CommandPreviewTextBox"
+                     IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                     TextWrapping="Wrap" AcceptsReturn="True"
+                     Margin="0,8,0,4" Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

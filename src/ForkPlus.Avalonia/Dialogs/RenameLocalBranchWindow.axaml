@@ -1,0 +1,89 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RenameLocalBranchWindow"
+                              Title="Rename Local Branch"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 RenameLocalBranchWindow（对照 WPF RenameLocalBranchWindow.xaml + .cs 234 行）。
+
+        对照 WPF：
+          - public partial class RenameLocalBranchWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / RepositoryReferences _references / LocalBranch _localBranch / RemoteBranch _remoteBranch
+          - 构造函数 (GitModule, RepositoryReferences, LocalBranch, [Null] string newName)
+          - IsSubmitAllowed: 名字空 false / 重复 false / Validate 失败 Warning / rename remote 重复 Warning
+          - GetCommandPreview: "git branch -m {name} {newName}" + 可选 "git push ..." 远端重命名
+          - OnSubmit: RenameLocalBranchGitCommand + 可选 RenameRemoteBranchGitCommand + UpdateTrackingReferenceGitCommand
+            → 更新 Pinned/Filter references → Close(result)
+
+        Avalonia 版差异（spike）：
+          1. spike 模式：构造函数 SetFooter/Footer 注入
+          2. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBlock
+          3. spike 基类不提供 DisableEditableControls → 手动禁用 BranchNameTextBox + RenameRemoteBranchCheckbox
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. PlaceholderTextBox.Placeholder → TextBox Watermark
+          6. ReferenceTextBox + ReferenceNameAutocompleteProvider → spike 版用普通 TextBox（autocomplete 暂不接入）
+          7. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          8. TextChangedEventArgs → Avalonia 同名类型
+          9. PreferencesLocalization → ServiceLocator.Localization.Translate
+         10. MainWindow.ActiveRepositoryUserControl 依赖 → 注入 Action<GitCommandResult>? onCompleted 回调
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Branch name TextBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="New Name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="BranchNameTextBox"
+                     Watermark="Enter new branch name"
+                     Margin="8,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="BranchName_TextChanged" />
+            <!-- Row 1: Rename remote branch checkbox -->
+            <CheckBox Grid.Row="1" Grid.Column="1"
+                      Name="RenameRemoteBranchCheckbox"
+                      Margin="8,4,0,4"
+                      FontSize="13"
+                      IsVisible="False"
+                      IsCheckedChanged="RenameRemoteBranchCheckbox_Changed" />
+            <!-- Row 2: Command preview -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

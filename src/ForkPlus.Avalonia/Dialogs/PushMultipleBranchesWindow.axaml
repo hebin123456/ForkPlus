@@ -1,0 +1,87 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.PushMultipleBranchesWindow"
+                              Title="Push"
+                              Width="540"
+                              Height="320"
+                              MinWidth="520"
+                              MinHeight="200"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 PushMultipleBranchesWindow（对照 WPF PushMultipleBranchesWindow.xaml 63 行 + .cs 125 行）。
+
+        对照 WPF：
+          - public partial class PushMultipleBranchesWindow : ForkPlusDialogWindow
+          - 嵌套类 PushBranchItem (BranchName / UpstreamName / Remote / RemoteIcon)
+          - 字段: RepositoryUserControl _repositoryUserControl / LocalBranch[] _localBranches / Remote _remote
+          - 构造函数 (RepositoryUserControl, LocalBranch[], Remote)
+          - GetCommandPreview: "git push remote branch1 branch2 ..."
+          - OnSubmit: PushMultipleBranchesGitCommand().Execute(...) → InvalidateAndRefresh(Revisions | References)
+          - Refresh: 查找每个 localBranch 的 upstream，构建 PushBranchItem 列表
+
+        Avalonia 版差异（spike）：
+          1. 构造函数注入 GitModule + LocalBranch[] + Remote + RepositoryReferences + Action 回调替代 RepositoryUserControl
+          2. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBlock
+          3. spike 基类不提供 DisableEditableControls → 空实现（无可编辑控件）
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. PreferencesLocalization → ServiceLocator.Localization.Translate
+          6. IReadOnlyListExtensions.FirstItem → list.FirstOrDefault(predicate) (LINQ)
+          7. PushBranchItem.RemoteIcon (ImageSource) → spike 版用 TextBlock 显示 Remote.Name 简化
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - Branches ItemsControl + Command preview -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Branches list -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Branches:" FontSize="13"
+                       VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,6,8,0" />
+            <Border Grid.Row="0" Grid.Column="1" Margin="0,4,0,4" MinHeight="100" MaxHeight="180"
+                    BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ItemsControl Name="BranchesItemsControl" Padding="2">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding BranchName}"
+                                               FontSize="13" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="→"
+                                               FontSize="13" Margin="6,0,6,0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding UpstreamName}"
+                                               FontSize="13" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <!-- Row 1: Command preview -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,8,4"
+                       VerticalAlignment="Top" HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1" Name="CommandPreviewTextBox"
+                     IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                     TextWrapping="Wrap" Margin="0,8,0,4" Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

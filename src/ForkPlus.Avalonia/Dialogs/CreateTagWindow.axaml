@@ -1,0 +1,126 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.CreateTagWindow"
+                              Title="Create Tag"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.40b：Avalonia 版 CreateTagWindow（对照 WPF CreateTagWindow.xaml 31 行 + .cs 187 行）。
+
+        对照 WPF：
+          - public partial class CreateTagWindow : ForkPlusDialogWindow
+          - 字段: GitModule _gitModule / Tag[] _tags / Remote[] _remotes / IGitPoint _gitPoint
+          - 构造函数 (GitModule, RepositoryReferences, Remote[], IGitPoint)
+          - IsSubmitAllowed: tag name 非空 + ReferenceNameValidator 通过 + 不重复
+          - GetCommandPreview: "git tag -a [-m \"msg\"] tagName commit" + 可选 push
+          - OnSubmit: CreateTagGitCommand().Execute(...) → 可选 PushTagGitCommand().Execute(...)
+            → Close(result)
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBlock
+          3. spike 基类不提供 DisableEditableControls → 手动禁用 TagNameTextBox + TagMessageTextBox + PushCheckBox
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          5. PlaceholderTextBox.Placeholder → TextBox Watermark
+          6. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          7. GitPointView 自定义控件 → spike 版用 TextBlock 显示 FriendlyName 简化
+          8. ReferenceTextBox + ReferenceNameAutocompleteProvider → spike 版用普通 TextBox（autocomplete 暂不接入）
+          9. PreferencesLocalization.Translate → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Create tag at: <GitPointView> -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Create tag at:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="GitPointTextBlock"
+                       Margin="8,0,0,0"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+            <!-- Row 1: Tag Name -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Tag Name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="TagNameTextBox"
+                     Watermark="Enter tag name"
+                     Margin="8,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="TagNameTextBox_TextChanged" />
+            <!-- Row 2: Message -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Message:"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       Margin="0,7,0,0"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="TagMessageTextBox"
+                     Watermark="Enter tag message (optional)"
+                     Margin="8,4,0,4"
+                     Padding="4,2,4,2"
+                     Height="100"
+                     FontSize="13"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     TextChanged="TagMessageTextBox_TextChanged" />
+            <!-- Row 3: Push checkbox -->
+            <CheckBox Grid.Row="3" Grid.Column="1"
+                      Name="PushCheckBox"
+                      Margin="8,4,0,4"
+                      HorizontalAlignment="Left"
+                      FontSize="13"
+                      IsCheckedChanged="PushCheckBox_Changed" />
+            <!-- Row 4: Command preview -->
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       FontWeight="Medium"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -1,0 +1,170 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RemoveLocalBranchWindow"
+                              Title="Delete Branch"
+                              Width="570"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 RemoveLocalBranchWindow（对照 WPF RemoveLocalBranchWindow.xaml + .cs 373 行）。
+
+        对照 WPF：
+          - public partial class RemoveLocalBranchWindow : ForkPlusDialogWindow
+          - 嵌套类 RemoveLocalBranchItem : INotifyPropertyChanged
+            (BranchName / UpstreamName / RemoteName / RemoteIcon / UpstreamVisibility)
+          - 字段: RepositoryUserControl _repositoryUserControl / LocalBranch[] _branchesToRemove
+            / RemoteBranch[] _remoteBranches / RepositoryRemotes _remotes / RepositoryReferences _references
+            / RemoveLocalBranchItem[] _branchesSource / Worktree? _worktreeToRemove
+          - 单分支 vs 多分支两种 UI 模式：
+            * 单分支：GitPointView 显示分支名 + 可选 DeleteRemoteBranchCheckBox + 可选 DeleteWorktreeCheckBox
+            * 多分支：ItemsControl 显示分支列表 + DeleteRemoteBranchCheckBox
+          - GetCommandPreview: "git branch -D {names}" + 可选 "git push {remote} -delete {shortName}" 多行
+          - OnSubmit: AddUndoable → RemoveWorktreeGitCommand (可选) + RemoveLocalBranchGitCommand
+            + 可选 RemoveMultipleRemoteBranchesGitCommand → 更新 Pinned/Filter references → Close(result)
+
+        Avalonia 版差异（spike）：
+          1. spike 模式：构造函数 SetFooter/Footer 注入
+          2. RepositoryUserControl 参数 → GitModule + RepositoryReferences + RepositoryRemotes
+             + Action<GitCommandResult>? onCompleted + Action<string>? onCloseTab 回调
+          3. GitPointView 自定义控件 → spike 版用 TextBlock 显示 branch.Name 简化
+          4. ItemsControl + DataTemplate 显示多分支列表（spike 版简化 DataTemplate：
+             TextBlock 显示 BranchName + 可选 upstream 信息，不用 INotifyPropertyChanged 切换可见性）
+          5. spike 版简化 UpstreamVisibility 切换：始终显示 upstream 信息（如果存在），
+             不通过 DeleteRemoteBranchCheckBox 切换（spike UX 简化）
+          6. PNG 图标（WarningImage / WorktreeWarningImage / RemoteIcon）→ spike 版用 emoji TextBlock "⚠" 替代
+          7. MainWindow.Instance.TabManager.CloseTab(path) → 注入 Action<string>? onCloseTab 回调
+          8. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          9. spike 基类不提供 DisableEditableControls → 手动禁用 CheckBoxes
+         10. JobQueue + AddUndoable + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor（spike 版不做 undo）
+         11. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+         12. Collapse()/Show() 扩展方法 → IsVisible = false/true
+         13. PreferencesLocalization → ServiceLocator.Localization.Translate/FormatCurrent
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Branch label + name (单分支) 或 ItemsControl (多分支) -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Name="StartPointTextBlock"
+                       Text="Branch:"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <!-- 单分支时显示 -->
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="SingleBranchTextBlock"
+                       Margin="8,4,0,4"
+                       FontSize="13"
+                       IsVisible="False" />
+            <!-- 多分支时显示 -->
+            <Border Grid.Row="0" Grid.Column="1"
+                    Name="BranchesContainer"
+                    Margin="8,4,0,4"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    IsVisible="False">
+                <ScrollViewer MaxHeight="180"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <ItemsControl Name="BranchesItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="🌿"
+                                               FontSize="13"
+                                               Margin="0,0,4,0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Text="{Binding DisplayText}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <!-- Row 1: Delete remote branch checkbox + warning + upstream label -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Name="WarningText"
+                       Text="⚠"
+                       FontSize="14"
+                       Margin="0,6,0,0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       IsVisible="False" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,6,0,0">
+                <CheckBox Name="DeleteRemoteBranchCheckBox"
+                          FontSize="13"
+                          IsCheckedChanged="DeleteRemoteBranchCheckBox_Changed" />
+                <TextBlock Name="DeleteRemoteBranchCheckBoxUpstream"
+                           FontSize="13"
+                           Margin="6,0,0,2"
+                           VerticalAlignment="Center"
+                           IsVisible="False" />
+            </StackPanel>
+            <!-- Row 2: Delete worktree checkbox + warning + label (collapsible) -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Name="WorktreeWarningText"
+                       Text="⚠"
+                       FontSize="14"
+                       Margin="0,6,0,0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       IsVisible="False" />
+            <StackPanel Grid.Row="2" Grid.Column="1"
+                        Name="DeleteWorktreeContainer"
+                        Orientation="Horizontal"
+                        Margin="8,6,0,0"
+                        IsVisible="False">
+                <CheckBox Name="DeleteWorktreeCheckBox"
+                          Content="Also delete worktree"
+                          FontSize="13"
+                          IsCheckedChanged="DeleteWorktreeCheckBox_Changed" />
+                <TextBlock Name="DeleteWorktreeLabel"
+                           FontSize="13"
+                           Margin="6,0,0,2"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

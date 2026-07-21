@@ -1,0 +1,97 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.EditRemoteWindow"
+                              Title="Edit Remote"
+                              Width="630"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Remote: label + RemoteNameTextBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Remote:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Name="RemoteNameTextBox"
+                     Watermark="Remote name"
+                     Margin="8,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="RemoteNameTextBox_TextChanged" />
+            <!-- Row 1: Repository Url: label + RepositoryUrlTextBox -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Repository Url:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="RepositoryUrlTextBox"
+                     Watermark="Git Repository Url"
+                     Margin="8,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="RepositoryUrlTextBox_TextChanged" />
+            <!-- Row 2: SyncCheckBox（仅 submodule + edit + URL 变化时显示） -->
+            <CheckBox Grid.Row="2" Grid.Column="1"
+                      Name="SyncCheckBox"
+                      Content="Sync submodule URL with parent repository"
+                      Margin="8,4,0,4"
+                      IsChecked="True"
+                      IsVisible="False" />
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+            <!-- Row 4: TestButton + StatusTextBlock -->
+            <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="8,4,0,4">
+                <Button Name="TestButton"
+                        Content="Test Connection"
+                        Margin="0,0,4,0"
+                        Click="TestButton_Click" />
+                <TextBlock Name="StatusTextBlock"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           IsVisible="False" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

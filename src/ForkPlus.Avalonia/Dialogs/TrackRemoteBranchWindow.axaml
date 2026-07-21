@@ -1,0 +1,105 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.TrackRemoteBranchWindow"
+                              Title="Track Remote Branch"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Remote branch label + name -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Remote branch:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="RemoteBranchTextBlock"
+                       Margin="8,4,0,4"
+                       FontSize="13"
+                       VerticalAlignment="Center" />
+            <!-- Row 1: Local branch label + TextBox -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Local branch:"
+                       FontSize="13"
+                       Margin="0,5,0,0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="LocalBranchNameTextBox"
+                     Watermark="Enter branch name"
+                     Margin="8,5,0,0"
+                     Padding="4,2,4,2"
+                     FontSize="13"
+                     TextChanged="LocalBranchName_TextChanged" />
+            <!-- Row 2: Local changes label + RadioButtons -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Name="LocalChangesTextBlock"
+                       Text="Local changes:"
+                       FontSize="13"
+                       Margin="0,10,0,0"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <StackPanel Grid.Row="2" Grid.Column="1"
+                        Name="LocalChangesOptionsContainer"
+                        Margin="8,5,0,0">
+                <RadioButton Name="DoNotChangeRadioButton"
+                             Content="Don't change"
+                             FontSize="13"
+                             Margin="0,6,0,0"
+                             IsCheckedChanged="LocalChangesOption_Changed" />
+                <RadioButton Name="StashAndReapplyRadioButton"
+                             Content="Stash and reapply"
+                             FontSize="13"
+                             Margin="0,6,0,0"
+                             IsCheckedChanged="LocalChangesOption_Changed" />
+                <RadioButton Name="DiscardRadioButton"
+                             Content="Discard"
+                             FontSize="13"
+                             Margin="0,6,0,0"
+                             IsCheckedChanged="LocalChangesOption_Changed" />
+            </StackPanel>
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

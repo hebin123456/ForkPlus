@@ -1,0 +1,115 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RevertRevisionWindow"
+                              Title="Revert"
+                              Width="590"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.x：Avalonia 版 RevertRevisionWindow（对照 WPF RevertRevisionWindow.xaml + .cs 181 行）。
+
+        对照 WPF：
+          - public partial class RevertRevisionWindow : ForkPlusDialogWindow
+          - 字段: RepositoryUserControl _repositoryUserControl / Revision _revision / Sha[] _revisionParents
+          - 属性: bool MergeRevision => _revisionParents.Length > 1
+          - 构造函数 (RepositoryUserControl, Revision revision, Sha[] revisionParents)
+            * 调 GetRevisionsGitCommand 拿 parent revisions 填充 ComboBox（merge commit 情况）
+            * 调 RevertTestGitCommand 做冲突预检（三态：Success / Warning / Unknown 不显示）
+          - IsSubmitAllowed: merge commit 时 ComboBox 必须有选中项
+          - GetCommandPreview: "git revert [-no-commit] [-m N] {sha}"
+          - OnSubmit: RevertCommitGitCommand + 可选 UpdateSubmodulesGitCommand → Close(result)
+
+        Avalonia 版差异（spike）：
+          1. spike 模式：构造函数 SetFooter/Footer 注入
+          2. RepositoryUserControl 参数 → GitModule + RepositoryReferences? + SubmodulesToUpdate
+             + Action<GitCommandResult>? onCompleted 回调
+          3. GitPointView 自定义控件 → spike 版用 TextBlock 显示 revision.FriendlyName 简化
+          4. BindableGitPointView (ComboBox ItemTemplate) → spike 版用 TextBlock 显示 revision.FriendlyName
+          5. spike 基类不提供 GetCommandPreview/RefreshCommandPreview → 自行维护 CommandPreviewTextBox
+          6. spike 基类不提供 DisableEditableControls → 手动禁用 ComboBox + CheckBox
+          7. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post + JobMonitor
+          8. CheckBox Checked/Unchecked 事件 → IsCheckedChanged 事件
+          9. ComboBox SelectionChanged 事件参数 → Avalonia.Controls.SelectionChangedEventArgs
+         10. PreferencesLocalization → ServiceLocator.Localization.Translate
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Commit to apply -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Commit to apply:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="RevisionGitPointTextBlock"
+                       Margin="8,0,0,0"
+                       FontSize="13"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center" />
+            <!-- Row 1: Parent to skip (ComboBox, collapsible for non-merge) -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Name="RevisionParentTextBlock"
+                       Text="Parent to skip:"
+                       FontSize="13"
+                       Margin="0,8,0,0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       IsVisible="False" />
+            <ComboBox Grid.Row="1" Grid.Column="1"
+                      Name="RevisionParentComboBox"
+                      Margin="8,8,0,0"
+                      HorizontalAlignment="Stretch"
+                      IsVisible="False"
+                      SelectionChanged="RevisionParentComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Revision.FriendlyName 是 IGitPoint 显式接口实现，无法直接 Binding。
+                             Revision.Message 是 public 属性，返回与 FriendlyName 相同的内容。 -->
+                        <TextBlock Text="{Binding Message}" FontSize="13" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 2: Commit checkbox -->
+            <CheckBox Grid.Row="2" Grid.Column="1"
+                      Name="CommitCheckBox"
+                      Content="Commit the changes"
+                      FontSize="13"
+                      Margin="8,8,0,0"
+                      HorizontalAlignment="Left"
+                      IsCheckedChanged="CommitCheckBox_Changed" />
+            <!-- Row 3: Command preview -->
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

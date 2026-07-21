@@ -1,0 +1,82 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.RemoveRemoteBranchWindow"
+                              Title="Delete Remote Branch"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: 分支 label + 单个/多个分支显示 -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Name="StartPointTextBlock"
+                       FontSize="13"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <!-- 单个分支时显示 -->
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Name="SingleBranchTextBlock"
+                       Margin="8,4,0,4"
+                       FontSize="13"
+                       IsVisible="False" />
+            <!-- 多个分支时显示 -->
+            <Border Grid.Row="0" Grid.Column="1"
+                    Name="BranchesContainer"
+                    Margin="8,4,0,4"
+                    IsVisible="False"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                    Padding="4"
+                    Height="120">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Name="BranchesItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" FontSize="13" Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <!-- Row 1: Command preview -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Command:"
+                       FontSize="13"
+                       Margin="0,8,0,4"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="CommandPreviewTextBox"
+                     IsReadOnly="True"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="8,8,0,4"
+                     Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

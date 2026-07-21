@@ -1,0 +1,56 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.MergeBranchWindow"
+                              Title="Merge Branch"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" Margin="0,4,0,0" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Merge:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="SourceTextBlock" FontSize="13"
+                       Margin="8,4,0,4" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Into:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="DestinationTextBlock" FontSize="13"
+                       Margin="8,4,0,4" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Merge Option:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Name="MergeTypeComboBox"
+                      HorizontalAlignment="Stretch" Margin="8,4,0,4"
+                      SelectionChanged="MergeTypeComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" Width="120" FontSize="13" />
+                            <TextBlock Text="{Binding Description}" FontSize="12"
+                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,0,4" />
+            <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                     Name="CommandPreviewTextBox" IsReadOnly="True" FontFamily="Consolas"
+                     FontSize="12" TextWrapping="Wrap" Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

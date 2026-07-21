@@ -1,0 +1,97 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.PushWindow"
+                              Title="Push"
+                              Width="540"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0" Name="TitleTextBlock" FontSize="14" FontWeight="Medium" Margin="0,0,0,4" />
+        <!-- Row 1: Description -->
+        <TextBlock Grid.Row="1" Name="DescriptionTextBlock" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="0,0,0,8" />
+
+        <!-- Row 2: Content - Branch / Remote / To / CheckBoxes -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Row 0: Branch ComboBox -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Name="LocalBranchesComboBox"
+                      HorizontalAlignment="Stretch" Margin="0,4,0,4"
+                      SelectionChanged="LocalBranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 1: Remote ComboBox -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Name="RemotesLabel" Text="Remote:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Name="RemotesComboBox"
+                      HorizontalAlignment="Stretch" Margin="0,4,0,4"
+                      SelectionChanged="RemotesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 2: To ComboBox (Remote Branch) -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="To:" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,4" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Name="RemoteBranchesComboBox"
+                      HorizontalAlignment="Stretch" Margin="0,4,0,4"
+                      SelectionChanged="RemoteBranchesComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!-- Row 3: Create tracking reference checkbox -->
+            <CheckBox Grid.Row="3" Grid.Column="1" Name="CreateTrackingReferenceCheckBox"
+                      Margin="0,4,0,4" HorizontalAlignment="Left" FontSize="13"
+                      Content="Create tracking reference"
+                      IsChecked="True"
+                      IsCheckedChanged="CheckBox_Changed" />
+            <!-- Row 4: Push all tags checkbox -->
+            <CheckBox Grid.Row="4" Grid.Column="1" Name="AllTagsCheckBox"
+                      Margin="0,4,0,4" HorizontalAlignment="Left" FontSize="13"
+                      Content="Push all tags"
+                      IsCheckedChanged="CheckBox_Changed" />
+            <!-- Row 5: Force push warning + checkbox -->
+            <TextBlock Grid.Row="5" Grid.Column="0" Name="ForcePushWarningImage"
+                        Text="⚠" FontSize="14" Margin="0,4,8,0"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"
+                        IsVisible="False" />
+            <CheckBox Grid.Row="5" Grid.Column="1" Name="ForcePushCheckBox"
+                      Margin="0,4,0,4" HorizontalAlignment="Left" FontSize="13"
+                      Content="Force push"
+                      IsCheckedChanged="ForcePushCheckBox_Changed" />
+            <!-- Row 6: Command preview -->
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Command:" FontSize="13"
+                       FontWeight="Medium" Margin="0,8,8,4"
+                       VerticalAlignment="Top" HorizontalAlignment="Right" />
+            <TextBox Grid.Row="6" Grid.Column="1" Name="CommandPreviewTextBox"
+                     IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                     TextWrapping="Wrap" Margin="0,8,0,4" Padding="6" />
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
