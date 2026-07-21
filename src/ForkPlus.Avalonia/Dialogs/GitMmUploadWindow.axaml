@@ -1,0 +1,187 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.GitMmUploadWindow"
+                              Title="Upload git mm"
+                              Width="560" SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.14b：Avalonia 版 GitMmUploadWindow（对照 WPF GitMmUploadWindow.xaml）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Dialogs/GitMmUploadWindow.xaml（112 行）：
+          - Grid 2 列 3 行：Header / 内容 / Footer
+          - 内容区 Grid 2 列 8 行：
+            * Row 0: WorkspacePathTextBlock
+            * Row 1: CommitTitleTextBox (PlaceholderTextBox)
+            * Row 2: TopicTextBox (PlaceholderTextBox)
+            * Row 3: ReviewersTextBox (PlaceholderTextBox)
+            * Row 4: CcTextBox (PlaceholderTextBox)
+            * Row 5: Expander "Advanced Options"（自定义 ExpanderStyle）含 7 个 CheckBox + ForceUploadWarningImage
+            * Row 7: CommandPreviewTextBlock (ScrollViewer + TextBlock)
+
+        Avalonia 版差异：
+          1. PlaceholderTextBox → Avalonia TextBox + Watermark
+          2. WPF 自定义 ExpanderStyle 简化为 Avalonia 内置 Expander（默认样式）
+          3. Image Source 用 avares:// URI（spike 版省略 ForceUploadWarningImage，仅保留 ToolTip）
+          4. spike 版不接入 PreferencesLocalization.Apply（直接字面量英文 + cs 中显式 Translate 关键文本）
+    -->
+    <Grid Margin="0,10,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Workspace path -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Workspace:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,4,8,4" />
+        <TextBlock Grid.Row="0" Grid.Column="1"
+                   Name="WorkspacePathTextBlock"
+                   Margin="0,4,0,4"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+
+        <!-- Row 1: Commit title -->
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Text="Commit title:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,4,8,4" />
+        <TextBox Grid.Row="1" Grid.Column="1"
+                 Name="CommitTitleTextBox"
+                 Margin="0,4,0,4"
+                 Padding="4,2"
+                 Watermark="Commit title" />
+
+        <!-- Row 2: Topic -->
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Text="Topic:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,4,8,4" />
+        <TextBox Grid.Row="2" Grid.Column="1"
+                 Name="TopicTextBox"
+                 Margin="0,4,0,4"
+                 Padding="4,2"
+                 Watermark="Topic" />
+
+        <!-- Row 3: Reviewers -->
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Text="Reviewers:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,4,8,4" />
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 Name="ReviewersTextBox"
+                 Margin="0,4,0,4"
+                 Padding="4,2"
+                 Watermark="name1;name2" />
+
+        <!-- Row 4: CC -->
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   Text="CC:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,4,8,4" />
+        <TextBox Grid.Row="4" Grid.Column="1"
+                 Name="CcTextBox"
+                 Margin="0,4,0,4"
+                 Padding="4,2"
+                 Watermark="email1;email2" />
+
+        <!-- Row 5: Advanced Options expander -->
+        <Expander Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                  Name="AdvancedOptionsExpander"
+                  Margin="0,6,0,0"
+                  Header="Advanced Options"
+                  IsExpanded="False">
+            <Grid Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <!-- Row 0: ForceUpload warning + 3 checkboxes -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Name="ForceUploadWarningImage"
+                           Margin="0,4,8,4"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Text="⚠"
+                           FontSize="14"
+                           ToolTip.Tip="Force upload even if git mm reports safety checks." />
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,4">
+                    <CheckBox Name="ForceUploadCheckBox"
+                              Content="_Force upload"
+                              Margin="0,0,16,0"
+                              ToolTip.Tip="-f" />
+                    <CheckBox Name="AssumeYesCheckBox"
+                              Content="Assume yes"
+                              Margin="0,0,16,0"
+                              ToolTip.Tip="-y"
+                              IsChecked="True" />
+                    <CheckBox Name="CurrentBranchOnlyCheckBox"
+                              Content="Current branch only"
+                              ToolTip.Tip="--cbr" />
+                </StackPanel>
+                <!-- Row 1: 4 more checkboxes -->
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,4">
+                    <CheckBox Name="HeadCheckBox"
+                              Content="Upload HEAD"
+                              Margin="0,0,16,0"
+                              ToolTip.Tip="--head" />
+                    <CheckBox Name="ReadyCheckBox"
+                              Content="Ready"
+                              Margin="0,0,16,0"
+                              ToolTip.Tip="--ready" />
+                    <CheckBox Name="WipCheckBox"
+                              Content="Work in progress"
+                              Margin="0,0,16,0"
+                              ToolTip.Tip="--wip" />
+                    <CheckBox Name="NoUpdateManifestCheckBox"
+                              Content="No update manifest"
+                              ToolTip.Tip="-N" />
+                </StackPanel>
+            </Grid>
+        </Expander>
+
+        <!-- Row 6: Command Preview -->
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   Text="Command Preview:"
+                   FontSize="13"
+                   VerticalAlignment="Top"
+                   HorizontalAlignment="Right"
+                   Margin="0,8,8,0" />
+        <ScrollViewer Grid.Row="6" Grid.Column="1"
+                      MaxHeight="120"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,8,0,0">
+            <TextBlock Name="CommandPreviewTextBlock"
+                       FontFamily="Consolas"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </ScrollViewer>
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
