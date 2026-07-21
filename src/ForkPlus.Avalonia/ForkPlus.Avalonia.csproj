@@ -39,16 +39,19 @@
          用于 CodeEditor 基类 + DiffCodeEditor / TextDiffControl / HexEditor 等编辑器子树。
          API 与 WPF AvalonEdit 高度相似：TextEditor / TextArea / TextView /
          BackgroundRenderers / LineTransformers / LeftMargins。
-         12.0.0 是当前最新版（.NET 8.0 + Avalonia 11.x 兼容）。 -->
-    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+         版本选择 11.3.0（依赖 Avalonia >= 11.0.0，与项目 11.3.18 兼容）。
+         注意：12.0.0 要求 Avalonia >= 12.0.0，与项目 11.3.18 冲突（NU1605 降级错误）。 -->
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
     <!-- Phase 2.7：OxyPlot.Avalonia（OxyPlot.Wpf 的 Avalonia 移植版）。
          对照 WPF 工程 src/ForkPlus 的 OxyPlot.Wpf 2.2.0（仅 StatisticsUserControl 使用）。
          用于 RepositoryStatisticsWindow 内的 5 个 PlotView：
          LinePlot (LineSeries + DateTimeAxis) / PiePlot (PieSeries) /
          WeekDayPlot + DayHourPlot (BarSeries + CategoryAxis) / CodeLinesPiePlot (PieSeries)。
          PlotModel / Series / Axis 核心模型来自 OxyPlot.Core（平台无关），可零改动复用。
-         2.1.2 是当前 Avalonia 11 兼容版（OxyPlot.Avalonia 已停滞维护，需 spike 验证）。 -->
-    <PackageReference Include="OxyPlot.Avalonia" Version="2.1.2" />
+         版本选择 2.1.0-Avalonia11：依赖 Avalonia >= 11.0.0，与项目 11.3.18 兼容。
+         注意：stable 2.1.0 依赖 Avalonia 0.10.11（旧版），2.1.2 在 nuget.org 上不存在（NU1102）。
+         OxyPlot.Avalonia 已停滞维护，需 spike 验证 PlotView 渲染是否正常。 -->
+    <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Avalonia11" />
     <!-- Phase 5.1：Markdown.Avalonia.Tight（whistyun 社区版，无 AvaloniaEdit 依赖的轻量版）。
          对照 WPF 工程 src/ForkPlus 用 native Bt.bt_md_to_html P/Invoke + WebView2 渲染 markdown。
          用于 GitMmReferenceWindow（git mm 命令参考手册静态 markdown 文档）。
