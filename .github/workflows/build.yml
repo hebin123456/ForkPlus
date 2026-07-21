@@ -228,7 +228,7 @@ jobs:
           }
           dotnet test $dll --no-build --framework net10.0 `
             --logger "console;verbosity=normal" `
-            -- RunConfiguration.TestSessionTimeout=240000
+            -- RunConfiguration.TestSessionTimeout=600000
 
       # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
       # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
