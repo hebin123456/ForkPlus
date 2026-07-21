@@ -21,7 +21,8 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 6.1（已完成）：IClipboardService / IDispatcher / IAppContext / IDesignModeService
     //   - Phase 6.2（已完成）：IToastNotificationService
     //   - Phase 6.3（已完成）：IDialogService
-    //   - Phase 6.4+：IUserSettings / IProcessLauncher
+    //   - Phase 6.4a（已完成）：IUserSettings（spike stub，所有属性返回默认值；Phase 0.4 + 6.4b 升级为真实持久化实现）
+    //   - Phase 6.5+：IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -53,6 +54,13 @@ namespace ForkPlus.Avalonia.Services
             //   - ForkPlus.UI.Dialogs.ErrorWindow → ShowError 同样走 ShowDialog 模态窗口
             // 用 Avalonia 11 StorageProvider API（三平台统一，不引入任何 Windows-only 包）。
             services.AddSingleton<IDialogService, AvaloniaDialogService>();
+
+            // Phase 6.4a：IUserSettings 的 Avalonia spike stub 实现
+            // 对照 WPF 工程 src/ForkPlus/Services/Wpf/WpfUserSettings.cs（委托到 ForkPlusSettings.Default）。
+            // spike stub 所有 17 个属性返回 ForkPlusSettings.Decode 方法的默认值，不读 settings.json，不持久化。
+            // Phase 0.4 把 ForkPlusSettings 从 WPF 工程迁入 Core（替换 System.Windows.WindowState 为
+            // 自定义枚举）后，升级为真实实现（Phase 6.4b：委托到迁移后的 ForkPlusSettings.Default）。
+            services.AddSingleton<IUserSettings, AvaloniaUserSettings>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
