@@ -1,11 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <!-- Phase 2.5：FocusVisual 样式（焦点边框）。
-       来源：src/ForkPlus/Theme/Styles/Focusvisual.xaml
-       WPF 用 SystemColors.ControlTextBrushKey，Avalonia 改用 ThemeBorderHighBrush
-       （Fluent 主题提供的动态资源）。-->
-  <Style x:Key="FocusVisual" Selector="Control">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-  </Style>
+  <!-- Phase 2.5：FocusVisual 样式占位。
+       Avalonia 11 的 Control 基类没有 BorderBrush/BorderThickness 属性（这些在 Border/TemplatedControl 上），
+       焦点视觉由 Avalonia 内置的 KeyboardNavigation / FocusAdorner 机制处理，无需自定义样式。
+       WPF 的 FocusVisual 样式在 Avalonia 不需要等价迁移。-->
 </ResourceDictionary>

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
@@ -76,13 +77,13 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // ===== Button 事件占位（对照 WPF click handler）=====
 
         // 对照 WPF: AiExplainCommitButton_Click（AI 调用，Phase 5）
-        private void AiExplainCommitButton_Click(object sender, EventArgs e)
+        private void AiExplainCommitButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionSummary] AiExplainCommitButton_Click (spike placeholder, Phase 5)");
         }
 
         // 对照 WPF: ExpandAllButton_Click
-        private void ExpandAllButton_Click(object sender, EventArgs e)
+        private void ExpandAllButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionSummary] ExpandAllButton_Click (spike placeholder)");
         }

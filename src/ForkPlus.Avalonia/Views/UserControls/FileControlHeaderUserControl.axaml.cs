@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
@@ -73,52 +74,52 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // ===== ToggleButton/Button 事件占位（对照 WPF 9 个 click handler）=====
         // spike 版只打日志，真实逻辑（更新 ForkPlusSettings + 触发 diff 重渲染）留待 Phase 3.7 后续子阶段
 
-        private void PreviousButton_Click(object sender, EventArgs e)
+        private void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Previous change (spike placeholder)");
         }
 
-        private void NextButton_Click(object sender, EventArgs e)
+        private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Next change (spike placeholder)");
         }
 
-        private void IgnoreWhitespacesToggleButton_Click(object sender, EventArgs e)
+        private void IgnoreWhitespacesToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Ignore whitespaces toggle (spike placeholder)");
         }
 
-        private void ShowHiddenSymbolsToggleButton_Click(object sender, EventArgs e)
+        private void ShowHiddenSymbolsToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Show hidden symbols toggle (spike placeholder)");
         }
 
-        private void WordWrapToggleButton_Click(object sender, EventArgs e)
+        private void WordWrapToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Word wrap toggle (spike placeholder)");
         }
 
-        private void DecreaseVisibleLines_Click(object sender, EventArgs e)
+        private void DecreaseVisibleLines_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Decrease visible lines (spike placeholder)");
         }
 
-        private void IncreaseVisibleLines_Click(object sender, EventArgs e)
+        private void IncreaseVisibleLines_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Increase visible lines (spike placeholder)");
         }
 
-        private void ShowEntireFileToggleButton_Click(object sender, EventArgs e)
+        private void ShowEntireFileToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Show entire file toggle (spike placeholder)");
         }
 
-        private void DiffLayoutModeToggleButton_Click(object sender, EventArgs e)
+        private void DiffLayoutModeToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Diff layout mode toggle (spike placeholder)");
         }
 
-        private void HighlightPixelsToggleButton_Click(object sender, EventArgs e)
+        private void HighlightPixelsToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[FileControlHeader] Highlight pixels toggle (spike placeholder)");
         }

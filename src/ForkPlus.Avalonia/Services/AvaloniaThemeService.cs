@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using ForkPlus.UI;
 
@@ -55,12 +56,14 @@ namespace ForkPlus.Avalonia.Services
             {
                 // Avalonia 11 加载外部 axaml 资源字典用 ResourceInclude（不是 WPF 的 ResourceDictionary.Source）。
                 // ResourceInclude 实现 IResourceProvider，可直接加入 MergedDictionaries。
-                var colorsRd = new ResourceInclude
+                // ResourceInclude 没有无参构造函数，构造函数签名：
+                //   ResourceInclude(Uri baseUri) — baseUri 用于解析相对 Source，可为 null。
+                var colorsRd = new ResourceInclude((Uri)null)
                 {
                     Source = new Uri(colorsUri)
                 };
 
-                var brushesRd = new ResourceInclude
+                var brushesRd = new ResourceInclude((Uri)null)
                 {
                     Source = new Uri(brushesUri)
                 };

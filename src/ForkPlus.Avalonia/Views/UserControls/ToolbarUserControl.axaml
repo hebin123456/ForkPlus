@@ -30,7 +30,7 @@
           - 图标能从 Assets 加载
     -->
     <Grid ColumnDefinitions="*,300,*"
-          Background="{DynamicResource ToolbarBackgroundBrush, FallbackValue=#1E1E1E}">
+          Background="{DynamicResource ToolbarBackgroundBrush}">
 
         <!-- Column 0: 左侧主操作区（Quick Launch/Fetch/Pull/Push/Stash/Undo/Redo/Reflog）-->
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"

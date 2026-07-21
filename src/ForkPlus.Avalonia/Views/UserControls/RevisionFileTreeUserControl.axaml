@@ -42,27 +42,27 @@
           - GridSplitter 可拖动
     -->
     <Grid Name="ContainerGrid"
-          ColumnDefinitions="MinWidth=220 MaxWidth=850,Auto,*">
+          ColumnDefinitions="220,Auto,*">
 
         <!-- Col 0: FilesTreeView 占位（WPF 中是 MultiselectionTreeView + DataTemplate）-->
         <TreeView Grid.Column="0"
                   Name="FilesTreeView"
-                  Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+                  Background="{DynamicResource ThemeBackgroundBrush}"
                   BorderThickness="0,0,1,0"
-                  BorderBrush="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}" />
+                  BorderBrush="{DynamicResource ThemeBorderMidBrush}" />
 
         <!-- Col 1: GridSplitter -->
         <GridSplitter Grid.Column="1"
                       Name="FileTreeGridSplitter"
                       Width="4"
                       ResizeDirection="Columns"
-                      Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                      Background="{DynamicResource ThemeBorderMidBrush}"
                       HorizontalAlignment="Stretch" />
 
         <!-- Col 2: FileContentControl 占位 -->
         <ContentControl Grid.Column="2"
                         Name="FileContentControl"
-                        Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#252526}"
+                        Background="{DynamicResource ThemeBackgroundBrush}"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <TextBlock Text="(file content placeholder)"
                        FontSize="11"

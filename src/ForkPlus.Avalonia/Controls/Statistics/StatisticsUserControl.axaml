@@ -107,7 +107,6 @@
                     <ListBox Name="AuthorStatListBox"
                              Width="350"
                              Margin="35,0,0,0"
-                             HorizontalContentAlignment="Stretch"
                              VerticalAlignment="Top">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -228,7 +227,6 @@
                         </Grid>
                         <ListBox Name="CodeLinesListBox"
                                  BorderThickness="1,1,1,0"
-                                 HorizontalContentAlignment="Stretch"
                                  VerticalAlignment="Top">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>

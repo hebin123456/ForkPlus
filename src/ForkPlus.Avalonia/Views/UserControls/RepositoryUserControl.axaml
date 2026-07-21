@@ -36,13 +36,13 @@
           - Content 占位（暂用 ContentControl，Phase 3.4 后期装入 RepositoryContentUserControl）
     -->
     <Grid Name="RepositoryUserControlGrid"
-          ColumnDefinitions="MinWidth=120 MaxWidth=600,Auto,*"
+          ColumnDefinitions="120,Auto,*"
           RowDefinitions="Auto,Auto,*">
 
         <!-- Row 0: NotificationBar 占位（跨 3 列）-->
         <Border Grid.Row="0" Grid.ColumnSpan="3"
                 Name="NotificationBarPlaceholder"
-                Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+                Background="{DynamicResource ThemeCardBackgroundBrush}"
                 Padding="8,4">
             <TextBlock Text="(no notifications)"
                        FontSize="11"
@@ -59,7 +59,7 @@
                       Name="SidebarGridSplitter"
                       Width="4"
                       ResizeDirection="Columns"
-                      Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                      Background="{DynamicResource ThemeBorderMidBrush}"
                       HorizontalAlignment="Stretch" />
 
         <!-- Row 2, Col 2: Content 占位（Phase 3.4 后期装入 RepositoryContentUserControl）-->

@@ -16,8 +16,11 @@ _ReSharper*/
 # Logs
 *.log
 
-# biturbo.dll 不再提交，构建期从 Biturbo 仓库最新 release 拉取
+# biturbo 原生库不再提交，构建期从 Biturbo 仓库最新 release 拉取
+# Windows = biturbo.dll / Linux = libbiturbo.so / macOS = libbiturbo.dylib
 third_party/biturbo.dll
+third_party/libbiturbo.so
+third_party/libbiturbo.dylib
 
 # tokei.exe 不再提交，缺失时用 cargo install 从源码编译（tokei 上游不发布预编译二进制）
 third_party/tokei.exe

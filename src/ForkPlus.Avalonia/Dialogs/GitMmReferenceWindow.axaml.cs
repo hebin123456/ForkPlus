@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using Avalonia.Controls;
+using Markdown.Avalonia;
 
 namespace ForkPlus.Avalonia.Dialogs
 {
@@ -76,7 +78,14 @@ namespace ForkPlus.Avalonia.Dialogs
                 }
 
                 // Markdown.Avalonia 直接渲染 markdown 字符串（无需 HTML 转换）
-                ManualMarkdownViewer.Markdown = markdown;
+                // AvaloniaNameSourceGenerator 无法解析第三方命名空间 md:MarkdownScrollViewer
+                // （xmlns:md="https://github.com/whistyun/Markdown.Avalonia"），故不生成
+                // ManualMarkdownViewer 字段。这里运行时通过 FindControl 查找控件。
+                var viewer = this.FindControl<MarkdownScrollViewer>("ManualMarkdownViewer");
+                if (viewer != null)
+                {
+                    viewer.Markdown = markdown;
+                }
             }
             catch (Exception ex)
             {
@@ -111,7 +120,9 @@ namespace ForkPlus.Avalonia.Dialogs
         // spike 版：用 TextBlock 占位替代 FallbackUserControl
         private void ShowFallback(string message)
         {
-            if (ManualMarkdownViewer != null) ManualMarkdownViewer.IsVisible = false;
+            // ManualMarkdownViewer 通过 FindControl 查找（见 InitializeManualView 注释）
+            var viewer = this.FindControl<MarkdownScrollViewer>("ManualMarkdownViewer");
+            if (viewer != null) viewer.IsVisible = false;
             if (ManualFallback != null)
             {
                 ManualFallback.IsVisible = true;

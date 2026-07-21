@@ -44,7 +44,7 @@
              ShowLineNumbers=True 显示行号（spike 用 AvaloniaEdit 内置，Phase 3.9b 换 DiffLineNumberMargin） -->
         <editor:DiffCodeEditor Name="DiffEditor"
                                IsReadOnly="True"
-                               WordWrap="No"
+                               WordWrap="False"
                                ShowLineNumbers="True"
                                FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
                                FontSize="13" />

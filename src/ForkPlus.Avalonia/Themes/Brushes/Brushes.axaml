@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <VisualBrush x:Key="TransparentVisualBrush" TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute" Visual="{DynamicResource TransparentPatternImage}" />
+  <VisualBrush x:Key="TransparentVisualBrush" TileMode="Tile" Visual="{DynamicResource TransparentPatternImage}" />
   <SolidColorBrush x:Key="LabelBrush" Color="{DynamicResource LabelColor}" />
   <SolidColorBrush x:Key="SecondaryLabelBrush" Color="{DynamicResource SecondaryLabelColor}" />
   <SolidColorBrush x:Key="ForegroundBrush.WindowsInfo" Color="{DynamicResource ForegroundColor}" />

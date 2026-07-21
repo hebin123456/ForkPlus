@@ -38,7 +38,7 @@
           - 空 TabControl 能展示
     -->
     <Grid RowDefinitions="Auto,*"
-          Background="{DynamicResource Sidebar.Static.Background, FallbackValue=#252526}">
+          Background="{DynamicResource Sidebar.Static.Background}">
 
         <!-- Row 0: 标题栏 + 5 个 RadioButton -->
         <StackPanel Grid.Row="0" Margin="8,4">

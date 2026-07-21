@@ -48,7 +48,7 @@
           - 底部进度条占位可见
     -->
     <Border CornerRadius="3"
-            Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+            Background="{DynamicResource ThemeCardBackgroundBrush}"
             BorderThickness="0">
         <Grid ColumnDefinitions="20,*,20"
               RowDefinitions="18,16,2">

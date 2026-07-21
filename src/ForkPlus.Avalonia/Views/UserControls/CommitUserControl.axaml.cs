@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
@@ -118,20 +119,20 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // ===== Button 事件占位（对照 WPF click handler）=====
 
         // 对照 WPF: CommitButton_Click → git commit
-        private void CommitButton_Click(object sender, EventArgs e)
+        private void CommitButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Commit] CommitButton_Click (spike placeholder)");
             SaveCommitMessage();
         }
 
         // 对照 WPF: RecentCommitMessagesDropDownButton_Click → 显示最近 commit 消息下拉
-        private void RecentCommitMessagesButton_Click(object sender, EventArgs e)
+        private void RecentCommitMessagesButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Commit] RecentCommitMessagesButton_Click (spike placeholder)");
         }
 
         // 对照 WPF: CommitSettingsDropDownButton_Click → 显示 commit 设置下拉
-        private void CommitSettingsButton_Click(object sender, EventArgs e)
+        private void CommitSettingsButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Commit] CommitSettingsButton_Click (spike placeholder)");
         }

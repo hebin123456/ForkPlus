@@ -76,7 +76,7 @@
             <Grid Grid.Row="0" Name="RevisionListStatusBarContainer"
                   IsVisible="False"
                   Height="20"
-                  Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}" />
+                  Background="{DynamicResource ThemeCardBackgroundBrush}" />
 
             <!-- Row 1: RevisionListViewUserControl -->
             <uc:RevisionListViewUserControl Grid.Row="1"
@@ -87,7 +87,7 @@
                           Name="HorizontalGridSplitter"
                           Height="4"
                           ResizeDirection="Rows"
-                          Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                          Background="{DynamicResource ThemeBorderMidBrush}"
                           HorizontalAlignment="Stretch" />
 
             <!-- Row 3: RevisionDetailsUserControl -->

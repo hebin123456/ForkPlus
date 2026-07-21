@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
@@ -88,26 +89,26 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         // ===== Tab 切换（对照 WPF 3 个 RadioButton 事件）=====
 
-        private void CommitTabRadioButton_Click(object sender, EventArgs e)
+        private void CommitTabRadioButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionDetails] Commit tab");
             SwitchToCommitTab();
         }
 
-        private void ChangesTabRadioButton_Click(object sender, EventArgs e)
+        private void ChangesTabRadioButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionDetails] Changes tab");
             SwitchToChangesTab();
         }
 
-        private void FileTreeTabRadioButton_Click(object sender, EventArgs e)
+        private void FileTreeTabRadioButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionDetails] FileTree tab");
             SwitchToFileTreeTab();
         }
 
         // 对照 WPF: ShowRevisionInSeparateWindowButton_Click
-        private void ShowRevisionInSeparateWindowButton_Click(object sender, EventArgs e)
+        private void ShowRevisionInSeparateWindowButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[RevisionDetails] ShowRevisionInSeparateWindow (spike placeholder)");
         }

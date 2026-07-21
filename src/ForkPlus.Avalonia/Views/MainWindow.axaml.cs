@@ -78,9 +78,24 @@ namespace ForkPlus.Avalonia.Views
             _startupFinished = true;
             Console.WriteLine("[MainWindow] Loaded — startup finished");
 
+            // Phase 3.2：通过 DI 创建 ToolbarUserControl 装入 ToolbarContainer。
+            // ToolbarUserControl 需要 IThemeService 注入，故不在 XAML 中实例化。
+            LoadToolbarUserControl();
+
             // Phase 3.13：创建 RepositoryUserControl 装入 MainContentContainer
             // 对照 WPF MainWindow.xaml Row 1 ClosableTabControl 装入 RepositoryUserControl
             LoadRepositoryUserControl();
+        }
+
+        // Phase 3.2：通过 DI 创建 ToolbarUserControl 装入 ToolbarContainer
+        private void LoadToolbarUserControl()
+        {
+            Console.WriteLine("[MainWindow] LoadToolbarUserControl (Phase 3.2)");
+            var toolbar = _serviceProvider.GetRequiredService<ToolbarUserControl>();
+            if (ToolbarContainer != null)
+            {
+                ToolbarContainer.Content = toolbar;
+            }
         }
 
         // Phase 3.13：创建 RepositoryUserControl 装入 MainContentContainer

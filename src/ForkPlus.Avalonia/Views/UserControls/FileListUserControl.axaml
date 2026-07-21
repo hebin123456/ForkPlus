@@ -44,6 +44,6 @@
           - 顶层 TreeView 占位可见
     -->
     <TreeView Name="TreeView"
-              Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+              Background="{DynamicResource ThemeBackgroundBrush}"
               BorderThickness="0" />
 </UserControl>

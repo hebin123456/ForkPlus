@@ -60,7 +60,7 @@
         <!-- Row 0: SearchPanel 占位（WPF 中由 RevisionSearchPanelUserControl 注入）-->
         <Border Grid.Row="0"
                 Name="SearchPanelPlaceholder"
-                Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+                Background="{DynamicResource ThemeCardBackgroundBrush}"
                 Padding="8,4"
                 Height="32">
             <TextBlock Text="(search panel placeholder)"
@@ -72,7 +72,7 @@
         <!-- Row 1: RevisionListView 占位（WPF 中是 DragAndDropListView + GridView 6 列）-->
         <ListBox Grid.Row="1"
                  Name="RevisionListView"
-                 Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}"
+                 Background="{DynamicResource ThemeBackgroundBrush}"
                  BorderThickness="0" />
     </Grid>
 </UserControl>

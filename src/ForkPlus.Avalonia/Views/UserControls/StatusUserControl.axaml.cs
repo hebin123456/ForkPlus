@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ForkPlus.Avalonia.Views.UserControls
@@ -66,17 +67,17 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         // ===== Button 事件占位（对照 WPF click handler）=====
 
-        private void CancelButton_Click(object sender, EventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Status] CancelButton_Click (spike placeholder)");
         }
 
-        private void ShowActivityManagerToggleButton_Click(object sender, EventArgs e)
+        private void ShowActivityManagerToggleButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Status] ShowActivityManagerToggleButton_Click (spike placeholder)");
         }
 
-        private void FilterButton_Click(object sender, EventArgs e)
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Status] FilterButton_Click (spike placeholder)");
         }

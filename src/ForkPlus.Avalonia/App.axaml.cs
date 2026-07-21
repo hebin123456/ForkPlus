@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views;
 using ForkPlus.UI;
@@ -18,16 +19,19 @@ namespace ForkPlus.Avalonia
     //   2. 在 OnFrameworkInitializationCompleted 中构建 DI 容器
     //   3. 显示启动窗口（Phase 1 = AboutWindow，Phase 3 起替换为 MainWindow）
     //
-    // Avalonia 11：axaml 编译时由 source generator 生成 InitializeComponent() 方法（partial class），
-    // 无需手写 AvaloniaXamlLoader.Load(this)（该方法在 11.x 已过时）。
+    // Avalonia 11：AvaloniaNameSourceGenerator 会为继承自 Window/UserControl/Control 的
+    // axaml 生成 InitializeComponent() 方法，但 Application 根元素不在生成范围内。
+    // 故 App.axaml.cs 直接调用 AvaloniaXamlLoader.Load(this) 加载 XAML（与 generator
+    // 生成的 InitializeComponent 内部实现一致，见 generated/*.g.cs）。
     public partial class App : Application
     {
         private IHost _host;
 
         public override void Initialize()
         {
-            // InitializeComponent 由 App.axaml 编译生成的 partial class 提供
-            InitializeComponent();
+            // 直接调用 AvaloniaXamlLoader.Load 加载 App.axaml
+            // （generator 不为 Application 根元素生成 InitializeComponent）
+            AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted()

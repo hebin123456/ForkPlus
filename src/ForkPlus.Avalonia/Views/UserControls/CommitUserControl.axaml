@@ -61,14 +61,14 @@
     -->
     <Grid Name="CommitGrid"
           ColumnDefinitions="280,Auto,*"
-          Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}">
+          Background="{DynamicResource ThemeBackgroundBrush}">
 
         <!-- Col 0: StageFileUserControl 占位（WPF 是自嵌套子控件）-->
         <Border Grid.Column="0"
                 Name="StageFileContainer"
-                Background="{DynamicResource ThemeCardBackgroundBrush, FallbackValue=#2D2D30}"
+                Background="{DynamicResource ThemeCardBackgroundBrush}"
                 BorderThickness="0,0,1,0"
-                BorderBrush="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}">
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}">
             <TextBlock Text="(stage files placeholder)"
                        FontSize="11"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}"
@@ -80,7 +80,7 @@
                       Name="CommitGridSplitter"
                       Width="4"
                       ResizeDirection="Columns"
-                      Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}"
+                      Background="{DynamicResource ThemeBorderMidBrush}"
                       HorizontalAlignment="Stretch" />
 
         <!-- Col 2: 嵌套 Grid 3 行（diff + 分隔 + commit message 编辑区）-->
@@ -94,7 +94,7 @@
             <!-- Row 1: 分隔线 -->
             <Border Grid.Row="1"
                     Height="1"
-                    Background="{DynamicResource ThemeBorderMidBrush, FallbackValue=#3F3F46}" />
+                    Background="{DynamicResource ThemeBorderMidBrush}" />
 
             <!-- Row 2: commit message 编辑区 -->
             <Grid Grid.Row="2"

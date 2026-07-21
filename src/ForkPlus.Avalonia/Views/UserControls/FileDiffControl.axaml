@@ -77,7 +77,7 @@
              其他类型（Binary/Submodule/Fallback）仍用 TextBlock 占位（Phase 3.9b）。 -->
         <Border Grid.Row="1"
                 Name="SubViewContainer"
-                Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}">
+                Background="{DynamicResource ThemeBackgroundBrush}">
             <Grid>
                 <!-- 默认占位（非 Text/Hex 类型用）-->
                 <TextBlock Name="SubViewPlaceholder"
