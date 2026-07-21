@@ -10,6 +10,12 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls.Preferences;
 
+// Phase 0.4：FileControlHeaderMode / FileDiffControlTarget 已迁入 Core（namespace ForkPlus.UI）。
+// WPF 工程已 using ForkPlus.UI.UserControls（本命名空间）和 ForkPlus.UI.Controls，
+// 但迁移后枚举在 ForkPlus.UI 命名空间，需要用完全限定名避免歧义。
+using FileControlHeaderMode = ForkPlus.UI.FileControlHeaderMode;
+using FileDiffControlTarget = ForkPlus.UI.FileDiffControlTarget;
+
 namespace ForkPlus.UI.UserControls
 {
 	public partial class FileControlHeaderUserControl : UserControl, ForkPlus.UI.ILocalizableControl
