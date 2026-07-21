@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hex="clr-namespace:ForkPlus.Avalonia.Controls.Editor.Hex"
+             x:Class="ForkPlus.Avalonia.Controls.Editor.Hex.HexDiffUserControl">
+    <!--
+        Phase 2.9：Avalonia 版 HexDiffUserControl（side-by-side Hex Diff 视图）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Controls/Editor/Hex/HexDiffUserControl.cs（298 行，纯 C# Grid 子类）：
+          - HexDiffUserControl : Grid, FileContentControl.IFileContentControlSubControl
+          - 3 行 Grid：Row 0 (Auto) 工具栏 / Row 1 (Auto) 列头 / Row 2 (*) 双 HexEditor
+          - 工具栏：字节宽度下拉 + ASCII 开关 + Offset 开关 + Sync scroll 开关
+          - 列头：左 "修改前:" / 右 "修改后:"
+          - 双 HexEditor 并排 + ApplyDiffHighlight（逐字节比较，差异字节橙黄高亮）
+          - SetContent(HexDiffContent)：加载两侧字节 + 触发差异高亮
+          - ControlWillBeRemovedFromFileContentControl：释放两侧 MemoryStream
+          - 滚动同步（SyncScroll 复选框控制，100ms 防抖 + _isSyncingScroll 重入守卫）
+          - MaxBytesForDiffHighlight = 2MB（超过此阈值跳过逐字节比较）
+
+        Avalonia 版差异（spike 简化策略）：
+          1. axaml UserControl 替代纯 C# Grid 子类
+          2. 跳过 IFileContentControlSubControl 接口（接口在 Avalonia 工程不存在，spike 用方法签名兼容）
+          3. 跳过 ForkPlusSettings.Default.HexView* 持久化（WPF-only Settings）
+          4. PreferencesLocalization.Current(...) 用字面量字符串替代（已在 axaml 中）
+          5. spike 版跳过 SyncScroll CheckBox + 滚动同步逻辑（TextView.ScrollOffsetChanged 事件
+             API 在 AvaloniaEdit 12 与 AvalonEdit 略有差异，留 Phase 3.9b 验证后接入）
+          6. 保留 ApplyDiffHighlight 完整逻辑（HexDiffContent 的核心功能，复用 HexEditor.HighlightBytes）
+
+        本 spike 版暂不迁移（留 Phase 3.9b）：
+          - SyncScroll CheckBox + 滚动同步（_lastScrollTime / _lastScrolledEditor / _isSyncingScroll）
+          - TextView.ScrollOffsetChanged 事件订阅 + ScrollToVerticalOffset / ScrollToHorizontalOffset
+          - IsVerticalOffsetWithinDocumentArea / IsHorizontalOffsetWithinDocumentArea 边界检查
+
+        本 spike 版验证：
+          - 双 HexEditor 可在 axaml Grid ColumnDefinitions 中并排实例化
+          - SetContent(HexDiffContent) 可同时加载两侧字节
+          - ApplyDiffHighlight 逐字节比较并触发 HighlightBytes 高亮差异字节
+    -->
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- Row 0: 共享工具栏 -->
+        <Border Grid.Row="0" Padding="4,2">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Bytes per row:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <ComboBox Name="BytesPerRowComboBox"
+                          Width="60"
+                          VerticalAlignment="Center"
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="8" />
+                    <ComboBoxItem Content="16" />
+                    <ComboBoxItem Content="32" />
+                </ComboBox>
+
+                <CheckBox Name="ShowAsciiCheckBox"
+                          Content="Show ASCII"
+                          IsChecked="True"
+                          VerticalAlignment="Center" />
+
+                <CheckBox Name="ShowOffsetCheckBox"
+                          Content="Show offset"
+                          IsChecked="True"
+                          VerticalAlignment="Center" />
+
+                <!-- Phase 3.9b：在此补 Sync scroll CheckBox + 滚动同步逻辑 -->
+            </StackPanel>
+        </Border>
+
+        <!-- Row 1: 列头 — "修改前" / "修改后"，与下方编辑器左右对齐 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*">
+            <TextBlock Grid.Column="0"
+                       Text="Before Modification:"
+                       Margin="4,2,0,2"
+                       FontWeight="Medium" />
+            <TextBlock Grid.Column="1"
+                       Text="After Modification:"
+                       Margin="4,2,0,2"
+                       FontWeight="Medium" />
+        </Grid>
+
+        <!-- Row 2: 双 HexEditor 并排 -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*">
+            <hex:HexEditor Grid.Column="0" Name="SrcEditor" />
+            <hex:HexEditor Grid.Column="1" Name="DstEditor" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using ForkPlus.Git;
+using ForkPlus.Git.Diff;
 
 namespace ForkPlus.Avalonia.Views.UserControls
 {
@@ -83,7 +84,8 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         // ===== ShowSubView（对照 WPF ShowSubView<TChild> 动态装载）=====
         // Phase 2.6 升级：Text 类型不再用 TextBlock 占位，改用真实 TextDiffControl。
-        // 其他类型（Binary/Hex/Submodule/Fallback）仍用 TextBlock 占位（Phase 2.9/3.9b）。
+        // Phase 2.9 升级：Hex 类型不再用 TextBlock 占位，改用真实 HexDiffUserControl。
+        // 其他类型（Binary/Submodule/Fallback）仍用 TextBlock 占位（Phase 3.9b）。
         protected void ShowSubView(string subViewType)
         {
             Console.WriteLine($"[FileDiffControl] ShowSubView: {subViewType}");
@@ -92,19 +94,29 @@ namespace ForkPlus.Avalonia.Views.UserControls
             {
                 // Phase 2.6：显示 TextDiffControl（承载 DiffCodeEditor : CodeEditor : AvaloniaEdit.TextEditor）
                 if (SubViewPlaceholder != null) SubViewPlaceholder.IsVisible = false;
+                if (HexDiffSubView != null) HexDiffSubView.IsVisible = false;
                 if (TextDiffSubView != null) TextDiffSubView.IsVisible = true;
                 return;
             }
 
-            // 非 Text 类型：隐藏 TextDiffControl，显示 TextBlock 占位
+            if (subViewType == "Hex")
+            {
+                // Phase 2.9：显示 HexDiffUserControl（承载双 HexEditor : CodeEditor : AvaloniaEdit.TextEditor）
+                if (SubViewPlaceholder != null) SubViewPlaceholder.IsVisible = false;
+                if (TextDiffSubView != null) TextDiffSubView.IsVisible = false;
+                if (HexDiffSubView != null) HexDiffSubView.IsVisible = true;
+                return;
+            }
+
+            // 非 Text/Hex 类型：隐藏 TextDiffControl + HexDiffUserControl，显示 TextBlock 占位
             if (TextDiffSubView != null) TextDiffSubView.IsVisible = false;
+            if (HexDiffSubView != null) HexDiffSubView.IsVisible = false;
             if (SubViewPlaceholder != null)
             {
                 SubViewPlaceholder.IsVisible = true;
                 SubViewPlaceholder.Text = subViewType switch
                 {
                     "Binary" => "(binary diff placeholder — image swipe/onion skin not migrated)",
-                    "Hex" => "(hex diff placeholder — HexEditor not migrated, see Phase 2.9)",
                     "Submodule" => "(submodule diff placeholder)",
                     "Fallback" => "(no diff / fallback)",
                     _ => $"(unknown sub-view: {subViewType})"
@@ -140,6 +152,23 @@ namespace ForkPlus.Avalonia.Views.UserControls
             {
                 FileControlHeader.IsVisible = true;
             }
+        }
+
+        // Phase 2.9：HexDiffUserControl 的数据入口（对照 WPF 通过 _subView.SetContent(content) 转发）。
+        // spike 版需要外部调用者把 HexDiffContent 显式传入（WPF 是通过 UpdateView 内部 dispatch 自动转发，
+        // spike 版 UpdateView 暂不接入 git 命令，调用方手动调 SetHexDiff 加载字节）。
+        public void SetHexDiff(HexDiffContent content)
+        {
+            Console.WriteLine($"[FileDiffControl] SetHexDiff (Phase 2.9): srcSize={content?.SrcSize}, dstSize={content?.DstSize}");
+            HexDiffSubView?.SetContent(content);
+        }
+
+        // Phase 2.6：TextDiffControl 的数据入口（对照 WPF 通过 _subView.SetDiff(diff, ...) 转发）。
+        // spike 版需要外部调用者把 Diff 显式传入。
+        public void SetTextDiff(Diff diff, int tabWidth, bool entireFile, DiffLocation location)
+        {
+            Console.WriteLine($"[FileDiffControl] SetTextDiff (Phase 2.6): diff={diff?.ToString() ?? "null"}");
+            TextDiffSubView?.SetDiff(diff, tabWidth, entireFile, location);
         }
     }
 }

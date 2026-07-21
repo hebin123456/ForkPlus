@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              xmlns:editor="clr-namespace:ForkPlus.Avalonia.Controls.Editor.Diff"
+             xmlns:hex="clr-namespace:ForkPlus.Avalonia.Controls.Editor.Hex"
              x:Class="ForkPlus.Avalonia.Views.UserControls.FileDiffControl">
     <!--
         Phase 3.9a + Phase 2.6 升级：Avalonia 版 FileDiffControl 容器骨架。
@@ -72,12 +73,13 @@
 
         <!-- Row 1: SubView 容器（5 种 sub-view 切换）。
              Phase 2.6 升级：Text 类型不再用 TextBlock 占位，改用真实 TextDiffControl。
-             其他类型（Binary/Hex/Submodule/Fallback）仍用 TextBlock 占位（Phase 2.9/3.9b）。 -->
+             Phase 2.9 升级：Hex 类型不再用 TextBlock 占位，改用真实 HexDiffUserControl。
+             其他类型（Binary/Submodule/Fallback）仍用 TextBlock 占位（Phase 3.9b）。 -->
         <Border Grid.Row="1"
                 Name="SubViewContainer"
                 Background="{DynamicResource ThemeBackgroundBrush, FallbackValue=#1E1E1E}">
             <Grid>
-                <!-- 默认占位（非 Text 类型用）-->
+                <!-- 默认占位（非 Text/Hex 类型用）-->
                 <TextBlock Name="SubViewPlaceholder"
                            Text="(diff placeholder)"
                            FontSize="12"
@@ -88,6 +90,13 @@
                      承载 DiffCodeEditor : CodeEditor : AvaloniaEdit.TextEditor，
                      解 Phase 3.9a 的 AvalonEdit 占位。 -->
                 <editor:TextDiffControl Name="TextDiffSubView"
+                                        IsVisible="False" />
+
+                <!-- Phase 2.9：HexDiffUserControl（Hex 类型用，默认隐藏，ShowSubView 时显示）
+                     承载双 HexEditor : CodeEditor : AvaloniaEdit.TextEditor，
+                     解 Phase 3.9a 的 Hex 占位。
+                     SetHexDiff(HexDiffContent) 加载两侧字节并触发差异高亮。 -->
+                <hex:HexDiffUserControl Name="HexDiffSubView"
                                         IsVisible="False" />
             </Grid>
         </Border>

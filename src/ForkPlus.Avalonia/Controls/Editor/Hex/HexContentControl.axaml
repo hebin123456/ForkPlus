@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hex="clr-namespace:ForkPlus.Avalonia.Controls.Editor.Hex"
+             x:Class="ForkPlus.Avalonia.Controls.Editor.Hex.HexContentControl">
+    <!--
+        Phase 2.9：Avalonia 版 HexContentControl（单文件 Hex 视图容器）。
+
+        对照 WPF 工程 src/ForkPlus/UI/Controls/Editor/Hex/HexContentControl.cs（181 行，纯 C# Grid 子类）：
+          - HexContentControl : Grid, FileContentControl.IFileContentControlSubControl
+          - 2 行 Grid：Row 0 (Auto) 工具栏 / Row 1 (*) HexEditor
+          - 工具栏：字节宽度下拉 + ASCII 开关 + Offset 开关 + 搜索按钮 + 复制为原始字节按钮
+          - SetContent(HexContent) 加载字节并渲染
+          - ControlWillBeRemovedFromFileContentControl 释放 MemoryStream
+
+        Avalonia 版差异（spike 简化策略）：
+          1. axaml UserControl 替代纯 C# Grid 子类（Avalonia 习惯用 axaml）
+          2. 跳过 IFileContentControlSubControl 接口（接口在 Avalonia 工程不存在，spike 用方法签名兼容）
+          3. 字面量字符串替代 PreferencesLocalization.Current(...)（WPF 工程的本地化资源，spike 不接入）
+          4. 跳过 ForkPlusSettings.Default.HexView* 持久化（WPF-only Settings，spike 用默认值 16/true/true，
+             Phase 0 抽 IPreferencesService 后再接入）
+          5. 复制为原始字节简化：仅写入文本格式（Avalonia 剪贴板 IClipboard 不支持 DataFormats.Serializable
+             二进制；WPF 同时写入 Serializable + Text 两种格式，spike 仅保留 Text 方便粘贴到文本编辑器）
+
+        本 spike 版验证：
+          - HexEditor 可在 axaml 中实例化（AvaloniaEdit.TextEditor 子类树可工作）
+          - 工具栏 ComboBox/CheckBox/Button 可与 HexEditor.BytesPerRow/ShowAscii/ShowOffset 交互
+          - SetContent(HexContent) 可加载字节并渲染
+    -->
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Row 0: 工具栏 -->
+        <Border Grid.Row="0" Padding="4,2">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Bytes per row:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <ComboBox Name="BytesPerRowComboBox"
+                          Width="60"
+                          VerticalAlignment="Center"
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="8" />
+                    <ComboBoxItem Content="16" />
+                    <ComboBoxItem Content="32" />
+                </ComboBox>
+
+                <CheckBox Name="ShowAsciiCheckBox"
+                          Content="Show ASCII"
+                          IsChecked="True"
+                          VerticalAlignment="Center" />
+
+                <CheckBox Name="ShowOffsetCheckBox"
+                          Content="Show offset"
+                          IsChecked="True"
+                          VerticalAlignment="Center" />
+
+                <Button Name="SearchButton"
+                        Content="🔍"
+                        ToolTip.Tip="Search (ASCII or hex bytes like 41 42)"
+                        Width="28"
+                        Height="22"
+                        VerticalAlignment="Center" />
+
+                <Button Name="CopyRawButton"
+                        Content="Copy as raw bytes"
+                        Height="22"
+                        Padding="6,0"
+                        VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Row 1: HexEditor -->
+        <hex:HexEditor Grid.Row="1" Name="HexEditorControl" />
+    </Grid>
+</UserControl>
