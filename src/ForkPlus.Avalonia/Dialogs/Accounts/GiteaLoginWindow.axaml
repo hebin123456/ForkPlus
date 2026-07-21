@@ -1,0 +1,123 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.Accounts.GiteaLoginWindow"
+                              Title="Login to Gitea server"
+                              Width="525"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.23b：Avalonia 版 GiteaLoginWindow（对照 WPF GiteaLoginWindow.xaml 38 行 + .cs 122 行）。
+
+        对照 WPF：
+          - public partial class GiteaLoginWindow : ForkPlusDialogWindow, IServiceLoginWindow
+          - 字段: JobQueue _jobQueue / Account Account
+          - 构造函数 (Account account = null):
+            * ShowLogo=false / ShowHeader=false
+            * SubmitButtonTitle = "Sign In"
+            * ServerTextBox.Text = account?.ServerUrl
+          - IsSubmitAllowed override: Uri.TryCreate(ServerUrl) + !IsNullOrEmpty(TokenTextBox.Text)
+          - OnSubmit:
+            * 构造 PrivateAccessTokenAuthentication / Connection / GiteaService
+            * DisableEditableControls + SetStatus(InProgress, "Log in to {serverUrl}...")
+            * _jobQueue.Add("Get user", () => {
+                service.GetUser() → Dispatcher.Async(() => {
+                  if (!succeeded) EnableEditableControls + SetStatus(Error)
+                  else {
+                    if (Account != null) AccountManager.Current.LogOut(account)
+                    if (FindAccount(host, username) != null) SetStatus(Warning, "already logged in")
+                    else {
+                      PrivateAccessTokenAuthentication.Save()
+                      Account = new Account(Gitea, ...)
+                      AccountManager.Current.AddOrUpdate(account)
+                      MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes)
+                      CloseWithOk()
+                    }
+                  }
+                })
+              })
+          - OpenAccessTokenConfigurationUrlButton_Click: new Uri(ServerUrl + "/user/settings/applications").OpenInBrowser()
+
+        Avalonia 版差异：
+          1. spike 模式结构：根 Grid 4 行 = Header / Content / Footer
+          2. PreferencesLocalization.Current → ServiceLocator.Localization.Translate
+          3. PlaceholderTextBox.Placeholder → TextBox Watermark
+          4. JobQueue + Dispatcher.Async → Task.Run + Dispatcher.UIThread.Post
+          5. DisableEditableControls/EnableEditableControls → 手动禁用/启用 ServerTextBox + TokenTextBox
+          6. MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes)
+             → 注入 Action? onAccountChanged 回调（解耦）
+          7. IServiceLoginWindow 接口已在 Core（Phase 4.21b），namespace ForkPlus.Accounts
+          8. Image Source="pack://..." PNG 资源 → spike 版省略图标（Phase 4.0c 加回）
+          9. TextChanged 事件签名：EventArgs → TextChangedEventArgs
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="6,0,4,0">
+            <TextBlock Text="Log in to Gitea server"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+        </StackPanel>
+        <!-- Row 1: DescriptionTextBlock（本对话框无描述） -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="140,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Separator (Row 0, span 2) -->
+            <Separator Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8" />
+            <!-- Row 1: Server -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Server:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="ServerTextBox"
+                     Watermark="https://gitea.yourcompany.com"
+                     Margin="10,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13" />
+            <!-- Row 2: Token -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Personal Access Token:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="TokenTextBox"
+                     Watermark="Token with 'read user, read and write repository' scopes"
+                     Margin="10,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13" />
+            <!-- Row 3: Access token hint -->
+            <StackPanel Grid.Row="3" Grid.Column="1"
+                        Orientation="Horizontal"
+                        Margin="0,-6,0,0">
+                <TextBlock Name="StatusTextBlock"
+                           Margin="8,4,0,0"
+                           FontSize="12"
+                           Text="Manage " />
+                <Button Name="OpenAccessTokenConfigurationUrlButton"
+                        Content="access tokens"
+                        Margin="0"
+                        HorizontalAlignment="Left"
+                        Click="OpenAccessTokenConfigurationUrlButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
