@@ -20,7 +20,8 @@ namespace ForkPlus.Avalonia.Services
     //   - Phase 5：IMarkdownRenderer（替换 WebView2 渲染）
     //   - Phase 6.1（已完成）：IClipboardService / IDispatcher / IAppContext / IDesignModeService
     //   - Phase 6.2（已完成）：IToastNotificationService
-    //   - Phase 6.3+：IDialogService / IUserSettings / IProcessLauncher
+    //   - Phase 6.3（已完成）：IDialogService
+    //   - Phase 6.4+：IUserSettings / IProcessLauncher
     internal static class ServiceCollectionExtensions
     {
         public static void ConfigureServices(IServiceCollection services)
@@ -43,6 +44,15 @@ namespace ForkPlus.Avalonia.Services
             // 用 Avalonia.Controls.Notifications.WindowNotificationManager（三平台统一，无 OSPlatform 分支），
             // 首次 Show() 时懒加载注入主窗口可视树（不改 MainWindow.axaml）。
             services.AddSingleton<IToastNotificationService, AvaloniaToastNotificationService>();
+
+            // Phase 6.3：IDialogService 的 Avalonia 实现
+            // 对照 WPF 工程 src/ForkPlus/UI/OpenDialog.cs（用 Microsoft-WindowsAPICodePack-Shell，Windows-only）：
+            //   - CommonOpenFileDialog (IsFolderPicker=true/false) → TopLevel.StorageProvider.OpenFilePickerAsync / OpenFolderPickerAsync
+            //   - CommonSaveFileDialog → （接口暂未抽 ShowSaveFileDialog，留待后续 Phase 补充）
+            //   - WPF MessageBox.Show（49 处调用）→ 构造简单 Window + ShowDialog(owner) 模态显示
+            //   - ForkPlus.UI.Dialogs.ErrorWindow → ShowError 同样走 ShowDialog 模态窗口
+            // 用 Avalonia 11 StorageProvider API（三平台统一，不引入任何 Windows-only 包）。
+            services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）
