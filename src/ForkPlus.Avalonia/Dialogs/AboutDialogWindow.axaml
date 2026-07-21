@@ -83,6 +83,12 @@
                        FontSize="11"
                        Margin="0,4,0,0"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+            <!-- 对照 WPF: LegalHyperlink → 弹出 LegalWindow 显示第三方许可证 -->
+            <Button Name="LegalButton"
+                    HorizontalAlignment="Center"
+                    Margin="0,12,0,0"
+                    Padding="4,2"
+                    Click="LegalButton_Click" />
         </StackPanel>
     </Grid>
 </dialogs:ForkPlusDialogWindow>

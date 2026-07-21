@@ -3,10 +3,11 @@ using System.Diagnostics;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using ForkPlus.Services;
 
 namespace ForkPlus.Avalonia.Dialogs
 {
-    // Phase 4.12a：Avalonia 版 AboutDialogWindow（第一个对话框 spike，验证 ForkPlusDialogWindow 基类）。
+    // Phase 4.12a：Avalonia 版 AboutDialogWindow（完整迁移版，对照 WPF AboutWindow.xaml.cs）。
     //
     // 对照 WPF 工程 src/ForkPlus/UI/Dialogs/AboutWindow.xaml.cs（44 行）：
     //   - public partial class AboutWindow : ForkPlusDialogWindow
@@ -18,18 +19,12 @@ namespace ForkPlus.Avalonia.Dialogs
     //   - LegalHyperlink_RequestNavigate: new LegalWindow().ShowDialog()
     //   - Translate: PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage)
     //
-    // Avalonia 版差异（spike 简化策略）：
-    //   1. spike 版 ShowFooter=false（与 WPF 一致，没有 Submit/Cancel 按钮）
-    //   2. spike 版不调 SetFooter（ShowFooter=false 时基类 OnCancel 不会被 ESC 触发）
-    //   3. spike 版不接入 PreferencesLocalization.Translate（直接用字面量英文）
-    //   4. spike 版用 Button + Click 替代 Hyperlink.RequestNavigate
-    //   5. spike 版不弹 LegalWindow（Phase 4.12b 再迁）
-    //   6. 版本号读取：与 Phase 1 AboutWindow 一致，从 AssemblyInformationalVersionAttribute
-    //
-    // 本 spike 版验证：
-    //   - ForkPlusDialogWindow 基类继承链工作（CustomWindow → Window + 基类 API 可用）
-    //   - 子类设置 DialogTitle 同步 Window.Title
-    //   - ShowFooter=false 时窗口无 Footer 也能正确显示
+    // Avalonia 版完整迁移差异：
+    //   1. ShowFooter=false（与 WPF 一致，没有 Submit/Cancel 按钮）
+    //   2. 集成 ServiceLocator.Localization（PreferencesLocalization.Translate → ServiceLocator.Localization.Translate）
+    //   3. 用 Button + Click 替代 Hyperlink.RequestNavigate（Avalonia 11 跨平台更稳）
+    //   4. LegalButton 点击弹出 LegalWindow（已在 Phase 4.4b 迁移）
+    //   5. 版本号读取 AssemblyInformationalVersionAttribute（fallback 到 GetName().Version）
     public partial class AboutDialogWindow : ForkPlusDialogWindow
     {
         public AboutDialogWindow()
@@ -40,24 +35,49 @@ namespace ForkPlus.Avalonia.Dialogs
             InitializeComponent();
 
             // 对照 WPF: Translate("About " + App.AppName)
-            DialogTitle = "About ForkPlus";
-            Title = "About ForkPlus";
+            string title = Translate("About ForkPlus");
+            DialogTitle = title;
+            Title = title;
 
             // 对照 WPF: VersionTextBlock.Text = string.Format(Translate("Version {0}"), App.Version)
-            VersionTextBlock.Text = string.Format("Version {0}", GetVersion());
+            VersionTextBlock.Text = string.Format(Translate("Version {0}"), GetVersion());
 
             // 对照 WPF: CopyrightTextBlock.Text = string.Format(Translate("Copyright © {0} Hebin"), DateTime.Now.Year)
-            CopyrightTextBlock.Text = string.Format("Copyright © {0} Hebin", DateTime.Now.Year);
+            CopyrightTextBlock.Text = string.Format(Translate("Copyright © {0} Hebin"), DateTime.Now.Year);
+
+            // 对照 WPF: LegalHyperlink → new LegalWindow().ShowDialog()
+            LegalButton.Content = Translate("Legal");
         }
 
         // 对照 WPF: private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-        // spike 版用 Button.Click + Tag=URL
         private void AuthorLinkButton_Click(object? sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string url)
             {
                 OpenUrl(url);
             }
+        }
+
+        // 对照 WPF: private void LegalHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        //   → new LegalWindow().ShowDialog()
+        private async void LegalButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var legalWindow = new LegalWindow();
+            await legalWindow.ShowDialog(this);
+        }
+
+        // 对照 WPF: private static string Translate(string text)
+        //   return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+        // Phase 0.4b 完成后，ILocalizationService 已注册到 ServiceLocator
+        private static string Translate(string text)
+        {
+            var localization = ServiceLocator.Localization;
+            var userSettings = ServiceLocator.UserSettings;
+            if (localization != null && userSettings != null)
+            {
+                return localization.Translate(text, userSettings.UiLanguage);
+            }
+            return text;
         }
 
         private static string GetVersion()
