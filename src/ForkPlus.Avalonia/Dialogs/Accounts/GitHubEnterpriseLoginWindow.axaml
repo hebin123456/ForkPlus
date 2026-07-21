@@ -1,0 +1,92 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Dialogs.Accounts.GitHubEnterpriseLoginWindow"
+                              Title="Login to GitHub Enterprise Server"
+                              Width="450"
+                              SizeToContent="Height"
+                              CanResize="False"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Phase 4.28b：Avalonia 版 GitHubEnterpriseLoginWindow（对照 WPF GitHubEnterpriseLoginWindow.xaml 38 行 + .cs 122 行）。
+
+        对照 WPF：
+          - public partial class GitHubEnterpriseLoginWindow : ForkPlusDialogWindow, IServiceLoginWindow
+          - 字段: JobQueue / Account / ServerTextBox + TokenTextBox（双字段，与 GiteaLoginWindow 同构）
+          - IsSubmitAllowed override: Uri.TryCreate(ServerUrl) + !IsNullOrEmpty(Token)
+          - OnSubmit: 构造 PrivateAccessTokenAuthentication + Connection + GitHubService(gitHubEnterprise: true)
+            → service.GetUser() → 成功则 LogOut 旧 + 防重复 + 创建新 Account + AddOrUpdate
+          - OpenPersonalAccessTokenConfigurationUrlButton_Click: 打开 ServerUrl + "/settings/tokens/new?..."
+
+        结构与 GiteaLoginWindow 几乎完全一致（仅 RemoteType / Service 类不同 + 防重复检查）。
+    -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="6,0,4,0">
+            <TextBlock Text="Log in to GitHub Enterprise Server"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+        </StackPanel>
+        <!-- Row 1: DescriptionTextBlock -->
+        <TextBlock Grid.Row="1"
+                   Name="DescriptionTextBlock"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 2: Content -->
+        <Grid Grid.Row="2" ColumnDefinitions="140,*" Margin="0,4,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- Separator (Row 0, span 2) -->
+            <Separator Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8" />
+            <!-- Server (Row 1) -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Server:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="ServerTextBox"
+                     Watermark="https://github.yourcompany.com"
+                     Margin="10,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13" />
+            <!-- Token (Row 2) -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Personal Access Token:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="TokenTextBox"
+                     Watermark="Token"
+                     Margin="10,4,0,4"
+                     Padding="4,2,4,2"
+                     FontSize="13" />
+            <!-- Access token hint (Row 3) -->
+            <StackPanel Grid.Row="3" Grid.Column="1"
+                        Orientation="Horizontal"
+                        Margin="0,-6,0,0">
+                <TextBlock Name="StatusTextBlock"
+                           Margin="8,4,0,0"
+                           FontSize="12"
+                           Text="Manage " />
+                <Button Name="OpenPersonalAccessTokenConfigurationUrlButton"
+                        Content="personal access tokens"
+                        Margin="0"
+                        HorizontalAlignment="Left"
+                        Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="3" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>
