@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -438,7 +439,20 @@ namespace ForkPlus.UI.Dialogs
 					});
 
 					// 流式输出：onChunk 回调实时追加到 _streamingMarkdown，节流渲染到 WebView2
-					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(historySnapshot, systemPrompt, requirement, monitor, delegate(string delta)
+				// 工具调用循环：AI 可通过 <list_dir>/<read_file> 标签请求读取仓库文件/目录，
+				// 本地执行后把结果作为新 user 消息续发，直到 AI 不再请求工具或达到最大轮数。
+				ServiceResult<OpenAiResponse> result = null;
+				string currentRequirement = requirement;
+				List<JObject> currentHistory = historySnapshot;
+				const int MaxToolRounds = 8;
+				for (int toolRound = 0; toolRound <= MaxToolRounds; toolRound++)
+				{
+					// 每轮重置流式缓冲（工具调用中间轮次的内容不展示给用户，只展示最终回复）
+					if (toolRound > 0)
+					{
+						lock (_streamingLock) { _streamingMarkdown = null; }
+					}
+					result = aiService.OpenAiRequestStreamingWithRetry(currentHistory, systemPrompt, currentRequirement, monitor, delegate(string delta)
 						{
 							if (string.IsNullOrEmpty(delta))
 							{
@@ -457,7 +471,36 @@ namespace ForkPlus.UI.Dialogs
 								TryRenderStreamingPreview();
 							});
 						});
-						if (monitor.IsCanceled)
+					if (monitor.IsCanceled)
+					{
+						break;
+					}
+					if (!result.Succeeded)
+					{
+						break;
+					}
+					// 检测 AI 回复里是否含工具调用标签
+				string roundResponse = result.Result.Message;
+				FileToolRequest toolRequest = ParseFileToolRequest(roundResponse);
+				if (toolRequest == null)
+				{
+					// 无工具调用，退出循环，走正常文件变更解析流程
+					break;
+				}
+				// 执行工具，把结果作为新 user 消息续发
+				string toolResult = ExecuteFileTool(toolRequest, monitor);
+				// 把 AI 的工具请求 + 工具结果加入历史（保持上下文连贯）
+				JObject toolAssistantMsg = new JObject();
+				toolAssistantMsg["role"] = "assistant";
+				toolAssistantMsg["content"] = roundResponse;
+					JObject toolResultMsg = new JObject();
+					toolResultMsg["role"] = "user";
+					toolResultMsg["content"] = toolResult;
+					currentHistory = new List<JObject>(currentHistory) { toolAssistantMsg, toolResultMsg };
+					currentRequirement = toolResult;
+					// 继续下一轮请求
+				}
+					if (monitor.IsCanceled)
 					{
 						// 取消可能由 Stop 按钮触发，此时位于后台线程；
 						// FinishRequest 会操作 UI 元素，需切回 UI 线程执行。
@@ -1245,18 +1288,198 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>
-		/// 构建系统提示（固定指令部分，不含用户需求）。
-		/// 多轮对话中 system 消息只发一次，用户需求作为独立的 user 消息发送。
-		/// </summary>
-		private string BuildSystemPrompt()
+	/// <summary>AI 请求的文件工具类型（list_dir / read_file）。</summary>
+	private enum FileToolKind { ListDir, ReadFile }
+
+	/// <summary>从 AI 回复中解析出的单个文件工具请求。</summary>
+	private sealed class FileToolRequest
+	{
+		public FileToolKind Kind;
+		public string Path; // 相对仓库根的路径
+	}
+
+	// 匹配 <list_dir>path</list_dir> 或 <read_file>path</read_file>（路径允许跨行空白被 trim）
+	private static readonly Regex FileToolRegex = new Regex(
+		@"<(list_dir|read_file)>\s*([^\n<]*?)\s*</\1>",
+		RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+	/// <summary>从 AI 回复文本里解析出第一个文件工具请求；无则返回 null。</summary>
+	private static FileToolRequest ParseFileToolRequest(string aiResponse)
+	{
+		if (string.IsNullOrWhiteSpace(aiResponse))
 		{
-			string repoPath = _gitModule?.Path ?? "";
+			return null;
+		}
+		Match m = FileToolRegex.Match(aiResponse);
+		if (!m.Success)
+		{
+			return null;
+		}
+		string tag = m.Groups[1].Value.ToLowerInvariant();
+		string path = m.Groups[2].Value.Trim();
+		return new FileToolRequest
+		{
+			Kind = tag == "read_file" ? FileToolKind.ReadFile : FileToolKind.ListDir,
+			Path = path
+		};
+	}
+
+	/// <summary>本地执行文件工具请求，返回要回填给 AI 的结果文本（以 user 角色续发）。</summary>
+	private string ExecuteFileTool(FileToolRequest request, JobMonitor monitor)
+	{
+		string repoRoot = _gitModule?.Path;
+		if (string.IsNullOrWhiteSpace(repoRoot) || !Directory.Exists(repoRoot))
+		{
+			return "[tool error] repository path is not available.";
+		}
+		// 安全校验：路径必须在仓库根目录内，禁止 .. 越界
+		string relPath = string.IsNullOrWhiteSpace(request.Path) ? "." : request.Path.Trim().Replace('/', '\\').TrimStart('\\');
+		string fullPath;
+		try
+		{
+			// "." 表示仓库根
+			if (relPath == "." || relPath == "")
+			{
+				fullPath = Path.GetFullPath(repoRoot);
+			}
+			else
+			{
+				fullPath = Path.GetFullPath(Path.Combine(repoRoot, relPath));
+			}
+			string rootWithSep = Path.GetFullPath(repoRoot).TrimEnd('\\') + "\\";
+			if (!fullPath.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase) && !string.Equals(fullPath, Path.GetFullPath(repoRoot).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+			{
+				return $"[tool error] path '{request.Path}' is outside the repository. Only paths inside the repository root are allowed.";
+			}
+		}
+		catch (Exception ex)
+		{
+			return $"[tool error] invalid path '{request.Path}': {ex.Message}";
+		}
+
+		base.Dispatcher.Async(delegate
+		{
+			AddStatusMessage(PreferencesLocalization.FormatCurrent(
+				request.Kind == FileToolKind.ReadFile ? "读取文件: {0}" : "列出目录: {0}",
+				request.Path), Brushes.Gray);
+		});
+
+		try
+		{
+			if (request.Kind == FileToolKind.ListDir)
+			{
+				return ListDirectoryAsText(fullPath, relPath);
+			}
+			else
+			{
+				return ReadFileAsText(fullPath, relPath);
+			}
+		}
+		catch (Exception ex)
+		{
+			return $"[tool error] {ex.Message}";
+		}
+	}
+
+	/// <summary>列出目录条目（含文件/子目录标记），屏蔽 .git 内部。</summary>
+	private static string ListDirectoryAsText(string fullPath, string relPath)
+	{
+		if (!Directory.Exists(fullPath))
+		{
+			if (File.Exists(fullPath))
+			{
+				return $"[tool error] '{relPath}' is a file, not a directory. Use <read_file> to read it.";
+			}
+			return $"[tool error] directory '{relPath}' does not exist.";
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.AppendLine($"[list_dir result for '{relPath}']");
+		var di = new DirectoryInfo(fullPath);
+		FileSystemInfo[] entries;
+		try
+		{
+			entries = di.GetFileSystemInfos()
+				.Where(e => !e.Name.Equals(".git", StringComparison.OrdinalIgnoreCase))
+				.OrderBy(e => e is DirectoryInfo ? 0 : 1)
+				.ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+				.ToArray();
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return $"[tool error] access denied when listing '{relPath}'.";
+		}
+		foreach (var e in entries)
+		{
+			sb.AppendLine(e is DirectoryInfo ? $"[dir]  {e.Name}/" : $"[file] {e.Name}");
+		}
+		if (entries.Length == 0)
+		{
+			sb.AppendLine("(empty)");
+		}
+		return sb.ToString();
+	}
+
+	/// <summary>读取文件文本内容，超大文件截断。二进制文件拒绝读取。</summary>
+	private static string ReadFileAsText(string fullPath, string relPath)
+	{
+		if (!File.Exists(fullPath))
+		{
+			if (Directory.Exists(fullPath))
+			{
+				return $"[tool error] '{relPath}' is a directory, not a file. Use <list_dir> to list it.";
+			}
+			return $"[tool error] file '{relPath}' does not exist.";
+		}
+		var fi = new FileInfo(fullPath);
+		const long MaxFileBytes = 512 * 1024; // 512KB 上限，避免把超大文件灌进上下文
+		if (fi.Length > MaxFileBytes)
+		{
+			return $"[tool error] file '{relPath}' is too large ({fi.Length} bytes > {MaxFileBytes} limit). Ask the user to paste the relevant portion.";
+		}
+		// 简单二进制检测：读前 4KB 检查是否含 NUL 字节
+		byte[] probe = new byte[Math.Min(4096, fi.Length)];
+		using (FileStream fs = File.OpenRead(fullPath))
+		{
+			fs.Read(probe, 0, probe.Length);
+		}
+		if (Array.IndexOf(probe, (byte)0) >= 0)
+		{
+			return $"[tool error] file '{relPath}' appears to be binary and cannot be read as text.";
+		}
+		string content = File.ReadAllText(fullPath);
+		StringBuilder sb = new StringBuilder();
+		sb.AppendLine($"[read_file result for '{relPath}' ({fi.Length} bytes)]");
+		sb.AppendLine("```");
+		sb.Append(content);
+		sb.AppendLine("```");
+		return sb.ToString();
+	}
+
+	/// <summary>
+	/// 构建系统提示（固定指令部分，不含用户需求）。
+	/// 多轮对话中 system 消息只发一次，用户需求作为独立的 user 消息发送。
+	/// </summary>
+	private string BuildSystemPrompt()
+	{
+		string repoPath = _gitModule?.Path ?? "";
 			string prompt = $@"You are an AI coding assistant integrated into ForkPlus, a Git client.
 Current repository path: {repoPath}
 
-IMPORTANT — YOU CANNOT READ THE LOCAL FILESYSTEM.
-You are a remote language model invoked over HTTP. ForkPlus does NOT send repository file contents to you automatically, and you have NO tooling to list, open, or read files on the user's machine. Do NOT attempt to ""read"", ""open"", ""list"", or ""access"" directories or files, and do NOT claim that you lack permission to do so — you simply have no such capability by design. If you need to know the current content of a file in order to modify it, ASK the user to paste it (or the relevant portion) in their next message. Never respond with errors like ""no permission"" / ""cannot access directory"" / ""unable to read"".
+YOU HAVE FILESYSTEM READ ACCESS (read-only, within the repository).
+ForkPlus executes file-reading requests locally on your behalf. To inspect the repository, emit ONE request tag on its own line and STOP — ForkPlus will execute it locally and feed the result back to you in the next turn. You may interleave multiple requests across turns, but only ONE tag per turn.
+
+Available request tags:
+- List a directory (returns entries, not file contents):
+  <list_dir>relative/path</list_dir>
+  Use ""."" for the repository root. Paths are relative to the repository root.
+- Read a file (returns its text content, truncated if very large):
+  <read_file>relative/path</read_file>
+
+Rules:
+- Paths MUST be relative to the repository root. NEVER use absolute paths or paths outside the repository.
+- These tools are READ-ONLY. You cannot create, modify, or delete files via these tags — use the ===FILE=== format below for actual changes.
+- After emitting a request tag, output nothing else in that turn. Wait for the result.
+- Do NOT claim you lack permission or cannot access the filesystem. If a path does not exist, ForkPlus will tell you.
 
 Analyze the user's requirement and generate necessary code changes.
 Respond with structured file changes in the following format for each file you want to modify:
