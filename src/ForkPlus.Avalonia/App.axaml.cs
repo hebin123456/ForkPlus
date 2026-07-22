@@ -129,32 +129,9 @@ namespace ForkPlus.Avalonia
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // 对照 WPF App.InitializeForkInstance()（App.xaml.cs line 874）：
-                // Guid 为空表示首次启动，需弹出 WelcomeWindow 收集用户名/邮箱/默认克隆目录。
-                // spike 版 WelcomeWindow 通过构造函数注入 callback 解耦 RepositoryManager /
-                // Application.Current.Shutdown，故这里提供 3 个 callback：
-                //   - onSetSourceDir：spike 跳过（RepositoryManager.Instance.SetSourceDirs 是 WPF-only）
-                //   - onRescanRepositories：spike 跳过（RescanUserRepositoriesCommand 依赖 RepositoryUserControl）
-                //   - onShutdown：错误时调用 desktop.Shutdown()
-                // 用户取消 Welcome（按 Cancel）时调用 Shutdown 终止启动流程。
-                if (string.IsNullOrEmpty(ForkPlusSettings.Default.Guid))
-                {
-                    var welcome = new WelcomeWindow(
-                        onSetSourceDir: null,
-                        onRescanRepositories: null,
-                        onShutdown: () => ShutdownApplication());
-                    welcome.ShowDialog(desktop.MainWindow);
-                    // WelcomeWindow 是模态对话框，ShowDialog 会阻塞直到关闭。
-                    // 用户取消（未设置 Guid）则 Shutdown 退出；用户提交则会写入 Guid。
-                    if (string.IsNullOrEmpty(ForkPlusSettings.Default.Guid))
-                    {
-                        ShutdownApplication();
-                        return;
-                    }
-                }
-
-                // Phase 3.1：启动 MainWindow 作为主窗口（spike 骨架版）
-                // Phase 1 的 AboutWindow 保留（通过菜单可达）
+                // 修复：先创建 MainWindow 并赋值给 desktop.MainWindow，
+                // 否则下方 WelcomeWindow.ShowDialog(desktop.MainWindow) 会传 null owner 导致崩溃。
+                // desktop lifetime 会在 OnFrameworkInitializationCompleted 返回后自动显示 MainWindow。
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                 desktop.MainWindow = mainWindow;
 
@@ -163,6 +140,25 @@ namespace ForkPlus.Avalonia
                 // 暴露，订阅后在应用退出时优雅关闭 Host，确保后台服务
                 // （如 GitOperationQueue）正确释放资源。
                 desktop.Exit += OnDesktopExit;
+
+                // 对照 WPF App.InitializeForkInstance()（App.xaml.cs line 874）：
+                // Guid 为空表示首次启动，需弹出 WelcomeWindow 收集用户名/邮箱/默认克隆目录。
+                // 必须在 desktop.MainWindow 赋值之后调用，用 mainWindow 作 owner。
+                // WelcomeWindow 是模态对话框，ShowDialog 会阻塞直到关闭。
+                // 用户取消（未设置 Guid）则 Shutdown 退出；用户提交则会写入 Guid。
+                if (string.IsNullOrEmpty(ForkPlusSettings.Default.Guid))
+                {
+                    var welcome = new WelcomeWindow(
+                        onSetSourceDir: null,
+                        onRescanRepositories: null,
+                        onShutdown: () => ShutdownApplication());
+                    welcome.ShowDialog(mainWindow);
+                    if (string.IsNullOrEmpty(ForkPlusSettings.Default.Guid))
+                    {
+                        ShutdownApplication();
+                        return;
+                    }
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

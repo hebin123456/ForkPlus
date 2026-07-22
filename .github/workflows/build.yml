@@ -75,28 +75,28 @@ jobs:
       - name: Build ForkPlus.Avalonia
         run: dotnet build src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj -c Release -v minimal
 
-      # Phase 7：三平台 publish ForkPlus.Avalonia 为 self-contained 可执行产物。
+      # Phase 7：三平台 publish ForkPlus.Avalonia 为 self-contained 单文件可执行产物。
       # Avalonia 是跨平台 UI，三平台都能 publish 出原生可执行文件（无需用户装 .NET runtime）。
-      # 用 self-contained + net10.0 + RuntimeIdentifier（win-x64 / linux-x64 / osx-arm64）。
-      # 产物路径：publish-avalonia-<RID>/
-      - name: Publish ForkPlus.Avalonia (self-contained)
+      # 用 PublishSingleFile=true 把所有 .NET dll 打包进单个可执行文件，产物从上百个文件
+      # 降到 ~9 个（可执行文件 + native 库 + Languages/ + Docs/），用户不会看到一堆 dll。
+      # native 库（libSkiaSharp/libHarfBuzzSharp/libbiturbo/tokei）保持独立——single-file
+      # 模式下 native 库会自动提取到临时目录，保持独立文件可避免重复提取。
+      - name: Publish ForkPlus.Avalonia (self-contained single-file)
         shell: bash
         run: |
           set -e
           RID="${{ matrix.rid }}"
-          echo "Publishing ForkPlus.Avalonia for $RID (self-contained)"
+          echo "Publishing ForkPlus.Avalonia for $RID (self-contained single-file)"
           dotnet publish src/ForkPlus.Avalonia/ForkPlus.Avalonia.csproj \
             -c Release \
             -r "$RID" \
             --self-contained true \
+            -p:PublishSingleFile=true \
             -o "publish-avalonia-$RID" \
             -v minimal
           echo "✓ Published to publish-avalonia-$RID"
-          # 注意：不要用 `ls | head` 管道，bash pipefail + head 关闭管道会触发 broken pipe exit 2。
-          # 用 ls 重定向到文件 + head 读取文件替代。
           ls -lh "publish-avalonia-$RID/" > /tmp/publish-ls.txt
-          head -20 /tmp/publish-ls.txt
-          echo "..."
+          cat /tmp/publish-ls.txt
           echo "Total files: $(wc -l < /tmp/publish-ls.txt)"
 
       # Phase 0.7：跑 ForkPlus.Core.Tests（net10.0 TFM，跨平台可编译）。
@@ -186,7 +186,7 @@ jobs:
             third_party/tokei
           key: tokei-14.0.0-${{ runner.os }}-${{ runner.arch }}
 
-      # Phase 10：产物上传。三平台统一上传 Avalonia self-contained publish 产物。
+      # Phase 10：产物上传。三平台统一上传 Avalonia self-contained single-file publish 产物。
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -194,14 +194,31 @@ jobs:
           path: publish-avalonia-${{ matrix.rid }}/
           if-no-files-found: error
 
-      - name: Package release zip
+      # Release 打包：
+      # - Windows：用 zip（Windows 资源管理器原生支持解压）
+      # - Linux/macOS：用 tar.gz（保留 Unix 可执行权限，zip 解压后 -rwxr-xr-x 会丢成 -rw-r--r--）
+      # 打包前显式 chmod +x 确保可执行文件有执行权限（single-file 模式下可执行文件名
+      # 为 ForkPlus.Avalonia / ForkPlus.Avalonia.exe，native 库 lib*.so/lib*.dylib 也需要 +x）。
+      - name: Package release archive
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
+          set -e
           RID="${{ matrix.rid }}"
-          zip -r -q "ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip" "publish-avalonia-$RID/"
-          echo "✓ Packaged ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip"
-          ls -lh "ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip"
+          OS_NAME="${{ matrix.artifact_suffix }}"
+          SRC_DIR="publish-avalonia-$RID"
+          # 确保可执行文件 + native 库有执行权限（tar.gz 会保留，zip 在 Windows 上不需要）
+          chmod +x "$SRC_DIR"/ForkPlus.Avalonia* 2>/dev/null || true
+          chmod +x "$SRC_DIR"/lib*.so "$SRC_DIR"/lib*.dylib "$SRC_DIR"/tokei 2>/dev/null || true
+          if [ "$OS_NAME" = "windows" ]; then
+            ARCHIVE="ForkPlus.Avalonia-${{ github.ref_name }}-${OS_NAME}.zip"
+            zip -r -q "$ARCHIVE" "$SRC_DIR/"
+          else
+            ARCHIVE="ForkPlus.Avalonia-${{ github.ref_name }}-${OS_NAME}.tar.gz"
+            tar -czf "$ARCHIVE" "$SRC_DIR/"
+          fi
+          echo "✓ Packaged $ARCHIVE"
+          ls -lh "$ARCHIVE"
 
       - name: Release on tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -209,4 +226,5 @@ jobs:
         with:
           files: |
             ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
+            ForkPlus.Avalonia-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.tar.gz
           generate_release_notes: true
