@@ -137,77 +137,77 @@ namespace ForkPlus.Avalonia.Views
         private static IEnumerable<MenuItem> CreateFileMenuItems()
         {
             // 对照 WPF: commands.ShowCreateRepositoryWindow.CreateMenuItem(...)
-            // spike 简化：每个菜单项 Click 空实现（命令是空壳）
-            yield return CreateMenuItem("New Repository", () => MainWindow.Commands.ShowCreateRepositoryWindow.Execute(null));
-            yield return CreateMenuItem("Clone Repository", () => MainWindow.Commands.ShowCloneWindow.Execute(null));
-            yield return CreateMenuItem("Init git mm Repository", () => MainWindow.Commands.ShowInitGitMmRepositoryWindow.Execute(null));
+            // 调用 MainWindow.Instance 公共方法（替代空壳 RelayCommand.Execute）
+            yield return CreateMenuItem("New Repository", () => { });  // spike 跳过（依赖 ShowCreateRepositoryWindow）
+            yield return CreateMenuItem("Clone Repository", () => MainWindow.Instance?.ShowCloneWindow());
+            yield return CreateMenuItem("Init git mm Repository", () => { });  // spike 跳过
             yield return CreateSeparator();
-            yield return CreateMenuItem("New Tab", () => MainWindow.Commands.NewTab.Execute(null));
+            yield return CreateMenuItem("New Tab", () => { });  // spike 单 tab
             yield return CreateMenuItem("Open Repository", () => MainWindow.Instance?.OpenRepositoryViaDialog());
-            yield return CreateMenuItem("Quick Launch", () => MainWindow.Commands.ShowQuickLaunchWindow.Execute(null));
-            yield return CreateMenuItem("Close Tab", () => MainWindow.Commands.CloseActiveTab.Execute(null));
+            yield return CreateMenuItem("Quick Launch", () => { });  // spike 跳过
+            yield return CreateMenuItem("Close Tab", () => { });  // spike 单 tab
             yield return CreateSeparator();
-            yield return CreateMenuItem("Configure SSH Keys", () => MainWindow.Commands.ShowConfigureSSHKeysWindow.Execute(null));
-            yield return CreateMenuItem("Accounts", () => MainWindow.Commands.ShowAccountsWindow.Execute(null));
+            yield return CreateMenuItem("Configure SSH Keys", () => MainWindow.Instance?.ShowConfigureSshKeysWindow());
+            yield return CreateMenuItem("Accounts", () => MainWindow.Instance?.ShowAccountsWindow());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Preferences", () => MainWindow.Commands.ShowPreferencesWindow.Execute(null));
+            yield return CreateMenuItem("Preferences", () => MainWindow.Instance?.ShowPreferencesWindow());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Exit", () => MainWindow.Commands.ExitApplication.Execute(null));
+            yield return CreateMenuItem("Exit", () => MainWindow.Instance?.ExitApplication());
         }
 
         private static IEnumerable<MenuItem> CreateViewMenuItems()
         {
-            yield return CreateMenuItem("Commit View", () => MainWindow.Commands.ActivateCommitView.Execute(null));
-            yield return CreateMenuItem("Revision List", () => MainWindow.Commands.ActivateRevisionList.Execute(null));
+            yield return CreateMenuItem("Commit View", () => MainWindow.Instance?.ActivateCommitView());
+            yield return CreateMenuItem("Revision List", () => MainWindow.Instance?.ActivateRevisionList());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Show HEAD", () => MainWindow.Commands.ShowHead.Execute(null));
+            yield return CreateMenuItem("Show HEAD", () => { });  // spike 跳过（依赖 RevisionListView.SelectHEAD）
             yield return CreateSeparator();
-            yield return CreateMenuItem("Hide Tags", () => MainWindow.Commands.ToggleHideTags.Execute(null));
-            yield return CreateMenuItem("Hide Stashes", () => MainWindow.Commands.ToggleHideStashesInRevisionList.Execute(null));
-            yield return CreateMenuItem("Show Lost Commits (Reflog)", () => MainWindow.Commands.ToggleShowReflogInRevisionList.Execute(null));
-            yield return CreateMenuItem("Collapse All Merge Revisions", () => MainWindow.Commands.ToggleCollapseAllMergeRevisions.Execute(null));
-            yield return CreateMenuItem("Filter by Active Branch", () => MainWindow.Commands.ToggleReferenceFilter.Execute(null));
+            yield return CreateMenuItem("Hide Tags", () => { });  // spike 跳过（依赖 ReferenceFilter）
+            yield return CreateMenuItem("Hide Stashes", () => { });
+            yield return CreateMenuItem("Show Lost Commits (Reflog)", () => { });
+            yield return CreateMenuItem("Collapse All Merge Revisions", () => { });
+            yield return CreateMenuItem("Filter by Active Branch", () => { });
         }
 
         private static IEnumerable<MenuItem> CreateRepositoryMenuItems()
         {
-            yield return CreateMenuItem("Refresh Repository Data", () => MainWindow.Commands.RefreshRepositoryData.Execute(null));
+            yield return CreateMenuItem("Refresh Repository Data", () => MainWindow.Instance?.RefreshRepositoryData());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Fetch", () => MainWindow.Commands.ShowFetchWindow.Execute(null));
-            yield return CreateMenuItem("Pull", () => MainWindow.Commands.ShowPullWindow.Execute(null));
-            yield return CreateMenuItem("Push", () => MainWindow.Commands.ShowPushWindow.Execute(null));
+            yield return CreateMenuItem("Fetch", () => MainWindow.Instance?.ShowFetchWindow());
+            yield return CreateMenuItem("Pull", () => MainWindow.Instance?.ShowPullWindow());
+            yield return CreateMenuItem("Push", () => MainWindow.Instance?.ShowPushWindow());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Save Stash", () => MainWindow.Commands.ShowSaveStashWindow.Execute(null));
+            yield return CreateMenuItem("Save Stash", () => MainWindow.Instance?.ShowSaveStashWindow());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Create Branch", () => MainWindow.Commands.ShowCreateBranchWindow.Execute(null));
-            yield return CreateMenuItem("Create Tag", () => MainWindow.Commands.ShowCreateTagWindow.Execute(null));
-            yield return CreateMenuItem("Create Worktree", () => MainWindow.Commands.ShowCreateWorktreeWindow.Execute(null));
+            yield return CreateMenuItem("Create Branch", () => MainWindow.Instance?.ShowCreateBranchWindow());
+            yield return CreateMenuItem("Create Tag", () => MainWindow.Instance?.ShowCreateTagWindow());
+            yield return CreateMenuItem("Create Worktree", () => { });  // spike 跳过
             yield return CreateSeparator();
             yield return CreateMenuItem("Apply Patch", () => { });
             yield return CreateSeparator();
-            yield return CreateMenuItem("Open in File Explorer", () => MainWindow.Commands.OpenRepositoryInFileExplorer.Execute(null));
-            yield return CreateMenuItem("Open in Shell", () => MainWindow.Commands.OpenRepositoryInShellTool.Execute(null));
+            yield return CreateMenuItem("Open in File Explorer", () => MainWindow.Instance?.OpenRepositoryInFileExplorer());
+            yield return CreateMenuItem("Open in Shell", () => MainWindow.Instance?.OpenRepositoryInShell());
         }
 
         private static IEnumerable<MenuItem> CreateWindowMenuItems()
         {
-            yield return CreateMenuItem("Previous Tab", () => MainWindow.Commands.SelectPreviousTab.Execute(null));
-            yield return CreateMenuItem("Next Tab", () => MainWindow.Commands.SelectNextTab.Execute(null));
+            yield return CreateMenuItem("Previous Tab", () => { });  // spike 单 tab
+            yield return CreateMenuItem("Next Tab", () => { });  // spike 单 tab
             yield return CreateSeparator();
-            yield return CreateMenuItem("Switch Theme", () => MainWindow.Commands.SwitchApplicationTheme.Execute(null));
+            yield return CreateMenuItem("Switch Theme", () => MainWindow.Instance?.SwitchApplicationTheme());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Increase Layout Scale", () => MainWindow.Commands.IncreaseLayoutScale.Execute(null));
-            yield return CreateMenuItem("Decrease Layout Scale", () => MainWindow.Commands.DecreaseLayoutScale.Execute(null));
+            yield return CreateMenuItem("Increase Layout Scale", () => { });  // spike 跳过
+            yield return CreateMenuItem("Decrease Layout Scale", () => { });  // spike 跳过
         }
 
         private static IEnumerable<MenuItem> CreateAboutMenuItems()
         {
-            yield return CreateMenuItem("Check for Updates", () => MainWindow.Commands.UpdateApplication.Execute(null));
+            yield return CreateMenuItem("Check for Updates", () => { });  // spike 跳过
             yield return CreateSeparator();
-            yield return CreateMenuItem("Keyboard Shortcuts", () => MainWindow.Commands.OpenKeyboardShortcuts.Execute(null));
-            yield return CreateMenuItem("Performance Diagnostics", () => MainWindow.Commands.ShowPerformanceDiagnosticsWindow.Execute(null));
+            yield return CreateMenuItem("Keyboard Shortcuts", () => { });  // spike 跳过
+            yield return CreateMenuItem("Performance Diagnostics", () => { });  // spike 跳过
             yield return CreateSeparator();
-            yield return CreateMenuItem("About ForkPlus", () => MainWindow.Commands.ShowAboutWindow.Execute(null));
+            yield return CreateMenuItem("About ForkPlus", () => MainWindow.Instance?.ShowAboutWindow());
         }
 
         // spike 版：MenuItem 工厂方法（替代 WPF commands.XXX.CreateMenuItem(handler)）

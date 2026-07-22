@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -8,6 +10,8 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ForkPlus.Avalonia.Controls;
+using ForkPlus.Avalonia.Dialogs;
+using ForkPlus.Avalonia.Dialogs.Accounts;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views.UserControls;
 using ForkPlus.Git;
@@ -394,11 +398,12 @@ namespace ForkPlus.Avalonia.Views
             // spike 版跳过刷新逻辑（spike 不接入 RefreshActiveCommitViewStatus）
         }
 
-        // ===== 菜单事件 handler（对照 WPF MainWindowMenuManager 动态构造的菜单项）=====
+        // ===== 菜单命令实现（对照 WPF MainWindowMenuManager 动态菜单 Click handler）=====
+        // public 方法供 MainWindowMenuManager.CreateMenuItem Click 调用，
+        // 替代空壳 MainWindow.Commands.XXX.Execute(null)（RelayCommand 空实现）。
+        // 对照 WPF: commands.XXX.Execute(args) → 命令树 → 实际对话框/操作
 
-        // File → Open Repository：打开文件夹选择对话框 → 创建 GitModule → OpenRepository
-        // 对照 WPF: OpenRepositoryCommand + TabManager.OpenRepository(path)
-        // public 供 MainWindowMenuManager 动态菜单 Click 调用（Commands.OpenRepository 空壳的替代）
+        // File → Open Repository（对照 WPF OpenRepositoryCommand + TabManager.OpenRepository）
         public async void OpenRepositoryViaDialog()
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -422,37 +427,193 @@ namespace ForkPlus.Avalonia.Views
             SaveSession();
         }
 
-        private void File_OpenRepository_Click(object sender, RoutedEventArgs e)
+        // File → Clone Repository（对照 WPF ShowCloneWindowCommand）
+        public void ShowCloneWindow()
         {
-            OpenRepositoryViaDialog();
+            var window = new CloneWindow(
+                url: null,
+                defaultSourceDirProvider: () => RepositoryManager.Instance.SourceDirs.FirstOrDefault() ?? "",
+                onRepositoryOpened: path =>
+                {
+                    var r = new OpenGitRepositoryGitCommand().Execute(path);
+                    if (r.Succeeded && r.Result != null)
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            _repositoryUserControl?.OpenRepository(r.Result);
+                            RefreshTitle();
+                            SaveSession();
+                        });
+                    }
+                });
+            window.Show(this);
         }
 
-        private void File_CloneRepository_Click(object sender, RoutedEventArgs e)
+        // File → Configure SSH Keys（对照 WPF ShowConfigureSshKeysCommand）
+        public void ShowConfigureSshKeysWindow()
         {
-            Console.WriteLine("[MainWindow] Clone Repository (not yet implemented)");
+            new ConfigureSshKeysWindow().Show(this);
         }
 
-        private void File_Exit_Click(object sender, RoutedEventArgs e)
+        // File → Accounts（对照 WPF ShowAccountsWindowCommand）
+        public void ShowAccountsWindow()
+        {
+            new AccountsWindow().Show(this);
+        }
+
+        // File → Preferences（对照 WPF ShowPreferencesWindowCommand）
+        public void ShowPreferencesWindow()
+        {
+            new PreferencesWindow(onSavePreferences: () =>
+            {
+                _repositoryUserControl?.InvalidateAndRefresh();
+            }).Show(this);
+        }
+
+        // File → Exit（对照 WPF ExitApplicationCommand）
+        public void ExitApplication()
         {
             Close();
         }
 
-        private void View_ToggleToolbar_Click(object sender, RoutedEventArgs e)
+        // View → Commit View（对照 WPF ActivateCommitViewCommand）
+        public void ActivateCommitView()
         {
-            if (ToolbarContainer != null)
-                ToolbarContainer.IsVisible = !ToolbarContainer.IsVisible;
+            _repositoryUserControl?.ActivateCommitView();
         }
 
-        private void View_ToggleSidebar_Click(object sender, RoutedEventArgs e)
+        // View → Revision List（对照 WPF ActivateRevisionListCommand）
+        public void ActivateRevisionList()
         {
-            // RepositoryUserControl 内部的 Sidebar 可见性切换
-            // spike 阶段暂不实现（需要访问 RepositoryUserControl 内部控件）
-            Console.WriteLine("[MainWindow] Toggle Sidebar (not yet implemented)");
+            _repositoryUserControl?.ActivateRevisionView();
         }
 
-        private void View_Appearance_Click(object sender, RoutedEventArgs e)
+        // Repository → Refresh Repository Data（对照 WPF RefreshRepositoryDataCommand）
+        public void RefreshRepositoryData()
         {
-            // 在 Light / Dark / Dracula / SolarizedDark 4 个主题间循环切换
+            _repositoryUserControl?.InvalidateAndRefresh();
+        }
+
+        // Repository → Fetch（对照 WPF ShowFetchWindowCommand）
+        public void ShowFetchWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryRemotes remotes = _repositoryUserControl?.RepositoryData?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new FetchWindow(module, remotes, onCompleted: _ =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+            });
+            window.Show(this);
+        }
+
+        // Repository → Pull（对照 WPF ShowPullWindowCommand）
+        public void ShowPullWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryData data = _repositoryUserControl?.RepositoryData;
+            RepositoryReferences refs = data?.References ?? RepositoryReferences.Empty;
+            RepositoryRemotes remotes = data?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new PullWindow(module, refs, remotes, null, onCompleted: _ =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+            });
+            window.Show(this);
+        }
+
+        // Repository → Push（对照 WPF ShowPushWindowCommand）
+        public void ShowPushWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryData data = _repositoryUserControl?.RepositoryData;
+            RepositoryReferences refs = data?.References ?? RepositoryReferences.Empty;
+            RepositoryRemotes remotes = data?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new PushWindow(module, refs, remotes, onCompleted: _ =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+            });
+            window.Show(this);
+        }
+
+        // Repository → Save Stash（对照 WPF ShowSaveStashWindowCommand）
+        public void ShowSaveStashWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            var window = new SaveStashWindow(module, onCompleted: _ =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+            });
+            window.Show(this);
+        }
+
+        // Repository → Create Branch（对照 WPF ShowCreateBranchWindowCommand）
+        public void ShowCreateBranchWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryReferences refs = _repositoryUserControl?.RepositoryData?.References ?? RepositoryReferences.Empty;
+            var window = new CreateBranchWindow(module, refs, onCompleted: _ =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+            });
+            window.Show(this);
+        }
+
+        // Repository → Create Tag（对照 WPF ShowCreateTagWindowCommand）
+        public void ShowCreateTagWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryData data = _repositoryUserControl?.RepositoryData;
+            RepositoryReferences refs = data?.References ?? RepositoryReferences.Empty;
+            Remote[] remotes = data?.Remotes?.Items ?? Array.Empty<Remote>();
+            var window = new CreateTagWindow(module, refs, remotes, null);
+            window.Show(this);
+        }
+
+        // Repository → Open in File Explorer（对照 WPF OpenRepositoryInFileExplorerCommand）
+        public void OpenRepositoryInFileExplorer()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            try
+            {
+                var psi = new ProcessStartInfo(module.Path) { UseShellExecute = true };
+                Process.Start(psi)?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] OpenInFileExplorer failed: {ex.Message}");
+            }
+        }
+
+        // Repository → Open in Shell（对照 WPF OpenRepositoryInShellToolCommand）
+        public void OpenRepositoryInShell()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            string shell = System.OperatingSystem.IsWindows() ? "cmd.exe" : "x-terminal-emulator";
+            try
+            {
+                var psi = new ProcessStartInfo(shell)
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = module.Path
+                };
+                Process.Start(psi)?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] OpenInShell failed: {ex.Message}");
+            }
+        }
+
+        // Window → Switch Theme（对照 WPF SwitchApplicationThemeCommand）
+        public void SwitchApplicationTheme()
+        {
             ThemeType[] cycle = { ThemeType.Light, ThemeType.Dark, ThemeType.Dracula, ThemeType.SolarizedDark };
             int currentIdx = Array.IndexOf(cycle, _themeService.CurrentTheme);
             if (currentIdx < 0) currentIdx = 0;
@@ -460,50 +621,30 @@ namespace ForkPlus.Avalonia.Views
             _themeService.ApplyTheme(cycle[nextIdx]);
         }
 
-        private void Repository_Fetch_Click(object sender, RoutedEventArgs e)
+        // Help → About ForkPlus（对照 WPF ShowAboutWindowCommand）
+        public void ShowAboutWindow()
         {
-            Console.WriteLine("[MainWindow] Repository → Fetch");
+            _serviceProvider.GetRequiredService<AboutWindow>().Show(this);
         }
 
-        private void Repository_Pull_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Repository → Pull");
-        }
+        // ===== 旧 XAML 静态菜单遗留 handler（保留供 XAML 引用，转发到新方法）=====
 
-        private void Repository_Push_Click(object sender, RoutedEventArgs e)
+        private void File_OpenRepository_Click(object sender, RoutedEventArgs e) => OpenRepositoryViaDialog();
+        private void File_CloneRepository_Click(object sender, RoutedEventArgs e) => ShowCloneWindow();
+        private void File_Exit_Click(object sender, RoutedEventArgs e) => ExitApplication();
+        private void View_ToggleToolbar_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("[MainWindow] Repository → Push");
+            if (ToolbarContainer != null) ToolbarContainer.IsVisible = !ToolbarContainer.IsVisible;
         }
-
-        private void Repository_Branch_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Repository → Branch");
-        }
-
-        private void Repository_Commit_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Repository → Commit");
-        }
-
-        private void Repository_Stash_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Repository → Stash");
-        }
-
-        private void Window_Preferences_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Window → Preferences");
-        }
-
-        private void Help_About_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Help → About");
-        }
-
-        private void Help_Feedback_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[MainWindow] Help → Feedback");
-        }
+        private void View_Appearance_Click(object sender, RoutedEventArgs e) => SwitchApplicationTheme();
+        private void Repository_Fetch_Click(object sender, RoutedEventArgs e) => ShowFetchWindow();
+        private void Repository_Pull_Click(object sender, RoutedEventArgs e) => ShowPullWindow();
+        private void Repository_Push_Click(object sender, RoutedEventArgs e) => ShowPushWindow();
+        private void Repository_Branch_Click(object sender, RoutedEventArgs e) => ShowCreateBranchWindow();
+        private void Repository_Stash_Click(object sender, RoutedEventArgs e) => ShowSaveStashWindow();
+        private void Window_Preferences_Click(object sender, RoutedEventArgs e) => ShowPreferencesWindow();
+        private void Help_About_Click(object sender, RoutedEventArgs e) => ShowAboutWindow();
+        private void Help_Feedback_Click(object sender, RoutedEventArgs e) { }
 
         // ===== 自绘标题栏系统按钮事件（对照 WPF SystemCommands + CustomWindow TemplatePart）=====
 
