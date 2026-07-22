@@ -1,9 +1,11 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
@@ -63,6 +65,11 @@ namespace ForkPlus.Avalonia.Views
 
         // 对照 WPF: private Toolbar Toolbar — 保存工具栏引用用于刷新
         private ToolbarUserControl _toolbarUserControl;
+
+        // 对照 WPF: NotificationManager 通知历史列表
+        // spike 版：用 ObservableCollection<string> 简化，由 AddNotification() 追加，
+        //           NotificationManagerPopup（XAML 中声明）通过 ItemsSource 绑定显示
+        private readonly ObservableCollection<string> _notifications = new ObservableCollection<string>();
 
         // 对照 WPF: private readonly AutomaticBackgroundFetchManager _automaticBackgroundFetchManager
         // spike 版：用 spike 版的 AutomaticBackgroundFetchManager（namespace ForkPlus.Avalonia）
@@ -266,6 +273,13 @@ namespace ForkPlus.Avalonia.Views
             // 对照 WPF: TabManager.RestoreSession() → OpenRepository(repository)
             LoadRepositoryUserControl();
 
+            // 对照 WPF: NotificationManager 通知历史列表绑定
+            // spike 版：NotificationList（Popup 内的 ItemsControl）.ItemsSource 绑定到 _notifications 集合
+            if (NotificationList != null)
+            {
+                NotificationList.ItemsSource = _notifications;
+            }
+
             // 对照 WPF: _updateCheckManager.Start();
             _updateCheckManager.Start();
 
@@ -338,6 +352,11 @@ namespace ForkPlus.Avalonia.Views
             RefreshTitle();
             // 对照 WPF: OpenRepository → Toolbar.Refresh()（更新分支名 + badges）
             _toolbarUserControl?.Refresh();
+            // 通知历史记录会话恢复结果
+            if (gitModuleToOpen != null)
+            {
+                AddNotification($"Restored repository: {gitModuleToOpen.RepositoryName}");
+            }
         }
 
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
@@ -431,6 +450,7 @@ namespace ForkPlus.Avalonia.Views
             RefreshTitle();
             SaveSession();
             _toolbarUserControl?.Refresh();
+            AddNotification($"Opened repository: {result.Result?.RepositoryName ?? path}");
         }
 
         // File → Clone Repository（对照 WPF ShowCloneWindowCommand）
@@ -450,6 +470,7 @@ namespace ForkPlus.Avalonia.Views
                             RefreshTitle();
                             SaveSession();
                             _toolbarUserControl?.Refresh();
+                            AddNotification($"Cloned repository: {r.Result?.RepositoryName ?? path}");
                         });
                     }
                 });
@@ -495,6 +516,103 @@ namespace ForkPlus.Avalonia.Views
             _repositoryUserControl?.ActivateRevisionView();
         }
 
+        // View → Show HEAD（对照 WPF ShowHEADCommand）
+        //   选中 HEAD 提交并滚动到可见区域
+        public void ShowHEAD()
+        {
+            RepositoryUserControl ruc = _repositoryUserControl;
+            if (ruc == null) return;
+            Sha? headSha = ruc.RepositoryData?.References?.HeadSha;
+            if (headSha.HasValue)
+            {
+                ruc.SelectRevision(headSha.Value);
+                AddNotification($"Selected HEAD: {headSha.Value}");
+            }
+        }
+
+        // View → Hide Tags（对照 WPF HideTagsCommand — 切换 Sidebar Tags 分组可见性）
+        public void ToggleHideTags()
+        {
+            _repositoryUserControl?.Sidebar?.ToggleTagsVisibility();
+        }
+
+        // View → Hide Stashes（对照 WPF HideStashesCommand — 切换 Sidebar Stashes 分组可见性）
+        public void ToggleHideStashes()
+        {
+            _repositoryUserControl?.Sidebar?.ToggleStashesVisibility();
+        }
+
+        // View → Show Lost Commits (Reflog)（对照 WPF ShowReflogCommand）
+        //   spike 版：打开 ReflogWindow 显示 reflog 列表
+        public void ShowReflogWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            var window = new ReflogWindow(module, onCompleted: result =>
+            {
+                Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Reflog operation completed" : $"Reflog failed: {result.Error?.FriendlyDescription}");
+            });
+            window.Show(this);
+        }
+
+        // View → Collapse All Merge Revisions（对照 WPF CollapseAllMergesCommand）
+        public void CollapseAllMerges()
+        {
+            _repositoryUserControl?.CollapseAllMerges();
+        }
+
+        // Repository → Create Worktree（对照 WPF ShowCreateWorktreeWindowCommand）
+        //   spike 版：传入 GitModule + references + worktrees + onRepositoryOpened 回调
+        public void ShowCreateWorktreeWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            RepositoryData data = _repositoryUserControl?.RepositoryData;
+            var window = new CreateWorktreeWindow(
+                module,
+                references: data?.References,
+                worktrees: data?.Worktrees,
+                onRepositoryOpened: path =>
+                {
+                    var r = new OpenGitRepositoryGitCommand().Execute(path);
+                    if (r.Succeeded && r.Result != null)
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            _repositoryUserControl?.OpenRepository(r.Result);
+                            RefreshTitle();
+                            _toolbarUserControl?.Refresh();
+                            AddNotification($"Opened worktree: {r.Result?.RepositoryName ?? path}");
+                        });
+                    }
+                },
+                onCompleted: result =>
+                {
+                    Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                    AddNotification(result.Succeeded ? "Worktree created" : $"Create worktree failed: {result.Error?.FriendlyDescription}");
+                });
+            window.Show(this);
+        }
+
+        // Repository → Apply Patch（对照 WPF ShowApplyPatchWindowCommand）
+        //   spike 版：以文件路径模式打开（patchPath=null，用户在对话框中 Browse 选择）
+        public void ShowApplyPatchWindow()
+        {
+            GitModule module = _repositoryUserControl?.GitModule;
+            if (module == null) return;
+            var window = new ApplyPatchWindow(
+                module,
+                patchPath: null,
+                defaultSourceDirProvider: () => RepositoryManager.Instance.SourceDirs.FirstOrDefault() ?? "",
+                onCompleted: result =>
+                {
+                    Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                    AddNotification(result.Succeeded ? "Patch applied" : $"Apply patch failed: {result.Error?.FriendlyDescription}");
+                });
+            window.Show(this);
+        }
+
         // Repository → Refresh Repository Data（对照 WPF RefreshRepositoryDataCommand）
         public void RefreshRepositoryData()
         {
@@ -507,9 +625,10 @@ namespace ForkPlus.Avalonia.Views
             GitModule module = _repositoryUserControl?.GitModule;
             if (module == null) return;
             RepositoryRemotes remotes = _repositoryUserControl?.RepositoryData?.Remotes ?? RepositoryRemotes.Empty;
-            var window = new FetchWindow(module, remotes, onCompleted: _ =>
+            var window = new FetchWindow(module, remotes, onCompleted: result =>
             {
                 Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Fetch completed" : $"Fetch failed: {result.Error?.FriendlyDescription}");
             });
             window.Show(this);
         }
@@ -522,9 +641,10 @@ namespace ForkPlus.Avalonia.Views
             RepositoryData data = _repositoryUserControl?.RepositoryData;
             RepositoryReferences refs = data?.References ?? RepositoryReferences.Empty;
             RepositoryRemotes remotes = data?.Remotes ?? RepositoryRemotes.Empty;
-            var window = new PullWindow(module, refs, remotes, null, onCompleted: _ =>
+            var window = new PullWindow(module, refs, remotes, null, onCompleted: result =>
             {
                 Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Pull completed" : $"Pull failed: {result.Error?.FriendlyDescription}");
             });
             window.Show(this);
         }
@@ -537,9 +657,10 @@ namespace ForkPlus.Avalonia.Views
             RepositoryData data = _repositoryUserControl?.RepositoryData;
             RepositoryReferences refs = data?.References ?? RepositoryReferences.Empty;
             RepositoryRemotes remotes = data?.Remotes ?? RepositoryRemotes.Empty;
-            var window = new PushWindow(module, refs, remotes, onCompleted: _ =>
+            var window = new PushWindow(module, refs, remotes, onCompleted: result =>
             {
                 Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Push completed" : $"Push failed: {result.Error?.FriendlyDescription}");
             });
             window.Show(this);
         }
@@ -549,9 +670,10 @@ namespace ForkPlus.Avalonia.Views
         {
             GitModule module = _repositoryUserControl?.GitModule;
             if (module == null) return;
-            var window = new SaveStashWindow(module, onCompleted: _ =>
+            var window = new SaveStashWindow(module, onCompleted: result =>
             {
                 Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Stash saved" : $"Stash failed: {result.Error?.FriendlyDescription}");
             });
             window.Show(this);
         }
@@ -562,9 +684,10 @@ namespace ForkPlus.Avalonia.Views
             GitModule module = _repositoryUserControl?.GitModule;
             if (module == null) return;
             RepositoryReferences refs = _repositoryUserControl?.RepositoryData?.References ?? RepositoryReferences.Empty;
-            var window = new CreateBranchWindow(module, refs, onCompleted: _ =>
+            var window = new CreateBranchWindow(module, refs, onCompleted: result =>
             {
                 Dispatcher.UIThread.Post(() => _repositoryUserControl?.InvalidateAndRefresh());
+                AddNotification(result.Succeeded ? "Branch created" : $"Create branch failed: {result.Error?.FriendlyDescription}");
             });
             window.Show(this);
         }
@@ -680,10 +803,45 @@ namespace ForkPlus.Avalonia.Views
         }
 
         // 对照 WPF: NotificationManagerToggleButton + NotificationManagerPopup
-        //   spike 版：仅日志占位（NotificationManagerUserControl 未在 MainWindow 装入）
+        //   spike 版：用 Popup + ItemsControl 显示通知历史列表
+        //   点击铃铛按钮切换 Popup 可见性；Popup 内 ItemsControl 绑定 _notifications
         private void NotificationToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("[MainWindow] Notification toggle (spike placeholder)");
+            if (NotificationManagerPopup == null) return;
+            // 对照 WPF: NotificationManagerPopup.IsOpen = !NotificationManagerPopup.IsOpen
+            NotificationManagerPopup.IsOpen = !NotificationManagerPopup.IsOpen;
+        }
+
+        // 对照 WPF: NotificationManager 清空按钮 — 关闭 Popup 并清空列表
+        private void ClearNotificationsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClearNotifications();
+            if (NotificationManagerPopup != null) NotificationManagerPopup.IsOpen = false;
+        }
+
+        // 对照 WPF: NotificationManager.AddNotification — 追加一条通知到历史列表
+        //   spike 版：公共方法，供对话框/命令完成时调用记录结果
+        //   保留最近 100 条（避免无限增长）
+        public void AddNotification(string message)
+        {
+            if (string.IsNullOrEmpty(message)) return;
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            string entry = $"[{timestamp}] {message}";
+            Dispatcher.UIThread.Post(() =>
+            {
+                _notifications.Insert(0, entry);
+                // 保留最近 100 条
+                while (_notifications.Count > 100)
+                {
+                    _notifications.RemoveAt(_notifications.Count - 1);
+                }
+            });
+        }
+
+        // 对照 WPF: NotificationManager.ClearNotifications — 清空通知历史
+        public void ClearNotifications()
+        {
+            Dispatcher.UIThread.Post(() => _notifications.Clear());
         }
     }
 }

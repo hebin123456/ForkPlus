@@ -160,13 +160,13 @@ namespace ForkPlus.Avalonia.Views
             yield return CreateMenuItem("Commit View", () => MainWindow.Instance?.ActivateCommitView());
             yield return CreateMenuItem("Revision List", () => MainWindow.Instance?.ActivateRevisionList());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Show HEAD", () => { });  // spike 跳过（依赖 RevisionListView.SelectHEAD）
+            yield return CreateMenuItem("Show HEAD", () => MainWindow.Instance?.ShowHEAD());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Hide Tags", () => { });  // spike 跳过（依赖 ReferenceFilter）
-            yield return CreateMenuItem("Hide Stashes", () => { });
-            yield return CreateMenuItem("Show Lost Commits (Reflog)", () => { });
-            yield return CreateMenuItem("Collapse All Merge Revisions", () => { });
-            yield return CreateMenuItem("Filter by Active Branch", () => { });
+            yield return CreateMenuItem("Hide Tags", () => MainWindow.Instance?.ToggleHideTags());
+            yield return CreateMenuItem("Hide Stashes", () => MainWindow.Instance?.ToggleHideStashes());
+            yield return CreateMenuItem("Show Lost Commits (Reflog)", () => MainWindow.Instance?.ShowReflogWindow());
+            yield return CreateMenuItem("Collapse All Merge Revisions", () => MainWindow.Instance?.CollapseAllMerges());
+            yield return CreateMenuItem("Filter by Active Branch", () => { });  // spike 跳过（依赖未迁移的 RevisionContextSearch/Filter 系统）
         }
 
         private static IEnumerable<MenuItem> CreateRepositoryMenuItems()
@@ -181,9 +181,9 @@ namespace ForkPlus.Avalonia.Views
             yield return CreateSeparator();
             yield return CreateMenuItem("Create Branch", () => MainWindow.Instance?.ShowCreateBranchWindow());
             yield return CreateMenuItem("Create Tag", () => MainWindow.Instance?.ShowCreateTagWindow());
-            yield return CreateMenuItem("Create Worktree", () => { });  // spike 跳过
+            yield return CreateMenuItem("Create Worktree", () => MainWindow.Instance?.ShowCreateWorktreeWindow());
             yield return CreateSeparator();
-            yield return CreateMenuItem("Apply Patch", () => { });
+            yield return CreateMenuItem("Apply Patch", () => MainWindow.Instance?.ShowApplyPatchWindow());
             yield return CreateSeparator();
             yield return CreateMenuItem("Open in File Explorer", () => MainWindow.Instance?.OpenRepositoryInFileExplorer());
             yield return CreateMenuItem("Open in Shell", () => MainWindow.Instance?.OpenRepositoryInShell());

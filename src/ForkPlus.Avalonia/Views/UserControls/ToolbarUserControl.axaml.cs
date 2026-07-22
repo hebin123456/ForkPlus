@@ -51,33 +51,74 @@ namespace ForkPlus.Avalonia.Views.UserControls
             Refresh();
         }
 
-        // 对照 WPF: RefreshPullPushBadges — 读 RepositoryData.References.ActiveBranch 的 upstream ahead/behind
-        // spike 简化：从 ActiveRepositoryUserControl.RepositoryData 读取
+        // 对照 WPF: RefreshPullPushBadges — 读 RepositoryData.UpstreamStatus.GetUpstreamStatus(activeBranch)
+        //   PullBadge 显示 Behind 计数（需要 pull 的提交数）
+        //   PushBadge 显示 Ahead 计数（需要 push 的提交数）
+        //   计数为 0 时隐藏对应 badge；无 upstream 时两个都隐藏
         public void UpdateBadges()
         {
             RepositoryUserControl ruc = GetActiveRepositoryUserControl();
             RepositoryData data = ruc?.RepositoryData;
             LocalBranch activeBranch = data?.References?.ActiveBranch;
 
-            bool showBadges = activeBranch != null && !string.IsNullOrEmpty(activeBranch.UpstreamFullReference);
-            if (PullBadge != null) PullBadge.IsVisible = showBadges;
-            if (PushBadge != null) PushBadge.IsVisible = showBadges;
-            // spike：ahead/behind 计数依赖 UpstreamStatusCache，暂显示占位 0
-            // WPF: badges.Text = status.BehindCount / status.AheadCount
+            bool hasUpstream = activeBranch != null && !string.IsNullOrEmpty(activeBranch.UpstreamFullReference);
+            int behind = 0;
+            int ahead = 0;
+            if (hasUpstream && data?.UpstreamStatus != null)
+            {
+                UpstreamStatus? status = data.UpstreamStatus.GetUpstreamStatus(activeBranch);
+                if (status.HasValue && status.Value.IsValid)
+                {
+                    behind = status.Value.Behind;
+                    ahead = status.Value.Ahead;
+                }
+            }
+
+            // PullBadge：behind > 0 时显示 behind 计数
+            if (PullBadge != null)
+            {
+                PullBadge.IsVisible = hasUpstream && behind > 0;
+                if (PullBadgeText != null && behind > 0) PullBadgeText.Text = behind.ToString();
+            }
+            // PushBadge：ahead > 0 时显示 ahead 计数
+            if (PushBadge != null)
+            {
+                PushBadge.IsVisible = hasUpstream && ahead > 0;
+                if (PushBadgeText != null && ahead > 0) PushBadgeText.Text = ahead.ToString();
+            }
         }
 
-        // 对照 WPF: StatusUserControl — 显示当前分支名
-        // spike 简化：用 StatusText 显示分支名（WPF 是独立 StatusUserControl 300px）
+        // 对照 WPF: StatusUserControl — 显示当前分支名 + ahead/behind 摘要
+        //   WPF StatusText 显示 "branch-name" + 旁边的 ahead/behind 箭头
+        //   spike：合并到单个 StatusText，格式 "branch  ↑N ↓M"（仅非零显示）
         private void UpdateStatusText()
         {
             RepositoryUserControl ruc = GetActiveRepositoryUserControl();
-            LocalBranch activeBranch = ruc?.RepositoryData?.References?.ActiveBranch;
-            if (StatusText != null)
+            RepositoryData data = ruc?.RepositoryData;
+            LocalBranch activeBranch = data?.References?.ActiveBranch;
+            if (StatusText == null) return;
+
+            if (activeBranch == null)
             {
-                StatusText.Text = activeBranch != null
-                    ? activeBranch.Name
-                    : "(no repository)";
+                StatusText.Text = "(no repository)";
+                return;
             }
+
+            string text = activeBranch.Name;
+            // 追加 ahead/behind 摘要（对照 WPF UpstreamStatus.ToShortDescription）
+            if (!string.IsNullOrEmpty(activeBranch.UpstreamFullReference) && data?.UpstreamStatus != null)
+            {
+                UpstreamStatus? status = data.UpstreamStatus.GetUpstreamStatus(activeBranch);
+                if (status.HasValue && status.Value.IsValid)
+                {
+                    string summary = status.Value.ToShortDescription();
+                    if (!string.IsNullOrEmpty(summary))
+                    {
+                        text = text + "  " + summary;
+                    }
+                }
+            }
+            StatusText.Text = text;
         }
 
         private static RepositoryUserControl GetActiveRepositoryUserControl()

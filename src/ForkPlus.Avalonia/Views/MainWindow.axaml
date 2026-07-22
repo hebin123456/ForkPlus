@@ -42,13 +42,66 @@
             <DockPanel>
                 <!-- 右侧系统按钮（对照 WPF StackPanel Dock=Right） -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <!-- NotificationManagerToggleButton（对照 WPF WindowRoundedToggleButton + NotificationIcon） -->
-                    <Button Name="NotificationManagerToggleButton"
-                            Classes="window-icon-button"
-                            ToolTip.Tip="Notifications"
-                            Click="NotificationToggleButton_Click">
-                        <Image Source="/Assets/notification.png" Width="16" Height="16" />
-                    </Button>
+                    <!-- NotificationManagerToggleButton（对照 WPF WindowRoundedToggleButton + NotificationIcon）
+                         外层 Panel 用于承载 Popup（Popup 需作为同辈控件定位到按钮下方） -->
+                    <Panel>
+                        <Button Name="NotificationManagerToggleButton"
+                                Classes="window-icon-button"
+                                ToolTip.Tip="Notifications"
+                                Click="NotificationToggleButton_Click">
+                            <Image Source="/Assets/notification.png" Width="16" Height="16" />
+                        </Button>
+                        <!-- NotificationManagerPopup（对照 WPF Popup IsOpen 绑定 + NotificationManager 列表）
+                             spike 版：Placement=Bottom 定位到铃铛按钮下方，Width=280，MaxHeight=400 可滚动 -->
+                        <Popup Name="NotificationManagerPopup"
+                               IsOpen="False"
+                               Placement="Bottom"
+                               PlacementTarget="{Binding #NotificationManagerToggleButton}"
+                               HorizontalOffset="-236"
+                               VerticalOffset="2"
+                               Width="280"
+                               MaxHeight="400">
+                            <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                                    BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <DockPanel Grid.Row="0" Margin="8,4">
+                                        <TextBlock Text="Notifications"
+                                                   FontWeight="Medium"
+                                                   VerticalAlignment="Center"
+                                                   DockPanel.Dock="Left" />
+                                        <Button Name="ClearNotificationsButton"
+                                                Content="Clear"
+                                                DockPanel.Dock="Right"
+                                                HorizontalAlignment="Right"
+                                                Padding="8,2"
+                                                FontSize="11"
+                                                Click="ClearNotificationsButton_Click" />
+                                    </DockPanel>
+                                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                                                  VerticalScrollBarVisibility="Auto" MaxHeight="360">
+                                        <ItemsControl Name="NotificationList" Margin="2">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"
+                                                               Padding="6,3"
+                                                               TextWrapping="Wrap"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource ThemeForegroundBrush}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </Popup>
+                    </Panel>
                     <!-- MinimizeButton -->
                     <Button Name="MinimizeButton"
                             Classes="window-icon-button"

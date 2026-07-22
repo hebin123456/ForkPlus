@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using ForkPlus.Avalonia.Dialogs;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -864,8 +865,38 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // 在 EnsureLayoutInitialized 中调用，把 Sidebar 的回调指向本控件的方法
         private void SetupSidebarCallbacks()
         {
+            // ===== Checkout（已有）=====
             _sidebar.CheckoutBranchCallback = branch => CheckoutBranch(branch);
             _sidebar.CheckoutTagCallback = tag => CheckoutTag(tag);
+
+            // ===== Branch 操作 =====
+            _sidebar.RenameBranchCallback = branch => ShowRenameBranchWindow(branch);
+            _sidebar.DeleteBranchesCallback = branches => ShowDeleteBranchesWindow(branches);
+            _sidebar.PushBranchCallback = (branch, remote) => ShowPushBranchWindow(branch, remote);
+            _sidebar.PullBranchCallback = _ => ShowPullWindow();
+            _sidebar.MergeBranchCallback = (source, destination) => ShowMergeBranchWindow(source, destination);
+            _sidebar.RebaseBranchCallback = (source, destination) => ShowRebaseBranchWindow(source, destination);
+            _sidebar.CheckoutRemoteBranchCallback = remoteBranch => CheckoutRemoteBranch(remoteBranch);
+            _sidebar.DeleteRemoteBranchesCallback = remoteBranches => ShowDeleteRemoteBranchesWindow(remoteBranches);
+
+            // ===== Tag 操作 =====
+            _sidebar.DeleteTagCallback = tag => ShowDeleteTagsWindow(new[] { tag });
+            _sidebar.PushTagCallback = (tag, remote) => ShowPushTagWindow(tag, remote);
+
+            // ===== Submodule 操作 =====
+            _sidebar.OpenSubmoduleCallback = submodule => OpenSubmodule(submodule);
+            _sidebar.DeleteSubmoduleCallback = submodule => ShowDeleteSubmoduleWindow(submodule);
+
+            // ===== Stash 操作 =====
+            // 注：Apply 与 Pop 都打开 ApplyStashWindow；用户在对话框中勾选
+            // "Delete stash after apply" 区分行为（spike 简化，对照 WPF 默认设置驱动）
+            _sidebar.ApplyStashCallback = stash => ShowApplyStashWindow(stash);
+            _sidebar.PopStashCallback = stash => ShowApplyStashWindow(stash);
+            _sidebar.DeleteStashCallback = stash => ShowDeleteStashesWindow(new[] { stash });
+
+            // ===== Worktree 操作 =====
+            _sidebar.OpenWorktreeCallback = worktree => OpenWorktree(worktree);
+            _sidebar.DeleteWorktreeCallback = worktree => ShowDeleteWorktreeWindow(worktree);
         }
 
         // 对照 WPF: CheckoutBranch(LocalBranch branch) — AddUndoable + CheckoutBranchGitCommand
@@ -886,6 +917,200 @@ namespace ForkPlus.Avalonia.Views.UserControls
             {
                 return new CheckoutRevisionGitCommand().Execute(GitModule, tag.Sha, monitor);
             });
+        }
+
+        // 对照 WPF: CheckoutRemoteBranch — spike 简化为 detached HEAD checkout（用 RemoteBranch.Sha）
+        //   WPF 完整版会创建跟踪本地分支；spike 阶段直接 checkout 到远程分支的 Sha
+        public void CheckoutRemoteBranch(RemoteBranch remoteBranch)
+        {
+            if (GitModule == null || remoteBranch == null) return;
+            AddUndoable("Checkout Remote Branch", monitor =>
+            {
+                return new CheckoutRevisionGitCommand().Execute(GitModule, remoteBranch.Sha, monitor);
+            });
+        }
+
+        // ===== Branch 操作对话框 =====
+
+        // 对照 WPF: ShowRenameBranchWindow(LocalBranch) → new RenameLocalBranchWindow(module, refs, branch, ...)
+        private void ShowRenameBranchWindow(LocalBranch branch)
+        {
+            if (GitModule == null || branch == null) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            var window = new RenameLocalBranchWindow(GitModule, refs, branch,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowDeleteBranchesWindow(LocalBranch[]) → new RemoveLocalBranchWindow(...)
+        private void ShowDeleteBranchesWindow(LocalBranch[] branches)
+        {
+            if (GitModule == null || branches == null || branches.Length == 0) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            RepositoryRemotes remotes = RepositoryData?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new RemoveLocalBranchWindow(GitModule, refs, branches, remotes,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowPushBranchWindow(LocalBranch, Remote) → new PushWindow(module, refs, remotes, remote, branch, ...)
+        private void ShowPushBranchWindow(LocalBranch branch, Remote remote)
+        {
+            if (GitModule == null || branch == null) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            RepositoryRemotes remotes = RepositoryData?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new PushWindow(GitModule, refs, remotes, remote, branch,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowPullWindow() → new PullWindow(module, refs, remotes, null, ...)
+        private void ShowPullWindow()
+        {
+            if (GitModule == null) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            RepositoryRemotes remotes = RepositoryData?.Remotes ?? RepositoryRemotes.Empty;
+            var window = new PullWindow(GitModule, refs, remotes, null,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowMergeBranchWindow(Branch source, LocalBranch destination)
+        //   → new MergeBranchWindow(module, source, destination, refs, ...)
+        private void ShowMergeBranchWindow(Branch source, LocalBranch destination)
+        {
+            if (GitModule == null || source == null || destination == null) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            var window = new MergeBranchWindow(GitModule, source, destination, refs,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowRebaseBranchWindow(LocalBranch source, Branch destination)
+        //   → new RebaseBranchWindow(module, source, destination, ...)
+        private void ShowRebaseBranchWindow(LocalBranch source, Branch destination)
+        {
+            if (GitModule == null || source == null || destination == null) return;
+            var window = new RebaseBranchWindow(GitModule, source, destination,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowDeleteRemoteBranchesWindow(RemoteBranch[])
+        //   → new RemoveRemoteBranchWindow(module, remoteBranches, refs, ...)
+        private void ShowDeleteRemoteBranchesWindow(RemoteBranch[] remoteBranches)
+        {
+            if (GitModule == null || remoteBranches == null || remoteBranches.Length == 0) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            var window = new RemoveRemoteBranchWindow(GitModule, remoteBranches, refs,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // ===== Tag 操作对话框 =====
+
+        // 对照 WPF: ShowDeleteTagWindow(Tag) → new RemoveTagWindow(module, tags[], refs, remotes, ...)
+        private void ShowDeleteTagsWindow(Tag[] tags)
+        {
+            if (GitModule == null || tags == null || tags.Length == 0) return;
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            Remote[] remotes = RepositoryData?.Remotes?.Items ?? Array.Empty<Remote>();
+            var window = new RemoveTagWindow(GitModule, tags, refs, remotes,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowPushTagWindow(Tag, Remote) → new PushTagWindow(module, tag, remotes, remote, refs, ...)
+        private void ShowPushTagWindow(Tag tag, Remote remote)
+        {
+            if (GitModule == null || tag == null) return;
+            Remote[] remotes = RepositoryData?.Remotes?.Items ?? Array.Empty<Remote>();
+            RepositoryReferences refs = RepositoryData?.References ?? RepositoryReferences.Empty;
+            var window = new PushTagWindow(GitModule, tag, remotes, remote, refs,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // ===== Submodule 操作 =====
+
+        // 对照 WPF: OpenSubmodule(Submodule) — 在新 tab 打开子模块仓库
+        //   spike 单 tab：直接 OpenRepository 替换当前内容
+        public void OpenSubmodule(Submodule submodule)
+        {
+            if (submodule == null || string.IsNullOrEmpty(submodule.Path) || GitModule == null) return;
+            try
+            {
+                string fullPath = Path.Combine(GitModule.Path, submodule.Path);
+                if (!Directory.Exists(fullPath)) return;
+                GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(fullPath);
+                if (result.Succeeded && result.Result != null)
+                {
+                    OpenRepository(result.Result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RepositoryUserControl] OpenSubmodule failed: {ex.Message}");
+            }
+        }
+
+        // 对照 WPF: ShowDeleteSubmoduleWindow(Submodule) → new DeleteSubmoduleWindow(module, submodule)
+        private void ShowDeleteSubmoduleWindow(Submodule submodule)
+        {
+            if (GitModule == null || submodule == null) return;
+            var window = new DeleteSubmoduleWindow(GitModule, submodule);
+            window.Show(MainWindow.Instance);
+        }
+
+        // ===== Stash 操作 =====
+
+        // 对照 WPF: ShowApplyStashWindow(StashRevision) → new ApplyStashWindow(module, stash, ...)
+        //   Apply 与 Pop 共用此对话框；用户在对话框中勾选 "Delete stash after apply" 区分行为
+        private void ShowApplyStashWindow(StashRevision stash)
+        {
+            if (GitModule == null || stash == null) return;
+            var window = new ApplyStashWindow(GitModule, stash,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // 对照 WPF: ShowDeleteStashWindow(StashRevision[]) → new RemoveStashWindow(module, stashes, ...)
+        private void ShowDeleteStashesWindow(StashRevision[] stashes)
+        {
+            if (GitModule == null || stashes == null || stashes.Length == 0) return;
+            var window = new RemoveStashWindow(GitModule, stashes,
+                onCompleted: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
+        }
+
+        // ===== Worktree 操作 =====
+
+        // 对照 WPF: OpenWorktree(Worktree) — 在新 tab 打开 worktree 仓库
+        //   spike 单 tab：直接 OpenRepository 替换当前内容
+        public void OpenWorktree(Worktree worktree)
+        {
+            if (string.IsNullOrEmpty(worktree.Path) || !Directory.Exists(worktree.Path)) return;
+            try
+            {
+                GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(worktree.Path);
+                if (result.Succeeded && result.Result != null)
+                {
+                    OpenRepository(result.Result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RepositoryUserControl] OpenWorktree failed: {ex.Message}");
+            }
+        }
+
+        // 对照 WPF: ShowDeleteWorktreeWindow(Worktree) → new DeleteWorktreeWindow(module, worktree, onCloseTab)
+        private void ShowDeleteWorktreeWindow(Worktree worktree)
+        {
+            if (GitModule == null) return;
+            var window = new DeleteWorktreeWindow(GitModule, worktree,
+                onCloseTab: _ => Dispatcher.UIThread.Post(() => InvalidateAndRefresh()));
+            window.Show(MainWindow.Instance);
         }
 
         // ===== ShowLoading / HideLoading / DisableUserInterface / EnableUserInterface（spike 补充）=====

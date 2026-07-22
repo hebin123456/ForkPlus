@@ -98,6 +98,11 @@ namespace ForkPlus.Avalonia.Views.UserControls
         private bool _updateRepositoryDataInProgress;
         private bool _selectionInProgress;
 
+        // 对照 WPF View 菜单 Hide Tags / Hide Stashes 切换状态
+        //   true = 用户主动隐藏（即使有子节点也不显示）；false = 走默认可见性逻辑
+        private bool _hideTags;
+        private bool _hideStashes;
+
         // ===== 注入回调（替代 MainWindow.Instance 依赖）=====
 
         // 仓库操作回调
@@ -728,15 +733,34 @@ namespace ForkPlus.Avalonia.Views.UserControls
         }
 
         // 更新分组可见性（对照 WPF 分组有子节点才显示）
+        //   _hideTags / _hideStashes 为 true 时强制隐藏（对照 WPF View 菜单 Hide Tags / Hide Stashes）
         private void UpdateGroupVisibility()
         {
             _branches.IsVisible = _branches.Children.Count > 0;
             _remotes.IsVisible = _remotes.Children.Count > 0;
-            _tags.IsVisible = _tags.Children.Count > 0;
-            _stashes.IsVisible = _stashes.Children.Count > 0;
+            _tags.IsVisible = !_hideTags && _tags.Children.Count > 0;
+            _stashes.IsVisible = !_hideStashes && _stashes.Children.Count > 0;
             _submodules.IsVisible = _submodules.Children.Count > 0;
             _worktrees.IsVisible = _worktrees.Children.Count > 0;
         }
+
+        // 对照 WPF View 菜单 Hide Tags — 切换 Tags 分组可见性
+        public void ToggleTagsVisibility()
+        {
+            _hideTags = !_hideTags;
+            UpdateGroupVisibility();
+        }
+
+        // 对照 WPF View 菜单 Hide Stashes — 切换 Stashes 分组可见性
+        public void ToggleStashesVisibility()
+        {
+            _hideStashes = !_hideStashes;
+            UpdateGroupVisibility();
+        }
+
+        // 读取 hide 状态（供菜单项 IsChecked 显示）
+        public bool IsTagsHidden => _hideTags;
+        public bool IsStashesHidden => _hideStashes;
 
         // ===== 查找辅助方法（对照 WPF FindActiveBranchItem / FindFolder 等）=====
 
