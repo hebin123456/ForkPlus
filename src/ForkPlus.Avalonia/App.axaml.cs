@@ -65,6 +65,29 @@ namespace ForkPlus.Avalonia
     {
         private IHost _host;
 
+        // 对照 WPF App.xaml.cs line 81/83/142：Git 路径解析静态属性
+        // spike 版：简化实现，直接从环境变量/ForkPlusSettings 读取
+        public static readonly string? EnvironmentGitInstancePath = TryGetEnvironmentGitInstancePath();
+        public static readonly string? ForkGitInstancePath = null; // spike: Fork 内置 git 省略
+        public static string GitPath => EnvironmentGitInstancePath ?? ForkPlusSettings.Default.GitInstancePath ?? ForkGitInstancePath ?? "git";
+        public static string ShellPath => System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GitPath) ?? "", "sh.exe");
+        public static string BashPath => System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GitPath) ?? "", "bash.exe");
+
+        private static string? TryGetEnvironmentGitInstancePath()
+        {
+            // spike: 从 PATH 查找 git（WPF 版用 GetEnvironmentVariable + Where-Where）
+            var pathEnv = Environment.GetEnvironmentVariable("PATH");
+            if (string.IsNullOrEmpty(pathEnv)) return null;
+            foreach (var dir in pathEnv.Split(System.IO.Path.PathSeparator))
+            {
+                var candidate = System.IO.Path.Combine(dir, "git");
+                if (System.IO.File.Exists(candidate)) return candidate;
+                candidate = System.IO.Path.Combine(dir, "git.exe");
+                if (System.IO.File.Exists(candidate)) return candidate;
+            }
+            return null;
+        }
+
         public override void Initialize()
         {
             // 直接调用 AvaloniaXamlLoader.Load 加载 App.axaml

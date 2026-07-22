@@ -29,9 +29,11 @@
 //  10. namespace 改为 ForkPlus.Avalonia.Views.UserControls.Preferences
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 
 namespace ForkPlus.Avalonia.Views.UserControls.Preferences
@@ -72,7 +74,7 @@ namespace ForkPlus.Avalonia.Views.UserControls.Preferences
                 ShellTool.CustomType
             };
             ShellToolComboBox.ItemsSource = array;
-            ShellToolComboBox.SelectedItem = array.FirstItem((string x) => x == ForkPlusSettings.Default.ShellTool.Type);
+            ShellToolComboBox.SelectedItem = array.FirstOrDefault(x => x == ForkPlusSettings.Default.ShellTool.Type);
             ShellToolPathTextBox.Text = ForkPlusSettings.Default.ShellTool.ApplicationPath;
             ShellToolArgumentsTextBox.Text = ForkPlusSettings.Default.ShellTool.Arguments;
             ShowBugtrackerLinksCheckBox.IsChecked = ForkPlusSettings.Default.ShowBugtrackerLinks;

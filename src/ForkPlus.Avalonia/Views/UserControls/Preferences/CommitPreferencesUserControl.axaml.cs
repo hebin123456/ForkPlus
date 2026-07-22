@@ -22,6 +22,7 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 
 namespace ForkPlus.Avalonia.Views.UserControls.Preferences
 {

@@ -294,7 +294,7 @@ namespace ForkPlus.Avalonia.Views.UserControls.Preferences
                 if (!gitCommandResult.Succeeded)
                 {
                     // spike: new ErrorWindow(null, gitCommandResult.Error).ShowDialog(); // 移除
-                    Log.Error("SetGlobalUserIdentity failed: " + (gitCommandResult.Error?.FriendlyMessage ?? ""), null);
+                    Log.Error("SetGlobalUserIdentity failed: " + (gitCommandResult.Error?.FriendlyDescription ?? ""), null);
                 }
             }
             catch (Exception ex)
