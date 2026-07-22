@@ -144,8 +144,16 @@
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
     <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0-windows10.0.19041.0）。
          Exists 守卫保证非 Windows build 或子项目尚未构建时不会失败。-->
+    <!-- .NET 10 下 exe 是 native apphost（启动器），托管代码在同名 .dll 中，
+         apphost 还需 .runtimeconfig.json 才能解析运行时框架。三者必须一起拷到主程序
+         输出目录，否则主程序 spawn ForkPlus.AskPass.exe 时报“缺少 ForkPlus.AskPass.dll”
+         （v3.5.0 迁移时漏拷 .dll/.runtimeconfig.json，v3.5.1 修复）。-->
     <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json')" />
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json')" />
     <!-- biturbo 原生库按平台拷贝：Exists 守卫确保只拷实际存在的那一份 -->
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
