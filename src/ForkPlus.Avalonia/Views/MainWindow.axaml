@@ -138,8 +138,10 @@
             </DockPanel>
         </Border>
 
-        <!-- ===== 工具栏（对照 WPF ToolbarUserControl，DI 注入故用 ContentControl 装入）===== -->
-        <ContentControl Grid.Row="1" Name="ToolbarContainer" Height="44" />
+        <!-- ===== 工具栏（对照 WPF ToolbarUserControl，DI 注入故用 ContentControl 装入）
+             WPF 未设置显式高度，高度由 ToolbarButton Margin=0,3,0,3 + MinHeight=32 自然撑开
+             （约 38px），故此处也不设 Height，让 ContentControl 按内容自适应。===== -->
+        <ContentControl Grid.Row="1" Name="ToolbarContainer" />
 
         <!-- ===== 主内容区（对照 WPF ClosableTabControl，spike 单 tab）===== -->
         <ContentControl Grid.Row="2" Name="MainContentContainer"

@@ -1,11 +1,13 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Microsoft.Extensions.DependencyInjection;
+using Avalonia.Media;
+using ForkPlus.Git;
 
 namespace ForkPlus.Avalonia.Views.UserControls
 {
-    // Avalonia 版 RevisionsHeaderUserControl（spike 简化新建版）。
+    // Avalonia 版 RevisionsHeaderUserControl（完全对照 WPF 6b4cbff~1）。
     //
     // 对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.xaml.cs（123 行）：
     //   - SetSubmoduleRevisions(SubmoduleDiffContent)：显示 src/dst revision 详情
@@ -13,120 +15,251 @@ namespace ForkPlus.Avalonia.Views.UserControls
     //   - UpdateControls：更新 AvatarImage/AuthorTextBlock/ShaTextBlock/SubjectTextBlock 等
     //   - GetCustomLabelString：Sha → 缩写字符串
     //   - SwapRevisionsButton：交换 src/dst 顺序
-    //   - 依赖 AvatarImage / Theme.Diff.AddedBrush/RemovedBrush（WPF-only）
     //
-    // Avalonia 版差异（spike 简化）：
-    //   - task spec 作用：commit 列表表头（列标题 + 排序），与 WPF 源（revision 详情对比）不同
-    //   - task spec 关键 API：Initialize(RepositoryUserControl) / SetSortColumn(string) / SortChanged
-    //   - WPF AvatarImage → emoji TextBlock（👤 作者）
-    //   - WPF Theme.Diff.AddedBrush/RemovedBrush → 硬编码颜色
-    //   - WPF UpdateControls 复杂逻辑 → spike 简化为基本按钮（task spec 简化策略）
-    //   - spike 简化：复杂控件简化为基本按钮（task spec 简化策略）
-    //
-    // spike 简化：
-    //   - Initialize(object repositoryUserControl) 方法（task spec 关键 API）
-    //   - SetSortColumn(string) 方法（task spec 关键 API）
-    //   - SortChanged 事件（task spec 关键 API）
-    //   - 列标题用 Button（点击切换排序方向）
-    //   - 当前排序列显示 ▲/▼ 箭头
+    // Avalonia 适配：
+    //   - WPF Show()/Hide()/Collapse() → IsVisible = true/false
+    //   - WPF Enable()/Disable() → IsEnabled = true/false
+    //   - WPF Theme.Diff.AddedBrush/RemovedBrush → DynamicResource Diff.Added/Diff.Removed
+    //   - WPF SelectableTextBlock → TextBlock（Avalonia TextBlock 默认可选）
+    //   - WPF ApplySearchAndButrackerHighlighting → spike 跳过（仅设 Text）
+    //   - spike 保留 IServiceProvider 构造函数（DI 兼容）
     public partial class RevisionsHeaderUserControl : UserControl
     {
-        // ===== 公共事件（task spec 关键 API）=====
-        // 排序变更事件（对照 task spec: SortChanged）
-        // EventArgs 携带排序列名 + 排序方向
-        public event EventHandler<SortChangedEventArgs> SortChanged;
-
-        // ===== 排序参数 EventArgs（spike 新增）=====
-        public class SortChangedEventArgs : EventArgs
-        {
-            public string ColumnName { get; set; }
-            public bool Ascending { get; set; }
-        }
-
         // ===== 私有字段 =====
         private readonly IServiceProvider _serviceProvider;
+
         // spike 版用 object 占位（对照 WPF: RepositoryUserControl）
         public object RepositoryUserControl { get; private set; }
 
-        // 当前排序列（对照 task spec: SetSortColumn）
-        private string _sortColumn = "Date";
-        // 当前排序方向
-        private bool _ascending = false;
-
-        // ===== 构造函数（spike 用 IServiceProvider）=====
+        // ===== 构造函数（spike 用 IServiceProvider，DI 兼容）=====
         public RevisionsHeaderUserControl(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             InitializeComponent();
-            UpdateSortIndicators();
         }
 
-        // ===== Initialize(object)（task spec 关键 API）=====
-        // 对照 WPF: 无独立 Initialize（依赖通过 DataContext 注入）
-        // spike 版：Initialize 方法注入 RepositoryUserControl
+        // ===== Initialize(object)（spike DI 注入）=====
         public void Initialize(object repositoryUserControl)
         {
             RepositoryUserControl = repositoryUserControl;
         }
 
-        // ===== SetSortColumn(string)（task spec 关键 API）=====
-        // 设置当前排序列（不触发 SortChanged 事件，仅更新 UI 指示器）
-        public void SetSortColumn(string columnName)
+        // ===== SetSubmoduleRevisions（对照 WPF）=====
+        // 显示 src/dst submodule revision 详情
+        public void SetSubmoduleRevisions(SubmoduleDiffContent submoduleDiffContent)
         {
-            if (string.IsNullOrEmpty(columnName)) return;
-            _sortColumn = columnName;
-            UpdateSortIndicators();
-        }
+            if (submoduleDiffContent == null) return;
 
-        // ===== SetSortDirection(bool)（spike 新增）=====
-        // 设置排序方向（不触发 SortChanged 事件，仅更新 UI 指示器）
-        public void SetSortDirection(bool ascending)
-        {
-            _ascending = ascending;
-            UpdateSortIndicators();
-        }
+            OtherRevisionDetailsContainer.IsVisible = true;
+            SwapRevisionsButton.IsVisible = false;
 
-        // ===== ColumnButton_Click（spike 新增，列标题点击排序）=====
-        // 对照 task spec: 排序功能
-        // 点击列标题：同列切换方向，不同列切换到该列（默认降序）
-        private void ColumnButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is string columnName)
+            Revision srcRevision = submoduleDiffContent.SrcRevision;
+            if (srcRevision != null)
             {
-                if (columnName == _sortColumn)
+                Revision dstRevision = submoduleDiffContent.DstRevision;
+                if (dstRevision != null)
                 {
-                    // 同列：切换方向
-                    _ascending = !_ascending;
+                    UpdateControls(dstRevision, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                        OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                        OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                        OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Added"));
+                    UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock,
+                        AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                        SubjectTextBlock, DescriptionSymbolTextBlock,
+                        CustomTextBlockBorder, CustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Removed"));
                 }
                 else
                 {
-                    // 不同列：切换到该列，默认降序
-                    _sortColumn = columnName;
-                    _ascending = false;
+                    UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                        OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                        OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                        OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Added"),
+                        GetCustomLabelString(submoduleDiffContent.DstSha));
+                    UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock,
+                        AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                        SubjectTextBlock, DescriptionSymbolTextBlock,
+                        CustomTextBlockBorder, CustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Removed"));
                 }
-
-                UpdateSortIndicators();
-
-                // 触发 SortChanged 事件（task spec 关键 API）
-                SortChanged?.Invoke(this, new SortChangedEventArgs
+            }
+            else
+            {
+                Revision dstRevision2 = submoduleDiffContent.DstRevision;
+                if (dstRevision2 != null)
                 {
-                    ColumnName = _sortColumn,
-                    Ascending = _ascending
-                });
+                    UpdateControls(dstRevision2, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                        OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                        OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                        OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Added"));
+                    UpdateControls(null, AuthorAvatarImage, AuthorTextBlock,
+                        AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                        SubjectTextBlock, DescriptionSymbolTextBlock,
+                        CustomTextBlockBorder, CustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Removed"),
+                        GetCustomLabelString(submoduleDiffContent.SrcSha));
+                }
+                else
+                {
+                    UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                        OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                        OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                        OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Added"),
+                        GetCustomLabelString(submoduleDiffContent.DstSha));
+                    UpdateControls(null, AuthorAvatarImage, AuthorTextBlock,
+                        AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                        SubjectTextBlock, DescriptionSymbolTextBlock,
+                        CustomTextBlockBorder, CustomTextBlock,
+                        submoduleDiffContent.Bugtrackers, GetBrush("Diff.Removed"),
+                        GetCustomLabelString(submoduleDiffContent.SrcSha));
+                }
             }
         }
 
-        // ===== UpdateSortIndicators（spike 新增，更新排序箭头）=====
-        // 当前排序列显示 ▲（升序）/ ▼（降序），其他列不显示
-        private void UpdateSortIndicators()
+        // ===== SetRevisions（对照 WPF）=====
+        // 显示 revision 对比（compareToWorkingDirectory 或 srcRevision vs revision）
+        public void SetRevisions(Revision revision, BugtrackerLinkDefinition[] bugtrackers,
+            RevisionDetails srcRevision = null, bool compareToWorkingDirectory = false)
         {
-            string arrow = _ascending ? "▲" : "▼";
-            string none = "";
+            if (revision == null) return;
 
-            if (ShaColumnButton != null) ShaColumnButton.Content = "SHA" + (_sortColumn == "Sha" ? " " + arrow : none);
-            if (AuthorColumnButton != null) AuthorColumnButton.Content = "Author" + (_sortColumn == "Author" ? " " + arrow : none);
-            if (SubjectColumnButton != null) SubjectColumnButton.Content = "Subject" + (_sortColumn == "Subject" ? " " + arrow : none);
-            if (DateColumnButton != null) DateColumnButton.Content = "Date" + (_sortColumn == "Date" ? " " + arrow : none);
+            if (compareToWorkingDirectory)
+            {
+                OtherRevisionDetailsContainer.IsVisible = true;
+                UpdateControls(revision, AuthorAvatarImage, AuthorTextBlock,
+                    AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                    SubjectTextBlock, DescriptionSymbolTextBlock,
+                    CustomTextBlockBorder, CustomTextBlock,
+                    bugtrackers, GetBrush("Diff.Removed"));
+                UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                    OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                    OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                    OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                    bugtrackers, GetBrush("Diff.Added"), "Local Changes");
+                SwapRevisionsButton.IsEnabled = false;
+            }
+            else if (srcRevision != null)
+            {
+                OtherRevisionDetailsContainer.IsVisible = true;
+                SwapRevisionsButton.IsEnabled = true;
+                UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock,
+                    OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder,
+                    OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock,
+                    OtherCustomTextBlockBorder, OtherCustomTextBlock,
+                    bugtrackers, GetBrush("Diff.Added"));
+                UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock,
+                    AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                    SubjectTextBlock, DescriptionSymbolTextBlock,
+                    CustomTextBlockBorder, CustomTextBlock,
+                    bugtrackers, GetBrush("Diff.Removed"));
+            }
+            else
+            {
+                OtherRevisionDetailsContainer.IsVisible = false;
+                UpdateControls(revision, AuthorAvatarImage, AuthorTextBlock,
+                    AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder,
+                    SubjectTextBlock, DescriptionSymbolTextBlock,
+                    CustomTextBlockBorder, CustomTextBlock,
+                    bugtrackers);
+            }
+        }
+
+        // ===== UpdateControls（对照 WPF private static void UpdateControls）=====
+        // 更新一组控件显示单个 revision 的详情
+        private static void UpdateControls(
+            Revision revision,
+            Controls.AvatarImage authorAvatarImage,
+            TextBlock authorTextBlock,
+            TextBlock authorDateTextBlock,
+            TextBlock shaTextBlock,
+            Border shaBackgroundBorder,
+            TextBlock subjectTextBlock,
+            TextBlock descriptionSymbolTextBlock,
+            Border customTextBlockBorder,
+            TextBlock customTextBlock,
+            BugtrackerLinkDefinition[] bugtrackers,
+            IBrush brush = null,
+            string customTextBlockText = null)
+        {
+            if (customTextBlockText != null)
+            {
+                // 自定义标签模式（如 "Local Changes"、缩写 SHA）
+                customTextBlockBorder.IsVisible = true;
+                authorTextBlock.IsVisible = false;
+                authorDateTextBlock.IsVisible = false;
+                shaTextBlock.IsVisible = false;
+                shaBackgroundBorder.IsVisible = false;
+                subjectTextBlock.IsVisible = false;
+                authorAvatarImage.UserIdentity = new UserIdentity("", "");
+                customTextBlock.Text = customTextBlockText;
+                if (brush != null) customTextBlockBorder.Background = brush;
+            }
+            else if (revision != null)
+            {
+                // 正常 revision 详情模式
+                customTextBlockBorder.IsVisible = false;
+                authorTextBlock.IsVisible = true;
+                authorDateTextBlock.IsVisible = true;
+                shaTextBlock.IsVisible = true;
+                shaBackgroundBorder.IsVisible = true;
+                subjectTextBlock.IsVisible = true;
+                authorAvatarImage.UserIdentity = revision.Author;
+                authorTextBlock.Text = revision.Author.Name;
+                authorDateTextBlock.Text = revision.AuthorDate.ToString(Consts.NormalDateTimeFormat);
+                shaTextBlock.Text = revision.Sha.ToAbbreviatedString();
+                if (brush != null) shaBackgroundBorder.Background = brush;
+                revision.MessageParts(out string subject, out string description);
+                subjectTextBlock.Text = subject;
+                // spike 跳过 ApplySearchAndButrackerHighlighting
+                ToolTip.SetTip(subjectTextBlock, revision.Message?.TrimEnd());
+                descriptionSymbolTextBlock.IsVisible = !string.IsNullOrEmpty(description);
+            }
+            else
+            {
+                // null revision：隐藏所有详情
+                customTextBlockBorder.IsVisible = false;
+                authorTextBlock.IsVisible = false;
+                authorDateTextBlock.IsVisible = false;
+                shaTextBlock.IsVisible = false;
+                shaBackgroundBorder.IsVisible = false;
+                subjectTextBlock.IsVisible = false;
+                descriptionSymbolTextBlock.IsVisible = false;
+                authorAvatarImage.UserIdentity = new UserIdentity("", "");
+            }
+        }
+
+        // ===== GetCustomLabelString（对照 WPF）=====
+        // Sha → 缩写字符串（Sha.Zero 返回 "null"）
+        private static string GetCustomLabelString(Sha sha)
+        {
+            if (sha != null && !(sha == Sha.Zero))
+            {
+                return sha.ToAbbreviatedString();
+            }
+            return "null";
+        }
+
+        // ===== SwapRevisionsButton_Click（spike 新增，对照 WPF SwapRevisionsButton 交换 src/dst）=====
+        private void SwapRevisionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            // spike 版：交换事件由父控件处理（对照 WPF 通过 Style 绑定 command）
+            Console.WriteLine("[RevisionsHeaderUserControl] SwapRevisionsButton clicked (spike)");
+        }
+
+        // ===== GetBrush（spike 辅助：从 DynamicResource 获取画刷）=====
+        // 对照 WPF Theme.Diff.AddedBrush / Theme.Diff.RemovedBrush
+        private static IBrush GetBrush(string resourceKey)
+        {
+            if (Application.Current != null && Application.Current.TryGetResource(resourceKey, null, out object value)
+                && value is IBrush brush)
+            {
+                return brush;
+            }
+            return null;
         }
     }
 }

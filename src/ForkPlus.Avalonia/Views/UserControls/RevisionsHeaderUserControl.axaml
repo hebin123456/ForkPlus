@@ -1,8 +1,26 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ForkPlus.Avalonia.Controls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionsHeaderUserControl">
     <!--
-        Avalonia 版 RevisionsHeaderUserControl（spike 简化新建版）。
+        Avalonia 版 RevisionsHeaderUserControl（完全对照 WPF 6b4cbff~1）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.xaml（115 行）：
+          - 顶层 Grid 2 行（Auto, Auto）：
+            Row 0: RevisionDetailsContainer Grid（6 列，src revision 详情）
+            Row 1: OtherRevisionDetailsContainer Grid（6 列，dst revision 详情）
+            SwapRevisionsButton（RowSpan=2, Right, Center, Hidden, 22x22, SwapIcon 16x16）
+          - 每行 6 列：
+            Col 0 (Auto): AvatarImage（18x18, Margin=10,2,10,2）
+            Col 1 (Auto): Border CustomTextBlockBorder（Height=18, Margin=-3,0,0,0, CornerRadius=3）
+                          → SelectableTextBlock CustomTextBlock（Margin=3,0,3,1, FontSize=13, FontWeight=Medium）
+            Col 2 (Auto): SelectableTextBlock AuthorTextBlock（Margin=0,2,5,0, FontSize=13, FontWeight=Medium）
+            Col 3 (Auto): Border ShaBackgroundBorder（Height=16, Margin=0,1,0,1, Padding=3,0,3,1, CornerRadius=3）
+                          → SelectableTextBlock ShaTextBlock（Foreground=SecondaryLabelBrush）
+            Col 4 (Auto): SelectableTextBlock AuthorDateTextBlock（Margin=5,3,10,0, FontWeight=Medium, Foreground=SecondaryLabelBrush）
+            Col 5 (*):    DockPanel（Margin=0,0,10,0）:
+                            SelectableTextBlock SubjectTextBlock（Dock=Left, Margin=0,0.8,0,0, FontSize=14, FontWeight=Medium, TextTrimming=CharacterEllipsis）
+                            TextBlock DescriptionSymbolTextBlock（Dock=Left, Margin=6,3,0,0, FontSize=12, Text="↩", Foreground=RevisionList.BodyIndicator.ForegroundBrush）
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.xaml.cs（123 行）：
           - SetSubmoduleRevisions(SubmoduleDiffContent)：显示 src/dst revision 详情
@@ -10,82 +28,194 @@
           - UpdateControls：更新 AvatarImage/AuthorTextBlock/ShaTextBlock/SubjectTextBlock 等
           - GetCustomLabelString：Sha → 缩写字符串
           - SwapRevisionsButton：交换 src/dst 顺序
-          - 依赖 AvatarImage / Theme.Diff.AddedBrush/RemovedBrush（WPF-only）
 
-        Avalonia 版差异（spike 简化）：
-          - task spec 作用：commit 列表表头（列标题 + 排序），与 WPF 源（revision 详情对比）不同
-          - task spec 关键 API：Initialize(RepositoryUserControl) / SetSortColumn(string) / SortChanged
-          - WPF AvatarImage → emoji TextBlock（👤 作者）
-          - WPF Theme.Diff.AddedBrush/RemovedBrush → 硬编码颜色
-          - spike 简化：复杂控件简化为基本按钮（task spec 简化策略）
-
-        spike 简化：
-          - Initialize(object repositoryUserControl) 方法（task spec 关键 API）
-          - SetSortColumn(string) 方法（task spec 关键 API）
-          - SortChanged 事件（task spec 关键 API）
-          - 列标题用 Button（点击切换排序方向）
-          - 当前排序列显示 ▲/▼ 箭头
+        Avalonia 适配：
+          - WPF SelectableTextBlock → TextBlock（Avalonia TextBlock 默认可选）
+          - WPF Visibility.Hidden → IsVisible=False（Avalonia 无 Hidden 等价物）
+          - WPF DynamicResource SwapIcon（Image 控件）→ ContentControl 包装
+          - WPF Show()/Hide()/Collapse()/Enable()/Disable() 扩展 → IsVisible=True/False + IsEnabled=True/False
     -->
-    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto"
-          Background="{DynamicResource ThemeCardBackgroundBrush}"
-          Margin="0,1">
+    <Grid RowDefinitions="Auto,Auto">
 
-        <!-- Col 0: SHA 列标题（可点击排序）-->
-        <Button Grid.Column="0"
-                Name="ShaColumnButton"
-                Content="SHA"
-                Click="ColumnButton_Click"
-                Tag="Sha"
-                Background="Transparent"
+        <!-- ===== Row 0: RevisionDetailsContainer（src revision 详情，对照 WPF Margin=0,1,0,1）===== -->
+        <Grid Grid.Row="0"
+              Name="RevisionDetailsContainer"
+              Margin="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Col 0: AvatarImage（对照 WPF AuthorAvatarImage 18x18 Margin=10,2,10,2）-->
+            <controls:AvatarImage Grid.Column="0"
+                                  Name="AuthorAvatarImage"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center"
+                                  Width="18" Height="18"
+                                  Margin="10,2,10,2" />
+
+            <!-- Col 1: CustomTextBlockBorder → CustomTextBlock（对照 WPF Height=18 Margin=-3,0,0,0 CornerRadius=3）-->
+            <Border Grid.Column="1"
+                    Name="CustomTextBlockBorder"
+                    Height="18"
+                    Margin="-3,0,0,0"
+                    CornerRadius="3"
+                    IsVisible="False">
+                <TextBlock Name="CustomTextBlock"
+                           Margin="3,0,3,1"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           FontWeight="Medium" />
+            </Border>
+
+            <!-- Col 2: AuthorTextBlock（对照 WPF Margin=0,2,5,0 FontSize=13 FontWeight=Medium）-->
+            <TextBlock Grid.Column="2"
+                       Name="AuthorTextBlock"
+                       Margin="0,2,5,0"
+                       FontSize="13"
+                       FontWeight="Medium" />
+
+            <!-- Col 3: ShaBackgroundBorder → ShaTextBlock（对照 WPF Height=16 Margin=0,1,0,1 Padding=3,0,3,1 CornerRadius=3）-->
+            <Border Grid.Column="3"
+                    Name="ShaBackgroundBorder"
+                    Height="16"
+                    Margin="0,1,0,1"
+                    Padding="3,0,3,1"
+                    CornerRadius="3">
+                <TextBlock Name="ShaTextBlock"
+                           Margin="0"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource SecondaryLabelBrush}" />
+            </Border>
+
+            <!-- Col 4: AuthorDateTextBlock（对照 WPF Margin=5,3,10,0 FontWeight=Medium Foreground=SecondaryLabelBrush）-->
+            <TextBlock Grid.Column="4"
+                       Name="AuthorDateTextBlock"
+                       Margin="5,3,10,0"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+
+            <!-- Col 5: SubjectTextBlock + DescriptionSymbolTextBlock（对照 WPF DockPanel Margin=0,0,10,0）-->
+            <DockPanel Grid.Column="5"
+                       Margin="0,0,10,0">
+                <TextBlock DockPanel.Dock="Left"
+                           Name="SubjectTextBlock"
+                           Margin="0,1,0,0"
+                           FontSize="14"
+                           FontWeight="Medium"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock DockPanel.Dock="Left"
+                           Name="DescriptionSymbolTextBlock"
+                           Margin="6,3,0,0"
+                           FontSize="12"
+                           Text="↩"
+                           Foreground="{DynamicResource RevisionList.BodyIndicator.ForegroundBrush}" />
+            </DockPanel>
+        </Grid>
+
+        <!-- ===== Row 1: OtherRevisionDetailsContainer（dst revision 详情，对照 WPF Margin=0,0,0,1）===== -->
+        <Grid Grid.Row="1"
+              Name="OtherRevisionDetailsContainer"
+              Margin="0,0,0,1"
+              IsVisible="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Col 0: OtherAuthorAvatarImage -->
+            <controls:AvatarImage Grid.Column="0"
+                                  Name="OtherAuthorAvatarImage"
+                                  HorizontalAlignment="Left"
+                                  Width="18" Height="18"
+                                  Margin="10,2,10,2" />
+
+            <!-- Col 1: OtherCustomTextBlockBorder → OtherCustomTextBlock -->
+            <Border Grid.Column="1"
+                    Name="OtherCustomTextBlockBorder"
+                    Height="18"
+                    Margin="-3,0,0,0"
+                    CornerRadius="3"
+                    IsVisible="False">
+                <TextBlock Name="OtherCustomTextBlock"
+                           Margin="3,0,3,1"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           FontWeight="Medium" />
+            </Border>
+
+            <!-- Col 2: OtherAuthorTextBlock -->
+            <TextBlock Grid.Column="2"
+                       Name="OtherAuthorTextBlock"
+                       Margin="0,2,5,0"
+                       FontSize="13"
+                       FontWeight="Medium" />
+
+            <!-- Col 3: OtherShaBackgroundBorder → OtherShaTextBlock -->
+            <Border Grid.Column="3"
+                    Name="OtherShaBackgroundBorder"
+                    Height="16"
+                    Margin="0,1,0,1"
+                    Padding="3,0,3,1"
+                    CornerRadius="3">
+                <TextBlock Name="OtherShaTextBlock"
+                           Margin="0"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource SecondaryLabelBrush}" />
+            </Border>
+
+            <!-- Col 4: OtherAuthorDateTextBlock -->
+            <TextBlock Grid.Column="4"
+                       Name="OtherAuthorDateTextBlock"
+                       Margin="5,3,10,0"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource SecondaryLabelBrush}" />
+
+            <!-- Col 5: OtherSubjectTextBlock + OtherDescriptionSymbolTextBlock -->
+            <DockPanel Grid.Column="5"
+                       Margin="0,0,10,0">
+                <TextBlock DockPanel.Dock="Left"
+                           Name="OtherSubjectTextBlock"
+                           Margin="0,1,0,0"
+                           FontSize="14"
+                           FontWeight="Medium"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock DockPanel.Dock="Left"
+                           Name="OtherDescriptionSymbolTextBlock"
+                           Margin="6,3,0,0"
+                           FontSize="12"
+                           Text="↩"
+                           Foreground="{DynamicResource RevisionList.BodyIndicator.ForegroundBrush}" />
+            </DockPanel>
+        </Grid>
+
+        <!-- ===== SwapRevisionsButton（对照 WPF RowSpan=2, Right, Center, Hidden, 22x22, SwapIcon 16x16）===== -->
+        <Button Grid.RowSpan="2"
+                Name="SwapRevisionsButton"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                IsVisible="False"
                 BorderThickness="0"
-                Padding="8,4"
-                FontSize="12"
-                FontWeight="SemiBold" />
-
-        <!-- Col 1: 作者列标题（可点击排序）-->
-        <Button Grid.Column="1"
-                Name="AuthorColumnButton"
-                Content="Author"
-                Click="ColumnButton_Click"
-                Tag="Author"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="8,4"
-                FontSize="12"
-                FontWeight="SemiBold" />
-
-        <!-- Col 2: 主题列标题（可点击排序）-->
-        <Button Grid.Column="2"
-                Name="SubjectColumnButton"
-                Content="Subject"
-                Click="ColumnButton_Click"
-                Tag="Subject"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="8,4"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Left"
-                FontSize="12"
-                FontWeight="SemiBold" />
-
-        <!-- Col 3: 日期列标题（可点击排序）-->
-        <Button Grid.Column="3"
-                Name="DateColumnButton"
-                Content="Date"
-                Click="ColumnButton_Click"
-                Tag="Date"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="8,4"
-                FontSize="12"
-                FontWeight="SemiBold" />
-
-        <!-- Col 4: 排序方向指示器（spike 新增）-->
-        <TextBlock Grid.Column="4"
-                   Name="SortDirectionTextBlock"
-                   Text=""
-                   VerticalAlignment="Center"
-                   Margin="4,0,8,0"
-                   FontSize="12" />
+                Background="#00FFFFFF"
+                Width="22" Height="22"
+                Padding="2"
+                Margin="0,0,10,0"
+                ToolTip.Tip="Reverse Commits"
+                Click="SwapRevisionsButton_Click">
+            <ContentControl Content="{DynamicResource SwapIcon}"
+                            Width="16" Height="16" />
+        </Button>
     </Grid>
 </UserControl>

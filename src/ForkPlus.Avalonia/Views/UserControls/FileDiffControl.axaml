@@ -64,41 +64,43 @@
           - Text 类型时 TextDiffControl 可见（解 Phase 3.9a 占位）
           - 其他类型时 TextBlock 占位可见，文字随 Content 类型切换
     -->
+    <!-- 对照 WPF DiffControlContainer : Grid（代码生成 Grid 2 行）：
+         Row 0 (Auto): FileControlHeaderUserControl（Header.Height = 18.0，默认 Collapse）
+         Row 1 (*):    _subView（ShowSubView 直接 Add 到 Children，无 Border 包裹、无 Background）
+         WPF 不设容器 Background，由各 sub-view 控件自定。 -->
     <Grid RowDefinitions="Auto,*">
 
-        <!-- Row 0: FileControlHeaderUserControl（默认 Collapsed，对照 WPF）-->
+        <!-- Row 0: FileControlHeaderUserControl（对照 WPF Header.Height = 18.0，默认 Collapse）-->
         <uc:FileControlHeaderUserControl Grid.Row="0"
                                          Name="FileControlHeader"
+                                         Height="18"
                                          IsVisible="False" />
 
         <!-- Row 1: SubView 容器（5 种 sub-view 切换）。
+             对照 WPF：SubView 直接 Add 到 Grid.Row=1，无 Border 包裹、无容器 Background。
              Phase 2.6 升级：Text 类型不再用 TextBlock 占位，改用真实 TextDiffControl。
              Phase 2.9 升级：Hex 类型不再用 TextBlock 占位，改用真实 HexDiffUserControl。
              其他类型（Binary/Submodule/Fallback）仍用 TextBlock 占位（Phase 3.9b）。 -->
-        <Border Grid.Row="1"
-                Name="SubViewContainer"
-                Background="{DynamicResource ThemeBackgroundBrush}">
-            <Grid>
-                <!-- 默认占位（非 Text/Hex 类型用）-->
-                <TextBlock Name="SubViewPlaceholder"
-                           Text="(diff placeholder)"
-                           FontSize="12"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Grid Grid.Row="1">
+            <!-- 默认占位（非 Text/Hex 类型用，spike 必需，WPF 用真实 FallbackUserControl）-->
+            <TextBlock Name="SubViewPlaceholder"
+                       Text=""
+                       FontSize="12"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-                <!-- Phase 2.6：TextDiffControl（Text 类型用，默认隐藏，ShowSubView 时显示）
-                     承载 DiffCodeEditor : CodeEditor : AvaloniaEdit.TextEditor，
-                     解 Phase 3.9a 的 AvalonEdit 占位。 -->
-                <editor:TextDiffControl Name="TextDiffSubView"
-                                        IsVisible="False" />
+            <!-- Phase 2.6：TextDiffControl（Text 类型用，默认隐藏，ShowSubView 时显示）
+                 承载 DiffCodeEditor : CodeEditor : AvaloniaEdit.TextEditor，
+                 解 Phase 3.9a 的 AvalonEdit 占位。 -->
+            <editor:TextDiffControl Name="TextDiffSubView"
+                                    IsVisible="False" />
 
-                <!-- Phase 2.9：HexDiffUserControl（Hex 类型用，默认隐藏，ShowSubView 时显示）
-                     承载双 HexEditor : CodeEditor : AvaloniaEdit.TextEditor，
-                     解 Phase 3.9a 的 Hex 占位。
-                     SetHexDiff(HexDiffContent) 加载两侧字节并触发差异高亮。 -->
-                <hex:HexDiffUserControl Name="HexDiffSubView"
-                                        IsVisible="False" />
-            </Grid>
-        </Border>
+            <!-- Phase 2.9：HexDiffUserControl（Hex 类型用，默认隐藏，ShowSubView 时显示）
+                 承载双 HexEditor : CodeEditor : AvaloniaEdit.TextEditor，
+                 解 Phase 3.9a 的 Hex 占位。
+                 SetHexDiff(HexDiffContent) 加载两侧字节并触发差异高亮。 -->
+            <hex:HexDiffUserControl Name="HexDiffSubView"
+                                    IsVisible="False" />
+        </Grid>
     </Grid>
 </UserControl>

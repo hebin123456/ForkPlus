@@ -2,78 +2,99 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionSearchPanelUserControl">
     <!--
-        Avalonia 版 RevisionSearchPanelUserControl（spike 简化新建版）。
+        Avalonia 版 RevisionSearchPanelUserControl（完全对照 WPF 6b4cbff~1）。
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.xaml.cs（162 行）：
-          - SearchPanelPlaceholder DependencyProperty（Grid，滑入/滑出容器）
-          - SearchString 属性（SearchTextBox.Text.Trim()）
-          - IsTextBoxFocused / IsBusyIndicatorVisible / IsSearchBarVisible 属性
-          - 4 个事件：SearchQueryChanged / JumpToPreviousSearchResult / JumpToNextSearchResult / Closed
-          - ShowSearchBar / HideSearchBar / UpdateMatchesCount 方法
-          - SlidingPanelHelper.ShowPanel/HidePanel（TranslateTransform 动画）
-          - SearchTextBox.PreviewKeyDown：Return/F3 → FindNext/Previous（Shift 区分方向）
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.xaml（90 行）：
+          - 顶层 Border（Padding=6,4,4,4, Background=ToolbarBackgroundBrush,
+            VerticalAlignment=Top, RenderTransform=TranslateTransform）
+          - DockPanel：
+              Close  Button (Dock=Right, CancelSearchIcon, Margin=0,0,2,0, IconButtonStyle, Padding=0, BorderThickness=0)
+              Next   Button (Dock=Right, NextIcon,          Margin=0,0,2,0, IconButtonStyle, Padding=0, BorderThickness=0)
+              Prev   Button (Dock=Right, PrevIcon,          Margin=2,0,2,0, IconButtonStyle, Padding=0, BorderThickness=0)
+              Grid (最后子元素，填充剩余空间):
+                PlaceholderTextBox (SearchTextBox, Placeholder="Search SHA, branch, author or message",
+                                    Style=SearchPanelPlaceholderTextBox, Icon=SearchIcon)
+                DockPanel (HorizontalAlignment=Right, Margin=0,0,4,0) — 叠加在 TextBox 右侧内部:
+                  ProgressBar (BusyIndicator, Dock=Left, CircularProgressBar, Width=12, Height=12,
+                               Foreground=ForegroundBrush.Gray, Margin=0,0,4,0, Collapsed)
+                  TextBlock (MatchesTextBlock, Dock=Right, VerticalAlignment=Bottom, Margin=0,0,4,3)
 
-        Avalonia 版差异（spike 简化）：
-          - WPF DependencyProperty SearchPanelPlaceholder → 直接 Grid 控件
+        Avalonia 适配：
           - WPF SlidingPanelHelper + TranslateTransform 动画 → IsVisible 切换（spike 简化）
-          - WPF PreviewKeyDown → KeyDown（Avalonia API）
-          - WPF KeyboardHelper.IsShiftDown → KeyModifiers.Shift（Avalonia API）
-          - task spec 关键 API：Initialize(RepositoryUserControl) / Search(string) / Clear() / SearchChanged
-
-        spike 简化：
-          - Initialize(object repositoryUserControl) 方法（task spec 关键 API）
-          - Search(string) 方法（task spec 关键 API）
-          - Clear() 方法（task spec 关键 API）
-          - SearchChanged 事件（task spec 关键 API）
-          - IsVisible 切换替代滑入/滑出动画
-          - Return/F3 → JumpToNext/Previous（保留键盘快捷键）
+          - WPF PlaceholderTextBox Icon=SearchIcon → TextBox + Watermark（spike 不迁移 Icon 属性）
+          - WPF DynamicResource XxxIcon（Image 控件）→ ContentControl 包装（Image 是控件非 IImage）
+          - WPF IconButtonStyle → Classes="icon-btn" + Padding=0 覆盖（WPF 各按钮也显式设 Padding=0）
+          - WPF CircularProgressBar Style → 标准 ProgressBar IsIndeterminate=True
     -->
-    <Grid Name="SearchPanelContainer"
-          ColumnDefinitions="*,Auto,Auto,Auto"
-          IsVisible="False"
-          Background="{DynamicResource ThemeCardBackgroundBrush}"
-          Margin="0,2">
+    <Border Name="SearchPanelContainer"
+            Padding="6,4,4,4"
+            Background="{DynamicResource ToolbarBackgroundBrush}"
+            VerticalAlignment="Top"
+            IsVisible="False">
+        <DockPanel>
 
-        <!-- Col 0: 搜索 TextBox（对照 WPF: SearchTextBox）-->
-        <TextBox Grid.Column="0"
-                 Name="SearchTextBox"
-                 Watermark="Search revisions..."
-                 KeyDown="SearchTextBox_KeyDown"
-                 TextChanged="SearchTextBox_TextChanged"
-                 Margin="0,0,4,0" />
+            <!-- Close 按钮（Dock=Right 最右侧，对照 WPF CancelSearchIcon）-->
+            <Button Classes="icon-btn"
+                    DockPanel.Dock="Right"
+                    Margin="0,0,2,0"
+                    Padding="0"
+                    ToolTip.Tip="Close search"
+                    Click="CloseSearchContainerButton_Click">
+                <ContentControl Content="{DynamicResource CancelSearchIcon}"
+                                Width="16" Height="16"
+                                VerticalAlignment="Center" />
+            </Button>
 
-        <!-- Col 1: 匹配计数（对照 WPF: MatchesTextBlock）-->
-        <TextBlock Grid.Column="1"
-                   Name="MatchesTextBlock"
-                   Text=""
-                   VerticalAlignment="Center"
-                   Margin="4,0"
-                   FontSize="12" />
+            <!-- Next 按钮（Dock=Right，对照 WPF NextIcon）-->
+            <Button Classes="icon-btn"
+                    DockPanel.Dock="Right"
+                    Margin="0,0,2,0"
+                    Padding="0"
+                    ToolTip.Tip="Next match"
+                    Click="JumpToNextSearchResultButton_Click">
+                <ContentControl Content="{DynamicResource NextIcon}"
+                                Width="16" Height="16"
+                                VerticalAlignment="Center" />
+            </Button>
 
-        <!-- Col 2: loading 指示器（对照 WPF: BusyIndicator）-->
-        <ProgressBar Grid.Column="2"
-                     Name="BusyIndicator"
-                     IsIndeterminate="True"
-                     Width="16"
-                     Height="16"
-                     VerticalAlignment="Center"
-                     Margin="4,0"
-                     IsVisible="False" />
+            <!-- Prev 按钮（Dock=Right 最左侧，对照 WPF PrevIcon Margin=2,0,2,0）-->
+            <Button Classes="icon-btn"
+                    DockPanel.Dock="Right"
+                    Margin="2,0,2,0"
+                    Padding="0"
+                    ToolTip.Tip="Previous match"
+                    Click="JumpToPreviousSearchResultButton_Click">
+                <ContentControl Content="{DynamicResource PrevIcon}"
+                                Width="16" Height="16"
+                                VerticalAlignment="Center" />
+            </Button>
 
-        <!-- Col 3: 关闭 + 上一个 + 下一个按钮 -->
-        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2">
-            <Button Name="JumpToPreviousSearchResultButton"
-                    Content="▲"
-                    Click="JumpToPreviousSearchResultButton_Click"
-                    Padding="6,2" />
-            <Button Name="JumpToNextSearchResultButton"
-                    Content="▼"
-                    Click="JumpToNextSearchResultButton_Click"
-                    Padding="6,2" />
-            <Button Name="CloseSearchContainerButton"
-                    Content="✕"
-                    Click="CloseSearchContainerButton_Click"
-                    Padding="6,2" />
-        </StackPanel>
-    </Grid>
+            <!-- 最后子元素：Grid（TextBox + 右侧叠加层）-->
+            <Grid>
+                <!-- 搜索 TextBox（对照 WPF PlaceholderTextBox Placeholder="Search SHA, branch, author or message"）-->
+                <TextBox Name="SearchTextBox"
+                         Watermark="Search SHA, branch, author or message"
+                         KeyDown="SearchTextBox_KeyDown"
+                         TextChanged="SearchTextBox_TextChanged" />
+
+                <!-- 叠加层：BusyIndicator + MatchesTextBlock（对照 WPF DockPanel HorizontalAlignment=Right Margin=0,0,4,0）
+                     叠加在 TextBox 右侧内部 -->
+                <DockPanel HorizontalAlignment="Right"
+                           Margin="0,0,4,0">
+                    <!-- BusyIndicator（对照 WPF ProgressBar Dock=Left Width=12 Height=12 Margin=0,0,4,0 Collapsed）-->
+                    <ProgressBar Name="BusyIndicator"
+                                 DockPanel.Dock="Left"
+                                 Width="12" Height="12"
+                                 Margin="0,0,4,0"
+                                 IsVisible="False"
+                                 IsIndeterminate="True" />
+                    <!-- MatchesTextBlock（对照 WPF TextBlock Dock=Right VerticalAlignment=Bottom Margin=0,0,4,3）-->
+                    <TextBlock Name="MatchesTextBlock"
+                               DockPanel.Dock="Right"
+                               VerticalAlignment="Bottom"
+                               Margin="0,0,4,3" />
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+    </Border>
 </UserControl>
