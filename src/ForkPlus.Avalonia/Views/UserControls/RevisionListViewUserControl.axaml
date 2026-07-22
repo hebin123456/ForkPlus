@@ -142,25 +142,26 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid ColumnDefinitions="48,Auto,*,90,70,90,4"
-                          Height="24"
+                    <Grid ColumnDefinitions="48,Auto,*,19,120,70,129,4"
+                          Height="23"
                           Background="Transparent"
                           ToolTip.Tip="{Binding ToolTipText}">
-                        <!-- Col 0: commit graph（对照 WPF GraphCellView，spike 用 Canvas + Line + Ellipse 简化） -->
+                        <!-- Col 0: commit graph（对照 WPF GraphCellView + UpstreamStatus Ellipse
+                             spike 用 Canvas + Line + Ellipse 简化；UpstreamStatus 暂不实现） -->
                         <Canvas Width="48"
-                                Height="24"
+                                Height="23"
                                 ClipToBounds="True"
                                 Background="Transparent">
                             <!-- lane 彩色线（8 色调色板循环分配） -->
                             <Line StartPoint="24,0"
-                                  EndPoint="24,24"
+                                  EndPoint="24,23"
                                   Stroke="{Binding GraphBrush}"
                                   StrokeThickness="2" />
                             <!-- commit 点 -->
                             <Ellipse Width="10"
                                      Height="10"
                                      Canvas.Left="19"
-                                     Canvas.Top="7"
+                                     Canvas.Top="6"
                                      Fill="{Binding GraphBrush}" />
                         </Canvas>
 
@@ -177,38 +178,43 @@
                         <TextBlock Grid.Column="2"
                                    Text="{Binding Subject}"
                                    VerticalAlignment="Center"
-                                   Margin="2,0,0,0"
+                                   Margin="2,0,0,2"
                                    TextTrimming="CharacterEllipsis" />
 
-                        <!-- Col 3: author（对照 WPF AuthorTextBlock） -->
-                        <TextBlock Grid.Column="3"
+                        <!-- Col 3: avatar 占位（对照 WPF Border 19px + AvatarImage + UserBackgroundBrush）
+                             spike 不加载真实 avatar，保留 19px 列宽占位以匹配 WPF 列布局 -->
+                        <Border Grid.Column="3"
+                                Margin="-6,2,-6,2"
+                                Width="18"
+                                BorderThickness="1,1,0,1"
+                                CornerRadius="3,0,0,3" />
+
+                        <!-- Col 4: author（对照 WPF AuthorTextBlock Width=120） -->
+                        <TextBlock Grid.Column="4"
                                    Text="{Binding Author}"
                                    VerticalAlignment="Center"
-                                   Margin="6,0,0,0"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundMidBrush}"
+                                   Margin="4,0,2,0"
                                    TextTrimming="CharacterEllipsis" />
 
-                        <!-- Col 4: short sha（对照 WPF AbbreviatedSha） -->
-                        <TextBlock Grid.Column="4"
+                        <!-- Col 5: short sha（对照 WPF AbbreviatedSha Width=70） -->
+                        <TextBlock Grid.Column="5"
                                    Text="{Binding ShortSha}"
                                    VerticalAlignment="Center"
-                                   Margin="6,0,0,0"
-                                   FontSize="11"
+                                   Margin="5,0,0,0"
                                    FontFamily="Consolas,Menlo,monospace"
                                    Foreground="{DynamicResource ThemeForegroundLowBrush}" />
 
-                        <!-- Col 5: author date（对照 WPF AuthorDateLongString） -->
-                        <TextBlock Grid.Column="5"
+                        <!-- Col 6: author date（对照 WPF AuthorDateLongString Width=129） -->
+                        <TextBlock Grid.Column="6"
                                    Text="{Binding AuthorDate}"
                                    VerticalAlignment="Center"
-                                   Margin="6,0,0,0"
+                                   Margin="0,0,-5,0"
                                    FontSize="11"
                                    Foreground="{DynamicResource ThemeForegroundLowBrush}"
                                    TextTrimming="CharacterEllipsis" />
 
-                        <!-- Col 6: 搜索匹配指示条（对照 WPF SearchMatchBorder） -->
-                        <Border Grid.Column="6"
+                        <!-- Col 7: 搜索匹配指示条（对照 WPF SearchMatchBorder Width=4） -->
+                        <Border Grid.Column="7"
                                 Width="4"
                                 Background="{DynamicResource ThemeAccentBrush}"
                                 IsVisible="{Binding IsSearchMatch}" />
