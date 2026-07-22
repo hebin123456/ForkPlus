@@ -5,13 +5,9 @@ VisualStudioVersion = 18.6.11819.183
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Avalonia", "src\ForkPlus.Avalonia\ForkPlus.Avalonia.csproj", "{C5F46746-2DF2-4F3F-9018-09C1962D0D4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus", "src\ForkPlus\ForkPlus.csproj", "{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AskPass", "src\ForkPlus.AskPass\ForkPlus.AskPass.csproj", "{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.RI", "src\ForkPlus.RI\ForkPlus.RI.csproj", "{D8C10C64-DA39-4E43-94C6-3E0FE21B2F49}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.Tests", "src\ForkPlus.Tests\ForkPlus.Tests.csproj", "{928D980B-767E-43B0-8511-57950F972CB5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForkPlus.AutomationTests", "src\ForkPlus.AutomationTests\ForkPlus.AutomationTests.csproj", "{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}"
 EndProject
@@ -35,18 +31,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|x64.Build.0 = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Debug|x86.Build.0 = Debug|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|x64.ActiveCfg = Release|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|x64.Build.0 = Release|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|x86.ActiveCfg = Release|Any CPU
-		{E8AC0C5A-6870-41EE-8D28-A9F64F8F4556}.Release|x86.Build.0 = Release|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4D0D167-4E30-4D44-97CF-D81E6FDD7663}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -71,18 +55,6 @@ Global
 		{D8C10C64-DA39-4E43-94C6-3E0FE21B2F49}.Release|x64.Build.0 = Release|Any CPU
 		{D8C10C64-DA39-4E43-94C6-3E0FE21B2F49}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8C10C64-DA39-4E43-94C6-3E0FE21B2F49}.Release|x86.Build.0 = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|x64.Build.0 = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Debug|x86.Build.0 = Debug|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|x64.ActiveCfg = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|x64.Build.0 = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|x86.ActiveCfg = Release|Any CPU
-		{928D980B-767E-43B0-8511-57950F972CB5}.Release|x86.Build.0 = Release|Any CPU
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A12E0F3-A06A-4AE5-B9BD-5E8F734F61B5}.Debug|x64.ActiveCfg = Debug|Any CPU

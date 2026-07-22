@@ -79,11 +79,17 @@
     <AvaloniaResource Include="Assets\**\*.*" />
   </ItemGroup>
 
-  <!-- Phase 4.4b：Legal.txt 嵌入资源（LegalWindow 显示第三方许可证）。
+  <!-- Phase 4.4b：Legal.txt / gitignore.txt / md-ai-output.css 嵌入资源。
        对照 WPF 工程 src/ForkPlus/ForkPlus.csproj 的 EmbeddedResource 配置。
-       LogicalName 与 WPF 一致（"ForkPlus.Assets.Legal.txt"），代码无需改动。 -->
+       LogicalName 与 WPF 一致（"ForkPlus.Assets.*"），代码无需改动。
+       - Legal.txt：LegalWindow 显示第三方许可证
+       - gitignore.txt：AddGitignoreTemplateWindow 解析模板分块
+       - md-ai-output.css：AiDevelopmentWindow/AiCodeReviewWindow/AiTextResultWindow
+         渲染 markdown 输出的 CSS 样式（Phase 5.2 LiveMarkdown.Avalonia 流式渲染） -->
   <ItemGroup>
     <EmbeddedResource Include="ForkPlus.Assets.Legal.txt" LogicalName="ForkPlus.Assets.Legal.txt" />
+    <EmbeddedResource Include="ForkPlus.Assets.gitignore.txt" LogicalName="ForkPlus.Assets.gitignore.txt" />
+    <EmbeddedResource Include="ForkPlus.Assets.md-ai-output.css" LogicalName="ForkPlus.Assets.md-ai-output.css" />
   </ItemGroup>
 
   <!-- Phase 2.5：axaml 资源（主题/样式文件）。
@@ -91,6 +97,62 @@
        Themes/ 下的 Colors.*.axaml / Brushes.axaml / Styles/*.axaml 都在这里。 -->
   <ItemGroup>
     <AvaloniaResource Include="Themes\**\*.axaml" />
+  </ItemGroup>
+
+  <!-- Phase 9：语言资源（对照 WPF src/ForkPlus.csproj 的 <Content Include="Languages\**\*.json">）。
+       LocalizationService（ForkPlus.Core/Services/LocalizationService.cs）通过
+       Path.Combine(AppContext.BaseDirectory, "Languages") 加载 JSON 文件。
+       用 Content + CopyToOutputDirectory=PreserveNewest 把 JSON 拷到输出目录，
+       与 WPF 工程行为一致。 -->
+  <ItemGroup>
+    <Content Include="Languages\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Languages\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Phase 9：gitmm 文档（GitMmReferenceWindow 显示 git mm 命令参考手册）。
+       对照 WPF src/ForkPlus.csproj 的 <Content Include="..\..\gitmm\README.md"><Link>Docs\gitmm.zh-Hans.md</Link>。
+       README.md 是简体中文，README.en.md 是英文，README.zh-Hant.md 是繁体中文，其他语言对应文件。 -->
+  <ItemGroup>
+    <Content Include="..\..\gitmm\README.md">
+      <Link>Docs\gitmm.zh-Hans.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.zh-Hant.md">
+      <Link>Docs\gitmm.zh-Hant.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.en.md">
+      <Link>Docs\gitmm.en.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.ja.md">
+      <Link>Docs\gitmm.ja.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.ko.md">
+      <Link>Docs\gitmm.ko.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.fr.md">
+      <Link>Docs\gitmm.fr.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.de.md">
+      <Link>Docs\gitmm.de.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\gitmm\README.es.md">
+      <Link>Docs\gitmm.es.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\RELEASE_NOTE.md">
+      <Link>Docs\RELEASE_NOTE.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Avalonia XAML 编译：axaml 文件由 Avalonia.Markup.Xaml AvaloniaXaml 编译器编译。
