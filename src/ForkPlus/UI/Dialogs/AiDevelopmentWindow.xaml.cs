@@ -1437,10 +1437,12 @@ namespace ForkPlus.UI.Dialogs
 			return $"[tool error] file '{relPath}' is too large ({fi.Length} bytes > {MaxFileBytes} limit). Ask the user to paste the relevant portion.";
 		}
 		// 简单二进制检测：读前 4KB 检查是否含 NUL 字节
-		byte[] probe = new byte[Math.Min(4096, fi.Length)];
+		int probeLen = (int)Math.Min(4096, fi.Length);
+		byte[] probe = new byte[probeLen];
 		using (FileStream fs = File.OpenRead(fullPath))
 		{
-			fs.Read(probe, 0, probe.Length);
+			// ReadExactly 确保读满请求长度，避免 CA2022（FileStream.Read 可能读不满）
+			fs.ReadExactly(probe, 0, probeLen);
 		}
 		if (Array.IndexOf(probe, (byte)0) >= 0)
 		{

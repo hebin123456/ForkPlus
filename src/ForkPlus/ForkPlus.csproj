@@ -132,12 +132,13 @@
 
   <!-- tokei.exe（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
        不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。Windows 产物名为 tokei.exe。
-       本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。-->
+       本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。
+       带重试（3 次，指数退避）以容忍 GitHub release 下载偶发连接中断。-->
   <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
     <PropertyGroup>
       <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/latest/download</TokeiBaseUrl>
     </PropertyGroup>
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(TokeiBaseUrl)/tokei.exe' -OutFile '..\..\third_party\tokei.exe'; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { Write-Host &quot;Attempt $i failed: $($_.Exception.Message)&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
