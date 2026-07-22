@@ -4,12 +4,9 @@
 
 ## v3.5.1
 
-### 修复：运行时缺少 ForkPlus.AskPass.dll
+### Bug 修复
 
-- **症状**：v3.5.0 运行时，主程序通过 `Process.Start` 调起 `ForkPlus.AskPass.exe`（git/SSH 凭据与密码询问子进程）时报“缺少 ForkPlus.AskPass.dll”，导致凭据输入弹窗无法弹出、克隆/拉取等需要认证的操作失败。`ForkPlus.RI.exe`（交互式 rebase 助手）存在同一问题。
-- **根因**：.NET 10 下 `Exe` 工程产物中 `.exe` 只是 native apphost 启动器，托管代码在同名的 `.dll` 里，apphost 还需要 `.runtimeconfig.json` 才能解析运行时框架。v3.5.0 把 `ForkPlus.csproj` 的 `CopyHelperExecutables` target 迁移为 SDK 风格时，只拷了 `ForkPlus.AskPass.exe` / `ForkPlus.RI.exe`，漏拷了 `.dll` 和 `.runtimeconfig.json`（v3.5.0 的 RELEASE_NOTE 里测试工程已做了“同时拷 .exe 和 .dll”，但主工程 helper 拷贝漏了这步）。
-- **修复**：在 `CopyHelperExecutables` target 中对 `ForkPlus.AskPass` 和 `ForkPlus.RI` 各补拷 `.dll` 与 `.runtimeconfig.json`（均带 `Exists` 守卫，非 Windows 构建或子项目未构建时不报错）。
-- **影响范围**：仅 `src/ForkPlus/ForkPlus.csproj` 一处构建逻辑改动，无源码 / 行为变更。
+- 修复运行时缺少 `ForkPlus.AskPass.dll` / `ForkPlus.RI.dll`，导致凭据/SSH 询问弹窗无法弹出、交互式 rebase 助手无法启动的问题。
 
 ## v3.5.0
 
