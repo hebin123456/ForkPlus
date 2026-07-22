@@ -23,6 +23,10 @@
     -->
     <Application.Styles>
         <FluentTheme />
+        <!-- 全局控件样式（对照 WPF Theme/Styles/）：Menu/Button/TextBox/ListBoxItem/
+             TreeViewItem/TabItem/GridSplitter/ScrollBar 等 WPF 风格外观。
+             放在 FluentTheme 之后以覆盖默认样式。 -->
+        <StyleInclude Source="avares://ForkPlus.Avalonia/Themes/Styles/Controls.axaml" />
     </Application.Styles>
     <Application.Resources>
         <ResourceDictionary>
@@ -30,6 +34,11 @@
                 <ResourceInclude Source="avares://ForkPlus.Avalonia/Themes/Styles/Geometries.axaml" />
                 <ResourceInclude Source="avares://ForkPlus.Avalonia/Themes/Styles/Focusvisual.axaml" />
                 <ResourceInclude Source="avares://ForkPlus.Avalonia/Themes/Styles/Images.Light.axaml" />
+                <!-- 启动时即加载默认 Colors.Light + Brushes（含 Theme* 别名），
+                     避免 ApplyTheme 之前 274 处 ThemeXxxBrush 引用查不到。
+                     AvaloniaThemeService.ApplyTheme 会动态替换这一对资源字典。 -->
+                <ResourceInclude Source="avares://ForkPlus.Avalonia/Themes/Brushes/Colors.Light.axaml" />
+                <ResourceInclude Source="avares://ForkPlus.Avalonia/Themes/Brushes/Brushes.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

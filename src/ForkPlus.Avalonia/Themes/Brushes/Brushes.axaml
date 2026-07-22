@@ -281,4 +281,26 @@
   <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="{DynamicResource SliderThumb.Track.BorderColor}" />
   <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="{DynamicResource SliderThumb.Track.BackgroundColor}" />
   <SolidColorBrush x:Key="NoColorButtonBrush" Color="{DynamicResource NoColorButtonColor}" />
+
+  <!-- ========== Theme* 别名（对照 Avalonia Fluent 命名约定）==========
+       274 处 XAML 引用 ThemeXxxBrush（如 ThemeBackgroundBrush / ThemeBorderMidBrush /
+       ThemeForegroundLowBrush / ThemeAccentBrush 等），由 FluentTheme 兜底提供。
+       但本工程的 Colors.*.axaml + Brushes.axaml 切换主题时会覆盖 BackgroundColor 等
+       基础 Color，FluentTheme 自带的 Theme*Brush 不会同步更新，导致运行时显示
+       Fluent 默认色（与 22 套主题脱节）。
+       此处显式定义 Theme*Brush 引用本工程 Color 资源，让主题切换时同步刷新。 -->
+  <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource BackgroundColor}" />
+  <SolidColorBrush x:Key="ThemeCardBackgroundBrush" Color="{DynamicResource TileBackgroundColor}" />
+  <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource BorderColor}" />
+  <SolidColorBrush x:Key="ThemeBorderLowBrush" Color="{DynamicResource MouseOver.BorderColor}" />
+  <SolidColorBrush x:Key="ThemeBorderHighBrush" Color="{DynamicResource BorderColor}" />
+  <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource AccentColor}" />
+  <SolidColorBrush x:Key="ThemeHighlightBrush" Color="{DynamicResource AccentColor}" />
+  <SolidColorBrush x:Key="ThemeErrorBrush" Color="{DynamicResource Merge.StatusLabel.RedColor}" />
+  <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ForegroundColor}" />
+  <SolidColorBrush x:Key="ThemeForegroundMidBrush" Color="{DynamicResource SecondaryLabelColor}" />
+  <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource ForegroundColor.DimGray}" />
+  <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource GroupBoxBackgroundColor}" />
+  <SolidColorBrush x:Key="ThemeControlLowBrush" Color="{DynamicResource MouseOver.BackgroundColor}" />
+  <SolidColorBrush x:Key="ThemeControlDarkBrush" Color="{DynamicResource Pressed.BackgroundColor}" />
 </ResourceDictionary>
