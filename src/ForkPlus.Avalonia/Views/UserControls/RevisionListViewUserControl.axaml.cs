@@ -222,6 +222,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
         private bool _isLoading;
         private bool _isLoaded;
         private bool _suppressSelectionEvent;
+        private int _currentMatchIndex = -1;
 
         // 对照 WPF: _activeContextSearchJob / _activeSidebarSearchJob
         private JobMonitor _activeContextSearchMonitor;
@@ -755,7 +756,9 @@ namespace ForkPlus.Avalonia.Views.UserControls
         private void UpdateMatchCount()
         {
             if (MatchCountTextBlock == null) return;
-            if (string.IsNullOrEmpty(_searchText))
+            bool hasSearch = !string.IsNullOrEmpty(_searchText);
+            bool hasMatches = hasSearch && _filteredRevisions.Count > 0;
+            if (!hasSearch)
             {
                 MatchCountTextBlock.IsVisible = false;
             }
@@ -764,6 +767,34 @@ namespace ForkPlus.Avalonia.Views.UserControls
                 MatchCountTextBlock.IsVisible = true;
                 MatchCountTextBlock.Text = LocFmt("{0} matches", _filteredRevisions.Count);
             }
+            // Prev/Next 按钮仅在有匹配时显示（对照 WPF JumpToPrev/NextSearchResultButton）
+            if (PrevSearchButton != null) PrevSearchButton.IsVisible = hasMatches;
+            if (NextSearchButton != null) NextSearchButton.IsVisible = hasMatches;
+            if (hasMatches)
+            {
+                if (_currentMatchIndex < 0 || _currentMatchIndex >= _filteredRevisions.Count)
+                    _currentMatchIndex = 0;
+            }
+            else
+            {
+                _currentMatchIndex = -1;
+            }
+        }
+
+        // Prev 按钮：跳到上一个匹配（对照 WPF JumpToPreviousSearchResultButton_Click）
+        public void PrevSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_filteredRevisions.Count == 0) return;
+            _currentMatchIndex = (_currentMatchIndex - 1 + _filteredRevisions.Count) % _filteredRevisions.Count;
+            SelectRevision(_filteredRevisions[_currentMatchIndex].Sha);
+        }
+
+        // Next 按钮：跳到下一个匹配（对照 WPF JumpToNextSearchResultButton_Click）
+        public void NextSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_filteredRevisions.Count == 0) return;
+            _currentMatchIndex = (_currentMatchIndex + 1) % _filteredRevisions.Count;
+            SelectRevision(_filteredRevisions[_currentMatchIndex].Sha);
         }
 
         // ListView SelectionChanged（对照 WPF RevisionListView_SelectionChanged）

@@ -3,39 +3,41 @@
              x:Class="ForkPlus.Avalonia.Views.UserControls.SidebarUserControl"
              Width="240">
     <!--
-        Phase 5.2 完整迁移版：Avalonia 版 SidebarUserControl。
-
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/SidebarUserControl.xaml（105 行）+
-        SidebarUserControl.xaml.cs（2714 行）：
-          - WPF 顶层 Grid 2 行（Auto/*）：
-            Row 0: 仓库名 + 5 个 RadioButton（Changes/AllCommits/Branches/Search/Service）
-            Row 1: TabControl（Branches/Search/Service 3 个 TabItem）
-          - WPF SidebarTreeView 是 MultiselectionTreeView 自定义控件（自定义树视图）
-            spike 版用 Avalonia 原生 TreeView + TreeDataTemplate 替代
-          - WPF FilterTextBox 是自定义控件（带过滤的 TextBox）
-            spike 版用普通 TextBox + TextChanged 事件替代
-
-        Avalonia 11 适配：
-          - TreeView 用 TreeDataTemplate + ItemsSource="{Binding Children}" 绑定
-          - HierarchicalDataTemplate → TreeDataTemplate
-          - Visibility.Collapsed/Visible → IsVisible = false/true
-          - MouseDoubleClick → DoubleTapped
-
-        spike 简化策略：
-          - 图标用 emoji TextBlock（绑定 Icon 属性）
-          - 普通 TextBox 过滤（替代自定义 FilterTextBox）
-          - 不迁移 MultiselectionTreeView（用原生 TreeView）
+        对照 WPF SidebarUserControl.xaml（105 行）：
+          Row 0: 仓库名(DockPanel: 设置按钮 + 仓库名) + 5 个 RadioButton(Changes/AllCommits
+                 + Branches/Search/Service 3 个图标按钮)
+          Row 1: TabControl（Branches/Search/Service 3 个 TabItem）
+        Avalonia 版：emoji 换真实 PNG 图标，仓库名区按 WPF DockPanel 结构。
     -->
+    <UserControl.Styles>
+        <Style Selector="RadioButton.sidebar-nav">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="RadioButton.sidebar-icon-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+        <Style Selector="Button.sidebar-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="MinWidth" Value="24" />
+            <Setter Property="MinHeight" Value="24" />
+        </Style>
+    </UserControl.Styles>
+
     <UserControl.Resources>
-        <!--
-            树节点模板（对照 WPF HierarchicalDataTemplate）：
-              ItemsSource="{Binding Children}" → 递归显示子节点
-              Icon + Name → 横向排列 emoji 图标 + 名称
-        -->
         <TreeDataTemplate x:Key="SidebarNodeTemplate" ItemsSource="{Binding Children}">
-            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,1">
-                <TextBlock Text="{Binding Icon}" FontSize="12" />
-                <TextBlock Text="{Binding Name}" />
+            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,1">
+                <Image Source="{Binding IconPath}" Width="16" Height="16" />
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
             </StackPanel>
         </TreeDataTemplate>
     </UserControl.Resources>
@@ -43,76 +45,82 @@
     <Grid RowDefinitions="Auto,*"
           Background="{DynamicResource Sidebar.Static.Background}">
 
-        <!-- Row 0: 标题栏 + 5 个 RadioButton -->
-        <StackPanel Grid.Row="0" Margin="8,4">
-            <!-- Repo 标题栏（仓库名 + 设置按钮）-->
-            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
-                <Button Grid.Column="0" Name="RepoSettingsButton" Content="⚙"
-                        Click="RepoSettingsButton_Click"
-                        Background="Transparent"
-                        Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <TextBlock Grid.Column="1" Name="RepositoryNameText"
+        <!-- Row 0: 仓库名 + 视图切换按钮 -->
+        <StackPanel Grid.Row="0" Margin="0">
+            <!-- 仓库名栏（对照 WPF DockPanel: 仓库名 + 设置按钮）-->
+            <Grid ColumnDefinitions="*,Auto" Margin="8,4,4,4">
+                <TextBlock Grid.Column="0" Name="RepositoryNameText"
                            Text="(no repository)"
                            VerticalAlignment="Center"
-                           Margin="8,0"
+                           Margin="0,0,6,0"
+                           FontWeight="Medium"
+                           FontSize="13.5"
+                           TextTrimming="CharacterEllipsis"
                            Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <Button Grid.Column="2" Name="RepoHideButton" Content="◀"
-                        Click="RepoHideButton_Click"
-                        Background="Transparent"
-                        Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <Button Grid.Column="1" Name="RepoSettingsButton" Classes="sidebar-btn"
+                        ToolTip.Tip="Repository Settings"
+                        Click="RepoSettingsButton_Click">
+                    <Image Source="/Assets/settings.png" Width="16" Height="16" />
+                </Button>
             </Grid>
 
-            <!-- 视图切换 RadioButton -->
-            <StackPanel Orientation="Vertical" Spacing="2" Margin="0,4">
-                <!--
-                    ChangesRadioButton：对照 WPF ChangesRadioButton + ChangesTextBlock
-                    用 TextBlock 名为 ChangesTextBlock 作 Content（供 ApplyLocalization 更新文本）
-                -->
-                <RadioButton Name="ChangesRadioButton"
-                             Click="ChangesRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}">
-                    <TextBlock Name="ChangesTextBlock" Text="Changes" />
-                </RadioButton>
-                <RadioButton Name="AllCommitsRadioButton" Content="All Commits"
-                             IsChecked="True"
-                             Click="AllCommitsRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}" />
-            </StackPanel>
+            <!-- Changes / All Commits 视图切换（对照 WPF ChangesRadioButton + AllCommitsRadioButton）-->
+            <RadioButton Name="ChangesRadioButton" Classes="sidebar-nav"
+                         Click="ChangesRadioButton_Click"
+                         Margin="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Image Source="/Assets/changes.png" Width="16" Height="16" />
+                    <TextBlock Name="ChangesTextBlock" Text="Changes"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </RadioButton>
+            <RadioButton Name="AllCommitsRadioButton" Classes="sidebar-nav"
+                         IsChecked="True"
+                         Click="AllCommitsRadioButton_Click"
+                         Margin="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Image Source="/Assets/revisionlist.png" Width="16" Height="16" />
+                    <TextBlock Name="AllCommitsTextBlock" Text="All Commits"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </RadioButton>
 
-            <!-- 视图模式切换（Branches/Search/Service 3 个图标按钮）-->
-            <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center"
-                        Margin="0,4">
-                <RadioButton Name="BranchesRadioButton" Content="⌥"
-                             ToolTip.Tip="Branches"
-                             Click="BranchesRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <RadioButton Name="SearchRadioButton" Content="🔍"
-                             ToolTip.Tip="Search Commits"
-                             Click="SearchRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <RadioButton Name="ServiceRadioButton" Content="⇄"
-                             ToolTip.Tip="Pull Requests"
-                             IsVisible="False"
-                             Click="ServiceRadioButton_Click"
-                             Foreground="{DynamicResource ThemeForegroundBrush}" />
-            </StackPanel>
+            <!-- Branches / Search / Service 3 个图标按钮（对照 WPF SidebarPathImageRadioButtonStyle）-->
+            <Border Margin="0,5,0,0" BorderThickness="0,1,0,1"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2">
+                    <RadioButton Name="BranchesRadioButton" Classes="sidebar-icon-btn"
+                                 ToolTip.Tip="Branches"
+                                 IsChecked="True"
+                                 Click="BranchesRadioButton_Click">
+                        <Image Source="/Assets/branch.png" Width="16" Height="16" />
+                    </RadioButton>
+                    <RadioButton Name="SearchRadioButton" Classes="sidebar-icon-btn"
+                                 ToolTip.Tip="Search Commits"
+                                 Click="SearchRadioButton_Click">
+                        <Image Source="/Assets/search.png" Width="16" Height="16" />
+                    </RadioButton>
+                    <RadioButton Name="ServiceRadioButton" Classes="sidebar-icon-btn"
+                                 ToolTip.Tip="Pull Requests"
+                                 IsVisible="False"
+                                 Click="ServiceRadioButton_Click">
+                        <Image Source="/Assets/pullrequest.png" Width="16" Height="16" />
+                    </RadioButton>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <!-- Row 1: TabControl（Branches/Search/Service 3 个 Tab）-->
         <TabControl Grid.Row="1" Name="SidebarTabControl"
+                    Background="{DynamicResource Sidebar.Static.Background}"
+                    Padding="0"
                     SelectionChanged="TabControl_SelectionChanged">
             <TabItem Name="BranchesTabItem" Header="Branches">
                 <Grid RowDefinitions="Auto,*" Margin="4">
-                    <!-- 过滤框（对照 WPF FilterTextBox，spike 用普通 TextBox）-->
                     <TextBox Grid.Row="0" Name="FilterTextBox"
                              Watermark="Filter branches..."
                              TextChanged="FilterTextBox_TextChanged"
                              Margin="0,2" />
-                    <!--
-                        树视图（对照 WPF SidebarTreeView = MultiselectionTreeView）
-                        spike 版用 Avalonia 原生 TreeView + TreeDataTemplate
-                        ItemsSource 绑定 _rootNodes（在 OnLoaded / Initialize 中赋值）
-                    -->
                     <TreeView Grid.Row="1" Name="SidebarTreeView"
                               ItemTemplate="{StaticResource SidebarNodeTemplate}"
                               Background="Transparent"
@@ -120,14 +128,14 @@
                 </Grid>
             </TabItem>
             <TabItem Name="SearchTabItem" Header="Search">
-                <TextBlock Text="(search not implemented in spike)"
+                <TextBlock Text="(search not implemented)"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource ThemeForegroundLowBrush}"
                            FontSize="11" />
             </TabItem>
             <TabItem Name="ServiceTabItem" Header="Service" IsVisible="False">
-                <TextBlock Text="(service not implemented in spike)"
+                <TextBlock Text="(service not implemented)"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource ThemeForegroundLowBrush}"

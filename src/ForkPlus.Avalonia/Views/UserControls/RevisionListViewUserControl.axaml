@@ -1,6 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionListViewUserControl">
+    <UserControl.Styles>
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="MinWidth" Value="28" />
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+        <Style Selector="Button.icon-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        </Style>
+    </UserControl.Styles>
     <!--
         Phase 5.4 完整迁移版：Avalonia 版 RevisionListViewUserControl。
 
@@ -66,17 +78,19 @@
     <Grid ClipToBounds="True"
           RowDefinitions="Auto,*">
 
-        <!-- Row 0: 搜索栏（WPF 中由 RevisionSearchPanelUserControl 注入；spike 改为内联 TextBox） -->
+        <!-- Row 0: 搜索栏（对照 WPF RevisionSearchPanelUserControl：
+             Border Padding 6,4,4,4 + ToolbarBackgroundBrush + DockPanel:
+               Right: Close/Next/Prev 3 个 IconButton + 默认 PlaceholderTextBox + ProgressBar + match count）-->
         <Border Grid.Row="0"
                 Background="{DynamicResource ThemeCardBackgroundBrush}"
                 BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="8,4">
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <!-- Col 0: 搜索 TextBox（对照 WPF RevisionSearchPanelUserControl.SearchString） -->
+                Padding="6,4,4,4">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+                <!-- Col 0: 搜索 TextBox（对照 WPF PlaceholderTextBox.SearchString） -->
                 <TextBox Grid.Column="0"
                          Name="SearchTextBox"
-                         Watermark="Search commits..."
+                         Watermark="Search SHA, branch, author or message"
                          Padding="6,3" />
                 <!-- Col 1: 匹配计数（对照 WPF RevisionSearchPanelUserControl.UpdateMatchesCount） -->
                 <TextBlock Grid.Column="1"
@@ -86,18 +100,31 @@
                            FontSize="11"
                            Foreground="{DynamicResource ThemeForegroundLowBrush}"
                            IsVisible="False" />
-                <!-- Col 2: loading 指示（对照 WPF RevisionSearchPanelUserControl.IsBusyIndicatorVisible） -->
-                <Border Grid.Column="2"
-                        Name="LoadingIndicator"
-                        Margin="8,0,0,0"
-                        Padding="6,2"
-                        Background="{DynamicResource ThemeAccentBrush}"
-                        CornerRadius="3"
+                <!-- Col 2: loading 指示（对照 WPF ProgressBar.BusyIndicator） -->
+                <ProgressBar Grid.Column="2"
+                             Name="LoadingIndicator"
+                             Width="12" Height="12"
+                             Margin="8,0,0,0"
+                             IsVisible="False"
+                             IsIndeterminate="True" />
+                <!-- Col 3: Prev 按钮（对照 WPF JumpToPreviousSearchResultButton） -->
+                <Button Grid.Column="3" Name="PrevSearchButton"
+                        Classes="icon-btn"
+                        ToolTip.Tip="Previous match"
+                        Margin="2,0"
+                        Click="PrevSearchButton_Click"
                         IsVisible="False">
-                    <TextBlock Text="Loading..."
-                               Foreground="White"
-                               FontSize="11" />
-                </Border>
+                    <Image Source="/Assets/prev.png" Width="16" Height="16" />
+                </Button>
+                <!-- Col 4: Next 按钮（对照 WPF JumpToNextSearchResultButton） -->
+                <Button Grid.Column="4" Name="NextSearchButton"
+                        Classes="icon-btn"
+                        ToolTip.Tip="Next match"
+                        Margin="2,0"
+                        Click="NextSearchButton_Click"
+                        IsVisible="False">
+                    <Image Source="/Assets/next.png" Width="16" Height="16" />
+                </Button>
             </Grid>
         </Border>
 

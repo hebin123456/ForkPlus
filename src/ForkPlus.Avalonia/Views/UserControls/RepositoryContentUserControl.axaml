@@ -3,16 +3,7 @@
              xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryContentUserControl">
     <!--
-        Phase 3.11：Avalonia 版 RepositoryContentUserControl 骨架（spike 简化版）。
-
-        这是把 Phase 3.4-3.10 的所有 spike UserControl 串联起来的"中间包装层"：
-        RepositoryUserControl.RepositoryContentContainer (ContentControl)
-          → RepositoryContentUserControl（本控件）
-            → RevisionView (Grid)
-                → RevisionListViewUserControl (Row 1)
-                → RevisionDetailsUserControl (Row 2)
-            → CommitView (Grid, 默认 Collapsed)
-                → CommitUserControl
+        Avalonia 版 RepositoryContentUserControl（对照 WPF d696088）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryContentUserControl.xaml（54 行）：
           - 顶层 Grid 内并列两个 Grid：
@@ -21,42 +12,24 @@
               Row 0 (Auto): RevisionListStatusBarUserControl（默认 Collapsed）
               Row 1 (MinHeight=110): RevisionListViewUserControl（跨 3 列）
               Row 2 (MinHeight=110): RevisionDetailsUserControl（跨 3 列）
-              + 4 个 GridSplitter（FirstColumnHorizontalGridSplitter / SecondColumnHorizontalGridSplitter /
-                ThirdColumnHorizontalGridSplitter / VerticalGridSplitter）
+              + 4 个 GridSplitter：
+                FirstColumnHorizontalGridSplitter (Row 2, Col 0, Top)
+                SecondColumnHorizontalGridSplitter (Row 2, Col 0+1, Top, Height 32, Margin 260)
+                ThirdColumnHorizontalGridSplitter (Row 2, Col 2, Top)
+                VerticalGridSplitter (Row 1+2, Col 0, Right)
               + 列宽 400/MinWidth=300 / * / 40
+
+        WPF RevisionListView 和 RevisionDetails 都 ColSpan=3，所以 Col 0/1/2 的细分
+        主要由 GridSplitter + 内部子控件承担。Avalonia 版同样 ColSpan=3，但只保留 1 个
+        水平 GridSplitter（Row 1/Row 2 之间）作为最小可用分割。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryContentUserControl.xaml.cs（约 240 行）：
           - 6 个公共方法：Initialize / ApplyLocalization / SetRepositoryViewMode /
             RefreshRevisionItems / SelectRevisions(2 重载)
-          - Initialize(repo, sidebarSearchTabItem) 订阅 RevisionListView 的 4 个事件：
-            SearchQueryChanged / SelectionChanged / RevisionDoubleClick / BranchDoubleClick
+          - Initialize(repo, sidebarSearchTabItem) 订阅 RevisionListView 的 4 个事件
           - SetRepositoryViewMode 切换 RevisionView/CommitView 可见性
           - RevisionListViewUserControl_SelectionChanged 根据 selected count 构造
-            RevisionDiffTarget.Revision/Range/MultipleRevisions → RevisionDetails.ShowRevisionDetails
-
-        装入路径（WPF）：RepositoryUserControl.xaml Row 2 Col 2 RepositoryContentContainer (ContentControl)
-
-        本 spike 版策略：
-          - 简化 RevisionView 的 3 列布局（去掉 40 宽的第 3 列和复杂 GridSplitter）
-          - RevisionListStatusBarUserControl 用空 Grid 占位
-          - 4 个 GridSplitter 简化为 1 个（Row 1/Row 2 之间的水平分隔）
-          - 6 个公共方法签名保留，body stub
-          - Initialize 订阅 4 个事件占位（事件 body stub）
-
-        本 spike 版暂不迁移：
-          - RevisionListStatusBarUserControl（自定义，spike 未做）
-          - 4 个 GridSplitter 的精确布局（只保留 1 个水平 GridSplitter）
-          - RestoreRevisionListViewColumnWidth / SaveRevisionListViewColumnWidth 持久化
-          - NotificationCenter WeakEventManager 订阅
-          - RevisionListOrientation 切换
-          - CompactBranchLabels 切换
-          - RevisionDiffTarget 构造逻辑（spike 用 object 占位）
-
-        本 spike 版验证：
-          - 顶层 Grid 内并列 RevisionView + CommitView 两个子 Grid
-          - RevisionView 默认可见，CommitView 默认 Collapsed
-          - RevisionView 内 RevisionListViewUserControl + GridSplitter + RevisionDetailsUserControl 三层
-          - SetRepositoryViewMode 能切换 RevisionView/CommitView 可见性
+            RevisionDiffTarget → RevisionDetails.ShowRevisionDetails
     -->
     <Grid>
 
@@ -68,31 +41,42 @@
                                   VerticalAlignment="Stretch" />
         </Grid>
 
-        <!-- RevisionView：默认可见（对照 WPF x:Name="RevisionView"）-->
+        <!-- RevisionView：默认可见（对照 WPF x:Name="RevisionView"）
+             3 列 × 3 行布局：
+               Col 0 Width=400 MinWidth=300 / Col 1 * / Col 2 Width=40
+               Row 0 Auto (StatusBar, Collapsed) / Row 1 * MinHeight=110 (ListView) / Row 2 * MinHeight=110 (Details)
+             RevisionListView + RevisionDetails 均 ColSpan=3（沿用 WPF 语义）。
+             4 个 WPF GridSplitter 简化为 1 个水平 GridSplitter（Row 1/Row 2 之间）。-->
         <Grid Name="RevisionView"
-              RowDefinitions="Auto,*,Auto,*">
+              ColumnDefinitions="400,*,40"
+              RowDefinitions="Auto,*,*">
 
             <!-- Row 0: RevisionListStatusBarUserControl 占位（默认 Collapsed）-->
-            <Grid Grid.Row="0" Name="RevisionListStatusBarContainer"
-                  IsVisible="False"
-                  Height="20"
-                  Background="{DynamicResource ThemeCardBackgroundBrush}" />
+            <ContentControl Grid.Row="0" Grid.ColumnSpan="3"
+                            Name="RevisionListStatusBarContainer"
+                            IsVisible="False"
+                            Height="22"
+                            Background="{DynamicResource ThemeCardBackgroundBrush}" />
 
-            <!-- Row 1: RevisionListViewUserControl -->
-            <uc:RevisionListViewUserControl Grid.Row="1"
-                                            Name="RevisionListViewUserControl" />
+            <!-- Row 1: RevisionListViewUserControl（跨 3 列）-->
+            <uc:RevisionListViewUserControl Grid.Row="1" Grid.ColumnSpan="3"
+                                            Name="RevisionListViewUserControl"
+                                            MinHeight="110" />
 
-            <!-- Row 2: 水平 GridSplitter（简化版，对照 WPF 的 FirstColumnHorizontalGridSplitter）-->
-            <GridSplitter Grid.Row="2"
+            <!-- Row 1/Row 2 之间的水平 GridSplitter（spike 简化，对照 WPF 的
+                 FirstColumnHorizontalGridSplitter 等四个）-->
+            <GridSplitter Grid.Row="1" Grid.ColumnSpan="3"
                           Name="HorizontalGridSplitter"
                           Height="4"
+                          VerticalAlignment="Bottom"
                           ResizeDirection="Rows"
                           Background="{DynamicResource ThemeBorderMidBrush}"
                           HorizontalAlignment="Stretch" />
 
-            <!-- Row 3: RevisionDetailsUserControl -->
-            <uc:RevisionDetailsUserControl Grid.Row="3"
+            <!-- Row 2: RevisionDetailsUserControl（跨 3 列）-->
+            <uc:RevisionDetailsUserControl Grid.Row="2" Grid.ColumnSpan="3"
                                            Name="RevisionDetails"
+                                           MinHeight="110"
                                            BorderThickness="0" />
         </Grid>
     </Grid>

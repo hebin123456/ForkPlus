@@ -1073,12 +1073,6 @@ namespace ForkPlus.Avalonia.Views.UserControls
             Console.WriteLine("[Sidebar] Repo settings clicked");
         }
 
-        // 对照 WPF: 隐藏 Sidebar
-        private void RepoHideButton_Click(object sender, RoutedEventArgs e)
-        {
-            IsVisible = false;
-        }
-
         // 对照 WPF: Changes_Selected → RepositoryUserControl.SetRepositoryViewMode(CommitViewMode)
         private void ChangesRadioButton_Click(object sender, RoutedEventArgs e)
         {
