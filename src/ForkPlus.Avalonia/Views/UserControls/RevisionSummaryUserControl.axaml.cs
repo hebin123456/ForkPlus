@@ -56,26 +56,8 @@ namespace ForkPlus.Avalonia.Views.UserControls
                 ShaTextBlock.Text = sha?.ToString() ?? "(no sha)";
             }
 
-            // spike 版：更新文件变更统计（真实数据来自 FullRevisionDetails.ChangedFiles）
-            // 暂用示例数据占位
-            if (FileChangeStatistics != null)
-            {
-                FileChangeStatistics.Items.Clear();
-                FileChangeStatistics.Items.Add(new FileChangeStatItem
-                {
-                    Path = "src/Program.cs",
-                    Status = "Modified",
-                    Additions = "+12",
-                    Deletions = "-3"
-                });
-                FileChangeStatistics.Items.Add(new FileChangeStatItem
-                {
-                    Path = "README.md",
-                    Status = "Added",
-                    Additions = "+45",
-                    Deletions = "-0"
-                });
-            }
+            // spike 版：文件变更统计暂不接入（真实数据来自 FullRevisionDetails.ChangedFiles）
+            // 对照 WPF: DiffList.ItemsSource = revisionDetails.ChangedFiles
         }
 
         // 对照 WPF: public void ApplyLocalization()
@@ -128,7 +110,8 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
     // spike POCO：文件变更统计项（Path / Status / Additions / Deletions）
     // 对照 WPF 的 ChangedFile + DiffEntry 统计数据
-    public class FileChangeStatItem
+    // 当前未使用（保留备用，后续 Phase 接入 DiffList 时引用）
+    internal class FileChangeStatItem
     {
         public string Path { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;

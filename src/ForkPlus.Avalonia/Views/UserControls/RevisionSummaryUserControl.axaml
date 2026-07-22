@@ -3,227 +3,236 @@
              xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionSummaryUserControl">
     <!--
-        Phase 3.10：Avalonia 版 RevisionSummaryUserControl 骨架（spike 简化版）。
-
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.xaml（152 行）：
+        对照 WPF src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.xaml（152 行）：
           - Grid 2 行：* / Auto
           - Row 0: ScrollViewer + Grid 2 行 × 4 列（82/*/48/*）
-            Row 0: AuthorDetailsContainer（AvatarImage + Author/Email/Date）+
-                   CommitterDetailsContainer（同结构）
-            Row 1: commit 详情区（9 行子 Grid）：
-              REFS → ReferencePanel（自定义控件，spike 用 ItemsControl 占位）
-              SHA → SelectableTextBlock + AiExplainCommitButton（🤖 AI Explain）+
-                    RevisionRemoteButtonsContainer
-              PARENTS → ParentsContainer
-              Subject / Description → SelectableTextBlock
-              DiffList（ItemsControl）→ 每行 Expander 内嵌 FileDiffControl SubControlMode=True
+            Row 0: AuthorDetailsContainer（82 列 AvatarImage 42x42 + * 列 AUTHOR 标签 +
+                   Author/Email/Date SelectableTextBlock）+ CommitterDetailsContainer（同结构 48+*）
+            Row 1: commit 详情区（9 行子 Grid 82+* 列）：
+              REFS → ReferencePanel / SHA → SelectableTextBlock + AiExplainCommitButton +
+                    RevisionRemoteButtonsContainer / PARENTS → ParentsContainer
+              Subject / Description → SelectableTextBlock FontWeight=Medium FontSize=15
+              DiffList（ItemsControl + Expander 内嵌 FileDiffControl SubControlMode=True）
               ExpandAllButton / DiffListLimitTextBlock
           - Row 1: BottomControl（spike 不迁移）
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.xaml.cs（625 行）：
-          - 公共方法：Refresh(Sha, BugtrackerLinkDefinition[], UserColors) / ApplyLocalization /
-            HighlightSearchMatches(RevisionSearchQuery)
-          - 公共属性：RevisionDetailsUserControl（反向引用父控件）/
-            RepositoryUserControl（通过父控件取）
-          - 无 Initialize 注入模式（通过公共属性 RevisionDetailsUserControl 注入）
-
-        装入路径（WPF）：
-          RevisionDetailsUserControl.xaml Row 2 → RevisionSummaryUserControl（Commit tab）
-
-        本 spike 版策略：
-          - AvatarImage 用 Avalonia Image 占位（默认不显示）
-          - SelectableTextBlock 用 Avalonia SelectableTextBlock（API 对应）
-          - ReferencePanel 用 ItemsControl + TextBlock 占位
-          - AiExplainCommitButton 保留（Button + emoji 文本）
-          - DiffList 用 ItemsControl + Expander + DataTemplate，Expander 内容用 Phase 3.9a 的 FileDiffControl 占位
-            （SubControlMode=True，嵌入式 diff）
-          - 公共方法签名保留，body stub
-
-        本 spike 版暂不迁移：
-          - AvatarImage 真实 avatar 加载
-          - ReferencePanel 真实 reference 渲染
-          - ApplySearchAndButrackerHighlighting（搜索高亮）
-          - CreateColorsPopup（用户颜色配置浮窗）
-          - AiExplainCommitButton_Click（AI 调用，Phase 5）
-          - CreateFileContextMenuItems（右键菜单，30+ 项）
-          - LoadDiffEntryContent（git diff 调用）
-
-        本 spike 版验证：
-          - Grid 2 行布局正确显示
-          - Row 0 ScrollViewer + Grid 2 行 × 4 列布局
-          - Author/Committer 区占位可见
-          - commit 详情区（REFS/SHA/PARENTS/Subject/Description）占位可见
-          - DiffList 用空 ItemsControl 占位
+        装入路径：RevisionDetailsUserControl.axaml Row 2 → RevisionSummaryUserControl（Commit tab）
     -->
     <Grid RowDefinitions="*,Auto">
 
-        <!-- Row 0: ScrollViewer + Grid 2 行 × 4 列 -->
-        <ScrollViewer Grid.Row="0">
+        <ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
             <Grid RowDefinitions="Auto,Auto"
                   ColumnDefinitions="82,*,48,*">
 
-                <!-- Row 0, Col 0-1: AuthorDetailsContainer -->
-                <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                            Orientation="Horizontal" Margin="4">
-                    <Image Name="AuthorAvatarImage"
-                           Width="32" Height="32" Margin="0,0,8,0" />
-                    <StackPanel>
-                        <TextBlock Name="AuthorNameTextBlock"
-                                   Text="(author)"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource ThemeForegroundBrush}" />
-                        <TextBlock Name="AuthorEmailTextBlock"
-                                   Text="(email)"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                        <TextBlock Name="AuthorDateTextBlock"
-                                   Text="(date)"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                    </StackPanel>
-                </StackPanel>
+                <!-- ===== Row 0, Col 0-1: AuthorDetailsContainer（对照 WPF Grid 3 行 × 2 列）===== -->
+                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                      Name="AuthorDetailsContainer"
+                      RowDefinitions="25,30,32"
+                      ColumnDefinitions="82,*">
+                    <!-- AuthorAvatarImage 42x42 HAlign=Right -->
+                    <Image Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
+                           Name="AuthorAvatarImage"
+                           Width="42" Height="42"
+                           Margin="0,0,0,5"
+                           HorizontalAlignment="Right" />
+                    <!-- AUTHOR 标签 -->
+                    <TextBlock Grid.Row="0" Grid.Column="1"
+                               Text="AUTHOR"
+                               Margin="16,10,0,0"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <!-- Author + Email DockPanel -->
+                    <DockPanel Grid.Row="1" Grid.Column="1"
+                               Margin="16,8,4,4"
+                               LastChildFill="False">
+                        <SelectableTextBlock DockPanel.Dock="Left"
+                                             Name="AuthorNameTextBlock"
+                                             Text="(author)"
+                                             FontSize="14"
+                                             FontWeight="Medium"
+                                             VerticalAlignment="Center" />
+                        <SelectableTextBlock DockPanel.Dock="Left"
+                                             Name="AuthorEmailTextBlock"
+                                             Text="(email)"
+                                             Margin="8,0,14,-1"
+                                             VerticalAlignment="Center"
+                                             Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    </DockPanel>
+                    <!-- Author date -->
+                    <SelectableTextBlock Grid.Row="2" Grid.Column="1"
+                                         Name="AuthorDateTextBlock"
+                                         Text="(date)"
+                                         Margin="16,0,4,15"
+                                         Foreground="{DynamicResource SecondaryLabelBrush}" />
+                </Grid>
 
-                <!-- Row 0, Col 2-3: CommitterDetailsContainer -->
-                <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
-                            Orientation="Horizontal" Margin="4">
-                    <Image Name="CommitterAvatarImage"
-                           Width="32" Height="32" Margin="0,0,8,0" />
-                    <StackPanel>
-                        <TextBlock Name="CommitterNameTextBlock"
-                                   Text="(committer)"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource ThemeForegroundBrush}" />
-                        <TextBlock Name="CommitterEmailTextBlock"
-                                   Text="(email)"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                        <TextBlock Name="CommitterDateTextBlock"
-                                   Text="(date)"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                    </StackPanel>
-                </StackPanel>
+                <!-- ===== Row 0, Col 2-3: CommitterDetailsContainer（同结构 48+*）===== -->
+                <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2"
+                      Name="CommitterDetailsContainer"
+                      RowDefinitions="25,30,32"
+                      ColumnDefinitions="42,*">
+                    <Image Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
+                           Name="CommitterAvatarImage"
+                           Width="42" Height="42"
+                           Margin="0,0,0,5"
+                           HorizontalAlignment="Right" />
+                    <TextBlock Grid.Row="0" Grid.Column="1"
+                               Name="CommitterTitleTextBlock"
+                               Text="COMMITTER"
+                               Margin="16,10,0,0"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <DockPanel Grid.Row="1" Grid.Column="1"
+                               Margin="16,8,10,4"
+                               LastChildFill="False">
+                        <SelectableTextBlock DockPanel.Dock="Left"
+                                             Name="CommitterNameTextBlock"
+                                             Text="(committer)"
+                                             FontSize="14"
+                                             FontWeight="Medium"
+                                             VerticalAlignment="Center" />
+                        <SelectableTextBlock DockPanel.Dock="Left"
+                                             Name="CommitterEmailTextBlock"
+                                             Text="(email)"
+                                             Margin="8,0,14,-1"
+                                             VerticalAlignment="Center"
+                                             Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    </DockPanel>
+                    <SelectableTextBlock Grid.Row="2" Grid.Column="1"
+                                         Name="CommitterDateTextBlock"
+                                         Text="(date)"
+                                         Margin="16,0,10,15"
+                                         Foreground="{DynamicResource SecondaryLabelBrush}" />
+                </Grid>
 
-                <!-- Row 1, ColSpan 4: commit 详情区 -->
-                <Grid Grid.Row="1" Grid.ColumnSpan="4"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                      Margin="4,8,4,4">
+                <!-- ===== Row 1, ColSpan 4: commit 详情区（对照 WPF 9 行子 Grid 82+* 列）===== -->
+                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                      RowDefinitions="Auto,18,28,16,Auto,Auto,14,Auto,Auto"
+                      ColumnDefinitions="82,*">
 
-                    <!-- REFS -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,2">
-                        <TextBlock Text="REFS:"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                                   Margin="0,0,8,0" />
-                        <ItemsControl Name="ReferencesContainer">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="(ref)" FontSize="11" Margin="0,0,8,0" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
+                    <!-- Row 0: REFS（Label + ReferencePanel） -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="REFS"
+                               HorizontalAlignment="Right"
+                               Margin="16,2,0,0"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <ItemsControl Grid.Row="0" Grid.Column="1"
+                                  Name="ReferencePanel"
+                                  Margin="16,0,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="(ref)"
+                                           FontSize="11"
+                                           Margin="0,0,8,0"
+                                           Foreground="{DynamicResource ThemeAccentBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                    <!-- SHA -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,2">
-                        <TextBlock Text="SHA:"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                                   Margin="0,0,8,0" />
-                        <SelectableTextBlock Name="ShaTextBlock"
+                    <!-- Row 1: SHA（Label + SelectableTextBlock + AiExplainCommitButton + RevisionRemoteButtonsContainer） -->
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="SHA"
+                               HorizontalAlignment="Right"
+                               Margin="16,2,0,0"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <DockPanel Grid.Row="1" Grid.Column="1"
+                               Margin="16,2,0,0"
+                               HorizontalAlignment="Left">
+                        <SelectableTextBlock DockPanel.Dock="Left"
+                                             Name="ShaTextBlock"
                                              Text="(sha)"
-                                             FontSize="11"
+                                             FontSize="13"
                                              FontFamily="Consolas,Menlo,monospace" />
-                        <Button Name="AiExplainCommitButton"
-                                Content="🤖 AI Explain"
-                                Margin="8,0"
-                                Click="AiExplainCommitButton_Click" />
+                        <Button DockPanel.Dock="Left"
+                                Name="AiExplainCommitButton"
+                                Margin="8,0,0,0"
+                                Padding="6,1"
+                                Height="20"
+                                FontSize="11"
+                                VerticalAlignment="Center"
+                                ToolTip.Tip="Use AI to explain this commit"
+                                Click="AiExplainCommitButton_Click">
+                            <TextBlock Text="🤖 AI Explain" />
+                        </Button>
+                        <StackPanel DockPanel.Dock="Left"
+                                    Orientation="Horizontal"
+                                    Name="RevisionRemoteButtonsContainer" />
+                    </DockPanel>
+
+                    <!-- Row 2: PARENTS -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="PARENTS"
+                               HorizontalAlignment="Right"
+                               Margin="16,4,0,5"
+                               Foreground="{DynamicResource SecondaryLabelBrush}" />
+                    <StackPanel Grid.Row="2" Grid.Column="1"
+                                Orientation="Horizontal"
+                                Margin="16,0,0,5"
+                                Name="ParentsContainer">
+                        <SelectableTextBlock Text="(parents)"
+                                             FontSize="11"
+                                             FontFamily="Consolas,Menlo,monospace"
+                                             Foreground="{DynamicResource SecondaryLabelBrush}" />
                     </StackPanel>
 
-                    <!-- PARENTS -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2">
-                        <TextBlock Text="PARENTS:"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                                   Margin="0,0,8,0" />
-                        <ItemsControl Name="ParentsContainer">
+                    <!-- Row 3: Separator -->
+                    <Separator Grid.Row="3" Grid.ColumnSpan="2"
+                               Margin="20,10,20,5" />
+
+                    <!-- Row 4: Subject（FontWeight=Medium FontSize=15） -->
+                    <SelectableTextBlock Grid.Row="4" Grid.Column="1"
+                                         Name="SubjectTextBlock"
+                                         Text="(subject)"
+                                         Margin="16,5,10,5"
+                                         FontWeight="Medium"
+                                         FontSize="15"
+                                         TextWrapping="Wrap" />
+
+                    <!-- Row 5: Description -->
+                    <SelectableTextBlock Grid.Row="5" Grid.Column="1"
+                                         Name="DescriptionTextBlock"
+                                         Text=""
+                                         Margin="16,0,10,0"
+                                         TextWrapping="Wrap" />
+
+                    <!-- Row 6: Separator -->
+                    <Separator Grid.Row="6" Grid.ColumnSpan="2"
+                               Margin="20,8,20,4" />
+
+                    <!-- Row 7: DiffList + ExpandAllButton（对照 WPF Grid + ItemsControl + Expander） -->
+                    <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
+                        <ItemsControl Name="DiffList"
+                                      Margin="0,16,0,0"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <SelectableTextBlock Text="(parent sha)"
-                                                         FontSize="11"
-                                                         FontFamily="Consolas,Menlo,monospace"
-                                                         Margin="0,0,8,0" />
+                                    <Expander Header="(file)"
+                                              Padding="0"
+                                              HorizontalAlignment="Stretch">
+                                        <uc:FileDiffControl SubControlMode="True" />
+                                    </Expander>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </StackPanel>
-
-                    <!-- Subject -->
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,2">
-                        <TextBlock Text="Subject:"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                                   Margin="0,0,8,0" />
-                        <SelectableTextBlock Name="SubjectTextBlock"
-                                             Text="(subject)"
-                                             FontSize="12"
-                                             TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <!-- Description -->
-                    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,2">
-                        <TextBlock Text="Description:"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                                   Margin="0,0,8,0" />
-                        <SelectableTextBlock Name="DescriptionTextBlock"
-                                             Text="(description)"
-                                             FontSize="11"
-                                             TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <!-- DiffList（ItemsControl + Expander + FileDiffControl SubControlMode=True）-->
-                    <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,4,0,2">
                         <Button Name="ExpandAllButton"
-                                Content="Expand all"
+                                Width="80"
+                                Margin="8,0,20,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
                                 Click="ExpandAllButton_Click"
-                                Margin="0,0,8,0" />
-                        <TextBlock Name="DiffListLimitTextBlock"
-                                   Text=""
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                    </StackPanel>
+                                Content="Expand all" />
+                    </Grid>
 
-                    <!-- File Change Statistics（spike 新增：Path / Status / Additions / Deletions）-->
-                    <ItemsControl Grid.Row="6"
-                                  Name="FileChangeStatistics">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,1">
-                                    <TextBlock Grid.Column="0" Text="{Binding Path}" FontSize="11"
-                                               FontFamily="Consolas,Menlo,monospace" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11"
-                                               Margin="8,0" Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                                    <TextBlock Grid.Column="2" Text="{Binding Additions}" FontSize="11"
-                                               Margin="8,0" Foreground="#22AA22" />
-                                    <TextBlock Grid.Column="3" Text="{Binding Deletions}" FontSize="11"
-                                               Margin="8,0" Foreground="#AA2222" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- DiffList（ItemsControl + Expander + FileDiffControl SubControlMode=True）-->
-                    <ItemsControl Grid.Row="7"
-                                  Name="DiffList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Expander Header="(file)">
-                                    <uc:FileDiffControl SubControlMode="True" />
-                                </Expander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <!-- Row 8: DiffListLimitTextBlock（Collapsed 占位） -->
+                    <TextBlock Grid.Row="8" Grid.ColumnSpan="2"
+                               Name="DiffListLimitTextBlock"
+                               Margin="0,5,0,10"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryLabelBrush}"
+                               IsVisible="False" />
                 </Grid>
             </Grid>
         </ScrollViewer>

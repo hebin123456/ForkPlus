@@ -1,77 +1,110 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionChangesUserControl">
     <!--
-        Avalonia 版 RevisionChangesUserControl（spike 简化新建版）。
+        对照 WPF src/ForkPlus/UI/UserControls/RevisionChangesUserControl.xaml：
+          - Grid 2 列 × 3 行 + ClipToBounds
+            Col 0 (MinWidth=220 MaxWidth=850) / Col 1 (*)
+            Row 0 (Auto, Header DockPanel Height=17)
+            Row 1 (Auto, FilterTextBox AnimationPlaceholder)
+            Row 2 (*, FileListUserControl)
+          - Row 0 Col 0: Header DockPanel Height=17 BG=BackgroundBrush LastChildFill=False
+            Left: FilterButton (SearchIcon, ToolTip="Filter")
+            Right: FileListSettingsDropdownButton (DropDownButton + ListIcon + ToolTip="View Mode")
+            Right: ShowDiffPopupButton (PreviewIcon, ToolTip="Show diff side-by-side (space bar)")
+          - Row 1 Col 0 + Row 2 Col 0: FilterTextBox（RowSpan=2, Margin=4, AnimationPlaceholder）
+          - Row 2 Col 0: FileListUserControl（BorderThickness=0,1,0,0 BorderBrush=BorderBrush）
+          - Col 1 RowSpan=3: FileDiffControl
+          - GridSplitter Col 0 RowSpan=3 (VerticalGridSplitter HAlign=Right)
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionChangesUserControl.xaml.cs（619 行）：
-          - 构造函数订阅 FileListUserControl.SelectionChanged + FilterTextBox.FilterRequestChanged
-          - 公共属性：FileListsMode / RevisionDetailsUserControl / SelectedFile
-          - 公共方法：ApplyLocalization / Refresh(RevisionDiffTarget target, string fileToSelect)
-          - 私有 _refreshFilterAction / _updateDiffAction（DelayedAction 延迟执行）
-          - UpdateFileList(fileToSelect) → FileListUserControl.SetItemSource
-          - UpdateDiff(changedFile) → 异步 GetRevisionFileChangesGitCommand → FileDiffControl.Content
-          - CreateFileListContextMenuItems（约 150 行右键菜单）
-          - DiffPopupWindow 弹窗
-          - RestoreFileListColumnWidth / SaveFileListColumnWidth 持久化
-
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionChangesUserControl.xaml：
-          - Grid 2 列：
-            Col 0: FileListUserControl（文件列表）
-            Col 1: FileDiffControl（diff 显示）
-            GridSplitter
-
-        Avalonia 版差异：
-          - WPF FileListUserControl → ListBox（spike 简化）
-          - WPF FileDiffControl → AvaloniaEdit.TextEditor（spike 简化）
-          - WPF FilterTextBox → TextBox（spike）
-          - WPF DispatcherTimer / DelayedAction → spike 不实现延迟
-          - WPF CommandBindings → spike 不实现快捷键
-          - 构造函数签名：(IServiceProvider serviceProvider)
-
-        spike 简化：
-          - 用 ListBox 显示文件列表
-          - 用 AvaloniaEdit.TextEditor 显示 diff
-          - SetRevision(sha) / Refresh() / Initialize(repositoryUserControl) 公共方法
-          - FileSelected 事件在 ListBox 选择变化时触发
-          - 右键菜单 / DiffPopupWindow / 列宽持久化暂不实现
+        Avalonia 适配：
+          - FilterTextBox → TextBox（spike 简化）
+          - FileListUserControl → ListBox（spike）
+          - DropDownButton → Button（spike 简化，无下拉菜单）
+          - FileDiffControl → AvaloniaEdit TextEditor（spike）
     -->
     <Grid Name="ContainerGrid"
-          ColumnDefinitions="*,4,*">
+          ClipToBounds="True"
+          RowDefinitions="Auto,Auto,*"
+          ColumnDefinitions="*,*">
 
-        <!-- Col 0: 文件列表（spike 用 ListBox）-->
-        <ListBox Grid.Column="0"
+        <!-- Row 0 Col 0: Header DockPanel Height=17 BG=BackgroundBrush -->
+        <DockPanel Grid.Row="0" Grid.Column="0"
+                   Height="17"
+                   HorizontalAlignment="Stretch"
+                   Background="{DynamicResource BackgroundBrush}"
+                   LastChildFill="False">
+            <!-- Filter Button (Dock=Left, SearchIcon, ToolTip="Filter") -->
+            <Button DockPanel.Dock="Left"
+                    Name="FilterButton"
+                    Margin="6,0,0,0"
+                    ToolTip.Tip="Filter"
+                    Classes="icon-btn"
+                    Click="FilterButton_Click">
+                <Image Source="/Assets/search.png" Width="14" Height="14" />
+            </Button>
+            <!-- ShowDiffPopupButton (Dock=Right, PreviewIcon) -->
+            <Button DockPanel.Dock="Right"
+                    Name="ShowDiffPopupButton"
+                    ToolTip.Tip="Show diff side-by-side (space bar)"
+                    Classes="icon-btn"
+                    Click="ShowDiffPopupButton_Click">
+                <Image Source="/Assets/preview.png" Width="14" Height="14" />
+            </Button>
+            <!-- FileListSettingsDropdownButton (Dock=Right, ListIcon, ToolTip="View Mode") -->
+            <Button DockPanel.Dock="Right"
+                    Name="FileListSettingsDropdownButton"
+                    ToolTip.Tip="View Mode"
+                    Classes="icon-btn"
+                    Click="FileListSettingsDropdownButton_Click">
+                <Image Source="/Assets/list.png" Width="14" Height="14" />
+            </Button>
+        </DockPanel>
+
+        <!-- Row 1-2 Col 0: Filter TextBox（RowSpan=2, Margin=4，对照 WPF FilterTextBox） -->
+        <TextBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
+                 Name="FilterTextBox"
+                 Margin="4"
+                 Watermark="Filter files..."
+                 IsVisible="False"
+                 BorderThickness="0,0,0,1"
+                 BorderBrush="{DynamicResource BorderBrush}" />
+
+        <!-- Row 2 Col 0: FileListUserControl（对照 WPF FileListUserControl BorderThickness=0,1,0,0） -->
+        <ListBox Grid.Row="2" Grid.Column="0"
                  Name="FileListBox"
-                 Background="{DynamicResource ThemeBackgroundBrush}"
-                 BorderThickness="0,0,1,0"
-                 BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                 Background="{DynamicResource BackgroundBrush}"
+                 BorderThickness="0,1,0,0"
+                 BorderBrush="{DynamicResource BorderBrush}"
                  SelectionChanged="FileListBox_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding ChangeTypeEmoji}" Margin="0,0,4,0" />
-                        <TextBlock Text="{Binding FileName}" />
+                        <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- Col 1: GridSplitter -->
-        <GridSplitter Grid.Column="1"
-                      Name="GridSplitter"
-                      Width="4"
-                      ResizeDirection="Columns"
-                      Background="{DynamicResource ThemeBorderMidBrush}"
-                      HorizontalAlignment="Stretch" />
+        <!-- Col 1 RowSpan=3: FileDiffControl（对照 WPF FileDiffControl，spike 用 AvaloniaEdit） -->
+        <Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
+                Background="{DynamicResource BackgroundBrush}">
+            <avalonEdit:TextEditor Name="DiffEditor"
+                                   IsReadOnly="True"
+                                   ShowLineNumbers="True"
+                                   WordWrap="False"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                                   FontSize="13" />
+        </Border>
 
-        <!-- Col 2: diff 显示区（spike 用 AvaloniaEdit.TextEditor）-->
-        <avalonEdit:TextEditor Grid.Column="2"
-                               Name="DiffEditor"
-                               IsReadOnly="True"
-                               ShowLineNumbers="True"
-                               WordWrap="False"
-                               FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
-                               FontSize="13" />
+        <!-- GridSplitter（对照 WPF VerticalGridSplitter HAlign=Right） -->
+        <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
+                      Name="GridSplitter"
+                      Classes="vertical-grid-splitter"
+                      HorizontalAlignment="Right"
+                      ResizeDirection="Columns" />
     </Grid>
 </UserControl>

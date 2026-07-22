@@ -207,5 +207,32 @@ namespace ForkPlus.Avalonia.Views.UserControls
                 });
             });
         }
+
+        // 对照 WPF: FilterButton_Click → 切换 FilterTextBox 可见性
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FilterTextBox != null)
+            {
+                FilterTextBox.IsVisible = !FilterTextBox.IsVisible;
+                if (FilterTextBox.IsVisible)
+                {
+                    FilterTextBox.Focus();
+                }
+            }
+        }
+
+        // 对照 WPF: ShowDiffPopupButton_Click → DiffPopupWindow 弹窗
+        //   spike 版：仅日志占位（DiffPopupWindow 暂未实现）
+        private void ShowDiffPopupButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[RevisionChanges] ShowDiffPopupButton_Click (spike placeholder)");
+        }
+
+        // 对照 WPF: FileListSettingsDropdownButton_ContextMenuOpened → 视图模式菜单
+        //   spike 版：仅日志占位（菜单暂未实现）
+        private void FileListSettingsDropdownButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[RevisionChanges] FileListSettingsDropdownButton_Click (spike placeholder)");
+        }
     }
 }

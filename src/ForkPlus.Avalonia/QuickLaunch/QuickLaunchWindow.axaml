@@ -33,7 +33,7 @@
         <!-- Row 1: 搜索框 (Border + StackPanel + SearchIcon + CommandTextBox) -->
         <Border Grid.Row="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
             <StackPanel Orientation="Horizontal" Margin="10,0,0,7">
-                <Image Source="{DynamicResource SearchIcon}" Margin="0,3,6,0" Width="16" />
+                <ContentControl Content="{DynamicResource SearchIcon}" Margin="0,3,6,0" Width="16" Height="16" />
                 <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
             </StackPanel>
         </Border>
