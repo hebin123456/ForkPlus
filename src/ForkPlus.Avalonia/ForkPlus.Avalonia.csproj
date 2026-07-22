@@ -23,7 +23,7 @@
     <!-- CA1416：平台兼容性分析。Avalonia 工程跨平台目标，部分代码可能用平台 API
          （如 Windows 上的 INotificationService 实现），统一 NoWarn。
          真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证。 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS8632</NoWarn>
     <Version>4.0.0-alpha1</Version>
   </PropertyGroup>
 

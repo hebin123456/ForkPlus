@@ -113,7 +113,9 @@ namespace ForkPlus.Avalonia.Services
             // 完全平台无关，已实现 IAccountManager 接口。注入时用静态单例 Current。
             // 调用方：ForkPlus.Core/Git/Commands/GetRemotesGitCommand.cs:89
             // （按 host + username 查找已配置账号用于区分同 host 不同账号、附加 credential helper）。
-            services.AddSingleton<IAccountManager>(AccountManager.Current);
+            // 用工厂委托而非直接传 AccountManager.Current，避免 DI Build() 时立即触发
+            // AccountManager 静态构造（此时 ServiceLocator 可能尚未初始化）。
+            services.AddSingleton<IAccountManager>(sp => AccountManager.Current);
 
             // Views
             // Phase 3.1：MainWindow 作为启动窗口（spike 骨架版）

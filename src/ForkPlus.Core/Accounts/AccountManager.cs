@@ -296,8 +296,13 @@ namespace ForkPlus.Accounts
 		}
 
 		private Account[] Load()
-		{
-			string path = Path.Combine(ServiceLocator.AppContext.ForkDataDirectoryPath, "accounts.json");
+	{
+		// ServiceLocator.AppContext 可能在 AccountManager 静态构造时尚未初始化
+		//（Avalonia DI Build 时触发静态构造，而 ServiceLocator 在 Build 之后才 Initialize）。
+		// 此时返回空数组，后续 ServiceLocator 初始化后可通过其他路径重新加载。
+		var appContext = ServiceLocator.AppContext;
+		if (appContext == null) return new Account[0];
+		string path = Path.Combine(appContext.ForkDataDirectoryPath, "accounts.json");
 			try
 			{
 				if (File.Exists(path))
