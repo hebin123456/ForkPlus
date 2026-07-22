@@ -59,7 +59,10 @@ namespace ForkPlus.Avalonia.Views
         private bool _startupFinished;
 
         // 当前活动的 RepositoryUserControl（File → Open Repository 时复用）
-        private RepositoryUserControl _repositoryUserControl;
+        internal RepositoryUserControl _repositoryUserControl;
+
+        // 对照 WPF: private Toolbar Toolbar — 保存工具栏引用用于刷新
+        private ToolbarUserControl _toolbarUserControl;
 
         // 对照 WPF: private readonly AutomaticBackgroundFetchManager _automaticBackgroundFetchManager
         // spike 版：用 spike 版的 AutomaticBackgroundFetchManager（namespace ForkPlus.Avalonia）
@@ -274,10 +277,10 @@ namespace ForkPlus.Avalonia.Views
         private void LoadToolbarUserControl()
         {
             Console.WriteLine("[MainWindow] LoadToolbarUserControl (Phase 3.2)");
-            var toolbar = _serviceProvider.GetRequiredService<ToolbarUserControl>();
+            _toolbarUserControl = _serviceProvider.GetRequiredService<ToolbarUserControl>();
             if (ToolbarContainer != null)
             {
-                ToolbarContainer.Content = toolbar;
+                ToolbarContainer.Content = _toolbarUserControl;
             }
         }
 
@@ -333,6 +336,8 @@ namespace ForkPlus.Avalonia.Views
 
             _repositoryUserControl.OpenRepository(gitModuleToOpen);
             RefreshTitle();
+            // 对照 WPF: OpenRepository → Toolbar.Refresh()（更新分支名 + badges）
+            _toolbarUserControl?.Refresh();
         }
 
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
@@ -425,6 +430,7 @@ namespace ForkPlus.Avalonia.Views
             _repositoryUserControl?.OpenRepository(result.Result);
             RefreshTitle();
             SaveSession();
+            _toolbarUserControl?.Refresh();
         }
 
         // File → Clone Repository（对照 WPF ShowCloneWindowCommand）
@@ -443,6 +449,7 @@ namespace ForkPlus.Avalonia.Views
                             _repositoryUserControl?.OpenRepository(r.Result);
                             RefreshTitle();
                             SaveSession();
+                            _toolbarUserControl?.Refresh();
                         });
                     }
                 });
