@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ForkPlus.Avalonia.Views.UserControls.SidebarUserControl"
-             Width="240">
+             x:Class="ForkPlus.Avalonia.Views.UserControls.SidebarUserControl">
     <!--
         对照 WPF SidebarUserControl.xaml（105 行）：
           Row 0: DockPanel(Height=22, Margin=20,2,2,2) 仓库名栏

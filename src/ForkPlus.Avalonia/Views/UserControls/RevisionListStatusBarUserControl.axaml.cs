@@ -100,37 +100,18 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         // ShowLoading(bool) — 显示/隐藏 loading 指示器
         // spike 新增（WPF 无独立 loading 指示器，本控件在 WPF 是纯文本状态栏）
+        // 对照 WPF 原版后已移除独立 LoadingSpinner 控件，本方法保留为空 stub 供调用方兼容
         public void ShowLoading(bool show)
         {
-            if (LoadingSpinner != null)
-            {
-                LoadingSpinner.IsVisible = show;
-            }
-            if (Container != null)
-            {
-                Container.IsVisible = true;
-            }
+            // WPF 原版无独立 loading 指示器，状态栏显隐由 SetReflogMode/SetFilteredBy/Hide 控制
         }
 
         // SetCount(int total, int filtered) — 显示总数/过滤数
         // spike 新增（WPF 无计数显示，RevisionListView 上方有自己的计数）
+        // 对照 WPF 原版后已移除独立 CountTextBlock 控件，本方法保留为空 stub 供调用方兼容
         public void SetCount(int total, int filtered)
         {
-            if (CountTextBlock == null) return;
-            if (filtered >= 0 && filtered < total)
-            {
-                CountTextBlock.Text = $"{filtered} / {total}";
-                CountTextBlock.IsVisible = true;
-            }
-            else
-            {
-                CountTextBlock.Text = $"{total}";
-                CountTextBlock.IsVisible = total > 0;
-            }
-            if (Container != null)
-            {
-                Container.IsVisible = true;
-            }
+            // WPF 原版无独立计数显示，计数由 RevisionListView 上方控件展示
         }
 
         // ===== WPF 逻辑完整迁移方法 =====

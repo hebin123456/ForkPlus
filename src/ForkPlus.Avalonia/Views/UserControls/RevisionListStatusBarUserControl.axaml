@@ -2,46 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionListStatusBarUserControl">
     <!--
-        Phase 3.5：Avalonia 版 RevisionListStatusBarUserControl（完整迁移版）。
+        对照 WPF src/ForkPlus/UI/UserControls/RevisionListStatusBarUserControl.xaml（30 行）：
+          - Border Name=Container Height=22 BorderThickness=0,0,0,1 BorderBrush=BorderBrush Background=BackgroundBrush
+          - StackPanel horizontal：
+            - HeaderTextBlock Margin=10,0,6,0 Foreground=ForegroundBrush.Gray
+            - ReferencesTextBlock Margin=0,0,6,0 Foreground=ForegroundBrush
+            - StatusBarButton FontSize=12 Style=TextButtonStyle Click=StatusBarButton_Click
 
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionListStatusBarUserControl.xaml（31 行）：
-          - 顶层 Border（Height=22, BorderThickness=0,0,0,1, BorderBrush=BorderBrush, Background=BackgroundBrush）
-          - 内部 StackPanel horizontal：
-            - HeaderTextBlock（Margin=10,0,6,0, Foreground=ForegroundBrush.Gray）
-            - ReferencesTextBlock（Margin=0,0,6,0, Foreground=ForegroundBrush）
-            - StatusBarButton（FontSize=12, Style=TextButtonStyle, Click=StatusBarButton_Click）
-
-        Avalonia 版差异（spike 简化）：
-          - DynamicResource BorderBrush/BackgroundBrush → ThemeBorderMidBrush/ThemeCardBackgroundBrush
-          - DynamicResource ForegroundBrush.Gray/ForegroundBrush → ThemeForegroundLowBrush/ThemeForegroundBrush
+        Avalonia 适配：
+          - DynamicResource BorderBrush/BackgroundBrush → ThemeBorderMidBrush/ThemeCardBackgroundBrush（等价）
+          - DynamicResource ForegroundBrush.Gray/ForegroundBrush → ThemeForegroundLowBrush/ThemeForegroundBrush（等价）
           - DynamicResource TextButtonStyle → 不绑定样式（spike 用默认 Button 样式）
-          - 新增 LoadingSpinner（ProgressBar IsIndeterminate=true，对照 task spec ShowLoading API）
-          - 新增 CountTextBlock（对照 task spec SetCount API，显示 total/filtered 计数）
-          - Visibility.Collapsed/Visible → IsVisible=false/true
+          - Visibility.Collapsed/Visible → IsVisible=false/true（由 code-behind 控制）
 
-        本 spike 版验证：
-          - StackPanel horizontal 布局正确显示
-          - HeaderTextBlock + ReferencesTextBlock + StatusBarButton 可见性可控
-          - LoadingSpinner + CountTextBlock 占位可见
+        装入路径：RevisionListViewUserControl Row 2 → RevisionListStatusBarUserControl
     -->
     <Border Name="Container"
             Height="22"
             BorderThickness="0,0,0,1"
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-            Background="{DynamicResource ThemeCardBackgroundBrush}"
-            IsVisible="False">
-        <StackPanel Orientation="Horizontal"
-                    VerticalAlignment="Center">
-
-            <!-- Loading 指示器（spike 新增，对照 task spec ShowLoading(bool) API）-->
-            <ProgressBar Name="LoadingSpinner"
-                         IsVisible="False"
-                         IsIndeterminate="True"
-                         Width="14"
-                         Height="14"
-                         Margin="10,0,6,0"
-                         VerticalAlignment="Center" />
-
+            Background="{DynamicResource ThemeCardBackgroundBrush}">
+        <StackPanel Orientation="Horizontal">
             <TextBlock Name="HeaderTextBlock"
                        Margin="10,0,6,0"
                        VerticalAlignment="Center"
@@ -50,23 +31,13 @@
             <TextBlock Name="ReferencesTextBlock"
                        Margin="0,0,6,0"
                        VerticalAlignment="Center"
-                       Foreground="{DynamicResource ThemeForegroundBrush}"
-                       TextTrimming="CharacterEllipsis" />
+                       Foreground="{DynamicResource ThemeForegroundBrush}" />
 
             <Button Name="StatusBarButton"
                     Margin="0,0,0,0"
                     VerticalAlignment="Center"
                     FontSize="12"
-                    Click="StatusBarButton_Click"
-                    IsVisible="False" />
-
-            <!-- 计数文本（spike 新增，对照 task spec SetCount(total, filtered) API）-->
-            <TextBlock Name="CountTextBlock"
-                       Margin="10,0,6,0"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                       FontSize="12"
-                       IsVisible="False" />
+                    Click="StatusBarButton_Click" />
         </StackPanel>
     </Border>
 </UserControl>

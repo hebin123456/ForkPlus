@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ForkPlus.Avalonia.Views.UserControls.ToolbarUserControl"
-             Height="44">
+             x:Class="ForkPlus.Avalonia.Views.UserControls.ToolbarUserControl">
     <!--
         对照 WPF ToolbarUserControl.xaml（326 行）三列布局：
           Col 0 (*):  QuickLaunch / Fetch / Pull / Push / Stash+Dropdown / Undo+Dropdown /
@@ -186,8 +185,9 @@
         </Border>
 
         <!-- Column 2: 右侧次操作区（对照 WPF DockPanel LastChildFill=False）
-             WPF 用 DockPanel.Dock=Right 让按钮从右往左排。Avalonia 用 StackPanel
-             HorizontalAlignment=Right 模拟同样效果。-->
+             WPF 用 DockPanel.Dock=Right 让按钮从右往左排，视觉顺序为：
+             Branch+Dropdown → Workspaces → Appearance → Console → AI → OpenIn(最右)
+             Avalonia 用 StackPanel HorizontalAlignment=Right，按视觉顺序排列。-->
         <StackPanel Grid.Column="2" Orientation="Horizontal"
                     VerticalAlignment="Center" HorizontalAlignment="Right">
             <!-- Branch + Dropdown (WPF StackPanel Margin 10,3,0,3) -->
@@ -208,40 +208,40 @@
                           VerticalAlignment="Center" />
                 </Button>
             </StackPanel>
-            <!-- OpenIn (WPF Margin 4,3,4,3) -->
-            <Button Name="OpenInButton" Classes="toolbar-btn"
-                    Margin="4,3,4,3"
-                    ToolTip.Tip="Open in"
-                    Click="OpenInButton_Click">
-                <Image Source="/Assets/openin.png" Width="20" Height="20" />
+            <!-- Workspaces (WPF Margin 0,3,4,3, Dock=Right) -->
+            <Button Name="WorkspacesButton" Classes="toolbar-btn"
+                    Margin="0,3,4,3"
+                    ToolTip.Tip="Workspaces"
+                    Click="WorkspacesButton_Click">
+                <Image Source="/Assets/workspace.png" Width="20" Height="20" />
             </Button>
-            <!-- AI (WPF Margin 0,3,0,3) -->
-            <Button Name="AiButton" Classes="toolbar-btn"
-                    Margin="0,3,0,3"
-                    ToolTip.Tip="AI-Assisted Development"
-                    Click="AiButton_Click">
-                <Image Source="/Assets/ai.png" Width="20" Height="20" />
-            </Button>
-            <!-- Console (WPF Margin 0,3,0,3) -->
-            <Button Name="ConsoleButton" Classes="toolbar-btn"
-                    Margin="0,3,0,3"
-                    ToolTip.Tip="Console"
-                    Click="ConsoleButton_Click">
-                <Image Source="/Assets/console.png" Width="20" Height="20" />
-            </Button>
-            <!-- Appearance (WPF Margin 0,3,0,3) -->
+            <!-- Appearance (WPF Margin 0,3,0,3, Dock=Right) -->
             <Button Name="AppearanceButton" Classes="toolbar-btn"
                     Margin="0,3,0,3"
                     ToolTip.Tip="Appearance"
                     Click="AppearanceButton_Click">
                 <Image Source="/Assets/theme.png" Width="20" Height="20" />
             </Button>
-            <!-- Workspaces (WPF Margin 0,3,4,3) -->
-            <Button Name="WorkspacesButton" Classes="toolbar-btn"
-                    Margin="0,3,4,3"
-                    ToolTip.Tip="Workspaces"
-                    Click="WorkspacesButton_Click">
-                <Image Source="/Assets/workspace.png" Width="20" Height="20" />
+            <!-- Console (WPF Margin 0,3,0,3, Dock=Right) -->
+            <Button Name="ConsoleButton" Classes="toolbar-btn"
+                    Margin="0,3,0,3"
+                    ToolTip.Tip="Console"
+                    Click="ConsoleButton_Click">
+                <Image Source="/Assets/console.png" Width="20" Height="20" />
+            </Button>
+            <!-- AI (WPF Margin 0,3,0,3, Dock=Right) -->
+            <Button Name="AiButton" Classes="toolbar-btn"
+                    Margin="0,3,0,3"
+                    ToolTip.Tip="AI-Assisted Development"
+                    Click="AiButton_Click">
+                <Image Source="/Assets/ai.png" Width="20" Height="20" />
+            </Button>
+            <!-- OpenIn (WPF Margin 4,3,4,3, Dock=Right 最右) -->
+            <Button Name="OpenInButton" Classes="toolbar-btn"
+                    Margin="4,3,4,3"
+                    ToolTip.Tip="Open in"
+                    Click="OpenInButton_Click">
+                <Image Source="/Assets/openin.png" Width="20" Height="20" />
             </Button>
         </StackPanel>
     </Grid>
