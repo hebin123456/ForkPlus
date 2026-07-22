@@ -34,23 +34,21 @@
             IsVisible="False">
         <Grid ColumnDefinitions="Auto,*,Auto">
 
-            <!-- Col 0: 状态图标 emoji（对照 WPF StatusImage PNG）-->
+            <!-- Col 0: 状态图标 emoji（对照 WPF StatusImage PNG, Width=18 Margin=5,4,5,4）-->
             <TextBlock Grid.Column="0"
                        Name="StatusIconTextBlock"
-                       Margin="8,4,8,4"
+                       Width="18"
+                       Margin="5,4,5,4"
                        FontSize="16"
-                       VerticalAlignment="Center"
                        HorizontalAlignment="Center"
                        Text="⚠" />
 
-            <!-- Col 1: 通知文本 + Rebase 容器（对照 WPF NotificationTextBlock + RebaseContainer）-->
+            <!-- Col 1: 通知文本 + Rebase 容器（对照 WPF NotificationTextBlock FontSize=14）-->
             <TextBlock Grid.Column="1"
                        Name="NotificationTextBlock"
                        Margin="0,4,0,4"
                        VerticalAlignment="Center"
-                       FontSize="13"
-                       TextWrapping="NoWrap"
-                       TextTrimming="CharacterEllipsis" />
+                       FontSize="14" />
 
             <Grid Grid.Column="1"
                   Name="RebaseContainer"
@@ -81,8 +79,7 @@
             <!-- Col 2: 按钮组（对照 WPF StackPanel horizontal：Button1/Button2/Button3/AbortButton）-->
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
-                        Margin="0,0,6,0"
-                        VerticalAlignment="Center">
+                        Margin="0,0,6,0">
                 <Button Name="Button1"
                         VerticalAlignment="Center"
                         Margin="2,0,2,0"

@@ -54,8 +54,12 @@
                - VerticalGridSplitter：Col 0 右侧垂直分隔，调整 Col 0/Col 1 宽度（RowSpan=2 跨列表+详情）
                - 3 个 HorizontalGridSplitter：Row 2 顶部水平分隔，调整 Row 1/Row 2 高度-->
         <Grid Name="RevisionView"
-              ColumnDefinitions="400,*,40"
               RowDefinitions="Auto,*,*">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400" MinWidth="300" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="40" />
+            </Grid.ColumnDefinitions>
 
             <!-- Row 0: RevisionListStatusBarUserControl 占位（默认 Collapsed，跨 3 列）-->
             <ContentControl Grid.Row="0" Grid.ColumnSpan="3"

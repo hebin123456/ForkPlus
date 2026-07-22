@@ -38,35 +38,38 @@
     <!--
         对照 WPF RepositoryUserControl.xaml（24 行）Grid 3 列 × 3 行：
           Row 0: NotificationBar（跨 3 列）
-          Row 1: Sidebar 占位（RowSpan=2, Col=0）
-          Row 2: GridSplitter（Col=1）+ Content 占位（Col=2）
+          Row 1 (Auto): Sidebar 占位起始行（RowSpan=2, Col=0）
+          Row 2 (*):    GridSplitter（Col=1）+ Content 占位（Col=2）
           列宽：MinWidth=120 MaxWidth=600 / Auto / *
+          WPF Row 1 Auto 在无独占内容时塌缩为 0，等价 Avalonia 2 行布局。
         EnsureLayoutInitialized 在 OpenRepository 中调用，装入 Sidebar + Content。
     -->
     <Grid Name="RepositoryUserControlGrid"
-          ColumnDefinitions="240,Auto,*"
-          RowDefinitions="Auto,*">
+          RowDefinitions="Auto,Auto,*">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="120" MaxWidth="600" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
         <!-- Row 0: NotificationBar 容器（跨 3 列）-->
         <ContentControl Grid.Row="0" Grid.ColumnSpan="3"
                         Name="NotificationBarContainer"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
-        <!-- Row 1, Col 0: Sidebar（默认 240px 宽）-->
-        <ContentControl Grid.Row="1" Grid.Column="0"
+        <!-- Row 1-2, Col 0: Sidebar（RowSpan=2 对照 WPF RepositorySidebarContainer）-->
+        <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
                         Name="RepositorySidebarContainer"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
-        <!-- Row 1, Col 1: GridSplitter（可拖动调整 Sidebar 宽度）-->
-        <GridSplitter Grid.Row="1" Grid.Column="1"
+        <!-- Row 2, Col 1: GridSplitter（对照 WPF Style=VerticalGridSplitter）-->
+        <GridSplitter Grid.Row="2" Grid.Column="1"
                       Name="SidebarGridSplitter"
-                      Width="4"
-                      ResizeDirection="Columns"
-                      Background="{DynamicResource ThemeBorderMidBrush}"
-                      HorizontalAlignment="Stretch" />
+                      Classes="vertical-grid-splitter"
+                      ResizeDirection="Columns" />
 
-        <!-- Row 1, Col 2: Content -->
-        <ContentControl Grid.Row="1" Grid.Column="2"
+        <!-- Row 2, Col 2: Content -->
+        <ContentControl Grid.Row="2" Grid.Column="2"
                         Name="RepositoryContentContainer"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     </Grid>
