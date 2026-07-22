@@ -358,10 +358,22 @@ namespace ForkPlus.Avalonia.Views.UserControls
         }
 
         // 对照 WPF: public void RefreshTitle()
+        //   读取 RepositoryUserControl.RepositoryName / ParentRepositoryName，写入顶部仓库名栏
         public void RefreshTitle()
         {
-            // spike 版：仓库标题由外部设置（对照 WPF RepositoryNameTextBlock.Value = repositoryName）
-            // 完整实现需要 RepositoryUserControl.RepositoryName / GitModule.Path
+            if (_repositoryUserControl == null)
+            {
+                return;
+            }
+            if (RepositoryParentNameText != null)
+            {
+                RepositoryParentNameText.Text = _repositoryUserControl.ParentRepositoryName ?? "";
+            }
+            if (RepositoryNameText != null)
+            {
+                RepositoryNameText.Text = _repositoryUserControl.RepositoryName
+                    ?? Localize("(no repository)");
+            }
         }
 
         // 对照 WPF: public void ApplyLocalization()
@@ -1076,13 +1088,13 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // 对照 WPF: Changes_Selected → RepositoryUserControl.SetRepositoryViewMode(CommitViewMode)
         private void ChangesRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("[Sidebar] Changes view selected");
+            _repositoryUserControl?.SetRepositoryViewMode(RepositoryContentUserControl.CommitViewMode);
         }
 
         // 对照 WPF: AllCommits_Selected → RepositoryUserControl.SetRepositoryViewMode(RevisionViewMode)
         private void AllCommitsRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("[Sidebar] All Commits view selected");
+            _repositoryUserControl?.SetRepositoryViewMode(RepositoryContentUserControl.RevisionViewMode);
         }
 
         // 对照 WPF: 切换到 BranchesTabItem

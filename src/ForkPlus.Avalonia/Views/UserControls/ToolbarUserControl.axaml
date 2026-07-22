@@ -15,44 +15,7 @@
         WPF DropDownButton: Width=14, Padding=0, Path ArrowGeometry, Fill=ToolbarForeground。
         Avalonia spike: DropdownButton 用 Button + 小箭头 Path 模拟（SplitButton 样式不匹配）。
     -->
-    <UserControl.Styles>
-        <!-- toolbar-btn 对照 WPF ToolbarButton 样式 -->
-        <Style Selector="Button.toolbar-btn">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Margin" Value="0,3,0,3" />
-            <Setter Property="Padding" Value="4,0" />
-            <Setter Property="MinWidth" Value="32" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="CornerRadius" Value="3" />
-        </Style>
-        <Style Selector="Button.toolbar-btn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
-        <Style Selector="Button.toolbar-btn:pressed">
-            <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
-        <!-- toolbar-dropdown 对照 WPF DropDownButton (Width=14, Padding=0) -->
-        <Style Selector="Button.toolbar-dropdown">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Margin" Value="0,3,0,3" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Width" Value="14" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-        <Style Selector="Button.toolbar-dropdown:pointerover">
-            <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-        </Style>
-        <Style Selector="Button.toolbar-dropdown:pressed">
-            <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-        </Style>
-    </UserControl.Styles>
+    <!-- toolbar-btn / toolbar-dropdown 样式由 Controls.axaml 全局提供（避免局部重复定义覆盖全局） -->
 
     <Grid ColumnDefinitions="*,300,*"
           Background="{DynamicResource ToolbarBackgroundBrush}">
@@ -151,11 +114,14 @@
                 </Button>
             </StackPanel>
 
-            <!-- BadgesCanvas: Pull/Push 数字角标（对照 WPF Canvas IsHitTestVisible=False）-->
+            <!-- BadgesCanvas: Pull/Push 数字角标（对照 WPF Canvas IsHitTestVisible=False + PullPushBadge 样式）
+                 WPF PullPushBadge: Background=Toolbar.PullPushBadgeBrush（灰色，非强调色），
+                 CornerRadius + MinWidth=14 保证单数字角标形状 + FontSize=8 Foreground=White -->
             <Canvas Name="BadgesCanvas" IsHitTestVisible="False">
                 <Border Name="PullBadge" IsVisible="False"
-                        Background="{DynamicResource SystemAccentBrush}"
+                        Background="{DynamicResource Toolbar.PullPushBadgeBrush}"
                         CornerRadius="6"
+                        MinWidth="14"
                         Padding="3,0"
                         Canvas.Left="78" Canvas.Top="30">
                     <TextBlock Name="PullBadgeText" FontSize="8" FontWeight="Medium"
@@ -163,8 +129,9 @@
                                VerticalAlignment="Bottom" />
                 </Border>
                 <Border Name="PushBadge" IsVisible="False"
-                        Background="{DynamicResource SystemAccentBrush}"
+                        Background="{DynamicResource Toolbar.PullPushBadgeBrush}"
                         CornerRadius="6"
+                        MinWidth="14"
                         Padding="3,0"
                         Canvas.Left="108" Canvas.Top="30">
                     <TextBlock Name="PushBadgeText" FontSize="8" FontWeight="Medium"

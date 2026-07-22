@@ -26,23 +26,45 @@
         <Setter Property="FontSize" Value="13" />
     </Style>
 
-    <!-- ========== Menu / MenuItem（对照 WPF Menu.MenuItem.Static.BackgroundColor #F6F6F6）========== -->
+    <!-- ========== Menu / MenuItem（对照 WPF Menu.xaml）
+         WPF Menu: Background=Menu.Static.Background, FontSize=12, 无边框
+         WPF 顶级 MenuItem (TopLevelHeader): Height=26, Padding=5,0, BG=透明,
+           Foreground=Menu.MenuItem.Static.Foreground, CornerRadius=3
+         WPF 子菜单 MenuItem (SubmenuItem): FontSize=12, Height=22
+         WPF 子菜单 Popup: CornerRadius=6 + DropShadowEffect 阴影 ========== -->
     <Style Selector="Menu">
-        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-        <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
     </Style>
+    <!-- 顶级 MenuItem（对照 WPF TopLevelHeader: Height=26 Padding=5,0 BG=透明） -->
     <Style Selector="MenuItem">
-        <Setter Property="Padding" Value="8,3" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="5,0" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="3" />
     </Style>
     <Style Selector="MenuItem:selected /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <Style Selector="MenuItem:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
+        <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    <!-- 子菜单 MenuItem（对照 WPF SubmenuItem: Height=22 Padding=6,0）
+         Avalonia 子菜单 MenuItem 不含 :toplevel 伪类 -->
+    <Style Selector="MenuItem:not(:toplevel)">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Padding" Value="6,0" />
+    </Style>
+    <Style Selector="MenuItem:not(:toplevel):pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
+        <Setter Property="CornerRadius" Value="3" />
     </Style>
 
     <!-- ========== TextBox（对照 WPF TextBox.Static.BackgroundColor #FFFFFF / BorderColor #CECECE）========== -->
@@ -135,13 +157,9 @@
     </Style>
     <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
-        <Setter Property="BorderThickness" Value="1" />
     </Style>
     <Style Selector="Button.toolbar-btn:pressed /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <!-- ========== sidebar-btn：Sidebar 小图标按钮（对照 WPF BranchOptionButton）========== -->
@@ -342,13 +360,23 @@
          HAlign/VAlign=Stretch, Margin=0,-2,0,-2, Height=5, BG=BorderBrush,
          Template=Grid#00FFFFFF > Border Height=1 BG=BorderBrush）==========
          用于 Row 1/Row 2 之间水平分隔（调整 Row 高度）。
-         Margin 负值让 splitter 视觉上跨整行，Height=5 是命中区，1px Border 是可见线。-->
+         Margin 负值让 splitter 视觉上跨整行，Height=5 是命中区，1px Border 是可见线。
+         Template 替换为透明 Grid + 1px Border 对照 WPF（避免 5px 整条都是 BorderBrush 色过粗）。-->
     <Style Selector="GridSplitter.horizontal-grid-splitter">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0,-2,0,-2" />
         <Setter Property="Height" Value="5" />
-        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="#00FFFFFF">
+                    <Border Height="1"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource BorderBrush}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
     </Style>
 
     <!-- ========== vertical-grid-splitter（对照 WPF VerticalGridSplitter Style：
@@ -360,7 +388,16 @@
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="-2,0,-2,0" />
         <Setter Property="Width" Value="5" />
-        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="#00FFFFFF">
+                    <Border Width="1"
+                            HorizontalAlignment="Center"
+                            Background="{DynamicResource BorderBrush}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
     </Style>
 
     <!-- ========== ScrollViewer / ScrollBar（对照 WPF ScrollBar.ThumbColor #D9D9D9）========== -->

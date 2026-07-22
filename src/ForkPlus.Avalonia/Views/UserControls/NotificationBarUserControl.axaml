@@ -28,8 +28,8 @@
           - RebaseContainer + ProgressBar 占位可见
     -->
     <Border Name="NotificationBorder"
-            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-            Background="{DynamicResource ThemeCardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            Background="{DynamicResource BackgroundBrush}"
             BorderThickness="0,0,0,1"
             IsVisible="False">
         <Grid ColumnDefinitions="Auto,*,Auto">

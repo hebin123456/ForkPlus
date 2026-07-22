@@ -61,12 +61,12 @@
                 <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
 
-            <!-- Row 0: RevisionListStatusBarUserControl 占位（默认 Collapsed，跨 3 列）-->
-            <ContentControl Grid.Row="0" Grid.ColumnSpan="3"
-                            Name="RevisionListStatusBarContainer"
-                            IsVisible="False"
-                            Height="22"
-                            Background="{DynamicResource ThemeCardBackgroundBrush}" />
+            <!-- Row 0: RevisionListStatusBarUserControl（对照 WPF 直接嵌入，默认 Collapsed，跨 3 列）
+                 WPF Row 0 直接 <local:RevisionListStatusBarUserControl Visibility=Collapsed />
+                 StatusBar 内部 Border 已有 Height=22 + Background=BackgroundBrush，无需外层重复 -->
+            <uc:RevisionListStatusBarUserControl Grid.Row="0" Grid.ColumnSpan="3"
+                                                 Name="RevisionListStatusBar"
+                                                 IsVisible="False" />
 
             <!-- Row 1: RevisionListViewUserControl（跨 3 列）-->
             <uc:RevisionListViewUserControl Grid.Row="1" Grid.ColumnSpan="3"

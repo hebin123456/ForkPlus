@@ -191,9 +191,10 @@ namespace ForkPlus.Avalonia.Views
 
         // 对照 WPF: public static RepositoryUserControl ActiveRepositoryUserControl
         //   => Instance?.TabManager.ActiveRepositoryUserControl;
-        // spike 版：TabManager 用 ClosableTabControl，没有 ActiveRepositoryUserControl 属性
-        // → 返回 null 占位（spike 阶段 RepositoryUserControl 未在 tab 中管理）
-        public static object ActiveRepositoryUserControl => null;
+        // spike 版：TabManager 用 ClosableTabControl（无 ActiveRepositoryUserControl 属性），
+        // 直接返回当前装入的 _repositoryUserControl，让 View/Repository 菜单可见性正确反映
+        // 是否已打开仓库（spike 启动时即装入空 RepositoryUserControl，菜单立即可见）。
+        public static object ActiveRepositoryUserControl => Instance?._repositoryUserControl;
 
         // 对照 WPF: public void OpenRepository(Repository?) — 通过 TabManager.OpenRepository(path)
         // spike 版：简化为装入 MainContentContainer（spike 不实现多 tab）

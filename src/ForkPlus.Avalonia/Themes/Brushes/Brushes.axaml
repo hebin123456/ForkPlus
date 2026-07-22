@@ -22,6 +22,8 @@
   <SolidColorBrush x:Key="Disabled.ForegroundBrush" Color="{DynamicResource Disabled.ForegroundColor}" />
   <SolidColorBrush x:Key="BusyIndicatorBrush" Color="{DynamicResource BusyIndicatorColor}" />
   <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
+  <!-- SystemAccentBrush：对照 Avalonia Fluent 命名，让主题切换时同步刷新（Controls.axaml 3 处引用） -->
+  <SolidColorBrush x:Key="SystemAccentBrush" Color="{DynamicResource AccentColor}" />
   <SolidColorBrush x:Key="AccentSecondaryBrush" Color="{DynamicResource AccentSecondaryColor}" />
   <SolidColorBrush x:Key="ReferenceBrush" Color="{DynamicResource ReferenceColor}" />
   <SolidColorBrush x:Key="IconBrush" Color="{DynamicResource IconColor}" />

@@ -65,7 +65,8 @@
     <UserControl.Resources>
         <TreeDataTemplate x:Key="SidebarNodeTemplate" ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,1">
-                <Image Source="{Binding IconPath}" Width="16" Height="16" />
+                <TextBlock Text="{Binding Icon}" FontSize="13" Width="16"
+                           TextAlignment="Center" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
             </StackPanel>
         </TreeDataTemplate>

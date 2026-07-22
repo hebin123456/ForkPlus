@@ -87,42 +87,15 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Menu（对照 WPF PART_MainMenu Background=Window.TitleBar.Background） -->
+                    <!-- Menu（对照 WPF PART_MainMenu：XAML 中为空，由 MainWindowMenuManager 动态填充）
+                         WPF 原版 MainWindow.xaml 中 <Menu ... x:Name="PART_MainMenu" /> 无任何子项，
+                         5 个根菜单（File/View/Repository/Window/Help）由 MainWindowMenuManager 构造函数添加，
+                         子菜单项由 SubmenuOpened 事件按需动态构造。
+                         背景=Window.TitleBar.Background 融入标题栏（对照 WPF PART_MainMenu Background）。 -->
                     <Menu Grid.Column="0" Name="MainMenu"
-                          Background="Transparent"
+                          Background="{DynamicResource Window.TitleBar.Background}"
                           BorderThickness="0"
-                          Padding="2,0">
-                        <MenuItem Header="File">
-                            <MenuItem Header="Open Repository..." Click="File_OpenRepository_Click" />
-                            <MenuItem Header="Clone Repository..." Click="File_CloneRepository_Click" />
-                            <Separator />
-                            <MenuItem Header="Recent Repositories" Name="RecentRepositoriesMenuItem" />
-                            <Separator />
-                            <MenuItem Header="Exit" Click="File_Exit_Click" />
-                        </MenuItem>
-                        <MenuItem Header="View">
-                            <MenuItem Header="Toolbar" IsChecked="True" Click="View_ToggleToolbar_Click" />
-                            <MenuItem Header="Sidebar" IsChecked="True" Click="View_ToggleSidebar_Click" />
-                            <Separator />
-                            <MenuItem Header="Appearance" Click="View_Appearance_Click" />
-                        </MenuItem>
-                        <MenuItem Header="Repository">
-                            <MenuItem Header="Fetch" Click="Repository_Fetch_Click" />
-                            <MenuItem Header="Pull" Click="Repository_Pull_Click" />
-                            <MenuItem Header="Push" Click="Repository_Push_Click" />
-                            <Separator />
-                            <MenuItem Header="Branch..." Click="Repository_Branch_Click" />
-                            <MenuItem Header="Commit..." Click="Repository_Commit_Click" />
-                            <MenuItem Header="Stash..." Click="Repository_Stash_Click" />
-                        </MenuItem>
-                        <MenuItem Header="Window">
-                            <MenuItem Header="Preferences..." Click="Window_Preferences_Click" />
-                        </MenuItem>
-                        <MenuItem Header="Help">
-                            <MenuItem Header="About ForkPlus" Click="Help_About_Click" />
-                            <MenuItem Header="Feedback" Click="Help_Feedback_Click" />
-                        </MenuItem>
-                    </Menu>
+                          Padding="2,0" />
 
                     <!-- 中央 Icon + Title（对照 WPF StackPanel Margin=0,0,90,0 + Image + Label） -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal"

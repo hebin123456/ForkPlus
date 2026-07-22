@@ -37,17 +37,11 @@
           - WPF OpenInSeparateWindowIcon DynamicResource → 直接 /Assets/openinseparatewindow.png
     -->
     <UserControl.Styles>
-        <!-- 本控件内 tab-btn 样式覆盖（对照 WPF RevisionDetailsBarButton Foreground=ForegroundMidBrush）-->
+        <!-- 本控件内 tab-btn normal Foreground 对照 WPF RevisionDetailsBarButton Foreground=ForegroundMidBrush
+             （全局 tab-btn normal 用 ForegroundBrush 偏深，这里覆盖为 SecondaryLabel 中等灰）
+             :checked 选中色用全局 SystemAccentBrush（跟随 22 套主题，不再局部覆盖） -->
         <Style Selector="RadioButton.tab-btn">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="12,4" />
-            <Setter Property="MinHeight" Value="30" />
-            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundMidBrush}" />
-        </Style>
-        <Style Selector="RadioButton.tab-btn:checked">
-            <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}" />
         </Style>
         <Style Selector="Button.icon-btn">
             <Setter Property="Background" Value="Transparent" />
@@ -104,18 +98,14 @@
             </Canvas>
         </Grid>
 
-        <!-- Row 1: RevisionsHeaderUserControl 占位（对照 WPF BorderBrush=BorderBrush）
-             spike 用 ContentControl 占位（RevisionsHeaderUserControl 自定义控件未迁移）-->
-        <ContentControl Grid.Row="1"
-                        Name="RevisionsHeaderContainer"
-                        Background="{DynamicResource ThemeBackgroundBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}"
-                        BorderThickness="0,0,0,1"
-                        Padding="8,4">
-            <TextBlock Text="(revision header)"
-                       FontSize="11"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-        </ContentControl>
+        <!-- Row 1: RevisionsHeaderUserControl（对照 WPF 直接嵌入 + BorderBrush=BorderBrush 分隔）
+             WPF Row 1 直接 <uc:RevisionsHeaderUserControl x:Name=RevisionsHeader />
+             外层 Border 提供 BorderThickness=0,0,0,1 底部分隔线（对照 WPF RevisionsHeader 内部 Border） -->
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <uc:RevisionsHeaderUserControl Name="RevisionsHeader" />
+        </Border>
 
         <!-- Row 2: 3 个子 UserControl（对照 WPF Border BorderThickness=0,1,0,0 BorderBrush=BorderBrush）
              完全对照 WPF 用 RevisionSummaryUserControl / RevisionChangesUserControl / RevisionFileTreeUserControl -->
