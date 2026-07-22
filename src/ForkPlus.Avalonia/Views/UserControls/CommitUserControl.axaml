@@ -50,8 +50,12 @@
           - Visibility.Collapsed/Visible → IsVisible = false/true
     -->
     <Grid Name="CommitGrid"
-          ColumnDefinitions="280,Auto,*"
           Background="{DynamicResource ThemeBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" MinWidth="220" MaxWidth="850" />
+            <ColumnDefinition Width="1" />
+            <ColumnDefinition Width="*" MinWidth="200" />
+        </Grid.ColumnDefinitions>
 
         <!-- Col 0: 文件列表面板（对照 WPF StageFileUserControl，spike 内联 ItemsControl）-->
         <Border Grid.Column="0"
@@ -131,17 +135,17 @@
              Background=PanelBackgroundBrush 对照 WPF -->
         <Grid Grid.Column="2"
               Background="{DynamicResource PanelBackgroundBrush}"
-              RowDefinitions="*,Auto,Auto">
+              RowDefinitions="*,1,Auto">
 
             <!-- Row 0: CommitFileDiffControl（对照 WPF Background=HeaderToolbarBackgroundBrush）-->
             <uc:CommitFileDiffControl Grid.Row="0"
                                       Name="CommitFileDiffControl"
                                       Background="{DynamicResource HeaderToolbarBackgroundBrush}" />
 
-            <!-- Row 1: 1px 分隔线（对照 WPF Border BorderThickness=1 BorderBrush=BorderBrush）-->
+            <!-- Row 1 (Height=1): 1px 分隔线（对照 WPF Border BorderThickness=1 BorderBrush=BorderBrush）-->
             <Border Grid.Row="1"
-                    Height="1"
-                    Background="{DynamicResource BorderBrush}" />
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource BorderBrush}" />
 
             <!-- Row 2: commit message 编辑区（对照 WPF Grid Margin=15,15,15,15）-->
             <Grid Grid.Row="2"
@@ -167,20 +171,20 @@
                              TextChanged="CommitSubjectTextBox_TextChanged"
                              GotFocus="CommitTextBox_GotFocus"
                              LostFocus="CommitTextBox_LostFocus" />
-                    <!-- 长度计数器（对照 WPF SubjectLengthLimitTextBlock）-->
+                    <!-- 长度计数器（对照 WPF SubjectLengthLimitTextBlock Margin=1,3,47,1）-->
                     <TextBlock Grid.Column="1"
                                Name="SubjectLengthLimitTextBlock"
-                               Margin="1,3,8,1"
+                               Margin="1,3,47,1"
                                FontSize="12"
                                VerticalAlignment="Center"
                                IsVisible="False" />
-                    <!-- Clear 按钮（对照 WPF ClearCommitMessageButton，18x18 X mark Path）-->
+                    <!-- Clear 按钮（对照 WPF ClearCommitMessageButton Margin=1,1,25,1）-->
                     <Button Grid.Column="2"
                             Name="ClearCommitMessageButton"
                             Classes="icon-btn"
                             Width="18"
                             Height="18"
-                            Margin="0,1,2,1"
+                            Margin="1,1,25,1"
                             Padding="0"
                             ToolTip.Tip="Clear commit message"
                             Click="ClearCommitMessageButton_Click">
@@ -224,7 +228,6 @@
                          AcceptsReturn="True"
                          BorderThickness="1,0,1,1"
                          Margin="0,-1,0,0"
-                         MinHeight="60"
                          TextChanged="CommitDescriptionTextBox_TextChanged"
                          GotFocus="CommitTextBox_GotFocus"
                          LostFocus="CommitTextBox_LostFocus" />
@@ -266,7 +269,7 @@
                         <!-- CommitButton（对照 WPF CommitButton Style=CommitButtonVisibleDropdownStyle）-->
                         <Button Name="CommitButton"
                                 Content="Commit"
-                                Padding="10,2"
+                                Padding="10,2,10,2"
                                 Margin="0"
                                 Click="CommitButton_Click" />
                         <!-- CommitDropdownButton（对照 WPF CommitDropdownButton Style=CommitDropDownButtonStyle,
