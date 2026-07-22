@@ -761,31 +761,37 @@ namespace ForkPlus.UI.Dialogs
 					e.Handled = true;
 				};
 				// 自动高度：导航完成后用 JS 测量内容高度，调整 WebView2 的 Height 使其完整显示
-				webView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
+			// 修复（v3.5.2）：长回答会让 WebView2 撑得过高，导致整页溢出父 ScrollViewer。
+			//   限制单条消息 WebView2 最大高度，超出部分由 WebView2 内部滚动；外层 MainScrollViewer
+			//   只滚动消息列表本身，不再因单条超长消息把整页撑爆。
+			const double MaxMessageWebViewHeight = 480.0;
+			webView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
+			{
+				if (!e.IsSuccess)
 				{
-					if (!e.IsSuccess)
+					return;
+				}
+				webView.CoreWebView2.ExecuteScriptAsync("document.documentElement.scrollHeight").ContinueWith(delegate(Task<string> t)
+				{
+					try
 					{
-						return;
-					}
-					webView.CoreWebView2.ExecuteScriptAsync("document.documentElement.scrollHeight").ContinueWith(delegate(Task<string> t)
-					{
-						try
+						string result = t.Result;
+						if (double.TryParse(result, out double h))
 						{
-							string result = t.Result;
-							if (double.TryParse(result, out double h))
+							base.Dispatcher.Async(delegate
 							{
-								base.Dispatcher.Async(delegate
-								{
-									webView.Height = Math.Max(h, 20);
-									ScrollToEnd();
-								});
-							}
+								// 内容短：高度贴合内容；内容长：封顶到 MaxMessageWebViewHeight，超出由 WebView2 内部滚动
+								webView.MaxHeight = MaxMessageWebViewHeight;
+								webView.Height = Math.Max(Math.Min(h, MaxMessageWebViewHeight), 20);
+								ScrollToEnd();
+							});
 						}
-						catch
-						{
-						}
-					});
-				};
+					}
+					catch
+					{
+					}
+				});
+			};
 			}
 			catch (Exception ex)
 			{
@@ -1248,6 +1254,9 @@ namespace ForkPlus.UI.Dialogs
 			string repoPath = _gitModule?.Path ?? "";
 			string prompt = $@"You are an AI coding assistant integrated into ForkPlus, a Git client.
 Current repository path: {repoPath}
+
+IMPORTANT — YOU CANNOT READ THE LOCAL FILESYSTEM.
+You are a remote language model invoked over HTTP. ForkPlus does NOT send repository file contents to you automatically, and you have NO tooling to list, open, or read files on the user's machine. Do NOT attempt to ""read"", ""open"", ""list"", or ""access"" directories or files, and do NOT claim that you lack permission to do so — you simply have no such capability by design. If you need to know the current content of a file in order to modify it, ASK the user to paste it (or the relevant portion) in their next message. Never respond with errors like ""no permission"" / ""cannot access directory"" / ""unable to read"".
 
 Analyze the user's requirement and generate necessary code changes.
 Respond with structured file changes in the following format for each file you want to modify:

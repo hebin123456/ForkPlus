@@ -126,16 +126,29 @@ namespace ForkPlus.UI.UserControls
 					return;
 				}
 				if (!ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured())
+			{
+				// 用 ForkPlus 自带 MessageBoxWindow 替代原生 MessageBox，文案走 i18n。
+				// Submit 按钮 = 打开偏好设置（AI Enhancement 标签），Cancel = 关闭。
+				bool openPrefs = new ForkPlus.UI.Dialogs.MessageBoxWindow(
+					"AI is not configured.",
+					"AI development requires API configuration. Please configure service URL and API Key in Preferences → AI Enhancement.",
+					"Open Preferences",
+					"Close",
+					showCancelButton: true,
+					width: 560.0,
+					showWarningIcon: false
+				).ShowDialog().GetValueOrDefault();
+				if (openPrefs)
 				{
-					System.Windows.MessageBox.Show(
-						Preferences.PreferencesLocalization.Current("AI development requires API configuration. Please configure service URL and API Key in Settings → AI Review."),
-						Preferences.PreferencesLocalization.Current("Configuration Reminder"),
-						System.Windows.MessageBoxButton.OK,
-						System.Windows.MessageBoxImage.Information);
-					return;
+					ForkPlus.UI.Dialogs.PreferencesWindow prefs = new ForkPlus.UI.Dialogs.PreferencesWindow();
+					// 程序集内可访问 internal 字段，直接定位到 AI Enhancement 标签
+					try { prefs.PreferencesTabControl.SelectedItem = prefs.AiReviewTabItem; } catch { }
+					prefs.ShowDialog();
 				}
-				ForkPlus.UI.Dialogs.AiDevelopmentWindow window = new ForkPlus.UI.Dialogs.AiDevelopmentWindow(repositoryUserControl, gitModule);
-				window.Show();
+				return;
+			}
+			ForkPlus.UI.Dialogs.AiDevelopmentWindow window = new ForkPlus.UI.Dialogs.AiDevelopmentWindow(repositoryUserControl, gitModule);
+			window.Show();
 			};
 			BranchToolbarButton.Click += delegate
 			{
