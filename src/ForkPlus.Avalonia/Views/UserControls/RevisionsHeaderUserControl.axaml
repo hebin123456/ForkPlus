@@ -106,7 +106,7 @@
                        Margin="0,0,10,0">
                 <TextBlock DockPanel.Dock="Left"
                            Name="SubjectTextBlock"
-                           Margin="0,1,0,0"
+                           Margin="0,0.8,0,0"
                            FontSize="14"
                            FontWeight="Medium"
                            TextTrimming="CharacterEllipsis" />
@@ -188,7 +188,7 @@
                        Margin="0,0,10,0">
                 <TextBlock DockPanel.Dock="Left"
                            Name="OtherSubjectTextBlock"
-                           Margin="0,1,0,0"
+                           Margin="0,0.8,0,0"
                            FontSize="14"
                            FontWeight="Medium"
                            TextTrimming="CharacterEllipsis" />

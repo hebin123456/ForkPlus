@@ -81,11 +81,13 @@
                      叠加在 TextBox 右侧内部 -->
                 <DockPanel HorizontalAlignment="Right"
                            Margin="0,0,4,0">
-                    <!-- BusyIndicator（对照 WPF ProgressBar Dock=Left Width=12 Height=12 Margin=0,0,4,0 Collapsed）-->
+                    <!-- BusyIndicator（对照 WPF ProgressBar Dock=Left Width=12 Height=12
+                         Margin=0,0,4,0 Foreground=ForegroundBrush.Gray Collapsed）-->
                     <ProgressBar Name="BusyIndicator"
                                  DockPanel.Dock="Left"
                                  Width="12" Height="12"
                                  Margin="0,0,4,0"
+                                 Foreground="{DynamicResource ThemeForegroundLowBrush}"
                                  IsVisible="False"
                                  IsIndeterminate="True" />
                     <!-- MatchesTextBlock（对照 WPF TextBlock Dock=Right VerticalAlignment=Bottom Margin=0,0,4,3）-->

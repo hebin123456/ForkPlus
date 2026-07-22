@@ -68,11 +68,11 @@
                                          Foreground="{DynamicResource SecondaryLabelBrush}" />
                 </Grid>
 
-                <!-- ===== Row 0, Col 2-3: CommitterDetailsContainer（同结构 48+*）===== -->
+                <!-- ===== Row 0, Col 2-3: CommitterDetailsContainer（同结构 48+*，对照 WPF 外层 Col=48）===== -->
                 <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2"
                       Name="CommitterDetailsContainer"
                       RowDefinitions="25,30,32"
-                      ColumnDefinitions="42,*">
+                      ColumnDefinitions="48,*">
                     <Image Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
                            Name="CommitterAvatarImage"
                            Width="42" Height="42"

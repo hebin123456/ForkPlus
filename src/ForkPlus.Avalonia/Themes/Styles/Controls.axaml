@@ -105,6 +105,21 @@
         <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
     </Style>
 
+    <!-- ========== text-btn：文本/链接按钮（对照 WPF TextButtonStyle）
+         WPF TextButtonStyle: Background=Transparent, BorderThickness=0,
+         无边框透明背景的文本按钮，hover 才显示背景 -->
+    <Style Selector="Button.text-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="4,0" />
+    </Style>
+    <Style Selector="Button.text-btn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+    </Style>
+    <Style Selector="Button.text-btn:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+    </Style>
+
     <!-- ========== toolbar-btn：工具栏图标按钮（对照 WPF ToolbarButton 样式）
          WPF ToolbarButton: Background=Transparent, MouseOver.Background=#EAEAEA,
          Pressed.Background=#D5D5D5, BorderThickness=0, 透明无边框，hover 才显示背景 -->

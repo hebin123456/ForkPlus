@@ -102,7 +102,8 @@
                     Name="DiffContentHost"
                     BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                     BorderThickness="0,1,0,1"
-                    MinHeight="120"
+                    MinHeight="180"
+                    MaxHeight="420"
                     IsVisible="False">
                 <ContentControl Name="DiffContentContainer"
                                 IsVisible="False" />

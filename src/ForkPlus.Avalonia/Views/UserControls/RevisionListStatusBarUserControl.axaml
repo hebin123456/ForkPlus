@@ -33,7 +33,9 @@
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource ThemeForegroundBrush}" />
 
+            <!-- StatusBarButton（对照 WPF Style=TextButtonStyle：透明背景、无边框的文本/链接按钮） -->
             <Button Name="StatusBarButton"
+                    Classes="text-btn"
                     Margin="0,0,0,0"
                     VerticalAlignment="Center"
                     FontSize="12"

@@ -25,12 +25,19 @@
           - DropDownButton → Button（spike 简化，无下拉菜单）
           - FileDiffControl → AvaloniaEdit TextEditor（spike）
     -->
+    <!-- 对照 WPF：<ColumnDefinition MinWidth="220" MaxWidth="850" /> + <ColumnDefinition /> -->
     <Grid Name="ContainerGrid"
           ClipToBounds="True"
-          RowDefinitions="Auto,Auto,*"
-          ColumnDefinitions="*,*">
+          RowDefinitions="Auto,Auto,*">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="220" MaxWidth="850" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Row 0 Col 0: Header DockPanel Height=17 BG=BackgroundBrush -->
+        <!-- Row 0 Col 0: Header DockPanel Height=17 BG=BackgroundBrush LastChildFill=False
+             对照 WPF DockPanel Dock=Right 声明顺序：
+               先声明 FileListSettingsDropdownButton(List) → 贴最右
+               后声明 ShowDiffPopupButton(Preview) → 靠左 -->
         <DockPanel Grid.Row="0" Grid.Column="0"
                    Height="17"
                    HorizontalAlignment="Stretch"
@@ -45,21 +52,21 @@
                     Click="FilterButton_Click">
                 <Image Source="/Assets/search.png" Width="14" Height="14" />
             </Button>
-            <!-- ShowDiffPopupButton (Dock=Right, PreviewIcon) -->
-            <Button DockPanel.Dock="Right"
-                    Name="ShowDiffPopupButton"
-                    ToolTip.Tip="Show diff side-by-side (space bar)"
-                    Classes="icon-btn"
-                    Click="ShowDiffPopupButton_Click">
-                <Image Source="/Assets/preview.png" Width="14" Height="14" />
-            </Button>
-            <!-- FileListSettingsDropdownButton (Dock=Right, ListIcon, ToolTip="View Mode") -->
+            <!-- FileListSettingsDropdownButton (Dock=Right, ListIcon, ToolTip="View Mode") 贴最右 -->
             <Button DockPanel.Dock="Right"
                     Name="FileListSettingsDropdownButton"
                     ToolTip.Tip="View Mode"
                     Classes="icon-btn"
                     Click="FileListSettingsDropdownButton_Click">
                 <Image Source="/Assets/list.png" Width="14" Height="14" />
+            </Button>
+            <!-- ShowDiffPopupButton (Dock=Right, PreviewIcon) 靠左 -->
+            <Button DockPanel.Dock="Right"
+                    Name="ShowDiffPopupButton"
+                    ToolTip.Tip="Show diff side-by-side (space bar)"
+                    Classes="icon-btn"
+                    Click="ShowDiffPopupButton_Click">
+                <Image Source="/Assets/preview.png" Width="14" Height="14" />
             </Button>
         </DockPanel>
 

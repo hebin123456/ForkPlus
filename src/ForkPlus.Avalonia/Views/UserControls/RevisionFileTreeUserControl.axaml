@@ -39,14 +39,17 @@
         </TreeDataTemplate>
     </UserControl.DataTemplates>
 
-    <Grid Name="ContainerGrid"
-          ColumnDefinitions="*,*">
+    <!-- 对照 WPF：<ColumnDefinition MinWidth="220" MaxWidth="850" /> + <ColumnDefinition />
+         列宽约束必须挂在 ColumnDefinition 上，GridSplitter 拖动时才真正限制列宽 -->
+    <Grid Name="ContainerGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="220" MaxWidth="850" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Col 0: FilesTreeView（MinWidth=220 MaxWidth=850，对照 WPF） -->
+        <!-- Col 0: FilesTreeView（对照 WPF MultiselectionTreeView） -->
         <TreeView Grid.Column="0"
                   Name="FilesTreeView"
-                  MinWidth="220"
-                  MaxWidth="850"
                   Background="{DynamicResource BackgroundBrush}"
                   BorderThickness="0,0,1,0"
                   BorderBrush="{DynamicResource BorderBrush}"

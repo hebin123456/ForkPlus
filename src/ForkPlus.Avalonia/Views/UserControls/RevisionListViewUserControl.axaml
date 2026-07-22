@@ -185,7 +185,7 @@
                              spike 不加载真实 avatar，保留 19px 列宽占位以匹配 WPF 列布局 -->
                         <Border Grid.Column="3"
                                 Margin="-6,2,-6,2"
-                                Width="18"
+                                Width="19"
                                 BorderThickness="1,1,0,1"
                                 CornerRadius="3,0,0,3" />
 

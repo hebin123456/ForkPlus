@@ -193,13 +193,13 @@
                               StrokeThickness="1.6"
                               StrokeLineCap="Round" />
                     </Button>
-                    <!-- Recent 下拉按钮（对照 WPF RecentCommitMessagesDropDownButton，18x18 ListIcon）-->
+                    <!-- Recent 下拉按钮（对照 WPF RecentCommitMessagesDropDownButton，18x18 ListIcon，Margin=1,1,3,1）-->
                     <Button Grid.Column="3"
                             Name="RecentCommitMessagesButton"
                             Classes="icon-btn"
                             Width="18"
                             Height="18"
-                            Margin="0,1,3,1"
+                            Margin="1,1,3,1"
                             Padding="0"
                             ToolTip.Tip="Recent commit messages"
                             Click="RecentCommitMessagesButton_Click">
