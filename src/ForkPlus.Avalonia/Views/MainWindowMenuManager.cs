@@ -143,7 +143,7 @@ namespace ForkPlus.Avalonia.Views
             yield return CreateMenuItem("Init git mm Repository", () => MainWindow.Commands.ShowInitGitMmRepositoryWindow.Execute(null));
             yield return CreateSeparator();
             yield return CreateMenuItem("New Tab", () => MainWindow.Commands.NewTab.Execute(null));
-            yield return CreateMenuItem("Open Repository", () => MainWindow.Commands.OpenRepository.Execute(null));
+            yield return CreateMenuItem("Open Repository", () => MainWindow.Instance?.OpenRepositoryViaDialog());
             yield return CreateMenuItem("Quick Launch", () => MainWindow.Commands.ShowQuickLaunchWindow.Execute(null));
             yield return CreateMenuItem("Close Tab", () => MainWindow.Commands.CloseActiveTab.Execute(null));
             yield return CreateSeparator();

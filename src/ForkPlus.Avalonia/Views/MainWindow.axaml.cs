@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using ForkPlus.Avalonia.Controls;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views.UserControls;
+using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI;
@@ -277,30 +278,99 @@ namespace ForkPlus.Avalonia.Views
         }
 
         // Phase 3.13：创建 RepositoryUserControl 装入 MainContentContainer
-        // 并触发 EnsureLayoutInitialized 装配 Sidebar + RepositoryContent
+        // 对照 WPF TabManager.RestoreSession()：从 ForkPlusSettings 恢复持久化仓库
+        // WPF: 遍历 ActiveWorkspace.Repositories，每个路径用 OpenGitRepositoryGitCommand 打开，
+        //       选中 ActiveRepository 对应的 tab。spike 单 tab：直接装入第一个成功打开的仓库。
         private void LoadRepositoryUserControl()
         {
-            Console.WriteLine("[MainWindow] LoadRepositoryUserControl (Phase 3.13)");
-
-            // Phase 4.0：用 ClosableTabControl 替代单 ContentContainer
-            // spike 阶段简化：直接装入 MainContentContainer（不创建 tab）
-            // 真实多 tab 切换留待 Phase 4.x 后期接入 TabManager
+            Console.WriteLine("[MainWindow] LoadRepositoryUserControl (RestoreSession)");
             _repositoryUserControl = _serviceProvider.GetRequiredService<RepositoryUserControl>();
             if (MainContentContainer != null)
             {
                 MainContentContainer.Content = _repositoryUserControl;
             }
 
-            // 对照 WPF: OpenRepository(repository) → EnsureLayoutInitialized + UpdateRepositoryData
-            // spike 阶段没有真实 repository，传 null 触发 EnsureLayoutInitialized 装配骨架
-            _repositoryUserControl.OpenRepository(null);
+            // 对照 WPF TabManager.RestoreSession：从持久化 settings 恢复仓库
+            GitModule gitModuleToOpen = null;
+            try
+            {
+                Workspace workspace = ForkPlusSettings.Default.Workspaces.ActiveWorkspace;
+                string activeRepository = workspace?.ActiveRepository;
+                string[] repositories = workspace?.Repositories ?? Array.Empty<string>();
+                Console.WriteLine($"[MainWindow] RestoreSession: {repositories.Length} persisted repo(s), active={activeRepository}");
+
+                GitModule activeModule = null;
+                GitModule firstModule = null;
+                foreach (string path in repositories)
+                {
+                    if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+                    {
+                        Console.WriteLine($"[MainWindow] Skip missing repo: {path}");
+                        continue;
+                    }
+                    GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(path);
+                    if (!result.Succeeded || result.Result == null)
+                    {
+                        Console.WriteLine($"[MainWindow] Cannot open repo: {path} ({result.Error})");
+                        continue;
+                    }
+                    firstModule ??= result.Result;
+                    if (PathHelper.Normalize(path) == activeRepository)
+                    {
+                        activeModule = result.Result;
+                    }
+                }
+                gitModuleToOpen = activeModule ?? firstModule;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] RestoreSession failed: {ex.Message}");
+            }
+
+            _repositoryUserControl.OpenRepository(gitModuleToOpen);
+            RefreshTitle();
         }
 
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
         {
-            // 对照 WPF Window_Closing：保存窗口状态 + 关闭 NotificationManager
+            // 对照 WPF Window_Closing：保存窗口状态 + 保存仓库 session + 关闭 NotificationManager
             Console.WriteLine("[MainWindow] Closing");
+            SaveSession();
             SaveWindowLocationState();
+        }
+
+        // 对照 WPF TabManager.SaveSession()：把当前打开的仓库路径持久化到 ForkPlusSettings
+        // spike 单 tab：只保存 _repositoryUserControl 的 GitModule.Path
+        private void SaveSession()
+        {
+            try
+            {
+                GitModule gitModule = _repositoryUserControl?.GitModule;
+                Workspace workspace = ForkPlusSettings.Default.Workspaces.ActiveWorkspace;
+                if (workspace == null)
+                {
+                    return;
+                }
+                if (gitModule == null)
+                {
+                    return;
+                }
+                string path = PathHelper.Normalize(gitModule.Path);
+                var list = new System.Collections.Generic.List<string>(workspace.Repositories ?? Array.Empty<string>());
+                if (!list.Contains(path))
+                {
+                    list.Add(path);
+                }
+                // 对照 WPF TabManager.SaveSession：直接赋值 Repositories + ActiveRepository
+                workspace.Repositories = list.ToArray();
+                workspace.ActiveRepository = path;
+                ForkPlusSettings.Default.Save();
+                Console.WriteLine($"[MainWindow] SaveSession: {list.Count} repo(s), active={path}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] SaveSession failed: {ex.Message}");
+            }
         }
 
         // Phase 3.1b：窗口位置/大小/状态变化时保存到 ForkPlusSettings。
@@ -327,8 +397,9 @@ namespace ForkPlus.Avalonia.Views
         // ===== 菜单事件 handler（对照 WPF MainWindowMenuManager 动态构造的菜单项）=====
 
         // File → Open Repository：打开文件夹选择对话框 → 创建 GitModule → OpenRepository
-        // 对照 WPF: OpenRepositoryCommand（src/ForkPlus/UI/Commands/OpenRepositoryCommand.cs）
-        private async void File_OpenRepository_Click(object sender, RoutedEventArgs e)
+        // 对照 WPF: OpenRepositoryCommand + TabManager.OpenRepository(path)
+        // public 供 MainWindowMenuManager 动态菜单 Click 调用（Commands.OpenRepository 空壳的替代）
+        public async void OpenRepositoryViaDialog()
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
@@ -338,7 +409,7 @@ namespace ForkPlus.Avalonia.Views
             if (folders.Count == 0) return;
 
             string path = folders[0].Path.LocalPath;
-            var result = new OpenGitRepositoryGitCommand().Execute(path);
+            GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(path);
             if (!result.Succeeded || result.Result == null)
             {
                 Console.WriteLine($"[MainWindow] OpenRepository failed: {path} is not a git repository");
@@ -348,6 +419,12 @@ namespace ForkPlus.Avalonia.Views
             Console.WriteLine($"[MainWindow] OpenRepository: {path}");
             _repositoryUserControl?.OpenRepository(result.Result);
             RefreshTitle();
+            SaveSession();
+        }
+
+        private void File_OpenRepository_Click(object sender, RoutedEventArgs e)
+        {
+            OpenRepositoryViaDialog();
         }
 
         private void File_CloneRepository_Click(object sender, RoutedEventArgs e)
