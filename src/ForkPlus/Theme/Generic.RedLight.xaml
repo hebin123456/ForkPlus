@@ -1,7 +1,0 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-  <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Styles/Brushes/Colors.RedLight.xaml" />
-    <ResourceDictionary Source="Styles/Images.Light.xaml" />
-    <ResourceDictionary Source="Generic.xaml" />
-  </ResourceDictionary.MergedDictionaries>
-</ResourceDictionary>
