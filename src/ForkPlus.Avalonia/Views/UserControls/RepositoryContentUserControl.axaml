@@ -3,25 +3,29 @@
              xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RepositoryContentUserControl">
     <!--
-        Avalonia 版 RepositoryContentUserControl（对照 WPF d696088）。
+        Avalonia 版 RepositoryContentUserControl（完全对照 WPF 6b4cbff~1）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryContentUserControl.xaml（54 行）：
           - 顶层 Grid 内并列两个 Grid：
             CommitView（默认 Collapsed）→ CommitUserControl
-            RevisionView（默认可见）Grid 3 行 × 3 列：
-              Row 0 (Auto): RevisionListStatusBarUserControl（默认 Collapsed）
+            RevisionView（默认可见）3 行 × 3 列：
+              Row 0 (Auto): RevisionListStatusBarUserControl（默认 Collapsed，跨 3 列）
               Row 1 (MinHeight=110): RevisionListViewUserControl（跨 3 列）
               Row 2 (MinHeight=110): RevisionDetailsUserControl（跨 3 列）
-              + 4 个 GridSplitter：
-                FirstColumnHorizontalGridSplitter (Row 2, Col 0, Top)
-                SecondColumnHorizontalGridSplitter (Row 2, Col 0+1, Top, Height 32, Margin 260)
-                ThirdColumnHorizontalGridSplitter (Row 2, Col 2, Top)
-                VerticalGridSplitter (Row 1+2, Col 0, Right)
-              + 列宽 400/MinWidth=300 / * / 40
+              Col 0 Width=400 MinWidth=300 / Col 1 * / Col 2 Width=40
+            + 4 个 GridSplitter（完全对照 WPF）：
+              FirstColumnHorizontalGridSplitter  (Row 2, Col 0,    VAlign=Top,           Style=HorizontalGridSplitter)
+              SecondColumnHorizontalGridSplitter (Row 2, ColSpan=2, Height=32, Margin=260,0,0,0, HAlign=Stretch, VAlign=Top, BG=#00FFFFFF, BorderBrush=BorderBrush, BorderThickness=0,1,0,0)
+              ThirdColumnHorizontalGridSplitter  (Row 2, Col 2,    VAlign=Top,           Style=HorizontalGridSplitter)
+              VerticalGridSplitter               (Row 1, RowSpan=2, Col 0, HAlign=Right, Style=VerticalGridSplitter)
 
-        WPF RevisionListView 和 RevisionDetails 都 ColSpan=3，所以 Col 0/1/2 的细分
-        主要由 GridSplitter + 内部子控件承担。Avalonia 版同样 ColSpan=3，但只保留 1 个
-        水平 GridSplitter（Row 1/Row 2 之间）作为最小可用分割。
+        WPF HorizontalGridSplitter Style（来自 Commonresources.xaml）：
+          HAlign/VAlign=Stretch, Margin=0,-2,0,-2, Height=5, BG=BorderBrush,
+          Template=<Grid BG=#00FFFFFF><Border Height=1 BG=BorderBrush/></Grid>
+
+        WPF VerticalGridSplitter Style（来自 Commonresources.xaml）：
+          HAlign/VAlign=Stretch, Margin=-2,0,-2,0, Width=5, BG=BorderBrush,
+          Template=<Grid BG=#00FFFFFF><Border Width=1 BG=BorderBrush/></Grid>
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RepositoryContentUserControl.xaml.cs（约 240 行）：
           - 6 个公共方法：Initialize / ApplyLocalization / SetRepositoryViewMode /
@@ -42,16 +46,18 @@
         </Grid>
 
         <!-- RevisionView：默认可见（对照 WPF x:Name="RevisionView"）
-             3 列 × 3 行布局：
+             3 列 × 3 行布局完全对照 WPF：
                Col 0 Width=400 MinWidth=300 / Col 1 * / Col 2 Width=40
                Row 0 Auto (StatusBar, Collapsed) / Row 1 * MinHeight=110 (ListView) / Row 2 * MinHeight=110 (Details)
              RevisionListView + RevisionDetails 均 ColSpan=3（沿用 WPF 语义）。
-             4 个 WPF GridSplitter 简化为 1 个水平 GridSplitter（Row 1/Row 2 之间）。-->
+             4 个 GridSplitter 完全对照 WPF：
+               - VerticalGridSplitter：Col 0 右侧垂直分隔，调整 Col 0/Col 1 宽度（RowSpan=2 跨列表+详情）
+               - 3 个 HorizontalGridSplitter：Row 2 顶部水平分隔，调整 Row 1/Row 2 高度-->
         <Grid Name="RevisionView"
               ColumnDefinitions="400,*,40"
               RowDefinitions="Auto,*,*">
 
-            <!-- Row 0: RevisionListStatusBarUserControl 占位（默认 Collapsed）-->
+            <!-- Row 0: RevisionListStatusBarUserControl 占位（默认 Collapsed，跨 3 列）-->
             <ContentControl Grid.Row="0" Grid.ColumnSpan="3"
                             Name="RevisionListStatusBarContainer"
                             IsVisible="False"
@@ -63,21 +69,54 @@
                                             Name="RevisionListViewUserControl"
                                             MinHeight="110" />
 
-            <!-- Row 1/Row 2 之间的水平 GridSplitter（spike 简化，对照 WPF 的
-                 FirstColumnHorizontalGridSplitter 等四个）-->
-            <GridSplitter Grid.Row="1" Grid.ColumnSpan="3"
-                          Name="HorizontalGridSplitter"
-                          Height="4"
-                          VerticalAlignment="Bottom"
-                          ResizeDirection="Rows"
-                          Background="{DynamicResource ThemeBorderMidBrush}"
-                          HorizontalAlignment="Stretch" />
-
             <!-- Row 2: RevisionDetailsUserControl（跨 3 列）-->
             <uc:RevisionDetailsUserControl Grid.Row="2" Grid.ColumnSpan="3"
                                            Name="RevisionDetails"
                                            MinHeight="110"
                                            BorderThickness="0" />
+
+            <!-- VerticalGridSplitter（对照 WPF VerticalGridSplitter：
+                 Row 1, RowSpan=2, Col 0, HAlign=Right, Style=VerticalGridSplitter）
+                 调整左侧列表区/详情区宽度，跨 Row 1+Row 2 -->
+            <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0"
+                          Name="VerticalGridSplitter"
+                          Classes="vertical-grid-splitter"
+                          HorizontalAlignment="Right"
+                          ResizeDirection="Columns" />
+
+            <!-- FirstColumnHorizontalGridSplitter（对照 WPF：
+                 Row 2, Col 0, VAlign=Top, Style=HorizontalGridSplitter）
+                 调整 Col 0 区域 Row 1/Row 2 高度 -->
+            <GridSplitter Grid.Row="2" Grid.Column="0"
+                          Name="FirstColumnHorizontalGridSplitter"
+                          Classes="horizontal-grid-splitter"
+                          VerticalAlignment="Top"
+                          ResizeDirection="Rows" />
+
+            <!-- SecondColumnHorizontalGridSplitter（对照 WPF：
+                 Row 2, ColSpan=2, Height=32, Margin=260,0,0,0,
+                 HAlign=Stretch, VAlign=Top, BG=#00FFFFFF 透明,
+                 BorderBrush=BorderBrush, BorderThickness=0,1,0,0）
+                 这是中间区域的拖拽 handle，比左右两侧更高（32px）便于拖拽 -->
+            <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                          Name="SecondColumnHorizontalGridSplitter"
+                          Height="32"
+                          Margin="260,0,0,0"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Top"
+                          ResizeDirection="Rows"
+                          Background="#00FFFFFF"
+                          BorderBrush="{DynamicResource BorderBrush}"
+                          BorderThickness="0,1,0,0" />
+
+            <!-- ThirdColumnHorizontalGridSplitter（对照 WPF：
+                 Row 2, Col 2, VAlign=Top, Style=HorizontalGridSplitter）
+                 调整 Col 2 区域 Row 1/Row 2 高度 -->
+            <GridSplitter Grid.Row="2" Grid.Column="2"
+                          Name="ThirdColumnHorizontalGridSplitter"
+                          Classes="horizontal-grid-splitter"
+                          VerticalAlignment="Top"
+                          ResizeDirection="Rows" />
         </Grid>
     </Grid>
 </UserControl>

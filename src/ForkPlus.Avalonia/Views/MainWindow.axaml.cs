@@ -89,6 +89,9 @@ namespace ForkPlus.Avalonia.Views
             _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             InitializeComponent();
+            // Phase 4.0：自绘标题栏 — 隐藏系统 caption 按钮（PreferNone），由我们绘制 Minimize/Restore/Maximize/Close。
+            // XAML 中 ExtendClientAreaChromeHints 字符串解析在 Avalonia 11.3 有解析器问题，改在代码中赋值。
+            ExtendClientAreaChromeHints = global::Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
             RefreshTitle();
             _themeService.ThemeChanged += (_, _) => { /* Phase 4.0 暂不更新 ThemeInfo */ };
 
@@ -113,12 +116,45 @@ namespace ForkPlus.Avalonia.Views
 
             // 对照 WPF: base.SizeChanged += MainWindow_SizeChanged;
             // Avalonia 用 PropertyChanged 观察 Width/Height/Position（spike 简化在 Closing 时一次性保存）
+
+            // Phase 4.0：自绘标题栏系统按钮 — 初始化 Restore/Maximize 按钮可见性。
+            // WindowState 变化由 OnPropertyChanged(AvaloniaProperty) 监听处理（对照 WPF CustomWindow.OnStateChanged）
+            UpdateWindowButtonsVisibility();
+        }
+
+        // Phase 4.0：监听 WindowState 变化切换 Restore/Maximize 按钮可见性。
+        // 对照 WPF CustomWindow.OnStateChanged：maximized 显示 RestoreButton，否则显示 MaximizeButton
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == WindowStateProperty)
+            {
+                UpdateWindowButtonsVisibility();
+            }
+        }
+
+        // Phase 4.0：根据 WindowState 切换 RestoreButton/MaximizeButton 可见性。
+        private void UpdateWindowButtonsVisibility()
+        {
+            if (RestoreButton != null)
+            {
+                RestoreButton.IsVisible = WindowState == global::Avalonia.Controls.WindowState.Maximized;
+            }
+            if (MaximizeButton != null)
+            {
+                MaximizeButton.IsVisible = WindowState != global::Avalonia.Controls.WindowState.Maximized;
+            }
         }
 
         // 对照 WPF: public void RefreshTitle()
+        //   WPF CustomWindow 标题栏 Label 绑定 Window.Title，Avalonia 自绘标题栏需手动同步 TitleLabel
         public void RefreshTitle()
         {
             Title = "ForkPlus";
+            if (TitleLabel != null)
+            {
+                TitleLabel.Content = Title;
+            }
         }
 
         // 对照 WPF: public void ApplyLocalization()
@@ -389,6 +425,39 @@ namespace ForkPlus.Avalonia.Views
         private void Help_Feedback_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[MainWindow] Help → Feedback");
+        }
+
+        // ===== 自绘标题栏系统按钮事件（对照 WPF SystemCommands + CustomWindow TemplatePart）=====
+
+        // 对照 WPF: SystemCommands.MinimizeWindowCommand → Window.Minimize()
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = global::Avalonia.Controls.WindowState.Minimized;
+        }
+
+        // 对照 WPF: SystemCommands.MaximizeWindowCommand → Window.Maximize()
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = global::Avalonia.Controls.WindowState.Maximized;
+        }
+
+        // 对照 WPF: SystemCommands.RestoreWindowCommand → Window.Restore()
+        private void RestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = global::Avalonia.Controls.WindowState.Normal;
+        }
+
+        // 对照 WPF: SystemCommands.CloseWindowCommand → Window.Close()
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        // 对照 WPF: NotificationManagerToggleButton + NotificationManagerPopup
+        //   spike 版：仅日志占位（NotificationManagerUserControl 未在 MainWindow 装入）
+        private void NotificationToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Notification toggle (spike placeholder)");
         }
     }
 }

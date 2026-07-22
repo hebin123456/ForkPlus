@@ -4,32 +4,62 @@
              Width="240">
     <!--
         对照 WPF SidebarUserControl.xaml（105 行）：
-          Row 0: 仓库名(DockPanel: 设置按钮 + 仓库名) + 5 个 RadioButton(Changes/AllCommits
-                 + Branches/Search/Service 3 个图标按钮)
-          Row 1: TabControl（Branches/Search/Service 3 个 TabItem）
-        Avalonia 版：emoji 换真实 PNG 图标，仓库名区按 WPF DockPanel 结构。
+          Row 0: DockPanel(Height=22, Margin=20,2,2,2) 仓库名栏
+                   DropDownButton(设置 16x16) + TextBlock(Hyperlink 父目录) + EditableTextBlock(仓库名)
+                 RadioButton Changes (Style=SidebarButton, Image 16x16 + TextBlock)
+                 RadioButton AllCommits (IsChecked=True, Style=SidebarButton, Image 16x16 + TextBlock)
+                 Border(分隔线) > StackPanel Center:
+                   3 个 RadioButton (Style=SidebarPathImageRadioButtonStyle, Content=Path Geometry)
+                   IsChecked 双向绑定 TabItem.IsSelected
+          Row 1: TabControl(无 Header TabItem，靠 RadioButton 切换):
+                   BranchesTabItem: FilterTextBox + MultiselectionTreeView
+                   SearchTabItem / ServiceTabItem (spike 占位)
+
+        WPF SidebarButton 样式：Padding=20,0, Height=26, hover=Button.MouseOver.Background
+        WPF SidebarPathImageRadioButtonStyle：Path 内容，Width=28, Height=28, Padding=6,4
     -->
     <UserControl.Styles>
         <Style Selector="RadioButton.sidebar-nav">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Padding" Value="20,0" />
+            <Setter Property="MinHeight" Value="26" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="0" />
         </Style>
+        <Style Selector="RadioButton.sidebar-nav:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="RadioButton.sidebar-nav:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+        </Style>
+        <!-- sidebar-icon-btn 对照 WPF SidebarPathImageRadioButtonStyle -->
         <Style Selector="RadioButton.sidebar-icon-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="6,4" />
-            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="MinWidth" Value="28" />
             <Setter Property="MinHeight" Value="28" />
+            <Setter Property="CornerRadius" Value="3" />
         </Style>
+        <Style Selector="RadioButton.sidebar-icon-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="RadioButton.sidebar-icon-btn:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+        </Style>
+        <!-- sidebar-btn 对照 WPF BranchOptionButton -->
         <Style Selector="Button.sidebar-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="4" />
-            <Setter Property="MinWidth" Value="24" />
-            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="16" />
+            <Setter Property="MinHeight" Value="16" />
+        </Style>
+        <Style Selector="Button.sidebar-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
         </Style>
     </UserControl.Styles>
 
@@ -45,100 +75,123 @@
     <Grid RowDefinitions="Auto,*"
           Background="{DynamicResource Sidebar.Static.Background}">
 
-        <!-- Row 0: 仓库名 + 视图切换按钮 -->
-        <StackPanel Grid.Row="0" Margin="0">
-            <!-- 仓库名栏（对照 WPF DockPanel: 仓库名 + 设置按钮）-->
-            <Grid ColumnDefinitions="*,Auto" Margin="8,4,4,4">
-                <TextBlock Grid.Column="0" Name="RepositoryNameText"
-                           Text="(no repository)"
-                           VerticalAlignment="Center"
-                           Margin="0,0,6,0"
-                           FontWeight="Medium"
-                           FontSize="13.5"
-                           TextTrimming="CharacterEllipsis"
-                           Foreground="{DynamicResource ThemeForegroundBrush}" />
-                <Button Grid.Column="1" Name="RepoSettingsButton" Classes="sidebar-btn"
+        <!-- Row 0: 仓库名栏 + 视图切换按钮 -->
+        <StackPanel Grid.Row="0">
+            <!-- 仓库名栏（对照 WPF DockPanel Height=22 Margin=20,2,2,2）-->
+            <DockPanel Height="22" Margin="20,2,2,2">
+                <!-- 设置按钮（WPF DropDownButton Dock=Right, 16x16）-->
+                <Button Name="RepoSettingsButton" Classes="sidebar-btn"
+                        DockPanel.Dock="Right"
                         ToolTip.Tip="Repository Settings"
                         Click="RepoSettingsButton_Click">
                     <Image Source="/Assets/settings.png" Width="16" Height="16" />
                 </Button>
-            </Grid>
+                <!-- 父目录名（WPF TextBlock Hyperlink, FontWeight=Medium, FontSize=13.5）-->
+                <TextBlock Name="RepositoryParentNameText"
+                           DockPanel.Dock="Left"
+                           FontWeight="Medium"
+                           FontSize="13.5"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+                <!-- 仓库名（WPF EditableTextBlock, FontWeight=Medium, FontSize=13.5）-->
+                <TextBlock Name="RepositoryNameText"
+                           FontWeight="Medium"
+                           FontSize="13.5"
+                           Foreground="{DynamicResource ForegroundBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Text="(no repository)" />
+            </DockPanel>
 
-            <!-- Changes / All Commits 视图切换（对照 WPF ChangesRadioButton + AllCommitsRadioButton）-->
+            <!-- Changes（WPF RadioButton Style=SidebarButton, Image 16x16 + TextBlock）-->
             <RadioButton Name="ChangesRadioButton" Classes="sidebar-nav"
-                         Click="ChangesRadioButton_Click"
-                         Margin="4,2">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Image Source="/Assets/changes.png" Width="16" Height="16" />
-                    <TextBlock Name="ChangesTextBlock" Text="Changes"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                         Click="ChangesRadioButton_Click">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Image Grid.Column="0" Source="/Assets/changes.png" Width="16" Height="16" />
+                    <TextBlock Grid.Column="1" Name="ChangesTextBlock" Text="Changes"
+                               Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" />
+                </Grid>
             </RadioButton>
+            <!-- All Commits（WPF IsChecked=True, Style=SidebarButton）-->
             <RadioButton Name="AllCommitsRadioButton" Classes="sidebar-nav"
                          IsChecked="True"
-                         Click="AllCommitsRadioButton_Click"
-                         Margin="4,2">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Image Source="/Assets/revisionlist.png" Width="16" Height="16" />
-                    <TextBlock Name="AllCommitsTextBlock" Text="All Commits"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                         Click="AllCommitsRadioButton_Click">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Image Grid.Column="0" Source="/Assets/revisionlist.png" Width="16" Height="16" />
+                    <TextBlock Grid.Column="1" Name="AllCommitsTextBlock" Text="All Commits"
+                               Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" />
+                </Grid>
             </RadioButton>
 
-            <!-- Branches / Search / Service 3 个图标按钮（对照 WPF SidebarPathImageRadioButtonStyle）-->
-            <Border Margin="0,5,0,0" BorderThickness="0,1,0,1"
-                    BorderBrush="{DynamicResource ThemeBorderMidBrush}">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2">
+            <!-- 3 个图标 RadioButton（WPF Border 分隔线 + StackPanel Center）-->
+            <Border Margin="0,5,0,0" HorizontalAlignment="Stretch"
+                    BorderThickness="0,1,0,1"
+                    BorderBrush="{DynamicResource BorderBrush}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Branches（Content=Path SidebarBranchGeometry, IsChecked 绑定 BranchesTabItem.IsSelected）-->
                     <RadioButton Name="BranchesRadioButton" Classes="sidebar-icon-btn"
                                  ToolTip.Tip="Branches"
-                                 IsChecked="True"
-                                 Click="BranchesRadioButton_Click">
-                        <Image Source="/Assets/branch.png" Width="16" Height="16" />
+                                 IsChecked="{Binding #BranchesTabItem.IsSelected, Mode=TwoWay}">
+                        <Path Data="{DynamicResource SidebarBranchGeometry}"
+                              Fill="{DynamicResource ForegroundBrush}"
+                              Width="16" Height="16"
+                              Stretch="Uniform" />
                     </RadioButton>
+                    <!-- Search（Content=Path SidebarSearchGeometry）-->
                     <RadioButton Name="SearchRadioButton" Classes="sidebar-icon-btn"
                                  ToolTip.Tip="Search Commits"
-                                 Click="SearchRadioButton_Click">
-                        <Image Source="/Assets/search.png" Width="16" Height="16" />
+                                 IsChecked="{Binding #SearchTabItem.IsSelected, Mode=TwoWay}">
+                        <Path Data="{DynamicResource SidebarSearchGeometry}"
+                              Fill="{DynamicResource ForegroundBrush}"
+                              Width="16" Height="16"
+                              Stretch="Uniform" />
                     </RadioButton>
+                    <!-- Service（WPF Visibility=Collapsed）-->
                     <RadioButton Name="ServiceRadioButton" Classes="sidebar-icon-btn"
-                                 ToolTip.Tip="Pull Requests"
                                  IsVisible="False"
-                                 Click="ServiceRadioButton_Click">
-                        <Image Source="/Assets/pullrequest.png" Width="16" Height="16" />
+                                 ToolTip.Tip="Pull Requests"
+                                 IsChecked="{Binding #ServiceTabItem.IsSelected, Mode=TwoWay}">
+                        <Path Data="{DynamicResource GenericRemoteGeometry}"
+                              Fill="{DynamicResource ForegroundBrush}"
+                              Width="16" Height="16"
+                              Stretch="Uniform" />
                     </RadioButton>
                 </StackPanel>
             </Border>
         </StackPanel>
 
-        <!-- Row 1: TabControl（Branches/Search/Service 3 个 Tab）-->
+        <!-- Row 1: TabControl（WPF 无 Header TabItem，靠 Branches/Search/Service
+             3 个 RadioButton 双向绑定 IsSelected 切换）-->
         <TabControl Grid.Row="1" Name="SidebarTabControl"
                     Background="{DynamicResource Sidebar.Static.Background}"
                     Padding="0"
                     SelectionChanged="TabControl_SelectionChanged">
-            <TabItem Name="BranchesTabItem" Header="Branches">
-                <Grid RowDefinitions="Auto,*" Margin="4">
+            <!-- BranchesTabItem（WPF 无 Header，靠 RadioButton 切换）
+                 内含 Grid: FilterTextBox(Margin=4) + TreeView -->
+            <TabItem Name="BranchesTabItem">
+                <Grid RowDefinitions="Auto,*">
                     <TextBox Grid.Row="0" Name="FilterTextBox"
                              Watermark="Filter branches..."
                              TextChanged="FilterTextBox_TextChanged"
-                             Margin="0,2" />
+                             Margin="4" />
                     <TreeView Grid.Row="1" Name="SidebarTreeView"
                               ItemTemplate="{StaticResource SidebarNodeTemplate}"
                               Background="Transparent"
                               BorderThickness="0" />
                 </Grid>
             </TabItem>
-            <TabItem Name="SearchTabItem" Header="Search">
+            <TabItem Name="SearchTabItem">
                 <TextBlock Text="(search not implemented)"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Foreground="{DynamicResource ForegroundBrush.Gray}"
                            FontSize="11" />
             </TabItem>
-            <TabItem Name="ServiceTabItem" Header="Service" IsVisible="False">
+            <TabItem Name="ServiceTabItem" IsVisible="False">
                 <TextBlock Text="(service not implemented)"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Foreground="{DynamicResource ForegroundBrush.Gray}"
                            FontSize="11" />
             </TabItem>
         </TabControl>

@@ -84,6 +84,18 @@ namespace ForkPlus.Avalonia.Views.UserControls
             Console.WriteLine("[RevisionSummary] ApplyLocalization (spike placeholder)");
         }
 
+        // spike 新增：SetRevisionInfo(string author, string date, string sha, string subject, string message)
+        //   供父控件 RevisionDetailsUserControl.SetRevision 调用，更新 Author/Date/SHA/Subject/Description 文本
+        //   对照 WPF: RevisionSummaryUserControl.Refresh 内部从 FullRevisionDetails 取属性并赋值
+        public void SetRevisionInfo(string author, string date, string sha, string subject, string message)
+        {
+            if (AuthorNameTextBlock != null) AuthorNameTextBlock.Text = author ?? "(unknown)";
+            if (AuthorDateTextBlock != null) AuthorDateTextBlock.Text = date ?? "(unknown)";
+            if (ShaTextBlock != null) ShaTextBlock.Text = sha ?? "(no sha)";
+            if (SubjectTextBlock != null) SubjectTextBlock.Text = subject ?? "(no subject)";
+            if (DescriptionTextBlock != null) DescriptionTextBlock.Text = message ?? "";
+        }
+
         // 对照 WPF: public void HighlightSearchMatches(RevisionSearchQuery searchQuery)
         //   委托 ApplySearchAndButrackerHighlighting（spike 不迁移高亮逻辑）
         public void HighlightSearchMatches(object searchQuery)

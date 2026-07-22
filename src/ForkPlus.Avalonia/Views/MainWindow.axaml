@@ -9,56 +9,140 @@
         Title="ForkPlus"
         Icon="/Assets/ForkPlusIcon.png"
         WindowState="Normal"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="32"
+        Background="{DynamicResource ThemeBackgroundBrush}"
         Loaded="MainWindow_Loaded"
         Closing="MainWindow_Closing"
         Activated="MainWindow_Activated">
     <!--
-        对照 WPF MainWindow.xaml：
-          - WPF 用 CustomWindow 自定义标题栏（Menu + Icon + Title + Notification + 系统按钮）
-          - Avalonia 用系统原生标题栏（三平台原生外观，不自绘系统按钮）
-          - 内容区：Menu(可选) + Toolbar + ClosableTabControl(多仓库 tab)
-          - spike 简化：单 RepositoryUserControl（无多 tab），菜单用原生 Menu
+        对照 WPF MainWindow.xaml + CustomWindow ControlTemplate：
+          - WPF CustomWindow PART_WindowHeader：Border Background=Window.TitleBar.Background
+            DockPanel(系统按钮 Dock=Right + Menu Dock=Left + Icon+Title Center Margin=0,0,90,0)
+          - 系统按钮：Notification + Minimize + Restore + Maximize + Close
+            Path 用 MinimizeGeometry/RestoreGeometry/MaximizeGeometry/CloseGeometry
+          - 内容区：ToolbarUserControl (Row 1) + ClosableTabControl (Row 2，spike 单 tab)
+        Avalonia 适配：
+          - ExtendClientAreaToDecorationsHint=True 自绘标题栏
+          - 系统按钮调用 Window.Minimize/Restore/Maximize/Close
+          - WindowState 变化时切换 Restore/Maximize 按钮可见性
     -->
-    <DockPanel>
-        <!-- 顶部菜单栏（对照 WPF CustomWindow ControlTemplate 中的 PART_MainMenu）-->
-        <Menu DockPanel.Dock="Top" Name="MainMenu">
-            <MenuItem Header="File">
-                <MenuItem Header="Open Repository..." Click="File_OpenRepository_Click" />
-                <MenuItem Header="Clone Repository..." Click="File_CloneRepository_Click" />
-                <Separator />
-                <MenuItem Header="Recent Repositories" Name="RecentRepositoriesMenuItem" />
-                <Separator />
-                <MenuItem Header="Exit" Click="File_Exit_Click" />
-            </MenuItem>
-            <MenuItem Header="View">
-                <MenuItem Header="Toolbar" IsChecked="True" Click="View_ToggleToolbar_Click" />
-                <MenuItem Header="Sidebar" IsChecked="True" Click="View_ToggleSidebar_Click" />
-                <Separator />
-                <MenuItem Header="Appearance" Click="View_Appearance_Click" />
-            </MenuItem>
-            <MenuItem Header="Repository">
-                <MenuItem Header="Fetch" Click="Repository_Fetch_Click" />
-                <MenuItem Header="Pull" Click="Repository_Pull_Click" />
-                <MenuItem Header="Push" Click="Repository_Push_Click" />
-                <Separator />
-                <MenuItem Header="Branch..." Click="Repository_Branch_Click" />
-                <MenuItem Header="Commit..." Click="Repository_Commit_Click" />
-                <MenuItem Header="Stash..." Click="Repository_Stash_Click" />
-            </MenuItem>
-            <MenuItem Header="Window">
-                <MenuItem Header="Preferences..." Click="Window_Preferences_Click" />
-            </MenuItem>
-            <MenuItem Header="Help">
-                <MenuItem Header="About ForkPlus" Click="Help_About_Click" />
-                <MenuItem Header="Feedback" Click="Help_Feedback_Click" />
-            </MenuItem>
-        </Menu>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- 工具栏（对照 WPF ToolbarUserControl，DI 注入故用 ContentControl 装入）-->
-        <ContentControl DockPanel.Dock="Top" Name="ToolbarContainer" Height="44" />
+        <!-- ===== 标题栏（对照 WPF PART_WindowHeader Border Background=Window.TitleBar.Background）===== -->
+        <Border Grid.Row="0" Name="TitleBarBorder"
+                Background="{DynamicResource Window.TitleBar.Background}"
+                Height="32"
+                Padding="0">
+            <DockPanel>
+                <!-- 右侧系统按钮（对照 WPF StackPanel Dock=Right） -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <!-- NotificationManagerToggleButton（对照 WPF WindowRoundedToggleButton + NotificationIcon） -->
+                    <Button Name="NotificationManagerToggleButton"
+                            Classes="window-icon-button"
+                            ToolTip.Tip="Notifications"
+                            Click="NotificationToggleButton_Click">
+                        <Image Source="/Assets/notification.png" Width="16" Height="16" />
+                    </Button>
+                    <!-- MinimizeButton -->
+                    <Button Name="MinimizeButton"
+                            Classes="window-icon-button"
+                            ToolTip.Tip="Minimize"
+                            Click="MinimizeButton_Click">
+                        <Path Data="{StaticResource MinimizeGeometry}" Classes="window-path" />
+                    </Button>
+                    <!-- RestoreButton（仅在最大化时可见） -->
+                    <Button Name="RestoreButton"
+                            Classes="window-icon-button"
+                            ToolTip.Tip="Restore"
+                            IsVisible="False"
+                            Click="RestoreButton_Click">
+                        <Path Data="{StaticResource RestoreGeometry}" Classes="window-path" />
+                    </Button>
+                    <!-- MaximizeButton（仅在非最大化时可见） -->
+                    <Button Name="MaximizeButton"
+                            Classes="window-icon-button"
+                            ToolTip.Tip="Maximize"
+                            Click="MaximizeButton_Click">
+                        <Path Data="{StaticResource MaximizeGeometry}" Classes="window-path" />
+                    </Button>
+                    <!-- CloseButton（对照 WPF WindowCloseButton hover=#E81123） -->
+                    <Button Name="CloseButton"
+                            Classes="window-close-button"
+                            ToolTip.Tip="Close"
+                            Click="CloseButton_Click">
+                        <Path Data="{StaticResource CloseGeometry}" Classes="window-close-path" />
+                    </Button>
+                </StackPanel>
 
-        <!-- 主内容区：RepositoryUserControl（对照 WPF ClosableTabControl，spike 单 tab）-->
-        <ContentControl Name="MainContentContainer"
+                <!-- 左侧 Menu + 中央 Icon/Title（对照 WPF Grid Col=0,1 + StackPanel Center） -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Menu（对照 WPF PART_MainMenu Background=Window.TitleBar.Background） -->
+                    <Menu Grid.Column="0" Name="MainMenu"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Padding="2,0">
+                        <MenuItem Header="File">
+                            <MenuItem Header="Open Repository..." Click="File_OpenRepository_Click" />
+                            <MenuItem Header="Clone Repository..." Click="File_CloneRepository_Click" />
+                            <Separator />
+                            <MenuItem Header="Recent Repositories" Name="RecentRepositoriesMenuItem" />
+                            <Separator />
+                            <MenuItem Header="Exit" Click="File_Exit_Click" />
+                        </MenuItem>
+                        <MenuItem Header="View">
+                            <MenuItem Header="Toolbar" IsChecked="True" Click="View_ToggleToolbar_Click" />
+                            <MenuItem Header="Sidebar" IsChecked="True" Click="View_ToggleSidebar_Click" />
+                            <Separator />
+                            <MenuItem Header="Appearance" Click="View_Appearance_Click" />
+                        </MenuItem>
+                        <MenuItem Header="Repository">
+                            <MenuItem Header="Fetch" Click="Repository_Fetch_Click" />
+                            <MenuItem Header="Pull" Click="Repository_Pull_Click" />
+                            <MenuItem Header="Push" Click="Repository_Push_Click" />
+                            <Separator />
+                            <MenuItem Header="Branch..." Click="Repository_Branch_Click" />
+                            <MenuItem Header="Commit..." Click="Repository_Commit_Click" />
+                            <MenuItem Header="Stash..." Click="Repository_Stash_Click" />
+                        </MenuItem>
+                        <MenuItem Header="Window">
+                            <MenuItem Header="Preferences..." Click="Window_Preferences_Click" />
+                        </MenuItem>
+                        <MenuItem Header="Help">
+                            <MenuItem Header="About ForkPlus" Click="Help_About_Click" />
+                            <MenuItem Header="Feedback" Click="Help_Feedback_Click" />
+                        </MenuItem>
+                    </Menu>
+
+                    <!-- 中央 Icon + Title（对照 WPF StackPanel Margin=0,0,90,0 + Image + Label） -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,90,0">
+                        <Image Source="/Assets/ForkPlusIcon.png" Width="16" Height="16" />
+                        <Label Name="TitleLabel" Content="ForkPlus"
+                               Foreground="{DynamicResource ThemeForegroundBrush}"
+                               Padding="6,0"
+                               VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== 工具栏（对照 WPF ToolbarUserControl，DI 注入故用 ContentControl 装入）===== -->
+        <ContentControl Grid.Row="1" Name="ToolbarContainer" Height="44" />
+
+        <!-- ===== 主内容区（对照 WPF ClosableTabControl，spike 单 tab）===== -->
+        <ContentControl Grid.Row="2" Name="MainContentContainer"
                         Background="{DynamicResource ThemeBackgroundBrush}" />
-    </DockPanel>
+    </Grid>
 </Window>

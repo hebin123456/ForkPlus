@@ -26,11 +26,11 @@
         <Setter Property="FontSize" Value="13" />
     </Style>
 
-    <!-- ========== Menu / MenuItem（对照 WPF MainMenu.Static.ForegroundColor #595959）========== -->
+    <!-- ========== Menu / MenuItem（对照 WPF Menu.MenuItem.Static.BackgroundColor #F6F6F6）========== -->
     <Style Selector="Menu">
-        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Padding" Value="2,1" />
     </Style>
@@ -39,100 +39,124 @@
         <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="MenuItem:selected /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <Style Selector="MenuItem:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
 
     <!-- ========== TextBox（对照 WPF TextBox.Static.BackgroundColor #FFFFFF / BorderColor #CECECE）========== -->
     <Style Selector="TextBox">
-        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Padding" Value="6,4" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="CornerRadius" Value="2" />
     </Style>
     <Style Selector="TextBox:focus /template/ Border">
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
     </Style>
 
-    <!-- ========== Button 默认（对照 WPF Button.Static.BackgroundColor #FDFDFD / Border #CECECE）========== -->
+    <!-- ========== Button 默认（对照 WPF Button.Static.BackgroundColor #FDFDFD / Border #CECECE / Height 24）========== -->
     <Style Selector="Button">
-        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
+        <Setter Property="Margin" Value="4,2" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Height" Value="24" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
     </Style>
     <Style Selector="Button:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Pressed.Foreground}" />
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
     </Style>
 
     <!-- ========== icon-btn：透明图标按钮（对照 WPF IconButtonStyle）========== -->
     <Style Selector="Button.icon-btn">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="4" />
+        <Setter Property="Height" Value="NaN" />
         <Setter Property="MinWidth" Value="28" />
         <Setter Property="MinHeight" Value="28" />
     </Style>
     <Style Selector="Button.icon-btn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
     </Style>
     <Style Selector="Button.icon-btn:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
     </Style>
 
-    <!-- ========== toolbar-btn：工具栏图标按钮（对照 WPF ToolbarButton 样式）========== -->
+    <!-- ========== toolbar-btn：工具栏图标按钮（对照 WPF ToolbarButton 样式）
+         WPF ToolbarButton: Background=Transparent, MouseOver.Background=#EAEAEA,
+         Pressed.Background=#D5D5D5, BorderThickness=0, 透明无边框，hover 才显示背景 -->
     <Style Selector="Button.toolbar-btn">
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="6,4" />
-        <Setter Property="Margin" Value="1,0" />
+        <Setter Property="Margin" Value="0,3,0,3" />
+        <Setter Property="Padding" Value="4,0" />
+        <Setter Property="Height" Value="NaN" />
         <Setter Property="MinWidth" Value="32" />
         <Setter Property="MinHeight" Value="32" />
+        <Setter Property="CornerRadius" Value="3" />
     </Style>
     <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
     <Style Selector="Button.toolbar-btn:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <!-- ========== sidebar-btn：Sidebar 小图标按钮（对照 WPF BranchOptionButton）========== -->
     <Style Selector="Button.sidebar-btn">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="4" />
-        <Setter Property="MinWidth" Value="24" />
-        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Height" Value="NaN" />
+        <Setter Property="MinWidth" Value="16" />
+        <Setter Property="MinHeight" Value="16" />
     </Style>
     <Style Selector="Button.sidebar-btn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
     </Style>
 
-    <!-- ========== sidebar-nav：Sidebar 导航 RadioButton（对照 WPF SidebarButton）========== -->
+    <!-- ========== sidebar-nav：Sidebar 导航 RadioButton（对照 WPF SidebarButton 样式）========== -->
     <Style Selector="RadioButton.sidebar-nav">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="8,4" />
-        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="20,0" />
+        <Setter Property="MinHeight" Value="26" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="CornerRadius" Value="0" />
     </Style>
     <Style Selector="RadioButton.sidebar-nav:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
     </Style>
     <Style Selector="RadioButton.sidebar-nav:checked /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
     </Style>
 
     <!-- ========== sidebar-icon-btn：Sidebar 图标按钮（对照 WPF SidebarPathImageRadioButtonStyle）========== -->
@@ -140,14 +164,16 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="6,4" />
-        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="MinWidth" Value="28" />
         <Setter Property="MinHeight" Value="28" />
+        <Setter Property="CornerRadius" Value="3" />
     </Style>
     <Style Selector="RadioButton.sidebar-icon-btn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
     </Style>
     <Style Selector="RadioButton.sidebar-icon-btn:checked /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
     </Style>
 
     <!-- ========== tab-btn：RevisionDetails Tab 按钮（对照 WPF RevisionDetailsBarButton）========== -->
@@ -157,13 +183,13 @@
         <Setter Property="Padding" Value="12,4" />
         <Setter Property="MinHeight" Value="30" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundMidBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
     <Style Selector="RadioButton.tab-btn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
     </Style>
     <Style Selector="RadioButton.tab-btn:checked">
-        <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
     </Style>
 
     <!-- ========== ListBoxItem（对照 WPF Item.SelectedActive.BackgroundColor #236BD2）========== -->
@@ -172,19 +198,19 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
     </Style>
     <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
         <Setter Property="TextElement.Foreground" Value="White" />
     </Style>
 
     <!-- ========== TreeViewItem（对照 WPF TreeViewItem.Static.BackgroundColor #FFFFFF）========== -->
     <Style Selector="TreeView">
-        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
     <Style Selector="TreeViewItem">
@@ -192,40 +218,134 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="TreeViewItem:pointerover /template/ ContentPresenter#PART_Header">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.MouseOver.Background}" />
     </Style>
     <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_Header">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
     </Style>
     <Style Selector="TreeViewItem:selected:focus /template/ ContentPresenter#PART_Header">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
         <Setter Property="TextElement.Foreground" Value="White" />
     </Style>
 
     <!-- ========== TabControl / TabItem（对照 WPF ClosableTabItem 样式）========== -->
     <Style Selector="TabControl">
-        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="0" />
     </Style>
     <Style Selector="TabItem">
-        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Padding" Value="10,4" />
         <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="TabItem:selected">
-        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TabItem.Selected.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
 
-    <!-- ========== GridSplitter（对照 WPF HorizontalGridSplitter / VerticalGridSplitter）========== -->
+    <!-- ========== Window 标题栏系统按钮（对照 WPF WindowButton / WindowCloseButton Style）==========
+         WPF WindowButton：Width=46, Height=32, Padding=0, BG=Transparent, BorderThickness=0
+           MouseOver BG=Window.Button.MouseOver.Background（#EAEAEA）
+           Pressed BG=Window.Button.Pressed.Background（#D9D9D9）
+         WPF WindowCloseButton：Width=46, Height=32, MouseOver BG=#E81123（红色）, Foreground=#FFFFFF
+         WPF WindowPathStyle：Width=10, Height=10, Stretch=Uniform, Fill=Window.Button.Static.Foreground
+         WPF WindowCloseButtonPathStyle：Width=10, Height=10, Stretch=Uniform, Fill=Window.CloseButton.Foreground -->
+    <Style Selector="Button.window-icon-button">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="Button.window-icon-button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.window-icon-button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Button.window-close-button">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="Button.window-close-button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.window-close-button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <!-- 系统按钮 Path 样式（对照 WPF WindowPathStyle：Width=10, Height=10, Stretch=Uniform, Fill=Window.Button.Static.Foreground）
+         WPF Trigger IsMouseOver=True 时 Fill=Window.Button.MouseOver.Foreground（深色） -->
+    <Style Selector="Path.window-path">
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Height" Value="10" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+    </Style>
+    <Style Selector="Button.window-icon-button:pointerover Path.window-path">
+        <Setter Property="Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
+    </Style>
+
+    <!-- 关闭按钮 Path（对照 WPF WindowCloseButtonPathStyle：Fill=Window.CloseButton.Foreground，hover=白色 Window.Button.MouseOver.Foreground） -->
+    <Style Selector="Path.window-close-path">
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Height" Value="10" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="{DynamicResource Window.CloseButton.Foreground}" />
+    </Style>
+    <Style Selector="Button.window-close-button:pointerover Path.window-close-path">
+        <Setter Property="Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
+    </Style>
+
+    <!-- ========== GridSplitter 默认（对照 WPF HorizontalGridSplitter / VerticalGridSplitter）========== -->
     <Style Selector="GridSplitter">
-        <Setter Property="Background" Value="{DynamicResource ThemeBorderMidBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeBorderMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     </Style>
     <Style Selector="GridSplitter:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+
+    <!-- ========== horizontal-grid-splitter（对照 WPF HorizontalGridSplitter Style：
+         HAlign/VAlign=Stretch, Margin=0,-2,0,-2, Height=5, BG=BorderBrush,
+         Template=Grid#00FFFFFF > Border Height=1 BG=BorderBrush）==========
+         用于 Row 1/Row 2 之间水平分隔（调整 Row 高度）。
+         Margin 负值让 splitter 视觉上跨整行，Height=5 是命中区，1px Border 是可见线。-->
+    <Style Selector="GridSplitter.horizontal-grid-splitter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0,-2,0,-2" />
+        <Setter Property="Height" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    </Style>
+
+    <!-- ========== vertical-grid-splitter（对照 WPF VerticalGridSplitter Style：
+         HAlign/VAlign=Stretch, Margin=-2,0,-2,0, Width=5, BG=BorderBrush,
+         Template=Grid#00FFFFFF > Border Width=1 BG=BorderBrush）==========
+         用于 Col 0/Col 1 之间垂直分隔（调整 Col 宽度）-->
+    <Style Selector="GridSplitter.vertical-grid-splitter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="-2,0,-2,0" />
+        <Setter Property="Width" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     </Style>
 
     <!-- ========== ScrollViewer / ScrollBar（对照 WPF ScrollBar.ThumbColor #D9D9D9）========== -->
@@ -239,25 +359,25 @@
         <Setter Property="Height" Value="12" />
     </Style>
     <Style Selector="ScrollBar Thumb">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Thumb}" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="2" />
         <Setter Property="MinWidth" Value="6" />
         <Setter Property="MinHeight" Value="6" />
     </Style>
     <Style Selector="ScrollBar Thumb:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ThemeForegroundLowBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ForegroundBrush}" />
     </Style>
 
     <!-- ========== TextBlock 默认字号（对照 WPF FontConstants Proportional 13）========== -->
     <Style Selector="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="FontSize" Value="13" />
     </Style>
 
     <!-- ========== CheckBox ========== -->
     <Style Selector="CheckBox">
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="FontSize" Value="13" />
     </Style>
 </Styles>

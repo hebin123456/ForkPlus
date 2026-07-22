@@ -113,14 +113,32 @@ namespace ForkPlus.Avalonia.Views.UserControls
             Console.WriteLine("[Toolbar] Stash clicked");
         }
 
+        // 对照 WPF StashToolbarDropdownButtonContextMenu_Opened
+        private void StashDropdownButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[Toolbar] Stash dropdown clicked");
+        }
+
         private void UndoButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Toolbar] Undo clicked");
         }
 
+        // 对照 WPF UndoToolbarDropdownButtonContextMenu_Opened
+        private void UndoDropdownButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[Toolbar] Undo dropdown clicked");
+        }
+
         private void RedoButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Toolbar] Redo clicked");
+        }
+
+        // 对照 WPF RedoToolbarDropdownButtonContextMenu_Opened
+        private void RedoDropdownButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[Toolbar] Redo dropdown clicked");
         }
 
         private void ReflogButton_Click(object sender, RoutedEventArgs e)
@@ -133,6 +151,12 @@ namespace ForkPlus.Avalonia.Views.UserControls
         private void BranchButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("[Toolbar] Branch clicked");
+        }
+
+        // 对照 WPF BranchToolbarDropdownButtonContextMenu_Opened
+        private void BranchDropdownButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[Toolbar] Branch dropdown clicked");
         }
 
         private void WorkspacesButton_Click(object sender, RoutedEventArgs e)

@@ -1,41 +1,43 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
              x:Class="ForkPlus.Avalonia.Views.UserControls.RevisionDetailsUserControl">
     <!--
-        Avalonia 版 RevisionDetailsUserControl（对照 WPF d696088）。
+        Avalonia 版 RevisionDetailsUserControl（完全对照 WPF 6b4cbff~1）。
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.xaml（40 行）：
-          - ContentContainer（自定义控件）→ spike 用 Grid 替代
+          - controls:ContentContainer（自定义控件）→ spike 用 Grid 替代
           - Grid 3 行：
-            Row 0 (Auto): TabHeaderContainer
-              - Row 0 (30): 3 个 RadioButton (Commit/Changes/FileTree) + Col 4 (40) ShowRevisionInSeparateWindowButton
-              - Row 1 (1.5): Canvas + IndicatorBorder（动画指示器，对照 SystemAccentBrush）
-              - Col 0/1/2/Auto/Auto/Auto/* /40
-            Row 1 (Auto): RevisionsHeaderUserControl（自定义）→ spike 用 ContentControl 占位
-            Row 2 (*): Border 包 Grid，3 个子 UserControl：
-              - RevisionSummaryUserControl（默认可见）
-              - RevisionChangesUserControl（默认 Collapsed）
-              - RevisionFileTreeUserControl（默认 Collapsed）
+            Row 0 (Auto): TabHeaderContainer (Background=PanelBackgroundBrush)
+              - Row 0 (30): 3 个 RadioButton (Commit/Changes/FileTree) Style=RevisionDetailsBarButton +
+                            Col 4 (40) ShowRevisionInSeparateWindowButton (22x22, OpenInSeparateWindowIcon)
+              - Row 1 (1.5): Canvas + IndicatorBorder (Background=SystemAccentBrush, 动画 Canvas.Left)
+              - Col 0/1/2 (Auto) / Col 3 (*) / Col 4 (40)
+            Row 1 (Auto): RevisionsHeaderUserControl (BorderBrush=BorderBrush)
+            Row 2 (*): Border (BorderThickness=0,1,0,0, BorderBrush=BorderBrush, UseLayoutRounding=True)
+              - Grid 包 3 个子 UserControl：
+                - RevisionSummaryUserControl (默认可见)
+                - RevisionChangesUserControl (默认 Collapsed)
+                - RevisionFileTreeUserControl (默认 Collapsed)
 
         对照 WPF 工程 src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.xaml.cs（595 行）：
           - 公共方法：Initialize(repo, mode) / ShowRevisionDetails(target, fileToSelect) /
             ShowInFileTreeTab(filePath) / HighlightSearchMatches(query) / ApplyLocalization
           - 公共事件：RevisionDetailsUpdated
-          - 异步 Job：_loadFullRevisionDetailsJob
+          - 异步 Job：_loadFullRevisionDetailsJob（git 命令取 FullRevisionDetails）
           - Tab 切换动画（DoubleAnimation + TranslateTransform on IndicatorBorder）
 
-        Avalonia 版差异：
-          - WPF Visibility.Collapsed/Visible → Avalonia IsVisible=false/true
+        Avalonia 适配：
           - WPF ContentContainer（自定义控件）→ Grid 替代
-          - WPF RevisionsHeaderUserControl → ContentControl 占位
+          - WPF RevisionsHeaderUserControl → ContentControl 占位（spike 未迁移）
           - WPF Dispatcher.Invoke → Dispatcher.UIThread.Post
           - WPF JobQueue → Task.Run + Dispatcher.UIThread.Post
-          - WPF AvalonEdit.TextEditor → AvaloniaEdit.TextEditor
-          - WPF Tab 切换动画（DoubleAnimation + TranslateTransform）→ spike 暂不迁移
-          - WPF RevisionDetailsBarButton 样式 → spike 用 tab-btn class 简化
+          - WPF Tab 切换动画 → spike 静态指示条（暂不迁移 DoubleAnimation）
+          - WPF RevisionDetailsBarButton 样式 → tab-btn class（已在 Controls.axaml 定义）
+          - WPF OpenInSeparateWindowIcon DynamicResource → 直接 /Assets/openinseparatewindow.png
     -->
     <UserControl.Styles>
+        <!-- 本控件内 tab-btn 样式覆盖（对照 WPF RevisionDetailsBarButton Foreground=ForegroundMidBrush）-->
         <Style Selector="RadioButton.tab-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -58,16 +60,16 @@
 
     <Grid RowDefinitions="Auto,Auto,*">
 
-        <!-- Row 0: Tab 切换栏（对照 WPF TabHeaderContainer）
-             Col 0/1/2: Commit/Changes/FileTree RadioButton
+        <!-- Row 0: Tab 切换栏（对照 WPF TabHeaderContainer Background=PanelBackgroundBrush）
+             Col 0/1/2: Commit/Changes/FileTree RadioButton (Style=RevisionDetailsBarButton)
              Col 3 (*): 空
-             Col 4 (40): ShowRevisionInSeparateWindowButton
+             Col 4 (40): ShowRevisionInSeparateWindowButton (22x22, Margin=0,1.5,10,0)
              Row 0 (30): RadioButton + Button
-             Row 1 (1.5): IndicatorBorder（spike 静态）-->
+             Row 1 (1.5): Canvas + IndicatorBorder（spike 静态在 Commit tab 下方，对照 WPF 动画）-->
         <Grid Grid.Row="0"
               ColumnDefinitions="Auto,Auto,Auto,*,40"
               RowDefinitions="30,1.5"
-              Background="{DynamicResource ThemeCardBackgroundBrush}">
+              Background="{DynamicResource PanelBackgroundBrush}">
             <RadioButton Grid.Row="0" Grid.Column="0" Name="CommitTabRadioButton"
                          Classes="tab-btn"
                          Content="Commit" IsChecked="True"
@@ -80,109 +82,58 @@
                          Classes="tab-btn"
                          Content="File Tree"
                          Click="FileTreeTabRadioButton_Click" />
+            <!-- ShowRevisionInSeparateWindowButton（对照 WPF 22x22 Margin=0,1.5,10,0 Style=RevisionDetailsSwapButtonStyle）-->
             <Button Grid.Row="0" Grid.Column="4" Name="ShowRevisionInSeparateWindowButton"
                     Classes="icon-btn"
                     HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Width="22" Height="22"
+                    Padding="2"
+                    Margin="0,1.5,10,0"
                     ToolTip.Tip="Open in separate window"
                     Click="ShowRevisionInSeparateWindowButton_Click">
                 <Image Source="/Assets/openinseparatewindow.png" Width="16" Height="16" />
             </Button>
-            <!-- Row 1: 指示条（对照 WPF IndicatorBorder，spike 静态在 Commit tab 下方）-->
-            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
-                    Name="IndicatorBorder"
-                    Height="1.5"
-                    HorizontalAlignment="Left"
-                    Background="{DynamicResource ThemeAccentBrush}"
-                    Width="60" />
+            <!-- Row 1: 指示条（对照 WPF Canvas + IndicatorBorder Background=SystemAccentBrush）
+                 spike 静态在 Commit tab 下方，Width=60（动画暂不迁移）-->
+            <Canvas Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                <Border Name="IndicatorBorder"
+                        Height="1.5"
+                        Width="60"
+                        Background="{DynamicResource SystemAccentBrush}"
+                        Canvas.Left="0" />
+            </Canvas>
         </Grid>
 
-        <!-- Row 1: RevisionsHeaderUserControl 占位 -->
+        <!-- Row 1: RevisionsHeaderUserControl 占位（对照 WPF BorderBrush=BorderBrush）
+             spike 用 ContentControl 占位（RevisionsHeaderUserControl 自定义控件未迁移）-->
         <ContentControl Grid.Row="1"
                         Name="RevisionsHeaderContainer"
                         Background="{DynamicResource ThemeBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1"
                         Padding="8,4">
             <TextBlock Text="(revision header)"
                        FontSize="11"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}" />
         </ContentControl>
 
-        <!-- Row 2: 3 个子面板（用 IsVisible 切换）-->
+        <!-- Row 2: 3 个子 UserControl（对照 WPF Border BorderThickness=0,1,0,0 BorderBrush=BorderBrush）
+             完全对照 WPF 用 RevisionSummaryUserControl / RevisionChangesUserControl / RevisionFileTreeUserControl -->
         <Border Grid.Row="2"
                 BorderThickness="0,1,0,0"
-                BorderBrush="{DynamicResource ThemeBorderMidBrush}">
+                BorderBrush="{DynamicResource BorderBrush}">
             <Grid>
+                <!-- Commit tab: RevisionSummaryUserControl（默认可见）-->
+                <uc:RevisionSummaryUserControl Name="SummaryUserControl"
+                                               IsVisible="True" />
 
-                <!-- Commit tab: 作者/日期/message + diff -->
-                <ScrollViewer Name="RevisionSummaryContainer" IsVisible="True">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-                          Margin="8,4">
-                        <!-- Author -->
-                        <Grid Grid.Row="0" ColumnDefinitions="80,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="Author:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                            <TextBlock Grid.Column="1" Name="AuthorTextBlock"
-                                       Text="(author)"
-                                       FontSize="11" />
-                        </Grid>
-                        <!-- Date -->
-                        <Grid Grid.Row="1" ColumnDefinitions="80,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="Date:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                            <TextBlock Grid.Column="1" Name="DateTextBlock"
-                                       Text="(date)"
-                                       FontSize="11" />
-                        </Grid>
-                        <!-- SHA -->
-                        <Grid Grid.Row="2" ColumnDefinitions="80,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="SHA:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                            <SelectableTextBlock Grid.Column="1" Name="ShaTextBlock"
-                                                  Text="(sha)"
-                                                  FontSize="11"
-                                                  FontFamily="Consolas,Menlo,monospace" />
-                        </Grid>
-                        <!-- Message Subject -->
-                        <Grid Grid.Row="3" ColumnDefinitions="80,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="Subject:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                            <TextBlock Grid.Column="1" Name="SubjectTextBlock"
-                                       Text="(subject)"
-                                       FontSize="12" TextWrapping="Wrap" />
-                        </Grid>
-                        <!-- Message Body -->
-                        <Grid Grid.Row="4" ColumnDefinitions="80,*" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="Message:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
-                            <TextBlock Grid.Column="1" Name="MessageTextBlock"
-                                       Text="(message body)"
-                                       FontSize="11" TextWrapping="Wrap" />
-                        </Grid>
-                    </Grid>
-                </ScrollViewer>
+                <!-- Changes tab: RevisionChangesUserControl（默认 Collapsed）-->
+                <uc:RevisionChangesUserControl Name="ChangesUserControl"
+                                               IsVisible="False" />
 
-                <!-- Changes tab: diff（spike 用 AvaloniaEdit.TextEditor）-->
-                <Grid Name="RevisionChangesContainer" IsVisible="False">
-                    <avalonEdit:TextEditor Name="DiffEditor"
-                                           IsReadOnly="True"
-                                           ShowLineNumbers="True"
-                                           WordWrap="False"
-                                           FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
-                                           FontSize="13" />
-                </Grid>
-
-                <!-- FileTree tab: RevisionFileTreeUserControl 占位 -->
-                <ContentControl Name="RevisionFileTreeContainer"
-                                IsVisible="False">
-                    <TextBlock Text="(file tree tab placeholder)"
-                               FontSize="11"
-                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                               Margin="8,4" />
-                </ContentControl>
+                <!-- FileTree tab: RevisionFileTreeUserControl（默认 Collapsed）-->
+                <uc:RevisionFileTreeUserControl Name="FileTreeUserControl"
+                                                IsVisible="False" />
             </Grid>
         </Border>
     </Grid>

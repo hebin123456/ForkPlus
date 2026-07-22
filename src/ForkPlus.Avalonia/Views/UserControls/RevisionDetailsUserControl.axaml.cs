@@ -65,13 +65,13 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         // spike 新增：SetRevision(RevisionViewModel revision)
         //   对照 WPF: ShowRevisionDetails(RevisionDiffTarget target, string fileToSelect)
-        //   spike 版：用 object 占位参数，从 revision 反射读取属性更新 UI
+        //   spike 版：用 object 占位参数，从 revision 反射读取属性 → 委托 SummaryUserControl.SetRevisionInfo
         public void SetRevision(object revision)
         {
             CurrentRevision = revision;
             Console.WriteLine($"[RevisionDetails] SetRevision: {revision}");
 
-            // spike 版：从 revision 反射读取属性更新 UI
+            // spike 版：从 revision 反射读取属性 → 委托给子 UserControl
             if (revision != null)
             {
                 var type = revision.GetType();
@@ -82,16 +82,25 @@ namespace ForkPlus.Avalonia.Views.UserControls
                 var messageProp = type.GetProperty("Body")?.GetValue(revision) ??
                                    type.GetProperty("Message")?.GetValue(revision);
 
-                if (AuthorTextBlock != null)
-                    AuthorTextBlock.Text = authorProp?.ToString() ?? "(unknown)";
-                if (DateTextBlock != null)
-                    DateTextBlock.Text = dateProp?.ToString() ?? "(unknown)";
-                if (ShaTextBlock != null)
-                    ShaTextBlock.Text = shaProp?.ToString() ?? "(no sha)";
-                if (SubjectTextBlock != null)
-                    SubjectTextBlock.Text = subjectProp?.ToString() ?? "(no subject)";
-                if (MessageTextBlock != null)
-                    MessageTextBlock.Text = messageProp?.ToString() ?? "";
+                // 委托 RevisionSummaryUserControl.SetRevisionInfo 更新 Author/Date/SHA/Subject/Description
+                SummaryUserControl?.SetRevisionInfo(
+                    authorProp?.ToString(),
+                    dateProp?.ToString(),
+                    shaProp?.ToString(),
+                    subjectProp?.ToString(),
+                    messageProp?.ToString());
+
+                // 委托 RevisionChangesUserControl.SetRevision（用 sha 触发 diff 加载）
+                if (ChangesUserControl != null && shaProp != null)
+                {
+                    ChangesUserControl.SetRevision(shaProp.ToString());
+                }
+
+                // 委托 RevisionFileTreeUserControl.Refresh（用 sha 触发文件树加载）
+                if (FileTreeUserControl != null && shaProp != null)
+                {
+                    FileTreeUserControl.Refresh(shaProp.ToString());
+                }
             }
 
             RevisionDetailsUpdated?.Invoke(this, EventArgs.Empty);
@@ -175,23 +184,23 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         private void SwitchToCommitTab()
         {
-            if (RevisionSummaryContainer != null) RevisionSummaryContainer.IsVisible = true;
-            if (RevisionChangesContainer != null) RevisionChangesContainer.IsVisible = false;
-            if (RevisionFileTreeContainer != null) RevisionFileTreeContainer.IsVisible = false;
+            if (SummaryUserControl != null) SummaryUserControl.IsVisible = true;
+            if (ChangesUserControl != null) ChangesUserControl.IsVisible = false;
+            if (FileTreeUserControl != null) FileTreeUserControl.IsVisible = false;
         }
 
         private void SwitchToChangesTab()
         {
-            if (RevisionSummaryContainer != null) RevisionSummaryContainer.IsVisible = false;
-            if (RevisionChangesContainer != null) RevisionChangesContainer.IsVisible = true;
-            if (RevisionFileTreeContainer != null) RevisionFileTreeContainer.IsVisible = false;
+            if (SummaryUserControl != null) SummaryUserControl.IsVisible = false;
+            if (ChangesUserControl != null) ChangesUserControl.IsVisible = true;
+            if (FileTreeUserControl != null) FileTreeUserControl.IsVisible = false;
         }
 
         private void SwitchToFileTreeTab()
         {
-            if (RevisionSummaryContainer != null) RevisionSummaryContainer.IsVisible = false;
-            if (RevisionChangesContainer != null) RevisionChangesContainer.IsVisible = false;
-            if (RevisionFileTreeContainer != null) RevisionFileTreeContainer.IsVisible = true;
+            if (SummaryUserControl != null) SummaryUserControl.IsVisible = false;
+            if (ChangesUserControl != null) ChangesUserControl.IsVisible = false;
+            if (FileTreeUserControl != null) FileTreeUserControl.IsVisible = true;
         }
 
         // 对照 WPF: RefreshLayout()

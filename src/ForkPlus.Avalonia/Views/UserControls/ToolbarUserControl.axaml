@@ -4,110 +4,244 @@
              Height="44">
     <!--
         对照 WPF ToolbarUserControl.xaml（326 行）三列布局：
-          Col 0: Quick Launch / Fetch / Pull / Push / Stash / Undo / Redo
-          Col 1: 状态区（300px）
-          Col 2: Workspaces / Appearance / Console / AI / OpenIn
-        Avalonia 版用真实 PNG 图标（Assets/）替代 WPF DynamicResource 图标。
+          Col 0 (*):  QuickLaunch / Fetch / Pull / Push / Stash+Dropdown / Undo+Dropdown /
+                      Redo+Dropdown / Reflog + BadgesCanvas(Pull/Push 数字角标)
+          Col 1 (300): StatusUserControl (Height 36)
+          Col 2 (*):  DockPanel LastChildFill=False:
+                        StackPanel(Branch+Dropdown) / Workspaces / Appearance /
+                        Console / AI / OpenIn  (后 5 个 Dock=Right)
+
+        WPF ToolbarButton: Background=Transparent, hover=#EAEAEA, pressed=#D5D5D5,
+                           Margin=0,3,0,3 (Fetch 单独 16,3,0,3)，图标 20x20。
+        WPF DropDownButton: Width=14, Padding=0, Path ArrowGeometry, Fill=ToolbarForeground。
+        Avalonia spike: DropdownButton 用 Button + 小箭头 Path 模拟（SplitButton 样式不匹配）。
     -->
     <UserControl.Styles>
+        <!-- toolbar-btn 对照 WPF ToolbarButton 样式 -->
         <Style Selector="Button.toolbar-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="6,4" />
-            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="Margin" Value="0,3,0,3" />
+            <Setter Property="Padding" Value="4,0" />
             <Setter Property="MinWidth" Value="32" />
             <Setter Property="MinHeight" Value="32" />
+            <Setter Property="CornerRadius" Value="3" />
         </Style>
         <Style Selector="Button.toolbar-btn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
+            <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button.toolbar-btn:pressed">
-            <Setter Property="Background" Value="{DynamicResource ThemeControlDarkBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <!-- toolbar-dropdown 对照 WPF DropDownButton (Width=14, Padding=0) -->
+        <Style Selector="Button.toolbar-dropdown">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0,3,0,3" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Width" Value="14" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.toolbar-dropdown:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+        </Style>
+        <Style Selector="Button.toolbar-dropdown:pressed">
+            <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
         </Style>
     </UserControl.Styles>
 
     <Grid ColumnDefinitions="*,300,*"
           Background="{DynamicResource ToolbarBackgroundBrush}">
 
-        <!-- Column 0: 左侧主操作区 -->
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="1"
-                    VerticalAlignment="Center" Margin="8,0">
-            <Button Name="QuickLaunchButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Quick Launch"
-                    Click="QuickLaunchButton_Click">
-                <Image Source="/Assets/openquickly.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="FetchButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Fetch"
-                    Click="FetchButton_Click">
-                <Image Source="/Assets/fetch.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="PullButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Pull"
-                    Click="PullButton_Click">
-                <Image Source="/Assets/pull.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="PushButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Push"
-                    Click="PushButton_Click">
-                <Image Source="/Assets/push.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="BranchButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Branch"
-                    Click="BranchButton_Click">
-                <Image Source="/Assets/branch.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="StashButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Stash"
-                    Click="StashButton_Click">
-                <Image Source="/Assets/stash.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="UndoButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Undo"
-                    Click="UndoButton_Click">
-                <Image Source="/Assets/undo.png" Width="20" Height="20" />
-            </Button>
-            <Button Name="RedoButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Redo"
-                    Click="RedoButton_Click">
-                <Image Source="/Assets/redo.png" Width="20" Height="20" />
-            </Button>
-        </StackPanel>
+        <!-- Column 0: 左侧主操作区（对照 WPF StackPanel Horizontal）-->
+        <Grid Grid.Column="0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Quick Launch (WPF Margin 8,3,0,3) -->
+                <Button Name="QuickLaunchButton" Classes="toolbar-btn"
+                        Margin="8,3,0,3"
+                        ToolTip.Tip="Quick Launch"
+                        Click="QuickLaunchButton_Click">
+                    <Image Source="/Assets/openquickly.png" Width="20" Height="20" />
+                </Button>
+                <!-- Fetch (WPF Margin 16,3,0,3) -->
+                <Button Name="FetchButton" Classes="toolbar-btn"
+                        Margin="16,3,0,3"
+                        ToolTip.Tip="Fetch"
+                        Click="FetchButton_Click">
+                    <Image Source="/Assets/fetch.png" Width="20" Height="20" />
+                </Button>
+                <!-- Pull (WPF Margin 0,3,0,3) -->
+                <Button Name="PullButton" Classes="toolbar-btn"
+                        Margin="0,3,0,3"
+                        ToolTip.Tip="Pull"
+                        Click="PullButton_Click">
+                    <Image Source="/Assets/pull.png" Width="20" Height="20" />
+                </Button>
+                <!-- Push (WPF Margin 0,3,0,3) -->
+                <Button Name="PushButton" Classes="toolbar-btn"
+                        Margin="0,3,0,3"
+                        ToolTip.Tip="Push"
+                        Click="PushButton_Click">
+                    <Image Source="/Assets/push.png" Width="20" Height="20" />
+                </Button>
+                <!-- Stash + Dropdown (WPF Margin 20,3,0,3) -->
+                <StackPanel Orientation="Horizontal" Margin="20,3,0,3">
+                    <Button Name="StashButton" Classes="toolbar-btn"
+                            ToolTip.Tip="Stash"
+                            Click="StashButton_Click">
+                        <Image Source="/Assets/stash.png" Width="20" Height="20" />
+                    </Button>
+                    <Button Name="StashDropdownButton" Classes="toolbar-dropdown"
+                            ToolTip.Tip="Stash options"
+                            Click="StashDropdownButton_Click">
+                        <Path Data="{DynamicResource ArrowGeometry}"
+                              Fill="{DynamicResource ToolbarForeground}"
+                              Width="6" Height="4"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+                <!-- Undo + Dropdown (WPF Margin 8,3,0,3) -->
+                <StackPanel Orientation="Horizontal" Margin="8,3,0,3">
+                    <Button Name="UndoButton" Classes="toolbar-btn"
+                            ToolTip.Tip="Undo"
+                            Click="UndoButton_Click">
+                        <Image Source="/Assets/undo.png" Width="20" Height="20" />
+                    </Button>
+                    <Button Name="UndoDropdownButton" Classes="toolbar-dropdown"
+                            ToolTip.Tip="Undo options"
+                            Click="UndoDropdownButton_Click">
+                        <Path Data="{DynamicResource ArrowGeometry}"
+                              Fill="{DynamicResource ToolbarForeground}"
+                              Width="6" Height="4"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+                <!-- Redo + Dropdown (WPF Margin 0,3,0,3) -->
+                <StackPanel Orientation="Horizontal" Margin="0,3,0,3">
+                    <Button Name="RedoButton" Classes="toolbar-btn"
+                            ToolTip.Tip="Redo"
+                            Click="RedoButton_Click">
+                        <Image Source="/Assets/redo.png" Width="20" Height="20" />
+                    </Button>
+                    <Button Name="RedoDropdownButton" Classes="toolbar-dropdown"
+                            ToolTip.Tip="Redo options"
+                            Click="RedoDropdownButton_Click">
+                        <Path Data="{DynamicResource ArrowGeometry}"
+                              Fill="{DynamicResource ToolbarForeground}"
+                              Width="6" Height="4"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+                <!-- Reflog (WPF Margin 8,3,0,3) -->
+                <Button Name="ReflogButton" Classes="toolbar-btn"
+                        Margin="8,3,0,3"
+                        ToolTip.Tip="View Reflog..."
+                        Click="ReflogButton_Click">
+                    <Image Source="/Assets/revisionlist.png" Width="20" Height="20" />
+                </Button>
+            </StackPanel>
 
-        <!-- Column 1: 状态区 -->
-        <Border Grid.Column="1" Padding="8,0" VerticalAlignment="Center">
+            <!-- BadgesCanvas: Pull/Push 数字角标（对照 WPF Canvas IsHitTestVisible=False）-->
+            <Canvas Name="BadgesCanvas" IsHitTestVisible="False">
+                <Border Name="PullBadge" IsVisible="False"
+                        Background="{DynamicResource SystemAccentBrush}"
+                        CornerRadius="6"
+                        Padding="3,0"
+                        Canvas.Left="78" Canvas.Top="30">
+                    <TextBlock Name="PullBadgeText" FontSize="8" FontWeight="Medium"
+                               Foreground="White" HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom" />
+                </Border>
+                <Border Name="PushBadge" IsVisible="False"
+                        Background="{DynamicResource SystemAccentBrush}"
+                        CornerRadius="6"
+                        Padding="3,0"
+                        Canvas.Left="108" Canvas.Top="30">
+                    <TextBlock Name="PushBadgeText" FontSize="8" FontWeight="Medium"
+                               Foreground="White" HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom" />
+                </Border>
+            </Canvas>
+        </Grid>
+
+        <!-- Column 1: 状态区（对照 WPF StatusUserControl Height=36）-->
+        <Border Grid.Column="1" Margin="0,0,0,3" Height="36"
+                VerticalAlignment="Center">
             <TextBlock Name="StatusText" Text="(no repository)"
-                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
-                       FontSize="11" />
+                       Foreground="{DynamicResource ToolbarForeground}"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center" />
         </Border>
 
-        <!-- Column 2: 右侧次操作区 -->
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="1"
-                    VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0">
-            <Button Name="WorkspacesButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Workspaces"
-                    Click="WorkspacesButton_Click">
-                <Image Source="/Assets/workspace.png" Width="20" Height="20" />
+        <!-- Column 2: 右侧次操作区（对照 WPF DockPanel LastChildFill=False）
+             WPF 用 DockPanel.Dock=Right 让按钮从右往左排。Avalonia 用 StackPanel
+             HorizontalAlignment=Right 模拟同样效果。-->
+        <StackPanel Grid.Column="2" Orientation="Horizontal"
+                    VerticalAlignment="Center" HorizontalAlignment="Right">
+            <!-- Branch + Dropdown (WPF StackPanel Margin 10,3,0,3) -->
+            <StackPanel Orientation="Horizontal" Margin="10,3,0,3">
+                <Button Name="BranchButton" Classes="toolbar-btn"
+                        ToolTip.Tip="Branch"
+                        Click="BranchButton_Click">
+                    <Image Source="/Assets/branch.png" Width="20" Height="20" />
+                </Button>
+                <Button Name="BranchDropdownButton" Classes="toolbar-dropdown"
+                        ToolTip.Tip="Branch options"
+                        Click="BranchDropdownButton_Click">
+                    <Path Data="{DynamicResource ArrowGeometry}"
+                          Fill="{DynamicResource ToolbarForeground}"
+                          Width="6" Height="4"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+            <!-- OpenIn (WPF Margin 4,3,4,3) -->
+            <Button Name="OpenInButton" Classes="toolbar-btn"
+                    Margin="4,3,4,3"
+                    ToolTip.Tip="Open in"
+                    Click="OpenInButton_Click">
+                <Image Source="/Assets/openin.png" Width="20" Height="20" />
             </Button>
-            <Button Name="AppearanceButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Appearance"
-                    Click="AppearanceButton_Click">
-                <TextBlock Text="A" FontSize="14" FontWeight="Bold" />
+            <!-- AI (WPF Margin 0,3,0,3) -->
+            <Button Name="AiButton" Classes="toolbar-btn"
+                    Margin="0,3,0,3"
+                    ToolTip.Tip="AI-Assisted Development"
+                    Click="AiButton_Click">
+                <Image Source="/Assets/ai.png" Width="20" Height="20" />
             </Button>
+            <!-- Console (WPF Margin 0,3,0,3) -->
             <Button Name="ConsoleButton" Classes="toolbar-btn"
+                    Margin="0,3,0,3"
                     ToolTip.Tip="Console"
                     Click="ConsoleButton_Click">
                 <Image Source="/Assets/console.png" Width="20" Height="20" />
             </Button>
-            <Button Name="AiButton" Classes="toolbar-btn"
-                    ToolTip.Tip="AI"
-                    Click="AiButton_Click">
-                <Image Source="/Assets/ai.png" Width="20" Height="20" />
+            <!-- Appearance (WPF Margin 0,3,0,3) -->
+            <Button Name="AppearanceButton" Classes="toolbar-btn"
+                    Margin="0,3,0,3"
+                    ToolTip.Tip="Appearance"
+                    Click="AppearanceButton_Click">
+                <Image Source="/Assets/theme.png" Width="20" Height="20" />
             </Button>
-            <Button Name="OpenInButton" Classes="toolbar-btn"
-                    ToolTip.Tip="Open in"
-                    Click="OpenInButton_Click">
-                <Image Source="/Assets/openin.png" Width="20" Height="20" />
+            <!-- Workspaces (WPF Margin 0,3,4,3) -->
+            <Button Name="WorkspacesButton" Classes="toolbar-btn"
+                    Margin="0,3,4,3"
+                    ToolTip.Tip="Workspaces"
+                    Click="WorkspacesButton_Click">
+                <Image Source="/Assets/workspace.png" Width="20" Height="20" />
             </Button>
         </StackPanel>
     </Grid>

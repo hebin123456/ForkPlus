@@ -13,7 +13,6 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using AvaloniaEdit;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -45,8 +44,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
     //   - CommitMessageAutocompleteProvider / GitmojiAutocompleteProvider → 省略自动补全（保留注释）
     //   - 拼写检查 → 省略（Avalonia 不原生支持）
     //   - StageFileUserControl 双列表 → 内联 ObservableCollection<FileRow> + DataTemplate
-    //   - CommitSubjectTextBox + CommitDescriptionTextBox → 单个 AvaloniaEdit.TextEditor
-    //     （CommitMessageTextBox，Document.Text 替代 .Text）
+    //   - CommitSubjectTextBox + CommitDescriptionTextBox 完全对照 WPF（两个独立 TextBox）
     //   - DropDownButton（最近消息/Commit 设置下拉）→ 普通 Button
     //   - DiffPopupWindow 弹窗 → 省略
     //   - NotificationCenter 事件订阅 → 省略（不可访问）
@@ -127,24 +125,48 @@ namespace ForkPlus.Avalonia.Views.UserControls
         public GitModule GitModule { get; set; }
 
         // 对照 WPF: public string FullCommitMessage
-        //   WPF 版从 CommitSubjectTextBox.Text + CommitDescriptionTextBox.Text 拼接
-        //   spike 版从 AvaloniaEdit CommitMessageTextBox.Document.Text 读取
+        //   完全对照 WPF：从 CommitSubjectTextBox.Text + CommitDescriptionTextBox.Text 拼接
+        //   若 description 非空，subject + "\n\n" + description（与 WPF CommitDescriptionTextBox 一致）
         public string FullCommitMessage
         {
             get
             {
-                if (CommitMessageTextBox?.Document != null)
+                string subject = CommitSubjectTextBox?.Text ?? string.Empty;
+                string description = CommitDescriptionTextBox?.Text ?? string.Empty;
+                if (string.IsNullOrEmpty(description))
                 {
-                    return CommitMessageTextBox.Document.Text;
+                    return subject;
                 }
-                return string.Empty;
+                if (string.IsNullOrEmpty(subject))
+                {
+                    return description;
+                }
+                return subject + "\n\n" + description;
             }
             set
             {
-                if (CommitMessageTextBox?.Document != null)
+                _suppressTextChanged = true;
+                try
                 {
-                    _suppressTextChanged = true;
-                    CommitMessageTextBox.Document.Text = value ?? string.Empty;
+                    string v = value ?? string.Empty;
+                    // WPF 行为：第一行是 subject，其余是 description（去掉首个换行分隔）
+                    int firstNewline = v.IndexOf('\n');
+                    if (firstNewline < 0)
+                    {
+                        if (CommitSubjectTextBox != null) CommitSubjectTextBox.Text = v;
+                        if (CommitDescriptionTextBox != null) CommitDescriptionTextBox.Text = string.Empty;
+                    }
+                    else
+                    {
+                        string subject = v.Substring(0, firstNewline).TrimEnd('\r');
+                        // 跳过第一行后的空行（git commit message 习惯 subject\n\nbody）
+                        string rest = v.Substring(firstNewline + 1).TrimStart('\r', '\n');
+                        if (CommitSubjectTextBox != null) CommitSubjectTextBox.Text = subject;
+                        if (CommitDescriptionTextBox != null) CommitDescriptionTextBox.Text = rest;
+                    }
+                }
+                finally
+                {
                     _suppressTextChanged = false;
                 }
             }
@@ -235,10 +257,14 @@ namespace ForkPlus.Avalonia.Views.UserControls
             Loaded += OnLoaded;
 
             // 对照 WPF: CommitSubjectTextBox.TextChanged + CommitDescriptionTextBox.TextChanged
-            //   spike 版用 AvaloniaEdit Document.TextChanged 替代
-            if (CommitMessageTextBox?.Document != null)
+            //   完全对照 WPF：两个 TextBox 各自订阅 TextChanged
+            if (CommitSubjectTextBox != null)
             {
-                CommitMessageTextBox.Document.TextChanged += CommitMessageTextBox_DocumentTextChanged;
+                CommitSubjectTextBox.TextChanged += CommitMessage_TextChanged;
+            }
+            if (CommitDescriptionTextBox != null)
+            {
+                CommitDescriptionTextBox.TextChanged += CommitMessage_TextChanged;
             }
 
             // 对照 WPF: gridSplitter.DragCompleted → SaveGridColumnWidth（spike 暂不持久化列宽）
@@ -439,9 +465,13 @@ namespace ForkPlus.Avalonia.Views.UserControls
         public void UpdateCommitSection(bool updateWarningMessage = true)
         {
             bool fieldsAllowed = AreCommitFieldsAllowed;
-            if (CommitMessageTextBox != null)
+            if (CommitSubjectTextBox != null)
             {
-                CommitMessageTextBox.IsReadOnly = !fieldsAllowed;
+                CommitSubjectTextBox.IsReadOnly = !fieldsAllowed;
+            }
+            if (CommitDescriptionTextBox != null)
+            {
+                CommitDescriptionTextBox.IsReadOnly = !fieldsAllowed;
             }
             if (RecentCommitMessagesButton != null)
             {
@@ -462,7 +492,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // 对照 WPF: public void FocusCommitMessageField()
         public void FocusCommitMessageField()
         {
-            CommitMessageTextBox?.Focus();
+            CommitSubjectTextBox?.Focus();
         }
 
         // 对照 WPF: public void ToggleShowIgnoredFiles()
@@ -838,15 +868,21 @@ namespace ForkPlus.Avalonia.Views.UserControls
         }
 
         // 对照 WPF: private void UpdateStagedDiffStats()
-        //   spike 版：显示 staged 文件计数（git diff --cached --numstat 需 GitModule，spike 用计数替代）
+        //   WPF 显示 staged 文件的 added/deleted 行数（git diff --cached --numstat）
+        //   spike 版：用 staged/unstaged 文件计数替代（added=stagedCount / deleted=unstagedCount）
         private void UpdateStagedDiffStats()
         {
-            if (StagedDiffStatsTextBlock == null) return;
             int stagedCount = StagedFilesCount;
             int totalCount = _fileRows.Count;
-            StagedDiffStatsTextBlock.Text = totalCount > 0
-                ? $"{stagedCount}/{totalCount} staged"
-                : string.Empty;
+            int unstagedCount = totalCount - stagedCount;
+            if (StagedDiffAddedTextBlock != null)
+            {
+                StagedDiffAddedTextBlock.Text = totalCount > 0 ? $"+{stagedCount}" : string.Empty;
+            }
+            if (StagedDiffDeletedTextBlock != null)
+            {
+                StagedDiffDeletedTextBlock.Text = totalCount > 0 ? $"-{unstagedCount}" : string.Empty;
+            }
         }
 
         // ===== 文件列表过滤（对照 WPF StageFileUserControl FilterTextBox）=====
@@ -928,13 +964,33 @@ namespace ForkPlus.Avalonia.Views.UserControls
         }
 
         // 对照 WPF: CommitSubjectTextBox_TextChanged + CommitDescriptionTextBox_TextChanged
-        //   spike 版：AvaloniaEdit Document.TextChanged 替代
-        private void CommitMessageTextBox_DocumentTextChanged(object sender, EventArgs e)
+        //   完全对照 WPF：subject 和 description 各自的 TextChanged 共用同一处理逻辑
+        private void CommitMessage_TextChanged(object sender, EventArgs e)
         {
             if (_suppressTextChanged) return;
             UpdateCommitButtonState();
             UpdateSubjectLengthLimit();
             UpdateCommitWarningMessage();
+        }
+
+        // 公共入口供 axaml TextChanged 直接绑定（subject 和 description 共用）
+        private void CommitSubjectTextBox_TextChanged(object sender, TextChangedEventArgs e)
+            => CommitMessage_TextChanged(sender, e);
+
+        private void CommitDescriptionTextBox_TextChanged(object sender, TextChangedEventArgs e)
+            => CommitMessage_TextChanged(sender, e);
+
+        // 对照 WPF: CommitSubjectTextBox_GotFocus + CommitDescriptionTextBox_GotFocus
+        //   spike 版：共用同一 GotFocus 处理（占位，保留方法供 axaml 绑定）
+        private void CommitTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            // 对照 WPF: CommitTextBox_GotFocus → RefreshDescriptionFieldHeight + 其他 UI 状态
+        }
+
+        // 对照 WPF: CommitSubjectTextBox_LostFocus + CommitDescriptionTextBox_LostFocus
+        private void CommitTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // 对照 WPF: CommitTextBox_LostFocus → SaveCommitMessage 持久化
         }
 
         // 对照 WPF: ClearCommitMessageButton_Click
@@ -945,19 +1001,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
             UpdateCommitButtonState();
             UpdateSubjectLengthLimit();
             UpdateCommitWarningMessage();
-            CommitMessageTextBox?.Focus();
-        }
-
-        // task spec: Co-authored-by 模板插入
-        private void InsertCoAuthoredButton_Click(object sender, RoutedEventArgs e)
-        {
-            string current = FullCommitMessage ?? string.Empty;
-            if (!current.EndsWith("\n"))
-            {
-                current += "\n";
-            }
-            current += "\nCo-authored-by: Name <email@example.com>\n";
-            FullCommitMessage = current;
+            CommitSubjectTextBox?.Focus();
         }
 
         // 对照 WPF: RecentCommitMessagesDropDownButton_Click（spike 版不实现下拉，仅日志）
