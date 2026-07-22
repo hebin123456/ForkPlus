@@ -54,17 +54,9 @@ jobs:
           ls -lh "third_party/$asset"
           echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
 
-      # tokei 上游不发布预编译二进制，缺失时 RestoreTokei target 会用 cargo install 从源码
-      # 编译（windows-latest 自带 Rust 1.96）。缓存 third_party/tokei.exe 命中后跳过编译，
-      # key 绑定 tokei 版本号，升级时自动失效重新编译。
-      # 仅 Windows：tokei.exe 产物名带 .exe，非 Windows 上 cargo 产出无后缀。
-      - name: Cache tokei
-        if: runner.os == 'Windows'
-        uses: actions/cache@v4
-        with:
-          path: third_party/tokei.exe
-          key: tokei-14.0.0-windows-x86_64
-
+      # tokei 现已从 hebin123456/tokei 仓库最新 release 拉取预编译二进制（与 biturbo 一致），
+      # 不再从源码 cargo 编译。RestoreTokei target 会在 Windows build 时自动下载到 third_party/tokei.exe，
+      # 无需单独缓存步骤。
       # 以下完整构建 / 测试 / 产物 / 发布仅 Windows 跑。
       # 非 Windows 等 ForkPlus 迁移到跨平台 UI 框架后再放开。
       # .NET 10 迁移：原 msbuild + setup-msbuild + setup-nuget 已替换为 dotnet CLI
