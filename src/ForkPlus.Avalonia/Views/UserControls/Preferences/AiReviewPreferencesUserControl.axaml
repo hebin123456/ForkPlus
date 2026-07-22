@@ -1,0 +1,252 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.AiReviewPreferencesUserControl">
+    <!--
+        Avalonia 版 AiReviewPreferencesUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/AiReviewPreferencesUserControl.xaml.cs（486 行）：
+          - 服务 URL / API Key / Auto Fetch Models CheckBox / Retry Count / Timeout
+          - Model ComboBox + Refresh Models Button + BusyIndicator + StatusTextBlock
+          - Custom Skills：动态构造 line-numbered TextBox + Add/Load/Remove 按钮 + SkillListBox
+          - Initialize()：LoadSkills + 读 ForkPlusSettings.AiReview* 各项
+          - RefreshModels：JobQueue + OpenAiService.ListModels + Dispatcher.Async
+          - AddSkillButton_Click：Ctrl+Enter 触发，从 SkillNameTextBox + SkillInputTextBox 读
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF 动态构造 BuildCustomSkillInputArea（Grid + ScrollViewer + TextBox）== spike
+            改用 axaml 静态声明 SkillInputTextBox + SkillLineNumbers TextBlock
+          - WPF Microsoft.Win32.OpenFileDialog == spike 移除（spike 用 stub 注释）
+          - WPF JobQueue == spike 移除（spike 不做异步刷新模型）
+          - WPF OpenAiService.ListModels == spike 移除（spike 不调用 AI 服务）
+          - WPF Dispatcher.Async == spike 移除
+          - WPF MessageBox.Show == spike 移除
+          - WPF SkillListBox.Items.Add(ListBoxItem { Content = StackPanel }) == spike
+            改用 ItemsControl + ItemsSource 绑定（spike 用 Items.Add 直接塞 AiSkillEntry）
+    -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <Grid ColumnDefinitions="Auto,*" Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: header -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                       Text="AI Review Service"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 1: Service URL -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Service URL:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Name="ServiceUrlTextBox"
+                     Watermark="https://api.openai.com/v1"
+                     HorizontalAlignment="Stretch"
+                     Margin="0,4,0,4"
+                     TextChanged="ServiceUrlTextBox_TextChanged" />
+
+            <!-- Row 2: API Key -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="API key:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Name="ApiKeyTextBox"
+                     Watermark="sk-..."
+                     HorizontalAlignment="Stretch"
+                     Margin="0,4,0,4"
+                     TextChanged="ApiKeyTextBox_TextChanged" />
+
+            <!-- Row 3: Auto fetch models -->
+            <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                      Name="AutoFetchModelsCheckBox"
+                      Content="Auto fetch models"
+                      FontSize="13"
+                      Margin="0,4,0,4"
+                      Click="AutoFetchModelsCheckBox_Changed" />
+
+            <!-- Row 4: Model + Refresh button -->
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       Text="Model:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,Auto">
+                <ComboBox Grid.Column="0"
+                          Name="ModelComboBox"
+                          HorizontalAlignment="Stretch"
+                          Margin="0,4,4,4"
+                          SelectionChanged="ModelComboBox_SelectionChanged"
+                          LostFocus="ModelComboBox_LostFocus" />
+                <Button Grid.Column="1"
+                        Name="RefreshModelsButton"
+                        Content="Refresh"
+                        FontSize="12"
+                        Margin="4,4,0,4"
+                        Click="RefreshModelsButton_Click" />
+            </Grid>
+
+            <!-- Row 5: Busy + Status -->
+            <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Name="BusyIndicator"
+                           Text="⏳"
+                           FontSize="14"
+                           Margin="0,0,8,0"
+                           IsVisible="False" />
+                <TextBlock Name="StatusTextBlock"
+                           FontSize="12"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- Row 6: Retry count -->
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       Text="Retry count:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <TextBox Grid.Row="6" Grid.Column="1"
+                     Name="RetryCountTextBox"
+                     HorizontalAlignment="Stretch"
+                     Margin="0,4,0,4"
+                     TextChanged="RetryCountTextBox_TextChanged" />
+
+            <!-- Row 7: Timeout -->
+            <TextBlock Grid.Row="7" Grid.Column="0"
+                       Text="Timeout (seconds):"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <TextBox Grid.Row="7" Grid.Column="1"
+                     Name="TimeoutTextBox"
+                     HorizontalAlignment="Stretch"
+                     Margin="0,4,0,4"
+                     TextChanged="TimeoutTextBox_TextChanged" />
+
+            <!-- Row 8: spacer -->
+            <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Height="8" />
+
+            <!-- Row 9: Custom skills header -->
+            <TextBlock Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                       Text="Custom Skills"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 10: Skill name + Add/Load buttons -->
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       Text="Skill name:"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Margin="0,4,12,4" />
+            <Grid Grid.Row="10" Grid.Column="1" ColumnDefinitions="*,Auto,Auto">
+                <TextBox Grid.Column="0"
+                         Name="SkillNameTextBox"
+                         Watermark="Skill name (auto-detected if empty)"
+                         HorizontalAlignment="Stretch"
+                         Margin="0,4,4,4" />
+                <Button Grid.Column="1"
+                        Name="AddCustomSkillButton"
+                        Content="Add"
+                        FontSize="12"
+                        Margin="4,4,2,4"
+                        Click="AddSkillButton_Click" />
+                <Button Grid.Column="2"
+                        Name="LoadSkillButton"
+                        Content="Load"
+                        FontSize="12"
+                        Margin="2,4,0,4"
+                        Click="LoadSkillButton_Click" />
+            </Grid>
+
+            <!-- Row 11: Ctrl+Enter hint -->
+            <TextBlock Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2"
+                       Name="CtrlEnterHintTextBlock"
+                       Text="Ctrl+Enter to add"
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 12: Skill input (spike: 静态声明替代 WPF 动态构造) -->
+            <Border Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1"
+                    Margin="0,4,0,4"
+                    Height="120">
+                <Grid ColumnDefinitions="28,*">
+                    <TextBlock Grid.Column="0"
+                               Name="SkillLineNumbers"
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Padding="4,4,2,0"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               Background="{DynamicResource ThemeControlLowBrush}"
+                               VerticalAlignment="Top" />
+                    <TextBox Grid.Column="1"
+                             Name="SkillInputTextBox"
+                             AcceptsReturn="True"
+                             FontFamily="Cascadia Mono,Consolas,monospace"
+                             FontSize="12"
+                             BorderThickness="0"
+                             Padding="4,2,0,0"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             TextChanged="CustomSkillInputBox_TextChanged" />
+                </Grid>
+            </Border>
+
+            <!-- Row 13: Skill list header -->
+            <TextBlock Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2"
+                       Text="Saved skills:"
+                       FontSize="13"
+                       Margin="0,4,0,4" />
+
+            <!-- Row 14: Skill list (spike: 用 ItemsControl 替代 WPF 动态构造 ListBoxItem) -->
+            <ItemsControl Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2"
+                          Name="SkillListBox"
+                          MinHeight="40" MaxHeight="180"
+                          Margin="0,0,0,4">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="Auto,*" Margin="2">
+                            <Button Grid.Column="0"
+                                    Content="×"
+                                    Width="20" Height="20"
+                                    FontSize="12"
+                                    Padding="0"
+                                    Margin="0,0,4,0"
+                                    Tag="{Binding}"
+                                    Click="RemoveSkillButton_Click"
+                                    ToolTip.Tip="Remove this skill" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Name}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

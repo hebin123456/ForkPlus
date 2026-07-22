@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:external="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.IntegrationUserControl">
+    <!--
+        Avalonia 版 IntegrationUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/IntegrationUserControl.xaml + .xaml.cs（128 行）：
+          - ExternalMergeToolsUserControl + ExternalDiffToolsUserControl（已迁移的 Avalonia 控件）
+          - ShellToolComboBox（Default/WindowsTerminal/CommandPrompt/PowerShell/Custom）
+          - ShellToolPathTextBox + BrowseShellTool Button
+          - ShellToolArgumentsTextBox
+          - ShowBugtrackerLinksCheckBox
+          - Initialize(ForkPlusDialogWindow)：ExternalToolsUserControl.Initialize + 填 ShellTool
+          - ApplyLocalization：PreferencesLocalization.Apply + ExternalToolsUserControl.ApplyLocalization
+          - Save：ExternalToolManager.SaveMergeToolsSettings + SaveDiffToolsSettings + SaveShellToolSettings
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF ExternalMergeToolsUserControl / ExternalDiffToolsUserControl == spike
+            改用已迁移的 Avalonia ExternalToolsUserControl（spike 不调 Initialize，
+            axaml 中静态声明占位）
+          - WPF ExternalToolManager.RevealAvailableMergeTools/DiffTools == spike 移除
+            （spike 不扫系统工具）
+          - WPF ShellTool.* == spike 保留（Core 类型）
+          - WPF OpenDialog.SelectExecutableFile == spike 移除
+          - WPF NotificationCenter.Current.RaiseShellChanged == spike 移除
+          - WPF PreferencesLocalization.Apply == spike 移除（spike 不做逻辑树递归翻译）
+          - WPF ILocalizableControl 接口 == spike 移除
+    -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <!-- Row 0: Merge tools header -->
+            <TextBlock Grid.Row="0"
+                       Text="Merge tools:"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 1: External merge tools (spike: 占位) -->
+            <external:ExternalToolsUserControl Grid.Row="1"
+                                               Name="ExternalMergeToolsUserControl"
+                                               Margin="0,0,0,8" />
+
+            <!-- Row 2: Diff tools header -->
+            <TextBlock Grid.Row="2"
+                       Text="Diff tools:"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 3: External diff tools (spike: 占位) -->
+            <external:ExternalToolsUserControl Grid.Row="3"
+                                               Name="ExternalDiffToolsUserControl"
+                                               Margin="0,0,0,8" />
+
+            <!-- Row 4: Shell tool header -->
+            <TextBlock Grid.Row="4"
+                       Text="Shell tool:"
+                       FontSize="13" FontWeight="Medium"
+                       Margin="0,0,0,4" />
+
+            <!-- Row 5: Shell type -->
+            <Grid Grid.Row="5" ColumnDefinitions="Auto,*" Margin="0,4,0,4">
+                <TextBlock Grid.Column="0"
+                           Text="Type:"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0" />
+                <ComboBox Grid.Column="1"
+                          Name="ShellToolComboBox"
+                          HorizontalAlignment="Stretch"
+                          SelectionChanged="ShellToolComboBox_SelectionChanged" />
+            </Grid>
+
+            <!-- Row 6: Shell path -->
+            <Grid Grid.Row="6" ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,4">
+                <TextBlock Grid.Column="0"
+                           Text="Path:"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0" />
+                <TextBox Grid.Column="1"
+                         Name="ShellToolPathTextBox"
+                         HorizontalAlignment="Stretch"
+                         Margin="0,0,4,0" />
+                <Button Grid.Column="2"
+                        Content="Browse..."
+                        FontSize="12"
+                        Margin="4,0,0,0"
+                        Click="BrowseShellTool_Click" />
+            </Grid>
+
+            <!-- Row 7: Shell arguments -->
+            <Grid Grid.Row="7" ColumnDefinitions="Auto,*" Margin="0,4,0,4">
+                <TextBlock Grid.Column="0"
+                           Text="Arguments:"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0" />
+                <TextBox Grid.Column="1"
+                         Name="ShellToolArgumentsTextBox"
+                         HorizontalAlignment="Stretch" />
+            </Grid>
+
+            <!-- Row 8: spacer -->
+            <TextBlock Grid.Row="8" Height="8" />
+
+            <!-- Row 9: Bugtracker links -->
+            <CheckBox Grid.Row="9"
+                      Name="ShowBugtrackerLinksCheckBox"
+                      Content="Show bugtracker links"
+                      FontSize="13"
+                      Margin="0,4,0,4" />
+
+            <!-- Row 10-12: hint -->
+            <TextBlock Grid.Row="10"
+                       Text="Shell tool is used when opening a terminal from Fork."
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                       Margin="0,8,0,0" />
+            <TextBlock Grid.Row="11" Height="4" />
+            <TextBlock Grid.Row="12"
+                       Text="Custom shell type allows specifying path and arguments."
+                       FontSize="11"
+                       Foreground="{DynamicResource ThemeForegroundLowBrush}" />
+        </Grid>
+    </ScrollViewer>
+</UserControl>

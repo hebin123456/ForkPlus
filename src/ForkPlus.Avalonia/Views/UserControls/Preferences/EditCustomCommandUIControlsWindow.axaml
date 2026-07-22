@@ -1,0 +1,256 @@
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:dialogs="clr-namespace:ForkPlus.Avalonia.Dialogs"
+                              x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.EditCustomCommandUIControlsWindow"
+                              Title="Edit UI Controls"
+                              Width="640" Height="480"
+                              CanResize="True"
+                              WindowStartupLocation="CenterOwner">
+    <!--
+        Avalonia 版 EditCustomCommandUIControlsWindow（spike 简化新建版，继承 ForkPlusDialogWindow）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/EditCustomCommandUIControlsWindow.xaml + .xaml.cs（495 行）：
+          - public partial class EditCustomCommandUIControlsWindow : ForkPlusDialogWindow
+          - 字段：ObservableCollection<CustomCommandUIControlViewModel> _controlViewModels /
+            bool _stopComboBoxEvents
+          - 构造函数(CustomCommandUI.Control[])：
+            * ShowLogo=false / ShowHeader=false
+            * SubmitButtonTitle = PreferencesLocalization.Current("Save")
+            * 遍历 controls 构造 _controlViewModels
+            * ControlsListBox.ItemsSource = _controlViewModels
+          - OutControls getter：_controlViewModels.Map(x => x.Control)
+          - 7 个 Add*MenuItem_Click：GenericTextBox/PathTextBox/LocalBranch/RemoteBranch/Tag/Reference/CheckBox
+          - RemoveCustomCommandButton_Click：MessageBoxWindow 确认 + Remove
+          - ControlTypeComboBox_SelectionChanged / TextBoxTypeComboBox_SelectionChanged /
+            DialogTypeComboBox_SelectionChanged：切换 UI 显隐 + RefreshDescription
+          - ListBoxItem_Drop：拖拽排序（DragAndDropListBoxItem + DropPosition）
+          - RefreshControls / RefreshDescription / SaveActiveControl
+          - GetSelectedControlType / GetSelectedTextBoxType / GetSelectedDialogType
+          - RefreshTextBoxControlsVisibility / RefreshDialogTypeComboBox / RefreshPathTextBoxControlsVisibility
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF ForkPlusDialogWindow 基类动态构造 chrome == spike 子类 axaml 自带 Header + Footer
+          - WPF ShowLogo=false / ShowHeader=false == spike axaml 中不放 Logo
+          - WPF MessageBoxWindow（删除确认）== spike 移除（spike 直接删除）
+          - WPF DragAndDropListBoxItem 拖拽排序 == spike 移除（spike 不支持拖拽）
+          - WPF Inlines（DescriptionTextBlock.Inlines.Add(new Run(...))）== spike
+            改用 TextBlock.Text（spike 不用富文本）
+          - WPF 7 个 ContextMenu MenuItem == spike 改用 7 个 Button
+          - WPF CancelComboBoxItem.Show()/Collapse() == spike IsVisible
+    -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <!-- Row 0: Header -->
+        <TextBlock Grid.Row="0"
+                   Name="TitleTextBlock"
+                   FontSize="14" FontWeight="Medium"
+                   Text="Edit UI Controls"
+                   Margin="0,0,0,8" />
+
+        <!-- Row 1: Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="180,*,Auto" Margin="0,0,0,8">
+            <!-- Col 0: Controls list + add/remove buttons -->
+            <Grid ColumnDefinitions="*" RowDefinitions="*,Auto,Auto">
+                <ListBox Grid.Row="0"
+                         Name="ControlsListBox"
+                         MinHeight="200"
+                         SelectionChanged="ControlsListBox_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="13"
+                                       Margin="4,1"
+                                       TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <!-- spike: 7 个 Button 替代 WPF ContextMenu 7 个 MenuItem -->
+                <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,4,0,0">
+                    <Button Content="Add Text Box"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddGenericTextBoxMenuItem_Click" />
+                    <Button Content="Add Path Text Box"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddPathTextBoxMenuItem_Click" />
+                    <Button Content="Add Local Branch"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddLocalBranchSelectorMenuItem_Click" />
+                    <Button Content="Add Remote Branch"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddRemoteBranchSelectorMenuItem_Click" />
+                    <Button Content="Add Tag"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddTagSelectorMenuItem_Click" />
+                    <Button Content="Add Reference"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddReferenceSelectorMenuItem_Click" />
+                    <Button Content="Add Check Box"
+                            FontSize="11"
+                            Margin="0,2,0,0"
+                            Click="AddCheckBoxMenuItem_Click" />
+                </StackPanel>
+                <Button Grid.Row="2"
+                        Name="RemoveCustomCommandButton"
+                        Content="Remove"
+                        FontSize="12"
+                        Margin="0,4,0,0"
+                        Click="RemoveCustomCommandButton_Click" />
+            </Grid>
+
+            <!-- Col 1: Control details -->
+            <ScrollViewer Grid.Column="1"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="8,0,0,0">
+                <StackPanel>
+                    <!-- Control type -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                        <TextBlock Grid.Column="0"
+                                   Text="Type:"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <ComboBox Grid.Column="1"
+                                  Name="ControlTypeComboBox"
+                                  HorizontalAlignment="Stretch"
+                                  SelectionChanged="ControlTypeComboBox_SelectionChanged">
+                            <ComboBoxItem Name="TextBoxComboBoxItem" Content="Text Box" />
+                            <ComboBoxItem Name="DropdownComboBoxItem" Content="Dropdown" />
+                            <ComboBoxItem Name="CheckBoxComboBoxItem" Content="Check Box" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Text box type -->
+                    <Grid Name="TextBoxTypeContainer" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                        <TextBlock Grid.Column="0"
+                                   Name="TextBoxTypeTextBlock"
+                                   Text="Subtype:"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <ComboBox Grid.Column="1"
+                                  Name="TextBoxTypeComboBox"
+                                  HorizontalAlignment="Stretch"
+                                  SelectionChanged="TextBoxTypeComboBox_SelectionChanged">
+                            <ComboBoxItem Name="GenericComboBoxItem" Content="Generic" />
+                            <ComboBoxItem Name="FilePathComboBoxItem" Content="File Path" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Dialog type (File Path only) -->
+                    <Grid Name="DialogTypeContainer" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                        <TextBlock Grid.Column="0"
+                                   Text="Dialog:"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <ComboBox Grid.Column="1"
+                                  Name="DialogTypeComboBox"
+                                  HorizontalAlignment="Stretch"
+                                  SelectionChanged="DialogTypeComboBox_SelectionChanged">
+                            <ComboBoxItem Name="SaveFileComboBoxItem" Content="Save File" />
+                            <ComboBoxItem Name="OpenFileComboBoxItem" Content="Open File" />
+                            <ComboBoxItem Name="OpenDirectoryComboBoxItem" Content="Open Directory" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Title -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                        <TextBlock Grid.Column="0"
+                                   Text="Title:"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <TextBox Grid.Column="1"
+                                 Name="TitleTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 TextChanged="TextBox_TextChanged" />
+                    </Grid>
+
+                    <!-- Generic text box controls -->
+                    <StackPanel Name="GenericTextBoxControlsContainer" Margin="0,0,0,8">
+                        <TextBlock Text="Default value:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="GenericTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="0,0,0,8"
+                                 TextChanged="TextBox_TextChanged" />
+                        <TextBlock Text="Placeholder:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="GenericPlaceholderTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 TextChanged="TextBox_TextChanged" />
+                    </StackPanel>
+
+                    <!-- Path text box controls -->
+                    <StackPanel Name="PathTextBoxControlsContainer" Margin="0,0,0,8">
+                        <TextBlock Text="Default directory:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="DefaultDirectoryTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="0,0,0,8"
+                                 TextChanged="TextBox_TextChanged" />
+                        <TextBlock Name="FileNameTextBlock"
+                                   Text="File name:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="FileNameTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 TextChanged="TextBox_TextChanged" />
+                    </StackPanel>
+
+                    <!-- Dropdown controls -->
+                    <StackPanel Name="DropdownControlsContainer" Margin="0,0,0,8">
+                        <TextBlock Text="Filter:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="DropdownFilterTextBox"
+                                 Watermark="refs/heads/"
+                                 HorizontalAlignment="Stretch"
+                                 TextChanged="TextBox_TextChanged" />
+                    </StackPanel>
+
+                    <!-- Check box controls -->
+                    <StackPanel Name="CheckBoxControlsContainer" Margin="0,0,0,8">
+                        <CheckBox Name="CheckBoxDefaultValueCheckBox"
+                                  Content="Default checked"
+                                  FontSize="13"
+                                  Margin="0,0,0,4"
+                                  Click="CheckBoxDefaultValueCheckBox_Changed" />
+                        <TextBlock Text="Checked value:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="CheckBoxCheckedValueTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="0,0,0,8"
+                                 TextChanged="TextBox_TextChanged" />
+                        <TextBlock Text="Unchecked value:"
+                                   FontSize="13"
+                                   Margin="0,0,0,4" />
+                        <TextBox Name="CheckBoxUncheckedValueTextBox"
+                                 HorizontalAlignment="Stretch"
+                                 TextChanged="TextBox_TextChanged" />
+                    </StackPanel>
+
+                    <!-- Description (spike: TextBlock.Text 替代 WPF Inlines) -->
+                    <TextBlock Name="DescriptionTextBlock"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               Margin="0,8,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Row 2: Footer -->
+        <dialogs:ForkPlusDialogFooter Grid.Row="2" Name="Footer" />
+    </Grid>
+</dialogs:ForkPlusDialogWindow>

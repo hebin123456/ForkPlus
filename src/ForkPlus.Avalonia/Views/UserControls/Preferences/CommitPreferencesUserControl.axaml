@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.CommitPreferencesUserControl">
+    <!--
+        Avalonia 版 CommitPreferencesUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/CommitPreferencesUserControl.xaml
+        + .xaml.cs（108 行）：
+          - Grid 2 列（Label / Input）多行布局
+          - SpellChecking ComboBox（Disable/System/English）
+          - CommitSubject Low/High Limit TextBox
+          - PageGuideLinePosition TextBox
+          - CommitMessageRegex TextBox
+          - code-behind：Initialize() 读 ForkPlusSettings；TextChanged 写 settings +
+            NotificationCenter.Current.RaiseXxxChanged(...) 通知其他窗口
+
+        Avalonia 版差异（spike 简化）：
+          - WPF ComboBoxItem x:Name 引用 == spike 改用 ComboBox.SelectedIndex + 常量索引
+          - WPF NotificationCenter.Current.Raise* == spike 移除（NotificationCenter 在 WPF 工程，
+            Core 未抽出 INotificationService，spike 阶段仅写 ForkPlusSettings.Default）
+          - WPF PreferencesLocalization.FormatCurrent("System ({0})", culture) == spike
+            保留 PreferencesLocalization.FormatCurrent 调用（已 stub 委托 ServiceLocator）
+          - WPF TextChangedEventArgs == Avalonia.TextInputEventArgs / TextChangedEventArgs
+            （Avalonia 11 的 TextBox.TextChanging 用 TextChangingEventArgs，
+             TextBox.TextChanged 用 TextChangedEventArgs）
+          - WPF ComboBoxItem.Content = string == Avalonia ComboBoxItem.Content = string
+    -->
+    <Grid ColumnDefinitions="Auto,*" Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Spell Checking label -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Spell checking:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <ComboBox Grid.Row="0" Grid.Column="1"
+                  Name="CommintSpellCheckingComboBox"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,4,0,4"
+                  SelectionChanged="CommintSpellCheckingComboBox_SelectionChanged">
+            <ComboBoxItem Name="DisableComboBoxItem" Content="Disable" />
+            <ComboBoxItem Name="SystemComboBoxItem" Content="System" />
+            <ComboBoxItem Name="EnglishComboBoxItem" Content="English" />
+        </ComboBox>
+
+        <!-- Row 1: spacer -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 2: Commit subject low limit -->
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Text="Commit subject low limit:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="2" Grid.Column="1"
+                 Name="CommitSubjectLowLimitTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 TextChanged="CommitSubjectLowLimitTextBox_TextChanged" />
+
+        <!-- Row 3: Commit subject high limit -->
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Text="Commit subject high limit:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 Name="CommitSubjectHighLimitTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 TextChanged="CommitSubjectHighLimitTextBox_TextChanged" />
+
+        <!-- Row 4: spacer -->
+        <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 5: Page guide line position -->
+        <TextBlock Grid.Row="5" Grid.Column="0"
+                   Text="Page guide line position:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="5" Grid.Column="1"
+                 Name="PageGuideLinePositionTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 TextChanged="PageGuideLinePositionTextBox_TextChanged" />
+
+        <!-- Row 6: spacer -->
+        <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 7: Commit message regex -->
+        <TextBlock Grid.Row="7" Grid.Column="0"
+                   Text="Commit message regex:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="7" Grid.Column="1"
+                 Name="CommitMessageRegexTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 TextChanged="CommitMessageRegexTextBox_TextChanged" />
+
+        <!-- Row 8: spacer / hint -->
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="Leave regex empty to disable commit message validation."
+                   FontSize="11"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,8,0,0" />
+    </Grid>
+</UserControl>

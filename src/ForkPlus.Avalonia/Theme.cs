@@ -271,7 +271,7 @@ namespace ForkPlus.Avalonia
 
 		public static object FindResource(string resourceKey)
 		{
-			if (Application.Current != null && Application.Current.TryFindResource(resourceKey, out object value))
+			if (Application.Current != null && Application.Current.TryGetResource(resourceKey, null, out object value))
 			{
 				return value;
 			}

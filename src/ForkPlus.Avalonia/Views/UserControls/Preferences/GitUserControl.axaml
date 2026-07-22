@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.GitUserControl">
+    <!--
+        Avalonia 版 GitUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/GitUserControl.xaml + .xaml.cs（494 行）：
+          - Grid 多行：Git Instance ComboBox / GitMm Instance ComboBox /
+            Verbose Git Output CheckBox / User Name TextBox / Email TextBox / Avatar Image
+          - GitInstanceItem 嵌套类 + GitInstanceType 枚举（Environment/Local/System/Custom/
+            Separator/AddCustom）
+          - Initialize(ForkPlusDialogWindow)：刷新 ComboBox + 读 UserIdentity + 头像
+          - ComboBox SelectionChanged：写 ForkPlusSettings.Default.GitInstancePath +
+            弹 OpenDialog.SelectExecutableFile + WarnIfGitVersionUnsupported
+          - UserIdentity TextBox LostFocus/TextChanged：DelayedAction + SetGlobalUserIdentity
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF ForkPlusDialogWindow _parentWindow == spike 用 object 占位（避免 WPF 依赖）
+          - WPF OpenDialog.SelectExecutableFile == spike 移除（Core 的 OpenDialog 依赖 Window，
+            spike 用 stub 注释）
+          - WPF ErrorWindow.ShowDialog() == spike 移除（Avalonia ErrorWindow 需 Window owner，
+            spike 用 stub 注释）
+          - WPF DelayedAction<UserIdentity> == spike 移除（spike 不做防抖，直接 UpdateAvatar）
+          - WPF AuthorAvatarImage.ShowAvatarNoCache(userIdentity) == spike 移除（spike 不渲染头像）
+          - WPF TextBlock ToolTip = new TextBlock { ... } == spike 用 ToolTip.Tip 附加属性
+          - WPF Hyperlink RequestNavigate == spike 移除（spike 不放超链接）
+          - WPF VerboseGitOutputCheckBox.ToolTip = new TextBlock { ... } == spike 用 ToolTip.Tip
+    -->
+    <Grid ColumnDefinitions="Auto,*" Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Git instance -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Git instance:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <ComboBox Grid.Row="0" Grid.Column="1"
+                  Name="GitInstanceComboBox"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,4,0,4"
+                  SelectionChanged="GitInstanceComboBox_SelectionChanged" />
+
+        <!-- Row 1: spacer -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 2: GitMm instance -->
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Text="git-mm instance:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <ComboBox Grid.Row="2" Grid.Column="1"
+                  Name="GitMmInstanceComboBox"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,4,0,4"
+                  SelectionChanged="GitMmInstanceComboBox_SelectionChanged" />
+
+        <!-- Row 3: spacer -->
+        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 4: Verbose git output -->
+        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                  Name="VerboseGitOutputCheckBox"
+                  Content="Verbose git output"
+                  FontSize="13"
+                  Margin="0,4,0,4"
+                  Click="VerboseGitOutputCheckBox_Click" />
+
+        <!-- Row 5: spacer -->
+        <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Height="6" />
+
+        <!-- Row 6: User name -->
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   Text="User name:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="6" Grid.Column="1"
+                 Name="UserNameTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 LostFocus="UserNameTextBox_LostFocus"
+                 TextChanged="UserNameTextBox_TextChanged" />
+
+        <!-- Row 7: Email -->
+        <TextBlock Grid.Row="7" Grid.Column="0"
+                   Text="Email:"
+                   FontSize="13"
+                   VerticalAlignment="Center"
+                   Margin="0,4,12,4" />
+        <TextBox Grid.Row="7" Grid.Column="1"
+                 Name="EmailTextBox"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,4,0,4"
+                 LostFocus="EmailTextBox_LostFocus"
+                 TextChanged="EmailTextBox_TextChanged" />
+
+        <!-- Row 8: Avatar placeholder (spike: 不渲染真实头像) -->
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                   Name="AuthorAvatarImage"
+                   Text="👤"
+                   FontSize="32"
+                   HorizontalAlignment="Left"
+                   Margin="0,8,0,0"
+                   IsVisible="False" />
+
+        <!-- Row 9: hint -->
+        <TextBlock Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="User identity is saved to global git config."
+                   FontSize="11"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   Margin="0,8,0,0" />
+    </Grid>
+</UserControl>

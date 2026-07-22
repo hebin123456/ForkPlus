@@ -946,7 +946,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
 
         private static Control CreateSubrepoPlaceholder(GitMmSubrepoItem subrepo)
         {
-            Application.Current.TryFindResource("ThemeForegroundBrush", out var brush);
+            Application.Current.TryGetResource("ThemeForegroundBrush", null, out var brush);
             return new TextBlock
             {
                 Text = subrepo.DisplayName,

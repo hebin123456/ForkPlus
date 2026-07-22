@@ -1,0 +1,216 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:ForkPlus.Avalonia.Views.UserControls"
+             x:Class="ForkPlus.Avalonia.Views.UserControls.Preferences.CustomCommandsUserControl">
+    <!--
+        Avalonia 版 CustomCommandsUserControl（spike 简化新建版）。
+
+        对照 WPF 工程 src/ForkPlus/UI/UserControls/Preferences/CustomCommandsUserControl.xaml + .xaml.cs（459 行）：
+          - Grid 3 列：CustomCommandsListBox（200）/ 详情面板（*）/ FallbackUserControl
+          - AddCustomCommandDropDownButton（SplitButton + ContextMenu：5 种 target 菜单项）
+          - RemoveCustomCommandButton
+          - LocationRadioButtonContainer（Local/Shared RadioButton）
+          - TargetsComboBox（Commit/Repository/File/Branch/Submodule）
+          - UiRadioButton / ProcessRadioButton + UiActionDetailsContainer / ProcessActionTypeTextBlock
+          - ProcessActionButton / UiActionButton1 / UiActionButton2 / UiControlsButton
+          - DescriptionTextBlock（Inlines 显示可用变量）
+          - FallbackUserControl（无选中项时显示）
+
+        Avalonia 版差异（spike 简化策略）：
+          - WPF AddCustomCommandDropDownButton（SplitButton + ContextMenu）== spike
+            改用 5 个 Button（spike 不用 ContextMenu）
+          - WPF Inlines（DescriptionTextBlock.Inlines.Add(new Run(...))）== spike
+            改用 TextBlock.Text（spike 不用富文本）
+          - WPF MessageBoxWindow（删除确认）== spike 移除（spike 直接删除）
+          - WPF EditCustomActionWindow / EditCustomCommandUIControlsWindow.ShowDialog == spike
+            移除（spike 不弹编辑窗口）
+          - WPF FallbackUserControl == spike 用已迁移的 Avalonia FallbackUserControl
+          - WPF ILocalizableControl 接口 == spike 移除
+          - WPF ApplyLocalization（菜单项翻译）== spike 保留菜单项翻译
+    -->
+    <Grid ColumnDefinitions="200,*,Auto" Margin="8">
+        <!-- Col 0: Custom commands list + add/remove buttons -->
+        <Grid Grid.Column="0" RowDefinitions="*,Auto,Auto">
+            <ListBox Grid.Row="0"
+                     Name="CustomCommandsListBox"
+                     MinHeight="200"
+                     SelectionChanged="CustomCommandsListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"
+                                   FontSize="13"
+                                   Margin="4,1"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- spike: 5 个 Button 替代 WPF SplitButton + ContextMenu -->
+            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,4,0,0">
+                <Button Content="Add Commit Command"
+                        FontSize="11"
+                        Margin="0,2,0,0"
+                        Click="RevisionCustomCommandMenuItem_Click" />
+                <Button Content="Add Repository Command"
+                        FontSize="11"
+                        Margin="0,2,0,0"
+                        Click="RepositoryCustomCommandMenuItem_Click" />
+                <Button Content="Add File Command"
+                        FontSize="11"
+                        Margin="0,2,0,0"
+                        Click="FileCustomCommandMenuItem_Click" />
+                <Button Content="Add Branch Command"
+                        FontSize="11"
+                        Margin="0,2,0,0"
+                        Click="ReferenceCustomCommandMenuItem_Click" />
+                <Button Content="Add Submodule Command"
+                        FontSize="11"
+                        Margin="0,2,0,0"
+                        Click="SubmoduleCustomCommandMenuItem_Click" />
+            </StackPanel>
+            <Button Grid.Row="2"
+                    Name="RemoveCustomCommandButton"
+                    Content="Remove"
+                    FontSize="12"
+                    Margin="0,4,0,0"
+                    Click="RemoveCustomCommandButton_Click" />
+        </Grid>
+
+        <!-- Col 1: Details panel (spike: 占位) -->
+        <ScrollViewer Grid.Column="1"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="8,0,0,0">
+            <StackPanel>
+                <!-- Location radio buttons (local mode only) -->
+                <StackPanel Name="LocationRadioButtonContainer"
+                            Orientation="Horizontal"
+                            Margin="0,0,0,8">
+                    <RadioButton Name="LocalRadioButton"
+                                 Content="Local"
+                                 FontSize="12"
+                                 Margin="0,0,12,0"
+                                 Click="LocationRadioButton_Changed" />
+                    <RadioButton Name="SharedRadioButton"
+                                 Content="Shared"
+                                 FontSize="12"
+                                 Click="LocationRadioButton_Changed" />
+                </StackPanel>
+
+                <!-- Location text -->
+                <TextBlock Name="LocationTextBlock"
+                           FontSize="11"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Margin="0,0,0,8" />
+
+                <!-- OS combo (shared only) -->
+                <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                    <TextBlock Grid.Column="0"
+                               Name="OSTextBlock"
+                               Text="OS:"
+                               FontSize="13"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <ComboBox Grid.Column="1"
+                              Name="OSComboBox"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="OSComboBox_SelectionChanged">
+                        <ComboBoxItem Name="AnyComboBoxItem" Content="Any" />
+                        <ComboBoxItem Name="WindowsComboBoxItem" Content="Windows" />
+                        <ComboBoxItem Name="MacComboBoxItem" Content="Mac" />
+                    </ComboBox>
+                </Grid>
+
+                <!-- Target combo -->
+                <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                    <TextBlock Grid.Column="0"
+                               Text="Target:"
+                               FontSize="13"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <ComboBox Grid.Column="1"
+                              Name="TargetsComboBox"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="TargetsComboBox_SelectionChanged">
+                        <ComboBoxItem Name="CommitComboBoxItem" Content="Commit" />
+                        <ComboBoxItem Name="RepositoryComboBoxItem" Content="Repository" />
+                        <ComboBoxItem Name="FileComboBoxItem" Content="File" />
+                        <ComboBoxItem Name="BranchComboBoxItem" Content="Branch" />
+                        <ComboBoxItem Name="SubmoduleComboBoxItem" Content="Submodule" />
+                    </ComboBox>
+                </Grid>
+
+                <!-- Reference targets container (Branch target only) -->
+                <StackPanel Name="ReferenceTargetsContainer" Margin="0,0,0,8">
+                    <CheckBox Name="LocalBranchReferenceTargetCheckBox"
+                              Content="Local branches"
+                              FontSize="12"
+                              Margin="0,2,0,0" />
+                    <CheckBox Name="RemoteBranchReferenceTargetCheckBox"
+                              Content="Remote branches"
+                              FontSize="12"
+                              Margin="0,2,0,0" />
+                    <CheckBox Name="TagReferenceTargetCheckBox"
+                              Content="Tags"
+                              FontSize="12"
+                              Margin="0,2,0,0" />
+                </StackPanel>
+
+                <!-- Action type radio buttons -->
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                    <RadioButton Name="UiRadioButton"
+                                 Content="UI"
+                                 FontSize="13"
+                                 Margin="0,0,16,0"
+                                 Click="UIMode_Changed" />
+                    <RadioButton Name="ProcessRadioButton"
+                                 Content="Process"
+                                 FontSize="13"
+                                 Click="UIMode_Changed" />
+                </StackPanel>
+
+                <!-- Process action -->
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock Name="ProcessActionTypeTextBlock"
+                               FontSize="12"
+                               Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                               Margin="0,0,0,4" />
+                    <Button Name="ProcessActionButton"
+                            Content="Edit Action..."
+                            FontSize="12"
+                            Click="ProcessActionButton_Click" />
+                </StackPanel>
+
+                <!-- UI action details -->
+                <StackPanel Name="UiActionDetailsContainer" Margin="0,0,0,8">
+                    <Button Name="UiActionButton1"
+                            Content="Edit Button 1 Action..."
+                            FontSize="12"
+                            Margin="0,0,0,4"
+                            Click="UiActionButton1_Click" />
+                    <Button Name="UiActionButton2"
+                            Content="Edit Button 2 Action..."
+                            FontSize="12"
+                            Margin="0,0,0,4"
+                            Click="UiActionButton2_Click" />
+                    <Button Name="UiControlsButton"
+                            Content="Edit UI Controls..."
+                            FontSize="12"
+                            Click="UiControlsButton_Click" />
+                </StackPanel>
+
+                <!-- Description (spike: TextBlock.Text 替代 WPF Inlines) -->
+                <TextBlock Name="DescriptionTextBlock"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                           Margin="0,8,0,0" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Col 2: Fallback (spike: 占位，无选中项时显示) -->
+        <uc:FallbackUserControl Grid.Column="2"
+                                Name="FallbackUserControl"
+                                Width="200"
+                                IsVisible="False" />
+    </Grid>
+</UserControl>
