@@ -365,15 +365,19 @@ namespace ForkPlus.Avalonia.Views.UserControls
         // 对照 WPF: public void OpenRepository(GitModule gitModule)
         public void OpenRepository(GitModule gitModule)
         {
-            // spike 阶段可能传 null（无真实 repository），直接返回避免后续 gitModule.XXX 崩溃。
-            // 真实 repository 打开流程留待后续 Phase 接入。
+            // 无论 gitModule 是否为 null，都先确保 UI 布局初始化
+            // （装入 Sidebar + RepositoryContent + NotificationBar），
+            // 这样即使没有打开仓库，用户也能看到完整的界面骨架。
+            EnsureLayoutInitialized();
+
+            // spike 阶段可能传 null（无真实 repository），设置 null 后返回。
+            // 真实仓库打开流程：File → Open Repository → 创建 GitModule → OpenRepository(module)。
+            GitModule = gitModule;
             if (gitModule == null)
             {
-                GitModule = null;
                 _sidebar?.RefreshTitle();
                 return;
             }
-            GitModule = gitModule;
             CommitGraphCache = new CommitGraphCache(gitModule);
             if (gitModule.Type == ModuleType.Submodule)
             {

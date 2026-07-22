@@ -1,69 +1,80 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ForkPlus.Avalonia.Views.UserControls.ToolbarUserControl"
-             Height="40">
+             Height="44">
     <!--
-        Avalonia 版 ToolbarUserControl（spike 简化升级版）。
-
-        对照 WPF 工程 src/ForkPlus/UI/UserControls/ToolbarUserControl.xaml（326 行）+
-        ToolbarUserControl.xaml.cs（962 行）：
-          - WPF 三列 Grid 布局：左操作区（Quick Launch/Fetch/Pull/Push/Stash/Undo/Redo/Reflog）
-            + 中状态区（StatusUserControl）+ 右操作区（Branch/Workspaces/Appearance/Console/AI/OpenIn）
-          - 所有按钮用自定义控件 ToolbarButton/DropDownButton/ToolbarDropDownButton
-          - 43 处 DynamicResource 引用主题样式/图标/画刷
-
-        Avalonia 版差异：
-          - 自定义控件 ToolbarButton/DropDownButton/ToolbarDropDownButton → 原生 Button
-          - WPF PNG 图标 → emoji 文本（Fetch=⬇ / Pull=⬇⬆ / Push=⬆ / Branch=🌿 / Commit=✓ / Stash=📥）
-          - WPF Visibility.Collapsed/Visible → Avalonia IsVisible=false/true
-          - ContextMenu.Open() 直接在控件上调用
-
-        spike 简化：
-          - 用 StackPanel + Button 显示按钮，emoji 替代 PNG 图标
-          - 主题切换菜单用 ContextMenu 动态构造
-          - Pull/Push 数字角标用 TextBlock 占位（暂不实现）
-          - Undo/Redo 历史菜单 / Stash/Branch/OpenIn 下拉菜单暂不实现
-          - NotificationCenter 事件订阅暂不接入
+        对照 WPF ToolbarUserControl.xaml（326 行）三列布局：
+          Col 0: Quick Launch / Fetch / Pull / Push / Stash / Undo / Redo
+          Col 1: 状态区（300px）
+          Col 2: Workspaces / Appearance / Console / AI / OpenIn
+        Avalonia 版用真实 PNG 图标（Assets/）替代 WPF DynamicResource 图标。
     -->
+    <UserControl.Styles>
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="MinHeight" Value="32" />
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+        </Style>
+        <Style Selector="Button.toolbar-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource ThemeControlDarkBrush}" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid ColumnDefinitions="*,300,*"
           Background="{DynamicResource ToolbarBackgroundBrush}">
 
-        <!-- Column 0: 左侧主操作区（emoji 图标按钮）-->
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2"
+        <!-- Column 0: 左侧主操作区 -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="1"
                     VerticalAlignment="Center" Margin="8,0">
-            <Button Name="QuickLaunchButton" Content="🔍"
+            <Button Name="QuickLaunchButton" Classes="toolbar-btn"
                     ToolTip.Tip="Quick Launch"
-                    Click="QuickLaunchButton_Click" Margin="0,0,2,0" />
-            <Button Name="FetchButton" Content="⬇"
+                    Click="QuickLaunchButton_Click">
+                <Image Source="/Assets/openquickly.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="FetchButton" Classes="toolbar-btn"
                     ToolTip.Tip="Fetch"
-                    Click="FetchButton_Click" Margin="0,0,2,0" />
-            <Button Name="PullButton" Content="⬇⬆"
+                    Click="FetchButton_Click">
+                <Image Source="/Assets/fetch.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="PullButton" Classes="toolbar-btn"
                     ToolTip.Tip="Pull"
-                    Click="PullButton_Click" Margin="0,0,2,0" />
-            <Button Name="PushButton" Content="⬆"
+                    Click="PullButton_Click">
+                <Image Source="/Assets/pull.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="PushButton" Classes="toolbar-btn"
                     ToolTip.Tip="Push"
-                    Click="PushButton_Click" Margin="0,0,2,0" />
-            <Button Name="BranchButton" Content="🌿"
+                    Click="PushButton_Click">
+                <Image Source="/Assets/push.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="BranchButton" Classes="toolbar-btn"
                     ToolTip.Tip="Branch"
-                    Click="BranchButton_Click" Margin="0,0,2,0" />
-            <Button Name="CommitButton" Content="✓"
-                    ToolTip.Tip="Commit"
-                    Click="CommitButton_Click" Margin="0,0,2,0" />
-            <Button Name="StashButton" Content="📥"
+                    Click="BranchButton_Click">
+                <Image Source="/Assets/branch.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="StashButton" Classes="toolbar-btn"
                     ToolTip.Tip="Stash"
-                    Click="StashButton_Click" Margin="0,0,2,0" />
-            <Button Name="UndoButton" Content="↶"
+                    Click="StashButton_Click">
+                <Image Source="/Assets/stash.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="UndoButton" Classes="toolbar-btn"
                     ToolTip.Tip="Undo"
-                    Click="UndoButton_Click" Margin="0,0,2,0" />
-            <Button Name="RedoButton" Content="↷"
+                    Click="UndoButton_Click">
+                <Image Source="/Assets/undo.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="RedoButton" Classes="toolbar-btn"
                     ToolTip.Tip="Redo"
-                    Click="RedoButton_Click" Margin="0,0,2,0" />
-            <Button Name="ReflogButton" Content="📋"
-                    ToolTip.Tip="Reflog"
-                    Click="ReflogButton_Click" />
+                    Click="RedoButton_Click">
+                <Image Source="/Assets/redo.png" Width="20" Height="20" />
+            </Button>
         </StackPanel>
 
-        <!-- Column 1: 状态区（StatusUserControl 占位）-->
+        <!-- Column 1: 状态区 -->
         <Border Grid.Column="1" Padding="8,0" VerticalAlignment="Center">
             <TextBlock Name="StatusText" Text="(no repository)"
                        Foreground="{DynamicResource ThemeForegroundLowBrush}"
@@ -71,23 +82,33 @@
         </Border>
 
         <!-- Column 2: 右侧次操作区 -->
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2"
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="1"
                     VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0">
-            <Button Name="WorkspacesButton" Content="🗂"
+            <Button Name="WorkspacesButton" Classes="toolbar-btn"
                     ToolTip.Tip="Workspaces"
-                    Click="WorkspacesButton_Click" Margin="0,0,2,0" />
-            <Button Name="AppearanceButton" Content="🎨"
+                    Click="WorkspacesButton_Click">
+                <Image Source="/Assets/workspace.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="AppearanceButton" Classes="toolbar-btn"
                     ToolTip.Tip="Appearance"
-                    Click="AppearanceButton_Click" Margin="0,0,2,0" />
-            <Button Name="ConsoleButton" Content="🖥"
+                    Click="AppearanceButton_Click">
+                <TextBlock Text="A" FontSize="14" FontWeight="Bold" />
+            </Button>
+            <Button Name="ConsoleButton" Classes="toolbar-btn"
                     ToolTip.Tip="Console"
-                    Click="ConsoleButton_Click" Margin="0,0,2,0" />
-            <Button Name="AiButton" Content="🤖"
+                    Click="ConsoleButton_Click">
+                <Image Source="/Assets/console.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="AiButton" Classes="toolbar-btn"
                     ToolTip.Tip="AI"
-                    Click="AiButton_Click" Margin="0,0,2,0" />
-            <Button Name="OpenInButton" Content="📂"
+                    Click="AiButton_Click">
+                <Image Source="/Assets/ai.png" Width="20" Height="20" />
+            </Button>
+            <Button Name="OpenInButton" Classes="toolbar-btn"
                     ToolTip.Tip="Open in"
-                    Click="OpenInButton_Click" />
+                    Click="OpenInButton_Click">
+                <Image Source="/Assets/openin.png" Width="20" Height="20" />
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

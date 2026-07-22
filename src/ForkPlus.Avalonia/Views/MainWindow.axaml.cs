@@ -1,13 +1,16 @@
 using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ForkPlus.Avalonia.Controls;
 using ForkPlus.Avalonia.Services;
 using ForkPlus.Avalonia.Views.UserControls;
+using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +52,9 @@ namespace ForkPlus.Avalonia.Views
         private readonly IThemeService _themeService;
         private readonly IServiceProvider _serviceProvider;
         private bool _startupFinished;
+
+        // 当前活动的 RepositoryUserControl（File → Open Repository 时复用）
+        private RepositoryUserControl _repositoryUserControl;
 
         // 对照 WPF: private readonly AutomaticBackgroundFetchManager _automaticBackgroundFetchManager
         // spike 版：用 spike 版的 AutomaticBackgroundFetchManager（namespace ForkPlus.Avalonia）
@@ -112,12 +118,7 @@ namespace ForkPlus.Avalonia.Views
         // 对照 WPF: public void RefreshTitle()
         public void RefreshTitle()
         {
-            const string title = "ForkPlus Avalonia";
-            Title = title;
-            if (TitleTextBlock != null)
-            {
-                TitleTextBlock.Text = title;
-            }
+            Title = "ForkPlus";
         }
 
         // 对照 WPF: public void ApplyLocalization()
@@ -247,15 +248,15 @@ namespace ForkPlus.Avalonia.Views
             // Phase 4.0：用 ClosableTabControl 替代单 ContentContainer
             // spike 阶段简化：直接装入 MainContentContainer（不创建 tab）
             // 真实多 tab 切换留待 Phase 4.x 后期接入 TabManager
-            var repositoryUserControl = _serviceProvider.GetRequiredService<RepositoryUserControl>();
+            _repositoryUserControl = _serviceProvider.GetRequiredService<RepositoryUserControl>();
             if (MainContentContainer != null)
             {
-                MainContentContainer.Content = repositoryUserControl;
+                MainContentContainer.Content = _repositoryUserControl;
             }
 
             // 对照 WPF: OpenRepository(repository) → EnsureLayoutInitialized + UpdateRepositoryData
             // spike 阶段没有真实 repository，传 null 触发 EnsureLayoutInitialized 装配骨架
-            repositoryUserControl.OpenRepository(null);
+            _repositoryUserControl.OpenRepository(null);
         }
 
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
@@ -286,28 +287,56 @@ namespace ForkPlus.Avalonia.Views
             // spike 版跳过刷新逻辑（spike 不接入 RefreshActiveCommitViewStatus）
         }
 
-        // ===== 系统按钮（对照 WPF ControlTemplate 中的 SystemCommands 绑定）=====
+        // ===== 菜单事件 handler（对照 WPF MainWindowMenuManager 动态构造的菜单项）=====
 
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        // File → Open Repository：打开文件夹选择对话框 → 创建 GitModule → OpenRepository
+        // 对照 WPF: OpenRepositoryCommand（src/ForkPlus/UI/Commands/OpenRepositoryCommand.cs）
+        private async void File_OpenRepository_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = global::Avalonia.Controls.WindowState.Minimized;
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Open Repository",
+                AllowMultiple = false
+            });
+            if (folders.Count == 0) return;
+
+            string path = folders[0].Path.LocalPath;
+            var result = new OpenGitRepositoryGitCommand().Execute(path);
+            if (!result.Succeeded || result.Result == null)
+            {
+                Console.WriteLine($"[MainWindow] OpenRepository failed: {path} is not a git repository");
+                return;
+            }
+
+            Console.WriteLine($"[MainWindow] OpenRepository: {path}");
+            _repositoryUserControl?.OpenRepository(result.Result);
+            RefreshTitle();
         }
 
-        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        private void File_CloneRepository_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState == global::Avalonia.Controls.WindowState.Maximized
-                ? global::Avalonia.Controls.WindowState.Normal
-                : global::Avalonia.Controls.WindowState.Maximized;
+            Console.WriteLine("[MainWindow] Clone Repository (not yet implemented)");
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void File_Exit_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        // ===== 主题切换（验证 IThemeService）=====
+        private void View_ToggleToolbar_Click(object sender, RoutedEventArgs e)
+        {
+            if (ToolbarContainer != null)
+                ToolbarContainer.IsVisible = !ToolbarContainer.IsVisible;
+        }
 
-        private void ThemeToggle_Click(object sender, RoutedEventArgs e)
+        private void View_ToggleSidebar_Click(object sender, RoutedEventArgs e)
+        {
+            // RepositoryUserControl 内部的 Sidebar 可见性切换
+            // spike 阶段暂不实现（需要访问 RepositoryUserControl 内部控件）
+            Console.WriteLine("[MainWindow] Toggle Sidebar (not yet implemented)");
+        }
+
+        private void View_Appearance_Click(object sender, RoutedEventArgs e)
         {
             // 在 Light / Dark / Dracula / SolarizedDark 4 个主题间循环切换
             ThemeType[] cycle = { ThemeType.Light, ThemeType.Dark, ThemeType.Dracula, ThemeType.SolarizedDark };
@@ -315,6 +344,51 @@ namespace ForkPlus.Avalonia.Views
             if (currentIdx < 0) currentIdx = 0;
             int nextIdx = (currentIdx + 1) % cycle.Length;
             _themeService.ApplyTheme(cycle[nextIdx]);
+        }
+
+        private void Repository_Fetch_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Fetch");
+        }
+
+        private void Repository_Pull_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Pull");
+        }
+
+        private void Repository_Push_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Push");
+        }
+
+        private void Repository_Branch_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Branch");
+        }
+
+        private void Repository_Commit_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Commit");
+        }
+
+        private void Repository_Stash_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Repository → Stash");
+        }
+
+        private void Window_Preferences_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Window → Preferences");
+        }
+
+        private void Help_About_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Help → About");
+        }
+
+        private void Help_Feedback_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[MainWindow] Help → Feedback");
         }
     }
 }

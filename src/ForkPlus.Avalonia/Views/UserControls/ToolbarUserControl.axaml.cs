@@ -67,7 +67,6 @@ namespace ForkPlus.Avalonia.Views.UserControls
             if (PullButton != null) PullButton.IsEnabled = hasRepo;
             if (PushButton != null) PushButton.IsEnabled = hasRepo;
             if (BranchButton != null) BranchButton.IsEnabled = hasRepo;
-            if (CommitButton != null) CommitButton.IsEnabled = hasRepo;
             if (StashButton != null) StashButton.IsEnabled = hasRepo;
             if (StatusText != null)
             {
