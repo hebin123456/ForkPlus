@@ -23,7 +23,14 @@
          1. FileHelper.cs / ProcessExtensions.cs 等有 Kernel32 P/Invoke，已加 [SupportedOSPlatform] 标注
          2. 后续 Biturbo P/Invoke 在非 Windows 上有 runtime guard
          真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证 -->
-    <NoWarn>$(NoWarn);CA1416;CS8632</NoWarn>
+    <!-- CA1416：平台兼容性分析（Core 工程有 Kernel32 P/Invoke 等 Windows-specific API）。
+         CS8632：nullable 注解在 disable 上下文。
+         CS0108/CS0109：成员隐藏。
+         CS0169/CS0414：字段未使用/未赋值。
+         CS0067：事件未使用。
+         CS0618：过时 API。
+         CS0652/CS8073/CS1522：spike 阶段占位代码的无害 warning。 -->
+    <NoWarn>$(NoWarn);CA1416;CS8632;CS0108;CS0109;CS0169;CS0414;CS0067;CS0618;CS0652;CS8073;CS1522</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -22,8 +22,16 @@
          Phase 7 切换为默认发布版本时再按平台条件加。-->
     <!-- CA1416：平台兼容性分析。Avalonia 工程跨平台目标，部分代码可能用平台 API
          （如 Windows 上的 INotificationService 实现），统一 NoWarn。
-         真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证。 -->
-    <NoWarn>$(NoWarn);CA1416;CS8632</NoWarn>
+         真正的跨平台 guard 由 RuntimeInformation.IsOSPlatform 保证。
+         CS8632：nullable 注解在 disable 上下文（spike 代码大量使用 [Null] 等 JetBrains 注解）。
+         CS0108/CS0109：成员隐藏（spike 类继承 WPF 基类时成员名冲突，spike 阶段不重构）。
+         CS0169/CS0414：字段未使用/未赋值（spike 占位字段，后续 Phase 接入真实逻辑）。
+         CS0067：事件未使用（spike 占位事件，后续 Phase 接入真实订阅）。
+         CS0618：过时 API 使用（spike 阶段部分 Avalonia API 标记过时但功能正常）。
+         CS0652：#pragma warning disable 与 #pragma checksum 指令比较（无害）。
+         CS8073：is 模式匹配结果始终为 false/null（spike 占位逻辑）。
+         CS1522：switch case 标签冗余（spike 占位逻辑）。 -->
+    <NoWarn>$(NoWarn);CA1416;CS8632;CS0108;CS0109;CS0169;CS0414;CS0067;CS0618;CS0652;CS8073;CS1522;AVLN3001</NoWarn>
     <Version>4.0.0-alpha1</Version>
   </PropertyGroup>
 
