@@ -222,39 +222,4 @@ namespace ForkPlus.Avalonia.Controls
             }
         }
     }
-
-    // spike 版本地接口：IAutoCompleteProvider（替代 WPF ForkPlus.UI.Controls.IAutoCompleteProvider）
-    // 对照 src/ForkPlus/UI/Controls/IAutoCompleteProvider.cs（8 行）
-    public interface IAutoCompleteProvider
-    {
-        AutoCompleteSuggestions GetSuggestions(string text, int caretIndex);
-    }
-
-    // spike 版本地 POCO：AutoCompleteSuggestion（替代 WPF ForkPlus.UI.Controls.AutoCompleteSuggestion）
-    // 对照 src/ForkPlus/UI/Controls/AutoCompleteSuggestion.cs（15 行）
-    public class AutoCompleteSuggestion
-    {
-        public Range Range { get; }
-        public string Suggestion { get; }
-
-        public AutoCompleteSuggestion(Range range, string suggestion)
-        {
-            Range = range;
-            Suggestion = suggestion;
-        }
-    }
-
-    // spike 版本地 POCO：AutoCompleteSuggestions（替代 WPF ForkPlus.UI.Controls.AutoCompleteSuggestions）
-    // 对照 src/ForkPlus/UI/Controls/AutoCompleteSuggestions.cs（15 行）
-    public class AutoCompleteSuggestions
-    {
-        public int DropdownPosition { get; }
-        public AutoCompleteSuggestion[] Suggestions { get; }
-
-        public AutoCompleteSuggestions(int dropdownPosition, AutoCompleteSuggestion[] suggestions)
-        {
-            DropdownPosition = dropdownPosition;
-            Suggestions = suggestions;
-        }
-    }
 }

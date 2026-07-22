@@ -33,7 +33,7 @@ namespace ForkPlus.Avalonia.Controls
     //   7. WPF VisualTreeAttachmentHelper.TrySetContent → spike 用 Content 直接赋值
     //   8. WPF RepositoryManagerUserControl / RepositoryUserControl / GitMmUserControl
     //      类型来自 ForkPlus.UI.UserControls，spike 用 object 替代
-    //   9. WPF TabItemMode 枚举 → spike 本地枚举
+    //   9. WPF TabItemMode 枚举 → spike 独立文件 TabItemMode.cs（与 WPF 源对齐）
     //  10. WPF EditableTextBlock TitleTextBlock → spike 跳过（无 OnApplyTemplate）
     //  11. spike 跳过 GetContextMenu()（依赖 RepositoryManager 单例 + Workspaces）
     //  12. spike 跳过 RenameRepository / RepositoryColors 菜单（依赖 ForkPlus.Core 单例）
@@ -56,7 +56,7 @@ namespace ForkPlus.Avalonia.Controls
             AvaloniaProperty.Register<ClosableTabItem, bool>(nameof(IsDirty));
 
         // 对照 WPF: public TabItemMode Mode { get; private set; }
-        // spike 版本地枚举（替代 WPF ForkPlus.UI.TabItemMode）
+        // TabItemMode 枚举迁移到独立文件 TabItemMode.cs（与 WPF 源对齐）
         public TabItemMode Mode { get; private set; }
 
         // 对照 WPF: public RepositoryManagerUserControl RepositoryManagerUserControl
@@ -161,13 +161,5 @@ namespace ForkPlus.Avalonia.Controls
             // spike 版跳过拖放逻辑（spike 不实现拖放重排序）
             // 对照 WPF: PreviewMouseDown + PreviewMouseMove + Drop 完整拖放流程
         }
-    }
-
-    // spike 版本地枚举：TabItemMode（替代 WPF ForkPlus.UI.TabItemMode）
-    public enum TabItemMode
-    {
-        RepositoryManager,
-        Repository,
-        GitMm,
     }
 }

@@ -82,6 +82,11 @@
              改为在 MainWindow_Loaded 中通过 _serviceProvider 创建并装入此 ContentControl。-->
         <ContentControl Grid.Row="1" Name="ToolbarContainer" />
 
+        <!-- Row 1b: Phase 4.0 MainMenu（对照 WPF ControlTemplate 中的 PART_MainMenu）
+             由 MainWindowMenuManager 在 Loaded 时动态构造 File/View/Repository/Window/Help 5 个根菜单项。
+             spike 版简化：用 Avalonia.Controls.Menu，菜单项由 MainWindowMenuManager 动态创建。-->
+        <Menu Grid.Row="1" Name="MainMenu" IsVisible="False" />
+
         <!-- Row 2: 内容区（Phase 3.13 起装入 RepositoryUserControl，
              对照 WPF MainWindow.xaml 的 ClosableTabControl。
              spike 阶段简化为单个 RepositoryUserControl，未来 Phase 3.x 后期会接入 TabManager）-->
