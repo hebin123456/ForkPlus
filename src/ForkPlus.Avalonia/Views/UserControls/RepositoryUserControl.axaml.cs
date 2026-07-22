@@ -619,6 +619,7 @@ namespace ForkPlus.Avalonia.Views.UserControls
             // 对照 WPF: Sidebar.Initialize(this); Content.Initialize(this, Sidebar.SearchTabItem);
             // spike: Sidebar.SearchTabItem 是 Avalonia 自动生成的 internal 字段，外部不可访问；传 null
             _sidebar.Initialize(this);
+            SetupSidebarCallbacks();
             _content.Initialize(this, null);
 
             // 对照 WPF: Content.RevisionListViewUserControl.RevisionsDataSource.OnFetchRevisionsNeeded = FetchNextRevisionPage;
@@ -855,6 +856,36 @@ namespace ForkPlus.Avalonia.Views.UserControls
         public void SetRepositoryViewMode(string mode)
         {
             ViewMode = mode;
+        }
+
+        // ===== Sidebar 回调接线（对照 WPF Sidebar 双击/右键菜单 → RepositoryUserControl 方法）=====
+
+        // 对照 WPF: Sidebar 的 CheckoutBranchCallback / CheckoutRemoteBranchCallback / CheckoutTagCallback 等
+        // 在 EnsureLayoutInitialized 中调用，把 Sidebar 的回调指向本控件的方法
+        private void SetupSidebarCallbacks()
+        {
+            _sidebar.CheckoutBranchCallback = branch => CheckoutBranch(branch);
+            _sidebar.CheckoutTagCallback = tag => CheckoutTag(tag);
+        }
+
+        // 对照 WPF: CheckoutBranch(LocalBranch branch) — AddUndoable + CheckoutBranchGitCommand
+        public void CheckoutBranch(LocalBranch branch)
+        {
+            if (GitModule == null || branch == null) return;
+            AddUndoable("Checkout", monitor =>
+            {
+                return new CheckoutBranchGitCommand().Execute(GitModule, branch, monitor);
+            });
+        }
+
+        // 对照 WPF: CheckoutTag(Tag tag) — AddUndoable + CheckoutRevisionGitCommand
+        public void CheckoutTag(Tag tag)
+        {
+            if (GitModule == null || tag == null) return;
+            AddUndoable("Checkout Tag", monitor =>
+            {
+                return new CheckoutRevisionGitCommand().Execute(GitModule, tag.Sha, monitor);
+            });
         }
 
         // ===== ShowLoading / HideLoading / DisableUserInterface / EnableUserInterface（spike 补充）=====
