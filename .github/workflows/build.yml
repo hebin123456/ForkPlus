@@ -2,11 +2,7 @@ name: Build
 
 on:
   push:
-<<<<<<< HEAD
     branches: [master, master-update, master-refactor]
-=======
-    branches: [master-update]
->>>>>>> 501fe31ea7a124196106d6e0a0e8d7dba957edc1
     tags: ["v*"]
   workflow_dispatch:
 
