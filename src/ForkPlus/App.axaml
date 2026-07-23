@@ -1,0 +1,20 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:f="clr-namespace:ForkPlus"
+             x:Class="ForkPlus.App">
+  <!-- 阶段 4 里程碑 4.1：WPF → Avalonia 命名空间切换。
+       ShutdownMode 在 Avalonia 中由 IClassicDesktopStyleApplicationLifetime 设置（见 App.axaml.cs）。
+       原 Generic.Light.xaml 主题字典待里程碑 4.3 重写为 Avalonia Styles 后恢复引用。 -->
+  <Application.Styles>
+    <FluentTheme />
+    <!-- DataGrid 控件主题（Avalonia 11.x 起独立包，需显式引入） -->
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+  </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <!-- 阶段 4 里程碑 4.3 待办：22 套主题字典 (Generic.*.xaml) 重写为 Avalonia Styles 后在此引入。
+           原 WPF: <ResourceDictionary Source="pack://application:,,,/ForkPlus;component/Theme/Generic.Light.xaml" />
+           Avalonia: <StyleInclude Source="avares://ForkPlus/Theme/Generic.Light.axaml" /> -->
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

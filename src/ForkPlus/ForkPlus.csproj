@@ -1,11 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- .NET 10 LTS + Windows 10 2004 (19041) 最低要求（WebView2 需要）。
-         WPF + WebView2 + FlaUI 都是 Windows-only，故用 -windows TFM；
-         暂未做跨平台 UI 迁移（A 方向），Linux/macOS 仍只跑 biturbo 冒烟测试。-->
+    <!-- 阶段 4 里程碑 4.1：WPF → Avalonia 一次性整体切换。
+         TFM 保持 net10.0-windows10.0.19041.0（阶段 4 决策：TFM 不切，阶段 6 再切 net10.0）。
+         Avalonia 11.3.18 包对 net10.0-windows 完全兼容。
+         UseWPF 必须关闭，否则 XAML 编译器与 Avalonia 冲突。 -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <UseWPF>false</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+    <!-- Avalonia 11.3 默认 false，官方模板与 12 起默认 true。显式开启以获得编译期类型检查 + AOT 友好。 -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>
     <RootNamespace>ForkPlus</RootNamespace>
@@ -20,18 +24,8 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)obj\**;$(MSBuildThisFileDirectory)obj_agent\**;$(MSBuildThisFileDirectory)bin\**</DefaultItemExcludes>
-    <!-- WPF / INPC / Sha struct 模式常见无害警告，全局静默：
-         CS0067  事件未使用（INotifyPropertyChanged 实现的 PropertyChanged 事件）
-         CS0108  子类成员隐藏父类（WPF 子窗口覆盖父窗口成员）
-         CS0169 / CS0414  字段未使用（WPF 模板字段、序列化占位字段）
-         CS1522  空 switch block（已枚举所有 case 的 switch）
-         CS0652  byte 与超范围常量比较
-         CS8073  struct（如 Sha）与 null 比较恒为 false/true（用于 null 合并模式）
-         CS8632  代码局部用了 #nullable 注解但工程未全局启用 nullable
-         CA1416  平台兼容性分析：本工程 TFM 已是 net10.0-windows10.0.19041.0，
-                 整个工程只跑 Windows，但 AvalonEdit/OxyPlot/WebView2 等库的 API
-                 标注 [SupportedOSPlatform("Windows")]，分析器认为"call site 可达
-                 所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
+    <!-- Avalonia 11.3 + net10.0-windows 下，部分第三方包（OxyPlot.Avalonia 等）API 仍标注
+         [SupportedOSPlatform("Windows")]，CA1416 在 Windows-only TFM 下无意义。 -->
     <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
   </PropertyGroup>
 
@@ -92,16 +86,37 @@
        无需显式 Reference。原 net472 时代的 6 个 Reference 节已删除。-->
 
   <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
-    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+    <!-- ===== Avalonia 11.3.18 核心包（阶段 4 里程碑 4.1 引入）=====
+         全家桶必须严格同版本，否则触发程序集版本冲突。
+         - Avalonia：框架核心（属性系统/控件基类/XAML 编译器）
+         - Avalonia.Desktop：桌面平台元包（Win32/X11/macOS Native 后端）
+         - Avalonia.Themes.Fluent：默认主题，App.axaml 中 <FluentTheme /> 引用
+         - Avalonia.Fonts.Inter：内嵌 Inter 字体，跨平台一致性
+         - Avalonia.Controls.DataGrid：DataGrid 控件（11.x 起独立包）
+         - Avalonia.Diagnostics：F12 开发者工具，仅 Debug 配置引用
+                              （Avalonia 12 起被移除，由 Avalonia Plus 付费替代） -->
+    <PackageReference Include="Avalonia" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.18" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- ===== 第三方库 Avalonia 替代（阶段 4 里程碑 4.7 完成）=====
+         AvalonEdit 6.3.1.120 → Avalonia.AvaloniaEdit 11.4.1（官方移植，API 高度一致）
+         OxyPlot.Wpf 2.2.0 → OxyPlot.Avalonia 2.2.0（社区移植，维护活跃度低）
+         WebView2 → AvaloniaEdit + 自写 Markdown 渲染（阶段 4 决策） -->
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <PackageReference Include="OxyPlot.Avalonia" Version="2.2.0" />
+    <!-- ===== 暂保留包（阶段 4 后续里程碑替换/移除）=====
+         - Microsoft.Web.WebView2：阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除
+         - Microsoft-WindowsAPICodePack-Shell：阶段 0 已迁移到 IFileSystemDialogService，本阶段移除
+         - CommunityToolkit.WinUI.Notifications：阶段 5 由 IToastNotificationService 跨平台实现替代 -->
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
-    <!-- System.Drawing.Common 通过 OxyPlot.Wpf 等包传递引入，不再显式引用（NU1510）。
-         IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->
+    <!-- System.Drawing.Common 通过 OxyPlot.Avalonia 等包传递引入，不再显式引用（NU1510）。 -->
   </ItemGroup>
 
   <ItemGroup>

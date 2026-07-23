@@ -9,14 +9,12 @@ using System.Runtime.InteropServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Interop;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -31,8 +29,31 @@ using NLog;
 
 namespace ForkPlus
 {
-	public partial class App : Application
+	public partial class App : Avalonia.Application
 	{
+		/// <summary>
+		/// Avalonia XAML 加载入口（替代 WPF 自动生成的 InitializeComponent）。
+		/// </summary>
+		public override void Initialize()
+		{
+			AvaloniaXamlLoader.Load(this);
+		}
+
+		/// <summary>
+		/// Avalonia 框架初始化完成回调（替代 WPF 的 OnStartup）。
+		/// 原 WPF OnStartup 的业务逻辑迁移到 OnStartupLegacy，由此处调用。
+		/// ShutdownMode="OnExplicitShutdown" 在 Avalonia 中通过 desktop.ShutdownMode 设置。
+		/// </summary>
+		public override void OnFrameworkInitializationCompleted()
+		{
+			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+				OnStartupLegacy();
+			}
+			base.OnFrameworkInitializationCompleted();
+		}
+
 		private class NativeMethods
 		{
 			[DllImport("shell32.dll", SetLastError = true)]
@@ -343,7 +364,8 @@ namespace ForkPlus
 
 		private void RegisterGlobalExceptionLogging()
 		{
-			DispatcherUnhandledException += App_DispatcherUnhandledException;
+			// TODO 阶段 4 后续：Avalonia 无 DispatcherUnhandledException 等价，改用 Avalonia.Logging 或 AppDomain 异常捕获
+			// DispatcherUnhandledException += App_DispatcherUnhandledException;
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 			AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 			TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
@@ -593,9 +615,8 @@ namespace ForkPlus
 			}
 		}
 
-		protected override void OnStartup(StartupEventArgs e)
+		private void OnStartupLegacy()
 		{
-			base.OnStartup(e);
 			ServiceLocator.Initialize(
 				dispatcher: new WpfDispatcher(Dispatcher.CurrentDispatcher),
 				designMode: new WpfDesignModeService(),
@@ -892,17 +913,16 @@ namespace ForkPlus
 			}
 		}
 
-		protected override void OnExit(ExitEventArgs e)
+		private void OnExitLegacy()
 		{
 			ForkPlusSettings.Default.Save();
 			_askPassIpcServer.Dispose();
 			_defaultIpcServer.Dispose();
-			base.OnExit(e);
 		}
 
 		private void DoShutdown()
 		{
-			Shutdown();
+			(ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 		}
 
 		private static string GetEnvironmentGitInstancePath()
