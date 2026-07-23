@@ -68,6 +68,57 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 
 ---
 
+## 里程碑 3.1：抽取首个 ViewModel（CloneWindowViewModel）建立模式
+
+> 状态：**已完成**（待 CI 验证）
+
+阶段 3 的核心是 VM 抽取。本里程碑选最小且独立的 `CloneWindow` 作为首个目标，建立"VM 持纯状态/逻辑、View 仅绑定+转发"的模式，为后续大规模 VM 抽取定基调。
+
+### VM 范围（[CloneWindowViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CloneWindowViewModel.cs)）
+
+**关键设计**：VM **零 WPF using**（无 `System.Windows.*`），满足阶段 3 验收标准——"把 `using System.Windows.*` 全删掉能编译通过"。
+
+承接的纯业务逻辑：
+
+| VM 成员 | 替换的 View 逻辑 | 类型来源 |
+|---|---|---|
+| `RepositoryUrl` / `RepositoryName` / `ParentDirectory` | 3 个 TextBox.Text 直访 | `string` |
+| `IsSubmitAllowed`（计算属性） | `ForkPlusDialogWindow.IsSubmitAllowed` override | `bool` |
+| `CommandPreview`（计算属性） | `ForkPlusDialogWindow.GetCommandPreview()` override | `string` |
+| `DeriveRepositoryName(url)` 静态 | `RefreshRepositoryNameTextBox` 核心 | `GitUrl`（Git） |
+| `GetNetworkProtocol(url)` 静态 | `RefreshNetworkProtocolButton` 核心 | `GitUrl.NetworkProtocol?`（Git） |
+| `TryGetUrlFromClipboard()` 静态 | `TryParseUrlFromClipboard` | `ServiceLocator.Clipboard`（Services） |
+| `RemoveGitClonePrefix(text)` 静态 | `RemoveGitClonePrefix` | `string` |
+
+`INotifyPropertyChanged` 实现参考既有 [SshKeyViewModel](file:///workspace/src/ForkPlus/UI/Dialogs/SshKeyViewModel.cs) 模式（同目录，简单 INPC，无基类）。
+
+### View 接入（[CloneWindow.xaml.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CloneWindow.xaml.cs)）
+
+1. 新增 `_viewModel` 字段（构造时实例化）。
+2. `IsSubmitAllowed` / `GetCommandPreview()` 两个 override 改为：先 `SyncViewModelFromControls()`（把 3 个 TextBox.Text 推到 VM），再返回 VM 的计算属性。
+3. `RefreshRepositoryNameTextBox` / `RefreshNetworkProtocolButton` / `TryParseUrlFromClipboard` 改为调用 VM 的对应静态方法，View 仅保留控件可见性/赋值。
+4. 删除 View 中已迁走的 `RemoveGitClonePrefix`（逻辑唯一入口现是 VM）。
+
+### 暂留 View 的逻辑（显式标注，留待后续迭代）
+
+| 逻辑 | 为什么暂留 |
+|---|---|
+| `OnSubmit` | 调 `JobQueue.Add` / `MainWindow.ActiveRepositoryUserControl` / `Application.Current.TabManager().OpenRepository` / `Dispatcher.Invoke`，WPF 强耦合 |
+| `TestButton_Click` | `BitmapImage` / `Dispatcher.Invoke` / 控件 Show/Hide |
+| `AccountItem`（含 `ImageSource Icon`） | `ImageSource` 是 WPF 类型，放 VM 会破层；后续需改为图标 key 字符串 |
+| `RefreshAccountsComboBox` / `RefreshUrlUserName` | 涉及 `AccountsComboBox` 控件操作 + `AccountItem` 构造，与上同 |
+| `BrowseButton_Click` | `OpenDialog.SelectDirectory`（WPF 对话框封装） |
+
+### 建立的模式（供后续 VM 抽取复用）
+
+1. **VM 零 WPF using**：VM 只引用领域/根/Services 层类型，View 负责 WPF 类型适配。
+2. **View 主动推送**：现阶段 View 在事件里把控件值 push 到 VM 属性（非双向绑定），降低改动面；后续整体切 Avalonia 时改双向绑定。
+3. **override 委托**：基类虚方法（`IsSubmitAllowed`/`GetCommandPreview`）的 override 改为转发 VM，保持基类调用契约不变。
+4. **静态纯函数**：无状态的推导逻辑（仓库名/协议/剪贴板解析）做成 VM 静态方法，View 直接调，避免为一次性计算创建实例状态。
+5. **显式标注暂留项**：每个暂留 View 的 WPF 耦合点都在文档/注释里写明原因和后续路径，避免遗漏。
+
+---
+
 ## 待办清单（按耦合严重程度排序）
 
 ### 核心 UserControl

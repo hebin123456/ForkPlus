@@ -78,52 +78,36 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		[Null]
-		private Account _account;
+	private Account _account;
 
-		private bool _refreshingUrl;
+	private bool _refreshingUrl;
 
-		protected override bool IsSubmitAllowed
+	// 阶段 3：承接表单状态与命令预览的纯业务逻辑。View 仍负责把 TextBox.Text 同步到 VM，
+	// 后续可改为双向绑定。OnSubmit / TestButton / AccountItem 等强耦合逻辑暂留 View。
+	private readonly CloneWindowViewModel _viewModel = new CloneWindowViewModel();
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
-			{
-				if (string.IsNullOrWhiteSpace(RepositoryUrlTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				if (string.IsNullOrWhiteSpace(RepositoryNameTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				if (string.IsNullOrWhiteSpace(ParentDirectoryTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				return true;
-			}
+			SyncViewModelFromControls();
+			return _viewModel.IsSubmitAllowed;
 		}
+	}
 
-		protected override string GetCommandPreview()
-		{
-			string url = RepositoryUrlTextBox.Text.Trim();
-			if (string.IsNullOrWhiteSpace(url))
-			{
-				return null;
-			}
-			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
-			List<string> parts = new List<string> { "git", "clone" };
-			if (ForkPlusSettings.Default.UpdateSubmodulesOnCheckout)
-			{
-				parts.Add("--recurse-submodules");
-			}
-			parts.Add(Quote(url));
-			string parentDir = ParentDirectoryTextBox.Text.Trim();
-			string repoName = RepositoryNameTextBox.Text.Trim();
-			if (!string.IsNullOrWhiteSpace(parentDir) && !string.IsNullOrWhiteSpace(repoName))
-			{
-				parts.Add(Quote(System.IO.Path.Combine(parentDir, repoName)));
-			}
-			return string.Join(" ", parts);
-		}
+	protected override string GetCommandPreview()
+	{
+		SyncViewModelFromControls();
+		return _viewModel.CommandPreview;
+	}
+
+	/// <summary>把 3 个 TextBox 的当前值推送到 VM（替换原 override 内联读取 TextBox.Text 的逻辑）。</summary>
+	private void SyncViewModelFromControls()
+	{
+		_viewModel.RepositoryUrl = RepositoryUrlTextBox.Text;
+		_viewModel.RepositoryName = RepositoryNameTextBox.Text;
+		_viewModel.ParentDirectory = ParentDirectoryTextBox.Text;
+	}
 
 		private AccountItem[] AccountItems { get; set; }
 
@@ -410,65 +394,54 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void RefreshNetworkProtocolButton()
+	{
+		// 阶段 3：协议推导逻辑移入 CloneWindowViewModel.GetNetworkProtocol，View 仅负责控件可见性。
+		GitUrl.NetworkProtocol? protocol = CloneWindowViewModel.GetNetworkProtocol(RepositoryUrlTextBox.Text);
+		if (protocol.HasValue)
 		{
-			GitUrl gitUrl = new GitUrl(RepositoryUrlTextBox.Text.Trim());
-			if (gitUrl.IsValid)
+			NetworkProtocolDropDownButton.Show();
+			if (protocol.Value == GitUrl.NetworkProtocol.Https)
 			{
-				NetworkProtocolDropDownButton.Show();
-				if (gitUrl.Protocol == GitUrl.NetworkProtocol.Https)
-				{
-					NetworkProtocolTextBlock.Text = "HTTPS";
-				}
-				else if (gitUrl.Protocol == GitUrl.NetworkProtocol.Ssh)
-				{
-					NetworkProtocolTextBlock.Text = "SSH";
-				}
-				else
-				{
-					NetworkProtocolDropDownButton.Hide();
-				}
+				NetworkProtocolTextBlock.Text = "HTTPS";
+			}
+			else if (protocol.Value == GitUrl.NetworkProtocol.Ssh)
+			{
+				NetworkProtocolTextBlock.Text = "SSH";
 			}
 			else
 			{
 				NetworkProtocolDropDownButton.Hide();
 			}
 		}
-
-		private void TryParseUrlFromClipboard()
+		else
 		{
-			if (!string.IsNullOrEmpty(RepositoryUrlTextBox.Text.Trim()))
-			{
-				return;
-			}
-			string text = ServiceLocator.Clipboard.GetText();
-			if (text != null)
-			{
-				text = RemoveGitClonePrefix(text).Trim().Trim('"');
-				if (new GitUrl(text).IsValid)
-				{
-					RepositoryUrlTextBox.Text = text;
-				}
-			}
+			NetworkProtocolDropDownButton.Hide();
 		}
+	}
 
-		private string RemoveGitClonePrefix(string clipboardUrl)
+	private void TryParseUrlFromClipboard()
+	{
+		if (!string.IsNullOrEmpty(RepositoryUrlTextBox.Text.Trim()))
 		{
-			string text = "git clone ";
-			if (!clipboardUrl.StartsWith(text))
-			{
-				return clipboardUrl;
-			}
-			return clipboardUrl.Remove(0, text.Length);
+			return;
 		}
+		// 阶段 3：剪贴板 URL 解析移入 CloneWindowViewModel.TryGetUrlFromClipboard。
+		string text = CloneWindowViewModel.TryGetUrlFromClipboard();
+		if (text != null)
+		{
+			RepositoryUrlTextBox.Text = text;
+		}
+	}
 
-		private void RefreshRepositoryNameTextBox()
+	private void RefreshRepositoryNameTextBox()
+	{
+		// 阶段 3：仓库名推导移入 CloneWindowViewModel.DeriveRepositoryName。
+		string repositoryName = CloneWindowViewModel.DeriveRepositoryName(RepositoryUrlTextBox.Text);
+		if (repositoryName != null)
 		{
-			string repositoryName = new GitUrl(RepositoryUrlTextBox.Text.Trim()).RepositoryName;
-			if (repositoryName != null)
-			{
-				RepositoryNameTextBox.Text = repositoryName;
-			}
+			RepositoryNameTextBox.Text = repositoryName;
 		}
+	}
 
 		private void RefreshAccountsComboBox()
 		{
