@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Settings;
+using ForkPlus.Utils.Http;
 
 namespace ForkPlus.UI.Dialogs
 {
