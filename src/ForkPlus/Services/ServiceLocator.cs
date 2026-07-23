@@ -24,6 +24,9 @@ namespace ForkPlus.Services
 		public static IFileAssociationService FileAssociation { get; private set; }
 		public static ISystemThemeService SystemTheme { get; private set; }
 
+		// ===== 阶段 4 新增抽象（主题字典刷新）=====
+		public static IThemeService ThemeService { get; private set; }
+
 		// ===== 阶段 1 新增抽象（领域层本地化访问）=====
 		public static ILocalizationService Localization { get; private set; }
 
@@ -59,7 +62,8 @@ namespace ForkPlus.Services
 			ICredentialService credential = null,
 			IFileAssociationService fileAssociation = null,
 			ISystemThemeService systemTheme = null,
-			ILocalizationService localization = null)
+			ILocalizationService localization = null,
+			IThemeService themeService = null)
 		{
 			if (messageBox != null) MessageBox = messageBox;
 			if (process != null) Process = process;
@@ -68,6 +72,7 @@ namespace ForkPlus.Services
 			if (fileAssociation != null) FileAssociation = fileAssociation;
 			if (systemTheme != null) SystemTheme = systemTheme;
 			if (localization != null) Localization = localization;
+			if (themeService != null) ThemeService = themeService;
 		}
 
 		public static void Reset()
@@ -86,6 +91,7 @@ namespace ForkPlus.Services
 			FileAssociation = null;
 			SystemTheme = null;
 			Localization = null;
+			ThemeService = null;
 			IsInitialized = false;
 		}
 	}

@@ -1,21 +1,30 @@
 using System;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Styling;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI
 {
+	/// <summary>
+	/// 阶段 4 里程碑 4.3：Theme 静态资源访问门面 WPF→Avalonia 迁移。
+	/// Application.Current.TryFindResource → Application.Current.FindResource。
+	/// WPF ResourceDictionary.MergedDictionaries.Add/Remove 强制刷新 → 转发到 IThemeService.Refresh。
+	/// Brush/ImageSource/Geometry/Style/ScaleTransform → Avalonia.Media/Styling 等价类型。
+	/// </summary>
 	internal static class Theme
 	{
 		public static class CommandTextBox
 		{
-			public static Brush LabelBackgroundBrush => FindBrush("CommandTextBox.LabelBackground");
+			public static IBrush LabelBackgroundBrush => FindBrush("CommandTextBox.LabelBackground");
 
-			public static Brush LabelForegroundBrush => FindBrush("CommandTextBox.LabelForeground");
+			public static IBrush LabelForegroundBrush => FindBrush("CommandTextBox.LabelForeground");
 		}
 
 		public static class CodeEditor
 		{
-			public static Brush BackgroundBrush => FindBrush("CodeEditorBackground");
+			public static IBrush BackgroundBrush => FindBrush("CodeEditorBackground");
 		}
 
 		public static class FileListMultiselectionTreeView
@@ -34,163 +43,155 @@ namespace ForkPlus.UI
 
 		public static class Diff
 		{
-			public static Brush FloatingButtonContainerBackground => FindBrush("Diff.FloatingButtonContainer.Background");
+			public static IBrush FloatingButtonContainerBackground => FindBrush("Diff.FloatingButtonContainer.Background");
 
-			public static Brush AddedForegroundBrush => FindBrush("Diff.Added.Foreground");
+			public static IBrush AddedForegroundBrush => FindBrush("Diff.Added.Foreground");
 
-			public static Brush AddedBrush => FindBrush("Diff.Added");
+			public static IBrush AddedBrush => FindBrush("Diff.Added");
 
-			public static Brush RemovedForegroundBrush => FindBrush("Diff.Removed.Foreground");
+			public static IBrush RemovedForegroundBrush => FindBrush("Diff.Removed.Foreground");
 
-			public static Brush RemovedBrush => FindBrush("Diff.Removed");
+			public static IBrush RemovedBrush => FindBrush("Diff.Removed");
 		}
 
 		public static class ApplicationColors
 		{
-			public static Brush GrayBrush => FindBrush("InteractiveRebase.Gray");
+			public static IBrush GrayBrush => FindBrush("InteractiveRebase.Gray");
 
-			public static Brush GreenBrush => FindBrush("InteractiveRebase.Green");
+			public static IBrush GreenBrush => FindBrush("InteractiveRebase.Green");
 
-			public static Brush RedBrush => FindBrush("InteractiveRebase.Red");
+			public static IBrush RedBrush => FindBrush("InteractiveRebase.Red");
 
-			public static Brush YellowBrush => FindBrush("InteractiveRebase.Yellow");
+			public static IBrush YellowBrush => FindBrush("InteractiveRebase.Yellow");
 		}
 
 		public static class RevisionTimeLine
 		{
-			public static Brush BackgroundBrush => FindBrush("Item.Static.Background");
+			public static IBrush BackgroundBrush => FindBrush("Item.Static.Background");
 
-			public static Brush LabelBrush => FindBrush("RevisionTimeLine.LabelBrush");
+			public static IBrush LabelBrush => FindBrush("RevisionTimeLine.LabelBrush");
 
-			public static Brush RevisionBrush => FindBrush("RevisionTimeLine.RevisionBrush");
+			public static IBrush RevisionBrush => FindBrush("RevisionTimeLine.RevisionBrush");
 
-			public static Brush TickBrush => FindBrush("RevisionTimeLine.TickBrush");
+			public static IBrush TickBrush => FindBrush("RevisionTimeLine.TickBrush");
 
-			public static Brush AlternationBrush => FindBrush("RevisionTimeLine.AlternationBrush");
+			public static IBrush AlternationBrush => FindBrush("RevisionTimeLine.AlternationBrush");
 		}
 
 		public static class RevisionList
 		{
-			public static Brush ItemSelectedInactiveBackgroundBrush => FindBrush("Item.SelectedInactive.Background");
+			public static IBrush ItemSelectedInactiveBackgroundBrush => FindBrush("Item.SelectedInactive.Background");
 
-			public static Brush ItemBackgroundBrush => FindBrush("ListBox.Static.Background");
+			public static IBrush ItemBackgroundBrush => FindBrush("ListBox.Static.Background");
 		}
 
-		public enum SystemColorType
-		{
-			Accent,
-			Accent1,
-			Accent2
-		}
+		// SystemColorType 已提取到 Services/IThemeService.cs，供 IThemeService 引用。
 
-		[Null]
-		private static ResourceDictionary _systemAccentBrushes;
+		public static IBrush SystemAccentBrush => FindBrush("SystemAccentBrush");
 
-		public static Brush SystemAccentBrush => FindBrush("SystemAccentBrush");
+		public static IBrush AccentBrush => FindBrush("AccentBrush");
 
-		public static Brush AccentBrush => FindBrush("AccentBrush");
+		public static IBrush BorderBrush => FindBrush("BorderBrush");
 
-		public static Brush BorderBrush => FindBrush("BorderBrush");
+		public static IBrush BackgroundBrush => FindBrush("BackgroundBrush");
 
-		public static Brush BackgroundBrush => FindBrush("BackgroundBrush");
+		public static IBrush LabelBrush => FindBrush("LabelBrush");
 
-		public static Brush LabelBrush => FindBrush("LabelBrush");
+		public static IBrush SecondaryLabelBrush => FindBrush("SecondaryLabelBrush");
 
-		public static Brush SecondaryLabelBrush => FindBrush("SecondaryLabelBrush");
+		public static IBrush MergeStatusLabelBrushRed => FindBrush("Merge.StatusLabel.Red");
 
-		public static Brush MergeStatusLabelBrushRed => FindBrush("Merge.StatusLabel.Red");
+		public static IBrush MergeStatusLabelBrushGreen => FindBrush("Merge.StatusLabel.Green");
 
-		public static Brush MergeStatusLabelBrushGreen => FindBrush("Merge.StatusLabel.Green");
+		public static IBrush HeaderMenuItemBrush => FindBrush("Menu.MenuItem.Disabled.Foreground");
 
-		public static Brush HeaderMenuItemBrush => FindBrush("Menu.MenuItem.Disabled.Foreground");
+		public static IBrush FilterPanelSecondaryBackground => FindBrush("FilterPanel.SecondaryBackground");
 
-		public static Brush FilterPanelSecondaryBackground => FindBrush("FilterPanel.SecondaryBackground");
+		public static IBrush FilterPanelSecondaryBorder => FindBrush("FilterPanel.SecondaryBorder");
 
-		public static Brush FilterPanelSecondaryBorder => FindBrush("FilterPanel.SecondaryBorder");
+		public static IBrush ForkPlusDialogBackgroundBrush => FindBrush("Window.Dialog.Background");
 
-		public static Brush ForkPlusDialogBackgroundBrush => FindBrush("Window.Dialog.Background");
+		public static IImage BranchFilterOnIcon => FindImage("BranchFilterOnIcon");
 
-		public static ImageSource BranchFilterOnIcon => FindImage("BranchFilterOnIcon");
+		public static IImage BranchFilterOnSelectedIcon => FindImage("BranchFilterOnSelectedIcon");
 
-		public static ImageSource BranchFilterOnSelectedIcon => FindImage("BranchFilterOnSelectedIcon");
+		public static IImage BranchFilterOffIcon => FindImage("BranchFilterOffIcon");
 
-		public static ImageSource BranchFilterOffIcon => FindImage("BranchFilterOffIcon");
+		public static IImage BranchFilterOffSelectedIcon => FindImage("BranchFilterOffSelectedIcon");
 
-		public static ImageSource BranchFilterOffSelectedIcon => FindImage("BranchFilterOffSelectedIcon");
+		public static IImage BranchIcon => FindImage("BranchIcon");
 
-		public static ImageSource BranchIcon => FindImage("BranchIcon");
+		public static IImage BranchSelectedIcon => FindImage("BranchSelectedIcon");
 
-		public static ImageSource BranchSelectedIcon => FindImage("BranchSelectedIcon");
+		public static IImage BranchWarningIcon => FindImage("BranchWarningIcon");
 
-		public static ImageSource BranchWarningIcon => FindImage("BranchWarningIcon");
+		public static IImage BranchWarningSelectedIcon => FindImage("BranchWarningSelectedIcon");
 
-		public static ImageSource BranchWarningSelectedIcon => FindImage("BranchWarningSelectedIcon");
+		public static IImage BranchPaleIcon => FindImage("BranchPaleIcon");
 
-		public static ImageSource BranchPaleIcon => FindImage("BranchPaleIcon");
+		public static IImage BranchPaleSelectedIcon => FindImage("BranchPaleSelectedIcon");
 
-		public static ImageSource BranchPaleSelectedIcon => FindImage("BranchPaleSelectedIcon");
+		public static IImage ConsoleIcon => FindImage("ConsoleIcon");
 
-		public static ImageSource ConsoleIcon => FindImage("ConsoleIcon");
+		public static IImage HideBranchOnIcon => FindImage("HideBranchOnIcon");
 
-		public static ImageSource HideBranchOnIcon => FindImage("HideBranchOnIcon");
+		public static IImage HideBranchOffIcon => FindImage("HideBranchOffIcon");
 
-		public static ImageSource HideBranchOffIcon => FindImage("HideBranchOffIcon");
+		public static IImage LockIcon => FindImage("LockIcon");
 
-		public static ImageSource LockIcon => FindImage("LockIcon");
+		public static IImage OpenInIcon => FindImage("OpenInIcon");
 
-		public static ImageSource OpenInIcon => FindImage("OpenInIcon");
+		public static IImage PinOnIcon => FindImage("PinOnIcon");
 
-		public static ImageSource PinOnIcon => FindImage("PinOnIcon");
+		public static IImage PinOffIcon => FindImage("PinOffIcon");
 
-		public static ImageSource PinOffIcon => FindImage("PinOffIcon");
+		public static IImage RevisionIcon => FindImage("RevisionIcon");
 
-		public static ImageSource RevisionIcon => FindImage("RevisionIcon");
+		public static IImage StashIcon => FindImage("SidebarStashIcon");
 
-		public static ImageSource StashIcon => FindImage("SidebarStashIcon");
+		public static IImage TagIcon => FindImage("TagIcon");
 
-		public static ImageSource TagIcon => FindImage("TagIcon");
+		public static IImage UnlockIcon => FindImage("UnlockIcon");
 
-		public static ImageSource UnlockIcon => FindImage("UnlockIcon");
+		public static IImage AzureIcon => FindImage("AzureIcon");
 
-		public static ImageSource AzureIcon => FindImage("AzureIcon");
+		public static IImage AzureOnIcon => FindImage("AzureOnIcon");
 
-		public static ImageSource AzureOnIcon => FindImage("AzureOnIcon");
+		public static IImage BitbucketIcon => FindImage("BitbucketIcon");
 
-		public static ImageSource BitbucketIcon => FindImage("BitbucketIcon");
+		public static IImage BitbucketOnIcon => FindImage("BitbucketOnIcon");
 
-		public static ImageSource BitbucketOnIcon => FindImage("BitbucketOnIcon");
+		public static IImage GitHubIcon => FindImage("GitHubIcon");
 
-		public static ImageSource GitHubIcon => FindImage("GitHubIcon");
+		public static IImage GitHubOnIcon => FindImage("GitHubOnIcon");
 
-		public static ImageSource GitHubOnIcon => FindImage("GitHubOnIcon");
+		public static IImage GitLabIcon => FindImage("GitLabIcon");
 
-		public static ImageSource GitLabIcon => FindImage("GitLabIcon");
+		public static IImage GitLabOnIcon => FindImage("GitLabOnIcon");
 
-		public static ImageSource GitLabOnIcon => FindImage("GitLabOnIcon");
+		public static IImage GiteaIcon => FindImage("GiteaIcon");
 
-		public static ImageSource GiteaIcon => FindImage("GiteaIcon");
+		public static IImage GiteaOnIcon => FindImage("GiteaOnIcon");
 
-		public static ImageSource GiteaOnIcon => FindImage("GiteaOnIcon");
+		public static IImage RemoteIcon => FindImage("GenericRemoteIcon");
 
-		public static ImageSource RemoteIcon => FindImage("GenericRemoteIcon");
+		public static IImage RemoteOnIcon => FindImage("GenericRemoteOnIcon");
 
-		public static ImageSource RemoteOnIcon => FindImage("GenericRemoteOnIcon");
+		public static IImage IssueIcon => FindImage("IssueIcon");
 
-		public static ImageSource IssueIcon => FindImage("IssueIcon");
+		public static IImage PullRequestIcon => FindImage("PullRequestIcon");
 
-		public static ImageSource PullRequestIcon => FindImage("PullRequestIcon");
+		public static IImage RepositoryIcon => FindImage("RepositoryIcon");
 
-		public static ImageSource RepositoryIcon => FindImage("RepositoryIcon");
+		public static IImage RepositoryWarningIcon => FindImage("RepositoryWarningIcon");
 
-		public static ImageSource RepositoryWarningIcon => FindImage("RepositoryWarningIcon");
+		public static IImage HorizontalMergerIcon => FindImage("HorizontalMergerIcon");
 
-		public static ImageSource HorizontalMergerIcon => FindImage("HorizontalMergerIcon");
+		public static IImage VerticalMergerIcon => FindImage("VerticalMergerIcon");
 
-		public static ImageSource VerticalMergerIcon => FindImage("VerticalMergerIcon");
+		public static IImage FolderIcon => FindImage("FolderIcon");
 
-		public static ImageSource FolderIcon => FindImage("FolderIcon");
-
-		public static ImageSource WarningIcon => FindImage("WarningIcon");
+		public static IImage WarningIcon => FindImage("WarningIcon");
 
 		public static Geometry AzureGeometry => FindGeometry("AzureGeometry");
 
@@ -214,9 +215,9 @@ namespace ForkPlus.UI
 
 		public static ScaleTransform LayoutScaleTransform => FindTransform("LayoutScaleTransform");
 
-		public static ImageSource FindImage(string resourceKey)
+		public static IImage FindImage(string resourceKey)
 		{
-			return FindResource(resourceKey) as ImageSource;
+			return FindResource(resourceKey) as IImage;
 		}
 
 		public static Geometry FindGeometry(string resourceKey)
@@ -224,9 +225,9 @@ namespace ForkPlus.UI
 			return FindResource(resourceKey) as Geometry;
 		}
 
-		public static Brush FindBrush(string resourceKey)
+		public static IBrush FindBrush(string resourceKey)
 		{
-			return FindResource(resourceKey) as Brush;
+			return FindResource(resourceKey) as IBrush;
 		}
 
 		public static Style FindStyle(string resourceKey)
@@ -241,37 +242,31 @@ namespace ForkPlus.UI
 
 		public static object FindResource(string resourceKey)
 		{
-			return Application.Current.TryFindResource(resourceKey);
+			// Avalonia: Application.Current.FindResource 在资源不存在时抛异常，
+			// 用 TryGetResource 安全查找（Avalonia 11 API）。
+			if (Application.Current?.Resources.TryGetResource(resourceKey, out object value) == true)
+			{
+				return value;
+			}
+			return null;
 		}
 
 		public static void SubscribeToSystemEvents()
 		{
-			if (App.OSVersion.Major >= new Version(10, 0).Major)
-			{
-				SystemThemeHelper.SubscribeToSystemEvents();
-			}
+			// 系统主题事件订阅转发到 ISystemThemeService
+			ServiceLocator.SystemTheme?.SubscribeToSystemEvents();
 		}
 
 		public static void Refresh()
 		{
 			Log.Info("Refresh Theme");
-			ResourceDictionary resourceDictionary = new ResourceDictionary();
-			resourceDictionary.Add("SystemAccentBrush", GetSystemBrush(SystemColorType.Accent2, AccentBrush));
-			Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
-			if (_systemAccentBrushes != null)
-			{
-				Application.Current.Resources.MergedDictionaries.Remove(_systemAccentBrushes);
-			}
-			_systemAccentBrushes = resourceDictionary;
+			// WPF MergedDictionaries.Add/Remove 强制刷新机制 → 转发到 IThemeService
+			ServiceLocator.ThemeService?.Refresh();
 		}
 
-		private static Brush GetSystemBrush(SystemColorType colorType, Brush fallback)
+		internal static IBrush GetSystemBrush(SystemColorType colorType, IBrush fallback)
 		{
-			if (App.OSVersion.Major < new Version(10, 0).Major)
-			{
-				return fallback;
-			}
-			return SystemThemeHelper.GetSystemBrush(colorType) ?? fallback;
+			return ServiceLocator.ThemeService?.GetSystemBrush(colorType, fallback) ?? fallback;
 		}
 	}
 }
