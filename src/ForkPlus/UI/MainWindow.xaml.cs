@@ -1,26 +1,28 @@
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Shell;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.QuickLaunch;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using NLog;
 using NLog.Targets;
-using ForkPlus.UI.Helpers;
-using ForkPlus.Services;
 
 namespace ForkPlus.UI
 {
@@ -57,7 +59,7 @@ namespace ForkPlus.UI
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		[Null]
-		public static MainWindow Instance => Application.Current.MainWindow as MainWindow;
+		public static MainWindow Instance => (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow as MainWindow;
 
 		[Null]
 		public static RepositoryUserControl ActiveRepositoryUserControl => Instance?.TabManager.ActiveRepositoryUserControl;
@@ -71,7 +73,7 @@ namespace ForkPlus.UI
 			bool flag = global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 			if (!flag)
 			{
-				Application.Current?.RefreshLayoutScaling();
+				ServiceLocator.WindowManager.RefreshLayoutScaling();
 				StartupTimeReporter.MainWindowCreated();
 				foreach (Target configuredNamedTarget in LogManager.Configuration.ConfiguredNamedTargets)
 				{
@@ -79,7 +81,8 @@ namespace ForkPlus.UI
 				}
 				base.Closed += delegate
 				{
-					Application.Current.Shutdown();
+					// Avalonia: Shutdown 由 IClassicDesktopStyleApplicationLifetime 提供（替代 WPF Application.Shutdown）
+					(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 				};
 			}
 			InitializeComponent();
@@ -92,8 +95,14 @@ namespace ForkPlus.UI
 			JobQueue = new JobQueue();
 			Toolbar.Initialize(this);
 			RefreshTitle();
-			base.SizeChanged += MainWindow_SizeChanged;
-			Application.Current.MainWindow = this;
+			// Avalonia: Window 没有 SizeChanged 事件，改用 Resized（尺寸）+ PositionChanged（位置）。
+			// 纯状态切换（最大化↔正常）由 OnWindowStateChanged 兜底保存。
+			base.Resized += (_, _) => SaveMainWindowLocationState();
+			base.PositionChanged += (_, _) => SaveMainWindowLocationState();
+			if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				desktop.MainWindow = this;
+			}
 			TabManager = new TabManager(TabControl);
 		}
 
@@ -116,11 +125,16 @@ namespace ForkPlus.UI
 		}
 		TabManager?.ActiveRepositoryManager?.ApplyLocalization();
 		TabManager?.ActiveGitMmUserControl?.ApplyLocalization();
-		foreach (Window window in Application.Current.Windows)
+		// TODO: Avalonia 迁移 - Application.Current.Windows 改用 desktop lifetime 的 Windows 列表
+		var windows = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows;
+		if (windows != null)
 		{
-			if (window != this && window is ILocalizableControl localizableControl)
+			foreach (Window window in windows)
 			{
-				localizableControl.ApplyLocalization();
+				if (window != this && window is ILocalizableControl localizableControl)
+				{
+					localizableControl.ApplyLocalization();
+				}
 			}
 		}
 	}
@@ -130,30 +144,37 @@ namespace ForkPlus.UI
 			_viewModel.PreventRefreshAfterChildDialogCloseWithReason(reason);
 		}
 
-		public override void OnApplyTemplate()
+		public override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			if (IsDesignMode)
 			{
 				return;
 			}
-			if (base.Template.TryFindName<Menu>("PART_MainMenu", this, out _templatePartMainMenu))
+			// TODO: Avalonia 迁移 - MainWindow.xaml 已移除 ControlTemplate，PART_MainMenu /
+			// Part_NotificationManagerToggleButton / NotificationManagerUserControl 不再存在于模板中
+			// （标题栏按钮由 CustomWindow 基类处理）。菜单与通知弹出 UI 需重新设计。
+			// 下面用 NameScope.Find 安全查找（找不到返回 null），保留原有逻辑结构。
+			_templatePartMainMenu = e.NameScope.Find(PartNameMainMenu) as Menu;
+			if (_templatePartMainMenu != null)
 			{
-				_templatePartMainMenu.SetValue(WindowChrome.IsHitTestVisibleInChromeProperty, true);
+				// WindowChrome.IsHitTestVisibleInChromeProperty 已移除（Avalonia 由 ExtendClientArea 处理标题栏命中测试）
 				_menuManager = new MainWindowMenuManager(_templatePartMainMenu);
 			}
-			if (base.Template.TryFindName<ToggleButton>("Part_NotificationManagerToggleButton", this, out _templatePartNotificationManagerToggleButton))
-		{
-			NotificationManager.Current.IsActiveChanged += delegate
+			_templatePartNotificationManagerToggleButton = e.NameScope.Find(PartNameNotificationManagerToggleButton) as ToggleButton;
+			if (_templatePartNotificationManagerToggleButton != null)
 			{
+				NotificationManager.Current.IsActiveChanged += delegate
+				{
+					_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
+				};
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-			};
-			_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
-		}
-		// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
-		// ApplyLocalization 时调用其 ApplyLocalization() 刷新 HeaderLabel.Text（Bug v2.1.2）。
-		base.Template.TryFindName<NotificationManagerUserControl>(PartNameNotificationManagerUserControl, this, out _templatePartNotificationManagerUserControl);
+				// TODO: NotificationManagerPopup 已移至基类或需重新设计
+				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+			}
+			// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
+			// ApplyLocalization 时调用其 ApplyLocalization() 刷新 HeaderLabel.Text（Bug v2.1.2）。
+			_templatePartNotificationManagerUserControl = e.NameScope.Find(PartNameNotificationManagerUserControl) as NotificationManagerUserControl;
 		}
 
 		public void RefreshTitle()
@@ -174,28 +195,10 @@ namespace ForkPlus.UI
 
 		public void ShowNotificationManager()
 		{
-			_templatePartNotificationManagerToggleButton.IsChecked = true;
-		}
-
-		protected override void OnSourceInitialized(EventArgs e)
-		{
-			base.OnSourceInitialized(e);
-			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
-			if (windowLocationState.WindowState == WindowState.Minimized)
+			// TODO: NotificationManagerPopup 已移至基类或需重新设计
+			if (_templatePartNotificationManagerToggleButton != null)
 			{
-				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, WindowState.Normal);
-			}
-			// 先同步 WPF 依赖属性到目标值，避免 WPF 在 Show 流程中用 XAML 默认值（Width=1000/Height=600）
-			// 覆盖 SetWindowPlacement 设置的 HWND 位置/尺寸，导致窗口位置/大小不恢复。
-			base.Left = windowLocationState.Left;
-			base.Top = windowLocationState.Top;
-			base.Width = windowLocationState.Width;
-			base.Height = windowLocationState.Height;
-			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
-			this.SetWindowLocationState(windowLocationState);
-			if (windowLocationState.WindowState == WindowState.Maximized)
-			{
-				base.WindowState = WindowState.Maximized;
+				_templatePartNotificationManagerToggleButton.IsChecked = true;
 			}
 		}
 
@@ -218,7 +221,7 @@ namespace ForkPlus.UI
 
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			if (e.Key == Key.O && Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt))
+			if (e.Key == Key.O && Keyboard.Modifiers.HasFlag(KeyModifiers.Control) && Keyboard.Modifiers.HasFlag(KeyModifiers.Alt))
 			{
 				e.Handled = true;
 				RepositoryUserControl activeRepositoryUserControl = TabManager.ActiveRepositoryUserControl;
@@ -246,7 +249,9 @@ namespace ForkPlus.UI
 		base.OnKeyDown(e);
 	}
 
-		private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+		// Avalonia: 尺寸/位置变化由 Resized/PositionChanged 事件回调本方法保存状态。
+		// TODO: Avalonia 迁移 - GetWindowLocationState 依赖 WindowLocationStateExtensions（Win32 WindowInteropHelper），需迁移到 Avalonia 平台句柄。
+		private void SaveMainWindowLocationState()
 		{
 			if (_viewModel.StartUpFinished)
 			{
@@ -254,33 +259,22 @@ namespace ForkPlus.UI
 			}
 		}
 
-		protected override void OnLocationChanged(EventArgs e)
+		protected override void OnWindowStateChanged(EventArgs e)
 		{
-			base.OnLocationChanged(e);
-			if (_viewModel.StartUpFinished)
-			{
-				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
-			}
-		}
-
-		protected override void OnStateChanged(EventArgs e)
-		{
-			base.OnStateChanged(e);
-			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 SizeChanged/LocationChanged，
+			base.OnWindowStateChanged(e);
+			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 Resized/PositionChanged，
 			// 此处补充保存，避免状态变更丢失。
-			if (_viewModel.StartUpFinished)
-			{
-				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
-			}
+			SaveMainWindowLocationState();
 		}
 
 		protected override void OnDrop(DragEventArgs e)
 		{
 			base.OnDrop(e);
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] array && array.Length != 0)
+			// TODO: Avalonia 迁移 - 文件拖放：e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
+			string[] array = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
+			if (array != null && array.Length != 0)
 			{
-				string[] array2 = array;
-				foreach (string path in array2)
+				foreach (string path in array)
 				{
 					TabManager.OpenRepository(path);
 				}
@@ -294,8 +288,27 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
+			// 原 WPF OnSourceInitialized 逻辑：恢复窗口位置/尺寸/状态。
+			// Avalonia 无 OnSourceInitialized（Win32 专属），移到 Loaded。
+			// TODO: Avalonia 迁移 - Win32 SetWindowPlacement 依赖 WindowLocationStateExtensions 的 WindowInteropHelper.Handle，
+			//       需迁移到 Avalonia 平台句柄；Loaded 时机较晚，窗口可能短暂以默认尺寸闪现。
+			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
+			if (windowLocationState.WindowState == WindowState.Minimized)
+			{
+				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, WindowState.Normal);
+			}
+			base.Left = windowLocationState.Left;
+			base.Top = windowLocationState.Top;
+			base.Width = windowLocationState.Width;
+			base.Height = windowLocationState.Height;
+			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
+			this.SetWindowLocationState(windowLocationState);
+			if (windowLocationState.WindowState == WindowState.Maximized)
+			{
+				base.WindowState = WindowState.Maximized;
+			}
 			StartupTimeReporter.MainWindowLoaded();
-			_menuManager.Initialize();
+			_menuManager?.Initialize();
 			InitializeKeyBindings();
 			TabManager.RestoreSession();
 			Toolbar.RefreshWorkspacesButton();
@@ -303,7 +316,8 @@ namespace ForkPlus.UI
 			RefreshRepositoriesStatus();
 			_updateCheckManager.Start();
 			App.CliArguments.RunCommand();
-			base.Dispatcher.Async(StartupTimeReporter.UIReady);
+			// Avalonia: Dispatcher.BeginInvoke → Dispatcher.Post
+			base.Dispatcher.Post(StartupTimeReporter.UIReady);
 		}
 
 		/// <summary>手动触发更新检测（由帮助菜单"Check for Updates..."调用）。</summary>
@@ -314,6 +328,11 @@ namespace ForkPlus.UI
 
 		private void InitializeKeyBindings()
 		{
+			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
+			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
+			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
+#if false
 			base.CommandBindings.Add(Commands.ActivateCommitView.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ActivateCommitView.Execute();
@@ -482,9 +501,10 @@ namespace ForkPlus.UI
 					Commands.Redo.Execute(activeRepoForRedo);
 				}
 			}));
+#endif
 		}
 
-		private void Window_Closing(object sender, CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
 			ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationStateX();
 			TabManager.SaveSession();
@@ -548,12 +568,18 @@ namespace ForkPlus.UI
 
 		private bool ChildDialogsAreNotAlreadyClosed()
 		{
-			foreach (object ownedWindow in base.OwnedWindows)
+			// TODO: Avalonia 迁移 - Window.OwnedWindows 在 Avalonia 中不存在，
+			// 改用 desktop lifetime 的 Windows 列表，按 Owner==this 过滤Owned 窗口。
+			var windows = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows;
+			if (windows != null)
 			{
-				if (ownedWindow is QuickLaunchWindow)
+				foreach (Window ownedWindow in windows)
 				{
-					_viewModel.PreventRefreshAfterChildDialogCloseReason = ownedWindow.GetType().Name;
-					return true;
+					if (ownedWindow.Owner == this && ownedWindow is QuickLaunchWindow)
+					{
+						_viewModel.PreventRefreshAfterChildDialogCloseReason = ownedWindow.GetType().Name;
+						return true;
+					}
 				}
 			}
 			return false;
