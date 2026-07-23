@@ -1,7 +1,7 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
@@ -45,7 +45,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		protected override FrameworkElement CreateAdornerContent(TextEditor textEditor)
+		protected override Control CreateAdornerContent(TextEditor textEditor)
 		{
 			StackPanel stackPanel = new StackPanel
 			{
@@ -55,14 +55,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			if (_textEditor.IsStaged)
 			{
 				_unStageButton = new FloatingButton(textEditor)
-				{
-					Content = PreferencesLocalization.Current("Unstage")
-				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton, "Click", delegate
-				{
-					this.UnStage?.Invoke(this, EventArgs.Empty);
-				});
-				stackPanel.Children.Add(_unStageButton);
+			{
+				Content = PreferencesLocalization.Current("Unstage")
+			};
+			_unStageButton.Click += delegate
+			{
+				this.UnStage?.Invoke(this, EventArgs.Empty);
+			};
+			stackPanel.Children.Add(_unStageButton);
 			}
 			else
 			{
@@ -75,14 +75,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					Content = PreferencesLocalization.Current("Discard..."),
 					Margin = new Thickness(0.0, 2.0, 2.0, 2.0)
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton, "Click", delegate
-				{
-					this.Stage?.Invoke(this, EventArgs.Empty);
-				});
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton, "Click", delegate
-				{
-					this.Discard?.Invoke(this, EventArgs.Empty);
-				});
+				_stageButton.Click += delegate
+			{
+				this.Stage?.Invoke(this, EventArgs.Empty);
+			};
+			_discardButton.Click += delegate
+			{
+				this.Discard?.Invoke(this, EventArgs.Empty);
+			};
 				stackPanel.Children.Add(_stageButton);
 				stackPanel.Children.Add(_discardButton);
 			}

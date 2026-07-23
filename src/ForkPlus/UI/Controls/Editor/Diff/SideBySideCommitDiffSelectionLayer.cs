@@ -1,7 +1,8 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
@@ -11,7 +12,7 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
-	public class SideBySideCommitDiffSelectionLayer : ChunkSelectionLayer<CommitDiffSelectedRange>, IWeakEventListener, ICommitDiffSelectionLayer
+	public class SideBySideCommitDiffSelectionLayer : ChunkSelectionLayer<CommitDiffSelectedRange>, ICommitDiffSelectionLayer
 	{
 		[Null]
 		private CommitDiffSelectedRange _activeSiblingChunk;
@@ -224,7 +225,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return null;
 		}
 
-		protected override FrameworkElement CreateAdornerContent(TextEditor textEditor)
+		protected override Control CreateAdornerContent(TextEditor textEditor)
 		{
 			StackPanel stackPanel = new StackPanel
 			{
@@ -237,10 +238,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				{
 					Content = PreferencesLocalization.Current("Unstage")
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton, "Click", delegate
+				_unStageButton.Click += delegate
 				{
 					this.UnStage?.Invoke(this, EventArgs.Empty);
-				});
+				};
 				stackPanel.Children.Add(_unStageButton);
 			}
 			else
@@ -254,14 +255,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					Content = PreferencesLocalization.Current("Discard..."),
 					Margin = new Thickness(0.0, 2.0, 2.0, 2.0)
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton, "Click", delegate
+				_stageButton.Click += delegate
 				{
 					this.Stage?.Invoke(this, EventArgs.Empty);
-				});
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton, "Click", delegate
+				};
+				_discardButton.Click += delegate
 				{
 					this.Discard?.Invoke(this, EventArgs.Empty);
-				});
+				};
 				stackPanel.Children.Add(_stageButton);
 				stackPanel.Children.Add(_discardButton);
 			}
