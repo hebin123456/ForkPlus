@@ -692,6 +692,33 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			RefreshCodeLines(_currentCodeLinesRef);
 		}
 
+		/// <summary>"重新统计（按排除输入）"按钮点击。读取排除输入框，按行拆分为 glob 列表后重跑。</summary>
+		private void CodeLinesRecountButton_Click(object sender, RoutedEventArgs e)
+		{
+			RefreshCodeLines(_currentCodeLinesRef);
+		}
+
+		/// <summary>从排除输入框读取非空行作为 glob pattern 列表；全空则返回 null。</summary>
+		[Null]
+		private List<string> ReadExcludePatterns()
+		{
+			string text = CodeLinesExcludeBox?.Text;
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				return null;
+			}
+			var patterns = new List<string>();
+			foreach (string line in text.Split(Consts.Chars.NewLine))
+			{
+				string trimmed = line.Trim();
+				if (!string.IsNullOrEmpty(trimmed))
+				{
+					patterns.Add(trimmed);
+				}
+			}
+			return patterns.Count == 0 ? null : patterns;
+		}
+
 		/// <summary>异步跑 tokei 拿代码行数统计，更新饼图 + 列表 + 摘要。
 		/// 走 JobQueue 串行化，避免切换 ref 时并发 spawn。</summary>
 		private void RefreshCodeLines([Null] string refSpec)
@@ -706,13 +733,16 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			CodeLinesSummary.Text = Translate("Counting code lines...") + (string.IsNullOrEmpty(refSpec) ? "" : " (" + refSpec + ")");
 			CodeLinesRefreshButton.IsEnabled = false;
 			CodeLinesRefButton.IsEnabled = false;
+			CodeLinesRecountButton.IsEnabled = false;
 
 			// 复制一份避免闭包捕获到后续变化的 refSpec
 			string refSpecCopy = refSpec;
+			// 复制一份当前排除 patterns（按钮点击瞬间快照，后续输入框变化不影响本次查询）
+			List<string> excludePatterns = ReadExcludePatterns();
 			GitModule gitModule = _gitModule;
 			_codeLinesJobQueue.Add("CodeLinesStats", delegate (JobMonitor monitor)
 			{
-				var result = new GetCodeLineStatsGitCommand().Execute(gitModule, refSpecCopy, monitor);
+				var result = new GetCodeLineStatsGitCommand().Execute(gitModule, refSpecCopy, monitor, excludePatterns);
 				Dispatcher.Async(delegate
 				{
 					// 用户可能在此期间又触发了新查询，校验是否还是当前选中的 ref
@@ -722,6 +752,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 					}
 					CodeLinesRefreshButton.IsEnabled = true;
 					CodeLinesRefButton.IsEnabled = true;
+					CodeLinesRecountButton.IsEnabled = true;
 					if (!result.Succeeded)
 					{
 						ShowCodeLinesError(result.Error?.FriendlyDescription ?? "Failed");
