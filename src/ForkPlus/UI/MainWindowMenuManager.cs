@@ -251,10 +251,74 @@ namespace ForkPlus.UI
 			yield return commands.SelectPreviousTab.CreateMenuItem(delegate { commands.SelectPreviousTab.Execute(); });
 			yield return commands.SelectNextTab.CreateMenuItem(delegate { commands.SelectNextTab.Execute(); });
 			yield return new Separator();
-			yield return commands.SwitchApplicationTheme.CreateMenuItem(delegate { commands.SwitchApplicationTheme.Execute(); });
+			// v3.6.4：原"切换主题"单项只能在 Light/Dark 间 toggle，现改成与工具栏 Appearance 下拉
+			// 一致的二级菜单——非纯色主题直列、"Solid Colors"三级菜单装纯色主题、"Custom Colors..."
+			// 单项打开自定义颜色对话框。用户在菜单栏也能选到全部 22 套预设皮肤 + 自定义颜色。
+			yield return CreateThemeMenuItem();
 			yield return new Separator();
 			yield return commands.IncreaseLayoutScale.CreateMenuItem(delegate { commands.IncreaseLayoutScale.Execute(); });
 			yield return commands.DecreaseLayoutScale.CreateMenuItem(delegate { commands.DecreaseLayoutScale.Execute(); });
+		}
+
+		/// <summary>构建"切换主题"二级菜单，结构与工具栏 Appearance 下拉一致。</summary>
+		private static MenuItem CreateThemeMenuItem()
+		{
+			MainWindowCommands commands = MainWindow.Commands;
+			string language = ForkPlusSettings.Default.UiLanguage;
+			// 启用自定义颜色时所有主题项都不勾选（互斥语义），勾选自定义颜色项。
+			bool useCustom = ForkPlusSettings.Default.UseCustomColors;
+			ThemeType currentTheme = ForkPlusSettings.Default.Theme;
+
+			MenuItem themeParent = new MenuItem
+			{
+				Header = PreferencesLocalization.Translate("Switch Theme", language)
+			};
+			// 非纯色主题直接列在二级菜单
+			foreach (ThemeType theme in ThemeTypeExtensions.AllThemes)
+			{
+				if (theme.IsSolidColor()) continue;
+				ThemeType themeCopy = theme;
+				MenuItem item = commands.SwitchApplicationTheme.CreateMenuItem(
+					PreferencesLocalization.Translate(theme.SkinName(), language), delegate
+				{
+					commands.SwitchApplicationTheme.Execute(themeCopy);
+				});
+				item.IsChecked = !useCustom && currentTheme == theme;
+				item.IsCheckable = true;
+				themeParent.Items.Add(item);
+			}
+			// "Solid Colors"三级菜单：纯色主题按 SolidColorThemes 顺序（彩虹色）排列
+			MenuItem solidColorsParent = new MenuItem
+			{
+				Header = PreferencesLocalization.Translate("Solid Colors", language)
+			};
+			foreach (ThemeType solidTheme in ThemeTypeExtensions.SolidColorThemes)
+			{
+				ThemeType solidCopy = solidTheme;
+				MenuItem subItem = commands.SwitchApplicationTheme.CreateMenuItem(
+					PreferencesLocalization.Translate(solidTheme.SkinName(), language), delegate
+				{
+					commands.SwitchApplicationTheme.Execute(solidCopy);
+				});
+				subItem.IsChecked = !useCustom && currentTheme == solidTheme;
+				subItem.IsCheckable = true;
+				solidColorsParent.Items.Add(subItem);
+			}
+			themeParent.Items.Add(solidColorsParent);
+			// "Custom Colors..."单项：点击打开编辑对话框，IsChecked 反映是否已启用自定义颜色覆盖
+			MenuItem customColorsItem = new MenuItem
+			{
+				Header = PreferencesLocalization.Translate("Custom Colors...", language),
+				IsCheckable = true,
+				IsChecked = useCustom
+			};
+			customColorsItem.Click += delegate
+			{
+				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
+				dialog.ShowDialog();
+			};
+			themeParent.Items.Add(customColorsItem);
+			return themeParent;
 		}
 
 		private static IEnumerable<Control> CreateDevelopMenuItems()
