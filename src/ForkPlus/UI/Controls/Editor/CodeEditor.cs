@@ -1,5 +1,4 @@
 using System.Windows.Input;
-using System.Windows.Media;
 using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
@@ -23,13 +22,12 @@ namespace ForkPlus.UI.Controls.Editor
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// TODO(4.7-a): 验证 Avalonia.AvalonEdit TextArea 是否有 SelectionBorder(Pen)/SelectionCornerRadius；
+			// WPF 版设 SelectionBorder=null + SelectionCornerRadius=0 以扁平化选区。Avalonia 版可能用 SelectionBrush/SelectionCornerRadius。
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());
-			for (int i = 0; i < base.TextArea.TextView.Layers.Count; i++)
-			{
-				RenderOptions.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
-			}
+			// 阶段 4 里程碑 4.7-a：移除 RenderOptions.SetClearTypeHint（WPF-only，Avalonia 无等价物，文本渲染由平台决定）。
 		}
 
 		public override void OnApplyTemplate()
