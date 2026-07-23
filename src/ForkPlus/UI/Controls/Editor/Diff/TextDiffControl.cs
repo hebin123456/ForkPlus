@@ -1,5 +1,5 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
@@ -56,7 +56,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public event ContextMenuEventHandler EditorContextMenuOpening;
+		public event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening;
 
 		public void SetDiff([Null] ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location)
 		{
@@ -69,22 +69,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public TextDiffControl(FileDiffControlTarget target)
 		{
 			_target = target;
-			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current, "DiffLayoutModeChanged", delegate
-			{
-				RefreshDiffLayoutMode();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowHiddenSymbolsChanged", delegate
-			{
-				RefreshDiffShowHiddenSymbols();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffWordWrapChanged", delegate
-			{
-				RefreshDiffWordWrap();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
-				RefreshDiffFontSize();
-			});
+			// 阶段 4 里程碑 4.7-a：WeakEventManager → 直接事件订阅（Avalonia 无 WeakEventManager）。
+			// NotificationCenter 是单例，直接订阅会导致 TextDiffControl 不被 GC 回收。
+			// 阶段 6 改用 Avalonia WeakEvent 或 IDisposable 模式。
+			NotificationCenter.Current.DiffLayoutModeChanged += delegate { RefreshDiffLayoutMode(); };
+			NotificationCenter.Current.DiffShowHiddenSymbolsChanged += delegate { RefreshDiffShowHiddenSymbols(); };
+			NotificationCenter.Current.DiffWordWrapChanged += delegate { RefreshDiffWordWrap(); };
+			NotificationCenter.Current.CodeEditorFontSizeChanged += delegate { RefreshDiffFontSize(); };
 			RefreshDiffLayoutMode();
 			RefreshDiffWordWrap();
 			RefreshDiffShowHiddenSymbols();
@@ -131,10 +122,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
-			if (!VisualTreeAttachmentHelper.TryAddChild(this, _child as Grid, GetType().Name + ".Child"))
-			{
-				_child = null;
-			}
+			// TODO(4.7-a): VisualTreeAttachmentHelper.TryAddChild 会先从旧 parent detach 再 add。
+			// Avalonia Panel.Children.Add 在已有 parent 时抛异常，暂直接 Add。
+			base.Children.Add(_child as Grid);
 		}
 
 		protected void RaiseEditorContextMenuOpening(object sender, ContextMenuEventArgs e)

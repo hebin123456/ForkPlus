@@ -1,4 +1,5 @@
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 
@@ -19,7 +20,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 
-		event ContextMenuEventHandler EditorContextMenuOpening;
+		event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening;
 
 		void SetDiff([Null] ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location);
 

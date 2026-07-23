@@ -1,5 +1,6 @@
 using System;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Helpers;
@@ -122,7 +123,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public event ContextMenuEventHandler EditorContextMenuOpening
+		public event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening
 		{
 			add
 			{
