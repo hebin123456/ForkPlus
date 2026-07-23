@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
