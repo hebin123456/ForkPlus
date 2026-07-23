@@ -21,31 +21,23 @@ namespace ForkPlus.UI.Dialogs
 		[Null]
 		private readonly Remote _remoteToSelect;
 
+		// 阶段 3：承接 remote 选择校验与命令预览（与 PushTagWindow 同构）。
+		private readonly PushMultipleTagsWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (RemotesComboBox.SelectedItem is Remote)
-				{
-					return base.IsSubmitAllowed;
-				}
-				return false;
+				// VM 只判 remote 已选；基类提交前置条件由 View 合并。
+				_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+				return _viewModel.IsRemoteSelected && base.IsSubmitAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			Remote remote = RemotesComboBox.SelectedItem as Remote;
-			if (remote == null)
-			{
-				return null;
-			}
-			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push", remote.Name };
-			foreach (Tag tag in _tags)
-			{
-				parts.Add(tag.FullReference);
-			}
-			return string.Join(" ", parts);
+			_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+			return _viewModel.CommandPreview;
 		}
 
 		public PushMultipleTagsWindow(RepositoryUserControl repositoryUserControl, Tag[] tags, Remote remote)
@@ -53,6 +45,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_tags = tags;
 			_remoteToSelect = remote;
+			_viewModel = new PushMultipleTagsWindowViewModel(tags);
 			InitializeComponent();
 			base.DialogTitle = Translate("Push");
 			base.DialogDescription = string.Format(Translate("Push {0} tags to remote repository"), _tags.Length);

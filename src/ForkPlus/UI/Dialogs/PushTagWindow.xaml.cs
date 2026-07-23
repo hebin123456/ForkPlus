@@ -22,27 +22,23 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Tag _tag;
 
+		// 阶段 3：承接 remote 选择校验与命令预览。OnSubmit 的 JobQueue/Dispatcher 耦合暂留 View。
+		private readonly PushTagWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (RemotesComboBox.SelectedItem is Remote)
-				{
-					return base.IsSubmitAllowed;
-				}
-				return false;
+				// VM 只判 remote 已选；基类自己的提交前置条件（base.IsSubmitAllowed）由 View 合并。
+				_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+				return _viewModel.IsRemoteSelected && base.IsSubmitAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			Remote remote = RemotesComboBox.SelectedItem as Remote;
-			if (remote == null)
-			{
-				return null;
-			}
-			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push", remote.Name, _tag.FullReference };
-			return string.Join(" ", parts);
+			_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+			return _viewModel.CommandPreview;
 		}
 
 		public PushTagWindow(RepositoryUserControl repositoryUserControl, Tag tag, [Null] Remote remote)
@@ -50,6 +46,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_remoteToSelect = remote;
 			_tag = tag;
+			_viewModel = new PushTagWindowViewModel(tag);
 			InitializeComponent();
 			base.DialogTitle = Translate("Push Tag");
 			base.DialogDescription = Translate("Push tag to remote repository");
