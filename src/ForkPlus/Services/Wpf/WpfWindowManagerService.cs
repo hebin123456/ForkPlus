@@ -82,6 +82,35 @@ namespace ForkPlus.Services.Wpf
 			MainWindow.Instance?.TabManager?.ActiveRepositoryManager?.Refresh();
 		}
 
+		// ===== 阶段 3 新增：活动仓库视图操作 =====
+		// 全部转发到 MainWindow.Instance.TabManager.ActiveRepositoryUserControl，
+		// 与 ApplicationExtensions.ActiveRepositoryUserControl() 同源；逐方法 null-safe。
+
+		public void InvalidateAndRefreshActiveRepositoryView(SubDomain domain)
+		{
+			MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.InvalidateAndRefresh(domain);
+		}
+
+		public void ActivateRevisionViewOnActiveRepository()
+		{
+			MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.ActivateRevisionView();
+		}
+
+		public void ShowRevisionDetailsOnActiveRepository(RevisionDiffTarget target)
+		{
+			MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.ShowRevisionDetails(target);
+		}
+
+		public TempFileManager GetActiveRepositoryTempFileManager()
+		{
+			return MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.TempFileManager;
+		}
+
+		public GitModule GetActiveRepositoryGitModule()
+		{
+			return MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.GitModule;
+		}
+
 		// ===== 阶段 2 新增：应用级操作 =====
 
 		public void RefreshLayoutScaling()

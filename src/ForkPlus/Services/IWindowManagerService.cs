@@ -40,6 +40,25 @@ namespace ForkPlus.Services
 		/// <summary>刷新当前活动的仓库管理器（RepositoryManager 视图）。</summary>
 		void RefreshActiveRepositoryManager();
 
+		// ===== 阶段 3 新增：活动仓库视图操作（替换 Commands 对 Application.Current.ActiveRepositoryUserControl() 的直接访问）=====
+		// 这些方法仅引用领域/根层类型（SubDomain / RevisionDiffTarget / GitModule / TempFileManager），
+		// 不引入 UI 层类型，故可安全放入本接口而不破坏 Services → UI 的分层。
+
+		/// <summary>使活动仓库视图失效并按指定子域刷新（替换 <c>ActiveRepositoryUserControl().InvalidateAndRefresh(domain)</c>）。</summary>
+		void InvalidateAndRefreshActiveRepositoryView(SubDomain domain);
+
+		/// <summary>在活动仓库视图中激活 Revision 视图（替换 <c>ActiveRepositoryUserControl().ActivateRevisionView()</c>）。</summary>
+		void ActivateRevisionViewOnActiveRepository();
+
+		/// <summary>在活动仓库视图中展示指定 revision diff 详情（替换 <c>ActiveRepositoryUserControl().ShowRevisionDetails(target)</c>）。</summary>
+		void ShowRevisionDetailsOnActiveRepository(RevisionDiffTarget target);
+
+		/// <summary>获取活动仓库视图的临时文件管理器（替换 <c>ActiveRepositoryUserControl().TempFileManager</c>）。无活动仓库时返回 null。</summary>
+		TempFileManager GetActiveRepositoryTempFileManager();
+
+		/// <summary>获取活动仓库视图的 GitModule（替换 <c>ActiveRepositoryUserControl().GitModule</c>）。无活动仓库时返回 null。</summary>
+		GitModule GetActiveRepositoryGitModule();
+
 		// ===== 阶段 2 新增：应用级操作 =====
 
 		/// <summary>重新计算并应用布局缩放（替换 <c>Application.Current.RefreshLayoutScaling()</c>）。</summary>

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Commands
 		{
 			gitModule.Settings.PinnedReferences = GetValidPinnedReferences(gitModule.Settings.PinnedReferences, allReferences, reference.FullReference);
 			gitModule.Settings.Save();
-			Application.Current.ActiveRepositoryUserControl().InvalidateAndRefresh(SubDomain.ReferenceSettings);
+			ServiceLocator.WindowManager.InvalidateAndRefreshActiveRepositoryView(SubDomain.ReferenceSettings);
 		}
 
 		private static string[] GetValidPinnedReferences(string[] pinnedReferences, Reference[] allReferences, string exceptingRef)

@@ -1,6 +1,6 @@
 # 阶段 3：ViewModel 抽取
 
-> 状态：**待开始**
+> 状态：**进行中**（阶段 2→3 过渡里程碑已完成）
 > 性质：最大工作量，重构分水岭
 > 前置：阶段 0/1/2 完成（抽象层就位、领域层干净、Commands 去 WPF）
 
@@ -11,6 +11,62 @@
 ## 验收标准
 
 随便挑一个 ViewModel，把 `using System.Windows.*` 全删掉能编译通过。
+
+---
+
+## 里程碑 3.0：清除 Commands 层残留的 `Application.Current.ActiveRepositoryUserControl()`（阶段 2→3 过渡）
+
+> 状态：**已完成**（待 CI 验证）
+
+阶段 2 验收时遗留 14 处 `Application.Current.ActiveRepositoryUserControl()` 直访，标记为"留待阶段 3"。本里程碑在不抽取 VM 的前提下，先把这些直访收口到服务抽象，让 Commands 层彻底不依赖 `Application.Current`。
+
+### 方案：扩展 `IWindowManagerService`（+5 活动仓库视图操作）
+
+关键约束：新接口方法的参数/返回类型只能引用**领域/根层类型**（`SubDomain` / `RevisionDiffTarget` / `GitModule` / `TempFileManager`），不能引用 UI 层类型（`RevisionSelector` / `RepositoryViewMode` 等），否则会形成 Services → UI 的逆向依赖。
+
+新增 5 方法（[IWindowManagerService.cs](file:///workspace/src/ForkPlus/Services/IWindowManagerService.cs)）：
+
+| 方法 | 替换的直访 | 用的类型 |
+|---|---|---|
+| `InvalidateAndRefreshActiveRepositoryView(SubDomain)` | `ActiveRepositoryUserControl().InvalidateAndRefresh(domain)` | `SubDomain`（Git） |
+| `ActivateRevisionViewOnActiveRepository()` | `ActiveRepositoryUserControl().ActivateRevisionView()` | 无 |
+| `ShowRevisionDetailsOnActiveRepository(RevisionDiffTarget)` | `ActiveRepositoryUserControl().ShowRevisionDetails(target)` | `RevisionDiffTarget`（Git） |
+| `GetActiveRepositoryTempFileManager()` | `ActiveRepositoryUserControl().TempFileManager` | `TempFileManager`（根） |
+| `GetActiveRepositoryGitModule()` | `ActiveRepositoryUserControl().GitModule` | `GitModule`（Git） |
+
+WPF 实现（[WpfWindowManagerService.cs](file:///workspace/src/ForkPlus/Services/Wpf/WpfWindowManagerService.cs)）全部转发到 `MainWindow.Instance?.TabManager?.ActiveRepositoryUserControl?.X()`，与 `ApplicationExtensions.ActiveRepositoryUserControl()` 同源，逐方法 null-safe。
+
+### 已迁移的 9 个 Command（14 → 5）
+
+1. [UnpinReferenceCommand](file:///workspace/src/ForkPlus/UI/Commands/UnpinReferenceCommand.cs) — `InvalidateAndRefresh(SubDomain.ReferenceSettings)`
+2. [PinReferenceCommand](file:///workspace/src/ForkPlus/UI/Commands/PinReferenceCommand.cs) — `InvalidateAndRefresh(SubDomain.ReferenceSettings)`
+3. [ShowPreferencesWindowCommand](file:///workspace/src/ForkPlus/UI/Commands/ShowPreferencesWindowCommand.cs) — `InvalidateAndRefresh(SubDomain.Revisions)`（注：同文件 `MainWindow.Toolbar.RefreshUndoRedoVisibility()` 是另一处 View 耦合，留待 MainWindowViewModel）
+4. [ShowRepositorySettingsWindowCommand](file:///workspace/src/ForkPlus/UI/Commands/ShowRepositorySettingsWindowCommand.cs) — `InvalidateAndRefresh(SubDomain.All)`
+5. [RefreshRepositoryDataCommand](file:///workspace/src/ForkPlus/UI/Commands/RefreshRepositoryDataCommand.cs) — `InvalidateAndRefresh(SubDomain.All)`
+6. [SwitchRevisionListOrientationCommand](file:///workspace/src/ForkPlus/UI/Commands/SwitchRevisionListOrientationCommand.cs) — `ActivateRevisionView()`
+7. [CompareRevisionToWorkingDirectoryCommand](file:///workspace/src/ForkPlus/UI/Commands/CompareRevisionToWorkingDirectoryCommand.cs) — `ShowRevisionDetails(RevisionDiffTarget)`
+8. [OpenFileInDefaultEditorCommand](file:///workspace/src/ForkPlus/UI/Commands/OpenFileInDefaultEditorCommand.cs) — `TempFileManager`
+9. [ToggleHideTagsCommand](file:///workspace/src/ForkPlus/UI/Commands/ToggleHideTagsCommand.cs) — `GitModule` + `InvalidateAndRefresh`（合并迁移）
+
+### 剩余 5 处（需具体 `RepositoryUserControl` 或 UI 层类型，留待 VM 抽取）
+
+这些命令把 RUC 当作**参数**传给别的构造器/方法，或访问 UI 层类型（`RevisionSelector` / `RepositoryViewMode`）/深层 View 成员，无法用领域类型抽象干净，必须等对应 VM 抽出后用 VM 注入替换：
+
+| 文件 | 耦合点 | 为什么不能现在抽象 |
+|---|---|---|
+| [ShowCreateTagWindowCommand](file:///workspace/src/ForkPlus/UI/Commands/ShowCreateTagWindowCommand.cs) | `InvalidateAndRefresh(SubDomain, new RevisionSelector.Sha(...))` | `RevisionSelector` 是 UI 层类型；且方法签名本就接收 `RepositoryUserControl` 参数 |
+| [ShowRevisionInSeparateWindowCommand](file:///workspace/src/ForkPlus/UI/Commands/ShowRevisionInSeparateWindowCommand.cs) | `new RevisionDetailsWindow(RUC, ...)` | 把 RUC 作为 owner 传给 Window 构造器 |
+| [ToggleReferenceFilterCommand](file:///workspace/src/ForkPlus/UI/Commands/ToggleReferenceFilterCommand.cs) | `RepositoryUserControl.Commands.UpdateReferenceFilter.ToggleActiveBranchFilter(RUC)` | 把 RUC 作为方法参数 |
+| [ToggleShowReflogInRevisionListCommand](file:///workspace/src/ForkPlus/UI/Commands/ToggleShowReflogInRevisionListCommand.cs) | `ViewMode` / `Content.CommitUserControl.ToggleShowIgnoredFiles()` / `ShowReflogInRevisionList` setter | 深层 View 成员访问，`RepositoryViewMode` 是 UI 层类型 |
+| [QuickLaunchWindow](file:///workspace/src/ForkPlus/UI/QuickLaunch/QuickLaunchWindow.xaml.cs) | `RepositoryData` / `GitModule` / `Command.Converter(args, RUC)` | 把 RUC 作为命令执行上下文，深度耦合 |
+
+> 这 5 处的本质：RUC 同时承担"数据源 + 命令执行上下文 + Window owner"三重角色。只有把 RUC 拆出 `RepositoryUserControlViewModel`（本阶段核心任务），用 VM 替换这些传参，才能彻底消除。
+
+### 验收
+
+Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访：**14 → 5**（剩余 5 处均标注了 VM 抽取后的替换路径）。
+
+---
 
 ## 待办清单（按耦合严重程度排序）
 

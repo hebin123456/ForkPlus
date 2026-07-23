@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
-using ForkPlus.UI.UserControls;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -15,16 +15,12 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			RepositoryUserControl repositoryUserControl = Application.Current.ActiveRepositoryUserControl();
-			if (repositoryUserControl != null)
+			GitModule gitModule = ServiceLocator.WindowManager.GetActiveRepositoryGitModule();
+			if (gitModule != null)
 			{
-				GitModule gitModule = repositoryUserControl.GitModule;
-				if (gitModule != null)
-				{
-					gitModule.Settings.HideTags = !gitModule.Settings.HideTags;
-					gitModule.Settings.Save();
-					repositoryUserControl.InvalidateAndRefresh(SubDomain.References);
-				}
+				gitModule.Settings.HideTags = !gitModule.Settings.HideTags;
+				gitModule.Settings.Save();
+				ServiceLocator.WindowManager.InvalidateAndRefreshActiveRepositoryView(SubDomain.References);
 			}
 		}
 	}

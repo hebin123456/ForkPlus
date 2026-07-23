@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 
@@ -34,7 +35,7 @@ namespace ForkPlus.UI.Commands
 		public void Execute(GitModule gitModule, RepositoryData repositoryData)
 		{
 			new RepositorySettingsWindow(gitModule, repositoryData).ShowDialog();
-			Application.Current.ActiveRepositoryUserControl()?.InvalidateAndRefresh(SubDomain.All);
+			ServiceLocator.WindowManager.InvalidateAndRefreshActiveRepositoryView(SubDomain.All);
 		}
 	}
 }

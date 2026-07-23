@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -15,7 +16,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			Application.Current.ActiveRepositoryUserControl()?.InvalidateAndRefresh(SubDomain.All);
+			ServiceLocator.WindowManager.InvalidateAndRefreshActiveRepositoryView(SubDomain.All);
 		}
 	}
 }

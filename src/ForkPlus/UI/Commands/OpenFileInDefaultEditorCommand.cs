@@ -90,12 +90,12 @@ namespace ForkPlus.UI.Commands
 			}
 		}
 
-		// 阶段 2 遗留：TempFileManager 通过 Application.Current.ActiveRepositoryUserControl() 获取，
-		// 属 View 类型耦合，留待阶段 3（ViewModel 抽取）后改为通过 ViewModel/服务获取。
+		// 阶段 3：TempFileManager 改由 IWindowManagerService.GetActiveRepositoryTempFileManager() 提供，
+		// 不再直访 Application.Current.ActiveRepositoryUserControl()。
 		[Null]
 		private string SaveToTempDestination(GitModule gitModule, string sha, ChangedFile changedFile)
 		{
-			TempFileManager tempFileManager = Application.Current.ActiveRepositoryUserControl()?.TempFileManager;
+			TempFileManager tempFileManager = ServiceLocator.WindowManager.GetActiveRepositoryTempFileManager();
 			if (tempFileManager == null)
 			{
 				return null;

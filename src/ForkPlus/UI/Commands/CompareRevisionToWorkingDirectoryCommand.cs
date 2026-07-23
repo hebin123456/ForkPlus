@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -14,7 +15,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(Sha sha)
 		{
-			Application.Current.ActiveRepositoryUserControl()?.ShowRevisionDetails(new RevisionDiffTarget.WorkingDirectory(sha));
+			ServiceLocator.WindowManager.ShowRevisionDetailsOnActiveRepository(new RevisionDiffTarget.WorkingDirectory(sha));
 		}
 	}
 }

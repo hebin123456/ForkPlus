@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Commands
@@ -22,7 +23,7 @@ namespace ForkPlus.UI.Commands
 		{
 			ForkPlusSettings.Default.RevisionListOrientation = newLayout;
 			NotificationCenter.Current.RaiseRevisionListOrientatioChanged(this, newLayout);
-			Application.Current.ActiveRepositoryUserControl()?.ActivateRevisionView();
+			ServiceLocator.WindowManager.ActivateRevisionViewOnActiveRepository();
 		}
 	}
 }
