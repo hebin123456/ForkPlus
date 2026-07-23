@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -47,7 +48,9 @@ namespace ForkPlus.Git.Commands
 		/// <param name="gitModule">仓库模块。</param>
 		/// <param name="refSpec">目标 ref。null/空表示工作区 snapshot；否则是分支名/tag/sha。</param>
 		/// <param name="monitor">可选的 JobMonitor（用于进度/取消）。</param>
-		public GitCommandResult<CodeLineStats> Execute(GitModule gitModule, [Null] string refSpec, [Null] JobMonitor monitor = null)
+		/// <param name="excludePatterns">临时排除的 glob 模式列表（透传给 tokei -e，语义同 .gitignore）。
+		/// null 或空则不排除任何内容。不持久化，由 UI 调用方按需传入。</param>
+		public GitCommandResult<CodeLineStats> Execute(GitModule gitModule, [Null] string refSpec, [Null] JobMonitor monitor = null, [Null] IList<string> excludePatterns = null)
 		{
 			string tokeiExe = ResolveTokeiPath();
 			if (tokeiExe == null || !File.Exists(tokeiExe))
@@ -66,7 +69,7 @@ namespace ForkPlus.Git.Commands
 				// 当 refSpec 就是当前工作区检出的分支/tag/sha 时也走此路径——
 				// git archive 当前 HEAD 检出的 ref 会失败（worktree 占用），直接统计工作区即可。
 				monitor?.Update(0, "Running tokei on workspace...");
-				return RunTokei(tokeiExe, gitModule.Path, null, refSpec);
+				return RunTokei(tokeiExe, gitModule.Path, null, refSpec, excludePatterns);
 			}
 
 			// 历史 ref 模式：git archive <refSpec> 导出 tar 到临时目录，跑 tokei，最后清理
@@ -88,7 +91,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError("canceled"));
 				}
 				monitor?.Update(0.5, "Running tokei on '" + refSpec + "'...");
-				return RunTokei(tokeiExe, tempDir, null, refSpec);
+				return RunTokei(tokeiExe, tempDir, null, refSpec, excludePatterns);
 			}
 			finally
 			{
@@ -99,16 +102,18 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		/// <summary>spawn tokei.exe --output json --path &lt;dir&gt;，解析 JSON 返回。</summary>
-		private GitCommandResult<CodeLineStats> RunTokei(string tokeiExe, string workingDir, [Null] byte[] stdin, [Null] string refSpec)
+		/// <summary>spawn tokei.exe --output json，解析 JSON 返回。</summary>
+		/// <param name="excludePatterns">透传 tokei -e 的 glob 排除模式；null/空则不追加 -e。</param>
+		private GitCommandResult<CodeLineStats> RunTokei(string tokeiExe, string workingDir, [Null] byte[] stdin, [Null] string refSpec, [Null] IList<string> excludePatterns)
 		{
 			Process process = new Process();
 			try
 			{
+				// 用 ArgumentList 逐个追加参数，避免手动拼接时 glob 里的空格/引号被 shell 解析出错。
+				// .NET Core 3+ / .NET 10 支持 ProcessStartInfo.ArgumentList。
 				process.StartInfo = new ProcessStartInfo
 				{
 					FileName = tokeiExe,
-					Arguments = "--output json",
 					WorkingDirectory = workingDir,
 					UseShellExecute = false,
 					RedirectStandardOutput = true,
@@ -116,6 +121,21 @@ namespace ForkPlus.Git.Commands
 					CreateNoWindow = true,
 					StandardOutputEncoding = System.Text.Encoding.UTF8
 				};
+				process.StartInfo.ArgumentList.Add("--output");
+				process.StartInfo.ArgumentList.Add("json");
+				if (excludePatterns != null)
+				{
+					foreach (string raw in excludePatterns)
+					{
+						if (string.IsNullOrWhiteSpace(raw))
+						{
+							continue;
+						}
+						string pattern = raw.Trim();
+						process.StartInfo.ArgumentList.Add("-e");
+						process.StartInfo.ArgumentList.Add(pattern);
+					}
+				}
 				process.Start();
 				// 异步读 stderr 防止管道满死锁
 				string stderr = "";

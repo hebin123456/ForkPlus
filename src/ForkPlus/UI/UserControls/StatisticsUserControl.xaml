@@ -115,6 +115,18 @@
             <Button Content="Refresh" Padding="10,2" x:Name="CodeLinesRefreshButton" Click="CodeLinesRefreshButton_Click" />
           </StackPanel>
         </Grid>
+        <!-- 临时排除输入：每行一个 glob（语义同 .gitignore，如 tests/、**/*.Tests/、bin/）。
+             不持久化，关闭窗口/换仓库即清空。点"重新统计"按当前输入重跑 tokei。 -->
+        <Grid Margin="10,8,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="Exclude:" VerticalAlignment="Center" Margin="0,0,6,0" />
+          <controls:PlaceholderTextBox Grid.Column="1" x:Name="CodeLinesExcludeBox" AcceptsReturn="True" Height="50" VerticalContentAlignment="Top" TextWrapping="Wrap" Placeholder="One glob per line, e.g. tests/  **/*.Tests/  bin/" />
+          <Button Grid.Column="2" Content="Recount with excludes" Padding="10,2" Margin="6,0,0,0" VerticalAlignment="Bottom" x:Name="CodeLinesRecountButton" Click="CodeLinesRecountButton_Click" />
+        </Grid>
         <TextBlock Margin="10,8,0,0" x:Name="CodeLinesSummary" TextWrapping="Wrap" />
         <TextBlock Margin="10,8,0,0" x:Name="CodeLinesError" TextWrapping="Wrap" Foreground="#FFCC0000" Visibility="Collapsed" />
         <Grid Margin="10,10,0,0">
