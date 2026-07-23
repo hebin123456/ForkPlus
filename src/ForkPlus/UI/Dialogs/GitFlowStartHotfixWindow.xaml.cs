@@ -15,39 +15,25 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly GitModule _gitModule;
 
-		private LocalBranch[] _localBranches;
+	private LocalBranch[] _localBranches;
 
-		private GitFlowSettings _gitFlowSettings;
+	private GitFlowSettings _gitFlowSettings;
 
-		protected override bool IsSubmitAllowed
+	// 阶段 3：承接 base 分支选择 + hotfix 名校验（GitFlow 格式 + 重名）+ 命令预览。
+	// Validate() 返回 (IsAllowed, Status, StatusMessage)，View override 据此调 SetStatus。
+	private GitFlowStartHotfixWindowViewModel _viewModel;
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
-			{
-				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				if (!(BranchesComboBox.SelectedItem is LocalBranch))
-				{
-					return false;
-				}
-				string text = HotfixNameTextBox.Text;
-				if (string.IsNullOrEmpty(text))
-				{
-					return false;
-				}
-				string text2 = ReferenceNameValidator.ValidateGitFlow(text);
-				if (text2 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Error, text2);
-					return false;
-				}
-				string branchName = (_gitFlowSettings.HotfixPrefix + text).ToLower();
-				if (_localBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == branchName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Branch '" + branchName + "' already exists");
-					return false;
-				}
-				return true;
-			}
+			_viewModel.HotfixName = HotfixNameTextBox.Text;
+			_viewModel.SelectedBaseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+			(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+			SetStatus(status, statusMessage ?? string.Empty);
+			return isAllowed;
 		}
+	}
 
 		public GitFlowStartHotfixWindow(GitModule gitModule)
 		{
@@ -61,17 +47,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		string hotfixName = HotfixNameTextBox.Text;
-		if (string.IsNullOrWhiteSpace(hotfixName))
-		{
-			return null;
-		}
-		LocalBranch baseBranch = BranchesComboBox.SelectedItem as LocalBranch;
-		if (baseBranch == null)
-		{
-			return null;
-		}
-		return "git flow hotfix start " + hotfixName + " " + baseBranch.Name;
+		_viewModel.HotfixName = HotfixNameTextBox.Text;
+		_viewModel.SelectedBaseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()
@@ -112,6 +90,7 @@ namespace ForkPlus.UI.Dialogs
 			RepositoryData repositoryData = (Application.Current.MainWindow as MainWindow).TabManager.ActiveRepositoryUserControl.RepositoryData;
 			_gitFlowSettings = repositoryData.GitFlowSettings;
 			_localBranches = repositoryData.References.LocalBranches;
+			_viewModel = new GitFlowStartHotfixWindowViewModel(_gitFlowSettings, _localBranches);
 			BranchesComboBox.ItemsSource = _localBranches;
 			BranchesComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.Name == _gitFlowSettings.MasterBranch) ?? IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.IsActive);
 			HotfixPrefixTextBlock.Text = _gitFlowSettings.HotfixPrefix;

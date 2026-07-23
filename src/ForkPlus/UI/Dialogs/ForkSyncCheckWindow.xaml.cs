@@ -14,46 +14,47 @@ namespace ForkPlus.UI.Dialogs
 	public partial class ForkSyncCheckWindow : ForkPlusDialogWindow
 	{
 		private readonly RepositoryUserControl _repositoryUserControl;
-		private readonly Remote _upstreamRemote;
-		private readonly LocalBranch _localBranch;
-		private readonly string _branchName;
-		private ForkSyncStatus? _status;
+	private readonly Remote _upstreamRemote;
+	private readonly LocalBranch _localBranch;
+	private readonly string _branchName;
+	// 阶段 3：承接同步状态持有 + "检测中不允许提交"守卫。ConfigureForStatus 的 UI 操作留 View。
+	private readonly ForkSyncCheckWindowViewModel _viewModel;
 
-		public ForkSyncCheckWindow(
-			RepositoryUserControl repositoryUserControl,
-			Remote upstreamRemote,
-			LocalBranch localBranch,
-			string branchName,
-			ForkSyncStatus? status)
-		{
-			_repositoryUserControl = repositoryUserControl;
-			_upstreamRemote = upstreamRemote;
-			_localBranch = localBranch;
-			_branchName = branchName;
-			_status = status;
-			InitializeComponent();
-			DialogTitle = PreferencesLocalization.Current("Remote Sync Status");
-			DialogDescription = string.Empty;
-			ConfigureForStatus();
-		}
+	public ForkSyncCheckWindow(
+		RepositoryUserControl repositoryUserControl,
+		Remote upstreamRemote,
+		LocalBranch localBranch,
+		string branchName,
+		ForkSyncStatus? status)
+	{
+		_repositoryUserControl = repositoryUserControl;
+		_upstreamRemote = upstreamRemote;
+		_localBranch = localBranch;
+		_branchName = branchName;
+		_viewModel = new ForkSyncCheckWindowViewModel(status);
+		InitializeComponent();
+		DialogTitle = PreferencesLocalization.Current("Remote Sync Status");
+		DialogDescription = string.Empty;
+		ConfigureForStatus();
+	}
 
-		/// <summary>检测中（status 为 null）时不允许提交，按钮自动禁用。</summary>
-		protected override bool IsSubmitAllowed => _status.HasValue && base.IsSubmitAllowed;
+	/// <summary>检测中（status 为 null）时不允许提交，按钮自动禁用。</summary>
+	protected override bool IsSubmitAllowed => _viewModel.IsSubmitAllowed && base.IsSubmitAllowed;
 
-		/// <summary>
-		/// 后台检测完成后调用，把对话框从"检测中"更新为最终结果。
-		/// </summary>
-		public void UpdateResult(ForkSyncStatus status)
-		{
-			_status = status;
-			ConfigureForStatus();
-			UpdateSubmitButton();
-		}
+	/// <summary>
+	/// 后台检测完成后调用，把对话框从"检测中"更新为最终结果。
+	/// </summary>
+	public void UpdateResult(ForkSyncStatus status)
+	{
+		_viewModel.Status = status;
+		ConfigureForStatus();
+		UpdateSubmitButton();
+	}
 
 		private void ConfigureForStatus()
 		{
 			string upstreamRef = _upstreamRemote.Name + "/" + _branchName;
-			if (!_status.HasValue)
+			if (!_viewModel.Status.HasValue)
 			{
 				// 检测中：按钮由 IsSubmitAllowed 守卫自动禁用，提示用户正在检测
 				StatusIcon.Source = null;
@@ -64,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 				UpdateSubmitButton();
 				return;
 			}
-			switch (_status.Value)
+			switch (_viewModel.Status.Value)
 			{
 				case ForkSyncStatus.SafeToPush:
 					StatusIcon.Source = new BitmapImage(SuccessIcon);
@@ -117,14 +118,14 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnSubmit()
 		{
 			// 检测中不应触发任何操作（按钮已禁用，兜底防御）
-			if (!_status.HasValue)
+			if (!_viewModel.Status.HasValue)
 			{
 				return;
 			}
 			// 对于"安全 push"和"无法判断"等无需操作的状态，点击主按钮即关闭
-			if (_status.Value == ForkSyncStatus.SafeToPush
-				|| _status.Value == ForkSyncStatus.NoUpstreamBranch
-				|| _status.Value == ForkSyncStatus.Unknown)
+			if (_viewModel.Status.Value == ForkSyncStatus.SafeToPush
+				|| _viewModel.Status.Value == ForkSyncStatus.NoUpstreamBranch
+				|| _viewModel.Status.Value == ForkSyncStatus.Unknown)
 			{
 				base.OnSubmit();
 				return;

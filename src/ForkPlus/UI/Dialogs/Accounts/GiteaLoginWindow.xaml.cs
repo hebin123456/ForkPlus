@@ -16,25 +16,27 @@ namespace ForkPlus.UI.Dialogs.Accounts
 	{
 		private readonly JobQueue _jobQueue = new JobQueue();
 
-		[Null]
-		public Account Account { get; private set; }
+	// 阶段 3：承接 server URL 规范化(TrimEnd) + URI 校验 + token 非空校验。
+	private readonly GiteaLoginWindowViewModel _viewModel = new GiteaLoginWindowViewModel();
 
-		protected override bool IsSubmitAllowed
+	[Null]
+	public Account Account { get; private set; }
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
+			SetStatus(ForkPlusDialogStatus.None, "");
+			PersonalAccessTokenHint.Disable();
+			_viewModel.ServerText = ServerTextBox.Text;
+			_viewModel.Token = TokenTextBox.Text;
+			if (_viewModel.IsUriValid)
 			{
-				SetStatus(ForkPlusDialogStatus.None, "");
-				PersonalAccessTokenHint.Disable();
-				if (!Uri.TryCreate(ServerUrl, UriKind.Absolute, out var _))
-				{
-					return false;
-				}
 				PersonalAccessTokenHint.Enable();
-				return !string.IsNullOrEmpty(TokenTextBox.Text);
 			}
+			return _viewModel.IsSubmitAllowed;
 		}
-
-		private string ServerUrl => ServerTextBox.Text.ToLower().TrimEnd(Consts.Chars.Slash);
+	}
 
 		public GiteaLoginWindow([Null] Account account = null)
 		{
@@ -57,7 +59,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		protected override void OnSubmit()
 		{
-			string serverUrl = ServerUrl;
+			_viewModel.ServerText = ServerTextBox.Text;
+			string serverUrl = _viewModel.ServerUrl;
 			string token = TokenTextBox.Text;
 			Uri uri = new Uri(serverUrl);
 			PrivateAccessTokenAuthentication authentication = new PrivateAccessTokenAuthentication(null, null, token);
@@ -115,7 +118,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private void OpenAccessTokenConfigurationUrlButton_Click(object sender, RoutedEventArgs e)
 		{
-			new Uri(ServerUrl + "/user/settings/applications").OpenInBrowser();
+			_viewModel.ServerText = ServerTextBox.Text;
+			new Uri(_viewModel.ServerUrl + "/user/settings/applications").OpenInBrowser();
 		}
 
 	}

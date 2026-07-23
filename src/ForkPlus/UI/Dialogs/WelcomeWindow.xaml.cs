@@ -17,29 +17,15 @@ namespace ForkPlus.UI.Dialogs
 {
 	public partial class WelcomeWindow : ForkPlusDialogWindow
 	{
+		// 阶段 3：承接默认克隆目录校验（非空 + 非 c:\ + 目录存在）。
+		private readonly WelcomeWindowViewModel _viewModel = new WelcomeWindowViewModel();
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				string text = DefaultCloneDirectoryTextBox.Text.Trim();
-				if (text == "" || text.Equals("c:\\", StringComparison.OrdinalIgnoreCase))
-				{
-					return false;
-				}
-				try
-				{
-					if (!Directory.Exists(text))
-					{
-						return false;
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Error("Failed to check '" + text + "' existence", ex);
-					return false;
-				}
-				return true;
+				_viewModel.DefaultCloneDirectory = DefaultCloneDirectoryTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
