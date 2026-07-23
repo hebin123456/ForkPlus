@@ -23,59 +23,30 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RemoteBranch _remoteBranch;
 
+		// 阶段 3：承接多重校验 + 命令预览（最复杂模式点）。OnSubmit 的 JobQueue/Dispatcher 暂留 View。
+		private readonly RenameLocalBranchWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string newName = BranchNameTextBox.Text.ToLower();
-				if (string.IsNullOrEmpty(newName))
+				_viewModel.NewName = BranchNameTextBox.Text;
+				_viewModel.RenameRemoteBranch = RenameRemoteBranchCheckbox.IsChecked.GetValueOrDefault();
+				(bool isAllowed, string warningMessage) = _viewModel.Validate();
+				if (warningMessage != null)
 				{
-					return false;
+					SetStatus(ForkPlusDialogStatus.Warning, warningMessage);
 				}
-				if (RenameRemoteBranchCheckbox.IsChecked.GetValueOrDefault())
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Renaming can break tracking references for other users"));
-					string upstreamRemote = UpstreamRemote(_localBranch);
-					RemoteBranch remoteBranch = IReadOnlyListExtensions.FirstItem(_references.RemoteBranches, (RemoteBranch x) => x.ShortName.ToLower() == newName && x.Remote == upstreamRemote);
-					if (remoteBranch != null)
-					{
-						SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("Branch {0} already exists"), remoteBranch.Name));
-						return false;
-					}
-				}
-				if (!(newName != _localBranch.Name.ToLower()))
-				{
-					return false;
-				}
-				string text = ReferenceNameValidator.Validate(newName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				if (_references.LocalBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == newName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("Branch '{0}' already exists"), BranchNameTextBox.Text));
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			string newName = BranchNameTextBox.Text;
-			if (string.IsNullOrWhiteSpace(newName))
-			{
-				return null;
-			}
-			string command = "git branch -m " + _localBranch.Name + " " + newName;
-			if (RenameRemoteBranchCheckbox.IsChecked.GetValueOrDefault() && _remoteBranch != null)
-			{
-				command += "\ngit push " + _remoteBranch.Remote + " " + newName + " :" + _remoteBranch.ShortName;
-			}
-			return command;
+			_viewModel.NewName = BranchNameTextBox.Text;
+			_viewModel.RenameRemoteBranch = RenameRemoteBranchCheckbox.IsChecked.GetValueOrDefault();
+			return _viewModel.CommandPreview;
 		}
 
 		public RenameLocalBranchWindow(GitModule gitModule, RepositoryReferences references, LocalBranch localBranch, [Null] string newName)
@@ -103,6 +74,8 @@ namespace ForkPlus.UI.Dialogs
 			ReferenceTextBox branchNameTextBox = BranchNameTextBox;
 			ForkPlus.Git.Reference[] references2 = references.Items.CompactMap((ForkPlus.Git.Reference x) => x as Branch);
 			branchNameTextBox.SetAutocompleteProvider(new ReferenceNameAutocompleteProvider(references2));
+			// 阶段 3：VM 在 _remoteBranch 赋值完成后构造（需要 localBranch + remoteBranch + references）。
+			_viewModel = new RenameLocalBranchWindowViewModel(_localBranch, _remoteBranch, _references);
 			UpdateSubmitButton();
 		}
 
@@ -209,21 +182,6 @@ namespace ForkPlus.UI.Dialogs
 		{
 			UpdateSubmitButton();
 			RefreshCommandPreview();
-		}
-
-		private static string UpstreamRemote(LocalBranch localBranch)
-		{
-			string upstreamFullName = localBranch.UpstreamFullName;
-			if (upstreamFullName == null)
-			{
-				return null;
-			}
-			int num = upstreamFullName.IndexOf("/");
-			if (num == -1)
-			{
-				return null;
-			}
-			return upstreamFullName.Substring(0, num);
 		}
 
 		private static string Translate(string text)
