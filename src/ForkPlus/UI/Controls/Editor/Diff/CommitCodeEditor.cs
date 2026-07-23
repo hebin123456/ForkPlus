@@ -1,6 +1,6 @@
 using System;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -40,7 +40,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				_diffSelectionLayer = new SideBySideCommitDiffSelectionLayer(this);
 			}
-			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as UIElement, KnownLayer.Selection, LayerInsertionPosition.Above);
+			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as Avalonia.Controls.Control, KnownLayer.Selection, LayerInsertionPosition.Above);
 			_diffSelectionLayer.Stage += delegate
 			{
 				this.Stage?.Invoke(this, this);
@@ -123,17 +123,20 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF OnPreviewKeyDown → Avalonia OnKeyDown（Avalonia 无 Preview 前缀，
+		// 隧道事件用 AddHandler(RoutingStrategies.Tunnel) 注册）。KeyEventArgs.KeyModifiers 替代
+		// WPF Keyboard.IsKeyDown 静态查询。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (base.IsSearchBarFocused)
 			{
-				base.OnPreviewKeyDown(e);
+				base.OnKeyDown(e);
 				return;
 			}
-			bool flag = Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftShift);
-			if (base.SelectionLength > 0 && (e.Key == Key.Return || (flag && e.Key == Key.S) || (KeyboardHelper.IsCtrlDown && e.Key == Key.S)))
+			bool flag = e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+			if (base.SelectionLength > 0 && (e.Key == Key.Return || (flag && e.Key == Key.S) || (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.S)))
 			{
-				if (!KeyboardHelper.IsAltDown)
+				if (!e.KeyModifiers.HasFlag(KeyModifiers.Alt))
 				{
 					this.ToggleStage?.Invoke(this, this);
 					e.Handled = true;
@@ -145,7 +148,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				this.Discard?.Invoke(this, this);
 				e.Handled = true;
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 	}
 }
