@@ -121,4 +121,13 @@
   <BitmapImage x:Key="GiteaOnIcon" UriSource="/Assets/GiteaOn.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="GenericRemoteIcon" UriSource="/Assets/Remote.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="GenericRemoteOnIcon" UriSource="/Assets/RemoteOn.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <!-- 业务层 IconKeys 用带 "Remote." 前缀的键（Remote.Azure / Remote.Bitbucket / ...），
+       与上面 XxxIcon 键不一致，导致 FindImage 找不到退化成 GenericRemoteIcon（全是 Remote.png）。
+       这里追加同名别名指向同一份 png，让两套键都能解析到正确图标。-->
+  <BitmapImage x:Key="Remote.Azure" UriSource="/Assets/Azure.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="Remote.Bitbucket" UriSource="/Assets/BitBucket.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="Remote.Gitea" UriSource="/Assets/Gitea.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="Remote.Github" UriSource="/Assets/Github.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="Remote.Gitlab" UriSource="/Assets/Gitlab.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="Remote.Generic" UriSource="/Assets/Remote.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
 </ResourceDictionary>
