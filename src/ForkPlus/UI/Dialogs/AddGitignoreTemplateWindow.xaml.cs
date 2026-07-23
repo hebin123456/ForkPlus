@@ -124,11 +124,24 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Dictionary<string, CheckBox> _checkboxes = new Dictionary<string, CheckBox>();
 
-		protected override bool IsSubmitAllowed => _selectedTemplateNames.Count > 0;
+		// 阶段 3：承接 .gitignore 模板选中项纯数据投影 + IsSubmitAllowed。
+		// TemplateMarkers/TemplateGroups/LoadTemplates/BuildTemplateList/PreselectTemplates 全部留 View
+		// （依赖 WPF CheckBox/TextBlock + 嵌入资源 + Run/Hyperlink）。
+		private readonly AddGitignoreTemplateWindowViewModel _viewModel;
+
+		protected override bool IsSubmitAllowed
+		{
+			get
+			{
+				_viewModel.SelectedTemplateNames = _selectedTemplateNames;
+				return _viewModel.IsSubmitAllowed;
+			}
+		}
 
 		public AddGitignoreTemplateWindow(RepositoryUserControl repositoryUserControl, string[] untrackedFiles)
 		{
 			base.ShowLogo = false;
+			_viewModel = new AddGitignoreTemplateWindowViewModel();
 			InitializeComponent();
 			_repositoryUserControl = repositoryUserControl;
 			_untrackedFiles = untrackedFiles;

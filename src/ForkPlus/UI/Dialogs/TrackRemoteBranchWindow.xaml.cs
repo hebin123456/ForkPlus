@@ -24,32 +24,21 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RemoteBranch _remoteBranch;
 
+		// 阶段 3：承接本地分支名校验 + 命令预览。复用第 9 模式点 Validate() 4 元组 with RequiresTranslation
+		// （重名消息需 FormatCurrent 翻译）。WorkingDirectoryIsDirty 由 View ctor 时传入 VM。
+		private readonly TrackRemoteBranchWindowViewModel _viewModel;
+
 		protected override string GetCommandPreview()
 		{
-			string localName = LocalBranchNameTextBox.Text;
-			if (string.IsNullOrWhiteSpace(localName))
-			{
-				return null;
-			}
-			RemoteBranch remoteBranch = _remoteBranch;
-			if (remoteBranch == null)
-			{
-				return null;
-			}
-			var parts = new System.Collections.Generic.List<string> { "git", "checkout" };
-			if (DiscardRadioButton.IsChecked.GetValueOrDefault())
-			{
-				parts.Add("--force");
-			}
-			parts.Add("-b");
-			parts.Add(localName);
-			parts.Add(remoteBranch.Name);
-			string command = string.Join(" ", parts);
-			if (_repositoryUserControl != null && _repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
-			{
-				command = "git stash\n" + command;
-			}
-			return command;
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.LocalBranchName = LocalBranchNameTextBox.Text;
+			_viewModel.Discard = DiscardRadioButton.IsChecked.GetValueOrDefault();
+			_viewModel.StashAndReapply = StashAndReapplyRadioButton.IsChecked.GetValueOrDefault();
 		}
 
 		protected override bool IsSubmitAllowed
@@ -57,29 +46,22 @@ namespace ForkPlus.UI.Dialogs
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string branchName = LocalBranchNameTextBox.Text.ToLower();
-				if (string.IsNullOrEmpty(branchName))
+				PushSelectionToViewModel();
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage, bool requiresTranslation) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					return false;
+					string message = requiresTranslation ? PreferencesLocalization.FormatCurrent(statusMessage ?? string.Empty) : (statusMessage ?? string.Empty);
+					SetStatus(status, message);
 				}
-				string text = ReferenceNameValidator.Validate(branchName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				if (_localBranches.Any((LocalBranch x) => x.Name.ToLower() == branchName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, PreferencesLocalization.FormatCurrent("Branch '{0}' already exists", LocalBranchNameTextBox.Text));
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
 		}
 
 		public TrackRemoteBranchWindow(RepositoryUserControl repositoryUserControl, LocalBranch[] localBranches, RemoteBranch remoteBranch)
 		{
 			InitializeComponent();
+			bool workingDirectoryIsDirty = repositoryUserControl?.RepositoryStatus?.WorkingDirectoryIsDirty() ?? false;
+			_viewModel = new TrackRemoteBranchWindowViewModel(localBranches, remoteBranch, workingDirectoryIsDirty);
 			base.DialogTitle = PreferencesLocalization.Current("Track Remote Branch");
 			base.DialogDescription = PreferencesLocalization.Current("Create new local branch which tracks remote branch");
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Track");

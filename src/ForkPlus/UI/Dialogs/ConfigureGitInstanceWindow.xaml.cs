@@ -31,10 +31,23 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override bool IsSubmitAllowed => IsGitPathValid(GitPathTextBox.Text.Trim()) && base.IsSubmitAllowed;
+		// 阶段 3：承接 git 路径合法性静默校验（IsSubmitAllowed）。
+		// BrowseButton/OpenFileDialog/GetGitCandidates/ListBox 选择同步留 View。
+		// showError=true 时的 ErrorWindow 弹窗留 View（VM 只暴露静默校验）。
+		private readonly ConfigureGitInstanceWindowViewModel _viewModel;
+
+		protected override bool IsSubmitAllowed
+		{
+			get
+			{
+				_viewModel.GitPath = GitPathTextBox.Text;
+				return _viewModel.IsSubmitAllowed && base.IsSubmitAllowed;
+			}
+		}
 
 		public ConfigureGitInstanceWindow()
 		{
+			_viewModel = new ConfigureGitInstanceWindowViewModel();
 			InitializeComponent();
 			base.DialogTitle = Translate("Configure Git");
 			base.DialogDescription = Translate("ForkPlus requires a valid Git executable to continue.");
@@ -56,8 +69,9 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnSubmit()
 		{
 			string gitPath = PathHelper.Normalize(GitPathTextBox.Text.Trim());
-			if (!ValidateGitPath(gitPath, showError: true))
+			if (!_viewModel.IsGitPathValid(gitPath))
 			{
+				ValidateGitPath(gitPath, showError: true);
 				UpdateSubmitButton();
 				return;
 			}

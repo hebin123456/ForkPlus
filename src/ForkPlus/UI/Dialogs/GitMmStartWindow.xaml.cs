@@ -14,26 +14,41 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly HashSet<string> _selectedSubrepoPaths = new HashSet<string>();
 
+		// 阶段 3：承接 git mm start 多参数构建 + IsSubmitAllowed + 命令预览。
+		// GitMmSubrepoItem→Name 投影由 View 完成（避免 VM 引用 ForkPlus.UI.UserControls 命名空间）。
+		// RestoreDialogOptions/SaveDialogOptions/SubreposDropDownButton 留 View。
+		private readonly GitMmStartWindowViewModel _viewModel;
+
 		public string[] StartArgs { get; private set; }
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (string.IsNullOrWhiteSpace(BranchNameTextBox.Text))
-				{
-					return false;
-				}
-				if (!AllSubreposCheckBox.IsChecked.GetValueOrDefault() && _selectedSubrepoPaths.Count == 0)
-				{
-					return false;
-				}
-				return base.IsSubmitAllowed;
+				PushSelectionToViewModel();
+				return _viewModel.IsSubmitAllowed && base.IsSubmitAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.BranchName = BranchNameTextBox.Text;
+			_viewModel.Jobs = SelectedJobs();
+			_viewModel.GrepMode = SelectedComboBoxText(GrepModeComboBox) ?? "mixed";
+			_viewModel.AllSubrepos = AllSubreposCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.SelectedSubrepoNames = _subrepos
+				.Where((GitMmSubrepoItem subrepo) => _selectedSubrepoPaths.Contains(subrepo.Path))
+				.Select((GitMmSubrepoItem subrepo) => subrepo.Name)
+				.ToArray();
+			_viewModel.AllowTag = AllowTagCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.AllowCommit = AllowCommitCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.AllowNoTrack = AllowNoTrackCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.Head = HeadCheckBox.IsChecked.GetValueOrDefault();
 		}
 
 		public GitMmStartWindow(IEnumerable<GitMmSubrepoItem> subrepos, GitMmSubrepoItem selectedSubrepo)
 		{
+			_viewModel = new GitMmStartWindowViewModel();
 			InitializeComponent();
 			_subrepos = subrepos?.ToArray() ?? new GitMmSubrepoItem[0];
 			if (selectedSubrepo != null)
@@ -58,49 +73,10 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override void OnSubmit()
 		{
-			StartArgs = CreateArgs();
+			PushSelectionToViewModel();
+			StartArgs = _viewModel.CreateArgs();
 			SaveDialogOptions();
 			base.OnSubmit();
-		}
-
-		private string[] CreateArgs()
-		{
-			List<string> args = new List<string> { "start", BranchNameTextBox.Text.Trim() };
-			args.Add("-j");
-			args.Add(SelectedJobs().ToString());
-			string grepMode = SelectedComboBoxText(GrepModeComboBox);
-			if (!string.IsNullOrWhiteSpace(grepMode) && grepMode != "mixed")
-			{
-				args.Add("-g");
-				args.Add(grepMode);
-			}
-			if (AllSubreposCheckBox.IsChecked.GetValueOrDefault())
-			{
-				args.Add("--all");
-			}
-			else
-			{
-				args.AddRange(_subrepos
-					.Where((GitMmSubrepoItem subrepo) => _selectedSubrepoPaths.Contains(subrepo.Path))
-					.Select((GitMmSubrepoItem subrepo) => subrepo.Name));
-			}
-			if (AllowTagCheckBox.IsChecked.GetValueOrDefault())
-			{
-				args.Add("--allow-tag");
-			}
-			if (AllowCommitCheckBox.IsChecked.GetValueOrDefault())
-			{
-				args.Add("--allow-commit");
-			}
-			if (AllowNoTrackCheckBox.IsChecked.GetValueOrDefault())
-			{
-				args.Add("--allow-no-track");
-			}
-			if (HeadCheckBox.IsChecked.GetValueOrDefault())
-			{
-				args.Add("--head");
-			}
-			return args.ToArray();
 		}
 
 		private int SelectedJobs()
@@ -237,7 +213,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (CommandPreviewTextBlock != null)
 			{
-				string cmd = GitMmCommandPreviewHelper.Format(CreateArgs());
+				PushSelectionToViewModel();
+				string cmd = _viewModel.CommandPreview;
 				CommandPreviewTextBlock.Text = cmd;
 				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
 				CommandPreviewTextBlock.ToolTip = cmd;

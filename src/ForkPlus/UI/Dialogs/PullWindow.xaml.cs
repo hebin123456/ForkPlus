@@ -29,53 +29,33 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _referencesLoaded;
 
+		// 阶段 3：承接远端/远端分支选择 + rebase/tags 选项 + 命令预览。
+		// LoadReferencesAndRefresh 异步流程留 View；VM 仅持选中状态 + AllTags 设置读取。
+		private readonly PullWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (_activeLocalBranch == null)
-				{
-					return false;
-				}
-				if (!_referencesLoaded)
-				{
-					return false;
-				}
-				Remote obj = RemotesComboBox.SelectedItem as Remote;
-				ForkPlus.Git.Reference reference = RemoteBranchesComboBox.SelectedItem as ForkPlus.Git.Reference;
-				if (obj != null && reference != null)
-				{
-					return base.IsSubmitAllowed;
-				}
-				return false;
+				PushSelectionToViewModel();
+				return _viewModel.IsSubmitAllowed && base.IsSubmitAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.ActiveLocalBranch = _activeLocalBranch;
+			_viewModel.ReferencesLoaded = _referencesLoaded;
+			_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+			_viewModel.SelectedRemoteBranch = RemoteBranchesComboBox.SelectedItem as RemoteBranch;
+			_viewModel.Rebase = RebaseCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.AllTags = ForkPlusSettings.Default.FetchAllTags;
 		}
 
 		protected override string GetCommandPreview()
 		{
-			Remote remote = RemotesComboBox.SelectedItem as Remote;
-			if (remote == null)
-			{
-				return null;
-			}
-			RemoteBranch remoteBranch = RemoteBranchesComboBox.SelectedItem as RemoteBranch;
-			bool rebase = RebaseCheckBox.IsChecked.GetValueOrDefault();
-			bool allTags = ForkPlusSettings.Default.FetchAllTags;
-			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "pull" };
-			parts.Add(remote.Name);
-			if (remoteBranch != null)
-			{
-				parts.Add(remoteBranch.ShortName);
-			}
-			if (rebase)
-			{
-				parts.Add("--rebase");
-			}
-			if (allTags)
-			{
-				parts.Add("--tags");
-			}
-			return string.Join(" ", parts);
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
 		}
 
 		public PullWindow(RepositoryUserControl repositoryUserControl, RemoteBranch remoteBranch)
@@ -85,6 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_repositoryUserControl = repositoryUserControl;
 				_predefinedRemoteBranch = remoteBranch;
+				_viewModel = new PullWindowViewModel();
 				InitializeComponent();
 				base.DialogTitle = Translate("Pull");
 				base.DialogDescription = Translate("Pull remote branches and merge them into your local branch");
