@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -138,9 +139,10 @@ namespace ForkPlus.UI.UserControls
 		public RepositoryUserControl()
 		{
 			InitializeComponent();
-			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "UpdateRepoStatusAutomaticallyChanged", UpdateRepoStatusAutomaticallyChanged);
+			// Avalonia 迁移：WeakEventManager<T,S>.AddHandler 改为直接事件订阅（NotificationCenter 已公开同名事件）
+			NotificationCenter.Current.RepositoryNameChanged += RepositoryNameChanged;
+			NotificationCenter.Current.RepositoryColorChanged += RepositoryColorChanged;
+			NotificationCenter.Current.UpdateRepoStatusAutomaticallyChanged += UpdateRepoStatusAutomaticallyChanged;
 			SidebarGridSplitter.DragCompleted += delegate
 			{
 				SaveSidebarColumnWidth();
@@ -161,7 +163,9 @@ namespace ForkPlus.UI.UserControls
 		protected override void OnDrop(DragEventArgs e)
 		{
 			base.OnDrop(e);
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] source)
+			// Avalonia 迁移：文件拖放 e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
+			string[] source = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
+			if (source != null)
 			{
 				string text = source.FirstItem();
 				if (text != null && text.EndsWith(Consts.Git.PatchFileExtension, StringComparison.CurrentCultureIgnoreCase))
@@ -476,7 +480,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						if (!response.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							base.Dispatcher.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -493,7 +497,7 @@ namespace ForkPlus.UI.UserControls
 							{
 								if (!newContextSearchResponse.Succeeded)
 								{
-									base.Dispatcher.Async(delegate
+									base.Dispatcher.Post(delegate
 									{
 										if (!monitor.IsCanceled)
 										{
@@ -505,7 +509,7 @@ namespace ForkPlus.UI.UserControls
 								else
 								{
 									RevisionContextSearch? newContextSearch = newContextSearchResponse.Result;
-									base.Dispatcher.Async(delegate
+									base.Dispatcher.Post(delegate
 									{
 										if (!monitor.IsCanceled)
 										{
@@ -569,7 +573,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						if (!response.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							base.Dispatcher.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -588,7 +592,7 @@ namespace ForkPlus.UI.UserControls
 								{
 									if (!newContextSearchResponse.Succeeded)
 									{
-										base.Dispatcher.Async(delegate
+										base.Dispatcher.Post(delegate
 										{
 											if (!monitor.IsCanceled)
 											{
@@ -600,7 +604,7 @@ namespace ForkPlus.UI.UserControls
 									else
 									{
 										RevisionContextSearch? newContextSearch = newContextSearchResponse.Result;
-										base.Dispatcher.Async(delegate
+										base.Dispatcher.Post(delegate
 										{
 											if (!monitor.IsCanceled)
 											{
@@ -669,7 +673,7 @@ namespace ForkPlus.UI.UserControls
 					}
 					if (!response.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						base.Dispatcher.Post(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -683,7 +687,7 @@ namespace ForkPlus.UI.UserControls
 					GitCommandResult<RevisionContextSearch?> newContextSearchResponse = ExpandContextSearch(gitModule, contextSearch, revisionStorage, result, repositoryData.References, monitor);
 					if (!newContextSearchResponse.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						base.Dispatcher.Post(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -699,7 +703,7 @@ namespace ForkPlus.UI.UserControls
 				while (result.HasMore && newContextSearch?.MatchCount == contextSearch.Value.MatchCount);
 				if (!monitor.IsCanceled)
 				{
-					base.Dispatcher.Async(delegate
+					base.Dispatcher.Post(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -1196,7 +1200,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					// P3.2：本地恢复成功后，按用户选择执行 force push
 					GitCommandResult pushResult = ForcePushCurrentBranch(monitor);
-					base.Dispatcher.Async(delegate
+					base.Dispatcher.Post(delegate
 					{
 						InvalidateAndRefresh(SubDomain.All);
 						RaiseUndoRedoStateChanged();
@@ -1207,7 +1211,7 @@ namespace ForkPlus.UI.UserControls
 					});
 					return;
 				}
-				base.Dispatcher.Async(delegate
+				base.Dispatcher.Post(delegate
 				{
 					InvalidateAndRefresh(SubDomain.All);
 					RaiseUndoRedoStateChanged();
@@ -1257,7 +1261,7 @@ namespace ForkPlus.UI.UserControls
 					return;
 				}
 				GitCommandResult result = new RestoreSnapshotGitCommand().Execute(GitModule, target, monitor);
-				base.Dispatcher.Async(delegate
+				base.Dispatcher.Post(delegate
 				{
 					InvalidateAndRefresh(SubDomain.All);
 					RaiseUndoRedoStateChanged();
@@ -1284,8 +1288,9 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"Working directory has uncommitted changes. {0} will discard them. Stash changes first?",
 				opLabel);
-			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNo, MessageBoxImage.Question);
-			if (r != MessageBoxResult.Yes)
+			// TODO: Avalonia 迁移 - MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
+			System.Windows.MessageBoxResult r = System.Windows.MessageBox.Show(message, opLabel, System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+			if (r != System.Windows.MessageBoxResult.Yes)
 			{
 				return false;
 			}
@@ -1355,12 +1360,13 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"{0} will undo commit(s) that have been pushed to remote. Force push to remote too?",
 				opLabel);
-			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-			if (r == MessageBoxResult.Cancel)
+			// TODO: Avalonia 迁移 - MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
+			System.Windows.MessageBoxResult r = System.Windows.MessageBox.Show(message, opLabel, System.Windows.MessageBoxButton.YesNoCancel, System.Windows.MessageBoxImage.Warning);
+			if (r == System.Windows.MessageBoxResult.Cancel)
 			{
 				return false;
 			}
-			forcePushAfterRestore = (r == MessageBoxResult.Yes);
+			forcePushAfterRestore = (r == System.Windows.MessageBoxResult.Yes);
 			return true;
 		}
 
@@ -1389,7 +1395,7 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>Job 内失败时在 UI 线程弹错误窗并刷新 Undo/Redo 状态。</summary>
 		private void ShowRestoreFailureAsync(GitCommandError error)
 		{
-			base.Dispatcher.Async(delegate
+			base.Dispatcher.Post(delegate
 			{
 				new ErrorWindow(this, error).ShowDialog();
 				RaiseUndoRedoStateChanged();
