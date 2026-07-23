@@ -1,6 +1,6 @@
 # 阶段 3：ViewModel 抽取
 
-> 状态：**Dialog 窗口 VM 抽取已完成**（48 个 ForkPlusDialogWindow 子类全部抽取）+ **AI 系列窗口 VM 抽取已完成**（3 个 WebView2 窗口），CI 三平台全绿
+> 状态：**Dialog 窗口 VM 抽取已完成**（48 个 ForkPlusDialogWindow 子类全部抽取）+ **AI 系列窗口 VM 抽取已完成**（3 个 WebView2 窗口）+ **核心 UserControl VM 抽取已完成**（6 个 UserControl），CI 三平台全绿
 > 性质：最大工作量，重构分水岭
 > 前置：阶段 0/1/2 完成（抽象层就位、领域层干净、Commands 去 WPF）
 
@@ -178,33 +178,30 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 
 ### 核心 UserControl
 
-- [ ] `MainWindowViewModel`
-  - 从 `MainWindow.xaml.cs` 抽出：TabManager / Toolbar / Manager 字段（`_automaticBackgroundFetchManager` / `_updateCheckManager` / `_repositoryStatusManager`）
-  - 快捷键映射（`InitializeKeyBindings` 第 323-493 行 20+ 个 KeyBinding）
-  - `OnDrop` / `OnKeyDown` 业务逻辑（QuickFetch 触发、剪贴板 patch 检测）
-  - 设置持久化（`Window_Closing` 写 `ForkPlusSettings.Default.MainWindowLocationState`）
+- [x] `MainWindowViewModel` — 里程碑 3.15 完成
+  - 从 `MainWindow.xaml.cs` 抽出纯状态：`StartUpFinished` / `PreventRefreshAfterChildDialogClose`(+Reason)
+  - 纯逻辑：`ShouldSkipActivationRefresh` 节流 / `TryGetClipboardPatchBytes` 剪贴板 patch 检测 / `IsPatchFile`
+  - Manager 字段（含 DispatcherTimer）/ KeyBinding / 模板部件留 View（WPF 强耦合）
 
-- [ ] `RepositoryUserControlViewModel`
-  - 从 `RepositoryUserControl.xaml.cs` 抽出字段：`TempFileManager` / `JobQueue` / `UndoRedoStack` / `RefreshRepositoryCommand` / `RepositoryData` / `RepositoryStatus` / `GitModule` / `CommitGraphCache`
-  - `OnDrop` 第 122-134 行 `.patch` 扩展名判断 → VM 命令
-  - `FindParentRepositoryName` 第 137-163 行（submodule/worktree 判断）→ VM 方法
+- [x] `RepositoryUserControlViewModel` — 里程碑 3.15 完成（解锁 Commands 层 5 处直访的钥匙）
+  - 从 `RepositoryUserControl.xaml.cs` 抽出纯状态：`RepositoryData` / `RepositoryStatus` / `GitModule` / `CommitGraphCache` / `RepositoryName` / `IsDirty` / `ViewMode` / `ShowReflogInRevisionList` / `ActiveFetchRevisions*Job`
+  - 纯逻辑：`FindParentRepositoryName`（合并去重）/ `Invalidate` / `ResetSubdomains` / `CancelActiveFetchRevisionsJobs` / `CountDistinctChangedFiles`
+  - ViewMode setter UI 副作用通过 `ViewModeChanged` 事件让 View 订阅
+  - View 保留公共属性签名作为薄转发层，维持 Commands 层调用契约不变
 
-- [ ] `CommitUserControlViewModel`
-  - 从 `CommitUserControl.xaml.cs` 抽出：`CommitMessageAutocompleteProvider` / `GitmojiAutocompleteProvider` / `DelayedAction<ChangedFileArgs>`
-  - `AmendMode` 属性（第 64-85 行）→ VM 属性，移除 `Dispatcher.CheckAccess()` / `Dispatcher.Invoke`
-  - `FullCommitMessage` 属性 → VM 属性，移除 `CommitSubjectTextBox.Text` 直访
-  - `CommitAndPush` getter（第 89-103 行）→ VM 属性，`KeyboardHelper.IsShiftDown` 改为 VM 接收键盘状态
+- [x] `CommitUserControlViewModel` — 里程碑 3.15 完成
+  - 纯静态：`SplitCommitMessageForFields` / `GetUniqueFilesCount` / `RangeOfAny`
+  - 纯状态：`CommittingInProgress` / `StageJob` / `ShowIgnoredFiles`
+  - 纯计算：`SquashMode` / `RebaseInProgress` / `AmInProgress` / `AreCommitFieldsAllowed` / `IsAmendAllowed`
+  - provider 字段：`CommitMessageAutocompleteProvider` / `GitmojiAutocompleteProvider`
+  - `AmendMode` / `FullCommitMessage` / `CommitAndPush` 含 Dispatcher/TextBox 直访留 View
 
 ### AI 系列窗口（最复杂）
 
-- [ ] `AiDevelopmentWindowViewModel` — **重构难度最高**
-  - 抽出状态字段：`_fileChanges` / `_lastBeforeContents`（撤销快照）/ `_skillEntries` / `_pendingRequests` / `_conversationHistory`（多轮对话）/ `_streamingMarkdown`（流式缓冲）
-  - 流式渲染节流逻辑（`StreamingRenderIntervalMs = 400` / `_lastStreamingRenderUtc`）→ VM 用 `ITimerService`
-  - `LoadSkillList()` / `InitializeModelComboBox()` / `ShowWelcomeMessage()` → VM 方法
-  - WebView2 交互通过 `IWebViewFactory` / `IMarkdownWebView` 抽象（需先补接口，见下文）
-
-- [ ] `AiCodeReviewWindowViewModel` / `AiCommitComposerWindowViewModel` / `AiTextResultWindowViewModel`
-  - 同上模式，抽取对话状态、流式状态、WebView2 交互
+- [x] `AiDevelopmentWindowViewModel` — 里程碑 3.14 完成（流式渲染 VM 基类）
+- [x] `AiCodeReviewWindowViewModel` — 里程碑 3.14 完成
+- [x] `AiTextResultWindowViewModel` — 里程碑 3.14 完成
+- [ ] `AiCommitComposerWindowViewModel` / `AiSuggestionPreviewWindow` — 评估后不抽（无 WebView2/无流式，抽取价值低）
 
 ### Dialog 窗口（VM 已抽取，剩余 View 侧清理）
 
@@ -212,17 +209,22 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 - [x] `SideBySideMergeWindowViewModel` — 里程碑 3.13 完成（IsSubmitAllowed 判定已抽 VM；MessageBox/diff 行动态生成等 View 侧清理留后续迭代）
 - [x] 全部 48 个 `ForkPlusDialogWindow` 子类的 `IsSubmitAllowed` / `GetCommandPreview` 已委托 VM
 
-- [ ] `StatisticsUserControlViewModel`
-  - 从 `StatisticsUserControl.xaml.cs` 抽出 `AuthorStatViewModel` / `CodeLineLanguageViewModel`（当前是 nested class 第 28-71 行）→ 独立 VM
-  - `PlotHelper.CreateLinePlotModel()` → VM 暴露 `PlotModel` 属性（OxyPlot 平台无关部分）
+- [x] `StatisticsUserControlViewModel` — 里程碑 3.15 完成
+  - 提升嵌套 VM 为顶级类：`AuthorStatViewModel` / `CodeLineLanguageViewModel`
+  - 调色板常量 + 纯静态方法：`DaysOfWeek` / `OxyColorToHex` / `CreateLineSeries` / `CreatePieSlice`
+  - `PlotHelper` 留 View（依赖 Theme WPF 类型）
+  - OxyPlot.Wpf 控件操作 + InvalidatePlot 留 View
 
-- [ ] `CustomColorsDialogViewModel`
-  - 12 处 `MessageBox.Show` → `ServiceLocator.MessageBox`
-  - 颜色行动态生成 → `ObservableCollection<ColorItemVm>` + `DataTemplate`
+- [x] `CustomColorsDialogViewModel` — 里程碑 3.15 完成
+  - 颜色 key 白名单 / `TranslateColorKey` / HSV/RGB 纯函数 / `IsValidHexColor`（正则替代 WPF ColorConverter）
+  - `BuildExportJson` / `ValidateImport` 返回 `ImportValidationResult`
+  - 12 处 MessageBox → 5 处（导入校验 8 处合并为 1 处消费 VM 结果）
+  - `CustomColorItem` 嵌套类含 WPF 类型留 View，VM 返回纯 `ColorItemData`
 
-- [ ] `MergeConflictUserControlViewModel`
-  - 8 处 `MessageBox.Show` → `ServiceLocator.MessageBox`
-  - diff 行动态生成 → `ObservableCollection<DiffLineVm>` + `DataTemplateSelector`（按 `LineType` 选模板）
+- [x] `MergeConflictUserControlViewModel` — 里程碑 3.15 完成
+  - 纯静态：`GetSha` / `IsMergeAllowed` / `ComputeResolveButtonState` / `MapRevisionsToViewModels`
+  - AI Resolve 流程：`TryResolveWithAiAsync` 返回 `AiResolveResult`（规避 internal `OpenAiService` 的 CS0050）
+  - 8 处 MessageBox 改为消费 `AiResolveStatus` 枚举 switch
 
 ### 阶段 0 推迟的接口（本阶段补）
 
@@ -297,6 +299,61 @@ View 保留（WPF 职责）：
 
 - [AiCommitComposerWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiCommitComposerWindow.xaml.cs)（542行）：继承 CustomWindow，无 WebView2/无流式，WIP 提交分组编辑，逻辑紧密围绕 ListBox/TextBox UI，抽取价值低
 - [AiSuggestionPreviewWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiSuggestionPreviewWindow.xaml.cs)（134行）：继承 ForkPlusDialogWindow 但无 IsSubmitAllowed override，纯 diff 预览，不在抽取范围
+
+---
+
+## 里程碑 3.15：核心 UserControl VM 抽取（第 11 个模式点：UserControl VM 薄转发层）
+
+> 状态：**已完成**（commit `9bf17c3` → `6ed40f3` → 修复 `25d183c`/`225691d`，CI 三平台全绿）
+
+本里程碑抽取 6 个核心 UserControl 的 ViewModel，标志阶段 3 VM 抽取全部完成。与 Dialog 窗口不同，UserControl 不继承 Window（无 IsSubmitAllowed/GetCommandPreview override），抽取目标是把 View 字段里的纯业务状态/纯逻辑搬到 VM，View 保留公共签名作为薄转发层维持调用契约不变。
+
+### 第 11 个模式点：UserControl VM 薄转发层
+
+UserControl 被大量外部代码（Commands 层 / 其他 View）直接访问公共成员（如 `repositoryUserControl.GitModule`）。若直接改公共 API 签名会引发大规模改动。模式点 11 的做法：
+
+1. **VM 承载纯状态/纯逻辑**（零 WPF using）
+2. **View 保留同名公共属性/方法**，内部改为 `_viewModel.X` 转发
+3. **ViewMode setter UI 副作用**通过事件让 View 订阅（VM 零 WPF，View 执行 UI 刷新）
+4. **WPF 强耦合成员留 View**（Dispatcher/TextBox 直访/KeyBinding/模板部件）
+
+### 新建 6 个 VM 文件（零 WPF）
+
+| 文件 | 职责 |
+|---|---|
+| [RepositoryUserControlViewModel.cs](file:///workspace/src/ForkPlus/UI/UserControls/RepositoryUserControlViewModel.cs) | 仓库纯状态 + FindParentRepositoryName/Invalidate/CancelActiveFetchRevisionsJobs/CountDistinctChangedFiles + ViewModeChanged 事件 |
+| [MainWindowViewModel.cs](file:///workspace/src/ForkPlus/UI/MainWindowViewModel.cs) | 启动/激活刷新状态 + ShouldSkipActivationRefresh 节流 + TryGetClipboardPatchBytes + IsPatchFile |
+| [CommitUserControlViewModel.cs](file:///workspace/src/ForkPlus/UI/UserControls/CommitUserControlViewModel.cs) | provider 字段 + 纯状态 + SquashMode/RebaseInProgress/AmInProgress/AreCommitFieldsAllowed/IsAmendAllowed + SplitCommitMessageForFields/GetUniqueFilesCount |
+| [StatisticsUserControlViewModel.cs](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControlViewModel.cs) | AuthorStatViewModel/CodeLineLanguageViewModel 顶级类 + 调色板 + DaysOfWeek/OxyColorToHex/CreateLineSeries/CreatePieSlice |
+| [CustomColorsDialogViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialogViewModel.cs) | 颜色 key 白名单 + HSV/RGB 纯函数 + IsValidHexColor(正则) + BuildExportJson + ValidateImport 返回 ImportValidationResult |
+| [MergeConflictUserControlViewModel.cs](file:///workspace/src/ForkPlus/UI/UserControls/MergeConflictUserControlViewModel.cs) | GetSha/IsMergeAllowed/ComputeResolveButtonState + TryResolveWithAiAsync 返回 AiResolveResult（规避 internal OpenAiService 的 CS0050） |
+
+### 接线 6 个 UserControl
+
+| UserControl | 行数 | 抽取要点 | 留 View 的 WPF 耦合 |
+|---|---|---|---|
+| [RepositoryUserControl](file:///workspace/src/ForkPlus/UI/UserControls/RepositoryUserControl.xaml.cs) | 1392 | 纯状态+纯逻辑迁移 VM，View 薄转发 | ViewMode UI 副作用经事件 / RefreshRepositoryCommand(internal 类) private 持有 / OpenRepository 多字段赋值 |
+| [MainWindow](file:///workspace/src/ForkPlus/UI/MainWindow.xaml.cs) | 579 | 纯状态+剪贴板patch检测+节流迁移 VM | 3 Manager 字段(DispatcherTimer) / KeyBinding / 模板部件 / Window 位置持久化 |
+| [CommitUserControl](file:///workspace/src/ForkPlus/UI/UserControls/CommitUserControl.xaml.cs) | 2339 | provider+纯状态+纯计算迁移 VM | AmendMode(Dispatcher) / FullCommitMessage(TextBox直访) / CommitAndPush(KeyboardHelper) / ContextMenu 构建 |
+| [StatisticsUserControl](file:///workspace/src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs) | 855 | 嵌套VM提升顶级+调色板+纯静态迁移 VM | PlotHelper(依赖Theme) / OxyPlot.Wpf 控件 / InvalidatePlot |
+| [CustomColorsDialog](file:///workspace/src/ForkPlus/UI/Dialogs/CustomColorsDialog.xaml.cs) | 967 | 颜色白名单+HSV/RGB+导入校验迁移 VM，12→5 MessageBox | CustomColorItem(含WPF Brush) / 滑块交互 / Swatch 动态生成 / ApplyAndRefresh |
+| [MergeConflictUserControl](file:///workspace/src/ForkPlus/UI/UserControls/MergeConflictUserControl.xaml.cs) | 491 | GetSha/IsMergeAllowed/ComputeResolveButtonState+AI Resolve 流程迁移 VM，8 MessageBox 改 switch | SetConflict UI 操作 / MessageBox 弹框 / ContextMenu 构建 / 子控件赋值 |
+
+### CI 修复记录
+
+- `9bf17c3` 推送后 Windows build 报 `CS0053`：`RefreshRepositoryCommand` 是 internal 类（ForkPlus.UI.Commands），VM 的 public 属性暴露 internal 类型。修复（`25d183c`）：VM 移除该属性，View 保留 private readonly 字段直接持有（与原实现一致）
+- `6ed40f3` 推送后 Windows build 报 `CS0103`：RepositoryUserControl 内部 18 处 `_activeFetchRevisionsUntilShaJob`/`_activeFetchRevisionsNextPageJob` 下划线字段名引用未改为公共属性。修复（`225691d`）：replace_all 批量替换为 `ActiveFetchRevisionsUntilShaJob`/`ActiveFetchRevisionsNextPageJob`
+
+### 阶段 3 完成总结
+
+| 类别 | VM 数量 | 模式点 |
+|---|---|---|
+| Dialog Window VM（里程碑 3.1–3.13） | 48 | 1-9（VM 零 WPF / override 委托 / Validate 元组 / CommandPreview 纯函数） |
+| AI 系列窗口 VM（里程碑 3.14） | 3 | 10（流式渲染 VM 基类） |
+| 核心 UserControl VM（里程碑 3.15） | 6 | 11（UserControl VM 薄转发层） |
+| **合计** | **57** | **11 个模式点** |
+
+所有 57 个 VM 零 WPF using，CI 三平台全绿。阶段 3 VM 抽取全部完成。
 
 ## 后续阶段衔接
 
