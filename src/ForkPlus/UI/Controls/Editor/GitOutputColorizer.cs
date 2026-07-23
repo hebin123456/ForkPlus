@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -42,30 +42,20 @@ namespace ForkPlus.UI.Controls.Editor
 		static GitOutputColorizer()
 		{
 			FilesChangedRegex = new Regex("^ \\d* files? changed", RegexOptions.Multiline | RegexOptions.Compiled);
-			_hintBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#54A353"));
-			_errorBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#000000"));
-			_warningBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9000"));
-			_commandRequestBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#000000"));
-			_defaultBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#595959"));
-			_noiseBrushLight = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9F9797"));
-			_hintBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#98C278"));
-			_errorBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
-			_warningBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFCB00"));
-			_commandRequestBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
-			_defaultBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DADADA"));
-			_noiseBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ABABAB"));
-			_hintBrushLight.Freeze();
-			_errorBrushLight.Freeze();
-			_warningBrushLight.Freeze();
-			_defaultBrushLight.Freeze();
-			_noiseBrushLight.Freeze();
-			_commandRequestBrushLight.Freeze();
-			_hintBrushDark.Freeze();
-			_errorBrushDark.Freeze();
-			_warningBrushDark.Freeze();
-			_defaultBrushDark.Freeze();
-			_noiseBrushDark.Freeze();
-			_commandRequestBrushDark.Freeze();
+			// 阶段 4 里程碑 4.7-a：ColorConverter.ConvertFromString → Avalonia Color.Parse；
+			// 移除 brush.Freeze()（Avalonia 画刷默认不可变）。
+			_hintBrushLight = new SolidColorBrush(Color.Parse("#54A353"));
+			_errorBrushLight = new SolidColorBrush(Color.Parse("#000000"));
+			_warningBrushLight = new SolidColorBrush(Color.Parse("#FF9000"));
+			_commandRequestBrushLight = new SolidColorBrush(Color.Parse("#000000"));
+			_defaultBrushLight = new SolidColorBrush(Color.Parse("#595959"));
+			_noiseBrushLight = new SolidColorBrush(Color.Parse("#9F9797"));
+			_hintBrushDark = new SolidColorBrush(Color.Parse("#98C278"));
+			_errorBrushDark = new SolidColorBrush(Color.Parse("#FFFFFF"));
+			_warningBrushDark = new SolidColorBrush(Color.Parse("#FFCB00"));
+			_commandRequestBrushDark = new SolidColorBrush(Color.Parse("#FFFFFF"));
+			_defaultBrushDark = new SolidColorBrush(Color.Parse("#DADADA"));
+			_noiseBrushDark = new SolidColorBrush(Color.Parse("#ABABAB"));
 		}
 
 		protected override void ColorizeLine(DocumentLine documentLine)

@@ -1,5 +1,5 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor

@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ICSharpCode.AvalonEdit.Document;
@@ -102,7 +102,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, Brush brush)
+		private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, IBrush brush)
 		{
 			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, range, extendToFullWidthAtLineEnd: true))
 			{

@@ -1,5 +1,5 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -32,8 +32,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			HighlightingSource[] highlightingSource = HighlightingSource;
 			foreach (HighlightingSource highlightingSource2 in highlightingSource)
 			{
-				Brush highlightBrush = highlightingSource2.HighlightingType.GetHighlightBrush(theme);
-				highlightBrush.Freeze();
+				IBrush highlightBrush = highlightingSource2.HighlightingType.GetHighlightBrush(theme);
 				if (highlightingSource2.HighlightingType == HighlightingType.ExactAdd || highlightingSource2.HighlightingType == HighlightingType.ExactRemove)
 				{
 					BackgroundGeometryBuilder backgroundGeometryBuilder = new BackgroundGeometryBuilder

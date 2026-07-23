@@ -1,10 +1,10 @@
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {
 	/// <summary>
 	/// UI 层字体常量，从 Consts.Fonts 移出以消除业务层的 WPF 依赖。
-	/// 迁移到 Avalonia 时替换为 Avalonia 原生字体 API。
+	/// 阶段 4 里程碑 4.7-a：System.Windows.Media.FontFamily → Avalonia.Media.FontFamily。
 	/// </summary>
 	public static class FontConstants
 	{
