@@ -47,8 +47,6 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>本仓库的 Undo/Redo 历史栈。v3.0.0 新增。</summary>
 		public UndoRedoStack UndoRedoStack { get; } = new UndoRedoStack();
 
-		public RefreshRepositoryCommand RefreshRepositoryCommand { get; } = new RefreshRepositoryCommand();
-
 		public RepositoryData RepositoryData { get; set; }
 
 		public RepositoryStatus RepositoryStatus { get; set; }

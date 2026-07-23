@@ -40,7 +40,9 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>Undo/Redo 状态变化时触发，UI 工具栏订阅以刷新按钮可用性。</summary>
 		public event EventHandler UndoRedoStateChanged;
 
-		public RefreshRepositoryCommand RefreshRepositoryCommand => _viewModel.RefreshRepositoryCommand;
+		// RefreshRepositoryCommand 是 internal 类（ForkPlus.UI.Commands），不可被 public 属性暴露（CS0053）。
+		// 保留为 private 字段直接持有，不通过 VM 转发（命令对象本身无状态需 VM 化）。
+		private readonly RefreshRepositoryCommand RefreshRepositoryCommand = new RefreshRepositoryCommand();
 
 		public RepositoryData RepositoryData
 		{
