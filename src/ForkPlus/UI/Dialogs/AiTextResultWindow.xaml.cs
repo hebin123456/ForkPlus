@@ -1,44 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using ForkPlus.Accounts.AiServices;
-using ForkPlus.Biturbo;
-using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
-using ForkPlus.Settings;
-using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
-using ForkPlus.Utils.Http;
 using Microsoft.Web.WebView2.Core;
 
 namespace ForkPlus.UI.Dialogs
 {
 	/// <summary>通用 AI 文本结果流式显示窗口。功能1（AI 解释 commit）和功能3（AI 生成 PR 描述）共用。
-	/// 调用方通过 StartStreaming(title, requestAction) 传入一个"启动 AI 请求并把 chunk 回写到本窗口"的委托。</summary>
+	/// 调用方通过 StartStreaming(title, requestAction) 传入一个"启动 AI 请求并把 chunk 回写到本窗口"的委托。
+	/// 流式渲染状态/协议/Markdown转换/CSS 由 AiTextResultWindowViewModel（继承 AiStreamingMarkdownViewModel）承载。
+	/// 本类仅负责 WebView2 实例操作 + Dispatcher 调度 + UI 状态切换 + ComboBox 填充。</summary>
 	public partial class AiTextResultWindow : CustomWindow, ILocalizableControl
 	{
-		// 流式渲染相关字段（模式参考 AiCodeReviewWindow，精简版）
-		private StringBuilder _streamingMarkdown;
-		private readonly object _streamingLock = new object();
-		private DateTime _lastStreamingRenderUtc = DateTime.MinValue;
-		private const int StreamingRenderIntervalMs = 400;
-		private bool _streamingActive;
-		private bool _pendingStreamingScrollToEnd;
-		private bool _streamingUserAtBottom = true;
+		private readonly AiTextResultWindowViewModel _viewModel = new AiTextResultWindowViewModel();
 
 		// 用户传入的"重试"委托：每次点 Retry 都重新执行一次 AI 请求
 		private Action<AiTextResultWindow, JobMonitor> _requestAction;
 		private JobMonitor _currentMonitor;
-		private static string _cachedCss;
-
-		// v3.0.1：模型下拉框是否已完成后台加载
-		private bool _modelListLoaded;
 
 		public AiTextResultWindow()
 		{
@@ -59,10 +40,11 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>v3.0.1：初始化模型下拉框。先用当前选中模型占位，再后台拉取完整列表。</summary>
+		/// <summary>v3.0.1：初始化模型下拉框。先用当前选中模型占位，再后台拉取完整列表。
+		/// 模型拉取逻辑由 AiModelListLoader 承载（零 WPF），本方法仅负责 ComboBox 填充 + Dispatcher 调度。</summary>
 		private void InitializeModelComboBox()
 		{
-			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
+			string currentModel = AiModelListLoader.CurrentModel;
 			if (!string.IsNullOrWhiteSpace(currentModel))
 			{
 				ModelComboBox.Items.Add(currentModel);
@@ -76,61 +58,32 @@ namespace ForkPlus.UI.Dialogs
 
 			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
 			{
-				List<string> models = null;
-				try
-				{
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<string[]> result = aiService.ListModels();
-						if (result.Succeeded && result.Result != null)
-						{
-							models = new List<string>(result.Result);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("AiTextResultWindow failed to load AI model list: " + ex.Message);
-				}
-
-				if (models == null || models.Count == 0)
+				List<string> models = AiModelListLoader.LoadModels();
+				if (models == null)
 				{
 					return;
 				}
-
 				Dispatcher.Async(delegate
 				{
 					try
 					{
-						if (_modelListLoaded)
+						if (_viewModel.ModelListLoaded)
 						{
 							return;
 						}
-						_modelListLoaded = true;
-						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
+						_viewModel.ModelListLoaded = true;
+						string selected = AiModelListLoader.CurrentModel;
 						ModelComboBox.Items.Clear();
 						foreach (string m in models)
 						{
-							if (!string.IsNullOrWhiteSpace(m))
-							{
-								ModelComboBox.Items.Add(m);
-							}
+							ModelComboBox.Items.Add(m);
 						}
-						int idx = -1;
-						for (int i = 0; i < ModelComboBox.Items.Count; i++)
-						{
-							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
-							{
-								idx = i;
-								break;
-							}
-						}
+						(int idx, bool shouldInsertCurrent) = AiModelListLoader.FindSelectedIndex(models, selected);
 						if (idx >= 0)
 						{
 							ModelComboBox.SelectedIndex = idx;
 						}
-						else if (!string.IsNullOrWhiteSpace(selected))
+						else if (shouldInsertCurrent)
 						{
 							ModelComboBox.Items.Insert(0, selected);
 							ModelComboBox.SelectedIndex = 0;
@@ -160,12 +113,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
-			ForkPlusSettings.Default.Save();
+			AiModelListLoader.CurrentModel = selected;
 			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected);
 		}
 
@@ -190,11 +138,10 @@ namespace ForkPlus.UI.Dialogs
 				AiResponseWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 				AiResponseWebView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
 				{
-					if (!e.IsSuccess || !_pendingStreamingScrollToEnd)
+					if (!e.IsSuccess || !_viewModel.ConsumeScrollToEndRequest())
 					{
 						return;
 					}
-					_pendingStreamingScrollToEnd = false;
 					try
 					{
 						AiResponseWebView.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)");
@@ -231,12 +178,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			// 重置流式状态
-			_streamingMarkdown = new StringBuilder();
-			_lastStreamingRenderUtc = DateTime.MinValue;
-			_streamingActive = true;
-			_streamingUserAtBottom = true;
-			_pendingStreamingScrollToEnd = false;
+			// 重置流式状态（VM 承载）
+			_viewModel.ResetForNewRequest();
 
 			StatusTextBlock.Text = PreferencesLocalization.Current("Queued...");
 			StatusProgressBar.Visibility = Visibility.Visible;
@@ -249,7 +192,7 @@ namespace ForkPlus.UI.Dialogs
 			_currentMonitor = new JobMonitor();
 			_currentMonitor.SetCancellationAction(delegate
 			{
-				Dispatcher.Async(delegate { StopStreamingRender(); });
+				Dispatcher.Async(delegate { _viewModel.StopStreaming(); UpdateStreamingStoppedUi(); });
 			});
 			// 后台线程执行 AI 请求
 			Task.Run(delegate
@@ -266,21 +209,13 @@ namespace ForkPlus.UI.Dialogs
 			});
 		}
 
-		/// <summary>流式 chunk 回调：追加到缓冲，节流渲染到 WebView。由调用方在 AI 请求的 onChunk 中调用。</summary>
+		/// <summary>流式 chunk 回调：追加到 VM 缓冲，节流渲染到 WebView。由调用方在 AI 请求的 onChunk 中调用。</summary>
 		public void OnChunk(string chunk)
 		{
-			if (string.IsNullOrEmpty(chunk) || !_streamingActive)
+			(bool shouldRender, int lengthSoFar) = _viewModel.OnChunk(chunk);
+			if (!shouldRender)
 			{
 				return;
-			}
-			lock (_streamingLock)
-			{
-				_streamingMarkdown?.Append(chunk);
-			}
-			int lengthSoFar;
-			lock (_streamingLock)
-			{
-				lengthSoFar = _streamingMarkdown?.Length ?? 0;
 			}
 			Dispatcher.Async(delegate { TryRenderStreamingPreview(lengthSoFar); });
 		}
@@ -290,11 +225,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			Dispatcher.Async(delegate
 			{
-				_streamingActive = false;
-				StopButton.Visibility = Visibility.Collapsed;
-				RetryButton.IsEnabled = true;
-				StatusProgressBar.Visibility = Visibility.Collapsed;
-				BusyIndicator.Collapse();
+				_viewModel.StopStreaming();
+				UpdateStreamingStoppedUi();
 				StatusTextBlock.Text = PreferencesLocalization.Current("Done");
 				// 如果调用方给了最终 markdown，覆盖渲染（可能经过修正）
 				if (!string.IsNullOrEmpty(finalMarkdown))
@@ -312,14 +244,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ShowError(string message)
 		{
-			_streamingActive = false;
-			StopButton.Visibility = Visibility.Collapsed;
-			RetryButton.IsEnabled = true;
-			StatusProgressBar.Visibility = Visibility.Collapsed;
-			BusyIndicator.Collapse();
+			_viewModel.StopStreaming();
+			UpdateStreamingStoppedUi();
 			StatusTextBlock.Text = PreferencesLocalization.Current("Failed");
-			string escaped = WebUtility.HtmlEncode(message ?? "");
-			string html = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" + GetCss() + "</style></head><body><p style='color:#d33'>" + escaped + "</p></body></html>";
+			string html = AiStreamingMarkdownViewModel.BuildErrorHtmlDocument(message);
 			try
 			{
 				AiResponseWebView.NavigateToString(html);
@@ -331,60 +259,41 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void StopStreamingRender()
+		/// <summary>流式停止后统一切换 UI 控件（完成/取消/出错共用）。</summary>
+		private void UpdateStreamingStoppedUi()
 		{
-			_streamingActive = false;
 			StopButton.Visibility = Visibility.Collapsed;
 			RetryButton.IsEnabled = true;
 			StatusProgressBar.Visibility = Visibility.Collapsed;
 			BusyIndicator.Collapse();
-			StatusTextBlock.Text = PreferencesLocalization.Current("Canceled");
 		}
 
 		private void TryRenderStreamingPreview(int lengthSoFar)
 		{
-			if (!_streamingActive || AiResponseWebView?.CoreWebView2 == null)
+			if (!_viewModel.ShouldRenderNow())
 			{
 				return;
 			}
-			DateTime now = DateTime.UtcNow;
-			if (now - _lastStreamingRenderUtc < TimeSpan.FromMilliseconds(StreamingRenderIntervalMs))
+			if (AiResponseWebView?.CoreWebView2 == null)
 			{
 				return;
 			}
-			_lastStreamingRenderUtc = now;
 			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
-			string md;
-			lock (_streamingLock)
-			{
-				md = _streamingMarkdown?.ToString() ?? "";
-			}
+			string md = _viewModel.GetMarkdownSnapshot();
 			if (string.IsNullOrEmpty(md))
 			{
 				return;
 			}
-			RenderMarkdown(md, scrollToEnd: _streamingUserAtBottom);
+			RenderMarkdown(md, scrollToEnd: _viewModel.StreamingUserAtBottom);
 		}
 
 		private void RenderMarkdown(string markdown, bool scrollToEnd)
 		{
-			string body;
-			try
-			{
-				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(markdown);
-				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(markdown);
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("AiTextResultWindow markdown render failed: " + ex.Message);
-				body = WebUtility.HtmlEncode(markdown);
-			}
-			string scrollScript = "<script>(function(){function s(){var st=document.documentElement.scrollTop||document.body.scrollTop;var sh=document.documentElement.scrollHeight||document.body.scrollHeight;var ch=document.documentElement.clientHeight;var at=ch<=0||(st+ch>=sh-80);window.chrome.webview.postMessage('scroll-at-bottom:'+(at?'1':'0'));}window.addEventListener('scroll',s,{passive:true});window.addEventListener('load',s);if(document.readyState==='complete'||document.readyState==='interactive'){s();}})();</script>";
+			string html = AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocumentWithScrollScript(markdown);
 			if (scrollToEnd)
 			{
-				_pendingStreamingScrollToEnd = true;
+				_viewModel.RequestScrollToEndIfNeeded();
 			}
-			string html = "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + GetCss() + "\n</style></head>\n<body>" + body + "\n" + scrollScript + "\n</body>\n</html>";
 			try
 			{
 				AiResponseWebView.NavigateToString(html);
@@ -400,46 +309,10 @@ namespace ForkPlus.UI.Dialogs
 		private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
 		{
 			string message = e.TryGetWebMessageAsString();
-			if (message != null && message.StartsWith("scroll-at-bottom:", StringComparison.Ordinal))
+			bool? atBottom = AiStreamingMarkdownViewModel.TryParseScrollMessage(message);
+			if (atBottom.HasValue)
 			{
-				string value = message.Substring("scroll-at-bottom:".Length);
-				_streamingUserAtBottom = value == "1";
-			}
-		}
-
-		private static GitCommandResult<string> ConvertMarkdownToHtml(string markdown)
-		{
-			return BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
-			{
-				return Bt.bt_md_to_html(markdown, ref x);
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				return GitCommandResult<string>.Success(x.html.GetUtf8String());
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				Bt.bt_release_md_to_html(ref x);
-			});
-		}
-
-		private static string GetCss()
-		{
-			if (_cachedCss != null)
-			{
-				return _cachedCss;
-			}
-			try
-			{
-				Assembly executingAssembly = Assembly.GetExecutingAssembly();
-				string name = "ForkPlus.Assets.md-ai-output.css";
-				using Stream stream = executingAssembly.GetManifestResourceStream(name);
-				using StreamReader streamReader = new StreamReader(stream);
-				_cachedCss = streamReader.ReadToEnd();
-				return _cachedCss;
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to read CSS resource", ex);
-				return string.Empty;
+				_viewModel.SetUserAtBottom(atBottom.Value);
 			}
 		}
 
@@ -455,11 +328,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CopyButton_Click(object sender, RoutedEventArgs e)
 		{
-			string md;
-			lock (_streamingLock)
-			{
-				md = _streamingMarkdown?.ToString() ?? "";
-			}
+			string md = _viewModel.GetFinalMarkdown();
 			if (string.IsNullOrEmpty(md))
 			{
 				return;
