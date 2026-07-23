@@ -16,73 +16,25 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly GitModule _gitModule;
 
+	// 阶段 3：承接 6 个分支名/前缀"非空 + ReferenceNameValidator"校验 + 命令预览。
+	// 新模式点：Validate() 返回 (IsAllowed, Status, StatusMessage, RequiresTranslation)，
+	// 非空失败消息需 View 翻译（PreferencesLocalization 是 WPF 类型，VM 不可用），校验器原文原样透传。
+	private readonly GitFlowInitWindowViewModel _viewModel = new GitFlowInitWindowViewModel();
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				if (string.IsNullOrEmpty(MasterBranchTextBox.Text))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Production branch name can't be empty"));
-					return false;
-				}
-				if (string.IsNullOrEmpty(DevelopBranchTextBox.Text))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Development branch name can't be empty"));
-					return false;
-				}
-				if (string.IsNullOrEmpty(FeaturePrefixTextBox.Text))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Feature branch prefix can't be empty"));
-					return false;
-				}
-				if (string.IsNullOrEmpty(ReleasePrefixTextBox.Text))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Release branch prefix can't be empty"));
-					return false;
-				}
-				if (string.IsNullOrEmpty(HotfixPrefixTextBox.Text))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, Translate("Hotfix branch prefix can't be empty"));
-					return false;
-				}
-				string text = ReferenceNameValidator.Validate(MasterBranchTextBox.Text);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				string text2 = ReferenceNameValidator.Validate(DevelopBranchTextBox.Text);
-				if (text2 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text2);
-					return false;
-				}
-				string text3 = ReferenceNameValidator.ValidateGitFlow(FeaturePrefixTextBox.Text);
-				if (text3 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text3);
-					return false;
-				}
-				string text4 = ReferenceNameValidator.ValidateGitFlow(ReleasePrefixTextBox.Text);
-				if (text4 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text4);
-					return false;
-				}
-				string text5 = ReferenceNameValidator.ValidateGitFlow(HotfixPrefixTextBox.Text);
-				if (text5 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text5);
-					return false;
-				}
-				string text6 = ReferenceNameValidator.ValidateGitFlow(VersionTagPrefixTextBox.Text);
-				if (text6 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text6);
-					return false;
-				}
-				return true;
+				_viewModel.MasterBranch = MasterBranchTextBox.Text;
+				_viewModel.DevelopBranch = DevelopBranchTextBox.Text;
+				_viewModel.FeaturePrefix = FeaturePrefixTextBox.Text;
+				_viewModel.ReleasePrefix = ReleasePrefixTextBox.Text;
+				_viewModel.HotfixPrefix = HotfixPrefixTextBox.Text;
+				_viewModel.VersionTagPrefix = VersionTagPrefixTextBox.Text;
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage, bool requiresTranslation) = _viewModel.Validate();
+				string message = requiresTranslation ? Translate(statusMessage ?? string.Empty) : (statusMessage ?? string.Empty);
+				SetStatus(status, message);
+				return isAllowed;
 			}
 		}
 
@@ -103,11 +55,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		if (string.IsNullOrEmpty(MasterBranchTextBox.Text) || string.IsNullOrEmpty(DevelopBranchTextBox.Text))
-		{
-			return null;
-		}
-		return "git flow init";
+		_viewModel.MasterBranch = MasterBranchTextBox.Text;
+		_viewModel.DevelopBranch = DevelopBranchTextBox.Text;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()

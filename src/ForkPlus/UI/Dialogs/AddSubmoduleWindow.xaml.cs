@@ -20,41 +20,32 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly SubmodulesToUpdate _submodulesToUpdate;
 
-		private bool _repositoryPathValid;
+	// 阶段 3：承接 url+path 非空 + 路径合法性（MakePath）校验 + 命令预览。
+	// IsPathValid 由 VM 在 Path 设置时 try MakePath 计算。剪贴板 URL 探测/GitUrl 解析留 View。
+	private readonly AddSubmoduleWindowViewModel _viewModel;
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (!string.IsNullOrWhiteSpace(RepositoryUrlTextBox.Text) && !string.IsNullOrWhiteSpace(PathTextBox.Text))
-				{
-					return _repositoryPathValid;
-				}
-				return false;
+				_viewModel.RepositoryUrl = RepositoryUrlTextBox.Text;
+				_viewModel.Path = PathTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			string url = RepositoryUrlTextBox.Text.Trim();
-			string path = PathTextBox.Text.Trim();
-			if (string.IsNullOrWhiteSpace(path))
-			{
-				return null;
-			}
-			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
-			string normalizedPath = PathHelper.NormalizeUnix(path);
-			if (string.IsNullOrWhiteSpace(url))
-			{
-				return "git submodule add " + Quote(normalizedPath);
-			}
-			return "git submodule add " + Quote(url) + " " + Quote(normalizedPath);
+			_viewModel.RepositoryUrl = RepositoryUrlTextBox.Text;
+			_viewModel.Path = PathTextBox.Text;
+			return _viewModel.CommandPreview;
 		}
 
 		public AddSubmoduleWindow(GitModule gitModule, SubmodulesToUpdate submodulesToUpdate)
 		{
 			_gitModule = gitModule;
 			_submodulesToUpdate = submodulesToUpdate;
+			_viewModel = new AddSubmoduleWindowViewModel(_gitModule);
 			InitializeComponent();
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
 			base.DialogTitle = Translate("Add Submodule");
@@ -119,23 +110,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			_repositoryPathValid = true;
-			try
+			_viewModel.Path = PathTextBox.Text;
+			if (string.IsNullOrEmpty(PathTextBox.Text))
 			{
-				string text = PathTextBox.Text;
-				if (string.IsNullOrEmpty(text))
-				{
-					FinalPathHintTextBlock.Collapse();
-				}
-				else
-				{
-					FinalPathHintTextBlock.Text = PathHelper.Normalize(_gitModule.MakePath(text));
-					FinalPathHintTextBlock.Show();
-				}
+				FinalPathHintTextBlock.Collapse();
 			}
-			catch
+			else if (_viewModel.IsPathValid)
 			{
-				_repositoryPathValid = false;
+				FinalPathHintTextBlock.Text = PathHelper.Normalize(_viewModel.NormalizedPathHint);
+				FinalPathHintTextBlock.Show();
 			}
 			UpdateSubmitButton();
 			RefreshCommandPreview();

@@ -23,15 +23,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _patchContainsCommitHeader;
 
+	// 阶段 3：承接"文件路径存在"校验 + 命令预览（git am/apply）。零 Git 依赖纯 BCL VM。
+	// CreateCommits 由 View 据 Checkbox 可见性+勾选计算后传入。TestForConflicts/可见性切换留 View。
+	private ApplyPatchWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (_patchData == null)
-				{
-					return File.Exists(PathTextBox.Text.Trim());
-				}
-				return true;
+				_viewModel.PatchPath = PathTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -39,6 +40,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_repositoryUserControl = repositoryUserControl;
 			_patchContainsCommitHeader = PatchContainsCommitHeader(patchPath);
+			_viewModel = new ApplyPatchWindowViewModel(_patchData);
 			InitializeComponent();
 			base.DialogTitle = Translate("Apply Patch");
 			base.DialogDescription = Translate("Apply Patch");
@@ -56,6 +58,7 @@ namespace ForkPlus.UI.Dialogs
 			_patchData = patchData;
 			string @string = Encoding.UTF8.GetString(patchData);
 			_patchContainsCommitHeader = @string.StartsWith("From ");
+			_viewModel = new ApplyPatchWindowViewModel(_patchData);
 			InitializeComponent();
 			base.DialogTitle = Translate("Apply Patch");
 			base.DialogDescription = Translate("Apply patch from clipboard");
@@ -70,19 +73,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		bool createCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
-		string command = createCommits ? "git am" : "git apply";
-		if (_patchData != null)
-		{
-			return command;
-		}
-		string filePath = PathTextBox.Text.Trim();
-		if (string.IsNullOrEmpty(filePath))
-		{
-			return null;
-		}
-		string quotedPath = filePath.IndexOf(' ') >= 0 ? ("\"" + filePath + "\"") : filePath;
-		return command + " " + quotedPath;
+		_viewModel.PatchPath = PathTextBox.Text;
+		_viewModel.CreateCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()

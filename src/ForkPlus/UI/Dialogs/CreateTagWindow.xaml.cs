@@ -23,60 +23,27 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly IGitPoint _gitPoint;
 
+	// 阶段 3：承接 tag 名校验（ReferenceNameValidator + 重名）+ 命令预览（含 push 多远端）。
+	// RefreshButtonTitle / autocomplete / PushCheckBox 持久化留 View。
+	private CreateTagWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string tagName = TagNameTextBox.Text.ToLower();
-				if (string.IsNullOrEmpty(tagName))
-				{
-					return false;
-				}
-				string text = ReferenceNameValidator.Validate(tagName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				if (_tags.AnyItem((Tag x) => x.Name.ToLower() == tagName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Tag '" + TagNameTextBox.Text + "' already exists");
-					return false;
-				}
-				return true;
+				_viewModel.TagName = TagNameTextBox.Text;
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+				SetStatus(status, statusMessage ?? string.Empty);
+				return isAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			string tagName = TagNameTextBox.Text;
-			if (string.IsNullOrWhiteSpace(tagName))
-			{
-				return null;
-			}
-			var parts = new System.Collections.Generic.List<string> { "git", "tag", "-a" };
-			string message = TagMessageTextBox.Text;
-			if (!string.IsNullOrEmpty(message))
-			{
-				parts.Add("-m");
-				parts.Add(message.Contains(" ") ? "\"" + message + "\"" : message);
-			}
-			parts.Add(tagName);
-			string commit = _gitPoint?.FriendlyName;
-			if (!string.IsNullOrEmpty(commit))
-			{
-				parts.Add(commit);
-			}
-			string command = string.Join(" ", parts);
-			if (PushCheckBox.IsChecked.GetValueOrDefault() && _remotes != null)
-			{
-				foreach (Remote remote in _remotes)
-				{
-					command += "\ngit push " + remote.Name + " refs/tags/" + tagName;
-				}
-			}
-			return command;
+			_viewModel.TagName = TagNameTextBox.Text;
+			_viewModel.TagMessage = TagMessageTextBox.Text;
+			_viewModel.Push = PushCheckBox.IsChecked.GetValueOrDefault();
+			return _viewModel.CommandPreview;
 		}
 
 		public CreateTagWindow(GitModule gitModule, RepositoryReferences refs, Remote[] remotes, IGitPoint startPoint)
@@ -86,6 +53,7 @@ namespace ForkPlus.UI.Dialogs
 			_tags = refs.Tags;
 			_remotes = remotes;
 			_gitPoint = startPoint;
+			_viewModel = new CreateTagWindowViewModel(_tags, _remotes, _gitPoint);
 			GitPointView.Value = startPoint;
 			base.DialogTitle = Translate("Create Tag");
 			base.DialogDescription = Translate("Create annotated tag at the selected point");

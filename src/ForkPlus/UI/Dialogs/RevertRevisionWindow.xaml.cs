@@ -21,17 +21,18 @@ namespace ForkPlus.UI.Dialogs
 
 		private Sha[] _revisionParents;
 
+	// 阶段 3：承接"merge 提交需选父提交"校验 + 命令预览。冲突预检/可见性切换留 View。
+	private RevertRevisionWindowViewModel _viewModel;
+
 		private bool MergeRevision => _revisionParents.Length > 1;
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (MergeRevision)
-				{
-					return RevisionParentComboBox.SelectedItem != null;
-				}
-				return true;
+				_viewModel.Commit = CommitCheckBox.IsChecked.GetValueOrDefault();
+				_viewModel.SelectedParentIndex = RevisionParentComboBox.SelectedIndex;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -45,6 +46,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_revision = revision;
 			_revisionParents = revisionParents;
+			_viewModel = new RevertRevisionWindowViewModel(_revision, _revisionParents);
 			InitializeComponent();
 			base.DialogTitle = Translate("Revert");
 			base.DialogDescription = Translate("Revert changes of the individual commit");
@@ -94,26 +96,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 		{
-			if (_revision == null)
-			{
-				return null;
-			}
-			var parts = new System.Collections.Generic.List<string> { "git", "revert" };
-			bool commit = CommitCheckBox.IsChecked.GetValueOrDefault();
-			if (!commit)
-			{
-				parts.Add("--no-commit");
-			}
-			if (MergeRevision)
-			{
-				int parentNumber = RevisionParentComboBox.SelectedIndex + 1;
-				if (parentNumber > 0)
-				{
-					parts.Add("-m " + parentNumber.ToString());
-				}
-			}
-			parts.Add(_revision.Sha.ToAbbreviatedString());
-			return string.Join(" ", parts);
+			_viewModel.Commit = CommitCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.SelectedParentIndex = RevisionParentComboBox.SelectedIndex;
+			return _viewModel.CommandPreview;
 		}
 
 		protected override void OnSubmit()
