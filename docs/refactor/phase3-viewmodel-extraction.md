@@ -1,6 +1,6 @@
 # 阶段 3：ViewModel 抽取
 
-> 状态：**Dialog 窗口 VM 抽取已完成**（48 个 ForkPlusDialogWindow 子类全部抽取，CI 三平台全绿）
+> 状态：**Dialog 窗口 VM 抽取已完成**（48 个 ForkPlusDialogWindow 子类全部抽取）+ **AI 系列窗口 VM 抽取已完成**（3 个 WebView2 窗口），CI 三平台全绿
 > 性质：最大工作量，重构分水岭
 > 前置：阶段 0/1/2 完成（抽象层就位、领域层干净、Commands 去 WPF）
 
@@ -226,26 +226,77 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 
 ### 阶段 0 推迟的接口（本阶段补）
 
-- [ ] `IWebViewFactory` / `IMarkdownWebView`
-  - WebView2 事件面大（`ContextMenuRequested` / `WebMessageReceived` / `NavigationCompleted`），需先设计 AI 窗口 VM 再定义接口
-  - 接口草案：
-    ```csharp
-    public interface IMarkdownWebView
-    {
-        string Markdown { set; }
-        bool IsDarkTheme { set; }
-        event Action<string> ScrollPositionChanged;
-        event Action<WebViewContextMenuRequest> ContextMenuRequested;
-    }
-    ```
-  - VM 只管"输出 markdown 字符串"，View 负责创建 WebView 并绑定
+- [x] `IWebViewFactory` / `IMarkdownWebView` → **改为 VM 基类方案（里程碑 3.14）**
+  - 原计划设计 `IMarkdownWebView` 接口抽象 WebView2，但 AI 窗口流式渲染逻辑高度重复且紧耦合 `NavigateToString`/`CoreWebView2`，接口抽象收益低于复杂度成本
+  - 实际方案：抽取 `AiStreamingMarkdownViewModel` 基类承载流式状态+协议+Markdown转换+CSS（零 WPF），View 保留 WebView2 实例操作。VM 只管"输出 HTML 字符串"，View 负责 `NavigateToString`
+  - 详见里程碑 3.14
 
 ## 风险点
 
-- **WebView2 是最大单点风险**：Avalonia 无官方 WebView。阶段 3 先抽 VM，WebView2 暂留 WPF View，等 VM 稳定后阶段 4 再决定替代方案（CefGlue / AvaloniaEdit 渲染 Markdown）
+- **WebView2 是最大单点风险**：Avalonia 无官方 WebView。阶段 3 先抽 VM（里程碑 3.14 已完成），WebView2 暂留 WPF View，等 VM 稳定后阶段 4 再决定替代方案（CefGlue / AvaloniaEdit 渲染 Markdown）
 - **静态全局访问**：`MainWindow.Instance` / `Application.Current.MainWindow` / `MainWindow.ActiveRepositoryUserControl` 共 74 处，需在 VM 化过程中逐步注入
 - **x:Name 直访**：176 处 `x:Name` + 事件，需逐个评估改 Binding+Command 还是保留事件（配合 VM）
 - **Dispatcher 直调**：29 个文件直接用 WPF Dispatcher，需替换为 `ServiceLocator.Dispatcher`
+
+---
+
+## 里程碑 3.14：AI 系列窗口 VM 抽取（第 10 个模式点：流式渲染 VM 基类）
+
+> 状态：**已完成**（commit `193f707` → `d048933` → `41234dd`，CI 三平台全绿）
+
+AI 系列窗口是阶段 3 中难度最高的部分（WebView2 + 流式渲染 + 多对话状态）。5 个 AI 窗口中 3 个使用 WebView2 流式渲染，其流式逻辑高度重复（`_streamingMarkdown` + `_streamingLock` + 节流 400ms + 滚动跟踪 + Markdown→HTML + CSS），是明显的抽取目标。
+
+### 关键决策：用 VM 基类替代 IWebViewFactory 接口
+
+原计划（阶段 0 推迟项）设计 `IMarkdownWebView` 接口抽象 WebView2。但调研发现 AI 窗口流式渲染紧耦合 `NavigateToString`/`CoreWebView2`，接口抽象收益低于复杂度成本。改为抽取纯 VM 基类承载流式状态+协议+Markdown转换+CSS，View 保留 WebView2 实例操作。
+
+### 新建 4 个 VM 文件（零 WPF）
+
+| 文件 | 职责 |
+|---|---|
+| [AiStreamingMarkdownViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiStreamingMarkdownViewModel.cs) | 基类：流式缓冲+节流协议+滚动跟踪+Markdown→HTML(native Bt)+CSS加载+HTML文档构建+scrollScript注入 |
+| [AiModelListLoader.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiModelListLoader.cs) | 静态助手：三窗口共有的模型下拉后台拉取逻辑（OpenAiService.ListModels）+ CurrentModel 持久化 |
+| [AiTextResultWindowViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiTextResultWindowViewModel.cs) | 继承基类，+ModelListLoaded |
+| [AiCodeReviewWindowViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiCodeReviewWindowViewModel.cs) | 继承基类，+ModelListLoaded |
+| [AiDevelopmentWindowViewModel.cs](file:///workspace/src/ForkPlus/UI/Dialogs/AiDevelopmentWindowViewModel.cs) | 继承基类，+ModelListLoaded |
+
+### 接线 3 个 WebView2 窗口
+
+| 窗口 | 行数 | 特点 | 接线方式 |
+|---|---|---|---|
+| [AiTextResultWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiTextResultWindow.xaml.cs) | 484 | 最简单，单 WebView，完整 scroll-at-bottom 跟踪 | 全套 VM 协议 |
+| [AiCodeReviewWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml.cs) | 1758 | suggestion 列表 + 文件 review + diff 缓存 | 流式部分用 VM，业务逻辑留 View |
+| [AiDevelopmentWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.xaml.cs) | 2141 | 最复杂，多对话气泡 + 工具调用循环 + 文件变更/撤销 | 流式缓冲用 VM，无 scroll-at-bottom（气泡自动高度），业务逻辑留 View |
+
+### 第 10 个模式点：流式渲染 VM 基类
+
+VM 承载（零 WPF）：
+- 流式状态：`_streamingMarkdown`(StringBuilder) + `_streamingLock` + `_lastStreamingRenderUtc` + `StreamingRenderIntervalMs`(400) + `_streamingActive` + `_streamingUserAtBottom` + `_pendingStreamingScrollToEnd`
+- 流式协议：`OnChunk(chunk)`→(shouldRender,lengthSoFar) / `ShouldRenderNow()` 节流判定 / `GetMarkdownSnapshot()` / `StopStreaming()` / `ResetForNewRequest()` / `SetUserAtBottom()` / `RequestScrollToEndIfNeeded()` / `ConsumeScrollToEndRequest()` / `ClearStreamingBuffer()` / `GetFinalMarkdown()`
+- Markdown→HTML：`ConvertMarkdownToHtml(markdown)`（native Bt.bt_md_to_html）
+- CSS：`GetCss()`（嵌入资源 md-ai-output.css，静态缓存）
+- HTML 文档：`BuildHtmlDocument(body)` / `RenderMarkdownToHtmlDocument(md)` / `RenderMarkdownToHtmlDocumentWithScrollScript(md)` / `BuildErrorHtmlDocument(msg)` / `BuildScrollScript()`
+- 消息解析：`TryParseScrollMessage(message)`→bool?
+
+View 保留（WPF 职责）：
+- WebView2 实例创建/初始化/事件订阅（`EnsureCoreWebView2Async` / `ContextMenuRequested` / `WebMessageReceived` / `NavigationCompleted`）
+- `NavigateToString(html)`
+- `Dispatcher.Async` 调度（VM.OnChunk 被 UI 线程外调用，View 负责 marshal 回 UI 线程渲染）
+- Visibility / ProgressBar / StatusText / BusyIndicator 切换
+- ComboBox.Items 填充
+- Clipboard.SetText
+- PreferencesLocalization（WPF 类型）
+- 业务逻辑（suggestion 交互 / 文件 review / 工具调用 / 文件变更 / 撤销）
+
+### CI 修复记录
+
+- `193f707` 推送后 Windows build 报 `CS0050`：`AiCodeReviewWindowViewModel.CreateAiService()` 返回 internal `OpenAiService`，public 方法返回 internal 类型。修复（`8af8db4`）：删除该封装方法，View 直接用 OpenAiService
+- `8af8db4` 推送后 Windows build 报 `CS0246`：`AiModelListLoader.cs` 缺 `ServiceResult<>` 的 using。修复（`d048933`）：补 `using ForkPlus.Utils.Http`
+
+### 未抽取的 2 个 AI 辅助窗口（评估后决定不抽）
+
+- [AiCommitComposerWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiCommitComposerWindow.xaml.cs)（542行）：继承 CustomWindow，无 WebView2/无流式，WIP 提交分组编辑，逻辑紧密围绕 ListBox/TextBox UI，抽取价值低
+- [AiSuggestionPreviewWindow](file:///workspace/src/ForkPlus/UI/Dialogs/AiSuggestionPreviewWindow.xaml.cs)（134行）：继承 ForkPlusDialogWindow 但无 IsSubmitAllowed override，纯 diff 预览，不在抽取范围
 
 ## 后续阶段衔接
 
