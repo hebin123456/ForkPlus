@@ -14,12 +14,16 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly string _sshKeyPath;
 
+		// 阶段 3：承接 passphrase 非空校验（纯判断，SetStatus 副作用留 override）。
+		private readonly SshPassphraseWindowViewModel _viewModel = new SshPassphraseWindowViewModel();
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, "");
-				return !string.IsNullOrWhiteSpace(PasswordBox.Password);
+				_viewModel.Passphrase = PasswordBox.Password;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 

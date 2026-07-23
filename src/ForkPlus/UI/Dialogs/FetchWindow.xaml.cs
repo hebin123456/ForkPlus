@@ -21,41 +21,23 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Remote _predefinedRemote;
 
+		// 阶段 3：承接 remote 选择 + fetchAllRemotes 复选框状态 + 命令预览。
+		private readonly FetchWindowViewModel _viewModel = new FetchWindowViewModel();
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (RemoteComboBox.SelectedItem != null)
-				{
-					return base.IsSubmitAllowed;
-				}
-				return false;
+				_viewModel.SelectedRemote = RemoteComboBox.SelectedItem as Remote;
+				return _viewModel.IsRemoteSelected && base.IsSubmitAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
-			bool fetchAllRemotes = FetchAllRemotesCheckBox.IsChecked.GetValueOrDefault();
-			bool allTags = ForkPlusSettings.Default.FetchAllTags;
-			System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "fetch" };
-			if (fetchAllRemotes)
-			{
-				parts.Add("--all");
-			}
-			else
-			{
-				Remote remote = RemoteComboBox.SelectedItem as Remote;
-				if (remote == null)
-				{
-					return null;
-				}
-				parts.Add(remote.Name);
-			}
-			if (allTags)
-			{
-				parts.Add("--tags");
-			}
-			return string.Join(" ", parts);
+			_viewModel.SelectedRemote = RemoteComboBox.SelectedItem as Remote;
+			_viewModel.FetchAllRemotes = FetchAllRemotesCheckBox.IsChecked.GetValueOrDefault();
+			return _viewModel.CommandPreview;
 		}
 
 		public FetchWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remote)

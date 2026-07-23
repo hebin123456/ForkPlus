@@ -18,15 +18,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly GitModule _gitModule;
 
+		// 阶段 3：承接 remote 选择校验与命令预览（与 PushTag 同构，无 tag 参数）。
+		private readonly GitLfsFetchWindowViewModel _viewModel = new GitLfsFetchWindowViewModel();
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (RemotesComboBox.SelectedItem is Remote)
-				{
-					return base.IsSubmitAllowed;
-				}
-				return false;
+				_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+				return _viewModel.IsRemoteSelected && base.IsSubmitAllowed;
 			}
 		}
 
@@ -67,11 +67,8 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 		{
-			if (!(RemotesComboBox.SelectedItem is Remote remote))
-			{
-				return null;
-			}
-			return "git lfs fetch " + remote.Name;
+			_viewModel.SelectedRemote = RemotesComboBox.SelectedItem as Remote;
+			return _viewModel.CommandPreview;
 		}
 
 		protected override void OnSubmit()
