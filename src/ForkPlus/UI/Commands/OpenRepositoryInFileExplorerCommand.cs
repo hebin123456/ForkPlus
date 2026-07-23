@@ -37,8 +37,10 @@ namespace ForkPlus.UI.Commands
 			Log.Info("Open in file explorer '" + repositoryPath + "'");
 			try
 			{
+				// .NET 10 起 UseShellExecute 默认从 true 改为 false，传文件夹路径作 FileName
+				// 会因"非可执行文件"抛 Win32Exception，必须显式置 true 才能走 Shell 打开文件夹。
 				Process process = new Process();
-				ProcessStartInfo startInfo = new ProcessStartInfo(repositoryPath);
+				ProcessStartInfo startInfo = new ProcessStartInfo(repositoryPath) { UseShellExecute = true };
 				process.StartInfo = startInfo;
 				process.Start();
 			}
