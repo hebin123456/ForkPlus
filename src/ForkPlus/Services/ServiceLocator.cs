@@ -16,6 +16,14 @@ namespace ForkPlus.Services
 		public static IToastNotificationService Toast { get; private set; }
 		public static IWindowManagerService WindowManager { get; private set; }
 
+		// ===== 阶段 0 新增抽象（可空，渐进式注册）=====
+		public static IMessageBoxService MessageBox { get; private set; }
+		public static IProcessService Process { get; private set; }
+		public static IFileSystemDialogService FileSystemDialog { get; private set; }
+		public static ICredentialService Credential { get; private set; }
+		public static IFileAssociationService FileAssociation { get; private set; }
+		public static ISystemThemeService SystemTheme { get; private set; }
+
 		public static bool IsInitialized { get; private set; }
 
 		public static void Initialize(
@@ -37,12 +45,41 @@ namespace ForkPlus.Services
 			IsInitialized = true;
 		}
 
+		/// <summary>
+		/// 注册阶段 0 新增的平台抽象服务。全部可选（null 表示该服务暂不注册）。
+		/// 应在 <see cref="Initialize"/> 之后调用。
+		/// </summary>
+		public static void RegisterPlatformServices(
+			IMessageBoxService messageBox = null,
+			IProcessService process = null,
+			IFileSystemDialogService fileSystemDialog = null,
+			ICredentialService credential = null,
+			IFileAssociationService fileAssociation = null,
+			ISystemThemeService systemTheme = null)
+		{
+			if (messageBox != null) MessageBox = messageBox;
+			if (process != null) Process = process;
+			if (fileSystemDialog != null) FileSystemDialog = fileSystemDialog;
+			if (credential != null) Credential = credential;
+			if (fileAssociation != null) FileAssociation = fileAssociation;
+			if (systemTheme != null) SystemTheme = systemTheme;
+		}
+
 		public static void Reset()
 		{
 			Dispatcher = null;
 			DesignMode = null;
 			AppContext = null;
 			Clipboard = null;
+			Timer = null;
+			Toast = null;
+			WindowManager = null;
+			MessageBox = null;
+			Process = null;
+			FileSystemDialog = null;
+			Credential = null;
+			FileAssociation = null;
+			SystemTheme = null;
 			IsInitialized = false;
 		}
 	}
