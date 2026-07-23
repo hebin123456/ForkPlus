@@ -22,6 +22,9 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			new AuthenticationItem(AuthenticationType.AccessToken, "API Token")
 		};
 
+	// 阶段 3：承接认证类型选择 + email + token 非空校验。SetStatus(None,"") 副作用留 View override。
+	private readonly BitbucketLoginWindowViewModel _viewModel = new BitbucketLoginWindowViewModel();
+
 		[Null]
 		public Account Account { get; private set; }
 
@@ -30,21 +33,10 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, "");
-				if (!(AuthenticationTypeComboBox.SelectedItem is AuthenticationItem { Type: var type }))
-				{
-					return false;
-				}
-				switch (type)
-				{
-				case AuthenticationType.AccessToken:
-					if (!string.IsNullOrEmpty(EmailTextBox.Text))
-					{
-						return !string.IsNullOrEmpty(TokenTextBox.Text);
-					}
-					return false;
-				default:
-					return false;
-				}
+				_viewModel.SelectedAuthenticationType = (AuthenticationTypeComboBox.SelectedItem as AuthenticationItem)?.Type;
+				_viewModel.Email = EmailTextBox.Text;
+				_viewModel.Token = TokenTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 

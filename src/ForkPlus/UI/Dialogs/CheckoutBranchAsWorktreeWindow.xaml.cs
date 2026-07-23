@@ -26,19 +26,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private string _worktreesContainerPath;
 
+	// 阶段 3：承接 worktree 路径非空校验 + "分支已有 worktree"重名校验 + 命令预览。
+	// RefreshPath（Path.Combine 拼装 + 写 PathTextBox）/ BrowseButton_Click 留 View。
+	private CheckoutBranchAsWorktreeWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (string.IsNullOrWhiteSpace(PathTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				if (_worktrees.WorktreesByFullReference.ContainsKey(_branch.FullReference))
-				{
-					return false;
-				}
-				return true;
+				_viewModel.WorktreePath = PathTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -47,8 +44,9 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_branch = branch;
 			_gitModule = repositoryUserControl.GitModule;
-			_worktrees = repositoryUserControl.RepositoryData.Worktrees;
-			string directoryName = Path.GetDirectoryName(_gitModule.CommonGitDir);
+		_worktrees = repositoryUserControl.RepositoryData.Worktrees;
+		_viewModel = new CheckoutBranchAsWorktreeWindowViewModel(_branch, _worktrees);
+		string directoryName = Path.GetDirectoryName(_gitModule.CommonGitDir);
 			_worktreesContainerPath = Path.Combine(Path.GetDirectoryName(directoryName), Path.GetFileName(directoryName) + "-worktrees");
 			InitializeComponent();
 			base.DialogTitle = Translate("Checkout Branch as Worktree");
@@ -62,17 +60,8 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		if (_branch == null || string.IsNullOrEmpty(_branch.Name))
-		{
-			return null;
-		}
-		string worktreePath = PathTextBox.Text.Trim();
-		if (string.IsNullOrEmpty(worktreePath))
-		{
-			return null;
-		}
-		string quotedPath = worktreePath.IndexOf(' ') >= 0 ? ("\"" + worktreePath + "\"") : worktreePath;
-		return "git worktree add " + quotedPath + " " + _branch.Name;
+		_viewModel.WorktreePath = PathTextBox.Text;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()

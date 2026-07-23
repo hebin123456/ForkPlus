@@ -67,38 +67,31 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RepositoryReferences _references;
 
+	// 阶段 3：承接"选中项与当前 upstream 比较"校验 + 命令预览拼接。
+	// RemoteBranchItem（含 WPF Visibility）整体留 View 作列表项；VM 仅持选中项纯数据投影。
+	private readonly ChangeRemoteTrackingWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				RemoteBranch obj = (RemoteBranchesComboBox.SelectedItem as RemoteBranchItem)?.RemoteBranch;
-				if (_localBranch.UpstreamFullReference == obj?.FullReference)
-				{
-					return false;
-				}
-				return true;
+				PushSelectionToViewModel();
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
 		protected override string GetCommandPreview()
 		{
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
+		}
+
+		/// <summary>把 ComboBox 选中项的纯数据投影推入 VM（RemoteBranch + 是否 NoTracking）。</summary>
+		private void PushSelectionToViewModel()
+		{
 			RemoteBranchItem selectedItem = RemoteBranchesComboBox.SelectedItem as RemoteBranchItem;
-			if (selectedItem == null)
-			{
-				return null;
-			}
-			string localName = _localBranch.Name;
-			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
-			if (selectedItem.ItemType == RemoteBranchItemType.NoTracking)
-			{
-				return "git branch --unset-upstream " + Quote(localName);
-			}
-			RemoteBranch remoteBranch = selectedItem.RemoteBranch;
-			if (remoteBranch == null)
-			{
-				return null;
-			}
-			return "git branch --set-upstream-to=" + remoteBranch.Remote + "/" + remoteBranch.ShortName + " " + Quote(localName);
+			_viewModel.SelectedRemoteBranch = selectedItem?.RemoteBranch;
+			_viewModel.IsNoTrackingSelected = selectedItem != null && selectedItem.ItemType == RemoteBranchItemType.NoTracking;
 		}
 
 		public ChangeRemoteTrackingWindow(GitModule gitModule, LocalBranch localBranch, RepositoryReferences references)
@@ -106,6 +99,7 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			_localBranch = localBranch;
 			_references = references;
+			_viewModel = new ChangeRemoteTrackingWindowViewModel(_localBranch);
 			InitializeComponent();
 			base.DialogTitle = PreferencesLocalization.Current("Change tracking reference");
 			base.DialogDescription = PreferencesLocalization.Current("Change branch remote tracking reference");

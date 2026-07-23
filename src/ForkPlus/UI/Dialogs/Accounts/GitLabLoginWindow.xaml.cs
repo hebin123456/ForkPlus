@@ -19,6 +19,9 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private readonly bool _server;
 
+	// 阶段 3：承接 server URL 规范化(TrimEnd) + URI 校验 + token 非空校验。SetStatus/Hint 副作用留 View。
+	private readonly GitLabLoginWindowViewModel _viewModel;
+
 		[Null]
 		public Account Account { get; private set; }
 
@@ -27,34 +30,24 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, "");
+				_viewModel.ServerText = ServerTextBox.Text;
+				_viewModel.Token = TokenTextBox.Text;
 				if (_server)
 				{
 					PersonalAccessTokenHint.Disable();
-					if (!Uri.TryCreate(ServerUrl, UriKind.Absolute, out var _))
+					if (_viewModel.IsUriValid)
 					{
-						return false;
+						PersonalAccessTokenHint.Enable();
 					}
-					PersonalAccessTokenHint.Enable();
 				}
-				return !string.IsNullOrEmpty(TokenTextBox.Text);
-			}
-		}
-
-		private string ServerUrl
-		{
-			get
-			{
-				if (!_server)
-				{
-					return "https://gitlab.com";
-				}
-				return ServerTextBox.Text.ToLower().TrimEnd(Consts.Chars.Slash);
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
 		public GitLabLoginWindow(bool server = false, [Null] Account account = null)
 		{
 			_server = server;
+			_viewModel = new GitLabLoginWindowViewModel(server);
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
@@ -85,7 +78,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		protected override void OnSubmit()
 		{
-			string serverUrl = ServerUrl;
+			_viewModel.ServerText = ServerTextBox.Text;
+			string serverUrl = _viewModel.ServerUrl;
 			string token = TokenTextBox.Text;
 			RemoteType remoteType = ((serverUrl == "https://gitlab.com") ? RemoteType.Gitlab : RemoteType.GitlabServer);
 			GitLabPrivateAccessTokenAuthentication authentication = new GitLabPrivateAccessTokenAuthentication(null, null, token);
@@ -135,7 +129,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private void OpenPersonalAccessTokenConfigurationUrlButton_Click(object sender, RoutedEventArgs e)
 		{
-			new Uri(ServerUrl + "/-/user_settings/personal_access_tokens?name=Fork&scopes=api%2Cwrite_repository").OpenInBrowser();
+			_viewModel.ServerText = ServerTextBox.Text;
+			new Uri(_viewModel.ServerUrl + "/-/user_settings/personal_access_tokens?name=Fork&scopes=api%2Cwrite_repository").OpenInBrowser();
 		}
 
 		private static string Translate(string text)

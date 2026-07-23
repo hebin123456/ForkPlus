@@ -22,33 +22,20 @@ namespace ForkPlus.UI.Dialogs
 
 		private GitFlowSettings _gitFlowSettings;
 
+	// 阶段 3：承接 base 分支选择 + feature 名校验（GitFlow 格式 + 重名）+ 命令预览。
+	// Validate() 返回 (IsAllowed, Status, StatusMessage)，View override 据此调 SetStatus。
+	// static UnfinishedBranchName 是 View 静态状态，留 View。
+	private GitFlowStartFeatureWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				if (!(BranchesComboBox.SelectedItem is LocalBranch))
-				{
-					return false;
-				}
-				string text = FeatureNameTextBox.Text;
-				if (string.IsNullOrEmpty(text))
-				{
-					return false;
-				}
-				string text2 = ReferenceNameValidator.ValidateGitFlow(text);
-				if (text2 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text2);
-					return false;
-				}
-				string branchName = (_gitFlowSettings.FeaturePrefix + text).ToLower();
-				if (_localBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == branchName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Branch '" + branchName + "' already exists");
-					return false;
-				}
-				return true;
+				_viewModel.FeatureName = FeatureNameTextBox.Text;
+				_viewModel.SelectedBaseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+				SetStatus(status, statusMessage ?? string.Empty);
+				return isAllowed;
 			}
 		}
 
@@ -64,17 +51,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		string featureName = FeatureNameTextBox.Text;
-		if (string.IsNullOrWhiteSpace(featureName))
-		{
-			return null;
-		}
-		LocalBranch baseBranch = BranchesComboBox.SelectedItem as LocalBranch;
-		if (baseBranch == null)
-		{
-			return null;
-		}
-		return "git flow feature start " + featureName + " " + baseBranch.Name;
+		_viewModel.FeatureName = FeatureNameTextBox.Text;
+		_viewModel.SelectedBaseBranch = BranchesComboBox.SelectedItem as LocalBranch;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()
@@ -123,6 +102,7 @@ namespace ForkPlus.UI.Dialogs
 			RepositoryData repositoryData = (Application.Current.MainWindow as MainWindow).TabManager.ActiveRepositoryUserControl.RepositoryData;
 			_gitFlowSettings = repositoryData.GitFlowSettings;
 			_localBranches = repositoryData.References.LocalBranches;
+			_viewModel = new GitFlowStartFeatureWindowViewModel(_gitFlowSettings, _localBranches);
 			BranchesComboBox.ItemsSource = _localBranches;
 			BranchesComboBox.SelectedItem = IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.Name == _gitFlowSettings.DevelopBranch) ?? IReadOnlyListExtensions.FirstItem(_localBranches, (LocalBranch x) => x.IsActive);
 			FeaturePrefixTextBlock.Text = _gitFlowSettings.FeaturePrefix;
