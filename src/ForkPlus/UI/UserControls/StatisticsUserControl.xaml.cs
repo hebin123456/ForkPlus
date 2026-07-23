@@ -25,51 +25,6 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class StatisticsUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
-		public class AuthorStatViewModel : INotifyPropertyChanged
-		{
-			public string Name { get; }
-
-			public int TotalCommits { get; }
-
-			public event PropertyChangedEventHandler PropertyChanged
-			{
-				add
-				{
-				}
-				remove
-				{
-				}
-			}
-
-			public AuthorStatViewModel(string name, int totalCommits)
-			{
-				Name = name;
-				TotalCommits = totalCommits;
-			}
-		}
-
-		/// <summary>代码行数列表行 ViewModel。每行一个语言。</summary>
-		public class CodeLineLanguageViewModel
-		{
-			public string Name { get; }
-			public long Files { get; }
-			public long Code { get; }
-			public long Comments { get; }
-			public long Blanks { get; }
-			/// <summary>饼图色块颜色，XAML 里 Rectangle.Fill 绑定。</summary>
-			public string Color { get; }
-
-			public CodeLineLanguageViewModel(string name, long files, long code, long comments, long blanks, string color)
-			{
-				Name = name;
-				Files = files;
-				Code = code;
-				Comments = comments;
-				Blanks = blanks;
-				Color = color;
-			}
-		}
-
 		public static class PlotHelper
 		{
 			public static PlotModel CreateLinePlotModel()
@@ -173,7 +128,7 @@ namespace ForkPlus.UI.UserControls
 						XAxisKey = "Value",
 						YAxisKey = "Category",
 						StrokeThickness = 0.0,
-						FillColor = _colors[2]
+						FillColor = StatisticsUserControlViewModel.Colors[2]
 					} }
 				};
 				RefreshPlotColors(obj);
@@ -216,7 +171,7 @@ namespace ForkPlus.UI.UserControls
 					XAxisKey = "Value",
 					YAxisKey = "Category",
 					StrokeThickness = 0.0,
-					FillColor = _colors[2]
+					FillColor = StatisticsUserControlViewModel.Colors[2]
 				});
 				RefreshPlotColors(plotModel);
 				return plotModel;
@@ -254,40 +209,6 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 		}
-
-		private static readonly OxyColor[] _colors = new OxyColor[13]
-		{
-			((Color)ColorConverter.ConvertFromString("#FF9502")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#64DA38")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#1CADF8")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#FF3B30")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#A2845E")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#CB73E1")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#FFCC00")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#8E8E91")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#FF2968")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#30D5C8")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#5856D6")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B4D435")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#FF6F61")).ToOxyColor()
-		};
-
-		private static readonly OxyColor[] _pieChartColors = new OxyColor[13]
-		{
-			((Color)ColorConverter.ConvertFromString("#B3FF9502")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B364DA38")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B31CADF8")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3FF3B30")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3A2845E")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3CB73E1")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3FFCC00")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B38E8E91")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3FF2968")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B330D5C8")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B35856D6")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3B4D435")).ToOxyColor(),
-			((Color)ColorConverter.ConvertFromString("#B3FF6F61")).ToOxyColor()
-		};
 
 		[Null]
 		private GitModule _gitModule;
@@ -345,7 +266,7 @@ namespace ForkPlus.UI.UserControls
 			LinePlot.Model = _linePlotModel;
 			_piePlotModel = PlotHelper.CreatePiePlotModel();
 			PiePlot.Model = _piePlotModel;
-			_weekDayPlotModel = PlotHelper.CreateWeekDayPlotModel(DaysOfWeek());
+			_weekDayPlotModel = PlotHelper.CreateWeekDayPlotModel(StatisticsUserControlViewModel.DaysOfWeek());
 			WeekDayPlot.Model = _weekDayPlotModel;
 			_dayHourPlotModel = PlotHelper.CreateDayHourPlotModel();
 			DayHourPlot.Model = _dayHourPlotModel;
@@ -491,8 +412,8 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			for (int i = 0; i < authorStat.Length && i < 20; i++)
 			{
 				AuthorStats authorStat2 = authorStat[i];
-				_linePlotModel.Series.Add(CreateLineSeries(authorStat2, i));
-				(_piePlotModel.Series[0] as PieSeries).Slices.Add(CreatePieSlice(authorStat2, i));
+				_linePlotModel.Series.Add(StatisticsUserControlViewModel.CreateLineSeries(authorStat2, i));
+				(_piePlotModel.Series[0] as PieSeries).Slices.Add(StatisticsUserControlViewModel.CreatePieSlice(authorStat2, i));
 			}
 			AuthorStatListBox.ItemsSource = authorStat.Map((AuthorStats x) => new AuthorStatViewModel(x.Name, x.TotalCommits));
 			LinePlot.InvalidatePlot();
@@ -504,25 +425,13 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 
 		private void UpdateCommitsPerWeekDayPlot(Dictionary<DayOfWeek, int> commitsPerWeekDay)
 		{
-			DayOfWeek[] array = DaysOfWeek();
+			DayOfWeek[] array = StatisticsUserControlViewModel.DaysOfWeek();
 			for (int i = 0; i < 7; i++)
 			{
 				int num = (commitsPerWeekDay.ContainsKey(array[i]) ? commitsPerWeekDay[array[i]] : 0);
 				(_weekDayPlotModel.Series[0] as BarSeries).Items.Add(new BarItem(num, i));
 			}
 			WeekDayPlot.InvalidatePlot();
-		}
-
-		private static DayOfWeek[] DaysOfWeek()
-		{
-			DayOfWeek[] array = new DayOfWeek[7];
-			DayOfWeek dayOfWeek = Thread.CurrentThread.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
-			for (int i = 0; i < 7; i++)
-			{
-				array[i] = dayOfWeek;
-				dayOfWeek = ((dayOfWeek != DayOfWeek.Saturday) ? (dayOfWeek + 1) : DayOfWeek.Sunday);
-			}
-			return array;
 		}
 
 		private void UpdateCommitsPerDayHourPlot(Dictionary<int, int> commitsPerDayHour)
@@ -533,29 +442,6 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				(_dayHourPlotModel.Series[0] as BarSeries).Items.Add(new BarItem(num, i));
 			}
 			DayHourPlot.InvalidatePlot();
-		}
-
-		private LineSeries CreateLineSeries(AuthorStats authorStat, int colorIndex)
-		{
-			return new LineSeries
-			{
-				Title = authorStat.Name,
-				DataFieldX = "Item1",
-				DataFieldY = "Item2",
-				InterpolationAlgorithm = InterpolationAlgorithms.CatmullRomSpline,
-				CanTrackerInterpolatePoints = false,
-				TrackerFormatString = "{2},\n{0}: {4}",
-				Color = _colors[colorIndex % _colors.Length],
-				ItemsSource = authorStat.CommitsByDate
-			};
-		}
-
-		private PieSlice CreatePieSlice(AuthorStats authorStat, int colorIndex)
-		{
-			return new PieSlice(authorStat.Name ?? "", authorStat.TotalCommits)
-			{
-				Fill = _pieChartColors[colorIndex % _colors.Length]
-			};
 		}
 
 		private static string Translate(string text)
@@ -781,11 +667,11 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				{
 					pieSeries.Slices.Add(new PieSlice(lang.Name, lang.Code)
 					{
-						Fill = _pieChartColors[i % _pieChartColors.Length]
+						Fill = StatisticsUserControlViewModel.PieChartColors[i % StatisticsUserControlViewModel.PieChartColors.Length]
 					});
 					listItems.Add(new CodeLineLanguageViewModel(
 						lang.Name, lang.Files, lang.Code, lang.Comments, lang.Blanks,
-						OxyColorToHex(_colors[i % _colors.Length])));
+						StatisticsUserControlViewModel.OxyColorToHex(StatisticsUserControlViewModel.Colors[i % StatisticsUserControlViewModel.Colors.Length])));
 				}
 				else
 				{
@@ -798,11 +684,11 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				int idx = 12;
 				pieSeries.Slices.Add(new PieSlice(Translate("Other"), otherCode)
 				{
-					Fill = _pieChartColors[idx % _pieChartColors.Length]
+					Fill = StatisticsUserControlViewModel.PieChartColors[idx % StatisticsUserControlViewModel.PieChartColors.Length]
 				});
 				listItems.Add(new CodeLineLanguageViewModel(
 					Translate("Other"), otherCount, otherCode, 0, 0,
-					OxyColorToHex(_colors[idx % _colors.Length])));
+					StatisticsUserControlViewModel.OxyColorToHex(StatisticsUserControlViewModel.Colors[idx % StatisticsUserControlViewModel.Colors.Length])));
 			}
 			CodeLinesListBox.ItemsSource = listItems;
 			CodeLinesPiePlot.InvalidatePlot();
@@ -829,12 +715,6 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			(_codeLinesPieModel.Series[0] as PieSeries).Slices.Clear();
 			CodeLinesPiePlot.InvalidatePlot();
 			CodeLinesListBox.ItemsSource = null;
-		}
-
-		/// <summary>OxyColor → "#RRGGBB" 十六进制字符串，给 XAML Rectangle.Fill 用。</summary>
-		private static string OxyColorToHex(OxyColor c)
-		{
-			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
 		}
 
 		/// <summary>ComboBox 项：显示名 + 实际 refSpec（null=工作区 snapshot）。</summary>

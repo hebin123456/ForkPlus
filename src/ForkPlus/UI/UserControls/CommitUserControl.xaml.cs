@@ -39,10 +39,7 @@ namespace ForkPlus.UI.UserControls
 
 		private const int LongFileListOperationThreshold = 5000;
 
-		private readonly CommitMessageAutocompleteProvider _commitMessageAutocompleteProvider = new CommitMessageAutocompleteProvider();
-
-		// Gitmoji 自动补全：commit subject 输入 ":" 触发 emoji 选择器
-		private readonly GitmojiAutocompleteProvider _gitmojiAutocompleteProvider = new GitmojiAutocompleteProvider();
+		private readonly CommitUserControlViewModel _viewModel = new CommitUserControlViewModel();
 
 		private readonly DelayedAction<ChangedFileArgs> _updateDiffAction;
 
@@ -84,7 +81,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private bool SquashMode => RepositoryUserControl.RepositoryStatus?.RepositoryState is RepositoryState.SquashInProgress;
+		private bool SquashMode
+		{
+			get
+			{
+				_viewModel.RepositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
+				return _viewModel.SquashMode;
+			}
+		}
 
 		private bool CommitAndPush
 		{
@@ -119,7 +123,7 @@ namespace ForkPlus.UI.UserControls
 			set
 			{
 				string text = value ?? string.Empty;
-				SplitCommitMessageForFields(text, out var subject, out var description);
+				CommitUserControlViewModel.SplitCommitMessageForFields(text, out var subject, out var description);
 				CommitDescriptionTextBox.DisableUpdates = true;
 				// 同步关闭 subject 框的自动补全：避免 AI 生成 / 最近消息回填等场景下
 				// 若 subject 恰好包含 ":" 触发 Gitmoji 选择器弹出
@@ -131,13 +135,25 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		public bool CommittingInProgress { get; set; }
+		public bool CommittingInProgress
+		{
+			get { return _viewModel.CommittingInProgress; }
+			set { _viewModel.CommittingInProgress = value; }
+		}
 
-		public Job StageJob { get; set; }
+		public Job StageJob
+		{
+			get { return _viewModel.StageJob; }
+			set { _viewModel.StageJob = value; }
+		}
 
 		private GitModule GitModule => RepositoryUserControl.GitModule;
 
-		public bool ShowIgnoredFiles { get; set; }
+		public bool ShowIgnoredFiles
+		{
+			get { return _viewModel.ShowIgnoredFiles; }
+			set { _viewModel.ShowIgnoredFiles = value; }
+		}
 
 		public bool IsCommitAllowed
 		{
@@ -181,28 +197,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			get
 			{
-				RepositoryState repositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
-				if (repositoryState == null)
-				{
-					return false;
-				}
-				if (StageJob != null)
-				{
-					return false;
-				}
-				if (CommittingInProgress)
-				{
-					return false;
-				}
-				if (repositoryState is RepositoryState.RebaseInProgress rebaseInProgress)
-				{
-					return rebaseInProgress.AmendSha != null;
-				}
-				if (repositoryState is RepositoryState.AmInProgress)
-				{
-					return false;
-				}
-				return true;
+				_viewModel.RepositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
+				return _viewModel.AreCommitFieldsAllowed;
 			}
 		}
 
@@ -219,9 +215,23 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private bool RebaseInProgress => RepositoryUserControl.RepositoryStatus?.RepositoryState is RepositoryState.RebaseInProgress;
+		private bool RebaseInProgress
+		{
+			get
+			{
+				_viewModel.RepositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
+				return _viewModel.RebaseInProgress;
+			}
+		}
 
-		private bool AmInProgress => RepositoryUserControl.RepositoryStatus?.RepositoryState is RepositoryState.AmInProgress;
+		private bool AmInProgress
+		{
+			get
+			{
+				_viewModel.RepositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
+				return _viewModel.AmInProgress;
+			}
+		}
 
 		static CommitUserControl()
 		{
@@ -235,9 +245,9 @@ namespace ForkPlus.UI.UserControls
 			_updateDiffAction = new DelayedAction<ChangedFileArgs>(UpdateDiff);
 			InitializeComponent();
 			PreferencesLocalization.ApplyCurrent(this);
-			CommitDescriptionTextBox.SetAutocompleteProvider(_commitMessageAutocompleteProvider);
+			CommitDescriptionTextBox.SetAutocompleteProvider(_viewModel.CommitMessageAutocompleteProvider);
 			// 为 commit subject 输入框注册 Gitmoji 自动补全（输入 ":" 触发 emoji 选择器）
-			CommitSubjectTextBox.SetAutocompleteProvider(_gitmojiAutocompleteProvider);
+			CommitSubjectTextBox.SetAutocompleteProvider(_viewModel.GitmojiAutocompleteProvider);
 			RefreshSubjectLengthLimitToolTip();
 			base.Loaded += delegate
 			{
@@ -816,7 +826,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				yield return new Separator();
 				ChangedFile[] expandedSelectedFiles = StageFileUserControl.ExpandedSelectedUnstagedFiles;
-				int uniqueFilesCount = GetUniqueFilesCount(expandedSelectedFiles);
+				int uniqueFilesCount = CommitUserControlViewModel.GetUniqueFilesCount(expandedSelectedFiles);
 				string itemType = expandedSelectedFiles.Length > 1 ? "Files" : "File";
 				yield return Commands.ShowCreatePartialStashWindowCommand.CreateMenuItem($"Stash {uniqueFilesCount} {itemType}...", delegate
 				{
@@ -1020,7 +1030,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				yield return new Separator();
 				ChangedFile[] expandedSelectedFiles = StageFileUserControl.ExpandedSelectedStagedFiles;
-				int uniqueFilesCount = GetUniqueFilesCount(expandedSelectedFiles);
+				int uniqueFilesCount = CommitUserControlViewModel.GetUniqueFilesCount(expandedSelectedFiles);
 				string itemType = expandedSelectedFiles.Length > 1 ? "Files" : "File";
 				yield return Commands.ShowCreatePartialStashWindowCommand.CreateMenuItem($"Stash {uniqueFilesCount} {itemType}...", delegate
 				{
@@ -1150,7 +1160,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (args.RepositoryUserControl == RepositoryUserControl)
 			{
-				_commitMessageAutocompleteProvider.UpdateUserIdentities(null);
+				_viewModel.CommitMessageAutocompleteProvider.UpdateUserIdentities(null);
 			}
 		}
 
@@ -1677,28 +1687,8 @@ namespace ForkPlus.UI.UserControls
 
 		private bool isAmendAllowed()
 		{
-			RepositoryState repositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
-			if (repositoryState == null)
-			{
-				return false;
-			}
-			if (StageJob != null)
-			{
-				return false;
-			}
-			if (CommittingInProgress)
-			{
-				return false;
-			}
-			if (repositoryState is RepositoryState.RebaseInProgress rebaseInProgress)
-			{
-				return rebaseInProgress.AmendSha != null;
-			}
-			if (repositoryState is RepositoryState.AmInProgress)
-			{
-				return false;
-			}
-			return true;
+			_viewModel.RepositoryState = RepositoryUserControl.RepositoryStatus?.RepositoryState;
+			return _viewModel.IsAmendAllowed;
 		}
 
 		private void UpdateCommitButtonTitle()
@@ -2167,7 +2157,7 @@ namespace ForkPlus.UI.UserControls
 			string[] array2 = result;
 			foreach (string fullMessage in array2)
 			{
-				SplitCommitMessageForFields(fullMessage, out var subject, out var description);
+				CommitUserControlViewModel.SplitCommitMessageForFields(fullMessage, out var subject, out var description);
 				string text = subject + (string.IsNullOrEmpty(description) ? "" : "...");
 				MenuItem menuItem4 = new MenuItem
 				{
@@ -2183,7 +2173,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SetRecentCommitMessage(string fullMessage)
 		{
-			SplitCommitMessageForFields(fullMessage, out var subject, out var description);
+			CommitUserControlViewModel.SplitCommitMessageForFields(fullMessage, out var subject, out var description);
 			CommitDescriptionTextBox.DisableUpdates = true;
 			// 同步关闭 subject 框的自动补全：最近消息回填时若 subject 含 ":" 会误触发 Gitmoji 选择器
 			CommitSubjectTextBox.DisableUpdates = true;
@@ -2193,20 +2183,6 @@ namespace ForkPlus.UI.UserControls
 			CommitDescriptionTextBox.DisableUpdates = false;
 			RefreshDescriptionFieldHeight();
 			UpdateCommitButtonState();
-		}
-
-		private static void SplitCommitMessageForFields(string fullMessage, out string subject, out string description)
-		{
-			string text = (fullMessage ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n').TrimEnd(Consts.Chars.NewLines);
-			int lineBreakIndex = text.IndexOf('\n');
-			if (lineBreakIndex < 0)
-			{
-				subject = text.Trim(Consts.Chars.NewLines);
-				description = string.Empty;
-				return;
-			}
-			subject = text.Substring(0, lineBreakIndex).Trim(Consts.Chars.NewLines);
-			description = text.Substring(lineBreakIndex + 1).TrimStart(Consts.Chars.NewLines);
 		}
 
 		private void CommitSubjectTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -2300,39 +2276,6 @@ namespace ForkPlus.UI.UserControls
 				Owner = MainWindow.Instance
 			};
 			window.Show();
-		}
-
-		private static int GetUniqueFilesCount(ChangedFile[] changedFiles)
-		{
-			HashSet<string> hashSet = new HashSet<string>();
-			foreach (ChangedFile changedFile in changedFiles)
-			{
-				hashSet.Add(changedFile.Path);
-			}
-			return hashSet.Count;
-		}
-
-		private static Range? RangeOfAny(string target, string string1, string string2)
-		{
-			int num = target.IndexOf(string1);
-			int num2 = target.IndexOf(string2);
-			if (num != -1)
-			{
-				if (num2 != -1)
-				{
-					if (num < num2)
-					{
-						return new Range(num, num + string1.Length);
-					}
-					return new Range(num2, num2 + string2.Length);
-				}
-				return new Range(num, num + string1.Length);
-			}
-			if (num2 != -1)
-			{
-				return new Range(num2, num2 + string2.Length);
-			}
-			return null;
 		}
 
 	}

@@ -10,8 +10,6 @@ using System.Windows.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -20,42 +18,6 @@ namespace ForkPlus.UI.Dialogs
 	/// 关闭对话框靠窗口标题栏 X 按钮；颜色选择器 Popup 靠点外部关闭。</summary>
 	public partial class CustomColorsDialog : ForkPlusDialogWindow
 	{
-		/// <summary>可自定义的颜色 key 列表（Colors.*.xaml 中的 Color resource key）。
-		/// 只暴露核心颜色，不暴露全部 260+ key。</summary>
-		private static readonly string[] _editableColorKeys = new string[]
-	{
-		"BackgroundColor",
-		"SecondaryBackgroundColor",
-		"PanelBackgroundColor",
-		"BorderColor",
-		"TileBorderColor",
-		"LabelColor",
-		"ForegroundColor",
-		"SecondaryLabelColor",
-		"AccentColor",
-		"AccentSecondaryColor",
-		"ReferenceColor",
-		"IconColor",
-		"Diff.AddedColor",
-		"Diff.RemovedColor",
-		"Diff.AddColor",
-		"Diff.RemoveColor",
-		"Diff.ExactAddColor",
-		"Diff.ExactRemoveColor",
-		"LineNumber.ForegroundColor",
-		"LineNumber.SeparatorColor",
-		"ChunkSelection.BorderColor",
-		"ChunkSelection.BackgroundColor",
-		"Syntax.CommentColor",
-		"Syntax.StringColor",
-		"Syntax.KeywordColor",
-		"Syntax.NumberColor",
-		"CodeEditor.BackgroundColor",
-		"CodeEditor.ForegroundColor",
-		"Window.BackgroundColor",
-		"Window.TitleBar.BackgroundColor",
-	};
-
 		private List<CustomColorItem> _items;
 	private Dictionary<string, string> _workingCopy;
 	private CustomColorItem _popupEditingItem;
@@ -100,29 +62,15 @@ namespace ForkPlus.UI.Dialogs
 
 		/// <summary>加载颜色列表。每项显示当前生效值（自定义覆盖或预设原色）。</summary>
 		private void LoadItems()
-	{
-		_workingCopy = new Dictionary<string, string>();
-		Dictionary<string, string> saved = ForkPlusSettings.Default.CustomColors;
-			_items = new List<CustomColorItem>();
-			string lang = ForkPlusSettings.Default.UiLanguage;
-			string resetLabel = PreferencesLocalization.Translate("Reset", lang);
-			foreach (string key in _editableColorKeys)
-			{
-				string hex;
-				bool isCustomized;
-				if (saved != null && saved.TryGetValue(key, out string savedHex) && !string.IsNullOrEmpty(savedHex))
-				{
-					hex = savedHex;
-					isCustomized = true;
-					_workingCopy[key] = hex;
-				}
-				else
-				{
-					hex = GetCurrentColorHex(key);
-					isCustomized = false;
-				}
-				_items.Add(new CustomColorItem(key, TranslateColorKey(key, lang), hex, isCustomized, resetLabel));
-			}
+		{
+			// VM 构造纯数据（items + workingCopy），View 据此构造 CustomColorItem（含 WPF PreviewBrush，留 View）。
+			// GetCurrentColorHex 作为预设原色查找委托传入，隔离 Application.Resources 的 WPF 依赖。
+			(List<ColorItemData> itemsData, Dictionary<string, string> workingCopy) =
+				CustomColorsDialogViewModel.LoadItems(GetCurrentColorHex);
+			_workingCopy = workingCopy;
+			_items = new List<CustomColorItem>(itemsData.Count);
+			foreach (ColorItemData data in itemsData)
+				_items.Add(new CustomColorItem(data.Key, data.DisplayName, data.HexValue, data.IsCustomized, data.ResetLabel));
 			ColorListControl.ItemsSource = _items;
 		}
 
@@ -137,18 +85,6 @@ namespace ForkPlus.UI.Dialogs
 			}
 			catch { }
 			return "#FFFFFF";
-		}
-
-		/// <summary>颜色 key → 国际化显示名。用 "Color." + key 作为 i18n key，
-		/// 找不到翻译时返回 key 原文。</summary>
-		private string TranslateColorKey(string key, string lang)
-		{
-			string i18nKey = "Color." + key;
-			string translated = PreferencesLocalization.Translate(i18nKey, lang);
-			// Translate 找不到时返回原文（即 "Color." + key），此时 fallback 到 key
-			if (translated != null && translated == i18nKey)
-				return key;
-			return translated ?? key;
 		}
 
 		/// <summary>初始化预设色板（常用颜色快速选择）。</summary>
@@ -392,39 +328,14 @@ namespace ForkPlus.UI.Dialogs
 			UpdatePopupFromHex(PopupHexBox.Text);
 		}
 
-		// HSV ↔ RGB 转换
+		// HSV ↔ RGB 转换：纯数学逻辑已迁入 VM（零 WPF），此处为薄包装以保留 Color 返回类型供 View 调用。
 		private static void RgbToHsv(byte r, byte g, byte b, out double h, out double s, out double v)
-		{
-			double rd = r / 255.0, gd = g / 255.0, bd = b / 255.0;
-			double max = Math.Max(rd, Math.Max(gd, bd));
-			double min = Math.Min(rd, Math.Min(gd, bd));
-			double delta = max - min;
-			v = max;
-			s = max == 0 ? 0 : delta / max;
-			if (delta == 0)
-				h = 0;
-			else if (max == rd)
-				h = 60 * (((gd - bd) / delta) % 6);
-			else if (max == gd)
-				h = 60 * (((bd - rd) / delta) + 2);
-			else
-				h = 60 * (((rd - gd) / delta) + 4);
-			if (h < 0) h += 360;
-		}
+			=> CustomColorsDialogViewModel.RgbToHsv(r, g, b, out h, out s, out v);
 
 		private static Color HsvToRgbColor(double h, double s, double v)
 		{
-			double c = v * s;
-			double x = c * (1 - Math.Abs((h / 60) % 2 - 1));
-			double m = v - c;
-			double r, g, b;
-			if (h < 60) { r = c; g = x; b = 0; }
-			else if (h < 120) { r = x; g = c; b = 0; }
-			else if (h < 180) { r = 0; g = c; b = x; }
-			else if (h < 240) { r = 0; g = x; b = c; }
-			else if (h < 300) { r = x; g = 0; b = c; }
-			else { r = c; g = 0; b = x; }
-			return Color.FromRgb((byte)Math.Round((r + m) * 255), (byte)Math.Round((g + m) * 255), (byte)Math.Round((b + m) * 255));
+			CustomColorsDialogViewModel.HsvToRgb(h, s, v, out byte r, out byte g, out byte b);
+			return Color.FromRgb(r, g, b);
 		}
 
 		#endregion
@@ -472,23 +383,9 @@ namespace ForkPlus.UI.Dialogs
 
 	#region 导入/导出颜色配置（v2.1.3 新增）
 
-	/// <summary>JSON 配置文件的 schema 标识。导入时校验，未来 schema 升级时向后兼容判断用。</summary>
-	private const string CustomColorsSchema = "ForkPlus.CustomColors/v1";
-
 	/// <summary>导出当前配色（_workingCopy 中所有自定义项）为 JSON 文件。
-	/// JSON 格式：
-	/// {
-	///   "schema": "ForkPlus.CustomColors/v1",
-	///   "theme": "Dark",          // 导出时的主题（仅参考，导入时不强制匹配）
-	///   "exportedAt": "2026-07-19T10:00:00Z",
-	///   "customColors": {
-	///     "BackgroundColor": "#282A36",
-	///     "Diff.AddedColor": "#50FA7B",
-	///     ...
-	///   }
-	/// }
-	/// 仅导出用户实际自定义过的颜色项（_workingCopy 中的项），未自定义的预设色不导出。
-	/// 这样导出文件简洁，且导入方按需覆盖。</summary>
+	/// JSON 构造逻辑（schema/theme/exportedAt/customColors）已迁入 VM.BuildExportJson；
+	/// View 仅负责 SaveFileDialog + 文件写入 + MessageBox。</summary>
 	private void ExportColors_Click(object sender, RoutedEventArgs e)
 	{
 		string lang = ForkPlusSettings.Default.UiLanguage;
@@ -516,21 +413,13 @@ namespace ForkPlus.UI.Dialogs
 
 		try
 		{
-			// 构建导出 JSON（仅含 _workingCopy 中实际自定义项）
-			Dictionary<string, string> exportColors = new Dictionary<string, string>(_workingCopy);
-			JObject root = new JObject
-			{
-				["schema"] = CustomColorsSchema,
-				["theme"] = ForkPlusSettings.Default.Theme.ToString(),
-				["exportedAt"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-				["customColors"] = JObject.FromObject(exportColors),
-			};
-			string json = root.ToString(Formatting.Indented);
+			// VM 构造导出 JSON 字符串（schema + theme + exportedAt + customColors），View 负责写文件
+			string json = CustomColorsDialogViewModel.BuildExportJson(_workingCopy, ForkPlusSettings.Default.Theme.ToString());
 			File.WriteAllText(dlg.FileName, json);
 
 			MessageBox.Show(this,
 				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
-					exportColors.Count, dlg.FileName),
+					_workingCopy.Count, dlg.FileName),
 				PreferencesLocalization.Translate("Export Colors", lang),
 				MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -543,13 +432,10 @@ namespace ForkPlus.UI.Dialogs
 		}
 	}
 
-	/// <summary>从 JSON 文件导入配色。导入前严格校验：
-	/// 1. 必须是合法 JSON
-	/// 2. 顶层必须是对象，含 customColors 字段（对象）
-	/// 3. schema 字段如果存在，必须是 "ForkPlus.CustomColors/v1"
-	/// 4. customColors 中每个 key 必须在 _editableColorKeys 白名单内
-	/// 5. customColors 中每个 value 必须是合法 hex 颜色（#RRGGBB 或 #AARRGGBB 或 RRGGBB）
-	/// 校验失败时弹出 MessageBox 提示具体错误，不修改任何当前配置。</summary>
+	/// <summary>从 JSON 文件导入配色。导入前严格校验（合法 JSON / schema / customColors 字段 /
+	/// key 白名单 / value 合法 hex），校验逻辑已迁入 VM.ValidateImport。
+	/// View 仅负责 OpenFileDialog + 文件读取 + 据 VM 返回结果弹 MessageBox + 应用配色到 UI。
+	/// 校验失败时不修改任何当前配置。</summary>
 	private void ImportColors_Click(object sender, RoutedEventArgs e)
 	{
 		string lang = ForkPlusSettings.Default.UiLanguage;
@@ -580,170 +466,32 @@ namespace ForkPlus.UI.Dialogs
 			return;
 		}
 
-		// 校验 1: 必须是合法 JSON
-		JObject root;
-		try
+		// VM 校验 JSON（合法 JSON / schema / customColors / key 白名单 / value hex），
+		// 返回结果对象含已本地化消息，View 单点消费结果弹 MessageBox。
+		ImportValidationResult result = CustomColorsDialogViewModel.ValidateImport(jsonText, lang);
+		if (result.IsSuccess)
 		{
-			JToken parsed = JToken.Parse(jsonText);
-			if (parsed.Type != JTokenType.Object)
+			// 校验通过，应用导入的配色：覆盖式合并到 _workingCopy（导入文件中出现的 key 覆盖当前值，
+			// 未出现的 key 保持不变），并同步 UI 项 + 落盘。
+			foreach (KeyValuePair<string, string> kv in result.Imported)
+				_workingCopy[kv.Key] = kv.Value;
+			foreach (CustomColorItem item in _items)
 			{
-				MessageBox.Show(this,
-					PreferencesLocalization.Translate("Invalid format: JSON root must be an object.", lang),
-					PreferencesLocalization.Translate("Import Colors", lang),
-					MessageBoxButton.OK, MessageBoxImage.Error);
-				return;
+				if (_workingCopy.TryGetValue(item.Key, out string hex))
+				{
+					item.HexValue = hex;
+					item.IsCustomized = true;
+				}
 			}
-			root = (JObject)parsed;
+			ApplyAndRefresh();
 		}
-		catch (JsonReaderException ex)
-		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid JSON: ", lang) + ex.Message,
-				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
-			return;
-		}
-
-		// 校验 2: schema 字段如果存在，必须匹配
-		JToken schemaToken = root["schema"];
-		if (schemaToken != null)
-		{
-			if (schemaToken.Type != JTokenType.String || (string)schemaToken != CustomColorsSchema)
-			{
-				MessageBox.Show(this,
-					string.Format(PreferencesLocalization.Translate("Unsupported schema. Expected '{0}'.", lang), CustomColorsSchema),
-					PreferencesLocalization.Translate("Import Colors", lang),
-					MessageBoxButton.OK, MessageBoxImage.Error);
-				return;
-			}
-		}
-
-		// 校验 3: customColors 字段必须存在且是对象
-		JToken colorsToken = root["customColors"];
-		if (colorsToken == null)
-		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid format: missing 'customColors' field.", lang),
-				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
-			return;
-		}
-		if (colorsToken.Type != JTokenType.Object)
-		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid format: 'customColors' must be an object.", lang),
-				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
-			return;
-		}
-
-		// 校验 4 & 5: 每个 key 在白名单内 + 每个 value 是合法 hex
-		HashSet<string> validKeys = new HashSet<string>(_editableColorKeys);
-		Dictionary<string, string> imported = new Dictionary<string, string>();
-		int errorCount = 0;
-		System.Text.StringBuilder errorBuf = new System.Text.StringBuilder();
-		const int maxErrorsShown = 10;
-
-		JObject colorsObj = (JObject)colorsToken;
-		foreach (KeyValuePair<string, JToken> kv in colorsObj)
-		{
-			string key = kv.Key;
-			JToken valToken = kv.Value;
-			// value 必须是字符串
-			if (valToken.Type != JTokenType.String)
-			{
-				errorCount++;
-				if (errorCount <= maxErrorsShown)
-					errorBuf.AppendLine(string.Format(PreferencesLocalization.Translate("  - '{0}': value must be a string", lang), key));
-				continue;
-			}
-			string hex = (string)valToken;
-			// key 白名单
-			if (!validKeys.Contains(key))
-			{
-				errorCount++;
-				if (errorCount <= maxErrorsShown)
-					errorBuf.AppendLine(string.Format(PreferencesLocalization.Translate("  - '{0}': unknown color key", lang), key));
-				continue;
-			}
-			// value 合法 hex
-			if (!IsValidHexColor(hex))
-			{
-				errorCount++;
-				if (errorCount <= maxErrorsShown)
-					errorBuf.AppendLine(string.Format(PreferencesLocalization.Translate("  - '{0}': invalid hex color '{1}'", lang), key, hex));
-				continue;
-			}
-			// 规范化：统一加 # 前缀
-			if (!hex.StartsWith("#")) hex = "#" + hex;
-			imported[key] = hex;
-		}
-
-		if (errorCount > 0)
-		{
-			string summary;
-			if (errorCount > maxErrorsShown)
-				summary = string.Format(PreferencesLocalization.Translate("Import aborted: {0} errors found (showing first {1}):\n", lang),
-					errorCount, maxErrorsShown);
-			else
-				summary = string.Format(PreferencesLocalization.Translate("Import aborted: {0} errors found:\n", lang), errorCount);
-			MessageBox.Show(this,
-				summary + errorBuf.ToString(),
-				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Warning);
-			return;
-		}
-
-		if (imported.Count == 0)
-		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("No valid color entries found in file.", lang),
-				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Warning);
-			return;
-		}
-
-		// 校验通过，应用导入的配色：合并到 _workingCopy 并刷新 UI + 落盘
-		// 注意：导入是"覆盖式合并"——导入文件中出现的 key 覆盖当前 _workingCopy 中的值，
-		// 导入文件中未出现的 key 保持当前值不变。这样用户可以只导入部分颜色覆盖。
-		foreach (KeyValuePair<string, string> kv in imported)
-			_workingCopy[kv.Key] = kv.Value;
-
-		// 同步 UI：更新每项的 HexValue/IsCustomized
-		foreach (CustomColorItem item in _items)
-		{
-			if (_workingCopy.TryGetValue(item.Key, out string hex))
-			{
-				item.HexValue = hex;
-				item.IsCustomized = true;
-			}
-		}
-
-		ApplyAndRefresh();
-
-		MessageBox.Show(this,
-			string.Format(PreferencesLocalization.Translate("Imported {0} colors successfully.", lang), imported.Count),
+		// 据 VM 返回状态选择 MessageBox 图标：校验通过=Information，无有效项/单项错误=Warning，其余=Error
+		MessageBoxImage icon = result.IsSuccess ? MessageBoxImage.Information
+			: (result.Status == ImportStatus.EntryErrors || result.Status == ImportStatus.NoValidEntries
+				? MessageBoxImage.Warning : MessageBoxImage.Error);
+		MessageBox.Show(this, result.Message,
 			PreferencesLocalization.Translate("Import Colors", lang),
-			MessageBoxButton.OK, MessageBoxImage.Information);
-	}
-
-	/// <summary>校验 hex 颜色字符串是否合法。接受以下格式：
-	/// #RRGGBB / #AARRGGBB / RRGGBB / AARRGGBB（不区分大小写）。
-	/// 用 ColorConverter.ConvertFromString 试解析，失败即非法。</summary>
-	private static bool IsValidHexColor(string hex)
-	{
-		if (string.IsNullOrWhiteSpace(hex)) return false;
-		try
-		{
-			string normalized = hex.Trim();
-			if (!normalized.StartsWith("#")) normalized = "#" + normalized;
-			Color c = (Color)ColorConverter.ConvertFromString(normalized);
-			return true;
-		}
-		catch
-		{
-			return false;
-		}
+			MessageBoxButton.OK, icon);
 	}
 
 	#endregion
