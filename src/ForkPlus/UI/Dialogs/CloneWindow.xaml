@@ -1,26 +1,5 @@
 <dialogs:ForkPlusDialogWindow MinHeight="245" Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CloneWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary>
-      <Style x:Key="AccountComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-        <Style.Triggers>
-          <DataTrigger>
-            <DataTrigger.Binding>
-              <Binding Path="ItemType" />
-            </DataTrigger.Binding>
-            <Setter Property="FrameworkElement.Height" Value="1" />
-            <Setter Property="UIElement.IsEnabled" Value="False" />
-            <Setter Property="Control.Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                  <Separator HorizontalAlignment="Stretch" Margin="0" />
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </Style.Triggers>
-      </Style>
-    </ResourceDictionary>
-  </dialogs:ForkPlusDialogWindow.Resources>
+  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 WPF DataTrigger+ControlTemplate for ItemType=="Separator"） -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -78,7 +57,9 @@
       <controls:PlaceholderTextBox TextChanged="RepositoryNameTextBox_TextChanged" Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Repository name" x:Name="RepositoryNameTextBox" />
       <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,4" x:Name="AccountsSeparator" />
       <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Account:" FontSize="13" x:Name="AccountsTextBlock" />
-      <ComboBox Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Title" ItemContainerStyle="{DynamicResource AccountComboBoxItemStyle}" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox">
+      <!-- TODO: TextSearch.TextPath="Title" 已移除（Avalonia 不支持），需在 code-behind 或自定义 SelectionBoxItem 处理 -->
+      <!-- TODO: ItemContainerStyle 已移除（原 AccountComboBoxItemStyle 用于 Separator 项），需用 DataTemplate Selector 替代 -->
+      <ComboBox Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <DockPanel>

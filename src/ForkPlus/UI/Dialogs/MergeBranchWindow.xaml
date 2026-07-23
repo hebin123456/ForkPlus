@@ -1,26 +1,5 @@
 <dialogs:ForkPlusDialogWindow MinHeight="225" Width="560" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.MergeBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary>
-      <Style x:Key="MergeComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-        <Style.Triggers>
-          <DataTrigger>
-            <DataTrigger.Binding>
-              <Binding Path="IsSeparator" />
-            </DataTrigger.Binding>
-            <Setter Property="FrameworkElement.Height" Value="1" />
-            <Setter Property="UIElement.IsEnabled" Value="False" />
-            <Setter Property="Control.Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                  <Separator HorizontalAlignment="Stretch" />
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </Style.Triggers>
-      </Style>
-    </ResourceDictionary>
-  </dialogs:ForkPlusDialogWindow.Resources>
+  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 WPF DataTrigger+ControlTemplate for IsSeparator==true） -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -48,7 +27,8 @@
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
-      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource MergeComboBoxItemStyle}" SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
+      <!-- TODO: ItemContainerStyle 已移除（原 MergeComboBoxItemStyle 用于 Separator 项），需用 DataTemplate Selector 替代 -->
+      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <DockPanel HorizontalAlignment="Stretch">
