@@ -21,7 +21,17 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly string _initialPattern;
 
-		protected override bool IsSubmitAllowed => !string.IsNullOrWhiteSpace(PatternTextBox.Text);
+	// 阶段 3：承接 pattern 非空校验 + 命令预览。UpdatePreview（Task/TaskScheduler）留 View。
+	private readonly AddGitIgnorePatternWindowViewModel _viewModel = new AddGitIgnorePatternWindowViewModel();
+
+	protected override bool IsSubmitAllowed
+	{
+		get
+		{
+			_viewModel.Pattern = PatternTextBox.Text;
+			return _viewModel.IsSubmitAllowed;
+		}
+	}
 
 		public AddGitIgnorePatternWindow(GitModule gitModule, string initialPattern)
 		{
@@ -42,15 +52,10 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		protected override string GetCommandPreview()
-		{
-			// 与 IgnoreFilesGitCommand 对应：把 pattern 写入 .gitignore，并对已跟踪文件执行 git rm --cached
-			string text = PatternTextBox.Text;
-			if (string.IsNullOrWhiteSpace(text))
-			{
-				return null;
-			}
-			return "# .gitignore\ngit rm --cached -r .";
-		}
+	{
+		_viewModel.Pattern = PatternTextBox.Text;
+		return _viewModel.CommandPreview;
+	}
 
 		protected override void OnSubmit()
 		{

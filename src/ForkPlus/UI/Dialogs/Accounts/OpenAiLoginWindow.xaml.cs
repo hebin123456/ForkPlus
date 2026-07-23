@@ -17,14 +17,18 @@ namespace ForkPlus.UI.Dialogs.Accounts
 	{
 		private readonly JobQueue _jobQueue = new JobQueue();
 
-		protected override bool IsSubmitAllowed
+	// 阶段 3：承接 token 非空校验（纯判断，SetStatus 副作用留 override）。
+	private readonly OpenAiLoginWindowViewModel _viewModel = new OpenAiLoginWindowViewModel();
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
-			{
-				SetStatus(ForkPlusDialogStatus.None, "");
-				return !string.IsNullOrEmpty(TokenTextBox.Text);
-			}
+			SetStatus(ForkPlusDialogStatus.None, "");
+			_viewModel.Token = TokenTextBox.Text;
+			return _viewModel.IsSubmitAllowed;
 		}
+	}
 
 		public OpenAiLoginWindow()
 		{

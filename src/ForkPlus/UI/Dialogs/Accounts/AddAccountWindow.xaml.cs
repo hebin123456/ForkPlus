@@ -41,18 +41,19 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private ServiceViewModel SelectedService => ServicesListBox.SelectedItem as ServiceViewModel;
 
-		protected override bool IsSubmitAllowed
+	// 阶段 3：承接"已选服务"校验（纯判断，SetStatus 副作用留 override）。
+	// ServiceViewModel（含 ImageSource Icon）留在 View，VM 只跟踪 RemoteType 枚举。
+	private readonly AddAccountWindowViewModel _viewModel = new AddAccountWindowViewModel();
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
-			{
-				SetStatus(ForkPlusDialogStatus.None, "");
-				if (SelectedService == null)
-				{
-					return false;
-				}
-				return true;
-			}
+			SetStatus(ForkPlusDialogStatus.None, "");
+			_viewModel.SelectedServiceType = SelectedService?.ServiceType;
+			return _viewModel.IsSubmitAllowed;
 		}
+	}
 
 		public AddAccountWindow()
 		{

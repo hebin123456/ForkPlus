@@ -20,7 +20,17 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly string _initialPattern;
 
-		protected override bool IsSubmitAllowed => !string.IsNullOrWhiteSpace(PatternTextBox.Text);
+	// 阶段 3：承接 pattern 非空校验 + 命令预览。UpdatePreview（Task/TaskScheduler）留 View。
+	private readonly GitLfsTrackWindowViewModel _viewModel = new GitLfsTrackWindowViewModel();
+
+	protected override bool IsSubmitAllowed
+	{
+		get
+		{
+			_viewModel.Pattern = PatternTextBox.Text;
+			return _viewModel.IsSubmitAllowed;
+		}
+	}
 
 		public GitLfsTrackWindow(GitModule gitModule, string initialPattern)
 		{
@@ -41,16 +51,10 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		protected override string GetCommandPreview()
-		{
-			// 与 AddGitLfsTrackPatternGitCommand 对应：git lfs track <pattern>...（每行一个 pattern）
-			string text = PatternTextBox.Text;
-			if (string.IsNullOrWhiteSpace(text))
-			{
-				return null;
-			}
-			string[] patterns = text.Trim().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-			return "git lfs track " + string.Join(" ", patterns);
-		}
+	{
+		_viewModel.Pattern = PatternTextBox.Text;
+		return _viewModel.CommandPreview;
+	}
 
 		protected override void OnSubmit()
 		{

@@ -16,25 +16,28 @@ namespace ForkPlus.UI.Dialogs.Accounts
 	{
 		private readonly JobQueue _jobQueue = new JobQueue();
 
-		[Null]
-		public Account Account { get; private set; }
+	// 阶段 3：承接 server URL 规范化 + URI 校验 + token 非空校验。
+	// SetStatus/Hint.Enable/Disable 副作用留 override，纯判断进 VM。ServerUrl 规范化移入 VM。
+	private readonly BitbucketServerLoginWindowViewModel _viewModel = new BitbucketServerLoginWindowViewModel();
 
-		protected override bool IsSubmitAllowed
+	[Null]
+	public Account Account { get; private set; }
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
+			SetStatus(ForkPlusDialogStatus.None, "");
+			PersonalAccessTokenHint.Disable();
+			_viewModel.ServerText = ServerTextBox.Text;
+			_viewModel.Token = TokenTextBox.Text;
+			if (_viewModel.IsUriValid)
 			{
-				SetStatus(ForkPlusDialogStatus.None, "");
-				PersonalAccessTokenHint.Disable();
-				if (!Uri.TryCreate(ServerUrl, UriKind.Absolute, out var _))
-				{
-					return false;
-				}
 				PersonalAccessTokenHint.Enable();
-				return !string.IsNullOrEmpty(TokenTextBox.Text);
 			}
+			return _viewModel.IsSubmitAllowed;
 		}
-
-		private string ServerUrl => ServerTextBox.Text.ToLower().Trim(Consts.Chars.Slash);
+	}
 
 		public BitbucketServerLoginWindow([Null] Account account = null)
 		{
@@ -57,7 +60,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		protected override void OnSubmit()
 		{
-			string serverUrl = ServerUrl;
+			_viewModel.ServerText = ServerTextBox.Text;
+			string serverUrl = _viewModel.ServerUrl;
 			string token = TokenTextBox.Text;
 			PrivateAccessTokenAuthentication authentication = new PrivateAccessTokenAuthentication(null, null, token);
 			Connection connection = new Connection(serverUrl, authentication);
@@ -106,7 +110,8 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private void OpenPersonalAccessTokenConfigurationUrlButton_Click(object sender, RoutedEventArgs e)
 		{
-			new Uri(ServerUrl + "/plugins/servlet/access-tokens/add").OpenInBrowser();
+			_viewModel.ServerText = ServerTextBox.Text;
+			new Uri(_viewModel.ServerUrl + "/plugins/servlet/access-tokens/add").OpenInBrowser();
 		}
 
 	}

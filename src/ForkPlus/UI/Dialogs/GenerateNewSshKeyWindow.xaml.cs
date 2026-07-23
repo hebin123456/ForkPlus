@@ -19,38 +19,24 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly SshKey[] _existingSshKeys;
 
-		[Null]
-		public string ResultKey { get; private set; }
+	// 阶段 3：承接 key 名/邮箱校验（含重名警告+异常错误）+ ssh-keygen 命令预览。
+	// Validate() 返回 (IsAllowed, Status, StatusMessage)，View override 据此调 SetStatus。
+	private readonly GenerateNewSshKeyWindowViewModel _viewModel;
 
-		protected override bool IsSubmitAllowed
+	[Null]
+	public string ResultKey { get; private set; }
+
+	protected override bool IsSubmitAllowed
+	{
+		get
 		{
-			get
-			{
-				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				if (string.IsNullOrEmpty(KeyFileNameTextBox.Text))
-				{
-					return false;
-				}
-				try
-				{
-					if (_existingSshKeys.Any((SshKey x) => Path.GetFileNameWithoutExtension(x.FilePath) == KeyFileNameTextBox.Text))
-					{
-						SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("Ssh key '{0}' already exists"), KeyFileNameTextBox.Text));
-						return false;
-					}
-				}
-				catch (Exception ex)
-				{
-					SetStatus(ForkPlusDialogStatus.Error, ex.ToString());
-					return false;
-				}
-				if (string.IsNullOrEmpty(EmailTextBox.Text))
-				{
-					return false;
-				}
-				return true;
-			}
+			_viewModel.KeyFileName = KeyFileNameTextBox.Text;
+			_viewModel.Email = EmailTextBox.Text;
+			(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+			SetStatus(status, statusMessage ?? string.Empty);
+			return isAllowed;
 		}
+	}
 
 		public GenerateNewSshKeyWindow()
 		{
@@ -59,24 +45,15 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Generate new ED25519 key");
 			base.SubmitButtonTitle = Translate("Generate");
 			_existingSshKeys = new GetLocalSshKeysCommand().Execute();
-		}
+		_viewModel = new GenerateNewSshKeyWindowViewModel(_existingSshKeys);
+	}
 
 		protected override string GetCommandPreview()
-		{
-			string keyName = KeyFileNameTextBox.Text;
-			string email = EmailTextBox.Text;
-			if (string.IsNullOrEmpty(keyName) || string.IsNullOrEmpty(email))
-			{
-				return null;
-			}
-			string sshDir = SystemEnvironment.LocalSSHDirectory;
-			string path = (sshDir != null) ? Path.Combine(sshDir, keyName) : keyName;
-			if (path.IndexOf(' ') >= 0)
-			{
-				path = "\"" + path + "\"";
-			}
-			return "ssh-keygen -t ed25519 -C \"" + email + "\" -f " + path;
-		}
+	{
+		_viewModel.KeyFileName = KeyFileNameTextBox.Text;
+		_viewModel.Email = EmailTextBox.Text;
+		return _viewModel.CommandPreview;
+	}
 
 		protected override async void OnSubmit()
 		{
