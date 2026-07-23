@@ -1,84 +1,19 @@
-<ui:CustomWindow Loaded="ForkWindow_Loaded" Closing="Window_Closing" Activated="Window_Activated" Height="600" Width="1000" MinWidth="650" MinHeight="400" Style="{DynamicResource MainWindowStyle}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.MainWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
-  <ui:CustomWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <Style x:Key="MainWindowStyle" TargetType="{x:Type ui:CustomWindow}" BasedOn="{StaticResource {x:Type ui:CustomWindow}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-        <Setter Property="Control.Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ui:CustomWindow}">
-              <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-                <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}">
-                  <Grid LayoutTransform="{DynamicResource LayoutScaleTransform}">
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
-                      <DockPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                          <ToggleButton ToolTip="Notifications" Style="{DynamicResource WindowRoundedToggleButton}" x:Name="Part_NotificationManagerToggleButton">
-                            <ToggleButton.FocusVisualStyle>
-                              <x:Null />
-                            </ToggleButton.FocusVisualStyle>
-                            <Image Source="{DynamicResource NotificationIcon}" Height="16" Width="16" VerticalAlignment="Center" />
-                          </ToggleButton>
-                          <Popup StaysOpen="False" AllowsTransparency="True" HorizontalOffset="-340" VerticalOffset="3" PopupAnimation="None" PlacementTarget="{Binding ElementName=Part_NotificationManagerToggleButton}" IsOpen="{Binding IsChecked, ElementName=Part_NotificationManagerToggleButton}" x:Name="NotificationManagerPopup">
-                            <userControls:NotificationManagerUserControl x:Name="NotificationManagerUserControl" />
-                          </Popup>
-                          <Button Command="SystemCommands.MinimizeWindowCommand" Style="{DynamicResource WindowButton}" x:Name="PART_MinimizeButton">
-                            <Path Data="{StaticResource MinimizeGeometry}" Style="{DynamicResource WindowPathStyle}" />
-                          </Button>
-                          <Button Command="SystemCommands.RestoreWindowCommand" Style="{DynamicResource WindowButton}" x:Name="PART_RestoreButton">
-                            <Path Data="{StaticResource RestoreGeometry}" Style="{DynamicResource WindowPathStyle}" />
-                          </Button>
-                          <Button Command="SystemCommands.MaximizeWindowCommand" Style="{DynamicResource WindowButton}" x:Name="PART_MaximizeButton">
-                            <Path Data="{StaticResource MaximizeGeometry}" Style="{DynamicResource WindowPathStyle}" />
-                          </Button>
-                          <Button Command="SystemCommands.CloseWindowCommand" Style="{DynamicResource WindowCloseButton}" x:Name="PART_CloseButton">
-                            <Path Data="{StaticResource CloseGeometry}" Style="{DynamicResource WindowCloseButtonPathStyle}" />
-                          </Button>
-                        </StackPanel>
-                        <Border>
-                          <Grid>
-                            <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="Auto" />
-                              <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Menu Grid.Column="0" HorizontalAlignment="Left" IsMainMenu="True" Background="{DynamicResource Window.TitleBar.Background}" x:Name="PART_MainMenu" />
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,90,0">
-                              <Image Source="{TemplateBinding Window.Icon}" />
-                              <Label Content="{TemplateBinding Window.Title}" Foreground="{TemplateBinding TextElement.Foreground}">
-                                <Label.Visibility>
-                                  <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
-                                </Label.Visibility>
-                              </Label>
-                            </StackPanel>
-                          </Grid>
-                        </Border>
-                      </DockPanel>
-                    </Border>
-                    <AdornerDecorator Grid.Row="1">
-                      <ContentPresenter ClipToBounds="True" />
-                    </AdornerDecorator>
-                    <ResizeGrip Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Row="1" IsTabStop="False" Visibility="Collapsed" x:Name="ResizeGrip" />
-                  </Grid>
-                </Border>
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-    </ResourceDictionary>
-  </ui:CustomWindow.Resources>
-  <Grid RenderOptions.ClearTypeHint="Enabled" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ui:CustomWindow xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="clr-namespace:ForkPlus.UI"
+                 xmlns:controls="clr-namespace:ForkPlus.UI.Controls"
+                 xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls"
+                 x:Class="ForkPlus.UI.MainWindow"
+                 Loaded="ForkWindow_Loaded"
+                 Closing="Window_Closing"
+                 Activated="Window_Activated"
+                 Height="600" Width="1000" MinWidth="650" MinHeight="400">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <userControls:ToolbarUserControl Grid.Row="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="Toolbar" />
-    <controls:ClosableTabControl Grid.Row="1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TabControl">
-      <controls:ClosableTabControl.FocusVisualStyle>
-        <x:Null />
-      </controls:ClosableTabControl.FocusVisualStyle>
-    </controls:ClosableTabControl>
+    <userControls:ToolbarUserControl Grid.Row="0" x:Name="Toolbar" />
+    <controls:ClosableTabControl Grid.Row="1" x:Name="TabControl" />
   </Grid>
 </ui:CustomWindow>
