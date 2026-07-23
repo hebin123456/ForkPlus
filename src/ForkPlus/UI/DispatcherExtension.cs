@@ -1,13 +1,15 @@
 using System;
-using System.Windows.Threading;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {
 	public static class DispatcherExtension
 	{
-		public static DispatcherOperation Async(this Dispatcher dispatcher, Action action)
+		/// <summary>Avalonia 无 DispatcherOperation 等价物，Post 是 fire-and-forget。
+		/// 调用方若需要等待完成，应直接用 Dispatcher.InvokeAsync。</summary>
+		public static void Async(this Dispatcher dispatcher, Action action)
 		{
-			return dispatcher.BeginInvoke(action);
+			dispatcher.Post(action);
 		}
 
 		public static void Sync(this Dispatcher dispatcher, Action action)
