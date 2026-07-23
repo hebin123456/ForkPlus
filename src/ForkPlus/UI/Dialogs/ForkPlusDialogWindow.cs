@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
 using ForkPlus.Settings;
@@ -16,13 +20,13 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class ForkPlusDialogWindow : CustomWindow
 	{
-		private static readonly Uri ForkPlusLogo = new Uri("pack://application:,,,/ForkPlus;component/Assets/ForkPlusIcon.png");
+		private static readonly Uri ForkPlusLogo = new Uri("avares://ForkPlus/Assets/ForkPlusIcon.png");
 
-		public static readonly Uri WarningIcon = new Uri("pack://application:,,,/ForkPlus;component/Assets/Warning.png");
+		public static readonly Uri WarningIcon = new Uri("avares://ForkPlus/Assets/Warning.png");
 
-		public static readonly Uri ErrorIcon = new Uri("pack://application:,,,/ForkPlus;component/Assets/Error.png");
+		public static readonly Uri ErrorIcon = new Uri("avares://ForkPlus/Assets/Error.png");
 
-		public static readonly Uri SuccessIcon = new Uri("pack://application:,,,/ForkPlus;component/Assets/CheckMarkStroked.png");
+		public static readonly Uri SuccessIcon = new Uri("avares://ForkPlus/Assets/CheckMarkStroked.png");
 
 		private Image _warningIcon;
 
@@ -204,15 +208,12 @@ namespace ForkPlus.UI.Dialogs
 
 		protected virtual bool ApplyAutomaticLocalization => true;
 
-		private bool IsWindowModal => ComponentDispatcher.IsThreadModal;
-
-		private IEnumerable<UIElement> EditableControls => FindVisualChildren<Control>(this);
+		private IEnumerable<Control> EditableControls => FindVisualChildren<Control>(this);
 
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		public ForkPlusDialogWindow(bool preventMainWindowRefresh = true)
 		{
-			base.OverridesDefaultStyle = true;
 			if (!IsDesignMode)
 			{
 				MainWindow instance = MainWindow.Instance;
@@ -227,13 +228,11 @@ namespace ForkPlus.UI.Dialogs
 				base.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 			}
 			base.ShowInTaskbar = false;
-			base.ResizeMode = ResizeMode.NoResize;
-			base.Initialized += ForkPlusDialogWindow_Initialized;
+			base.CanResize = false;
 			base.Loaded += ForkPlusDialogWindow_Loaded;
-			base.Style = Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style;
 			if (!IsDesignMode)
 			{
-				WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+				NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 			}
 		}
 
@@ -247,7 +246,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			string localizedMessage = PreferencesLocalization.Translate(message, ForkPlusSettings.Default.UiLanguage);
 			Footer.StatusMessageTextBlock.Text = localizedMessage;
-			Footer.StatusMessageTextBlock.ToolTip = localizedMessage;
+			ToolTip.SetTip(Footer.StatusMessageTextBlock, localizedMessage);
 			Footer.StatusMessageTextBlock.Visibility = Visibility.Visible;
 			if (status == ForkPlusDialogStatus.InProgress)
 			{
@@ -260,13 +259,13 @@ namespace ForkPlus.UI.Dialogs
 			switch (status)
 			{
 			case ForkPlusDialogStatus.Success:
-				Footer.StatusImage.Source = new BitmapImage(SuccessIcon);
+				Footer.StatusImage.Source = new Bitmap(SuccessIcon);
 				break;
 			case ForkPlusDialogStatus.Warning:
-				Footer.StatusImage.Source = new BitmapImage(WarningIcon);
+				Footer.StatusImage.Source = new Bitmap(WarningIcon);
 				break;
 			case ForkPlusDialogStatus.Error:
-				Footer.StatusImage.Source = new BitmapImage(ErrorIcon);
+				Footer.StatusImage.Source = new Bitmap(ErrorIcon);
 				break;
 			}
 		}
@@ -280,7 +279,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public void DisableEditableControls()
 		{
-			foreach (UIElement editableControl in EditableControls)
+			foreach (Control editableControl in EditableControls)
 			{
 				editableControl.Disable();
 			}
@@ -289,7 +288,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public void EnableEditableControls()
 		{
-			foreach (UIElement editableControl in EditableControls)
+			foreach (Control editableControl in EditableControls)
 			{
 				editableControl.Enable();
 			}
@@ -298,6 +297,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ForkPlusDialogWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+			InitializeDialogChrome();
 			if (IsDesignMode)
 			{
 				return;
@@ -306,21 +306,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			}
-			(base.Content as Grid)?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-		}
-
-		private void ForkPlusDialogWindow_Initialized(object sender, EventArgs e)
-		{
-			InitializeDialogChrome();
-		}
-
-		protected override void OnContentChanged(object oldContent, object newContent)
-		{
-			base.OnContentChanged(oldContent, newContent);
-			if (IsInitialized)
-			{
-				InitializeDialogChrome();
-			}
+			(base.Content as Grid)?.Focus();
 		}
 
 		private void InitializeDialogChrome()
@@ -338,7 +324,6 @@ namespace ForkPlus.UI.Dialogs
 			RefreshWindowSize();
 			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
 			obj.Background = Theme.ForkPlusDialogBackgroundBrush;
-			RenderOptions.SetClearTypeHint(obj, ClearTypeHint.Enabled);
 			if (ShowHeader)
 			{
 				AddDialogHeader();
@@ -380,7 +365,7 @@ namespace ForkPlus.UI.Dialogs
 				TextWrapping = TextWrapping.Wrap,
 				FontSize = 13.0,
 				Margin = new Thickness(0.0, 2.0, 0.0, 0.0),
-				Foreground = (Application.Current.TryFindResource("ForkPlusDialogDescriptionForeground") as Brush),
+				Foreground = Theme.FindBrush("ForkPlusDialogDescriptionForeground"),
 				Text = "[Dialog Description]"
 			};
 			StackPanel stackPanel = new StackPanel();
@@ -425,7 +410,7 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewTextBlock.Visibility = Visibility.Collapsed;
 			_commandPreviewTextBlock.Text = "";
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-			_commandPreviewTextBlock.ToolTip = null;
+			ToolTip.SetTip(_commandPreviewTextBlock, null);
 			if (_commandPreviewScrollViewer != null)
 			{
 				_commandPreviewScrollViewer.Visibility = Visibility.Collapsed;
@@ -441,7 +426,7 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewTextBlock.Visibility = Visibility.Visible;
 			_commandPreviewTextBlock.Text = text;
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-			_commandPreviewTextBlock.ToolTip = text;
+			ToolTip.SetTip(_commandPreviewTextBlock, text);
 			if (_commandPreviewScrollViewer != null)
 			{
 				_commandPreviewScrollViewer.Visibility = Visibility.Visible;
@@ -501,7 +486,7 @@ namespace ForkPlus.UI.Dialogs
 			FontFamily = new FontFamily("Consolas"),
 			FontSize = 12.0,
 			TextWrapping = TextWrapping.Wrap,
-			Foreground = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush),
+			Foreground = Theme.FindBrush("SecondaryLabelBrush"),
 			Margin = new Thickness(8.0, 4.0, 0.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
@@ -522,28 +507,19 @@ namespace ForkPlus.UI.Dialogs
 		// 复制按钮：点击复制预览命令到剪贴板，ToolTip 国际化
 		_commandPreviewCopyButton = new Button
 		{
-			ToolTip = PreferencesLocalization.Current("Copy to clipboard"),
 			VerticalAlignment = VerticalAlignment.Top,
 			HorizontalAlignment = HorizontalAlignment.Left,
 			Margin = new Thickness(4.0, 2.0, 0.0, 0.0),
 			Padding = new Thickness(2.0),
 			Background = Brushes.Transparent,
 			BorderThickness = new Thickness(0.0),
-			Cursor = Cursors.Hand,
+			Cursor = new Cursor(StandardCursorType.Hand),
 			Visibility = Visibility.Collapsed
 		};
+		ToolTip.SetTip(_commandPreviewCopyButton, PreferencesLocalization.Current("Copy to clipboard"));
 		_commandPreviewCopyButton.SetValue(Grid.ColumnProperty, 2);
-		// 用矢量 Path 绘制复制图标（两个重叠的圆角矩形），无需新增图片资源
-		_commandPreviewCopyButton.Content = new Image
-		{
-			Source = new DrawingImage(new GeometryDrawing
-			{
-				Geometry = Geometry.Parse("M4,2 L12,2 L12,14 L4,14 Z M6,4 L6,12 L10,12 L10,4 Z M2,4 L2,16 L14,16 L14,14 L13,14 L13,15 L3,15 L3,5 L4,5 L4,4 Z"),
-				Brush = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush) ?? Brushes.Gray
-			}),
-			Width = 14.0,
-			Height = 14.0
-		};
+		// Avalonia 中 DrawingImage/GeometryDrawing API 与 WPF 不同，简化为用 TextBlock 显示 emoji 复制图标
+		_commandPreviewCopyButton.Content = new TextBlock { Text = "📋", FontSize = 12 };
 		_commandPreviewCopyButton.Click += delegate
 		{
 			if (_commandPreviewTextBlock != null && !string.IsNullOrWhiteSpace(_commandPreviewTextBlock.Text))
@@ -572,7 +548,7 @@ namespace ForkPlus.UI.Dialogs
 		// 若最后一行已被命令预览占用（AddCommandPreview 先于 AddFooter 执行），则新增一行放 footer
 		int footerRow = grid.RowDefinitions.Count - 1;
 		bool lastRowOccupied = false;
-		foreach (UIElement child in grid.Children)
+		foreach (Control child in grid.Children)
 		{
 			int row = (int)child.GetValue(Grid.RowProperty);
 			if (row == footerRow)
@@ -626,7 +602,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			Image image = new Image
 			{
-				Source = new BitmapImage(ForkPlusLogo),
+				Source = new Bitmap(ForkPlusLogo),
 				Width = 64.0,
 				Height = 64.0,
 				HorizontalAlignment = HorizontalAlignment.Left,
@@ -647,7 +623,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				_warningIcon = new Image
 				{
-					Source = new BitmapImage(WarningIcon),
+					Source = new Bitmap(WarningIcon),
 					Width = 24.0,
 					Height = 24.0,
 					HorizontalAlignment = HorizontalAlignment.Left,
@@ -685,14 +661,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (base.IsVisible)
 			{
-				if (IsWindowModal)
-				{
-					base.DialogResult = false;
-				}
-				else
-				{
-					Close();
-				}
+				Close(false);
 			}
 		}
 
@@ -711,14 +680,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (base.IsVisible)
 			{
-				if (IsWindowModal)
-				{
-					base.DialogResult = true;
-				}
-				else
-				{
-					Close();
-				}
+				Close(true);
 			}
 		}
 
@@ -730,24 +692,9 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+		private static IEnumerable<T> FindVisualChildren<T>(Control depObj) where T : class
 		{
-			if (depObj == null)
-			{
-				yield break;
-			}
-			for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-			{
-				DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-				if (child is T typedChild)
-				{
-					yield return typedChild;
-				}
-				foreach (T childOfChild in FindVisualChildren<T>(child))
-				{
-					yield return childOfChild;
-				}
-			}
+			return depObj?.GetVisualDescendants().OfType<T>() ?? Enumerable.Empty<T>();
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
@@ -766,4 +713,3 @@ namespace ForkPlus.UI.Dialogs
 		}
 	}
 }
-
