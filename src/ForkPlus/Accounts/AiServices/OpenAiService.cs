@@ -9,8 +9,8 @@ using System.Threading;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
-using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
@@ -52,7 +52,7 @@ namespace ForkPlus.Accounts.AiServices
 
 		public ServiceResult<OpenAiResponse> GenerateCommitMessage(string patchString, GitModule gitModule, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Generating with {0}...", _model));
 			int pageGuideLinePosition = ForkPlusSettings.Default.PageGuideLinePosition;
 			int commitSubjectLowLimit = ForkPlusSettings.Default.CommitSubjectLowLimit;
 			int commitSubjectHighLimit = ForkPlusSettings.Default.CommitSubjectHighLimit;
@@ -64,9 +64,9 @@ namespace ForkPlus.Accounts.AiServices
 			}
 			string regexInstruction = string.IsNullOrWhiteSpace(commitMessageRegex) ? "" : $"\nThe commit message must match this Go regular expression when represented as `title\\ndescription` using one LF between the title and description:\n`{commitMessageRegex}`\nIf there is no description, match the title only. If the regex implies a required prefix, issue id, type, scope, or format, follow it strictly.\n";
 			string text = $"\nWrite a commit message for my changes.\nThe commit message must be written in {responseLanguage}.\nExplain what were the changes and why the changes were done.\nFocus the most important changes.\nUse the present tense.\nUse a single word lowercase commit prefix only if it is natural for {responseLanguage} and allowed by the configured format.\nHard wrap lines at {pageGuideLinePosition} characters.\nEnsure the title is less than {commitSubjectLowLimit} (soft limit) and {commitSubjectHighLimit} (hard limit).\nDo not start any lines with the hash symbol.{regexInstruction}\nOnly respond with the commit message.\n\nBelow is my git diff:\n\n```\n{patchString}\n```\n";
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			// onChunk 回调：流式 chunk 实时通知调用方（用于即时写入 commit 框）
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
@@ -80,7 +80,7 @@ namespace ForkPlus.Accounts.AiServices
 			if (!MatchesCommitMessageRegex(message, commitMessageRegex, out string regexError) && !string.IsNullOrWhiteSpace(commitMessageRegex))
 			{
 				monitor.AppendOutputLine(regexError);
-				monitor.AppendOutputLine(PreferencesLocalization.Current("Regenerating commit message with configured regex..."));
+				monitor.AppendOutputLine(ServiceLocator.Localization.Current("Regenerating commit message with configured regex..."));
 				ServiceResult<OpenAiResponse> retryResult = OpenAiRequestStreamingWithRetry(CreateRegexRetryPrompt(message, commitMessageRegex, responseLanguage), monitor);
 				if (retryResult.Succeeded)
 				{
@@ -114,7 +114,7 @@ namespace ForkPlus.Accounts.AiServices
 				{
 					return true;
 				}
-				error = PreferencesLocalization.FormatCurrent("Commit message does not match configured regex: {0}", pattern);
+				error = ServiceLocator.Localization.FormatCurrent("Commit message does not match configured regex: {0}", pattern);
 				return false;
 			}
 			catch (Exception ex)
@@ -177,11 +177,11 @@ namespace ForkPlus.Accounts.AiServices
 
 		public ServiceResult<OpenAiResponse> CodeReview(string patchString, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Reviewing with {0}...", _model));
 			string text = "\nMake code review for changes.\nDo not thank.\n\nBelow is the git diff:\n\n```\n" + patchString + "\n```\n";
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -190,17 +190,17 @@ namespace ForkPlus.Accounts.AiServices
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
 			// 流式输出已将内容逐 chunk 追加到 monitor，此处无需再 AppendOutputLine
-			monitor.Success(PreferencesLocalization.Current("reviewed"));
+			monitor.Success(ServiceLocator.Localization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
 		public ServiceResult<OpenAiResponse> CodeReviewFiles(string reviewContext, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Reviewing files with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Reviewing files with {0}...", _model));
 			string text = "\nReview the following file changes.\nUse concise Chinese by default unless the code/comment language clearly suggests another language.\nReturn actionable findings only.\nGroup findings by file. Start each file section with exactly `## File: relative/path`, using the same relative path from the review context.\nFor every issue, include file path and line number in the format `path:line` when possible.\nIf a finding has a safe concrete fix, also include it in one fenced JSON block named `forkplus-ai-suggestions` with this shape:\n\n```forkplus-ai-suggestions\n[\n  {\n    \"file\": \"relative/path\",\n    \"line\": 12,\n    \"comment\": \"why this should change\",\n    \"oldText\": \"exact text to replace\",\n    \"newText\": \"replacement text\"\n  }\n]\n```\n\nOnly include suggestions when `oldText` is an exact contiguous snippet from the full file content. Do not invent fixes for uncertain findings.\nIf there are no issues for a file, omit that file section. If there are no issues in all files, say clearly that no obvious issues were found.\n\nThe review context includes both full file content and diff.\n\n" + reviewContext;
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -209,14 +209,14 @@ namespace ForkPlus.Accounts.AiServices
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
 			// 流式输出已将内容逐 chunk 追加到 monitor，此处无需再 AppendOutputLine
-			monitor.Success(PreferencesLocalization.Current("reviewed"));
+			monitor.Success(ServiceLocator.Localization.Current("reviewed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
 		/// <summary>AI 解释提交：根据 commit 的 subject/diff/统计信息生成通俗易懂的中文解释（按 UI 语言）。</summary>
 		public ServiceResult<OpenAiResponse> ExplainCommit(string commitSubject, string commitBody, string diffSummary, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Explaining with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Explaining with {0}...", _model));
 			string responseLanguage = CommitMessageResponseLanguage();
 			StringBuilder prompt = new StringBuilder();
 			prompt.Append("\nYou are a senior engineer helping a teammate understand a git commit.\n");
@@ -237,9 +237,9 @@ namespace ForkPlus.Accounts.AiServices
 				prompt.Append("Diff summary (changed files and patch):\n```\n" + diffSummary + "\n```\n");
 			}
 			string text = prompt.ToString();
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -247,23 +247,23 @@ namespace ForkPlus.Accounts.AiServices
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.Success(PreferencesLocalization.Current("explained"));
+			monitor.Success(ServiceLocator.Localization.Current("explained"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
 		/// <summary>AI 生成 stash 名称：根据工作区 diff 生成简洁的 stash message（按 UI 语言）。</summary>
 		public ServiceResult<OpenAiResponse> GenerateStashName(string patchString, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Generating with {0}...", _model));
 			string responseLanguage = CommitMessageResponseLanguage();
 			string text = "\nWrite a short stash message for the following working directory changes.\n"
 				+ "The message must be written in " + responseLanguage + ".\n"
 				+ "Keep it under 50 characters. Use present tense. Do not add quotes or prefixes.\n"
 				+ "Only respond with the stash message, no explanation.\n\n"
 				+ "Below is the git diff:\n\n```\n" + (patchString ?? "") + "\n```\n";
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -271,14 +271,14 @@ namespace ForkPlus.Accounts.AiServices
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.Success(PreferencesLocalization.Current("generated"));
+			monitor.Success(ServiceLocator.Localization.Current("generated"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
 		/// <summary>AI 生成 Pull Request 描述：根据 commit range 的提交列表和聚合 diff 生成结构化 PR 描述（按 UI 语言）。</summary>
 		public ServiceResult<OpenAiResponse> GeneratePullRequestDescription(string commitLog, string aggregatedDiff, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Generating with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Generating with {0}...", _model));
 			string responseLanguage = CommitMessageResponseLanguage();
 			StringBuilder prompt = new StringBuilder();
 			prompt.Append("\nYou are generating a Pull Request description.\n");
@@ -304,9 +304,9 @@ namespace ForkPlus.Accounts.AiServices
 				prompt.Append("Aggregated diff (may be truncated):\n```\n" + diff + "\n```\n");
 			}
 			string text = prompt.ToString();
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -314,7 +314,7 @@ namespace ForkPlus.Accounts.AiServices
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.Success(PreferencesLocalization.Current("generated"));
+			monitor.Success(ServiceLocator.Localization.Current("generated"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
@@ -328,7 +328,7 @@ namespace ForkPlus.Accounts.AiServices
 		/// <param name="onChunk">流式 chunk 回调（实时把原始文本传给 UI）。</param>
 		public ServiceResult<OpenAiResponse> GenerateWipCommitSplits(string patchString, string[] stagedFilePaths, GitModule gitModule, JobMonitor monitor, Action<string> onChunk = null)
 		{
-			monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Composing with {0}...", _model));
+			monitor.Update(0.0, ServiceLocator.Localization.FormatCurrent("Composing with {0}...", _model));
 			int pageGuideLinePosition = ForkPlusSettings.Default.PageGuideLinePosition;
 			int commitSubjectLowLimit = ForkPlusSettings.Default.CommitSubjectLowLimit;
 			int commitSubjectHighLimit = ForkPlusSettings.Default.CommitSubjectHighLimit;
@@ -379,9 +379,9 @@ namespace ForkPlus.Accounts.AiServices
 			prompt.Append("Staged diff (may be truncated):\n```\n" + diff + "\n```\n");
 
 			string text = prompt.ToString();
-			monitor.AppendOutputLine(PreferencesLocalization.Current("Message:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("Message:\n"));
 			monitor.AppendOutputLine(text);
-			monitor.AppendOutputLine(PreferencesLocalization.Current("\nResponse:\n"));
+			monitor.AppendOutputLine(ServiceLocator.Localization.Current("\nResponse:\n"));
 			ServiceResult<OpenAiResponse> serviceResult = OpenAiRequestStreamingWithRetry(text, monitor, onChunk);
 			if (!serviceResult.Succeeded)
 			{
@@ -389,7 +389,7 @@ namespace ForkPlus.Accounts.AiServices
 				monitor.AppendOutputLine(serviceResult.Error.FriendlyMessage);
 				return ServiceResult<OpenAiResponse>.Failure(serviceResult.Error);
 			}
-			monitor.Success(PreferencesLocalization.Current("composed"));
+			monitor.Success(ServiceLocator.Localization.Current("composed"));
 			return ServiceResult<OpenAiResponse>.Success(serviceResult.Result);
 		}
 
@@ -661,8 +661,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -675,8 +675,8 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
-				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{
 					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -732,8 +732,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -746,8 +746,8 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
-				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{
 					return ServiceResult<OpenAiResponse>.Failure(new ServiceError.Cancelled());
@@ -931,8 +931,8 @@ namespace ForkPlus.Accounts.AiServices
 					}
 					int waitSeconds = Math.Min(queuedDelaySeconds, remainingQueuedWaitSeconds);
 					queuedWaitSeconds += waitSeconds;
-					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+					monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI request is queued. Waiting {0} before checking again...", FormatRetryDelay(waitSeconds)));
 					if (!WaitBeforeRetry(waitSeconds, monitor))
 					{
 						return ServiceResult<T>.Failure(new ServiceError.Cancelled());
@@ -945,8 +945,8 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				normalRetryAttempt++;
 				int delaySeconds = RetryDelaySeconds(normalRetryAttempt);
-				monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
-				monitor?.AppendOutputLine(PreferencesLocalization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
+				monitor?.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("AI service is busy or queued. Retrying in {0}s ({1}/{2})...", delaySeconds, normalRetryAttempt, retryCount));
 				if (!WaitBeforeRetry(delaySeconds, monitor))
 				{
 					return ServiceResult<T>.Failure(new ServiceError.Cancelled());
@@ -1130,11 +1130,11 @@ namespace ForkPlus.Accounts.AiServices
 				int restSeconds = seconds % 60;
 				if (restSeconds == 0)
 				{
-					return PreferencesLocalization.FormatCurrent("{0} min", minutes);
+					return ServiceLocator.Localization.FormatCurrent("{0} min", minutes);
 				}
-				return PreferencesLocalization.FormatCurrent("{0} min {1}s", minutes, restSeconds);
+				return ServiceLocator.Localization.FormatCurrent("{0} min {1}s", minutes, restSeconds);
 			}
-			return PreferencesLocalization.FormatCurrent("{0}s", seconds);
+			return ServiceLocator.Localization.FormatCurrent("{0}s", seconds);
 		}
 
 		private static bool WaitBeforeRetry(int delaySeconds, JobMonitor monitor)
@@ -1160,14 +1160,14 @@ namespace ForkPlus.Accounts.AiServices
 		  string message = result.Error?.FriendlyMessage ?? "";
 		  if (IsCancellationMessage(message))
 		  {
-		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(PreferencesLocalization.Current("AI request timed out or was canceled.")));
+		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(ServiceLocator.Localization.Current("AI request timed out or was canceled.")));
 		  }
 		  if (message.IndexOf("not supported", StringComparison.OrdinalIgnoreCase) >= 0
 		   && (message.IndexOf("country", StringComparison.OrdinalIgnoreCase) >= 0
 		    || message.IndexOf("region", StringComparison.OrdinalIgnoreCase) >= 0
 		    || message.IndexOf("territory", StringComparison.OrdinalIgnoreCase) >= 0))
 		  {
-		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(PreferencesLocalization.Current("Country, region, or territory not supported")));
+		   return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(ServiceLocator.Localization.Current("Country, region, or territory not supported")));
 		  }
 		 }
 		 return result;
@@ -1238,7 +1238,7 @@ namespace ForkPlus.Accounts.AiServices
 			if (!string.IsNullOrWhiteSpace(rawJson))
 			{
 				return ServiceResult<T>.Failure(new ServiceError.RemoteServiceError(
-					PreferencesLocalization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000))));
+					ServiceLocator.Localization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000))));
 			}
 			return base.DecodeJsonError<T>(jsonError);
 		}
@@ -1263,7 +1263,7 @@ namespace ForkPlus.Accounts.AiServices
 				}
 				string rawJson = json.ToString(Newtonsoft.Json.Formatting.None);
 				Log.Warn("Cannot parse Error json: " + rawJson);
-				return PreferencesLocalization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000));
+				return ServiceLocator.Localization.FormatCurrent("AI service returned an error: {0}", TrimErrorMessage(rawJson, 1000));
 			}
 			Log.Warn("Cannot parse Error json");
 			return null;

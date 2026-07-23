@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -52,7 +52,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 				}
 			}
-			monitor.Success(PreferencesLocalization.Current("unstaged"));
+			monitor.Success(ServiceLocator.Localization.Current("unstaged"));
 			return GitCommandResult.Success();
 		}
 	}

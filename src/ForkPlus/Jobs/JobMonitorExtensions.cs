@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
-using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Git.Interaction;
+using ForkPlus.Services;
 
 namespace ForkPlus.Jobs
 {
@@ -56,7 +56,7 @@ namespace ForkPlus.Jobs
 			{
 				operationName = operationName.Substring(ASCII_EL0.Length);
 			}
-			return PreferencesLocalization.Current(operationName);
+			return ServiceLocator.Localization.Current(operationName);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using ForkPlus.Services;
 using ForkPlus.Utils.Http;
 
 namespace ForkPlus.Accounts
@@ -41,7 +42,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.RemoveCredential(TokenKey(ServerUrl, Username));
+				ServiceLocator.Credential.RemoveCredential(TokenKey(ServerUrl, Username));
 			}
 			catch (Exception ex)
 			{
@@ -49,7 +50,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.RemoveCredential(RefreshTokenKey(ServerUrl, Username));
+				ServiceLocator.Credential.RemoveCredential(RefreshTokenKey(ServerUrl, Username));
 			}
 			catch (Exception ex2)
 			{
@@ -57,7 +58,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.RemoveCredential(ExpirationTimeKey(ServerUrl, Username));
+				ServiceLocator.Credential.RemoveCredential(ExpirationTimeKey(ServerUrl, Username));
 			}
 			catch (Exception ex3)
 			{
@@ -74,17 +75,17 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.WriteCredential(TokenKey(ServerUrl, Username), Username, OAuthToken.Token);
+				ServiceLocator.Credential.WriteCredential(TokenKey(ServerUrl, Username), Username, OAuthToken.Token);
 				string refreshToken = OAuthToken.RefreshToken;
 				if (refreshToken != null)
 				{
-					WindowsCredentialManager.WriteCredential(RefreshTokenKey(ServerUrl, Username), Username, refreshToken);
+					ServiceLocator.Credential.WriteCredential(RefreshTokenKey(ServerUrl, Username), Username, refreshToken);
 				}
 				DateTime? expirationTimeUTC = OAuthToken.ExpirationTimeUTC;
 				if (expirationTimeUTC.HasValue)
 				{
 					DateTime valueOrDefault = expirationTimeUTC.GetValueOrDefault();
-					WindowsCredentialManager.WriteCredential(ExpirationTimeKey(ServerUrl, Username), Username, valueOrDefault.Ticks.ToString());
+					ServiceLocator.Credential.WriteCredential(ExpirationTimeKey(ServerUrl, Username), Username, valueOrDefault.Ticks.ToString());
 				}
 			}
 			catch (Exception ex)
@@ -164,15 +165,15 @@ namespace ForkPlus.Accounts
 				{
 					return true;
 				}
-				Credential credential = WindowsCredentialManager.ReadCredential(TokenKey(ServerUrl, Username));
+				Credential credential = ServiceLocator.Credential.ReadCredential(TokenKey(ServerUrl, Username));
 				if (credential == null)
 				{
 					Log.Error("Cannot read credential record '" + TokenKey(ServerUrl, Username) + "'");
 					return false;
 				}
 				string password = credential.Password;
-				string refreshToken = WindowsCredentialManager.ReadCredential(RefreshTokenKey(ServerUrl, Username))?.Password;
-				string s = WindowsCredentialManager.ReadCredential(ExpirationTimeKey(ServerUrl, Username))?.Password;
+				string refreshToken = ServiceLocator.Credential.ReadCredential(RefreshTokenKey(ServerUrl, Username))?.Password;
+				string s = ServiceLocator.Credential.ReadCredential(ExpirationTimeKey(ServerUrl, Username))?.Password;
 				DateTime? expirationTimeUTC = null;
 				if (long.TryParse(s, out var result))
 				{

@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -12,10 +12,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(command).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Checkout branch as worktree failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Checkout branch as worktree failed"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success(PreferencesLocalization.FormatCurrent("Created '{0}' worktree", branch));
+			monitor.Success(ServiceLocator.Localization.FormatCurrent("Created '{0}' worktree", branch));
 			return GitCommandResult.Success();
 		}
 
@@ -25,10 +25,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(command).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Create worktree failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Create worktree failed"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success(PreferencesLocalization.FormatCurrent("Created '{0}' worktree", branch));
+			monitor.Success(ServiceLocator.Localization.FormatCurrent("Created '{0}' worktree", branch));
 			return GitCommandResult.Success();
 		}
 	}

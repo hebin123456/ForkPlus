@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -39,7 +39,7 @@ namespace ForkPlus.Git.Commands
 				if (match != null)
 				{
 					string text = match.Groups[1].Value.TrimEnd();
-					monitor.Success(PreferencesLocalization.FormatCurrent("Switched to branch'{0}'", text));
+					monitor.Success(ServiceLocator.Localization.FormatCurrent("Switched to branch'{0}'", text));
 				}
 			}
 			return GitCommandResult.Success();

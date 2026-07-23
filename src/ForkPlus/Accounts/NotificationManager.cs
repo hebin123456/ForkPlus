@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using CommunityToolkit.WinUI.Notifications;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 using ForkPlus.Utils.Http;
 
 namespace ForkPlus.Accounts
@@ -109,7 +109,7 @@ namespace ForkPlus.Accounts
 			}
 			IsActive = true;
 			IsUpdating = true;
-			_activeJob = _jobQueue.Add(PreferencesLocalization.Current("Refresh Notifications"), delegate(JobMonitor monitor)
+			_activeJob = _jobQueue.Add(ServiceLocator.Localization.Current("Refresh Notifications"), delegate(JobMonitor monitor)
 			{
 				GitServiceNotification newNotification = null;
 				int newNotificationsCount = 0;
@@ -213,8 +213,8 @@ namespace ForkPlus.Accounts
 
 		private void SendToastNotification(int newNotificationsCount)
 	{
-		string title = PreferencesLocalization.Current("New Notifications");
-		string body = PreferencesLocalization.FormatCurrent("You've got {0} new notifications", newNotificationsCount);
+		string title = ServiceLocator.Localization.Current("New Notifications");
+		string body = ServiceLocator.Localization.FormatCurrent("You've got {0} new notifications", newNotificationsCount);
 		SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\">{WebUtility.HtmlEncode(title)}</text>\n        <text>{WebUtility.HtmlEncode(body)}</text>\n    </binding>\n</visual>\n</toast>\n");
 	}
 

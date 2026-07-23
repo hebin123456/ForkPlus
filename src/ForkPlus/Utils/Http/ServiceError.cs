@@ -1,5 +1,5 @@
 using System.Net;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 using Newtonsoft.Json.Linq;
 
 namespace ForkPlus.Utils.Http
@@ -8,7 +8,7 @@ namespace ForkPlus.Utils.Http
 	{
 		public class Cancelled : ServiceError
 		{
-			public override string FriendlyMessage => PreferencesLocalization.Current("Cancelled");
+			public override string FriendlyMessage => ServiceLocator.Localization.Current("Cancelled");
 		}
 
 		public class NotFound : ServiceError
@@ -74,7 +74,7 @@ namespace ForkPlus.Utils.Http
 
 		public class RemoteServiceJsonError : ServiceError
 		{
-			public override string FriendlyMessage => PreferencesLocalization.Current("Remote service returned an error response.");
+			public override string FriendlyMessage => ServiceLocator.Localization.Current("Remote service returned an error response.");
 
 			public JContainer Json { get; }
 

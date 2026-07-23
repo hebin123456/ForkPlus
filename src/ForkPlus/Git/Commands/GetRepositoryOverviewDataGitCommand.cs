@@ -4,7 +4,7 @@ using System.Text;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -134,7 +134,7 @@ namespace ForkPlus.Git.Commands
 
 		private static string Translate(string text)
 		{
-			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+			return ServiceLocator.Localization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 	}
 }

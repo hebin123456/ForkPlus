@@ -606,14 +606,15 @@ namespace ForkPlus
 				windowManager: new WpfWindowManagerService()
 			);
 			// 阶段 0：注册新增平台抽象服务（不替换现有调用点，仅供阶段 2/3 迁移使用）
-			ServiceLocator.RegisterPlatformServices(
-				messageBox: new WpfMessageBoxService(),
-				process: new WpfProcessService(),
-				fileSystemDialog: new WpfFileSystemDialogService(),
-				credential: new WindowsCredentialService(),
-				fileAssociation: new WindowsFileAssociationService(),
-				systemTheme: new WpfSystemThemeService()
-			);
+		ServiceLocator.RegisterPlatformServices(
+			messageBox: new WpfMessageBoxService(),
+			process: new WpfProcessService(),
+			fileSystemDialog: new WpfFileSystemDialogService(),
+			credential: new WindowsCredentialService(),
+			fileAssociation: new WindowsFileAssociationService(),
+			systemTheme: new WpfSystemThemeService(),
+			localization: new WpfLocalizationService()
+		);
 			_ = IsDebug;
 			InitializeRenderMode();
 			InitializeTheme();

@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -10,7 +10,7 @@ namespace ForkPlus.Git.Commands
 		{
 			using GitLfsProgressHandler gitLfsProgressHandler = new GitLfsProgressHandler(monitor);
 			GitCommand command = new GitCommand(App.OverrideCredentialHelperBt, "lfs", "fetch", remote.Name);
-			monitor.Update(0.0, PreferencesLocalization.Current("Fetching LFS files..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Fetching LFS files..."));
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(command).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
@@ -21,7 +21,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(gitRequestResult.Stderr);
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
+			monitor.Success(ServiceLocator.Localization.Current("Everything is up to date"));
 			return GitCommandResult.Success();
 		}
 	}

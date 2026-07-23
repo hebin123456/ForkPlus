@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -15,7 +15,7 @@ namespace ForkPlus.Git.Commands
 			}
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Pushing..."));
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
 			if (monitor.IsCanceled)
@@ -32,7 +32,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(processOutputHandler.Stderr());
 				return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
+			monitor.Success(ServiceLocator.Localization.Current("Everything is up to date"));
 			return GitCommandResult.Success();
 		}
 	}

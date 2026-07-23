@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -38,7 +38,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Checkout failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Checkout failed"));
 				if (GitCommandError.RepositoryIsLocked.Test(gitRequestResult.Stderr))
 				{
 					return GitCommandResult.Failure(new GitCommandError.RepositoryIsLocked(gitRequestResult));
@@ -53,7 +53,7 @@ namespace ForkPlus.Git.Commands
 			if (match != null)
 			{
 				string text = match.Groups[1].Value.TrimEnd();
-				monitor.Success(PreferencesLocalization.FormatCurrent("Up to date with '{0}'", text));
+				monitor.Success(ServiceLocator.Localization.FormatCurrent("Up to date with '{0}'", text));
 			}
 			else
 			{
@@ -64,11 +64,11 @@ namespace ForkPlus.Git.Commands
 					string value2 = match2.Groups[4].Value;
 					if (match2.Groups[1].Value != "")
 					{
-						monitor.Success(PreferencesLocalization.FormatCurrent("Behind '{0}' '{1}'", value, value2));
+						monitor.Success(ServiceLocator.Localization.FormatCurrent("Behind '{0}' '{1}'", value, value2));
 					}
 					else if (match2.Groups[2].Value != "")
 					{
-						monitor.Success(PreferencesLocalization.FormatCurrent("Ahead of '{0}' '{1}'", value, value2));
+						monitor.Success(ServiceLocator.Localization.FormatCurrent("Ahead of '{0}' '{1}'", value, value2));
 					}
 				}
 				else
@@ -77,7 +77,7 @@ namespace ForkPlus.Git.Commands
 					if (match3 != null)
 					{
 						string text2 = match3.Groups[1].Value.TrimEnd();
-						monitor.Success(PreferencesLocalization.FormatCurrent("Switched to branch '{0}'", text2));
+						monitor.Success(ServiceLocator.Localization.FormatCurrent("Switched to branch '{0}'", text2));
 					}
 				}
 			}

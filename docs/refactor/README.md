@@ -8,7 +8,7 @@
 | 阶段 | 状态 | 文档 | 目标 |
 |------|------|------|------|
 | 0 | 已完成 | [phase0-abstraction.md](phase0-abstraction.md) | 补全跨平台抽象层（接口 + WPF 实现 + 注册到 ServiceLocator） |
-| 1 | 待开始 | [phase1-domain-validation.md](phase1-domain-validation.md) | 验证领域层（Git/Biturbo/Accounts/Jobs/Settings）零 WPF 依赖 |
+| 1 | 已完成 | [phase1-domain-validation.md](phase1-domain-validation.md) | 验证领域层（Git/Biturbo/Accounts/Jobs/Settings/Utils）零 WPF 依赖 |
 | 2 | 待开始 | [phase2-commands-dewpf.md](phase2-commands-dewpf.md) | Commands 层去 WPF 化（160+ 命令迁移到抽象服务） |
 | 3 | 待开始 | [phase3-viewmodel-extraction.md](phase3-viewmodel-extraction.md) | 抽取 ViewModel 层（最大工作量，重构分水岭） |
 | 4 | 待开始 | [phase4-avalonia-migration.md](phase4-avalonia-migration.md) | Avalonia UI 重写（换基类 + 换 XAML + 换第三方库） |

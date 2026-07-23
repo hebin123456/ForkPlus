@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 using ForkPlus.Undo;
 
 namespace ForkPlus.Git.Commands
@@ -39,7 +39,7 @@ namespace ForkPlus.Git.Commands
 				string currentBranch = ReadCurrentBranch(gitModule);
 				if (currentBranch != target.CurrentBranchName)
 				{
-					monitor?.Update(0.0, PreferencesLocalization.FormatCurrent("Checking out '{0}'...", target.CurrentBranchName));
+					monitor?.Update(0.0, ServiceLocator.Localization.FormatCurrent("Checking out '{0}'...", target.CurrentBranchName));
 					GitCommand checkoutCmd = new GitCommand(App.OverrideCredentialHelper, "checkout", target.CurrentBranchName);
 					monitor?.Append(null, checkoutCmd);
 					GitRequestResult checkoutResult = new GitRequest(gitModule).Command(checkoutCmd).Execute(monitor);
@@ -60,7 +60,7 @@ namespace ForkPlus.Git.Commands
 				string currentHead = ReadHead(gitModule);
 				if (currentHead != target.HeadSha)
 				{
-					monitor?.Update(0.5, PreferencesLocalization.FormatCurrent("Resetting HEAD to {0}...", target.HeadSha.Substring(0, 7)));
+					monitor?.Update(0.5, ServiceLocator.Localization.FormatCurrent("Resetting HEAD to {0}...", target.HeadSha.Substring(0, 7)));
 					GitCommand resetCmd = new GitCommand(App.OverrideCredentialHelperBt, "reset", "--hard", target.HeadSha);
 					monitor?.Append(null, resetCmd);
 					ProcessOutputHandler handler = new ProcessOutputHandler(monitor);
@@ -85,7 +85,7 @@ namespace ForkPlus.Git.Commands
 			// 用于 undo discard/stage/unstage/delete branch 等工作区级操作
 			if (!string.IsNullOrEmpty(target.PreOperationStashSha))
 			{
-				monitor?.Update(0.8, PreferencesLocalization.FormatCurrent("Restoring working tree..."));
+				monitor?.Update(0.8, ServiceLocator.Localization.FormatCurrent("Restoring working tree..."));
 				GitCommand stashApplyCmd = new GitCommand(App.OverrideCredentialHelper, "stash", "apply", "--index", target.PreOperationStashSha);
 				monitor?.Append(null, stashApplyCmd);
 				GitRequestResult stashResult = new GitRequest(gitModule).Command(stashApplyCmd).Execute(monitor);
@@ -97,11 +97,11 @@ namespace ForkPlus.Git.Commands
 				// 仅记录到 monitor 日志，返回成功
 				if (!stashResult.Success)
 				{
-					monitor?.Append(PreferencesLocalization.FormatCurrent("Working tree restore skipped: {0}", stashResult.Stderr?.Trim() ?? "unknown error"), null);
+					monitor?.Append(ServiceLocator.Localization.FormatCurrent("Working tree restore skipped: {0}", stashResult.Stderr?.Trim() ?? "unknown error"), null);
 				}
 			}
 
-			monitor?.Success(PreferencesLocalization.Current("snapshot restored"));
+			monitor?.Success(ServiceLocator.Localization.Current("snapshot restored"));
 			return GitCommandResult.Success();
 		}
 

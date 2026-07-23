@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -19,15 +19,15 @@ namespace ForkPlus.Git.Commands
 			ISpawnError error = executeWithCallbackResponse.Error;
 			if (error != null)
 			{
-				monitor.Fail(PreferencesLocalization.Current("reset failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("reset failed"));
 				return GitCommandResult.Failure(error.ToGitCommandError());
 			}
 			if (!executeWithCallbackResponse.Result.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("reset failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("reset failed"));
 				return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success(PreferencesLocalization.FormatCurrent("Reset to '{0}'", dst.ToAbbreviatedString()));
+			monitor.Success(ServiceLocator.Localization.FormatCurrent("Reset to '{0}'", dst.ToAbbreviatedString()));
 			return GitCommandResult.Success();
 		}
 

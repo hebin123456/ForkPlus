@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -17,7 +17,7 @@ namespace ForkPlus.Git.Commands
 			{
 				gitCommand.AddRange("fetch", remoteBranch.Remote, remoteBranch.ShortName + ":" + localBranch.Name, "--progress");
 			}
-			monitor.Update(0.0, PreferencesLocalization.Current("Pulling..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Pulling..."));
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).ExecuteLong(delegate(string stdOutLine)
 			{
 				monitor.AppendOutputLine(stdOutLine);
@@ -35,7 +35,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (gitRequestResult.Success)
 			{
-				monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
+				monitor.Success(ServiceLocator.Localization.Current("Everything is up to date"));
 			}
 			else
 			{

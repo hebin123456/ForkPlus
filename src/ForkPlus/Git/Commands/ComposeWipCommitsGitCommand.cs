@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -25,11 +25,11 @@ namespace ForkPlus.Git.Commands
 
 			// 1. 清空 staging area（用 git reset HEAD -- 不通过 UnstageGitCommand，
 			//    避免子命令污染 monitor 的 Success/Fail 终态）
-			monitor.Update(0.0, PreferencesLocalization.Current("Unstaging all files..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Unstaging all files..."));
 			GitRequestResult resetResult = new GitRequest(gitModule).Command(new GitCommand("reset", "HEAD", "--")).Execute();
 			if (!resetResult.Success && !IsAmbiguousHeadError(resetResult.Stderr))
 			{
-				monitor.Fail(PreferencesLocalization.Current("unstage failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("unstage failed"));
 				return GitCommandResult<string[]>.Failure(new GitCommandError.GitError(resetResult.Stdout, resetResult.Stderr));
 			}
 
@@ -45,7 +45,7 @@ namespace ForkPlus.Git.Commands
 				WipCommitGroup group = plan.Groups[i];
 				if (group.MatchedFiles.Count == 0)
 				{
-					monitor.AppendOutputLine(PreferencesLocalization.FormatCurrent("Skipping group {0}/{1}: no matched files", i + 1, totalGroups));
+					monitor.AppendOutputLine(ServiceLocator.Localization.FormatCurrent("Skipping group {0}/{1}: no matched files", i + 1, totalGroups));
 					continue;
 				}
 
@@ -54,7 +54,7 @@ namespace ForkPlus.Git.Commands
 				double groupMid = (i + 0.5) / totalGroups;
 				double groupEnd = (double)(i + 1) / totalGroups;
 
-				monitor.Update(groupStart, PreferencesLocalization.FormatCurrent("Composing commit {0}/{1}: {2}", i + 1, totalGroups, group.Subject));
+				monitor.Update(groupStart, ServiceLocator.Localization.FormatCurrent("Composing commit {0}/{1}: {2}", i + 1, totalGroups, group.Subject));
 
 				// 2a. Stage this group's files
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, group.MatchedFiles.ToArray(), monitor);
@@ -63,7 +63,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult<string[]>.Failure(stageResult.Error);
 				}
 				// StageFileGitCommand 调用了 monitor.Success，重置为 InProgress 让进度条继续走
-				monitor.Update(groupMid, PreferencesLocalization.FormatCurrent("Composing commit {0}/{1}: {2}", i + 1, totalGroups, group.Subject));
+				monitor.Update(groupMid, ServiceLocator.Localization.FormatCurrent("Composing commit {0}/{1}: {2}", i + 1, totalGroups, group.Subject));
 
 				// 2b. Commit with this group's message
 				string message = group.BuildFullMessage();
@@ -74,10 +74,10 @@ namespace ForkPlus.Git.Commands
 				}
 				committedSubjects.Add(group.Subject);
 				stageGroups++;
-				monitor.Update(groupEnd, PreferencesLocalization.FormatCurrent("Composed commit {0}/{1}", stageGroups, totalGroups));
+				monitor.Update(groupEnd, ServiceLocator.Localization.FormatCurrent("Composed commit {0}/{1}", stageGroups, totalGroups));
 			}
 
-			monitor.Success(PreferencesLocalization.FormatCurrent("Composed {0} commits", committedSubjects.Count));
+			monitor.Success(ServiceLocator.Localization.FormatCurrent("Composed {0} commits", committedSubjects.Count));
 			return GitCommandResult<string[]>.Success(committedSubjects.ToArray());
 		}
 

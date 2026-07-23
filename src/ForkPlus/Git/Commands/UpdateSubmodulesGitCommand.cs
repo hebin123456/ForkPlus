@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -102,7 +102,7 @@ namespace ForkPlus.Git.Commands
 			ISpawnError error = executeWithCallbackResponse.Error;
 			if (error != null)
 			{
-				monitor.Fail(PreferencesLocalization.Current("submodule update failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("submodule update failed"));
 				return GitCommandResult.Failure(error.ToGitCommandError());
 			}
 			if (!executeWithCallbackResponse.Result.Success)

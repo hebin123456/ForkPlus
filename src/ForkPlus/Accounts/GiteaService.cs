@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ForkPlus.Git;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 
@@ -304,7 +304,7 @@ namespace ForkPlus.Accounts
 					if (@string != null)
 					{
 						Log.Warn(@string);
-						return PreferencesLocalization.FormatCurrent("Gitea Error: {0}", @string);
+						return ServiceLocator.Localization.FormatCurrent("Gitea Error: {0}", @string);
 					}
 				}
 				Log.Warn("Cannot parse Error json");
@@ -380,7 +380,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/issues/new");
 		}
@@ -392,7 +392,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<Issue[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest("/api/v1/repos/" + slug + "/issues");
 				apiRequest.AddParameter("type", "issues");
@@ -409,7 +409,7 @@ namespace ForkPlus.Accounts
 			string slug = remote.GitUrl.Slug;
 			if (slug == null)
 			{
-				return ServiceResult<string>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+				return ServiceResult<string>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 			}
 			return ServiceResult<string>.Success(Connection.ServerUrl + "/" + slug + "/compare");
 		}
@@ -421,7 +421,7 @@ namespace ForkPlus.Accounts
 				string slug = remote.GitUrl.Slug;
 				if (slug == null)
 				{
-					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(PreferencesLocalization.FormatCurrent("Slug in '{0}'", remote.Url)));
+					return ServiceResult<PullRequest[]>.Failure(new ServiceError.ParseError(ServiceLocator.Localization.FormatCurrent("Slug in '{0}'", remote.Url)));
 				}
 				ApiRequest apiRequest = new ApiRequest("/api/v1/repos/" + slug + "/issues");
 				apiRequest.AddParameter("type", "pulls");

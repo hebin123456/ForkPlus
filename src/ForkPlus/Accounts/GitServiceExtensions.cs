@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using ForkPlus.Properties;
 using ForkPlus.Settings;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Accounts
 {
@@ -16,7 +16,7 @@ namespace ForkPlus.Accounts
 				return null;
 			}
 			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.AppendLine(PreferencesLocalization.Translate("Allowed parameters:", ForkPlusSettings.Default.UiLanguage));
+			stringBuilder.AppendLine(ServiceLocator.Localization.Translate("Allowed parameters:", ForkPlusSettings.Default.UiLanguage));
 			Func<string, string, SearchQuery.Parameter>[] allowedQueryParameters = service.AllowedQueryParameters;
 			foreach (Func<string, string, SearchQuery.Parameter> func in allowedQueryParameters)
 			{

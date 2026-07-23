@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using ForkPlus.Services;
 using ForkPlus.Utils.Http;
 
 namespace ForkPlus.Accounts
@@ -41,7 +42,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.RemoveCredential(Key(ServerUrl, Username));
+				ServiceLocator.Credential.RemoveCredential(Key(ServerUrl, Username));
 			}
 			catch (Exception ex)
 			{
@@ -49,7 +50,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.RemoveCredential(OldKey(ServerUrl, Username));
+				ServiceLocator.Credential.RemoveCredential(OldKey(ServerUrl, Username));
 			}
 			catch (Exception ex2)
 			{
@@ -66,7 +67,7 @@ namespace ForkPlus.Accounts
 			}
 			try
 			{
-				WindowsCredentialManager.WriteCredential(Key(ServerUrl, Username), Username, Token);
+				ServiceLocator.Credential.WriteCredential(Key(ServerUrl, Username), Username, Token);
 			}
 			catch (Exception ex)
 			{
@@ -106,11 +107,11 @@ namespace ForkPlus.Accounts
 				{
 					return true;
 				}
-				Credential credential = WindowsCredentialManager.ReadCredential(Key(ServerUrl, Username));
+				Credential credential = ServiceLocator.Credential.ReadCredential(Key(ServerUrl, Username));
 				Credential credential3;
 				if (credential == null)
 				{
-					Credential credential2 = WindowsCredentialManager.ReadCredential(OldKey(ServerUrl, Username));
+					Credential credential2 = ServiceLocator.Credential.ReadCredential(OldKey(ServerUrl, Username));
 					if (credential2 == null)
 					{
 						Log.Error("Cannot read credential records '" + Key(ServerUrl, Username) + "' and '" + OldKey(ServerUrl, Username) + "'");

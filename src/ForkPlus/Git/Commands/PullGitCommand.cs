@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -40,7 +40,7 @@ namespace ForkPlus.Git.Commands
 			}
 			gitCommand.Add("--progress");
 			monitor.Append(null, gitCommand);
-			monitor.Update(0.0, PreferencesLocalization.Current("Pulling..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Pulling..."));
 			using GitLfsProgressHandler gitLfsProgressHandler = new GitLfsProgressHandler(monitor);
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteLong(delegate(string stdOutLine)
 			{
@@ -49,7 +49,7 @@ namespace ForkPlus.Git.Commands
 			{
 				if (stdErrLine.Contains("bash: /dev/tty: No such device or address"))
 				{
-					monitor.AppendOutputLine(PreferencesLocalization.Current("Cancel background fetch..."));
+					monitor.AppendOutputLine(ServiceLocator.Localization.Current("Cancel background fetch..."));
 					Thread.Sleep(100);
 					monitor.Cancel();
 				}
@@ -66,7 +66,7 @@ namespace ForkPlus.Git.Commands
 			{
 				if (NoChangesRegEx.FirstMatch(monitor.Output) != null)
 				{
-					monitor.Success(PreferencesLocalization.Current("Already up to date"));
+					monitor.Success(ServiceLocator.Localization.Current("Already up to date"));
 				}
 				else
 				{
@@ -74,7 +74,7 @@ namespace ForkPlus.Git.Commands
 					if (match != null)
 					{
 						string text = match.Groups[1].Value.TrimEnd();
-						monitor.Success(PreferencesLocalization.FormatCurrent("Pulled '{0}'", text));
+						monitor.Success(ServiceLocator.Localization.FormatCurrent("Pulled '{0}'", text));
 					}
 				}
 			}
@@ -87,7 +87,7 @@ namespace ForkPlus.Git.Commands
 					if (match2 != null)
 					{
 						string text2 = match2.Groups[1].Value.TrimEnd();
-						monitor.Fail(PreferencesLocalization.FormatCurrent("Could not resolve host '{0}'", text2));
+						monitor.Fail(ServiceLocator.Localization.FormatCurrent("Could not resolve host '{0}'", text2));
 					}
 					else
 					{

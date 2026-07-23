@@ -1,6 +1,6 @@
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -11,10 +11,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("apply", "--3way", patchPath).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Cannot apply patch"));
+				monitor.Fail(ServiceLocator.Localization.Current("Cannot apply patch"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success(PreferencesLocalization.Current("Applied"));
+			monitor.Success(ServiceLocator.Localization.Current("Applied"));
 			return GitCommandResult.Success();
 		}
 
@@ -23,10 +23,10 @@ namespace ForkPlus.Git.Commands
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("apply", "--3way").Stdin(patchData).ExecuteBt(monitor);
 			if (!gitRequestResult.Success)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Cannot apply patch"));
+				monitor.Fail(ServiceLocator.Localization.Current("Cannot apply patch"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			monitor.Success(PreferencesLocalization.Current("Applied"));
+			monitor.Success(ServiceLocator.Localization.Current("Applied"));
 			return GitCommandResult.Success();
 		}
 	}

@@ -4,7 +4,7 @@ using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -26,7 +26,7 @@ namespace ForkPlus.Git.Commands
 				text = "Review commits in the following range: `" + shaRange.Src.ToString() + ".." + shaRange.Dst.ToString() + "`. Do not fetch.";
 			}
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
-			monitor.Update(monitor.TotalProgress, PreferencesLocalization.FormatCurrent("Reviewing with {0}...", aiAgent.Name));
+			monitor.Update(monitor.TotalProgress, ServiceLocator.Localization.FormatCurrent("Reviewing with {0}...", aiAgent.Name));
 			// Claude CLI 路径此前无超时，claude.exe 卡住时会无限等待。
 			// 复用 OpenAI 路径的 AiReviewTimeoutSeconds 设置，超时后取消（杀死进程）。
 			int timeoutSeconds = Math.Max(0, ForkPlusSettings.Default.AiReviewTimeoutSeconds);
@@ -52,7 +52,7 @@ namespace ForkPlus.Git.Commands
 			}
 			if (timedOut)
 			{
-				string timeoutMsg = PreferencesLocalization.Current("AI request timed out or was canceled.");
+				string timeoutMsg = ServiceLocator.Localization.Current("AI request timed out or was canceled.");
 				monitor.Fail(timeoutMsg);
 				return GitCommandResult<string>.Failure(new GitCommandError.GenericError(timeoutMsg));
 			}
@@ -70,7 +70,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(processOutputHandler.Stderr());
 				return GitCommandResult<string>.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success(PreferencesLocalization.Current("Finished"));
+			monitor.Success(ServiceLocator.Localization.Current("Finished"));
 			return GitCommandResult<string>.Success(processOutputHandler.FullOutput());
 		}
 	}

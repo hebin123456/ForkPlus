@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -23,16 +23,16 @@ namespace ForkPlus.Git.Commands
 				{
 					return GitCommandResult.Failure(new GitCommandError.MergeLocalChangesWouldBeOverwritten(gitRequestResult));
 				}
-				monitor.Fail(PreferencesLocalization.Current("Fast-forward failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Fast-forward failed"));
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
 			if (UpToDateRegEx.FirstMatch(monitor.Output) != null)
 			{
-				monitor.Success(PreferencesLocalization.Current("Up to date"));
+				monitor.Success(ServiceLocator.Localization.Current("Up to date"));
 			}
 			else if (FastForwardRegEx.FirstMatch(monitor.Output) != null)
 			{
-				monitor.Success(PreferencesLocalization.Current("Fast-forwarded"));
+				monitor.Success(ServiceLocator.Localization.Current("Fast-forwarded"));
 			}
 			return GitCommandResult.Success();
 		}

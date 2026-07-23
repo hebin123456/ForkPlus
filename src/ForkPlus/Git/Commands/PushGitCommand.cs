@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -50,7 +50,7 @@ namespace ForkPlus.Git.Commands
 			}
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Pushing..."));
 			using GitLfsProgressHandler gitLfsProgressHandler = new GitLfsProgressHandler(monitor);
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).Env(gitLfsProgressHandler.EnvironmentVariables).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
@@ -70,7 +70,7 @@ namespace ForkPlus.Git.Commands
 				if (match != null)
 				{
 					string text2 = match.Groups[1].Value.TrimEnd();
-					monitor.Fail(PreferencesLocalization.FormatCurrent("'{0}' rejected", text2));
+					monitor.Fail(ServiceLocator.Localization.FormatCurrent("'{0}' rejected", text2));
 				}
 				else
 				{
@@ -78,18 +78,18 @@ namespace ForkPlus.Git.Commands
 					if (match2 != null)
 					{
 						string text3 = match2.Groups[1].Value.TrimEnd();
-						monitor.Fail(PreferencesLocalization.FormatCurrent("Could not resolve host '{0}'", text3));
+						monitor.Fail(ServiceLocator.Localization.FormatCurrent("Could not resolve host '{0}'", text3));
 					}
 					else
 					{
-						monitor.Fail(PreferencesLocalization.Current("Push failed"));
+						monitor.Fail(ServiceLocator.Localization.Current("Push failed"));
 					}
 				}
 				return GitCommandResult.Failure(new GitCommandError.CallbackUnknownError(processOutputHandler.FullOutput()));
 			}
 			if (NoChangesRegEx.FirstMatch(input) != null)
 			{
-				monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
+				monitor.Success(ServiceLocator.Localization.Current("Everything is up to date"));
 			}
 			else
 			{
@@ -97,7 +97,7 @@ namespace ForkPlus.Git.Commands
 				if (match3 != null)
 				{
 					string text4 = match3.Groups[1].Value.TrimEnd();
-					monitor.Success(PreferencesLocalization.FormatCurrent("Updated '{0}'", text4));
+					monitor.Success(ServiceLocator.Localization.FormatCurrent("Updated '{0}'", text4));
 				}
 			}
 			return GitCommandResult.Success();
@@ -111,7 +111,7 @@ namespace ForkPlus.Git.Commands
 			gitCommand.Add("--force-with-lease");
 			gitCommand.Add("--verbose");
 			gitCommand.Add("--progress");
-			monitor.Update(0.0, PreferencesLocalization.Current("Pushing..."));
+			monitor.Update(0.0, ServiceLocator.Localization.Current("Pushing..."));
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(gitCommand).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, monitor);
 			if (monitor.IsCanceled)
@@ -128,7 +128,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(processOutputHandler.Stderr());
 				return GitCommandResult.Failure(new GitCommandError.GitError(processOutputHandler.FullOutput(), processOutputHandler.Stderr()));
 			}
-			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
+			monitor.Success(ServiceLocator.Localization.Current("Everything is up to date"));
 			return GitCommandResult.Success();
 		}
 	}

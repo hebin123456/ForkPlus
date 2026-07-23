@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ForkPlus.Settings;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Diff.Presentation
 {
@@ -271,7 +271,7 @@ namespace ForkPlus.Git.Diff.Presentation
 
 		private static VisualLine CreateNoNewlineAtEndOfFilePragmaVisualLine(PresentationContext ctx)
 		{
-			return CreateVisualLine(ctx, LineType.Pragma, PreferencesLocalization.Translate("No newline at end of file", ForkPlusSettings.Default.UiLanguage) + "\n", -1);
+			return CreateVisualLine(ctx, LineType.Pragma, ServiceLocator.Localization.Translate("No newline at end of file", ForkPlusSettings.Default.UiLanguage) + "\n", -1);
 		}
 
 		private static VisualLine CreateAlignmentVisualLine(PresentationContext ctx)

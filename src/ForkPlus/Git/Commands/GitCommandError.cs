@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Settings;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.Git.Commands
 {
@@ -381,7 +381,7 @@ namespace ForkPlus.Git.Commands
 			public string ErrorMessage { get; }
 
 			// 走国际化翻译。未命中的 key 会原样返回，所以带运行时数据的拼接串也安全。
-			public override string FriendlyDescription => PreferencesLocalization.Translate(ErrorMessage, ForkPlusSettings.Default.UiLanguage);
+			public override string FriendlyDescription => ServiceLocator.Localization.Translate(ErrorMessage, ForkPlusSettings.Default.UiLanguage);
 
 			public ParseError(string stderr)
 			{
@@ -471,11 +471,11 @@ namespace ForkPlus.Git.Commands
 			 }
 			 output = NoPathInCommitRegex.Replace(output, delegate(Match match)
 			 {
-			  return string.Format(PreferencesLocalization.Translate("fatal: There is no path '{0}' in the commit", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			  return string.Format(ServiceLocator.Localization.Translate("fatal: There is no path '{0}' in the commit", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
 			 });
 			 output = PermissionDeniedOpenRegex.Replace(output, delegate(Match match)
 			 {
-			  return string.Format(PreferencesLocalization.Translate("error: open('{0}'): Permission denied", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			  return string.Format(ServiceLocator.Localization.Translate("error: open('{0}'): Permission denied", ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
 			 });
 			 output = CannotHashRegex.Replace(output, delegate(Match match)
 			 {
@@ -484,9 +484,9 @@ namespace ForkPlus.Git.Commands
 			   : "fatal: cannot hash";
 			  if (key.Contains("{0}"))
 			  {
-			   return string.Format(PreferencesLocalization.Translate(key, ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
+			   return string.Format(ServiceLocator.Localization.Translate(key, ForkPlusSettings.Default.UiLanguage), match.Groups[1].Value);
 			  }
-			  return PreferencesLocalization.Translate(key, ForkPlusSettings.Default.UiLanguage);
+			  return ServiceLocator.Localization.Translate(key, ForkPlusSettings.Default.UiLanguage);
 			 });
 			 return output;
 			}
