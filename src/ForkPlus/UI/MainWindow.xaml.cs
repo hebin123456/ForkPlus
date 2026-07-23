@@ -39,8 +39,6 @@ namespace ForkPlus.UI
 
 		private MainWindowMenuManager _menuManager;
 
-		private bool _startUpFinished;
-
 		private Menu _templatePartMainMenu;
 
 		private ToggleButton _templatePartNotificationManagerToggleButton;
@@ -53,13 +51,8 @@ namespace ForkPlus.UI
 
 		private readonly RepositoryStatusManager _repositoryStatusManager = new RepositoryStatusManager();
 
-		private bool _preventRefreshAfterChildDialogClose;
-
-		private string _preventRefreshAfterChildDialogCloseReason;
-
-		private DateTime _lastActivationStatusRefreshTime = DateTime.MinValue;
-
-		private string _lastActivationStatusRefreshRepositoryPath;
+		// 阶段 3 里程碑 3.15：纯业务状态/逻辑由 VM 承载（零 WPF），本类保留薄转发。
+		private readonly MainWindowViewModel _viewModel = new MainWindowViewModel();
 
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
@@ -134,8 +127,7 @@ namespace ForkPlus.UI
 
 		public void PreventRefreshAfterChildDialogClose(string reason)
 		{
-			_preventRefreshAfterChildDialogCloseReason = reason;
-			_preventRefreshAfterChildDialogClose = true;
+			_viewModel.PreventRefreshAfterChildDialogCloseWithReason(reason);
 		}
 
 		public override void OnApplyTemplate()
@@ -237,26 +229,26 @@ namespace ForkPlus.UI
 				return;
 			}
 			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown)
+		{
+			RepositoryUserControl activeRepositoryUserControl2 = TabManager.ActiveRepositoryUserControl;
+			if (activeRepositoryUserControl2 != null)
 			{
-				RepositoryUserControl activeRepositoryUserControl2 = TabManager.ActiveRepositoryUserControl;
-				if (activeRepositoryUserControl2 != null)
+				// 阶段 3 里程碑 3.15：剪贴板 patch 检测+编码纯逻辑由 VM 承载，View 仅负责 WPF 事件+命令执行。
+				byte[] bytes = MainWindowViewModel.TryGetClipboardPatchBytes();
+				if (bytes != null)
 				{
-					string text = ServiceLocator.Clipboard.GetText();
-					if (text != null && (text.StartsWith("diff ") || text.StartsWith("From ")))
-					{
-						e.Handled = true;
-						byte[] bytes = Encoding.UTF8.GetBytes(text);
-						new ShowApplyPatchWindowCommand().Execute(activeRepositoryUserControl2, bytes);
-						return;
-					}
+					e.Handled = true;
+					new ShowApplyPatchWindowCommand().Execute(activeRepositoryUserControl2, bytes);
+					return;
 				}
 			}
-			base.OnKeyDown(e);
 		}
+		base.OnKeyDown(e);
+	}
 
 		private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (_startUpFinished)
+			if (_viewModel.StartUpFinished)
 			{
 				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
 			}
@@ -265,7 +257,7 @@ namespace ForkPlus.UI
 		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
-			if (_startUpFinished)
+			if (_viewModel.StartUpFinished)
 			{
 				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
 			}
@@ -276,7 +268,7 @@ namespace ForkPlus.UI
 			base.OnStateChanged(e);
 			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 SizeChanged/LocationChanged，
 			// 此处补充保存，避免状态变更丢失。
-			if (_startUpFinished)
+			if (_viewModel.StartUpFinished)
 			{
 				ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationState();
 			}
@@ -502,16 +494,15 @@ namespace ForkPlus.UI
 		private void Window_Activated(object sender, EventArgs e)
 		{
 			Log.Info("WindowActivated");
-			if (!_startUpFinished)
+			if (!_viewModel.StartUpFinished)
 			{
-				_startUpFinished = true;
+				_viewModel.StartUpFinished = true;
 				return;
 			}
-			if (_preventRefreshAfterChildDialogClose || ChildDialogsAreNotAlreadyClosed())
+			if (_viewModel.PreventRefreshAfterChildDialogClose || ChildDialogsAreNotAlreadyClosed())
 			{
-				Log.Info("Application Window Activated: skip (" + _preventRefreshAfterChildDialogCloseReason + ")");
-				_preventRefreshAfterChildDialogCloseReason = null;
-				_preventRefreshAfterChildDialogClose = false;
+				Log.Info("Application Window Activated: skip (" + _viewModel.PreventRefreshAfterChildDialogCloseReason + ")");
+				_viewModel.ClearPreventRefreshAfterChildDialogClose();
 				return;
 			}
 			if (!ForkPlusSettings.Default.DisableRefreshOnAppActivation)
@@ -536,14 +527,7 @@ namespace ForkPlus.UI
 
 		private bool ShouldSkipActivationRefresh(string repositoryPath)
 		{
-			DateTime now = DateTime.UtcNow;
-			if (string.Equals(repositoryPath, _lastActivationStatusRefreshRepositoryPath, StringComparison.OrdinalIgnoreCase) && now - _lastActivationStatusRefreshTime < TimeSpan.FromSeconds(10.0))
-			{
-				return true;
-			}
-			_lastActivationStatusRefreshRepositoryPath = repositoryPath;
-			_lastActivationStatusRefreshTime = now;
-			return false;
+			return _viewModel.ShouldSkipActivationRefresh(repositoryPath);
 		}
 
 		private bool RefreshActiveCommitViewStatus()
@@ -568,7 +552,7 @@ namespace ForkPlus.UI
 			{
 				if (ownedWindow is QuickLaunchWindow)
 				{
-					_preventRefreshAfterChildDialogCloseReason = ownedWindow.GetType().Name;
+					_viewModel.PreventRefreshAfterChildDialogCloseReason = ownedWindow.GetType().Name;
 					return true;
 				}
 			}

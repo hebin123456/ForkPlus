@@ -24,84 +24,110 @@ namespace ForkPlus.UI.UserControls
 	{
 		public static readonly RepositoryUserControlCommands Commands = new RepositoryUserControlCommands();
 
-		public readonly TempFileManager TempFileManager = new TempFileManager();
+		// 阶段 3 里程碑 3.15：纯业务状态/逻辑由 VM 承载（零 WPF），本类保留公共成员签名作为薄转发层，
+		// 维持 Commands 层与既有调用点契约不变（repositoryUserControl.GitModule 等仍可直访）。
+		private readonly RepositoryUserControlViewModel _viewModel = new RepositoryUserControlViewModel();
 
-		public readonly JobQueue JobQueue = new JobQueue();
+		private bool _layoutInitialized;
+
+		public TempFileManager TempFileManager => _viewModel.TempFileManager;
+
+		public JobQueue JobQueue => _viewModel.JobQueue;
 
 		/// <summary>本仓库的 Undo/Redo 历史栈。v3.0.0 新增。</summary>
-		public readonly UndoRedoStack UndoRedoStack = new UndoRedoStack();
+		public UndoRedoStack UndoRedoStack => _viewModel.UndoRedoStack;
 
 		/// <summary>Undo/Redo 状态变化时触发，UI 工具栏订阅以刷新按钮可用性。</summary>
 		public event EventHandler UndoRedoStateChanged;
 
-		private bool _isDirty;
+		public RefreshRepositoryCommand RefreshRepositoryCommand => _viewModel.RefreshRepositoryCommand;
 
-		private bool _layoutInitialized;
+		public RepositoryData RepositoryData
+		{
+			get { return _viewModel.RepositoryData; }
+			private set { _viewModel.RepositoryData = value; }
+		}
 
-		private SubDomain _invalidatedSubdomains = SubDomain.All;
+		public RepositoryStatus RepositoryStatus
+		{
+			get { return _viewModel.RepositoryStatus; }
+			private set { _viewModel.RepositoryStatus = value; }
+		}
 
-		private RepositoryViewMode _viewMode;
+		public GitModule GitModule
+		{
+			get { return _viewModel.GitModule; }
+			private set { _viewModel.GitModule = value; }
+		}
 
-		private Job _activeFetchRevisionsUntilShaJob;
+		public CommitGraphCache CommitGraphCache
+		{
+			get { return _viewModel.CommitGraphCache; }
+			private set { _viewModel.CommitGraphCache = value; }
+		}
 
-		[Null]
-		private Job _activeFetchRevisionsNextPageJob;
+		public string RepositoryName
+		{
+			get { return _viewModel.RepositoryName; }
+			private set { _viewModel.RepositoryName = value; }
+		}
 
-		private readonly RefreshRepositoryCommand RefreshRepositoryCommand = new RefreshRepositoryCommand();
+		public string ParentRepositoryName
+		{
+			get { return _viewModel.ParentRepositoryName; }
+			private set { _viewModel.ParentRepositoryName = value; }
+		}
 
-		public RepositoryData RepositoryData { get; private set; }
-
-		public RepositoryStatus RepositoryStatus { get; private set; }
-
-		public GitModule GitModule { get; private set; }
-
-		public CommitGraphCache CommitGraphCache { get; private set; }
-
-		public string RepositoryName { get; private set; }
-
-		public string ParentRepositoryName { get; private set; }
-
-		public string RepositoryTitle { get; private set; }
+		public string RepositoryTitle
+		{
+			get { return _viewModel.RepositoryTitle; }
+			private set { _viewModel.RepositoryTitle = value; }
+		}
 
 		public bool IsDirty
 		{
-			get
-			{
-				if (_isDirty)
-				{
-					return ForkPlusSettings.Default.AutomaticStatusUpdateInterval > 0;
-				}
-				return false;
-			}
-			set
-			{
-				_isDirty = value;
-			}
+			get { return _viewModel.IsDirty; }
+			set { _viewModel.IsDirty = value; }
 		}
 
-		public RepositoryColor RepositoryColor { get; private set; }
+		public RepositoryColor RepositoryColor
+		{
+			get { return _viewModel.RepositoryColor; }
+			private set { _viewModel.RepositoryColor = value; }
+		}
 
-		public SubDomain InvalidatedSubdomains => _invalidatedSubdomains;
+		public SubDomain InvalidatedSubdomains => _viewModel.InvalidatedSubdomains;
 
 		public RepositoryViewMode ViewMode
 		{
-			get
-			{
-				return _viewMode;
-			}
+			get { return _viewModel.ViewMode; }
 			private set
 			{
-				if (_viewMode != value)
-				{
-					_viewMode = value;
-					Content.SetRepositoryViewMode(_viewMode);
-					Sidebar.SetRepositoryViewMode(_viewMode);
-					NotificationBar.Refresh();
-				}
+				// VM 的 ViewMode setter 仅更新状态 + 触发 ViewModeChanged 事件；
+				// UI 副作用（Content/Sidebar.SetRepositoryViewMode + NotificationBar.Refresh）由本 View 订阅事件执行。
+				// 这里直接调用 VM 的 ViewMode setter，事件订阅在构造函数中完成。
+				_viewModel.ViewMode = value;
 			}
 		}
 
-		public bool ShowReflogInRevisionList { get; set; }
+		public bool ShowReflogInRevisionList
+		{
+			get { return _viewModel.ShowReflogInRevisionList; }
+			set { _viewModel.ShowReflogInRevisionList = value; }
+		}
+
+		public Job ActiveFetchRevisionsUntilShaJob
+		{
+			get { return _viewModel.ActiveFetchRevisionsUntilShaJob; }
+			set { _viewModel.ActiveFetchRevisionsUntilShaJob = value; }
+		}
+
+		[Null]
+		public Job ActiveFetchRevisionsNextPageJob
+		{
+			get { return _viewModel.ActiveFetchRevisionsNextPageJob; }
+			set { _viewModel.ActiveFetchRevisionsNextPageJob = value; }
+		}
 
 		public SidebarUserControl Sidebar { get; private set; }
 
@@ -117,6 +143,17 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveSidebarColumnWidth();
 			};
+			// 订阅 VM 事件：ViewMode 变更 → 驱动子控件 UI 刷新；UndoRedo 状态变更 → 转发本类事件供工具栏订阅。
+			_viewModel.ViewModeChanged += OnViewModeChanged;
+			_viewModel.UndoRedoStateChanged += (s, e) => UndoRedoStateChanged?.Invoke(this, e);
+		}
+
+		/// <summary>ViewModeChanged 事件处理器：执行原 ViewMode setter 的 UI 副作用。</summary>
+		private void OnViewModeChanged(RepositoryViewMode viewMode)
+		{
+			Content.SetRepositoryViewMode(viewMode);
+			Sidebar.SetRepositoryViewMode(viewMode);
+			NotificationBar.Refresh();
 		}
 
 		protected override void OnDrop(DragEventArgs e)
@@ -136,30 +173,7 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private string FindParentRepositoryName(GitModule gitModule)
 		{
-			if (gitModule.Type == ModuleType.Submodule)
-			{
-				string parentRepoPath = gitModule.ParentRepoPath;
-				if (parentRepoPath == null)
-				{
-					return null;
-				}
-				return RepositoryManager.Instance.FindRepositoryName(parentRepoPath) ?? Path.GetFileName(parentRepoPath);
-			}
-			if (gitModule.Type == ModuleType.Worktree)
-			{
-				string commonGitDir = gitModule.CommonGitDir;
-				if (commonGitDir == null)
-				{
-					return null;
-				}
-				if (Path.GetFileName(commonGitDir) != ".git")
-				{
-					return Path.GetFileName(commonGitDir);
-				}
-				string directoryName = Path.GetDirectoryName(commonGitDir);
-				return RepositoryManager.Instance.FindRepositoryName(directoryName) ?? Path.GetFileName(directoryName);
-			}
-			return null;
+			return RepositoryUserControlViewModel.FindParentRepositoryName(gitModule);
 		}
 
 		public void RefreshRepositoryTitle()
@@ -276,12 +290,7 @@ namespace ForkPlus.UI.UserControls
 
 		private static int CountDistinctChangedFiles(ChangedFile[] changedFiles)
 		{
-			HashSet<string> paths = new HashSet<string>(StringComparer.Ordinal);
-			foreach (ChangedFile changedFile in changedFiles)
-			{
-				paths.Add(changedFile.Path);
-			}
-			return paths.Count;
+			return RepositoryUserControlViewModel.CountDistinctChangedFiles(changedFiles);
 		}
 
 		public void RefreshToolbarBadges()
@@ -716,10 +725,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void CancelActiveFetchRevisionsJobs()
 		{
-			_activeFetchRevisionsUntilShaJob?.Monitor.Cancel();
-			_activeFetchRevisionsUntilShaJob = null;
-			_activeFetchRevisionsNextPageJob?.Monitor.Cancel();
-			_activeFetchRevisionsNextPageJob = null;
+			_viewModel.CancelActiveFetchRevisionsJobs();
 		}
 
 		private static GitCommandResult<RevisionContextSearch?> ExpandContextSearch(GitModule gitModule, RevisionContextSearch? oldContextSearch, RevisionStorage oldRevisionStorage, RevisionStorage newRevisionStorage, RepositoryReferences references, JobMonitor monitor)
@@ -958,12 +964,12 @@ namespace ForkPlus.UI.UserControls
 
 		public void Invalidate(SubDomain subdomains)
 		{
-			_invalidatedSubdomains |= subdomains;
+			_viewModel.Invalidate(subdomains);
 		}
 
 		public void ResetSubdomains(SubDomain subdomains)
 		{
-			_invalidatedSubdomains &= ~subdomains;
+			_viewModel.ResetSubdomains(subdomains);
 		}
 
 		public void InvalidateAndRefresh(SubDomain subdomains, RevisionSelector select = null, RepositoryViewMode priority = RepositoryViewMode.RevisionViewMode)
@@ -1037,7 +1043,7 @@ namespace ForkPlus.UI.UserControls
 		/// </summary>
 		public void RaiseUndoRedoStateChanged()
 		{
-			UndoRedoStateChanged?.Invoke(this, EventArgs.Empty);
+			_viewModel.RaiseUndoRedoStateChanged();
 		}
 
 		/// <summary>
