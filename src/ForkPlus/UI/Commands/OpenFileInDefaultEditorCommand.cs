@@ -79,7 +79,9 @@ namespace ForkPlus.UI.Commands
 				string text = gitModule.MakePath(filePath);
 				if (File.Exists(text))
 				{
-					Process.Start(text);
+					// Process.Start(string) 在 .NET 10 下默认 UseShellExecute=false，无法走
+					// shell 关联唤起默认编辑器，必须显式置 true。
+					Process.Start(new ProcessStartInfo(text) { UseShellExecute = true });
 				}
 			}
 			catch (Exception ex)
@@ -99,7 +101,8 @@ namespace ForkPlus.UI.Commands
 				string text = SaveToTempDestination(gitModule, sha, changedFile);
 				if (text != null && File.Exists(text))
 				{
-					Process.Start(text);
+					// 同上：历史版本临时文件需走 shell 关联打开，必须 UseShellExecute=true。
+					Process.Start(new ProcessStartInfo(text) { UseShellExecute = true });
 				}
 			}
 			catch (Exception ex)

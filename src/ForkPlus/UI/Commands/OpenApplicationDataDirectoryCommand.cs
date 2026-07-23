@@ -13,8 +13,10 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
+			// .NET 10 起 UseShellExecute 默认从 true 改为 false，文件夹路径不是可执行文件，
+			// 必须显式置 true 才能走 Shell 打开资源管理器。
 			Process process = new Process();
-			ProcessStartInfo startInfo = new ProcessStartInfo(App.ForkDirectoryPath);
+			ProcessStartInfo startInfo = new ProcessStartInfo(App.ForkDirectoryPath) { UseShellExecute = true };
 			process.StartInfo = startInfo;
 			process.Start();
 		}

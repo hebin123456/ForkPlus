@@ -2,6 +2,12 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.6.2
+
+### Bug 修复
+
+- 继续修复 .NET 10 迁移后 `UseShellExecute` 默认值变更导致的功能失效：用默认编辑器打开工作区文件、打开历史版本临时文件、打开应用数据文件夹三处 `Process.Start` 均失效，现已补齐 `UseShellExecute = true`。
+
 ## v3.6.1
 
 ### Bug 修复
