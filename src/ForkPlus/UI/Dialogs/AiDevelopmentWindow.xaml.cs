@@ -59,23 +59,12 @@ namespace ForkPlus.UI.Dialogs
 		private const int MaxContextTokenEstimate = 6000;
 		private const int KeepRecentMessagesOnCompress = 6;
 		private bool _isCompressingContext;
-		private bool _modelListLoaded;
 
-		// 流式输出的实时 Markdown 缓冲（边收边渲染到 WebView）
-		private StringBuilder _streamingMarkdown;
+		// 流式渲染状态/协议/Markdown转换/CSS 由 VM 承载（零 WPF），本类仅负责 WebView2 实例操作 + UI 切换。
+		private readonly AiDevelopmentWindowViewModel _viewModel = new AiDevelopmentWindowViewModel();
 
-		// 保护 _streamingMarkdown 的并发追加（chunk 来自后台 job 线程，渲染来自 UI 线程）
-		private readonly object _streamingLock = new object();
-
-		// 流式预览渲染节流：避免每个 chunk 都触发一次 markdown→html→NavigateToString 造成卡顿
-		private DateTime _lastStreamingRenderUtc = DateTime.MinValue;
-		private const int StreamingRenderIntervalMs = 400;
-
-		// 当前流式响应的 WebView2（onChunk 追加到 _streamingMarkdown 后节流渲染到这里）
+		// 当前流式响应的 WebView2（onChunk 追加到 VM 缓冲后节流渲染到这里；多对话气泡模式下动态创建）
 		private WebView2 _streamingWebView;
-
-		// CSS 缓存（从嵌入资源 md-ai-output.css 读取，与 AiCodeReviewWindow 共用样式）
-		private static string _cachedCss;
 
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
@@ -107,7 +96,7 @@ namespace ForkPlus.UI.Dialogs
 		/// </summary>
 		private void InitializeModelComboBox()
 		{
-			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
+			string currentModel = AiModelListLoader.CurrentModel;
 			if (!string.IsNullOrWhiteSpace(currentModel))
 			{
 				ModelComboBox.Items.Add(currentModel);
@@ -119,28 +108,11 @@ namespace ForkPlus.UI.Dialogs
 				ModelComboBox.SelectedIndex = 0;
 			}
 
-			// 后台拉取模型列表（不阻塞 UI 线程）
+			// 后台拉取模型列表（不阻塞 UI 线程），拉取逻辑由 AiModelListLoader 承载（零 WPF）
 			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
 			{
-				List<string> models = null;
-				try
-				{
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<string[]> result = aiService.ListModels();
-						if (result.Succeeded && result.Result != null)
-						{
-							models = new List<string>(result.Result);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Failed to load AI model list: " + ex.Message);
-				}
-
-				if (models == null || models.Count == 0)
+				List<string> models = AiModelListLoader.LoadModels();
+				if (models == null)
 				{
 					return;
 				}
@@ -150,35 +122,24 @@ namespace ForkPlus.UI.Dialogs
 				{
 					try
 					{
-						if (_modelListLoaded)
+						if (_viewModel.ModelListLoaded)
 						{
 							return;
 						}
-						_modelListLoaded = true;
-						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
+						_viewModel.ModelListLoaded = true;
+						string selected = AiModelListLoader.CurrentModel;
 						ModelComboBox.Items.Clear();
 						foreach (string m in models)
 						{
-							if (!string.IsNullOrWhiteSpace(m))
-							{
-								ModelComboBox.Items.Add(m);
-							}
+							ModelComboBox.Items.Add(m);
 						}
 						// 选中当前模型；若列表中不包含，插入到首位并选中
-						int idx = -1;
-						for (int i = 0; i < ModelComboBox.Items.Count; i++)
-						{
-							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
-							{
-								idx = i;
-								break;
-							}
-						}
+						(int idx, bool shouldInsertCurrent) = AiModelListLoader.FindSelectedIndex(models, selected);
 						if (idx >= 0)
 						{
 							ModelComboBox.SelectedIndex = idx;
 						}
-						else if (!string.IsNullOrWhiteSpace(selected))
+						else if (shouldInsertCurrent)
 						{
 							ModelComboBox.Items.Insert(0, selected);
 							ModelComboBox.SelectedIndex = 0;
@@ -196,10 +157,10 @@ namespace ForkPlus.UI.Dialogs
 			});
 		}
 
-		/// <summary>切换模型时保存到设置，并提示用户。</summary>
+		/// <summary>切换模型时保存到设置（AiModelListLoader 负责持久化），并提示用户。</summary>
 		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			// 首次初始化时也会触发，此时 _modelListLoaded 可能尚未完成；仅在有有效选中项时保存
+			// 首次初始化时也会触发，此时模型列表可能尚未完成；仅在有有效选中项时保存
 			if (ModelComboBox.SelectedItem == null)
 			{
 				return;
@@ -209,12 +170,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
-			ForkPlusSettings.Default.Save();
+			AiModelListLoader.CurrentModel = selected;
 			AddStatusMessage(
 				PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected),
 				Brushes.Gray);
@@ -450,7 +406,7 @@ namespace ForkPlus.UI.Dialogs
 					// 每轮重置流式缓冲（工具调用中间轮次的内容不展示给用户，只展示最终回复）
 					if (toolRound > 0)
 					{
-						lock (_streamingLock) { _streamingMarkdown = null; }
+						_viewModel.ClearStreamingBuffer();
 					}
 					result = aiService.OpenAiRequestStreamingWithRetry(currentHistory, systemPrompt, currentRequirement, monitor, delegate(string delta)
 						{
@@ -458,14 +414,7 @@ namespace ForkPlus.UI.Dialogs
 							{
 								return;
 							}
-							lock (_streamingLock)
-							{
-								if (_streamingMarkdown == null)
-								{
-									_streamingMarkdown = new StringBuilder();
-								}
-								_streamingMarkdown.Append(delta);
-							}
+							_viewModel.OnChunk(delta);
 							base.Dispatcher.Async(delegate
 							{
 								TryRenderStreamingPreview();
@@ -690,72 +639,19 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>读取嵌入资源 md-ai-output.css（与 AiCodeReviewWindow 共用样式），带缓存。</summary>
-		private static string GetCss()
-		{
-			if (_cachedCss != null)
-			{
-				return _cachedCss;
-			}
-			try
-			{
-				Assembly executingAssembly = Assembly.GetExecutingAssembly();
-				string name = "ForkPlus.Assets.md-ai-output.css";
-				using Stream stream = executingAssembly.GetManifestResourceStream(name);
-				using StreamReader streamReader = new StreamReader(stream);
-				_cachedCss = streamReader.ReadToEnd();
-				return _cachedCss;
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to read CSS resource", ex);
-				return string.Empty;
-			}
-		}
-
-		/// <summary>调 native Biturbo 库把 Markdown 转为 HTML（与 AiCodeReviewWindow 共用底层 bt_md_to_html）。</summary>
-		private static GitCommandResult<string> ConvertMarkdownToHtml(string markdown)
-		{
-			return BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
-			{
-				return Bt.bt_md_to_html(markdown, ref x);
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				return GitCommandResult<string>.Success(x.html.GetUtf8String());
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				Bt.bt_release_md_to_html(ref x);
-			});
-		}
-
-		/// <summary>把 Markdown 文本转为完整 HTML 文档（含 CSS），用于 NavigateToString。</summary>
-		private static string BuildHtmlDocument(string bodyHtml)
-		{
-			string css = GetCss();
-			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + bodyHtml + "\n</body>\n</html>";
-		}
-
-		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。</summary>
+		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。
+		/// Markdown转换/CSS/HTML文档构建由基类 AiStreamingMarkdownViewModel 承载（零 WPF）。
+		/// 气泡模式不注入 scrollScript（用自动高度 + 总是 ScrollToEnd，无 scroll-at-bottom 跟踪）。</summary>
 		private void RenderMarkdownToWebView(WebView2 webView, string markdown)
 		{
 			if (webView?.CoreWebView2 == null || string.IsNullOrEmpty(markdown))
 			{
 				return;
 			}
-			string body;
+			string html = AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocument(markdown);
 			try
 			{
-				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(markdown);
-				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(markdown);
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("AI message markdown render failed: " + ex.Message);
-				body = WebUtility.HtmlEncode(markdown);
-			}
-			try
-			{
-				webView.NavigateToString(BuildHtmlDocument(body));
+				webView.NavigateToString(html);
 			}
 			catch (Exception ex)
 			{
@@ -763,24 +659,19 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入流式 WebView。</summary>
+		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入流式 WebView。
+		/// 节流判定 + 缓冲快照由 VM 承载。</summary>
 		private void TryRenderStreamingPreview()
 		{
 			if (_streamingWebView?.CoreWebView2 == null)
 			{
 				return;
 			}
-			DateTime now = DateTime.UtcNow;
-			if (now - _lastStreamingRenderUtc < TimeSpan.FromMilliseconds(StreamingRenderIntervalMs))
+			if (!_viewModel.ShouldRenderNow())
 			{
 				return;
 			}
-			_lastStreamingRenderUtc = now;
-			string md;
-			lock (_streamingLock)
-			{
-				md = _streamingMarkdown?.ToString() ?? "";
-			}
+			string md = _viewModel.GetMarkdownSnapshot();
 			if (string.IsNullOrEmpty(md))
 			{
 				return;
@@ -926,12 +817,8 @@ namespace ForkPlus.UI.Dialogs
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
 
-			// 重置流式状态
-			lock (_streamingLock)
-			{
-				_streamingMarkdown = null;
-			}
-			_lastStreamingRenderUtc = DateTime.MinValue;
+			// 重置流式状态（VM 承载：清空缓冲 + 重置节流计时）
+			_viewModel.ClearStreamingBuffer();
 			_streamingWebView = webView;
 
 			// 异步初始化 WebView2（环境/主题/右键菜单/自动高度），fire-and-forget
@@ -956,12 +843,8 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>无文件变更时保留流式气泡作为最终响应，做一次最终渲染确保完整内容显示。</summary>
 		private void FinalizeStreamingResponseBubble(WebView2 streamingWebView)
 		{
-			// 最终渲染（无节流），确保流式结束后完整 Markdown 已渲染
-			string md;
-			lock (_streamingLock)
-			{
-				md = _streamingMarkdown?.ToString() ?? "";
-			}
+			// 最终渲染（无节流），确保流式结束后完整 Markdown 已渲染（VM 取最终完整 markdown）
+			string md = _viewModel.GetFinalMarkdown();
 			if (!string.IsNullOrEmpty(md) && streamingWebView?.CoreWebView2 != null)
 			{
 				RenderMarkdownToWebView(streamingWebView, md);
@@ -1041,10 +924,7 @@ namespace ForkPlus.UI.Dialogs
 			_fileChanges.Clear();
 			_lastBeforeContents.Clear();
 			_streamingWebView = null;
-			lock (_streamingLock)
-			{
-				_streamingMarkdown = null;
-			}
+			_viewModel.ClearStreamingBuffer();
 			MessagePanel.Children.Clear();
 			ShowWelcomeMessage();
 			AddStatusMessage(PreferencesLocalization.Current("Conversation cleared."), Brushes.Gray);
