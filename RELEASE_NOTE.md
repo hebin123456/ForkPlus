@@ -4,9 +4,14 @@
 
 ## v3.5.3
 
+### Bug 修复
+
+- 修复检查更新点击"下载"按钮无响应、不跳转浏览器的问题：根因是 .NET 10 迁移后 `UseShellExecute` 默认值变为 false，导致 `Process.Start` 不会唤起默认浏览器。
+
 ### 优化
 
 - tokei（代码行数统计）改为从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，不再从源码 cargo 编译，CI 构建更快、无需 Rust 工具链。
+- CI 触发条件调整：master 分支 push 不再触发构建，仅 tag（`v*`）和 master-update 分支触发。
 
 ## v3.5.2
 
