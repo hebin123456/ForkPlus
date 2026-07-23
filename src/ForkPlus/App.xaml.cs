@@ -873,7 +873,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is older than the required {1}. Some features (diff, status, empty-changes detection) may not work correctly. Please upgrade git.",
 						versionText, minText);
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
+					System.Windows.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
 				}
 				else if (result.Status == GitVersionStatus.Outdated)
 				{
@@ -882,7 +882,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is below the recommended {1}. Consider upgrading for better compatibility.",
 						versionText, recText);
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), MessageBoxButton.OK, MessageBoxImage.Information);
+					System.Windows.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 				}
 			}
 			catch (Exception ex)
