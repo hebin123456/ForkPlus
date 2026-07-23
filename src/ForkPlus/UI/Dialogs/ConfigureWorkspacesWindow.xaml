@@ -1,13 +1,13 @@
-<dialogs:ForkPlusDialogWindow Height="370" Width="330" MinHeight="300" MinWidth="250" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ConfigureWorkspacesWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<dialogs:ForkPlusDialogWindow Height="370" Width="330" MinHeight="300" MinWidth="250" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ConfigureWorkspacesWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <Style x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="{x:Type controls:RepositoryManagerEditableTextBlock}" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

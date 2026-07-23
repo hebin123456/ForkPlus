@@ -1,6 +1,6 @@
 <ui:CustomWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.BlameWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:diff="clr-namespace:ForkPlus.UI.Controls.Editor.Diff">
   <ui:CustomWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:DummyBlameItemViewModel}}" DataType="{x:Type dialogs:DummyBlameItemViewModel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Grid Height="16.393333333333334">
           <Border Margin="-4,0,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
@@ -58,7 +58,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
-  <Grid Margin="20,2,20,20" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid Margin="20,2,20,20" xmlns="https://github.com/avaloniaui">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />

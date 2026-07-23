@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow WindowStartupLocation="CenterScreen" Width="640" MinHeight="370" SizeToContent="Height" ResizeMode="NoResize" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.WelcomeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid Margin="0,0,20,20" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<dialogs:ForkPlusDialogWindow WindowStartupLocation="CenterScreen" Width="640" MinHeight="370" SizeToContent="Height" CanResize="False" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.WelcomeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid Margin="0,0,20,20" xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="280" />
       <ColumnDefinition Width="*" />

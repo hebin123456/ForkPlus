@@ -1,6 +1,6 @@
 <dialogs:ForkPlusDialogWindow MinHeight="348" Width="240" SizeToContent="Height" Title="About" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AboutWindow">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <Style x:Key="HyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Setter Property="FrameworkContentElement.FocusVisualStyle">
           <Setter.Value>
@@ -16,7 +16,7 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid Margin="20,0,20,20" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid Margin="20,0,20,20" xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
       <ColumnDefinition Width="*" />

@@ -1,8 +1,8 @@
 <dialogs:ForkPlusDialogWindow Width="570" MinHeight="156" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RescanRepositoriesWindow">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

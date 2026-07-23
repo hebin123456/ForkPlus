@@ -1,8 +1,8 @@
-<dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" Height="520" Width="760" MinHeight="320" MinWidth="520" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PerformanceDiagnosticsWindow">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<dialogs:ForkPlusDialogWindow CanResize="True" Height="520" Width="760" MinHeight="320" MinWidth="520" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PerformanceDiagnosticsWindow">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

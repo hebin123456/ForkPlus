@@ -1,5 +1,5 @@
 <dialogs:ForkPlusDialogWindow Title="Repository Settings" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RepositorySettingsWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:repositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:preferences="clr-namespace:ForkPlus.UI.UserControls.Preferences">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.RowDefinitions>
       <RowDefinition Height="0" />
       <RowDefinition Height="*" />

@@ -1,4 +1,4 @@
-<ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="640" Width="1024" MinHeight="420" MinWidth="720" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" x:Class="ForkPlus.UI.Dialogs.AiCommitComposerWindow">
+<ui:CustomWindow CanResize="True" Height="640" Width="1024" MinHeight="420" MinWidth="720" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" x:Class="ForkPlus.UI.Dialogs.AiCommitComposerWindow">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

@@ -1,6 +1,6 @@
-<dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.InteractiveRebaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
+<dialogs:ForkPlusDialogWindow CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.InteractiveRebaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
       <DataTemplate x:Key="NoneDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
       <DataTemplate x:Key="StartDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -29,22 +29,22 @@
       </DataTemplate>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.RowDefinitions>
-      <RowDefinition />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
-        <RowDefinition />
-        <RowDefinition />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="270" />
-        <ColumnDefinition />
+        <ColumnDefinition Width="*" />
         <ColumnDefinition Width="40" />
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Interactive Rebase" Margin="4,0,0,6" FontSize="18" FontWeight="Medium" />
@@ -54,7 +54,7 @@
           <ColumnDefinition Width="300" />
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
-          <ColumnDefinition />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="Rebase:" />
         <controls:GitPointView Grid.Column="1" Margin="8,0,8,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SourceGitPointView" />

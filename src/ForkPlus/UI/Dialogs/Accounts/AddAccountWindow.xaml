@@ -1,12 +1,12 @@
 <dialogs:ForkPlusDialogWindow Title="Add Account" Height="350" Width="450" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.AddAccountWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Text="Add Account" Margin="4,0,0,4" FontSize="15" FontWeight="Medium" VerticalAlignment="Center" />

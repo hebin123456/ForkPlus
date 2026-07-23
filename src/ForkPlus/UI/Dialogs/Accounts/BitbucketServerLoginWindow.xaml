@@ -1,18 +1,18 @@
 <dialogs:ForkPlusDialogWindow Title="Login to Bitbucket Server" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.BitbucketServerLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid Grid.Row="1" Grid.Column="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="140" />
-        <ColumnDefinition />
+        <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -22,7 +22,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-        <Image Width="24" Height="24" Source="pack://application:,,,/ForkPlus;component/Assets/BitBucket.png" />
+        <Image Width="24" Height="24" Source="avares://ForkPlus/Assets/BitBucket.png" />
         <TextBlock Text="Log in to Bitbucket Server" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
       </StackPanel>
       <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />

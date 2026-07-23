@@ -1,12 +1,12 @@
 <ui:CustomWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
   <ui:CustomWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:HistoryEntryViewModel}}" DataType="{x:Type dialogs:HistoryEntryViewModel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Grid Height="57">
           <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
           </Grid.RowDefinitions>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -178,11 +178,11 @@
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
-  <Grid Margin="20,0,20,20" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid Margin="20,0,20,20" xmlns="https://github.com/avaloniaui">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <DockPanel>

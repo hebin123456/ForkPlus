@@ -1,8 +1,8 @@
-<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleTagsWindow">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleTagsWindow">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -12,10 +12,10 @@
     <Grid Grid.Row="1" Grid.Column="1" Margin="2,10,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition />
+        <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
-        <RowDefinition />
+        <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Tags:" FontSize="13" />

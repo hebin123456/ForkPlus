@@ -1,5 +1,5 @@
 <dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmUploadWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.Resources>
       <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="{x:Type Expander}">
         <Setter Property="Template">
@@ -37,7 +37,7 @@
     </Grid.Resources>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -47,7 +47,7 @@
     <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition />
+        <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -73,13 +73,13 @@
         <Grid Margin="0,4,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
+            <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" x:Name="ForceUploadWarningImage" />
+          <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="avares://ForkPlus/Assets/Warning.png" x:Name="ForceUploadWarningImage" />
           <Grid Grid.Column="1" Grid.Row="0" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="145" />

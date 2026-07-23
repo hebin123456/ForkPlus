@@ -1,8 +1,8 @@
-<dialogs:ForkPlusDialogWindow ResizeMode="CanResizeWithGrip" Height="680" Width="860" MinHeight="420" MinWidth="560" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmReferenceWindow">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<dialogs:ForkPlusDialogWindow CanResize="True" Height="680" Width="860" MinHeight="420" MinWidth="560" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmReferenceWindow">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -13,7 +13,7 @@
       <wv2:WebView2 x:Name="ManualWebView" />
       <userControls:FallbackUserControl Visibility="Collapsed" x:Name="ManualFallback">
         <UserControl.Background>
-          <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#00FFFFFF</SolidColorBrush>
+          <SolidColorBrush xmlns="https://github.com/avaloniaui">#00FFFFFF</SolidColorBrush>
         </UserControl.Background>
       </userControls:FallbackUserControl>
     </Grid>

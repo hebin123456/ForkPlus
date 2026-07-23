@@ -1,12 +1,12 @@
-<dialogs:ForkPlusDialogWindow Width="700" MinWidth="400" Height="400" MinHeight="300" ResizeMode="CanResizeWithGrip" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitLfsStatusWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<dialogs:ForkPlusDialogWindow Width="700" MinWidth="400" Height="400" MinHeight="300" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitLfsStatusWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">

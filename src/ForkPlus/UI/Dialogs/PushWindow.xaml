@@ -1,6 +1,6 @@
 <dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Style.Triggers>
           <DataTrigger>
@@ -21,10 +21,10 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -34,7 +34,7 @@
     <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition />
+        <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -112,7 +112,7 @@
       </ComboBox>
       <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Create tracking reference" IsChecked="True" ToolTip="-u" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="CreateTrackingReferenceCheckBox" />
       <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Push all tags" IsChecked="True" ToolTip="--tags" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="AllTagsCheckBox" />
-      <Image Grid.Column="0" Grid.Row="5" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ForcePushWarningImage" />
+      <Image Grid.Column="0" Grid.Row="5" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="avares://ForkPlus/Assets/Warning.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ForcePushWarningImage" />
       <CheckBox Grid.Column="1" Grid.Row="5" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force push" ToolTip="--force-with-lease" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="ForcePushCheckBox_Changed" Unchecked="ForcePushCheckBox_Changed" x:Name="ForcePushCheckBox" />
     </Grid>
   </Grid>
