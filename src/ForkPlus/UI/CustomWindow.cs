@@ -1,21 +1,25 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Markup;
-using System.Windows.Shell;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
+	/// <summary>
+	/// 阶段 4 里程碑 4.2：CustomWindow WPF→Avalonia 迁移。
+	/// WPF WindowChrome/HwndSource/Win32 消息钩子 → Avalonia ExtendClientAreaToDecorationsHint。
+	/// DependencyProperty → StyledProperty&lt;T&gt;。OnSourceInitialized → 移除（Win32 专属）。
+	/// </summary>
 	[ContentProperty("Content")]
 	[TemplatePart(Name = "PART_MinimizeButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_MaximizeButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_RestoreButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_CloseButton", Type = typeof(Button))]
-	[TemplatePart(Name = "PART_WindowHeader", Type = typeof(FrameworkElement))]
+	[TemplatePart(Name = "PART_WindowHeader", Type = typeof(Control))]
 	public class CustomWindow : Window
 	{
 		protected const string PartNameWindowHeader = "PART_WindowHeader";
@@ -28,17 +32,19 @@ namespace ForkPlus.UI
 
 		protected const string PartNameMaximizeButton = "PART_MaximizeButton";
 
-		public static readonly DependencyProperty HeaderHeightProperty;
+		public static readonly StyledProperty<double> HeaderHeightProperty =
+			AvaloniaProperty.Register<CustomWindow, double>(nameof(HeaderHeight), 22.0);
 
-		public static readonly DependencyProperty ShowHeaderProperty;
+		public static readonly StyledProperty<bool> ShowHeaderProperty =
+			AvaloniaProperty.Register<CustomWindow, bool>(nameof(ShowHeader), true);
 
-		public static readonly DependencyProperty HideMinimizeMaximizeButtonsProperty;
+		public static readonly StyledProperty<bool> HideMinimizeMaximizeButtonsProperty =
+			AvaloniaProperty.Register<CustomWindow, bool>(nameof(HideMinimizeMaximizeButtons), false);
 
-		public static readonly DependencyProperty IsTitleVisibleProperty;
+		public static readonly StyledProperty<bool> IsTitleVisibleProperty =
+			AvaloniaProperty.Register<CustomWindow, bool>(nameof(IsTitleVisible), false);
 
-		public static readonly DependencyProperty WindowResizeBorderThicknessProperty;
-
-		private FrameworkElement _templatePartWindowHeader;
+		private Control _templatePartWindowHeader;
 
 		private Button _closeButton;
 
@@ -48,172 +54,90 @@ namespace ForkPlus.UI
 
 		private Button _restoreButton;
 
-		private Thickness _tempWindowResizeBorderThickness;
-
-		private Thickness _tempBorderThickness;
-
-		private WindowState _tempWindowState;
-
 		private bool _showHeader = true;
 
-		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
+		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsDesignMode();
 
 		public double HeaderHeight
 		{
-			get
-			{
-				return (double)GetValue(HeaderHeightProperty);
-			}
-			private set
-			{
-				SetValue(HeaderHeightProperty, value);
-			}
+			get => GetValue(HeaderHeightProperty);
+			private set => SetValue(HeaderHeightProperty, value);
 		}
 
 		public bool ShowHeader
 		{
-			get
-			{
-				return (bool)GetValue(ShowHeaderProperty);
-			}
-			set
-			{
-				SetValue(ShowHeaderProperty, value);
-			}
+			get => GetValue(ShowHeaderProperty);
+			set => SetValue(ShowHeaderProperty, value);
 		}
 
 		public bool HideMinimizeMaximizeButtons
 		{
-			get
-			{
-				return (bool)GetValue(HideMinimizeMaximizeButtonsProperty);
-			}
-			set
-			{
-				SetValue(HideMinimizeMaximizeButtonsProperty, value);
-			}
+			get => GetValue(HideMinimizeMaximizeButtonsProperty);
+			set => SetValue(HideMinimizeMaximizeButtonsProperty, value);
 		}
 
 		public bool IsTitleVisible
 		{
-			get
-			{
-				return (bool)GetValue(IsTitleVisibleProperty);
-			}
-			set
-			{
-				SetValue(IsTitleVisibleProperty, value);
-			}
-		}
-
-		public Thickness WindowResizeBorderThickness
-		{
-			get
-			{
-				return (Thickness)GetValue(WindowResizeBorderThicknessProperty);
-			}
-			private set
-			{
-				SetValue(WindowResizeBorderThicknessProperty, value);
-			}
-		}
-
-		private static Thickness MaximizedWindowResizeBorderThickness
-		{
-			get
-			{
-				Thickness windowResizeBorderThickness = WindowLocationStateExtensions.WindowResizeBorderThickness;
-				if (WindowLocationStateExtensions.AutoHideEnabled())
-				{
-					return new Thickness(0.0 - windowResizeBorderThickness.Left, 0.0 - windowResizeBorderThickness.Top, 0.0 - windowResizeBorderThickness.Right, 0.0 - windowResizeBorderThickness.Bottom);
-				}
-				return windowResizeBorderThickness;
-			}
+			get => GetValue(IsTitleVisibleProperty);
+			set => SetValue(IsTitleVisibleProperty, value);
 		}
 
 		static CustomWindow()
 		{
-			HeaderHeightProperty = DependencyProperty.Register("HeaderHeight", typeof(double), typeof(CustomWindow), new PropertyMetadata(22.0));
-			ShowHeaderProperty = DependencyProperty.Register("ShowHeader", typeof(bool), typeof(CustomWindow), new PropertyMetadata(true, OnShowHeaderChanged));
-			HideMinimizeMaximizeButtonsProperty = DependencyProperty.Register("HideMinimizeMaximizeButtons", typeof(bool), typeof(CustomWindow), new PropertyMetadata(false));
-			IsTitleVisibleProperty = DependencyProperty.Register("IsTitleVisible", typeof(bool), typeof(CustomWindow), new PropertyMetadata(false));
-			WindowResizeBorderThicknessProperty = DependencyProperty.Register("WindowResizeBorderThickness", typeof(Thickness), typeof(CustomWindow), new PropertyMetadata(default(Thickness)));
-			FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(CustomWindow), new FrameworkPropertyMetadata(typeof(CustomWindow)));
+			// Avalonia: 通过 StyleKey 让控件查找对应 ControlTheme
+			// （等价 WPF DefaultStyleKey OverrideMetadata）
 		}
 
 		public CustomWindow()
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CustomWindow));
-			if (IsDesignMode)
+			if (!IsDesignMode)
 			{
-				_tempWindowResizeBorderThickness = new Thickness(6.0);
-				WindowResizeBorderThickness = _tempWindowResizeBorderThickness;
-				return;
+				// Avalonia 自定义标题栏：扩展客户区到整个窗口
+				ExtendClientAreaToDecorationsHint = true;
+				ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
+				ExtendClientAreaTitleBarHeightHint = -1;
 			}
-			WindowChrome windowChrome = new WindowChrome
-			{
-				CornerRadius = default(CornerRadius),
-				GlassFrameThickness = new Thickness(0.0, 0.0, 0.0, 1.0),
-				UseAeroCaptionButtons = false
-			};
-			Binding binding = new Binding("HeaderHeight")
-			{
-				Source = this
-			};
-			BindingOperations.SetBinding(windowChrome, WindowChrome.CaptionHeightProperty, binding);
-			WindowChrome.SetWindowChrome(this, windowChrome);
-			_tempWindowResizeBorderThickness = WindowResizeBorderThickness;
 			base.Loaded += Window_Loaded;
 		}
 
-		protected override void OnContentRendered(EventArgs e)
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnContentRendered(e);
-			if (base.SizeToContent == SizeToContent.WidthAndHeight)
+			base.OnApplyTemplate(e);
+			_templatePartWindowHeader = e.NameScope.Get<Control>("PART_WindowHeader");
+			_closeButton = e.NameScope.Get<Button>("PART_CloseButton");
+			_minimizeButton = e.NameScope.Get<Button>("PART_MinimizeButton");
+			_maximizeButton = e.NameScope.Get<Button>("PART_MaximizeButton");
+			_restoreButton = e.NameScope.Get<Button>("PART_RestoreButton");
+
+			// 绑定标题栏按钮点击
+			if (_closeButton != null)
 			{
-				InvalidateMeasure();
+				_closeButton.Click += (s, ev) => Close();
 			}
+			if (_minimizeButton != null)
+			{
+				_minimizeButton.Click += (s, ev) => WindowState = WindowState.Minimized;
+			}
+			if (_maximizeButton != null)
+			{
+				_maximizeButton.Click += (s, ev) => WindowState = WindowState.Maximized;
+			}
+			if (_restoreButton != null)
+			{
+				_restoreButton.Click += (s, ev) => WindowState = WindowState.Normal;
+			}
+
+			AdjustButtonsVisibilityToWindowState();
 		}
 
-		protected override void OnStateChanged(EventArgs e)
+		protected override void OnWindowStateChanged(EventArgs e)
 		{
-			base.OnStateChanged(e);
+			base.OnWindowStateChanged(e);
 			if (IsDesignMode)
 			{
 				return;
 			}
 			AdjustButtonsVisibilityToWindowState();
-			if (base.WindowState == WindowState.Maximized)
-			{
-				WindowResizeBorderThickness = MaximizedWindowResizeBorderThickness;
-				base.BorderThickness = default(Thickness);
-			}
-			else
-			{
-				WindowResizeBorderThickness = _tempWindowResizeBorderThickness;
-				base.BorderThickness = _tempBorderThickness;
-			}
-		}
-
-		public override void OnApplyTemplate()
-		{
-			base.OnApplyTemplate();
-			_templatePartWindowHeader = GetTemplateChild("PART_WindowHeader") as FrameworkElement;
-			_closeButton = GetTemplateChild("PART_CloseButton") as Button;
-			_minimizeButton = GetTemplateChild("PART_MinimizeButton") as Button;
-			_maximizeButton = GetTemplateChild("PART_MaximizeButton") as Button;
-			_restoreButton = GetTemplateChild("PART_RestoreButton") as Button;
-			AdjustButtonsVisibilityToWindowState();
-		}
-
-		protected override void OnSourceInitialized(EventArgs e)
-		{
-			base.OnSourceInitialized(e);
-			if (IsDesignMode)
-			{
-				return;
-			}
-			HwndSource.FromHwnd(new WindowInteropHelper(this).EnsureHandle()).AddHook(HwndSourceHook);
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -221,28 +145,6 @@ namespace ForkPlus.UI
 			if (IsDesignMode)
 			{
 				return;
-			}
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, delegate
-			{
-				base.WindowState = WindowState.Minimized;
-			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, delegate
-			{
-				base.WindowState = WindowState.Maximized;
-			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, delegate
-			{
-				base.WindowState = WindowState.Normal;
-			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, delegate
-			{
-				Close();
-			}));
-			_tempWindowState = base.WindowState;
-			_tempBorderThickness = base.BorderThickness;
-			if (base.WindowState == WindowState.Maximized)
-			{
-				base.BorderThickness = default(Thickness);
 			}
 			SwitchShowHeader(_showHeader);
 		}
@@ -260,7 +162,7 @@ namespace ForkPlus.UI
 				_restoreButton?.Collapse();
 				return;
 			}
-			switch (base.WindowState)
+			switch (WindowState)
 			{
 			case WindowState.Normal:
 				_maximizeButton?.Show();
@@ -271,49 +173,25 @@ namespace ForkPlus.UI
 				_restoreButton?.Show();
 				break;
 			}
-			switch (base.ResizeMode)
+			if (!CanResize)
 			{
-			case ResizeMode.NoResize:
 				_minimizeButton?.Collapse();
 				_maximizeButton?.Collapse();
 				_restoreButton?.Collapse();
-				break;
-			case ResizeMode.CanMinimize:
-				_maximizeButton?.Collapse();
-				_restoreButton?.Collapse();
-				break;
 			}
 		}
 
-		private IntPtr HwndSourceHook(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+		/// <summary>
+		/// ShowHeader 属性变更回调（Avalonia 没有 OnPropertyChanged 虚方法重写 StyledProperty，
+		/// 通过 override OnPropertyChanged 统一处理）。
+		/// </summary>
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 		{
-			switch (msg)
+			base.OnPropertyChanged(change);
+			if (change.Property == ShowHeaderProperty)
 			{
-			case 71:
-				WindowResizeBorderThickness = ((base.WindowState == WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
-				break;
-			case 36:
-				WindowLocationStateExtensions.GetMinMaxInfo(hwnd, lparam);
-				WindowResizeBorderThickness = ((base.WindowState == WindowState.Maximized) ? MaximizedWindowResizeBorderThickness : _tempWindowResizeBorderThickness);
-				handled = true;
-				break;
-			case 132:
-				try
-				{
-					lparam.ToInt32();
-				}
-				catch (OverflowException)
-				{
-					handled = true;
-				}
-				break;
+				SwitchShowHeader(change.NewValue is bool b && b);
 			}
-			return IntPtr.Zero;
-		}
-
-		private static void OnShowHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((CustomWindow)d).SwitchShowHeader((bool)e.NewValue);
 		}
 
 		private void SwitchShowHeader(bool showHeader)
