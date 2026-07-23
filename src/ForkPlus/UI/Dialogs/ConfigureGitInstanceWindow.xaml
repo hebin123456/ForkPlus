@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="640" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ConfigureGitInstanceWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="640" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ConfigureGitInstanceWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />

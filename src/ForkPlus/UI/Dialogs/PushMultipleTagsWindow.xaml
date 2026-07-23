@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleTagsWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" CanResize="True" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleTagsWindow">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,7 +21,7 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Tags:" FontSize="13" />
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagsItemsControl">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="TagsItemsControl">
             <ItemsControl.FocusVisualStyle>
               <x:Null />
             </ItemsControl.FocusVisualStyle>
@@ -41,7 +41,7 @@
         </ScrollViewer>
       </Border>
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

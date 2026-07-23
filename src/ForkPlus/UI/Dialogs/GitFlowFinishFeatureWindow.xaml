@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowFinishFeatureWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowFinishFeatureWindow">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,7 +21,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Feature:" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -35,9 +35,9 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" ToolTip="--keep (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase before merging" ToolTip="--rebase" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseInsteadOfMergeCheckBox" />
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="No fast-forward" ToolTip="--no-ff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="NoFastForwardCheckBox" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" ToolTip="--keep (when unchecked)" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase before merging" ToolTip="--rebase" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseInsteadOfMergeCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="No fast-forward" ToolTip="--no-ff" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="NoFastForwardCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

@@ -1,7 +1,7 @@
-<dialogs:ForkPlusDialogWindow x:Class="ForkPlus.UI.Dialogs.CustomColorsDialog"
+<dialogs:ForkPlusDialogWindow xmlns="https://github.com/avaloniaui" x:Class="ForkPlus.UI.Dialogs.CustomColorsDialog"
     xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns="https://github.com/avaloniaui"
+   
+   
     Title="Custom Colors"
     Width="600" Height="680"
     WindowStartupLocation="CenterOwner"

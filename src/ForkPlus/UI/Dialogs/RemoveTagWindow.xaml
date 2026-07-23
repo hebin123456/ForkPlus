@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RemoveTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RemoveTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -18,9 +18,9 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Margin="0,6,0,2" VerticalAlignment="Top" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StartPointTextBlock" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
-      <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointsContainer">
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Margin="0,6,0,2" VerticalAlignment="Top" HorizontalAlignment="Right" x:Name="StartPointTextBlock" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" x:Name="GitPointView" />
+      <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="GitPointsContainer">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints">
             <ItemsControl.FocusVisualStyle>
@@ -38,7 +38,7 @@
           </ItemsControl>
         </ScrollViewer>
       </Border>
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="DeleteFromRemotesCheckBox_Changed" Unchecked="DeleteFromRemotesCheckBox_Changed" x:Name="DeleteFromRemotesCheckBox" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Checked="DeleteFromRemotesCheckBox_Changed" Unchecked="DeleteFromRemotesCheckBox_Changed" x:Name="DeleteFromRemotesCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

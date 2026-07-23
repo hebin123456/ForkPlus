@@ -1,6 +1,6 @@
 <UserControl xmlns:RepositoryOverview="clr-namespace:ForkPlus.UI.Dialogs.RepositoryOverview" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RepositoryOverview.RepositoryOverviewAuthorsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
-    <ListBox BorderThickness="1" HorizontalContentAlignment="Stretch" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AuthorsListBox">
+  <Grid>
+    <ListBox BorderThickness="1" HorizontalContentAlignment="Stretch" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid Height="30">

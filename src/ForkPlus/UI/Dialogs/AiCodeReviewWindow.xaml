@@ -50,22 +50,22 @@
           <wv2:WebView2 x:Name="AiResponseWebView" />
           <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
             <ProgressBar.Foreground>
-              <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="https://github.com/avaloniaui" />
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" />
             </ProgressBar.Foreground>
             <ProgressBar.Style>
-              <DynamicResource ResourceKey="CircularProgressBar" xmlns="https://github.com/avaloniaui" />
+              <DynamicResource ResourceKey="CircularProgressBar" />
             </ProgressBar.Style>
           </ProgressBar>
           <userControls:FallbackUserControl x:Name="AiResponseFallback">
             <UserControl.Background>
-              <SolidColorBrush xmlns="https://github.com/avaloniaui">#00FFFFFF</SolidColorBrush>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
             </UserControl.Background>
           </userControls:FallbackUserControl>
         </Grid.Children>
       </Grid>
       <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="GridSplitter">
         <GridSplitter.Style>
-          <DynamicResource ResourceKey="VerticalGridSplitter" xmlns="https://github.com/avaloniaui" />
+          <DynamicResource ResourceKey="VerticalGridSplitter" />
         </GridSplitter.Style>
       </GridSplitter>
     </Grid.Children>

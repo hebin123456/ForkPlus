@@ -1,7 +1,7 @@
-<dialogs:ForkPlusDialogWindow MinHeight="225" Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.MergeBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<dialogs:ForkPlusDialogWindow MinHeight="225" Width="560" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.MergeBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <Style x:Key="MergeComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="MergeComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -21,7 +21,7 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -44,11 +44,11 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SourceGitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="SourceGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
-      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
-      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource MergeComboBoxItemStyle}" SelectionChanged="MergeTypeComboBox_SelectionChanged" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="MergeTypeComboBox">
+      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource MergeComboBoxItemStyle}" SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <DockPanel HorizontalAlignment="Stretch">

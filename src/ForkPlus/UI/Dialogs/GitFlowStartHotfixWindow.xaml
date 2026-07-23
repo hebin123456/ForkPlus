@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowStartHotfixWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowStartHotfixWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -18,10 +18,10 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="hotfix/" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="HotfixPrefixTextBlock" />
-      <controls:ReferenceTextBox TextChanged="HotfixName_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Hotfix Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="HotfixNameTextBox" />
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="hotfix/" x:Name="HotfixPrefixTextBlock" />
+      <controls:ReferenceTextBox TextChanged="HotfixName_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Hotfix Name" x:Name="HotfixNameTextBox" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Start at:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

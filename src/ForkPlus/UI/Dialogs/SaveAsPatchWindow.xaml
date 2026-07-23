@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SaveAsPatchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SaveAsPatchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -14,10 +14,10 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
-      <TextBlock Grid.Row="0" FontSize="13" VerticalAlignment="Center" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionsTextBlock" />
+      <TextBlock Grid.Row="0" FontSize="13" VerticalAlignment="Center" x:Name="RevisionsTextBlock" />
       <Border Grid.Row="1" Height="80" Margin="0,6,0,2" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionsItemsControl">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="RevisionsItemsControl">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <controls:BindableGitPointView>

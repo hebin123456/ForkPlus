@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateWorktreeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateWorktreeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -20,7 +20,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Start from:" FontSize="13" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalBranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -40,15 +40,15 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Branch name:" />
-      <controls:ReferenceTextBox TextChanged="BranchName_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" Padding="1,2,2,2" Placeholder="Enter branch name" Icon="{DynamicResource BranchIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchNameTextBox" />
+      <controls:ReferenceTextBox TextChanged="BranchName_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" Padding="1,2,2,2" Placeholder="Enter branch name" Icon="{DynamicResource BranchIcon}" x:Name="BranchNameTextBox" />
       <TextBlock Grid.Column="0" Grid.Row="2" Margin="0,5,0,0" Text="Location:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <Grid Grid.Column="1" Grid.Row="2" Margin="0,5,0,0">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PathTextBox" />
-        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="BrowseButton_Click" />
+        <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="PathTextBox" />
+        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
       </Grid>
     </Grid>
   </Grid>

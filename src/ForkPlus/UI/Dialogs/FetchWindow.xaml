@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow MinHeight="180" Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FetchWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow MinHeight="180" Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FetchWindow">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -19,7 +19,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemoteComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemoteComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -37,7 +37,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,4" HorizontalAlignment="Left" Content="Fetch all remotes" ToolTip="--all" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="FetchAllRemotesCheckBox_Checked" Unchecked="FetchAllRemotesCheckBox_Checked" x:Name="FetchAllRemotesCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,4" HorizontalAlignment="Left" Content="Fetch all remotes" ToolTip="--all" Checked="FetchAllRemotesCheckBox_Checked" Unchecked="FetchAllRemotesCheckBox_Checked" x:Name="FetchAllRemotesCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

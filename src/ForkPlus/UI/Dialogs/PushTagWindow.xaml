@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow MinHeight="190" Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow MinHeight="190" Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -19,9 +19,9 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Tag:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagGitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,0" x:Name="TagGitPointView" />
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

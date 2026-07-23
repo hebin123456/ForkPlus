@@ -1,7 +1,7 @@
-<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutAndSyncWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutAndSyncWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <Style x:Key="CheckoutActionTypeComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="CheckoutActionTypeComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -21,7 +21,7 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -42,9 +42,9 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Action:" Margin="0,1,0,4" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,2,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource CheckoutActionTypeComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="CheckoutActionTypeComboBox_SelectionChanged" x:Name="CheckoutActionTypeComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,2,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource CheckoutActionTypeComboBoxItemStyle}" SelectionChanged="CheckoutActionTypeComboBox_SelectionChanged" x:Name="CheckoutActionTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <DockPanel Width="420">
@@ -67,7 +67,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AutostashCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" x:Name="AutostashCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

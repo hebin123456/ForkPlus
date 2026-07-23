@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Height="370" Width="590" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreatePartialStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Height="370" Width="590" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreatePartialStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -14,7 +14,7 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ListBox Grid.Row="0" Margin="0,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Style="{DynamicResource NoSelectionListBoxStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PartialStashListBox">
+      <ListBox Grid.Row="0" Margin="0,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="PartialStashListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>
@@ -50,8 +50,8 @@
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashMessageTextBox" />
-        <Button Grid.Column="1" Margin="6,0,0,0" Padding="8,2" Height="24" FontSize="12" VerticalAlignment="Center" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" x:Name="StashMessageTextBox" />
+        <Button Grid.Column="1" Margin="6,0,0,0" Padding="8,2" Height="24" FontSize="12" VerticalAlignment="Center" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton">
           <TextBlock Text="🤖 AI" FontFamily="Segoe UI, Segoe UI Emoji" />
         </Button>
       </Grid>

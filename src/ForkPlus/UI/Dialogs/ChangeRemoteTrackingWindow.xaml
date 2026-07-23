@@ -1,7 +1,7 @@
-<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ChangeRemoteTrackingWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ChangeRemoteTrackingWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -21,7 +21,7 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -41,9 +41,9 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Track:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />

@@ -1,26 +1,26 @@
-<dialogs:ForkPlusDialogWindow CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.InteractiveRebaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
+<dialogs:ForkPlusDialogWindow CanResize="True" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.InteractiveRebaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-      <DataTemplate x:Key="NoneDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-      <DataTemplate x:Key="StartDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+      <DataTemplate x:Key="NoneDataTemplate" DataType="{x:Type dialogs:GraphItemType}" />
+      <DataTemplate x:Key="StartDataTemplate" DataType="{x:Type dialogs:GraphItemType}">
         <Canvas Height="22" Width="22">
           <Line X1="11" Y1="11" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
           <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
         </Canvas>
       </DataTemplate>
-      <DataTemplate x:Key="MiddleDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="MiddleDataTemplate" DataType="{x:Type dialogs:GraphItemType}">
         <Canvas Height="22" Width="22">
           <Line X1="11" Y1="0" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
           <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
         </Canvas>
       </DataTemplate>
-      <DataTemplate x:Key="ThroughDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="ThroughDataTemplate" DataType="{x:Type dialogs:GraphItemType}">
         <Canvas Height="22" Width="22">
           <Line X1="11" Y1="0" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
         </Canvas>
       </DataTemplate>
-      <DataTemplate x:Key="TargetDataTemplate" DataType="{x:Type dialogs:GraphItemType}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="TargetDataTemplate" DataType="{x:Type dialogs:GraphItemType}">
         <Canvas Height="22" Width="22" SnapsToDevicePixels="True">
           <Grid Canvas.Top="0" Canvas.Left="11" Height="14" Width="18">
             <Path Stretch="Fill" StrokeThickness="0" Margin="-1,0,0,0" Fill="{DynamicResource ForegroundBrush.Gray}" Data="M8.38,11.598C3.523,9.982,-0.0640000000000001,5.335,0.00100000000000122,0.159000000000001L0.00100000000000122,6.93889390390723E-16C0.487000000000001,0.00100000000000069 0.974000000000001,0.00300000000000069 1.46,0.00400000000000069 1.447,4.469 4.236,8.469 8.38,10.051L8.38,7.566 18.034,10.784 8.38,14.002 8.38,11.598z" />
@@ -29,7 +29,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
@@ -57,13 +57,13 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="Rebase:" />
-        <controls:GitPointView Grid.Column="1" Margin="8,0,8,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SourceGitPointView" />
+        <controls:GitPointView Grid.Column="1" Margin="8,0,8,4" x:Name="SourceGitPointView" />
         <TextBlock Grid.Column="2" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="On:" />
-        <controls:GitPointView Grid.Column="3" Margin="8,0,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
-        <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip="--update-refs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UpdateRefsCheckBox" />
+        <controls:GitPointView Grid.Column="3" Margin="8,0,0,4" x:Name="DestinationGitPointView" />
+        <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" MouseDoubleClick="RevisionListView_MouseDoubleClick" BorderThickness="0" SelectionMode="Extended" Style="{DynamicResource ListViewWithGridViewStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionListView">
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" MouseDoubleClick="RevisionListView_MouseDoubleClick" BorderThickness="0" SelectionMode="Extended" Style="{DynamicResource ListViewWithGridViewStyle}" x:Name="RevisionListView">
           <dialogs:MultiselectionListView.FocusVisualStyle>
             <x:Null />
           </dialogs:MultiselectionListView.FocusVisualStyle>
@@ -336,11 +336,11 @@
           </dialogs:MultiselectionListView.View>
         </dialogs:MultiselectionListView>
       </Grid>
-      <userControls:RevisionDetailsUserControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" Background="{DynamicResource BackgroundBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionDetails" />
+      <userControls:RevisionDetailsUserControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" Background="{DynamicResource BackgroundBrush}" x:Name="RevisionDetails" />
       <GridSplitter Grid.Row="3" Grid.Column="0" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
       <GridSplitter Grid.Row="3" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" />
       <GridSplitter Grid.Row="3" Grid.Column="2" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
-      <userControls:FallbackUserControl Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionListFallbackUserControl" />
+      <userControls:FallbackUserControl Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListFallbackUserControl" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

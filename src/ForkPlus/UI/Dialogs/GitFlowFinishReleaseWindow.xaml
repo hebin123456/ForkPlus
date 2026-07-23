@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="530" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowFinishReleaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="530" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitFlowFinishReleaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,7 +21,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Release:" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -36,9 +36,9 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Top" Margin="0,4,0,4" HorizontalAlignment="Right" Text="Message:" />
-      <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter release message (optional)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagMessageTextBox" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" IsChecked="True" ToolTip="--keep (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Back-merge master into develop" IsChecked="True" ToolTip="--nobackmerge (when unchecked)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="BackMergeMasterCheckBox" />
+      <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter release message (optional)" x:Name="TagMessageTextBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" IsChecked="True" ToolTip="--keep (when unchecked)" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Back-merge master into develop" IsChecked="True" ToolTip="--nobackmerge (when unchecked)" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="BackMergeMasterCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

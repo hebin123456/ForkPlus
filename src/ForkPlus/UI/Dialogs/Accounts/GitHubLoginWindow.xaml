@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Title="Login to GitHub" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.GitHubLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Title="Login to GitHub" Width="450" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.GitHubLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
       <ColumnDefinition Width="*" />
@@ -21,7 +21,7 @@
         <TextBlock Text="Log in to GitHub" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
       </StackPanel>
       <Separator Grid.Row="1" Margin="0,8,0,8" />
-      <ComboBox Grid.Row="2" Margin="95,4,0,6" HorizontalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="AuthenticationTypeComboBox_SelectionChanged" x:Name="AuthenticationTypeComboBox">
+      <ComboBox Grid.Row="2" Margin="95,4,0,6" HorizontalAlignment="Stretch" SelectionChanged="AuthenticationTypeComboBox_SelectionChanged" x:Name="AuthenticationTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="0,0,4,0">
@@ -32,7 +32,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <Grid Grid.Row="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TokenContainer">
+      <Grid Grid.Row="3" x:Name="TokenContainer">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="95" />
           <ColumnDefinition Width="*" />

@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleBranchesWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" MinWidth="520" MinHeight="170" Height="270" CanResize="True" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushMultipleBranchesWindow">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -20,7 +20,7 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,6,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Branches:" FontSize="13" />
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchesItemsControl">
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl">
             <ItemsControl.FocusVisualStyle>
               <x:Null />
             </ItemsControl.FocusVisualStyle>

@@ -1,7 +1,7 @@
-<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow">
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow">
   <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -21,7 +21,7 @@
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
-  <Grid xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -45,7 +45,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="LocalBranchesComboBox_SelectionChanged" x:Name="LocalBranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="LocalBranchesComboBox_SelectionChanged" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -64,8 +64,8 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <TextBlock Grid.Column="0" Grid.Row="1" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RemotesLabel" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" ItemContainerStyle="{DynamicResource ComboBoxItemContainerStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <TextBlock Grid.Column="0" Grid.Row="1" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="RemotesLabel" />
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" ItemContainerStyle="{DynamicResource ComboBoxItemContainerStyle}" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -87,7 +87,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="To:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -110,10 +110,10 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Create tracking reference" IsChecked="True" ToolTip="-u" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="CreateTrackingReferenceCheckBox" />
-      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Push all tags" IsChecked="True" ToolTip="--tags" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="AllTagsCheckBox" />
-      <Image Grid.Column="0" Grid.Row="5" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="avares://ForkPlus/Assets/Warning.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ForcePushWarningImage" />
-      <CheckBox Grid.Column="1" Grid.Row="5" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force push" ToolTip="--force-with-lease" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="ForcePushCheckBox_Changed" Unchecked="ForcePushCheckBox_Changed" x:Name="ForcePushCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Create tracking reference" IsChecked="True" ToolTip="-u" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="CreateTrackingReferenceCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Push all tags" IsChecked="True" ToolTip="--tags" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="AllTagsCheckBox" />
+      <Image Grid.Column="0" Grid.Row="5" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden" Source="avares://ForkPlus/Assets/Warning.png" x:Name="ForcePushWarningImage" />
+      <CheckBox Grid.Column="1" Grid.Row="5" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force push" ToolTip="--force-with-lease" Checked="ForcePushCheckBox_Changed" Unchecked="ForcePushCheckBox_Changed" x:Name="ForcePushCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

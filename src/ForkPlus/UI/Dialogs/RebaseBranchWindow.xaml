@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="570" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RebaseBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="570" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RebaseBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -22,11 +22,11 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Rebase:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SourceGitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="SourceGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="On:" />
-      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip="--update-refs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="UpdateRefsCheckBox_Changed" Unchecked="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
-      <ListBox Grid.Row="3" Grid.Column="1" MaxHeight="72" Margin="30,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Padding="0" Style="{DynamicResource NoSelectionListBoxStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalBranchesListBox">
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip="--update-refs" Checked="UpdateRefsCheckBox_Changed" Unchecked="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
+      <ListBox Grid.Row="3" Grid.Column="1" MaxHeight="72" Margin="30,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Padding="0" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="LocalBranchesListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>
@@ -44,7 +44,7 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" Checked="AutostashCheckBox_Changed" Unchecked="AutostashCheckBox_Changed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AutostashCheckBox" />
+      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" Checked="AutostashCheckBox_Changed" Unchecked="AutostashCheckBox_Changed" x:Name="AutostashCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

@@ -1,7 +1,7 @@
-<ui:CustomWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
+<ui:CustomWindow xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
   <ui:CustomWindow.Resources>
-    <ResourceDictionary xmlns="https://github.com/avaloniaui">
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:HistoryEntryViewModel}}" DataType="{x:Type dialogs:HistoryEntryViewModel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:HistoryEntryViewModel}}" DataType="{x:Type dialogs:HistoryEntryViewModel}">
         <Grid Height="57">
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -85,7 +85,7 @@
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:FolderHistoryEntryViewModel}}" DataType="{x:Type dialogs:FolderHistoryEntryViewModel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:FolderHistoryEntryViewModel}}" DataType="{x:Type dialogs:FolderHistoryEntryViewModel}">
         <Grid Height="18">
           <Grid.ToolTip>
             <StackPanel Orientation="Horizontal">
@@ -140,7 +140,7 @@
           </Button>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:SubItemFileHistoryEntryViewModel}}" DataType="{x:Type dialogs:SubItemFileHistoryEntryViewModel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:SubItemFileHistoryEntryViewModel}}" DataType="{x:Type dialogs:SubItemFileHistoryEntryViewModel}">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -178,7 +178,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
-  <Grid Margin="20,0,20,20" xmlns="https://github.com/avaloniaui">
+  <Grid Margin="20,0,20,20">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -187,29 +187,29 @@
     </Grid.RowDefinitions>
     <DockPanel>
       <TextBlock DockPanel.Dock="Left" Text="History" Margin="4,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="HistoryTitleTextBlock" />
-      <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FileIcon" />
-      <controls:GitPointView DockPanel.Dock="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TargetReferenceGitPointView" />
-      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" Style="{DynamicResource CircularProgressBar}" Visibility="Visible" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BusyIndicator" />
-      <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FileNameTextBlock" />
+      <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" x:Name="FileIcon" />
+      <controls:GitPointView DockPanel.Dock="Right" x:Name="TargetReferenceGitPointView" />
+      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" Style="{DynamicResource CircularProgressBar}" Visibility="Visible" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" x:Name="FileNameTextBlock" />
     </DockPanel>
     <Border Grid.Row="1" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource BorderBrush}" Height="17" VerticalAlignment="Top" />
-    <controls:RevisionTimeLine Grid.Row="1" Height="46" Margin="1,1,1,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionTimeLine" />
+    <controls:RevisionTimeLine Grid.Row="1" Height="46" Margin="1,1,1,0" x:Name="RevisionTimeLine" />
     <Grid Grid.Row="2" Background="{DynamicResource BackgroundBrush}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="280" MinWidth="150" />
         <ColumnDefinition Width="1" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" ContextMenuOpening="TreeView_ContextMenuOpening" MouseDoubleClick="TreeView_MouseDoubleClick" Grid.Column="0" Margin="0" Style="{DynamicResource FileHistoryMultiselectionTreeViewStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TreeView">
+      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" ContextMenuOpening="TreeView_ContextMenuOpening" MouseDoubleClick="TreeView_MouseDoubleClick" Grid.Column="0" Margin="0" Style="{DynamicResource FileHistoryMultiselectionTreeViewStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" x:Name="TreeView">
         <controls:MultiselectionTreeView.ContextMenu>
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>
       </controls:MultiselectionTreeView>
       <Border Grid.Column="2" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}" RenderOptions.ClearTypeHint="Enabled">
-        <controls:FileDiffControl Target="History" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FileDiffControl" />
+        <controls:FileDiffControl Target="History" x:Name="FileDiffControl" />
       </Border>
       <GridSplitter Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" />
-      <userControls:FallbackUserControl BorderThickness="1" Grid.Column="0" Grid.ColumnSpan="3" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CodeEditorFallbackUserControl" />
+      <userControls:FallbackUserControl BorderThickness="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="CodeEditorFallbackUserControl" />
     </Grid>
   </Grid>
 </ui:CustomWindow>

@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PullWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PullWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -22,7 +22,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -41,7 +41,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -61,9 +61,9 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
-      <controls:GitPointView Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase instead of merge" ToolTip="--rebase" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseCheckBox" />
-      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Stash and reapply local changes" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="StashAndReapplyCheckBox" />
+      <controls:GitPointView Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase instead of merge" ToolTip="--rebase" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Stash and reapply local changes" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="StashAndReapplyCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
