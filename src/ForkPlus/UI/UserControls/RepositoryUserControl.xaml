@@ -1,24 +1,22 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryUserControl">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls"
+             xmlns:local="clr-namespace:ForkPlus.UI.UserControls"
+             x:Class="ForkPlus.UI.UserControls.RepositoryUserControl">
   <Grid x:Name="RepositoryUserControlGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition MinWidth="120" MaxWidth="600" />
+      <ColumnDefinition MinWidth="120" MaxWidth="600" Width="*" />
       <ColumnDefinition Width="Auto" />
-      <ColumnDefinition />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition />
+      <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <Grid.Children>
-      <local:NotificationBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="NotificationBar" />
-      <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" x:Name="RepositorySidebarContainer" />
-      <ContentControl Grid.Row="2" Grid.Column="2" x:Name="RepositoryContentContainer" />
-      <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="SidebarGridSplitter">
-        <GridSplitter.Style>
-          <DynamicResource ResourceKey="VerticalGridSplitter" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </GridSplitter.Style>
-      </GridSplitter>
-    </Grid.Children>
+    <local:NotificationBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="NotificationBar" />
+    <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" x:Name="RepositorySidebarContainer" />
+    <ContentControl Grid.Row="2" Grid.Column="2" x:Name="RepositoryContentContainer" />
+    <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="SidebarGridSplitter" Background="{DynamicResource VerticalGridSplitter}" />
   </Grid>
 </UserControl>
