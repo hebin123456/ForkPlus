@@ -88,14 +88,16 @@ namespace ForkPlus
 			try
 			{
 				if (File.Exists(absolutePath))
-				{
-					string arguments = "/select, \"" + absolutePath + "\"";
-					Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
-				}
-				else if (Directory.Exists(absolutePath))
-				{
-					Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
-				}
+			{
+				// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
+				// 会忽略 /select 直接打开"文档"库而非选中目标文件。
+				string arguments = "/select,\"" + absolutePath + "\"";
+				Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
+			}
+			else if (Directory.Exists(absolutePath))
+			{
+				Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
+			}
 			}
 			catch (Exception ex)
 			{
