@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Media;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Accounts;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Biturbo;
@@ -237,7 +238,10 @@ namespace ForkPlus.UI.UserControls
 		{
 			PrepareCommitMsgHook = "prepare-commit-msg";
 			Commands = new CommitUserControlCommands();
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(CommitUserControl), new FrameworkPropertyMetadata(KeyboardNavigationMode.Local));
+			// TODO: Avalonia 迁移 - WPF KeyboardNavigation.TabNavigationProperty.OverrideMetadata +
+			// FrameworkPropertyMetadata(KeyboardNavigationMode.Local) 在 Avalonia 中无对应 API。
+			// Avalonia 的 KeyboardNavigation 通过 attached property TabNavigation="Local" 在 XAML 中设置，
+			// 或在控件模板中显式声明。需要时改在 CommitUserControl.xaml 上设置 KeyboardNavigation.TabNavigation="Local"。
 		}
 
 		public CommitUserControl()
@@ -266,11 +270,11 @@ namespace ForkPlus.UI.UserControls
 				SaveGridColumnWidth();
 			};
 			CommitFileDiffControl fileDiffControl = FileDiffControl;
-			fileDiffControl.ShowLargeUntrackedChanges = (EventHandler)Delegate.Combine(fileDiffControl.ShowLargeUntrackedChanges, (EventHandler)delegate
+			fileDiffControl.ShowLargeUntrackedChanges += delegate
 			{
 				ChangedFile changedFile2 = StageFileUserControl.SelectedUnstagedFiles.FirstItem();
 				_updateDiffAction.InvokeNow(new ChangedFileArgs(changedFile2, loadLargeUntrackedFiles: true));
-			});
+			};
 			StageFileUserControl.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.S && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsAltDown)
@@ -280,11 +284,16 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			StageFileUserControl stageFileUserControl = StageFileUserControl;
-			stageFileUserControl.ShowDiffPopup = (EventHandler<EventArgs>)Delegate.Combine(stageFileUserControl.ShowDiffPopup, new EventHandler<EventArgs>(StageFileUserControl_ShowDiffPopupChanged));
+			stageFileUserControl.ShowDiffPopup += StageFileUserControl_ShowDiffPopupChanged;
 			StageFileUserControl stageFileUserControl2 = StageFileUserControl;
-			stageFileUserControl2.StagedFilesItemSourceChanged = (EventHandler<EventArgs>)Delegate.Combine(stageFileUserControl2.StagedFilesItemSourceChanged, new EventHandler<EventArgs>(StageFileUserControl_StagedFilesItemSourceChanged));
+			stageFileUserControl2.StagedFilesItemSourceChanged += StageFileUserControl_StagedFilesItemSourceChanged;
 			StageFileUserControl stageFileUserControl3 = StageFileUserControl;
-			stageFileUserControl3.SelectionChanged = (EventHandler<FileListEventArgs>)Delegate.Combine(stageFileUserControl3.SelectionChanged, new EventHandler<FileListEventArgs>(StageFileUserControl_SelectionChanged));
+			stageFileUserControl3.SelectionChanged += StageFileUserControl_SelectionChanged;
+			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// 需改用 Avalonia.Input.KeyBinding + ICommand 包装，并迁移
+			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
+			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
+#if false
 			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
@@ -363,6 +372,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				DiscardSelectedFiles();
 			}));
+#endif
 			StageFileUserControl.StageAll += delegate
 			{
 				StageAllFiles();
@@ -394,36 +404,42 @@ namespace ForkPlus.UI.UserControls
 				UpdateWorkingDirectoryFileListSettingsDropdownMenuItems(contextMenu);
 			};
 			InitializeFileDiffControlHandlers(FileDiffControl);
-			WeakEventManager<NotificationCenter, RepositoryDataUpdatedEventArgs>.AddHandler(NotificationCenter.Current, "RepositoryDataUpdated", RepositoryDataUpdated);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryStatusUpdated", RepositoryStatusUpdated);
-			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "DiffContextSizeChanged", delegate
+			// Avalonia 迁移：WeakEventManager<T,S>.AddHandler 改为直接事件订阅（NotificationCenter 已公开同名事件）
+			NotificationCenter.Current.RepositoryDataUpdated += RepositoryDataUpdated;
+			NotificationCenter.Current.RepositoryStatusUpdated += RepositoryStatusUpdated;
+			NotificationCenter.Current.ActiveTabChanged += ActiveTabChanged;
+			NotificationCenter.Current.DiffContextSizeChanged += delegate
 			{
 				_updateDiffAction.ReinvokeNow();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
+			};
+			NotificationCenter.Current.DiffIgnoreWhitespacesChanged += delegate
 			{
 				_updateDiffAction.ReinvokeNow();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
+			};
+			NotificationCenter.Current.DiffShowEntireFileChanged += delegate
 			{
 				_updateDiffAction.ReinvokeNow();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectLowLimitChanged", delegate
+			};
+			NotificationCenter.Current.CommitSubjectLowLimitChanged += delegate
 			{
 				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectHighLimitChanged", delegate
+			};
+			NotificationCenter.Current.CommitSubjectHighLimitChanged += delegate
 			{
 				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "PushAutomaticallyOnCommitChanged", delegate
+			};
+			NotificationCenter.Current.PushAutomaticallyOnCommitChanged += delegate
 			{
 				UpdateCommitButtonTitle();
-			});
+			};
+			// TODO: Avalonia 迁移 - WPF DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+			// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为，可在 CommitSubjectTextBox 上
+			// 监听 AvaloniaEdit 的 TextInput 或自己实现 Paste 命令覆盖。原 OnCommitSubjectPaste 暂用 #if false 关闭。
+#if false
 			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
+#endif
 		}
 
 		public void ApplyLocalization()
@@ -467,6 +483,10 @@ namespace ForkPlus.UI.UserControls
 			CommitSubjectTextBox.Focus();
 		}
 
+		// TODO: Avalonia 迁移 - WPF DataObjectPastingEventArgs / DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+		// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为（subject/description 分流），需在
+		// CommitSubjectTextBox 上监听 TextInput 或覆盖 Paste 命令。原方法体暂用 #if false 关闭编译。
+#if false
 		private void OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e)
 		{
 			if (e.DataObject.GetDataPresent(DataFormats.UnicodeText) && e.DataObject.GetData(DataFormats.UnicodeText) is string text)
@@ -507,6 +527,7 @@ namespace ForkPlus.UI.UserControls
 				CommitDescriptionTextBox.Focus();
 			}
 		}
+#endif
 
 		private void ToggleHideUntrackedFiles()
 		{
@@ -1328,6 +1349,11 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
+			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
+			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
+			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
+#if false
 			base.CommandBindings.Add(Commands.Commit.CreateShortcutCommandBinding(delegate
 			{
 				Commands.Commit.Execute(this, CommitAndPush);
@@ -1358,6 +1384,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
+#endif
 		}
 
 		private void RestoreGridColumnWidth()
@@ -1504,7 +1531,8 @@ namespace ForkPlus.UI.UserControls
 			if (_diffPopupWindow == null)
 			{
 				_diffPopupWindow = CreateNewDiffPopupWindow();
-				_diffPopupWindow.ShowAtCenter(Application.Current.MainWindow);
+				// Avalonia: Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
+				_diffPopupWindow.ShowAtCenter((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
 				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
 			}
 			else
@@ -1521,19 +1549,19 @@ namespace ForkPlus.UI.UserControls
 			{
 				_diffPopupWindow = null;
 			};
-			diffPopupWindow.SelectPrevious = (EventHandler)Delegate.Combine(diffPopupWindow.SelectPrevious, (EventHandler)delegate
+			diffPopupWindow.SelectPrevious += delegate
 			{
 				StageFileUserControl.SelectPrevious();
-			});
-			diffPopupWindow.SelectNext = (EventHandler)Delegate.Combine(diffPopupWindow.SelectNext, (EventHandler)delegate
+			};
+			diffPopupWindow.SelectNext += delegate
 			{
 				StageFileUserControl.SelectNext();
-			});
-			diffPopupWindow.ShowLargeUntrackedChanges = (EventHandler)Delegate.Combine(diffPopupWindow.ShowLargeUntrackedChanges, (EventHandler)delegate
+			};
+			diffPopupWindow.ShowLargeUntrackedChanges += delegate
 			{
 				ChangedFile changedFile = StageFileUserControl.SelectedUnstagedFiles.FirstItem();
 				_updateDiffAction.InvokeNow(new ChangedFileArgs(changedFile, loadLargeUntrackedFiles: true));
-			});
+			};
 			InitializeFileDiffControlHandlers((CommitFileDiffControl)diffPopupWindow.FileDiffControl);
 			return diffPopupWindow;
 		}
@@ -1843,10 +1871,14 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (isError)
 			{
-				WarningTextBlock.Foreground = Application.Current.TryFindResource("Diff.Removed.Foreground") as Brush;
+				// Avalonia: Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)
+				WarningTextBlock.Foreground = Theme.FindBrush("Diff.Removed.Foreground");
 			}
 			else
 			{
+				// TODO: Avalonia 迁移 - WPF ClearValue(TextBlock.ForegroundProperty) 用于清除本地值恢复默认。
+				// Avalonia 中 StyledProperty 可用 ClearValue(TextBlock.ForegroundProperty)（API 同名），
+				// 但若未设置过本地值会抛异常。这里直接置 null 让样式系统接管。
 				WarningTextBlock.ClearValue(TextBlock.ForegroundProperty);
 			}
 		}
@@ -1862,15 +1894,16 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (length > ForkPlusSettings.Default.CommitSubjectHighLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.Error.ForegroundBrush") as Brush;
+				// Avalonia: Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
 			}
 			else if (length > commitSubjectLowLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.Warning.ForegroundBrush") as Brush;
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
 			}
 			else
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.OK.ForegroundBrush") as Brush;
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
 			}
 			int num = commitSubjectLowLimit - length;
 			SubjectLengthLimitTextBlock.Show();
