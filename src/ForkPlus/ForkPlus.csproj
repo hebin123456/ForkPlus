@@ -99,14 +99,15 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.18" />
+    <!-- DataGrid 包版本号与 Avalonia 主包不同步：11.3 系列最高 11.3.13（不是 11.3.18）。 -->
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.18" Condition="'$(Configuration)' == 'Debug'" />
     <!-- ===== 第三方库 Avalonia 替代（阶段 4 里程碑 4.7 完成）=====
          AvalonEdit 6.3.1.120 → Avalonia.AvaloniaEdit 11.4.1（官方移植，API 高度一致）
-         OxyPlot.Wpf 2.2.0 → OxyPlot.Avalonia 2.2.0（社区移植，维护活跃度低）
-         WebView2 → AvaloniaEdit + 自写 Markdown 渲染（阶段 4 决策） -->
+         OxyPlot.Wpf 2.2.0 → OxyPlot.Avalonia 2.1.0-Avalonia11（适配 Avalonia 11 的预发布版本；
+                              稳定版 2.1.0 仅适配 Avalonia 0.10，已过时） -->
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
-    <PackageReference Include="OxyPlot.Avalonia" Version="2.2.0" />
+    <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Avalonia11" />
     <!-- ===== 暂保留包（阶段 4 后续里程碑替换/移除）=====
          - Microsoft.Web.WebView2：阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除
          - Microsoft-WindowsAPICodePack-Shell：阶段 0 已迁移到 IFileSystemDialogService，本阶段移除
