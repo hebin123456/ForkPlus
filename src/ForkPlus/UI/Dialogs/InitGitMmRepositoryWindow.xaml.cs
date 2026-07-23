@@ -14,28 +14,27 @@ namespace ForkPlus.UI.Dialogs
 {
 	public partial class InitGitMmRepositoryWindow : ForkPlusDialogWindow
 	{
+		// 阶段 3：承接 5 个文本输入非空校验 + git mm init 命令预览。
+		// SaveDefaults 持久化、剪贴板 URL 探测、目录存在性校验留 View。
+		private readonly InitGitMmRepositoryWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (string.IsNullOrWhiteSpace(ManifestUrlTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				if (string.IsNullOrWhiteSpace(ParentDirectoryTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				if (string.IsNullOrWhiteSpace(RepositoryNameTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				return base.IsSubmitAllowed;
+				_viewModel.ManifestUrl = ManifestUrlTextBox.Text;
+				_viewModel.ParentDirectory = ParentDirectoryTextBox.Text;
+				_viewModel.RepositoryName = RepositoryNameTextBox.Text;
+				_viewModel.ManifestFile = ManifestFileTextBox.Text;
+				_viewModel.ManifestBranch = ManifestBranchTextBox.Text;
+				_viewModel.ManifestGroup = ManifestGroupTextBox.Text;
+				return _viewModel.IsSubmitAllowed && base.IsSubmitAllowed;
 			}
 		}
 
 		public InitGitMmRepositoryWindow()
 		{
+			_viewModel = new InitGitMmRepositoryWindowViewModel();
 			InitializeComponent();
 			base.DialogTitle = Translate("Initialize git mm Repository");
 			base.DialogDescription = Translate("Initialize a git mm workspace from a manifest repository");
@@ -163,19 +162,14 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			string cmd = GitMmCommandPreviewHelper.Format(CreateInitArgs());
+			_viewModel.ManifestUrl = ManifestUrlTextBox.Text;
+			_viewModel.ManifestFile = ManifestFileTextBox.Text;
+			_viewModel.ManifestBranch = ManifestBranchTextBox.Text;
+			_viewModel.ManifestGroup = ManifestGroupTextBox.Text;
+			string cmd = _viewModel.CommandPreview;
 			CommandPreviewTextBlock.Text = cmd;
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
 			CommandPreviewTextBlock.ToolTip = cmd;
-		}
-
-		private string[] CreateInitArgs()
-		{
-			string url = ManifestUrlTextBox.Text.Trim();
-			string manifest = string.IsNullOrWhiteSpace(ManifestFileTextBox.Text) ? "dependency.xml" : ManifestFileTextBox.Text.Trim();
-			string branch = string.IsNullOrWhiteSpace(ManifestBranchTextBox.Text) ? "master" : ManifestBranchTextBox.Text.Trim();
-			string group = string.IsNullOrWhiteSpace(ManifestGroupTextBox.Text) ? "default" : ManifestGroupTextBox.Text.Trim();
-			return new string[9] { "init", "-u", url, "-m", manifest, "-b", branch, "-g", group };
 		}
 
 		private void SaveDefaults(string url, string manifest, string branch, string group)

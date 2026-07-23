@@ -23,10 +23,37 @@ namespace ForkPlus.UI.Dialogs
 		private GitModule _gitModule;
 		private bool _aiGenerating;
 
-		protected override bool IsSubmitAllowed => GetFirstSelectedFile() != null;
+		// 阶段 3：承接 partial stash 选中文件路径投影 + stash message + 命令预览。
+		// PartialStashFileViewModel（含 Selected 状态）作为列表项留 View；
+		// VM 仅持选中文件路径列表 + stash message。AI 生成 stash name 留 View。
+		private readonly CreatePartialStashWindowViewModel _viewModel;
+
+		protected override bool IsSubmitAllowed
+		{
+			get
+			{
+				PushSelectionToViewModel();
+				return _viewModel.IsSubmitAllowed;
+			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			var paths = new System.Collections.Generic.List<string>();
+			foreach (PartialStashFileViewModel item in (System.Collections.IEnumerable)PartialStashListBox.Items)
+			{
+				if (item.Selected)
+				{
+					paths.Add(item.FilePath);
+				}
+			}
+			_viewModel.SelectedFilePaths = paths;
+			_viewModel.StashMessage = StashMessageTextBox.Text;
+		}
 
 		public CreatePartialStashWindow(GitModule gitModule, ChangedFile[] filesToStash, ChangedFile[] allChangedFiles)
 		{
+			_viewModel = new CreatePartialStashWindowViewModel();
 			InitializeComponent();
 			base.DialogTitle = Translate("Save stash");
 			base.DialogDescription = Translate("Save your local modifications to a new stash. BOTH staged and unstaged changes will be stashed");
@@ -205,34 +232,10 @@ namespace ForkPlus.UI.Dialogs
 	}
 
 		protected override string GetCommandPreview()
-	{
-		List<string> files = new List<string>();
-		foreach (PartialStashFileViewModel item in (IEnumerable)PartialStashListBox.Items)
 		{
-			if (item.Selected)
-			{
-				files.Add(item.FilePath);
-			}
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
 		}
-		if (files.Count == 0)
-		{
-			return null;
-		}
-		List<string> parts = new List<string> { "git", "stash", "push" };
-		string stashMessage = StashMessageTextBox.Text;
-		if (!string.IsNullOrWhiteSpace(stashMessage))
-		{
-			string quoted = stashMessage.IndexOf(' ') >= 0 ? ("\"" + stashMessage + "\"") : stashMessage;
-			parts.Add("-m");
-			parts.Add(quoted);
-		}
-		parts.Add("--");
-		foreach (string f in files)
-		{
-			parts.Add(f.IndexOf(' ') >= 0 ? ("\"" + f + "\"") : f);
-		}
-		return string.Join(" ", parts);
-	}
 
 	protected override void OnSubmit()
 	{

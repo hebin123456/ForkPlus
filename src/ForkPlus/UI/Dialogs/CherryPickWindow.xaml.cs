@@ -21,17 +21,19 @@ namespace ForkPlus.UI.Dialogs
 
 		private Sha[] _firstRevisionParents;
 
+		// 阶段 3：承接 cherry-pick 父提交选择 + commit/-x 选项 + 多 sha 命令预览。
+		// 合并提交（parents.Length>1）必须选 parent；非合并提交恒允许。
+		// 多 commit shas 反转后逐个 ToAbbreviatedString 拼接预览。
+		private readonly CherryPickWindowViewModel _viewModel;
+
 		private bool MergeRevision => _firstRevisionParents.Length > 1;
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (MergeRevision)
-				{
-					return RevisionParentComboBox.SelectedItem != null;
-				}
-				return true;
+				_viewModel.SelectedParentIndex = RevisionParentComboBox.SelectedIndex;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -45,6 +47,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl = repositoryUserControl;
 			_revisions = revisions;
 			_firstRevisionParents = firstRevisionParents;
+			_viewModel = new CherryPickWindowViewModel(_revisions, _firstRevisionParents);
 			InitializeComponent();
 			base.DialogTitle = Translate("Cherry Pick");
 			base.DialogDescription = Translate("Apply changes of the individual commit");
@@ -119,36 +122,10 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 		{
-			if (_revisions == null || _revisions.Length == 0)
-			{
-				return null;
-			}
-			var parts = new System.Collections.Generic.List<string> { "git", "cherry-pick" };
-			bool commit = CommitCheckBox.IsChecked.GetValueOrDefault();
-			bool appendOriginSha = AppendOriginShaCheckBox.IsChecked.GetValueOrDefault();
-			if (!commit)
-			{
-				parts.Add("--no-commit");
-			}
-			if (appendOriginSha)
-			{
-				parts.Add("-x");
-			}
-			if (MergeRevision)
-			{
-				int parentNumber = RevisionParentComboBox.SelectedIndex + 1;
-				if (parentNumber > 0)
-				{
-					parts.Add("-m " + parentNumber.ToString());
-				}
-			}
-			Sha[] shas = _revisions.Map((Revision x) => x.Sha);
-			Array.Reverse(shas);
-			foreach (Sha sha in shas)
-			{
-				parts.Add(sha.ToAbbreviatedString());
-			}
-			return string.Join(" ", parts);
+			_viewModel.Commit = CommitCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.AppendOriginSha = AppendOriginShaCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.SelectedParentIndex = RevisionParentComboBox.SelectedIndex;
+			return _viewModel.CommandPreview;
 		}
 
 		protected override void OnSubmit()

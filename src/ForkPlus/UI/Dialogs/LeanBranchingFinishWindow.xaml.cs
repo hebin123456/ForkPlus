@@ -18,71 +18,22 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly RepositoryUserControl _repositoryUserControl;
 
+		// 阶段 3：承接 LeanBranchingFinish 的多重 behind/ahead 校验 + 命令预览。
+		// VM 持 (GitModule, RepositoryData, CommitGraphCache)，内部调用 GetBehindAheadCountGitCommand
+		// 做状态校验；SetStatus 副作用留 View，翻译键通过 RequiresTranslation 标志委托给 View。
+		private readonly LeanBranchingFinishWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				GitModule gitModule = _repositoryUserControl.GitModule;
-				if (gitModule != null)
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage, bool requiresTranslation) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
-					if (repositoryData != null)
-					{
-						CommitGraphCache commitGraphCache = _repositoryUserControl.CommitGraphCache;
-						if (commitGraphCache != null)
-						{
-							LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
-							if (localBranch != null)
-							{
-								RemoteBranch remoteBranch = repositoryData.References.Upstream(localBranch);
-								if (remoteBranch != null)
-								{
-									LocalBranch activeBranch = repositoryData.References.ActiveBranch;
-									if (activeBranch != null)
-									{
-										RemoteBranch remoteBranch2 = repositoryData.References.Upstream(activeBranch);
-										if (remoteBranch2 != null)
-										{
-											GitCommandResult<BehindAheadCount> gitCommandResult = new GetBehindAheadCountGitCommand().Execute(gitModule, activeBranch.Sha, remoteBranch2.Sha, commitGraphCache);
-											if (!gitCommandResult.Succeeded)
-											{
-												return false;
-											}
-											if (gitCommandResult.Result.Right > 0)
-											{
-												SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("You must sync '{0}' first"), activeBranch.Name));
-												return false;
-											}
-										}
-										GitCommandResult<BehindAheadCount> gitCommandResult2 = new GetBehindAheadCountGitCommand().Execute(gitModule, localBranch.Sha, remoteBranch.Sha, commitGraphCache);
-										if (!gitCommandResult2.Succeeded)
-										{
-											return false;
-										}
-										if (!gitCommandResult2.Result.AreInSync())
-										{
-											SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("You must checkout and sync '{0}' first"), localBranch.Name));
-											return false;
-										}
-										GitCommandResult<BehindAheadCount> gitCommandResult3 = new GetBehindAheadCountGitCommand().Execute(gitModule, activeBranch.Sha, localBranch.Sha, commitGraphCache);
-										if (!gitCommandResult3.Succeeded)
-										{
-											return false;
-										}
-										if (!gitCommandResult3.Result.AreInSync())
-										{
-											SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("You must sync '{0}' with '{1}' first"), activeBranch.Name, localBranch.Name));
-											return false;
-										}
-										return true;
-									}
-								}
-							}
-							return false;
-						}
-					}
+					string message = requiresTranslation ? Translate(statusMessage ?? string.Empty) : (statusMessage ?? string.Empty);
+					SetStatus(status, message);
 				}
-				return false;
+				return isAllowed;
 			}
 		}
 
@@ -95,6 +46,7 @@ namespace ForkPlus.UI.Dialogs
 				if (repositoryData != null)
 				{
 					_repositoryUserControl = repositoryUserControl;
+					_viewModel = new LeanBranchingFinishWindowViewModel(gitModule, repositoryData, repositoryUserControl.CommitGraphCache);
 					InitializeComponent();
 					LocalBranch activeBranch = repositoryData.References.ActiveBranch;
 					LocalBranch localBranch = repositoryData.References.LocalMain(gitModule);
@@ -115,31 +67,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			// LeanBranchingFinishWindow：把当前分支收尾合并回 main。
 			// 命令序列：可选 git fetch（main 落后 remote 时）→ git checkout main → git merge <feature>
-			GitModule gitModule = _repositoryUserControl?.GitModule;
-			if (gitModule == null)
-			{
-				return null;
-			}
-			RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
-			if (repositoryData == null)
-			{
-				return null;
-			}
-			LocalBranch localMain = repositoryData.References.LocalMain(gitModule);
-			LocalBranch activeBranch = repositoryData.References.ActiveBranch;
-			if (localMain == null || activeBranch == null)
-			{
-				return null;
-			}
-			var lines = new System.Collections.Generic.List<string>();
-			RemoteBranch remoteMain = repositoryData.References.Upstream(localMain);
-			if (remoteMain != null)
-			{
-				lines.Add("git fetch " + remoteMain.Remote + " " + remoteMain.ShortName);
-			}
-			lines.Add("git checkout " + localMain.Name);
-			lines.Add("git merge " + activeBranch.Name);
-			return string.Join("\n", lines);
+			return _viewModel.CommandPreview;
 		}
 
 		protected override void OnSubmit()

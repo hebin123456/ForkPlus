@@ -26,38 +26,24 @@ namespace ForkPlus.UI.Dialogs
 
 		private string _worktreesContainerPath;
 
+		// 阶段 3：承接 worktree 创建前的多重校验 + 命令预览。
+		// 复用 Validate() 三元组模式：分支名校验/worktree 重名/分支重名→Warning，路径为空→静默 false。
+		// RefreshPath/autocomplete/BrowseButton_Click 留 View。
+		private readonly CreateWorktreeWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string branchName = BranchNameTextBox.Text;
-				if (string.IsNullOrEmpty(branchName))
+				_viewModel.BranchName = BranchNameTextBox.Text;
+				_viewModel.Path = PathTextBox.Text;
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					return false;
+					SetStatus(status, statusMessage);
 				}
-				string text = ReferenceNameValidator.Validate(branchName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				string key = "refs/heads/" + branchName;
-				if (_worktrees.WorktreesByFullReference.ContainsKey(key))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Worktree '" + branchName + "' already exists");
-					return false;
-				}
-				if (_repositoryReferences.LocalBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == branchName.ToLower()))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Branch '" + branchName + "' already exists");
-					return false;
-				}
-				if (string.IsNullOrWhiteSpace(PathTextBox.Text.Trim()))
-				{
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
 		}
 
@@ -67,6 +53,7 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = repositoryUserControl.GitModule;
 			_worktrees = repositoryUserControl.RepositoryData.Worktrees;
 			_repositoryReferences = repositoryUserControl.RepositoryData.References;
+			_viewModel = new CreateWorktreeWindowViewModel(_worktrees, _repositoryReferences);
 			string directoryName = Path.GetDirectoryName(_gitModule.CommonGitDir);
 			_worktreesContainerPath = Path.Combine(Path.GetDirectoryName(directoryName), Path.GetFileName(directoryName) + "-worktrees");
 			InitializeComponent();
@@ -89,14 +76,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 	{
-		string branchName = BranchNameTextBox.Text;
-		string worktreePath = PathTextBox.Text.Trim();
-		if (string.IsNullOrEmpty(branchName) || string.IsNullOrEmpty(worktreePath))
-		{
-			return null;
-		}
-		string quotedPath = worktreePath.IndexOf(' ') >= 0 ? ("\"" + worktreePath + "\"") : worktreePath;
-		return "git worktree add " + quotedPath + " " + branchName;
+		_viewModel.BranchName = BranchNameTextBox.Text;
+		_viewModel.Path = PathTextBox.Text;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()
