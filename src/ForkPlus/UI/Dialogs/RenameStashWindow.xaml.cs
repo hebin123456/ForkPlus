@@ -19,19 +19,19 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly StashRevision _stash;
 
+		// 阶段 3：承接输入校验与命令预览的纯业务逻辑（零 WPF using）。OnSubmit 的 JobQueue/Dispatcher 耦合暂留 View。
+		private readonly RenameStashWindowViewModel _viewModel;
+
 		public Sha? OutResultSha { get; private set; }
 
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
+				// 副作用留 View（原 override 即如此），纯判断委托 VM。
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string text = StashNameTextBox.Text;
-				if (!string.IsNullOrWhiteSpace(text))
-				{
-					return text != _stash.Message;
-				}
-				return false;
+				_viewModel.StashName = StashNameTextBox.Text;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -39,6 +39,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_repositoryUserControl = repositoryUserControl;
 			_stash = stash;
+			_viewModel = new RenameStashWindowViewModel(stash.Message, stash.ReflogName);
 			InitializeComponent();
 			base.DialogTitle = Translate("Rename Stash");
 			base.DialogDescription = Translate("Update stash message");
@@ -49,19 +50,10 @@ namespace ForkPlus.UI.Dialogs
 		RefreshCommandPreview();
 	}
 
-		protected override string GetCommandPreview()
+	protected override string GetCommandPreview()
 	{
-		if (_stash == null || string.IsNullOrEmpty(_stash.ReflogName))
-		{
-			return null;
-		}
-		string newMessage = StashNameTextBox.Text;
-		if (string.IsNullOrWhiteSpace(newMessage))
-		{
-			return null;
-		}
-		string quotedMessage = newMessage.IndexOf(' ') >= 0 ? ("\"" + newMessage + "\"") : newMessage;
-		return "git stash rename " + _stash.ReflogName + " " + quotedMessage;
+		_viewModel.StashName = StashNameTextBox.Text;
+		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()
