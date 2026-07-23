@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			ServiceLocator.Dispatcher.Async(delegate
+			ServiceLocator.Dispatcher.Post(delegate
 			{
 				ForkPlus.RepositoryManager.Instance.AddRepositories(result);
 				ForkPlus.RepositoryManager.Instance.Save();
@@ -39,7 +39,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			ServiceLocator.Dispatcher.Async(delegate
+			ServiceLocator.Dispatcher.Post(delegate
 			{
 				if (reset)
 				{
