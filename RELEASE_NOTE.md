@@ -2,6 +2,12 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.6.3
+
+### Bug 修复
+
+- 修复添加账号窗口所有服务图标都显示成 Remote.png 的问题：根因是业务层 `IconKeys` 用带 `Remote.` 前缀的键（`Remote.Azure` / `Remote.Bitbucket` / `Remote.Github` / `Remote.Gitlab` / `Remote.Gitea` / `Remote.Generic`），而 XAML 资源字典里只定义了 `XxxIcon` 键（`AzureIcon` / `BitbucketIcon` 等），两套键对不上，`FindImage` 全部返回 null 退化成 `GenericRemoteIcon`。已在两个 Images 主题字典和 Geometries 字典中为每个 `Remote.Xxx` 键追加别名条目指向同一份资源，图标现在能正确区分。
+
 ## v3.6.2
 
 ### Bug 修复
