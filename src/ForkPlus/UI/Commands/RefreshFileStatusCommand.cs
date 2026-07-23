@@ -5,7 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -28,7 +28,7 @@ namespace ForkPlus.UI.Commands
 			{
 				return;
 			}
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Refresh working directory"), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Refresh working directory"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<RepositoryStatus> response = Execute(gitModule, repositoryData, oldRepositoryStatus, pathsToRefresh, commitUserControl.ShowIgnoredFiles, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate

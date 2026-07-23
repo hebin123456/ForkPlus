@@ -5,7 +5,7 @@ using ForkPlus.Git.Commands.LeanBranching;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Commands
 			}
 			if (repositoryStatus.WorkingDirectoryIsDirty())
 			{
-				new ErrorWindow(PreferencesLocalization.Translate("Cannot sync: You have unstaged changes. Please commit or stash them.", ForkPlusSettings.Default.UiLanguage)).ShowDialog();
+				new ErrorWindow(ServiceLocator.Localization.Translate("Cannot sync: You have unstaged changes. Please commit or stash them.", ForkPlusSettings.Default.UiLanguage)).ShowDialog();
 				return;
 			}
 			LeanBranchingFinishWindow leanBranchingFinishWindow = new LeanBranchingFinishWindow(repositoryUserControl);

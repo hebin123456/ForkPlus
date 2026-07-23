@@ -4,7 +4,7 @@ using ForkPlus.Git.Commands.LeanBranching;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -163,7 +163,7 @@ namespace ForkPlus.UI.Commands
 				repositoryUserControl.InvalidateAndRefresh(subdomainToRefresh);
 				return;
 			}
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Updating submodules..."), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Updating submodules..."), delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate

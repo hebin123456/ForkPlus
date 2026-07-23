@@ -2,9 +2,9 @@ using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -42,11 +42,11 @@ namespace ForkPlus.UI.Commands
 			RepositoryData repositoryData = repositoryUserControl?.RepositoryData;
 			if (repositoryData?.Remotes?.Items == null || repositoryData.Remotes.Items.Length == 0)
 			{
-				System.Windows.MessageBox.Show(
-					PreferencesLocalization.Current("No remotes configured. Please add an upstream remote first."),
-					PreferencesLocalization.Current("Remote Sync Status"),
-					System.Windows.MessageBoxButton.OK,
-					System.Windows.MessageBoxImage.Warning);
+				ServiceLocator.MessageBox.Show(
+					ServiceLocator.Localization.Current("No remotes configured. Please add an upstream remote first."),
+					ServiceLocator.Localization.Current("Remote Sync Status"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
 				return;
 			}
 
@@ -59,11 +59,11 @@ namespace ForkPlus.UI.Commands
 				upstreamBranchName = remoteBranch.ShortName;
 				if (upstreamRemote == null)
 				{
-					System.Windows.MessageBox.Show(
-						PreferencesLocalization.Current("No remotes configured. Please add an upstream remote first."),
-						PreferencesLocalization.Current("Remote Sync Status"),
-						System.Windows.MessageBoxButton.OK,
-						System.Windows.MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(
+						ServiceLocator.Localization.Current("No remotes configured. Please add an upstream remote first."),
+						ServiceLocator.Localization.Current("Remote Sync Status"),
+						MessageBoxButton.OK,
+						MessageBoxImage.Warning);
 					return;
 				}
 			}
@@ -72,11 +72,11 @@ namespace ForkPlus.UI.Commands
 				upstreamRemote = FindUpstreamRemote(repositoryData.Remotes.Items);
 				if (upstreamRemote == null)
 				{
-					System.Windows.MessageBox.Show(
-						PreferencesLocalization.Current("No 'upstream' remote found. Please add a remote named 'upstream' pointing to the main repository."),
-						PreferencesLocalization.Current("Remote Sync Status"),
-						System.Windows.MessageBoxButton.OK,
-						System.Windows.MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(
+						ServiceLocator.Localization.Current("No 'upstream' remote found. Please add a remote named 'upstream' pointing to the main repository."),
+						ServiceLocator.Localization.Current("Remote Sync Status"),
+						MessageBoxButton.OK,
+						MessageBoxImage.Warning);
 					return;
 				}
 				upstreamBranchName = localBranch?.Name;
@@ -88,11 +88,11 @@ namespace ForkPlus.UI.Commands
 			}
 			if (localBranch == null)
 			{
-				System.Windows.MessageBox.Show(
-					PreferencesLocalization.Current("No active branch to check."),
-					PreferencesLocalization.Current("Remote Sync Status"),
-					System.Windows.MessageBoxButton.OK,
-					System.Windows.MessageBoxImage.Warning);
+				ServiceLocator.MessageBox.Show(
+					ServiceLocator.Localization.Current("No active branch to check."),
+					ServiceLocator.Localization.Current("Remote Sync Status"),
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
 				return;
 			}
 
@@ -114,7 +114,7 @@ namespace ForkPlus.UI.Commands
 				repositoryUserControl, capturedUpstream, capturedBranch, capturedBranchName, null);
 
 			repositoryUserControl.JobQueue.Add(
-				PreferencesLocalization.FormatCurrent("Checking remote sync: {0}/{1}", capturedUpstream.Name, capturedBranchName),
+				ServiceLocator.Localization.FormatCurrent("Checking remote sync: {0}/{1}", capturedUpstream.Name, capturedBranchName),
 				delegate(JobMonitor monitor)
 				{
 					GitCommandResult<ForkSyncStatus> result = new CheckForkSyncStatusGitCommand().Execute(

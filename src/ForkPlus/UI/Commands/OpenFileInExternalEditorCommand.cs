@@ -14,7 +14,7 @@ using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 
@@ -109,7 +109,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(editorPath))
 			{
 				Log.Error("Cannot find external tool at '" + editorPath + "'");
-				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find external tool at '{0}'", editorPath)).ShowDialog();
+				new ErrorWindow(ServiceLocator.Localization.FormatCurrent("Cannot find external tool at '{0}'", editorPath)).ShowDialog();
 				return;
 			}
 			string filePath = PathHelper.Normalize(gitModule.MakePath(path));
@@ -140,7 +140,7 @@ namespace ForkPlus.UI.Commands
 
 		private static string Translate(string text)
 		{
-			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+			return ServiceLocator.Localization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		[Null]

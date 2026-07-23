@@ -6,7 +6,7 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -43,7 +43,7 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(applicationPath))
 			{
 				Log.Error("Cannot find shellToolPath at '" + applicationPath + "'");
-				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find shellToolPath at '{0}'", applicationPath)).ShowDialog();
+				new ErrorWindow(ServiceLocator.Localization.FormatCurrent("Cannot find shellToolPath at '{0}'", applicationPath)).ShowDialog();
 				return;
 			}
 			Process process = new Process

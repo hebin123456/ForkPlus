@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Commands
@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			Application.Current.Dispatcher.Async(delegate
+			ServiceLocator.Dispatcher.Async(delegate
 			{
 				ForkPlus.RepositoryManager.Instance.AddRepositories(result);
 				ForkPlus.RepositoryManager.Instance.Save();
@@ -39,7 +39,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			Application.Current.Dispatcher.Async(delegate
+			ServiceLocator.Dispatcher.Async(delegate
 			{
 				if (reset)
 				{

@@ -4,7 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -37,11 +37,11 @@ namespace ForkPlus.UI.Commands
 			if (remoteBranch == null)
 			{
 				string text = localBranch.UpstreamFullReference.Replace("refs/remotes/", "");
-				new ErrorWindow(PreferencesLocalization.FormatCurrent("Remote branch '{0}' doesn't exist. It might be removed, but '{1}' refers to it.", text, localBranch.Name)).ShowDialog();
+				new ErrorWindow(ServiceLocator.Localization.FormatCurrent("Remote branch '{0}' doesn't exist. It might be removed, but '{1}' refers to it.", text, localBranch.Name)).ShowDialog();
 				return;
 			}
 			SubmodulesToUpdate submodulesToUpdate = repositoryUserControl.SubmodulesToUpdate();
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Pull '{0}' into '{1}'", remoteBranch.Name, localBranch.Name), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Pull '{0}' into '{1}'", remoteBranch.Name, localBranch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult requestResult = PerformPull(gitModule, remoteBranch, localBranch, submodulesToUpdate, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate
@@ -70,12 +70,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Pull failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Pull failed"));
 				return gitCommandResult;
 			}
 			if (!gitCommandResult2.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Update submodules failed"));
 				return gitCommandResult2;
 			}
 			monitor.Success("Everything is up to date");

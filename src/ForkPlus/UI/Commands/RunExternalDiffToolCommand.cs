@@ -7,7 +7,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -174,10 +174,10 @@ namespace ForkPlus.UI.Commands
 			if (!File.Exists(externalDiffToolPath))
 			{
 				Log.Error("Cannot find external diff tool at '" + externalDiffToolPath + "'");
-				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find external diff tool at '{0}'", externalDiffToolPath)).ShowDialog();
+				new ErrorWindow(ServiceLocator.Localization.FormatCurrent("Cannot find external diff tool at '{0}'", externalDiffToolPath)).ShowDialog();
 				return;
 			}
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("External diff"), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("External diff"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<(string, string)> dumpResult = diffTarget.DumpChanges(gitModule, tempFileManager, monitor);
 				if (!dumpResult.Succeeded)

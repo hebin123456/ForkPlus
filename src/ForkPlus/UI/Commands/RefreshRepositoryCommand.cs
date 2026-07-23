@@ -5,7 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Commands
 			bool hideUntrackedFiles = gitModule.Settings.HideUntrackedFiles;
 			SubDomain subdomainsToReload = repositoryUserControl.InvalidatedSubdomains;
 			_activeRefreshRepositoryJob?.Monitor.Cancel();
-			Job activeRefreshRepositoryJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Refresh Repository"), delegate(JobMonitor monitor)
+			Job activeRefreshRepositoryJob = repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Refresh Repository"), delegate(JobMonitor monitor)
 			{
 				if (!monitor.IsCanceled)
 				{

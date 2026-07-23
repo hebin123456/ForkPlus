@@ -1,12 +1,11 @@
 using System;
 using System.IO;
-using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
-using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands.RepositoryManager
 {
@@ -25,17 +24,12 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 			{
 				return;
 			}
-			TabManager tabManager = Application.Current.TabManager();
-			if (tabManager == null)
-			{
-				return;
-			}
 			try
 			{
 				if (!Directory.Exists(repository.Value.Path))
 				{
 					DeleteRepository(repository.Value);
-					Application.Current.TabManager()?.ActiveRepositoryManager?.Refresh();
+					ServiceLocator.WindowManager.RefreshActiveRepositoryManager();
 					return;
 				}
 			}
@@ -43,7 +37,7 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 			{
 				Log.Error("Failed to remove invalid repo entry", ex);
 			}
-			if (!tabManager.OpenRepository(repository.Value.Path))
+			if (!ServiceLocator.WindowManager.OpenRepository(repository.Value.Path))
 			{
 				GitCommandResult<GitModule> gitCommandResult = new OpenGitRepositoryGitCommand().Execute(repository.Value.Path);
 				if (gitCommandResult.Error is GitCommandError.UnsafeRepository)
@@ -59,17 +53,12 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 			{
 				return;
 			}
-			TabManager tabManager = Application.Current.TabManager();
-			if (tabManager == null)
-			{
-				return;
-			}
 			try
 			{
 				if (!Directory.Exists(repository.Path))
 				{
 					DeleteRepository(repository);
-					Application.Current.TabManager()?.ActiveRepositoryManager?.Refresh();
+					ServiceLocator.WindowManager.RefreshActiveRepositoryManager();
 					return;
 				}
 			}
@@ -77,7 +66,7 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 			{
 				Log.Error("Failed to remove invalid repo entry", ex);
 			}
-			if (!tabManager.OpenRepository(repository.Path))
+			if (!ServiceLocator.WindowManager.OpenRepository(repository.Path))
 			{
 				GitCommandResult<GitModule> gitCommandResult = new OpenGitRepositoryGitCommand().Execute(repository.Path);
 				if (gitCommandResult.Error is GitCommandError.UnsafeRepository)
@@ -89,7 +78,7 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 
 		private void DeleteRepository(ForkPlusSettings.RepositoryManagerSettings.Repository repositoryToDelete)
 		{
-			if (new MessageBoxWindow("Repository Not Found", PreferencesLocalization.FormatCurrent("It looks like '{0}' was deleted or moved. Do you want to remove the reference from Fork?", repositoryToDelete.Name), "Remove").ShowDialog().GetValueOrDefault())
+			if (new MessageBoxWindow("Repository Not Found", ServiceLocator.Localization.FormatCurrent("It looks like '{0}' was deleted or moved. Do you want to remove the reference from Fork?", repositoryToDelete.Name), "Remove").ShowDialog().GetValueOrDefault())
 			{
 				ForkPlus.RepositoryManager.Instance.DeleteRepositories(new string[1] { repositoryToDelete.Path });
 			}
@@ -97,7 +86,7 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 
 		private void DeleteRepository(ForkPlus.RepositoryManager.Repository repositoryToDelete)
 		{
-			if (new MessageBoxWindow("Repository Not Found", PreferencesLocalization.FormatCurrent("It looks like '{0}' was deleted or moved. Do you want to remove the reference from Fork?", repositoryToDelete.Name()), "Remove").ShowDialog().GetValueOrDefault())
+			if (new MessageBoxWindow("Repository Not Found", ServiceLocator.Localization.FormatCurrent("It looks like '{0}' was deleted or moved. Do you want to remove the reference from Fork?", repositoryToDelete.Name()), "Remove").ShowDialog().GetValueOrDefault())
 			{
 				ForkPlus.RepositoryManager.Instance.DeleteRepositories(new string[1] { repositoryToDelete.Path });
 			}

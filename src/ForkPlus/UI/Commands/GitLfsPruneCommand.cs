@@ -4,7 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("LFS Prune"), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("LFS Prune"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pruneResult = new GitLfsPruneGitCommand().Execute(gitModule, monitor);
 				repositoryUserControl.Dispatcher.Invoke(delegate

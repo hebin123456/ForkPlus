@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 
@@ -19,7 +20,7 @@ namespace ForkPlus.UI.Commands
 			for (int i = 0; i < worktrees.Length; i++)
 			{
 				Worktree worktree = worktrees[i];
-				if (!MainWindow.Instance.TabManager.OpenRepository(worktree.Path, gitModule))
+				if (!ServiceLocator.WindowManager.OpenRepository(worktree.Path, gitModule))
 				{
 					GitCommandResult<GitModule> gitCommandResult = new OpenGitRepositoryGitCommand().Execute(worktree.Path);
 					if (gitCommandResult.Error is GitCommandError.UnsafeRepository)

@@ -5,7 +5,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Commands
 		{
 			bool fetchAllRemotes = ForkPlusSettings.Default.Fetch_FetchAllRemotes;
 			bool fetchAllTags = ForkPlusSettings.Default.FetchAllTags;
-			string name = (fetchAllRemotes ? PreferencesLocalization.Current("Fetch all") : PreferencesLocalization.FormatCurrent("Fetch '{0}'", remote.Name));
+			string name = (fetchAllRemotes ? ServiceLocator.Localization.Current("Fetch all") : ServiceLocator.Localization.FormatCurrent("Fetch '{0}'", remote.Name));
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult fetchResult = new FetchGitCommand().Execute(gitModule, remote, fetchAllRemotes, monitor, noPrompt: false, fetchAllTags);

@@ -1,5 +1,5 @@
-using System.Windows;
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			(Application.Current.MainWindow as MainWindow).TabManager.CloseActiveTab();
+			ServiceLocator.WindowManager.CloseActiveTab();
 		}
 	}
 }

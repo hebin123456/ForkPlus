@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands.RepositoryManager
 {
@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Commands.RepositoryManager
 
 		public void Execute(IReadOnlyList<string> repositories)
 		{
-			Application.Current.TabManager()?.OpenRepositories(repositories.ToArray());
+			ServiceLocator.WindowManager.OpenRepositories(repositories.ToArray());
 		}
 	}
 }

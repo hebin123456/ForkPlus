@@ -1,66 +1,15 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
 	public class OpenFileInDefaultEditorCommand : IUICommand, IForkPlusCommand
 	{
-		[Flags]
-		public enum AssocF
-		{
-			None = 0,
-			Init_NoRemapCLSID = 1,
-			Init_ByExeName = 2,
-			Open_ByExeName = 2,
-			Init_DefaultToStar = 4,
-			Init_DefaultToFolder = 8,
-			NoUserSettings = 0x10,
-			NoTruncate = 0x20,
-			Verify = 0x40,
-			RemapRunDll = 0x80,
-			NoFixUps = 0x100,
-			IgnoreBaseClass = 0x200,
-			Init_IgnoreUnknown = 0x400,
-			Init_Fixed_ProgId = 0x800,
-			Is_Protocol = 0x1000,
-			Init_For_File = 0x2000
-		}
-
-		public enum AssocStr
-		{
-			Command = 1,
-			Executable,
-			FriendlyDocName,
-			FriendlyAppName,
-			NoOpen,
-			ShellNewValue,
-			DDECommand,
-			DDEIfExec,
-			DDEApplication,
-			DDETopic,
-			InfoTip,
-			QuickTip,
-			TileInfo,
-			ContentType,
-			DefaultIcon,
-			ShellExtension,
-			DropTarget,
-			DelegateExecute,
-			Supported_Uri_Protocols,
-			ProgID,
-			AppID,
-			AppPublisher,
-			AppIconReference,
-			Max
-		}
-
 		public string Title => "Open";
 
 		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift);
@@ -79,7 +28,7 @@ namespace ForkPlus.UI.Commands
 				string text = gitModule.MakePath(filePath);
 				if (File.Exists(text))
 				{
-					Process.Start(text);
+					ServiceLocator.Process.OpenFileInDefaultApplication(text);
 				}
 			}
 			catch (Exception ex)
@@ -99,7 +48,7 @@ namespace ForkPlus.UI.Commands
 				string text = SaveToTempDestination(gitModule, sha, changedFile);
 				if (text != null && File.Exists(text))
 				{
-					Process.Start(text);
+					ServiceLocator.Process.OpenFileInDefaultApplication(text);
 				}
 			}
 			catch (Exception ex)
@@ -123,14 +72,16 @@ namespace ForkPlus.UI.Commands
 				{
 					return false;
 				}
-				string text2 = AssocQueryString(AssocStr.Executable, extension);
-				if (text2 == "%1" || text2.EndsWith("OpenWith.exe"))
+				bool available = ServiceLocator.FileAssociation.IsEditorAvailable(extension);
+				if (!available)
 				{
 					Log.Info("Can't find editor for '" + text + "'");
-					return false;
 				}
-				Log.Info("File can be edited with '" + text2 + "'");
-				return true;
+				else
+				{
+					Log.Info("File can be edited with an associated application");
+				}
+				return available;
 			}
 			catch (Exception ex)
 			{
@@ -139,21 +90,8 @@ namespace ForkPlus.UI.Commands
 			}
 		}
 
-		private static string AssocQueryString(AssocStr association, string extension)
-		{
-			uint pcchOut = 0u;
-			if (AssocQueryString(AssocF.None, association, extension, null, null, ref pcchOut) != 1)
-			{
-				throw new InvalidOperationException("Could not determine associated string");
-			}
-			StringBuilder stringBuilder = new StringBuilder((int)pcchOut);
-			if (AssocQueryString(AssocF.None, association, extension, null, stringBuilder, ref pcchOut) != 0)
-			{
-				throw new InvalidOperationException("Could not determine associated string");
-			}
-			return stringBuilder.ToString();
-		}
-
+		// 阶段 2 遗留：TempFileManager 通过 Application.Current.ActiveRepositoryUserControl() 获取，
+		// 属 View 类型耦合，留待阶段 3（ViewModel 抽取）后改为通过 ViewModel/服务获取。
 		[Null]
 		private string SaveToTempDestination(GitModule gitModule, string sha, ChangedFile changedFile)
 		{
@@ -170,8 +108,5 @@ namespace ForkPlus.UI.Commands
 			}
 			return tempFileManager.CreateTemporaryFile(changedFile.Path, binaryDiffContent.DstData, sha.Substring(0, 7));
 		}
-
-		[DllImport("Shlwapi.dll", CharSet = CharSet.Unicode)]
-		public static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
 	}
 }

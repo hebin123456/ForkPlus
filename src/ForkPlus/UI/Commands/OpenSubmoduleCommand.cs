@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 
@@ -33,7 +34,7 @@ namespace ForkPlus.UI.Commands
 			foreach (Submodule item in list)
 			{
 				string path = parentGitModule.MakePath(item.Path);
-				if (!MainWindow.Instance.TabManager.OpenRepository(path, parentGitModule))
+				if (!ServiceLocator.WindowManager.OpenRepository(path, parentGitModule))
 				{
 					GitCommandResult<GitModule> gitCommandResult = new OpenGitRepositoryGitCommand().Execute(path);
 					if (gitCommandResult.Error is GitCommandError.UnsafeRepository)
@@ -56,7 +57,7 @@ namespace ForkPlus.UI.Commands
 				foreach (Submodule item2 in submodulesToInitialize)
 				{
 					string path2 = parentGitModule.MakePath(item2.Path);
-					MainWindow.Instance.TabManager.OpenRepository(path2, parentGitModule);
+					ServiceLocator.WindowManager.OpenRepository(path2, parentGitModule);
 				}
 			});
 		}

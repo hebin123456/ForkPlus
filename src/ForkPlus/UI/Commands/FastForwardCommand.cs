@@ -4,7 +4,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -50,7 +50,7 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			SubmodulesToUpdate submodulesToUpdate = repositoryUserControl.SubmodulesToUpdate();
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Fast forward '{0}'", localBranch.Name), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Fast forward '{0}'", localBranch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult fastForwardResult = PerformFastForward(gitModule, localBranch, submodulesToUpdate, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate
@@ -79,12 +79,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Fast forward failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Fast forward failed"));
 				return gitCommandResult;
 			}
 			if (!gitCommandResult2.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Update submodules failed"));
 				return gitCommandResult2;
 			}
 			monitor.Success("Everything is up to date");

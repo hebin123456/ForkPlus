@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
@@ -24,7 +25,7 @@ namespace ForkPlus.UI.Commands
 			HashSet<ChangedFile> source = new HashSet<ChangedFile>(changedFiles.Where((ChangedFile x) => !x.IsDirectory));
 			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? ForkPlus.RepositoryManager.Instance.DefaultSourceDir();
 			string defaultFileName = gitModule.RepositoryName + "-" + DateTime.Now.ToString("HH-mm-ss");
-			if (OpenDialog.SelectPatchSaveLocation(MainWindow.Instance, "Save patch as...", initialDirectory, defaultFileName, out var filePath))
+			if (ServiceLocator.FileSystemDialog.SelectPatchSaveLocation("Save patch as...", initialDirectory, defaultFileName, out var filePath))
 			{
 				GitCommandResult<string> gitCommandResult = new CreatePatchGitCommand().Execute(gitModule, source.ToArray(), amend);
 				if (!gitCommandResult.Succeeded)

@@ -6,7 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -57,7 +57,7 @@ namespace ForkPlus.UI.Commands
 							bool rebase = ForkPlusSettings.Default.Pull_Rebase;
 							bool allTags = ForkPlusSettings.Default.FetchAllTags;
 							bool stashAndReapply = ForkPlusSettings.Default.Pull_StashAndReapply;
-							repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Pull '{0}'", remoteBranch.Name), delegate(JobMonitor monitor)
+							repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Pull '{0}'", remoteBranch.Name), delegate(JobMonitor monitor)
 							{
 								GitCommandResult requestResult = PerformPull(gitModule, remoteBranch.Remote, rebase, allTags, stashAndReapply, workingDirectoryIsDirty, submodulesToUpdate, monitor);
 								repositoryUserControl.Dispatcher.Invoke(delegate
@@ -97,7 +97,7 @@ namespace ForkPlus.UI.Commands
 					monitor.Update(0.0, "Updating submodules...");
 					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
-				monitor.Fail(PreferencesLocalization.Current("Pull failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Pull failed"));
 				return gitCommandResult2;
 			}
 			GitCommandResult gitCommandResult3 = GitCommandResult.Success();
@@ -114,12 +114,12 @@ namespace ForkPlus.UI.Commands
 			}
 			if (!gitCommandResult3.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Apply stash failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Apply stash failed"));
 				return gitCommandResult3;
 			}
 			if (!gitCommandResult4.Succeeded)
 			{
-				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
+				monitor.Fail(ServiceLocator.Localization.Current("Update submodules failed"));
 				return gitCommandResult4;
 			}
 			monitor.Success("Everything is up to date");

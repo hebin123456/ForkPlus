@@ -1,15 +1,66 @@
+using System.Runtime.InteropServices;
 using System.Text;
-using ForkPlus.UI.Commands;
 
 namespace ForkPlus.Services.Wpf
 {
 	/// <summary>
-	/// Windows 平台的 <see cref="IFileAssociationService"/> 实现，委托给
-	/// <see cref="OpenFileInDefaultEditorCommand"/> 中的 <c>Shlwapi.dll!AssocQueryString</c> P/Invoke。
-	/// 阶段 0 仅注册，<see cref="OpenFileInDefaultEditorCommand"/> 调用点将在阶段 2 迁移到此接口。
+	/// Windows 平台的 <see cref="IFileAssociationService"/> 实现，
+	/// 封装 <c>Shlwapi.dll!AssocQueryString</c> P/Invoke。
 	/// </summary>
 	public class WindowsFileAssociationService : IFileAssociationService
 	{
+		[Flags]
+		private enum AssocF
+		{
+			None = 0,
+			Init_NoRemapCLSID = 1,
+			Init_ByExeName = 2,
+			Open_ByExeName = 2,
+			Init_DefaultToStar = 4,
+			Init_DefaultToFolder = 8,
+			NoUserSettings = 0x10,
+			NoTruncate = 0x20,
+			Verify = 0x40,
+			RemapRunDll = 0x80,
+			NoFixUps = 0x100,
+			IgnoreBaseClass = 0x200,
+			Init_IgnoreUnknown = 0x400,
+			Init_Fixed_ProgId = 0x800,
+			Is_Protocol = 0x1000,
+			Init_For_File = 0x2000
+		}
+
+		private enum AssocStr
+		{
+			Command = 1,
+			Executable,
+			FriendlyDocName,
+			FriendlyAppName,
+			NoOpen,
+			ShellNewValue,
+			DDECommand,
+			DDEIfExec,
+			DDEApplication,
+			DDETopic,
+			InfoTip,
+			QuickTip,
+			TileInfo,
+			ContentType,
+			DefaultIcon,
+			ShellExtension,
+			DropTarget,
+			DelegateExecute,
+			Supported_Uri_Protocols,
+			ProgID,
+			AppID,
+			AppPublisher,
+			AppIconReference,
+			Max
+		}
+
+		[DllImport("Shlwapi.dll", CharSet = CharSet.Unicode)]
+		private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [System.Runtime.InteropServices.Out] StringBuilder pszOut, ref uint pcchOut);
+
 		public string GetAssociatedExecutable(string extension)
 		{
 			if (string.IsNullOrEmpty(extension))
@@ -19,18 +70,12 @@ namespace ForkPlus.Services.Wpf
 			try
 			{
 				uint pcchOut = 0u;
-				if (OpenFileInDefaultEditorCommand.AssocQueryString(
-						OpenFileInDefaultEditorCommand.AssocF.None,
-						OpenFileInDefaultEditorCommand.AssocStr.Executable,
-						extension, null, null, ref pcchOut) != 1)
+				if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, null, ref pcchOut) != 1)
 				{
 					return null;
 				}
 				StringBuilder sb = new StringBuilder((int)pcchOut);
-				if (OpenFileInDefaultEditorCommand.AssocQueryString(
-						OpenFileInDefaultEditorCommand.AssocF.None,
-						OpenFileInDefaultEditorCommand.AssocStr.Executable,
-						extension, null, sb, ref pcchOut) != 0)
+				if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, sb, ref pcchOut) != 0)
 				{
 					return null;
 				}

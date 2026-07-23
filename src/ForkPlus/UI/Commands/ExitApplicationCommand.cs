@@ -1,5 +1,5 @@
-using System.Windows;
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			Application.Current.Shutdown(0);
+			ServiceLocator.AppContext.Shutdown();
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +14,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			MainWindow.Instance?.CheckForUpdates();
+			ServiceLocator.WindowManager.CheckForUpdates();
 		}
 
 		public Task ExecuteAsync(bool silent)

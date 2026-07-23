@@ -1,6 +1,6 @@
 using System;
-using System.Windows;
 using System.Windows.Input;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Commands
@@ -28,7 +28,7 @@ namespace ForkPlus.UI.Commands
 		public void Execute()
 		{
 			ForkPlusSettings.Default.LayoutScaling = Math.Max(ForkPlusSettings.Default.LayoutScaling - Step, MinValue);
-			Application.Current.RefreshLayoutScaling();
+			ServiceLocator.WindowManager.RefreshLayoutScaling();
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Input;
 using ForkPlus.Git.Commands;
+using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.Commands
@@ -17,7 +18,7 @@ namespace ForkPlus.UI.Commands
 		public void Execute()
 		{
 			string text = ForkPlus.RepositoryManager.Instance.DefaultSourceDir();
-			if (!OpenDialog.SelectDirectory(MainWindow.Instance, "Select repository", text, out var directoryPath))
+			if (!ServiceLocator.FileSystemDialog.SelectDirectory("Select repository", text, out var directoryPath))
 			{
 				return;
 			}
@@ -39,7 +40,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else
 			{
-				MainWindow.Instance.TabManager.OpenRepository(directoryPath);
+				ServiceLocator.WindowManager.OpenRepository(directoryPath);
 			}
 		}
 	}

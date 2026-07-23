@@ -5,7 +5,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Commands
 		private void QuickPush(RepositoryUserControl repositoryUserControl, LocalBranch localBranch, Remote remote, bool track)
 		{
 			GitModule gitModule = repositoryUserControl.GitModule;
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Push '{0}' to '{1}'", localBranch.Name, remote.Name), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Push '{0}' to '{1}'", localBranch.Name, remote.Name), delegate(JobMonitor monitor)
 			{
 				bool push_PushAllTags = ForkPlusSettings.Default.Push_PushAllTags;
 				bool force = false;

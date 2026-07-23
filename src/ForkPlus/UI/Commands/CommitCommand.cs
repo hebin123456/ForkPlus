@@ -6,7 +6,7 @@ using ForkPlus.Git.Commands.LeanBranching;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -34,7 +34,7 @@ namespace ForkPlus.UI.Commands
 			{
 				commitUserControl.CommittingInProgress = true;
 				commitUserControl.UpdateCommitSection();
-				repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Continue Cherry-Pick"), delegate(JobMonitor monitor)
+				repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Continue Cherry-Pick"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult result2 = UpdateSubmodulesIfNeeded(new ContinueCherryPickGitCommand().Execute(gitModule), gitModule, submodulesToUpdate, monitor);
 					repositoryUserControl.Dispatcher.Async(delegate
@@ -54,7 +54,7 @@ namespace ForkPlus.UI.Commands
 			{
 				commitUserControl.CommittingInProgress = true;
 				commitUserControl.UpdateCommitSection();
-				repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Continue Am"), delegate(JobMonitor monitor)
+				repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Continue Am"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult result = UpdateSubmodulesIfNeeded(new ContinueAmGitCommand().Execute(gitModule), gitModule, submodulesToUpdate, monitor);
 					repositoryUserControl.Dispatcher.Async(delegate
@@ -74,7 +74,7 @@ namespace ForkPlus.UI.Commands
 			{
 				commitUserControl.CommittingInProgress = true;
 				commitUserControl.UpdateCommitSection();
-				repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Continue Rebase"), delegate(JobMonitor monitor)
+				repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Continue Rebase"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult continueRebaseResult = new ContinueRebaseGitCommand().Execute(gitModule);
 					if (!continueRebaseResult.Succeeded)
@@ -135,17 +135,17 @@ namespace ForkPlus.UI.Commands
 			bool amend = commitUserControl.AmendMode;
 			int stagedCount = commitUserControl.StageFileUserControl.StagedItemsCount;
 			string name = amend
-			 ? PreferencesLocalization.Current("Amend")
+			 ? ServiceLocator.Localization.Current("Amend")
 			 : ((stagedCount == 1)
-			  ? PreferencesLocalization.FormatCurrent("Commit {0} File", stagedCount)
-			  : PreferencesLocalization.FormatCurrent("Commit {0} Files", stagedCount));
+			  ? ServiceLocator.Localization.FormatCurrent("Commit {0} File", stagedCount)
+			  : ServiceLocator.Localization.FormatCurrent("Commit {0} Files", stagedCount));
 			commitUserControl.CommittingInProgress = true;
 			commitUserControl.UpdateCommitSection();
 			repositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
 		{
 		 string monitorMsg = (stagedCount == 1)
-		  ? PreferencesLocalization.FormatCurrent("{0} file...", stagedCount)
-		  : PreferencesLocalization.FormatCurrent("{0} files...", stagedCount);
+		  ? ServiceLocator.Localization.FormatCurrent("{0} file...", stagedCount)
+		  : ServiceLocator.Localization.FormatCurrent("{0} files...", stagedCount);
 		 monitor.Update(0.0, monitorMsg);
 			GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
 			repositoryUserControl.Dispatcher.Async(delegate

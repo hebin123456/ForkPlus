@@ -5,7 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -174,7 +174,7 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			SubmodulesToUpdate submodulesToUpdate = repositoryUserControl.SubmodulesToUpdate();
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = PerformCheckout(gitModule, branch, submodulesToUpdate, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate
@@ -202,7 +202,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult gitCommandResult2 = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				if (!gitCommandResult2.Succeeded)
 				{
-					monitor.Fail(PreferencesLocalization.Current("Updating submodules failed"));
+					monitor.Fail(ServiceLocator.Localization.Current("Updating submodules failed"));
 					return gitCommandResult2;
 				}
 				monitor.Success("");

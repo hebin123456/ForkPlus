@@ -6,7 +6,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -66,8 +66,8 @@ namespace ForkPlus.UI.Commands
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
 			int fileCount = changedFiles.Length;
 			string stageName = (fileCount == 1)
-				? PreferencesLocalization.FormatCurrent("Stage {0} File", fileCount)
-				: PreferencesLocalization.FormatCurrent("Stage {0} Files", fileCount);
+				? ServiceLocator.Localization.FormatCurrent("Stage {0} File", fileCount)
+				: ServiceLocator.Localization.FormatCurrent("Stage {0} Files", fileCount);
 			// v3.4.0 Layer 2：stage 走 AddUndoable，操作前抓工作区快照（stash create），
 			// Undo 时 stash apply --index 恢复 stage 前的 index 状态
 			commitUserControl.StageJob = repositoryUserControl.AddUndoable(stageName, delegate(JobMonitor monitor)
@@ -165,8 +165,8 @@ namespace ForkPlus.UI.Commands
 			bool showIgnoredFiles = commitUserControl.ShowIgnoredFiles;
 			int fileCount = changedFiles.Length;
 			string unstageName = (fileCount == 1)
-				? PreferencesLocalization.FormatCurrent("Unstage {0} File", fileCount)
-				: PreferencesLocalization.FormatCurrent("Unstage {0} Files", fileCount);
+				? ServiceLocator.Localization.FormatCurrent("Unstage {0} File", fileCount)
+				: ServiceLocator.Localization.FormatCurrent("Unstage {0} Files", fileCount);
 			// v3.4.0 Layer 2：unstage 走 AddUndoable，操作前抓工作区快照（stash create），
 			// Undo 时 stash apply --index 恢复 unstage 前的 index 状态
 			commitUserControl.StageJob = repositoryUserControl.AddUndoable(unstageName, delegate(JobMonitor monitor)

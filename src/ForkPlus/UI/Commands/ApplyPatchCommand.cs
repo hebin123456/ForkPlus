@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Windows.Input;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 
@@ -25,7 +26,7 @@ namespace ForkPlus.UI.Commands
 		public void Execute(RepositoryUserControl repositoryUserControl)
 		{
 			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? ForkPlus.RepositoryManager.Instance.SourceDirs.FirstItem() ?? Environment.ExpandEnvironmentVariables("%userprofile%");
-			if (OpenDialog.SelectFile(MainWindow.Instance, "Select patch", initialDirectory, "Git Patch", "*.*", out var filePath))
+			if (ServiceLocator.FileSystemDialog.SelectFile("Select patch", initialDirectory, "Git Patch", "*.*", out var filePath))
 			{
 				ForkPlusSettings.Default.RecentPatchDirectory = Path.GetDirectoryName(filePath);
 				new ShowApplyPatchWindowCommand().Execute(repositoryUserControl, filePath);

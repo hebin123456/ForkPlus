@@ -6,7 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -28,7 +28,7 @@ namespace ForkPlus.UI.Commands
 			bool pushAllTags = ForkPlusSettings.Default.Push_PushAllTags;
 			bool track = remoteBranch == null;
 			bool force = false;
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Push '{0}' to '{1}'", localBranch.Name, remote), delegate(JobMonitor monitor)
+			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Push '{0}' to '{1}'", localBranch.Name, remote), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pushResult = new PushGitCommand().Execute(repositoryUserControl.GitModule, remote, localBranch, null, null, pushAllTags, force, track, monitor);
 				repositoryUserControl.Dispatcher.Async(delegate

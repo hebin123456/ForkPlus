@@ -5,7 +5,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
 {
@@ -94,7 +94,7 @@ namespace ForkPlus.UI.Commands
 
 		private static string Translate(string text)
 		{
-			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+			return ServiceLocator.Localization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 	}
 }

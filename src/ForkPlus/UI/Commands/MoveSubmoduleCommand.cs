@@ -3,10 +3,10 @@ using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Commands
 {
@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Commands
 				return;
 			}
 			string directoryName = Path.GetDirectoryName(gitModule.MakePath(submodule.Path));
-			if (!OpenDialog.SelectDirectory(MainWindow.Instance, Translate("Select empty folder for new submodule location"), directoryName, out var directoryPath))
+			if (!ServiceLocator.FileSystemDialog.SelectDirectory(Translate("Select empty folder for new submodule location"), directoryName, out var directoryPath))
 			{
 				return;
 			}
@@ -71,7 +71,7 @@ namespace ForkPlus.UI.Commands
 
 		private static string Translate(string text)
 		{
-			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
+			return ServiceLocator.Localization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 	}
 }
