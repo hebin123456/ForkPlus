@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui">
   <BitmapImage x:Key="ActiveBranchIcon" UriSource="/Assets/ActiveBranch.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ActiveBranchSelectedIcon" UriSource="/Assets/ActiveBranchDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="AddIcon" UriSource="/Assets/Add.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
@@ -19,7 +19,7 @@
   <BitmapImage x:Key="BranchFilterOffSelectedIcon" UriSource="/Assets/BranchFilterOffDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ChangesIcon" UriSource="/Assets/Changes.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ChangesSelectedIcon" UriSource="/Assets/ChangesDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <BitmapImage x:Key="CommitIcon" UriSource="pack://application:,,,/ForkPlus;component/assets/revision.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="CommitIcon" UriSource="avares://ForkPlus/assets/revision.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ConsoleIcon" UriSource="/Assets/Console.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="ConsoleEmphasizedIcon" UriSource="/Assets/ConsoleDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="CreateBranchIcon" UriSource="/Assets/CreateBranch.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
@@ -110,7 +110,7 @@
   <BitmapImage x:Key="WorktreeIcon" UriSource="/Assets/Worktree.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="WorktreeSelectedIcon" UriSource="/Assets/WorktreeDark.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="AzureIcon" UriSource="/Assets/Azure.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <BitmapImage x:Key="AzureOnIcon" UriSource="pack://application:,,,/ForkPlus;component/assets/azure.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <BitmapImage x:Key="AzureOnIcon" UriSource="avares://ForkPlus/assets/azure.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="BitbucketIcon" UriSource="/Assets/BitBucket.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="BitbucketOnIcon" UriSource="/Assets/BitBucketOn.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BitmapImage x:Key="GitHubIcon" UriSource="/Assets/Github.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />

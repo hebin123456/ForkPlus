@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <PopupAnimation x:Key="{x:StaticExtension SystemParameters.MenuPopupAnimationKey}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">None</PopupAnimation>
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />

@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary xmlns="https://github.com/avaloniaui">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="Styles/Brushes/Colors.CyanDark.xaml" />
     <ResourceDictionary Source="Styles/Images.Dark.xaml" />
