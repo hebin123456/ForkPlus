@@ -467,7 +467,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			Sha[] remainingShas2 = hashSet.ToArray();
 			RevisionContextSearch? oldContextSearch = Content.RevisionListViewUserControl.RevisionsDataSource.ContextSearch;
-			_activeFetchRevisionsUntilShaJob = JobQueue.Add(PreferencesLocalization.Current("fetch until shas"), delegate(JobMonitor monitor)
+			ActiveFetchRevisionsUntilShaJob = JobQueue.Add(PreferencesLocalization.Current("fetch until shas"), delegate(JobMonitor monitor)
 			{
 				if (!monitor.IsCanceled)
 				{
@@ -480,7 +480,7 @@ namespace ForkPlus.UI.UserControls
 							{
 								if (!monitor.IsCanceled)
 								{
-									_activeFetchRevisionsUntilShaJob = null;
+									ActiveFetchRevisionsUntilShaJob = null;
 									new ErrorWindow(this, response.Error).ShowDialog();
 								}
 							});
@@ -497,7 +497,7 @@ namespace ForkPlus.UI.UserControls
 									{
 										if (!monitor.IsCanceled)
 										{
-											_activeFetchRevisionsUntilShaJob = null;
+											ActiveFetchRevisionsUntilShaJob = null;
 											new ErrorWindow(this, newContextSearchResponse.Error).ShowDialog();
 										}
 									});
@@ -511,7 +511,7 @@ namespace ForkPlus.UI.UserControls
 										{
 											if (repositoryData != RepositoryData)
 											{
-												_activeFetchRevisionsUntilShaJob = null;
+												ActiveFetchRevisionsUntilShaJob = null;
 											}
 											else
 											{
@@ -521,7 +521,7 @@ namespace ForkPlus.UI.UserControls
 												List<int> list = new List<int>(foundRows);
 												list.AddRange(item);
 												NavigateToRows(list);
-												_activeFetchRevisionsUntilShaJob = null;
+												ActiveFetchRevisionsUntilShaJob = null;
 											}
 										}
 									});
@@ -555,12 +555,12 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			CommitGraphCache commitGraphCache = CommitGraphCache;
-			if (commitGraphCache == null || !repositoryData.RevisionStorage.HasMore || _activeFetchRevisionsNextPageJob != null)
+			if (commitGraphCache == null || !repositoryData.RevisionStorage.HasMore || ActiveFetchRevisionsNextPageJob != null)
 			{
 				return;
 			}
 			RevisionContextSearch? oldContextSearch = Content.RevisionListViewUserControl.RevisionsDataSource.ContextSearch;
-			_activeFetchRevisionsNextPageJob = JobQueue.Add(PreferencesLocalization.Current("fetch next page"), delegate(JobMonitor monitor)
+			ActiveFetchRevisionsNextPageJob = JobQueue.Add(PreferencesLocalization.Current("fetch next page"), delegate(JobMonitor monitor)
 			{
 				if (!monitor.IsCanceled)
 				{
@@ -573,7 +573,7 @@ namespace ForkPlus.UI.UserControls
 							{
 								if (!monitor.IsCanceled)
 								{
-									_activeFetchRevisionsNextPageJob = null;
+									ActiveFetchRevisionsNextPageJob = null;
 									new ErrorWindow(this, response.Error).ShowDialog();
 								}
 							});
@@ -592,7 +592,7 @@ namespace ForkPlus.UI.UserControls
 										{
 											if (!monitor.IsCanceled)
 											{
-												_activeFetchRevisionsNextPageJob = null;
+												ActiveFetchRevisionsNextPageJob = null;
 												new ErrorWindow(this, newContextSearchResponse.Error).ShowDialog();
 											}
 										});
@@ -606,17 +606,17 @@ namespace ForkPlus.UI.UserControls
 											{
 												if (repositoryData != RepositoryData)
 												{
-													_activeFetchRevisionsNextPageJob = null;
+													ActiveFetchRevisionsNextPageJob = null;
 												}
 												else if (Content.RevisionListViewUserControl.RevisionsDataSource.ContextSearch?.SearchString != oldContextSearch?.SearchString)
 												{
-													_activeFetchRevisionsNextPageJob = null;
+													ActiveFetchRevisionsNextPageJob = null;
 												}
 												else
 												{
 													RepositoryData repositoryData2 = repositoryData.With(newRevisionStorage);
 													UpdateRepositoryData(repositoryData2, newContextSearch, null);
-													_activeFetchRevisionsNextPageJob = null;
+													ActiveFetchRevisionsNextPageJob = null;
 												}
 											}
 										});
@@ -642,7 +642,7 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			CommitGraphCache commitGraphCache = CommitGraphCache;
-			if (commitGraphCache == null || !repositoryData.RevisionStorage.HasMore || _activeFetchRevisionsNextPageJob != null)
+			if (commitGraphCache == null || !repositoryData.RevisionStorage.HasMore || ActiveFetchRevisionsNextPageJob != null)
 			{
 				return;
 			}
@@ -651,7 +651,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			_activeFetchRevisionsNextPageJob = JobQueue.Add(PreferencesLocalization.Current("fetch until search match"), delegate(JobMonitor monitor)
+			ActiveFetchRevisionsNextPageJob = JobQueue.Add(PreferencesLocalization.Current("fetch until search match"), delegate(JobMonitor monitor)
 			{
 				RevisionStorage revisionStorage = repositoryData.RevisionStorage;
 				RevisionContextSearch? newContextSearch = null;
@@ -673,7 +673,7 @@ namespace ForkPlus.UI.UserControls
 						{
 							if (!monitor.IsCanceled)
 							{
-								_activeFetchRevisionsNextPageJob = null;
+								ActiveFetchRevisionsNextPageJob = null;
 								new ErrorWindow(this, response.Error).ShowDialog();
 							}
 						});
@@ -687,7 +687,7 @@ namespace ForkPlus.UI.UserControls
 						{
 							if (!monitor.IsCanceled)
 							{
-								_activeFetchRevisionsNextPageJob = null;
+								ActiveFetchRevisionsNextPageJob = null;
 								new ErrorWindow(this, newContextSearchResponse.Error).ShowDialog();
 							}
 						});
@@ -705,7 +705,7 @@ namespace ForkPlus.UI.UserControls
 						{
 							if (repositoryData != RepositoryData)
 							{
-								_activeFetchRevisionsNextPageJob = null;
+								ActiveFetchRevisionsNextPageJob = null;
 							}
 							else
 							{
@@ -717,7 +717,7 @@ namespace ForkPlus.UI.UserControls
 									int valueOrDefault = num.GetValueOrDefault();
 									Content.RevisionListViewUserControl.Select(new int[1] { valueOrDefault });
 								}
-								_activeFetchRevisionsNextPageJob = null;
+								ActiveFetchRevisionsNextPageJob = null;
 							}
 						}
 					});
