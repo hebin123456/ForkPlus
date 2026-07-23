@@ -39,9 +39,8 @@ namespace ForkPlus.UI.Dialogs
 				if (_tagName != value)
 				{
 					_tagName = value;
-					OnPropertyChanged();
-					OnPropertyChanged(nameof(IsSubmitAllowed));
-					OnPropertyChanged(nameof(CommandPreview));
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(CommandPreview));
 				}
 			}
 		}
