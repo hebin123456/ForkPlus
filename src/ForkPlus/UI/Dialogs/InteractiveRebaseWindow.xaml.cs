@@ -77,6 +77,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RepositoryReferences _references;
 
+		// 阶段 3：承接 InteractiveRebase 的提交允许判定 + 命令预览。
+		// IPC/ObservableCollection/Adorner/Semaphore 等重度 WPF 逻辑全留 View。
+		private readonly InteractiveRebaseWindowViewModel _viewModel;
+
 		private bool _updateInProgress;
 
 		private RewordAdorner _adorner;
@@ -87,11 +91,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			get
 			{
-				if (_todoList.Count > 0)
-				{
-					return !_closing;
-				}
-				return false;
+				_viewModel.TodoListCount = _todoList.Count;
+				_viewModel.Closing = _closing;
+				return _viewModel.IsSubmitAllowed;
 			}
 		}
 
@@ -101,6 +103,7 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			_sourceBranch = sourceBranch;
 			_destination = destination;
+			_viewModel = new InteractiveRebaseWindowViewModel(_destination);
 			_initialAction = initialAction;
 			_references = repositoryUserControl.RepositoryData?.References ?? RepositoryReferences.Empty;
 			_riIpcServer = new IpcServer("RI", IpcMessageHandler);
@@ -163,14 +166,9 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 	protected override string GetCommandPreview()
-	{
-		// 与 RebaseInteractiveGitCommand 对应：git rebase -i <destination>
-		if (_destination == null)
-		{
-			return null;
-		}
-		return "git rebase -i " + _destination.FriendlyName;
-	}
+{
+	return _viewModel.CommandPreview;
+}
 
 		public void Dispose()
 		{

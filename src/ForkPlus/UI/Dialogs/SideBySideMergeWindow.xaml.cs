@@ -65,32 +65,26 @@ namespace ForkPlus.UI.Dialogs
 		// AI 解决冲突进行中标志，避免重复触发
 		private bool _aiResolving;
 
+		// 阶段 3：承接 SideBySideMerge 的提交允许判定。
+		// MergeCodeEditor/AvalonEdit/MergeConflictView 等重度 WPF 逻辑全留 View。
+		private readonly SideBySideMergeWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
-				if (_mergeMode == MergeMode.Text)
-				{
-					if (_mergeConflict == null)
-					{
-						return false;
-					}
-					return _mergeConflict.IsResolved;
-				}
-				if (_mergeMode == MergeMode.Binary)
-				{
-					if (!AllLocalCheckBox.IsChecked.GetValueOrDefault() || AllRemoteCheckBox.IsChecked != false)
-					{
-						if (AllRemoteCheckBox.IsChecked.GetValueOrDefault())
-						{
-							return AllLocalCheckBox.IsChecked == false;
-						}
-						return false;
-					}
-					return true;
-				}
-				return false;
+				PushSelectionToViewModel();
+				return _viewModel.IsSubmitAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.IsTextMode = (_mergeMode == MergeMode.Text);
+			_viewModel.IsBinaryMode = (_mergeMode == MergeMode.Binary);
+			_viewModel.MergeConflictResolved = _mergeConflict?.IsResolved ?? false;
+			_viewModel.AllLocalChecked = AllLocalCheckBox.IsChecked;
+			_viewModel.AllRemoteChecked = AllRemoteCheckBox.IsChecked;
 		}
 
 		public SideBySideMergeWindow(RepositoryUserControl repositoryUserControl, RepositoryState repositoryState, ChangedFile changedFile)
@@ -98,6 +92,7 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = repositoryUserControl.GitModule;
 			_repositoryState = repositoryState;
 			_changedFile = changedFile;
+			_viewModel = new SideBySideMergeWindowViewModel();
 			base.ShowHeader = false;
 			base.ShowLogo = false;
 			InitializeComponent();
