@@ -1,8 +1,5 @@
+using Avalonia.Input;
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Markup;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;

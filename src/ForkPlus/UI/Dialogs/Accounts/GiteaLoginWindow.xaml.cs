@@ -1,8 +1,6 @@
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;

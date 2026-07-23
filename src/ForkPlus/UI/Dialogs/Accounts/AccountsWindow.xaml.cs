@@ -1,10 +1,8 @@
+using Avalonia.Controls.Selection;
+using Avalonia.Interactivity;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;

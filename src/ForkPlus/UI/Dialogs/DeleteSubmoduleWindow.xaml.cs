@@ -1,7 +1,5 @@
+using Avalonia.Threading;
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Markup;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;

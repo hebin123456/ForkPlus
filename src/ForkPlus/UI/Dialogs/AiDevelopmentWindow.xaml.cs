@@ -1,3 +1,11 @@
+using Avalonia.Controls.Selection;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia;
 using ForkPlus;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Biturbo;
@@ -20,10 +28,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace ForkPlus.UI.Dialogs
 {

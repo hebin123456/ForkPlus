@@ -1,8 +1,7 @@
+using Avalonia.Interactivity;
 using System;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Markup;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;

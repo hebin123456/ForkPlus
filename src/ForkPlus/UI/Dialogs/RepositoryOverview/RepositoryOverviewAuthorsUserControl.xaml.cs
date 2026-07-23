@@ -1,8 +1,5 @@
+using Avalonia.Controls;
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Dialogs.RepositoryOverview

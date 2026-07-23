@@ -1,12 +1,10 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 

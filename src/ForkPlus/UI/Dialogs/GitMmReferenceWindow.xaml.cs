@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Windows.Markup;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;

@@ -1,8 +1,9 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;

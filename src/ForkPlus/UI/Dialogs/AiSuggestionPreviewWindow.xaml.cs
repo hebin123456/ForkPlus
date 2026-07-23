@@ -1,6 +1,6 @@
+using Avalonia.Interactivity;
 using System;
 using System.Text;
-using System.Windows;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;

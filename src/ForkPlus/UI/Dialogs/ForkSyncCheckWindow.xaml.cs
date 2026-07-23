@@ -1,4 +1,3 @@
-using System.Windows.Media.Imaging;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.UserControls;

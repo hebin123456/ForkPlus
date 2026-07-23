@@ -1,9 +1,8 @@
+using Avalonia.Controls.Selection;
+using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;

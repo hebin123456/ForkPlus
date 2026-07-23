@@ -1,10 +1,14 @@
+using Avalonia.Controls.Selection;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;

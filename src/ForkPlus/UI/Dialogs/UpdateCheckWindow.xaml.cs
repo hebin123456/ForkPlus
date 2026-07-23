@@ -1,7 +1,9 @@
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Threading;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using ForkPlus;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;

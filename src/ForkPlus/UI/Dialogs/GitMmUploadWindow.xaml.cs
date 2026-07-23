@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+using Avalonia.Threading;
 using System.Collections.Generic;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;

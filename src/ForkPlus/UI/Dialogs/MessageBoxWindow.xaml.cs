@@ -1,7 +1,5 @@
+using Avalonia.Media;
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Markup;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
