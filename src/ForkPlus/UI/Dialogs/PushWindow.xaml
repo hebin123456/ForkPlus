@@ -1,26 +1,5 @@
 <dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow">
-  <dialogs:ForkPlusDialogWindow.Resources>
-    <ResourceDictionary>
-      <Style x:Key="RemoteBranchesComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-        <Style.Triggers>
-          <DataTrigger>
-            <DataTrigger.Binding>
-              <Binding Path="ItemType" />
-            </DataTrigger.Binding>
-            <Setter Property="FrameworkElement.Height" Value="1" />
-            <Setter Property="UIElement.IsEnabled" Value="False" />
-            <Setter Property="Control.Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                  <Separator HorizontalAlignment="Stretch" Margin="0" />
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </Style.Triggers>
-      </Style>
-    </ResourceDictionary>
-  </dialogs:ForkPlusDialogWindow.Resources>
+  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 RemoteBranchesComboBoxItemStyle 用于在 ComboBox 中以 Separator 分组项目） -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -45,7 +24,8 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="LocalBranchesComboBox_SelectionChanged" x:Name="LocalBranchesComboBox">
+      <!-- TODO: Avalonia 迁移 - 已移除 TextSearch.TextPath（Avalonia 无此 API） -->
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="LocalBranchesComboBox_SelectionChanged" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -65,7 +45,8 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="RemotesLabel" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" ItemContainerStyle="{DynamicResource ComboBoxItemContainerStyle}" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <!-- TODO: Avalonia 迁移 - 已移除 TextSearch.TextPath 与 ItemContainerStyle（Avalonia 用 Styles 机制） -->
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -87,7 +68,8 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="To:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="ShortName" ItemContainerStyle="{DynamicResource RemoteBranchesComboBoxItemStyle}" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
+      <!-- TODO: Avalonia 迁移 - 已移除 TextSearch.TextPath 与 ItemContainerStyle（原 RemoteBranchesComboBoxItemStyle 用于 Separator 分组项，需用 DataTemplate Selector 实现） -->
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />

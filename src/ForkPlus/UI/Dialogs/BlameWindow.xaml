@@ -1,12 +1,12 @@
 <ui:CustomWindow xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.BlameWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:diff="clr-namespace:ForkPlus.UI.Controls.Editor.Diff">
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:DummyBlameItemViewModel}}" DataType="{x:Type dialogs:DummyBlameItemViewModel}">
+      <DataTemplate DataType="dialogs:DummyBlameItemViewModel">
         <Grid Height="16.393333333333334">
           <Border Margin="-4,0,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:BlameItemViewModel}}" DataType="{x:Type dialogs:BlameItemViewModel}">
+      <DataTemplate DataType="dialogs:BlameItemViewModel">
         <Grid Height="16.393333333333334">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22" />
@@ -53,7 +53,7 @@
           </Button>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:BlameItemBodyViewModel}}" DataType="{x:Type dialogs:BlameItemBodyViewModel}">
+      <DataTemplate DataType="dialogs:BlameItemBodyViewModel">
         <Grid Height="16.393333333333334" />
       </DataTemplate>
     </ResourceDictionary>
@@ -132,29 +132,7 @@
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>
-        <ListBox.ItemContainerStyle>
-          <Style TargetType="{x:Type ListBoxItem}">
-            <Setter Property="UIElement.Focusable" Value="False" />
-            <Setter Property="FrameworkElement.FocusVisualStyle">
-              <Setter.Value>
-                <x:Null />
-              </Setter.Value>
-            </Setter>
-            <Setter Property="Border.BorderThickness" Value="0" />
-            <Setter Property="Control.Padding" Value="0" />
-            <Setter Property="Panel.Background" Value="{DynamicResource Item.Static.Background}" />
-            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-            <Setter Property="Control.Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                  <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" x:Name="Bd">
-                    <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
-                  </Border>
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </Style>
-        </ListBox.ItemContainerStyle>
+        <!-- TODO: Avalonia 迁移 - 已移除原 ListBox.ItemContainerStyle（含 ListBoxItem 自定义 ControlTemplate：无边框、无焦点样式 Focusable=False、FocusVisualStyle=null、透明背景 Item.Static.Background）。需用 ItemContainerTheme/Styles 重写 -->
         <ListBox.ItemTemplate>
           <DataTemplate>
             <ContentControl>

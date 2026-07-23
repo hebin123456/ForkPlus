@@ -1,35 +1,27 @@
 <dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmSyncWindow">
   <Grid>
     <Grid.Resources>
-      <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="{x:Type Expander}">
+      <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="Expander">
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate TargetType="{x:Type Expander}">
+            <ControlTemplate TargetType="Expander">
               <DockPanel>
                 <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
                   <ToggleButton.Template>
-                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <ControlTemplate TargetType="ToggleButton">
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
+                          <!-- TODO: Avalonia 迁移 - 原WPF用 ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText 文本 ">" / "v"，需用 Selector 重写 -->
                           <TextBlock Text=">" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
-                          <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                          <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" />
                         </DockPanel>
                       </Border>
-                      <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                          <Setter TargetName="ArrowText" Property="Text" Value="v" />
-                        </Trigger>
-                      </ControlTemplate.Triggers>
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <ContentPresenter DockPanel.Dock="Bottom" Visibility="Collapsed" ContentSource="Content" x:Name="ExpandSite" />
+                <!-- TODO: Avalonia 迁移 - 原WPF用 ControlTemplate.Triggers 根据 IsExpanded 切换 Visibility，已改用 IsVisible Binding 替代 -->
+                <ContentPresenter DockPanel.Dock="Bottom" IsVisible="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ContentSource="Content" x:Name="ExpandSite" />
               </DockPanel>
-              <ControlTemplate.Triggers>
-                <Trigger Property="IsExpanded" Value="True">
-                  <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible" />
-                </Trigger>
-              </ControlTemplate.Triggers>
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -147,4 +139,3 @@
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
-
