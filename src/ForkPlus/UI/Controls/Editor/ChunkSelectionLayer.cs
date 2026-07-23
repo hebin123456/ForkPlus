@@ -1,9 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using ForkPlus.UI;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit;
@@ -15,13 +16,23 @@ using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor
 {
-	public abstract class ChunkSelectionLayer<TChunk> : FrameworkElement, IWeakEventListener where TChunk : class
+	/// <summary>
+	/// 阶段 4 里程碑 4.7-a：WPF→Avalonia 迁移要点：
+	/// - FrameworkElement → Avalonia.Controls.Control
+	/// - Adorner/AdornerLayer → ButtonsOverlay (自定义 Control) + OverlayLayer (Avalonia.Controls.Primitives)
+	/// - IWeakEventListener/WeakEventManagerBase → 直接事件订阅
+	/// - VisualTreeHelper.HitTest → InputHitTest
+	/// - Mouse.GetPosition → 缓存 PointerMoved 事件位置
+	/// - Brush → IBrush, Freeze() 移除
+	/// - MouseEventArgs → PointerEventArgs, Mouse* 事件 → Pointer* 事件
+	/// </summary>
+	public abstract class ChunkSelectionLayer<TChunk> : Control where TChunk : class
 	{
-		public class ButtonsAdorner : Adorner
+		public class ButtonsOverlay : Control
 		{
-			private FrameworkElement _child;
+			private Control _child;
 
-			public FrameworkElement Child
+			public Control Child
 			{
 				get
 				{
@@ -34,16 +45,12 @@ namespace ForkPlus.UI.Controls.Editor
 						if (_child != null)
 						{
 							RemoveVisualChild(_child);
-							RemoveLogicalChild(_child);
 						}
-						if (value != null && !VisualTreeAttachmentHelper.PrepareForNewParent(value, GetType().Name + ".Child"))
-						{
-							value = null;
-						}
+						// TODO(4.7-a): WPF 版用 VisualTreeAttachmentHelper.PrepareForNewParent 先 detach。
+						// Avalonia 无等价物；假设 child 没有旧 parent（CreateAdornerContent 每次创建新实例）。
 						_child = value;
 						if (_child != null)
 						{
-							AddLogicalChild(_child);
 							AddVisualChild(_child);
 						}
 						InvalidateMeasure();
@@ -51,16 +58,13 @@ namespace ForkPlus.UI.Controls.Editor
 				}
 			}
 
-			protected override int VisualChildrenCount => (Child != null) ? 1 : 0;
+			protected override int VisualChildrenCount => (_child != null) ? 1 : 0;
 
-			public ButtonsAdorner(UIElement adornernedElement)
-				: base(adornernedElement)
+			protected override IVisual GetVisualChild(int index)
 			{
-			}
-
-			protected override Visual GetVisualChild(int index)
-			{
-				return Child;
+				if (index != 0 || _child == null)
+					throw new ArgumentOutOfRangeException(nameof(index));
+				return _child;
 			}
 
 			protected override Size MeasureOverride(Size constraint)
@@ -93,22 +97,24 @@ namespace ForkPlus.UI.Controls.Editor
 		protected TChunk _activeChunk;
 
 		[Null]
-		private ButtonsAdorner _adorner;
+		private ButtonsOverlay _overlay;
 
 		[Null]
-		private AdornerLayer _adornerLayer;
+		private OverlayLayer _overlayLayer;
 
 		private readonly CodeEditor _textEditor;
 
-		protected Brush ChunkBackgroundBrush;
+		protected IBrush ChunkBackgroundBrush;
 
 		protected static readonly Pen _chunkBorderPen;
 
-		protected static readonly Brush _chunkBorderBrush;
+		protected static readonly IBrush _chunkBorderBrush;
 
-		protected static readonly Brush _chunkBackgroundBrush;
+		protected static readonly IBrush _chunkBackgroundBrush;
 
-		protected static readonly Brush _chunkBackgroundBrushDark;
+		protected static readonly IBrush _chunkBackgroundBrushDark;
+
+		private Point _lastMousePosition;
 
 		[Null]
 		public virtual TChunk ActiveChunk
@@ -134,41 +140,35 @@ namespace ForkPlus.UI.Controls.Editor
 			_chunkBorderBrush = new SolidColorBrush(Color.FromRgb(65, 155, 249));
 			_chunkBackgroundBrush = new SolidColorBrush(Color.FromArgb(60, 230, 241, byte.MaxValue));
 			_chunkBackgroundBrushDark = new SolidColorBrush(Color.FromArgb(20, 53, 140, byte.MaxValue));
-			_chunkBorderPen.Freeze();
-			_chunkBorderBrush.Freeze();
-			_chunkBackgroundBrush.Freeze();
-			_chunkBackgroundBrushDark.Freeze();
+			// Avalonia 画刷默认不可变，无需 Freeze()
 		}
 
 		public ChunkSelectionLayer(CodeEditor textEditor)
 		{
 			_textEditor = textEditor;
-			base.IsHitTestVisible = false;
-			_textEditor.MouseEnter += TextEditor_MouseEnter;
-			_textEditor.MouseLeave += TextEditor_MouseLeave;
-			_textEditor.MouseMove += TextEditor_MouseMove;
+			IsHitTestVisible = false;
+			_textEditor.PointerEntered += TextEditor_MouseEnter;
+			_textEditor.PointerLeave += TextEditor_MouseLeave;
+			_textEditor.PointerMoved += TextEditor_MouseMove;
 			_textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
 			_textEditor.TextChanged += TextEditor_TextChanged;
 			_textEditor.IsVisibleChanged += TextEditor_IsVisibleChanged;
 			RefreshBrush();
-			WeakEventManagerBase<TextViewWeakEventManager.ScrollOffsetChanged, TextView>.AddListener(_textEditor.TextArea.TextView, this);
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4 里程碑 4.7-a：WeakEventManagerBase/TextViewWeakEventManager → 直接事件订阅。
+			// NotificationCenter 是单例，直接订阅有内存泄漏风险，阶段 6 改用 WeakEvent。
+			_textEditor.TextArea.TextView.ScrollOffsetChanged += OnScrollOffsetChanged;
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
-		bool IWeakEventListener.ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
+		private void OnScrollOffsetChanged(object sender, EventArgs e)
 		{
-			if (managerType == typeof(TextViewWeakEventManager.ScrollOffsetChanged))
-			{
-				RefreshActiveChunk();
-				InvalidateVisual();
-				return true;
-			}
-			return false;
+			RefreshActiveChunk();
+			InvalidateVisual();
 		}
 
 		protected abstract void RefreshActiveChunk();
 
-		protected abstract FrameworkElement CreateAdornerContent(TextEditor textEditor);
+		protected abstract Control CreateAdornerContent(TextEditor textEditor);
 
 		protected abstract Rect? GetRectForChunk(TChunk chunk);
 
@@ -229,53 +229,56 @@ namespace ForkPlus.UI.Controls.Editor
 			num -= _textEditor.SearchBarHeight;
 			double num3 = _textEditor.TextArea.TextView.ActualWidth - num2;
 			double top = popupTopPosition + num;
-			if (_adorner == null)
+			if (_overlay == null)
 			{
-				_adornerLayer = AdornerLayer.GetAdornerLayer(this) ?? AdornerLayer.GetAdornerLayer(_textEditor.TextArea);
-				if (_adornerLayer == null)
+				// 阶段 4 里程碑 4.7-a：WPF AdornerLayer.GetAdornerLayer → Avalonia OverlayLayer.GetOverlayLayer。
+				_overlayLayer = OverlayLayer.GetOverlayLayer(_textEditor) ?? OverlayLayer.GetOverlayLayer(_textEditor.TextArea);
+				if (_overlayLayer == null)
 				{
 					return;
 				}
-				_adorner = new ButtonsAdorner(this);
-				_adorner.Child = CreateAdornerContent(_textEditor);
-				_adornerLayer.Add(_adorner);
+				_overlay = new ButtonsOverlay();
+				_overlay.Child = CreateAdornerContent(_textEditor);
+				_overlayLayer.Children.Add(_overlay);
 			}
-			_adorner.Child.Measure(new Size(1000.0, 22.0));
-			double width = _adorner.Child.DesiredSize.Width;
-			_adorner.Margin = new Thickness(num3 - width, top, 0.0, 0.0);
+			_overlay.Child.Measure(new Size(1000.0, 22.0));
+			double width = _overlay.Child.DesiredSize.Width;
+			_overlay.Margin = new Thickness(num3 - width, top, 0.0, 0.0);
 		}
 
 		protected void RemoveChunkAdorner()
 		{
-			if (_adorner != null)
+			if (_overlay != null)
 			{
-				_adorner.Child = null;
-				_adornerLayer?.Remove(_adorner);
-				_adornerLayer = null;
-				_adorner = null;
+				_overlay.Child = null;
+				_overlayLayer?.Children.Remove(_overlay);
+				_overlayLayer = null;
+				_overlay = null;
 			}
 		}
 
-		private void TextEditor_MouseEnter(object sender, MouseEventArgs e)
+		private void TextEditor_MouseEnter(object sender, PointerEventArgs e)
 		{
+			_lastMousePosition = e.GetPosition(_textEditor);
 			RefreshActiveChunk();
 		}
 
-		private void TextEditor_MouseLeave(object sender, MouseEventArgs e)
+		private void TextEditor_MouseLeave(object sender, PointerEventArgs e)
 		{
 			ContextMenu contextMenu = _textEditor.ContextMenu;
-			if (contextMenu == null || !contextMenu.IsMouseOver)
+			if (contextMenu == null || !contextMenu.IsPointerOver)
 			{
-				ButtonsAdorner adorner = _adorner;
-				if (adorner == null || VisualTreeHelper.HitTest(adorner, e.GetPosition(_adorner)) == null)
+				ButtonsOverlay overlay = _overlay;
+				if (overlay == null || overlay.InputHitTest(_lastMousePosition) == null)
 				{
 					ActiveChunk = null;
 				}
 			}
 		}
 
-		private void TextEditor_MouseMove(object sender, MouseEventArgs e)
+		private void TextEditor_MouseMove(object sender, PointerEventArgs e)
 		{
+			_lastMousePosition = e.GetPosition(_textEditor);
 			RefreshActiveChunk();
 			e.Handled = true;
 		}
@@ -285,7 +288,7 @@ namespace ForkPlus.UI.Controls.Editor
 			ActiveChunk = null;
 		}
 
-		private void TextEditor_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+		private void TextEditor_IsVisibleChanged(object sender, EventArgs e)
 		{
 			if (!_textEditor.IsVisible)
 			{
@@ -304,25 +307,25 @@ namespace ForkPlus.UI.Controls.Editor
 		}
 
 		private void RefreshBrush()
-	{
-		// 优先读资源（CustomColorsDialog 覆盖或主题字典），取不到回退到 light/dark 静态画刷。
-		ChunkBackgroundBrush = TryFindColorBrush("ChunkSelection.BackgroundColor")
-			?? (ForkPlusSettings.Default.Theme.IsDarkBase() ? _chunkBackgroundBrushDark : _chunkBackgroundBrush);
-	}
+		{
+			// 优先读资源（CustomColorsDialog 覆盖或主题字典），取不到回退到 light/dark 静态画刷。
+			ChunkBackgroundBrush = TryFindColorBrush("ChunkSelection.BackgroundColor")
+				?? (ForkPlusSettings.Default.Theme.IsDarkBase() ? _chunkBackgroundBrushDark : _chunkBackgroundBrush);
+		}
 
-	private static Color? TryFindColor(string key)
-	{
-		object res = Application.Current?.TryFindResource(key);
-		if (res is Color c) return c;
-		if (res is SolidColorBrush b) return b.Color;
-		return null;
-	}
+		private static Color? TryFindColor(string key)
+		{
+			object res = Theme.FindResource(key);
+			if (res is Color c) return c;
+			if (res is SolidColorBrush b) return b.Color;
+			return null;
+		}
 
-	private static Brush TryFindColorBrush(string key)
-	{
-		Color? c = TryFindColor(key);
-		return c.HasValue ? new SolidColorBrush(c.Value) : null;
-	}
+		private static IBrush TryFindColorBrush(string key)
+		{
+			Color? c = TryFindColor(key);
+			return c.HasValue ? new SolidColorBrush(c.Value) : null;
+		}
 
 		protected void DrawSelectionBorder(DrawingContext drawingContext, TextArea textArea)
 		{
@@ -392,8 +395,8 @@ namespace ForkPlus.UI.Controls.Editor
 		[Null]
 		protected TChunk GetChunkUnderMousePointer()
 		{
-			Point position = Mouse.GetPosition(_textEditor);
-			if (VisualTreeHelper.HitTest(_textEditor, position) == null)
+			Point position = _lastMousePosition;
+			if (_textEditor.InputHitTest(position) == null)
 			{
 				return null;
 			}
