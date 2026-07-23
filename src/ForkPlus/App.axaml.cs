@@ -14,12 +14,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.IO.Ipc;
 using ForkPlus.Services;
+using ForkPlus.Services.Avalonia;
 using ForkPlus.Services.Wpf;
 using ForkPlus.Settings;
 using ForkPlus.UI;
@@ -119,14 +121,9 @@ namespace ForkPlus
 
 		private static readonly SolidColorBrush _defaultWindowBorderDarkBrush;
 
-		private static Brush _windowBorderBrush;
-
-		private static ResourceDictionary _windowsBorderResourceDictionary;
+		private static IBrush _windowBorderBrush;
 
 		private static SystemTheme _systemTheme;
-
-		/// <summary>用户自定义颜色覆盖字典（动态构建，merge 到 MergedDictionaries 末尾覆盖预设皮肤颜色）。</summary>
-		private static ResourceDictionary _customColorsResourceDictionary;
 
 		private readonly IpcServer _askPassIpcServer;
 
@@ -597,20 +594,14 @@ namespace ForkPlus
 
 		public static void RefreshWindowBorderBrush()
 		{
-			SolidColorBrush solidColorBrush = (ForkPlusSettings.Default.Theme.IsDarkBase() ? _defaultWindowBorderDarkBrush : _defaultWindowBorderLightBrush);
-			Brush brush = (IsSystemAccentBrushEnabled() ? SystemParameters.WindowGlassBrush : solidColorBrush);
-			if (brush != _windowBorderBrush)
+			SolidColorBrush solidColorBrush = ForkPlusSettings.Default.Theme.IsDarkBase() ? _defaultWindowBorderDarkBrush : _defaultWindowBorderLightBrush;
+			IBrush brush = IsSystemAccentBrushEnabled()
+				? (ServiceLocator.ThemeService?.GetSystemBrush(SystemColorType.Accent, solidColorBrush) ?? solidColorBrush)
+				: solidColorBrush;
+			if (!Equals(brush, _windowBorderBrush))
 			{
 				_windowBorderBrush = brush;
-				_windowBorderBrush?.Freeze();
-				ResourceDictionary resourceDictionary = new ResourceDictionary();
-				resourceDictionary.Add("WindowBorderBrush", _windowBorderBrush);
-				Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
-				if (_windowsBorderResourceDictionary != null)
-				{
-					Application.Current.Resources.MergedDictionaries.Remove(_windowsBorderResourceDictionary);
-				}
-				_windowsBorderResourceDictionary = resourceDictionary;
+				Application.Current.Resources["WindowBorderBrush"] = brush;
 				Theme.Refresh();
 			}
 		}
@@ -634,7 +625,8 @@ namespace ForkPlus
 			credential: new WindowsCredentialService(),
 			fileAssociation: new WindowsFileAssociationService(),
 			systemTheme: new WpfSystemThemeService(),
-			localization: new WpfLocalizationService()
+			localization: new WpfLocalizationService(),
+			themeService: new AvaloniaThemeService()
 		);
 			_ = IsDebug;
 			InitializeRenderMode();
@@ -660,16 +652,11 @@ namespace ForkPlus
 				// 跟随系统时只映射到基底 Light/Dark（系统只有明暗二元）
 				ForkPlusSettings.Default.Theme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
 			}
-			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries.FirstOrDefault((ResourceDictionary rd) => rd.Source != null && rd.Source.OriginalString.Contains("/ForkPlus;component/Theme/Generic."));
-			ResourceDictionary item = new ResourceDictionary
-			{
-				Source = ForkPlusSettings.Default.Theme.ResourceUri()
-			};
-			Application.Current.Resources.MergedDictionaries.Add(item);
-			if (resourceDictionary != null)
-			{
-				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
-			}
+			// Avalonia: 主题通过 RequestedThemeVariant 切换（替代 WPF MergedDictionaries 加载 Generic.{Skin}.xaml）
+			if (ForkPlusSettings.Default.Theme.IsDarkBase())
+				Application.Current.RequestedThemeVariant = ThemeVariant.Dark;
+			else
+				Application.Current.RequestedThemeVariant = ThemeVariant.Light;
 			Theme.SubscribeToSystemEvents();
 			InitializeTextEditorContextMenuStyle();
 			ApplyCustomColors();
@@ -701,49 +688,29 @@ namespace ForkPlus
 	/// 主动刷新缓存的 Color 值（这些控件缓存 Color 值类型，必须靠事件刷新）。</summary>
 	public static void ApplyCustomColors()
 	{
-		// 移除旧的自定义颜色字典
-		if (_customColorsResourceDictionary != null)
-		{
-			Application.Current.Resources.MergedDictionaries.Remove(_customColorsResourceDictionary);
-			_customColorsResourceDictionary = null;
-		}
-		// 仅当用户启用自定义颜色且有自定义项时才应用覆盖；否则使用当前主题原色。
+		// Avalonia: 直接覆盖 Resources 中的键值，无需 MergedDictionaries 字典追踪
 		Dictionary<string, string> customColors = ForkPlusSettings.Default.CustomColors;
 		bool hasCustomColors = ForkPlusSettings.Default.UseCustomColors && customColors != null && customColors.Count > 0;
 
-		// 关键：重新加载当前主题的 Generic.{Skin}.xaml 字典，模仿主题切换的强力刷新机制。
-		// 这一步强制 WPF 让所有 DynamicResource 失效并重新解析，所有 SolidColorBrush 实例
-		// 被重建，所有引用 Brush 的控件（含 Style/Popup/已渲染控件）都会刷新——
-		// 这是"主题切换能立即生效"的根因，自定义颜色同样需要走这条路径。
+		// 关键：重新加载当前主题字典，模仿主题切换的强力刷新机制。
+		// ReloadThemeDictionary 在 Avalonia 中转发到 Theme.Refresh()，触发主题服务刷新所有引用 Brush 的控件。
 		ReloadThemeDictionary();
 
-		// 构建新的覆盖字典并 Add 到 MergedDictionaries 末尾
+		// 直接写入 Resources 覆盖预设颜色（Avalonia IResourceDictionary 索引赋值）
 		if (hasCustomColors)
 		{
-			ResourceDictionary dict = new ResourceDictionary();
 			foreach (KeyValuePair<string, string> kv in customColors)
 			{
 				try
 				{
 					string hex = kv.Value;
-					Color color;
-					if (hex.StartsWith("#") && hex.Length == 9)
-						color = (Color)ColorConverter.ConvertFromString(hex);
-					else if (hex.StartsWith("#") && hex.Length == 7)
-						color = (Color)ColorConverter.ConvertFromString(hex);
-					else
-						color = (Color)ColorConverter.ConvertFromString("#" + hex);
-					dict[kv.Key] = color;
+					Color color = hex.StartsWith("#") ? Color.Parse(hex) : Color.Parse("#" + hex);
+					Application.Current.Resources[kv.Key] = color;
 				}
 				catch (Exception ex)
 				{
 					Log.Warn("Invalid custom color value for key '" + kv.Key + "': " + kv.Value, ex);
 				}
-			}
-			if (dict.Count > 0)
-			{
-				Application.Current.Resources.MergedDictionaries.Add(dict);
-				_customColorsResourceDictionary = dict;
 			}
 		}
 		Theme.Refresh();
@@ -760,30 +727,8 @@ namespace ForkPlus
 	{
 		try
 		{
-			// 找到当前的 Generic.{Skin}.xaml 字典（Source 非空且匹配 /Theme/Generic.*.xaml）
-			ResourceDictionary oldThemeDict = null;
-			foreach (ResourceDictionary rd in Application.Current.Resources.MergedDictionaries)
-			{
-				if (rd.Source != null &&
-				    System.Text.RegularExpressions.Regex.Match(
-					    rd.Source.OriginalString,
-					    @"\/ForkPlus;component\/Theme\/Generic\.\w+\.xaml").Success)
-				{
-					oldThemeDict = rd;
-					break;
-				}
-			}
-			if (oldThemeDict == null)
-				return;  // 未找到主题字典（启动早期或异常状态），跳过刷新
-
-			// 先 Add 新 dict（同一 Source 重新加载），后 Remove 旧 dict——
-			// 这个顺序与 SwitchApplicationThemeCommand 一致，确保资源查找不出现空窗。
-			ResourceDictionary newThemeDict = new ResourceDictionary
-			{
-				Source = ForkPlusSettings.Default.Theme.ResourceUri()
-			};
-			Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
-			Application.Current.Resources.MergedDictionaries.Remove(oldThemeDict);
+			// Avalonia: 主题字典刷新通过 ThemeService 完成（替代 WPF MergedDictionaries Add 新 + Remove 旧）
+			Theme.Refresh();
 		}
 		catch (Exception ex)
 		{
