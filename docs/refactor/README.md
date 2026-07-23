@@ -10,7 +10,7 @@
 | 0 | 已完成 | [phase0-abstraction.md](phase0-abstraction.md) | 补全跨平台抽象层（接口 + WPF 实现 + 注册到 ServiceLocator） |
 | 1 | 已完成 | [phase1-domain-validation.md](phase1-domain-validation.md) | 验证领域层（Git/Biturbo/Accounts/Jobs/Settings/Utils）零 WPF 依赖 |
 | 2 | 已完成 | [phase2-commands-dewpf.md](phase2-commands-dewpf.md) | Commands 层去 WPF 化（MessageBox/Process/OpenDialog/Tab管理/应用操作 + 本地化） |
-| 3 | 待开始 | [phase3-viewmodel-extraction.md](phase3-viewmodel-extraction.md) | 抽取 ViewModel 层（最大工作量，重构分水岭） |
+| 3 | 进行中 | [phase3-viewmodel-extraction.md](phase3-viewmodel-extraction.md) | 抽取 ViewModel 层（最大工作量，重构分水岭）— Dialog 窗口 VM 已完成（48/48） |
 | 4 | 待开始 | [phase4-avalonia-migration.md](phase4-avalonia-migration.md) | Avalonia UI 重写（换基类 + 换 XAML + 换第三方库） |
 | 5 | 待开始 | [phase5-platform-crossplatform.md](phase5-platform-crossplatform.md) | 平台特定功能跨平台化（Win32 P/Invoke / IPC / 主题） |
 | 6 | 待开始 | [phase6-remove-wpf.md](phase6-remove-wpf.md) | 移除 WPF 框架依赖，切换 TFM 到 net10.0 |

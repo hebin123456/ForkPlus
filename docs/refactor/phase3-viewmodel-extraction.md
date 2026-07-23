@@ -1,6 +1,6 @@
 # 阶段 3：ViewModel 抽取
 
-> 状态：**进行中**（阶段 2→3 过渡里程碑已完成）
+> 状态：**Dialog 窗口 VM 抽取已完成**（48 个 ForkPlusDialogWindow 子类全部抽取，CI 三平台全绿）
 > 性质：最大工作量，重构分水岭
 > 前置：阶段 0/1/2 完成（抽象层就位、领域层干净、Commands 去 WPF）
 
@@ -119,6 +119,61 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 
 ---
 
+## 里程碑 3.2–3.13：批量抽取全部 48 个 Dialog Window ViewModel
+
+> 状态：**已完成**（CI 三平台全绿）
+
+在 3.1 建立的模式基础上，对全部 48 个含 `IsSubmitAllowed` override 的 `ForkPlusDialogWindow` 子类（40 个在 `Dialogs/` + 8 个在 `Dialogs/Accounts/`）批量抽取 ViewModel。每个 VM **零 WPF using**，View 仅负责绑定+转发+UI 副作用。
+
+### 9 个 VM 抽取模式点（横向复用）
+
+| # | 模式点 | 适用场景 | 代表 VM |
+|---|---|---|---|
+| 1 | VM 零 WPF using | 所有 VM | CloneWindowViewModel |
+| 2 | View 主动推送（PushSelectionToViewModel） | 控件值→VM 属性 | CreateBranchWindowViewModel |
+| 3 | override 委托（IsSubmitAllowed/GetCommandPreview 转发 VM） | 所有 Dialog | PullWindowViewModel |
+| 4 | SetStatus 拆分（Status+Message 由 VM 返回，View 调 SetStatus） | 有校验状态的窗口 | EditRemoteWindowViewModel |
+| 5 | base.IsSubmitAllowed 保留（!IsOperationInProgress） | 简单提交判定 | PushWindowViewModel |
+| 6 | 复选框/选项投影为 bool | 多选项窗口 | CherryPickWindowViewModel |
+| 7 | Validate() 三元组 (IsAllowed, Status, Message) | 有校验逻辑的窗口 | CreateBranchWindowViewModel |
+| 8 | 命令预览纯函数（CommandPreview 计算属性） | 所有有 GetCommandPreview 的窗口 | ConfigureGitInstanceWindowViewModel |
+| 9 | Validate() 4 元组 with RequiresTranslation | 校验消息需国际化的窗口 | LeanBranchingFinishWindowViewModel |
+
+### 里程碑总览
+
+| 里程碑 | VM 数量 | 代表 VM | 模式点 |
+|---|---|---|---|
+| 3.1 | 1 | CloneWindowViewModel | 1-5（建立模式） |
+| 3.2–3.5 | 9 | Fetch/RenameLocalBranch/GitLfs*/SshPassphrase/PushTag/PushMultipleTags/RenameStash/Welcome | 1-8 |
+| 3.6–3.8 | 12 | GitFlowStart*/ForkSyncCheck/GenerateNewSshKey/AddGitIgnorePattern/GitLfsTrack/ChangeRemoteTracking/CheckoutBranchAsWorktree + Accounts/ 8 个登录窗口 | 1-8（含 Validate 三元组） |
+| 3.9 | 5 | RevertRevision/GitFlowInit/CreateTag/ApplyPatch/AddSubmodule | 9（Validate() 4 元组 with RequiresTranslation） |
+| 3.10 | 5 | InitGitMmRepository/CreateWorktree/CherryPick/CreatePartialStash/LeanBranchingFinish | 9（LeanBranchingFinish 依赖运行时 git 命令校验） |
+| 3.11 | 5 | Pull/GitMmStart/ConfigureGitInstance/TrackRemoteBranch/AddGitignoreTemplate | 9（TrackRemoteBranch 重名消息含 {0} 占位符） |
+| 3.12 | 4 | LeanBranchingStart/CreateBranch/EditRemote/Push | 7/9/5（Push 保留 base.IsSubmitAllowed；嵌套类留 View） |
+| 3.13 | 2 | InteractiveRebase/SideBySideMerge | 3/5（重度 WPF 逻辑全留 View，VM 仅持判定+预览） |
+| **合计** | **48** | | |
+
+### 关键技术决策
+
+1. **WPF 嵌套类留 View**：`RemoteItem`/`RemoteBranchItem`（PushWindow）、`AccountItem`（EditRemoteWindow）、`GitMmSubrepoItem`（GitMmStartWindow）等嵌套类含 WPF `ImageSource`/`Visibility`，整体留 View 作列表项；VM 仅持选中状态纯数据投影（View 用 `.Select(s => s.Name).ToArray()` 投影为纯字符串列表后推入 VM）。
+
+2. **RequiresTranslation 双用法**：`PreferencesLocalization`（WPF 类型）不可被 VM 引用，第 9 模式点用 `RequiresTranslation` 标志让 View 决定是否翻译。
+   - LeanBranchingFinish/TrackRemoteBranch：VM 端已 `string.Format` 填充占位符，View 用 `Translate(message)` 直接翻译。
+   - LeanBranchingStart：VM 端未填充占位符（保留 `"Branch '{0}' already exists"` 原文），View 用 `string.Format(Translate(statusMessage), BranchNameTextBox.Text)` 双重处理。
+   - CreateBranch：走三元组模式，重名消息原文不翻译（保留原始行为差异）。
+
+3. **扩展方法命名空间陷阱**：`LocalMain`/`Upstream`（RepositoryReferences 扩展方法）和 `AreInSync`（BehindAheadCount 扩展方法）定义在 `ForkPlus.Git.Commands.LeanBranching` 命名空间，VM 需显式 `using`。
+
+4. **重度 WPF 窗口最小抽取**：InteractiveRebaseWindow（IPC/ObservableCollection/Adorner/Semaphore）和 SideBySideMergeWindow（AvalonEdit/MergeCodeEditor/MergeConflictView）仅抽取 `IsSubmitAllowed` 判定 + `CommandPreview`，重度 WPF 逻辑全留 View。
+
+### 验收
+
+- `grep -r "System.Windows" *WindowViewModel.cs` → 零匹配（所有 VM 零 WPF using）
+- 全部 48 个 `IsSubmitAllowed` override 均委托 VM
+- CI 三平台（Windows/Linux/macOS）全绿
+
+---
+
 ## 待办清单（按耦合严重程度排序）
 
 ### 核心 UserControl
@@ -151,11 +206,11 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
 - [ ] `AiCodeReviewWindowViewModel` / `AiCommitComposerWindowViewModel` / `AiTextResultWindowViewModel`
   - 同上模式，抽取对话状态、流式状态、WebView2 交互
 
-### Dialog 窗口
+### Dialog 窗口（VM 已抽取，剩余 View 侧清理）
 
-- [ ] `CloneWindowViewModel`
-  - 从 `CloneWindow.xaml.cs` 抽出：`IsSubmitAllowed`（第 85-103 行）、`GetCommandPreview`（第 105-126 行 git clone 命令拼接）
-  - 移除 `RepositoryUrlTextBox.Text` / `RepositoryNameTextBox.Text` / `ParentDirectoryTextBox.Text` 直访 → VM 属性双向绑定
+- [x] `CloneWindowViewModel` — 里程碑 3.1 完成
+- [x] `SideBySideMergeWindowViewModel` — 里程碑 3.13 完成（IsSubmitAllowed 判定已抽 VM；MessageBox/diff 行动态生成等 View 侧清理留后续迭代）
+- [x] 全部 48 个 `ForkPlusDialogWindow` 子类的 `IsSubmitAllowed` / `GetCommandPreview` 已委托 VM
 
 - [ ] `StatisticsUserControlViewModel`
   - 从 `StatisticsUserControl.xaml.cs` 抽出 `AuthorStatViewModel` / `CodeLineLanguageViewModel`（当前是 nested class 第 28-71 行）→ 独立 VM
@@ -165,8 +220,8 @@ Commands 目录对 `Application.Current.ActiveRepositoryUserControl()` 的直访
   - 12 处 `MessageBox.Show` → `ServiceLocator.MessageBox`
   - 颜色行动态生成 → `ObservableCollection<ColorItemVm>` + `DataTemplate`
 
-- [ ] `MergeConflictUserControlViewModel` / `SideBySideMergeWindowViewModel`
-  - 各 8 处 `MessageBox.Show` → `ServiceLocator.MessageBox`
+- [ ] `MergeConflictUserControlViewModel`
+  - 8 处 `MessageBox.Show` → `ServiceLocator.MessageBox`
   - diff 行动态生成 → `ObservableCollection<DiffLineVm>` + `DataTemplateSelector`（按 `LineType` 选模板）
 
 ### 阶段 0 推迟的接口（本阶段补）
