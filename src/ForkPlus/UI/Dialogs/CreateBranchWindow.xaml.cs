@@ -28,6 +28,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly bool _workingDirectoryIsDirty;
 
+		// 阶段 3：承接 CreateBranch 的本地分支名校验 + 命令预览。
+		// 复用 Validate() 三元组模式（重名消息原文不翻译，与 LeanBranchingStart 不一致）。
+		private readonly CreateBranchWindowViewModel _viewModel;
+
 		public bool Checkout => CheckoutAfterCreateCheckBox.IsChecked.GetValueOrDefault();
 
 		protected override bool IsSubmitAllowed
@@ -35,56 +39,27 @@ namespace ForkPlus.UI.Dialogs
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string branchName = BranchNameTextBox.Text.ToLower();
-				if (string.IsNullOrEmpty(branchName))
+				PushSelectionToViewModel();
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					return false;
+					SetStatus(status, statusMessage ?? string.Empty);
 				}
-				string text = ReferenceNameValidator.Validate(branchName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				if (_localBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == branchName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Branch '" + BranchNameTextBox.Text + "' already exists");
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.BranchName = BranchNameTextBox.Text;
+			_viewModel.Checkout = CheckoutAfterCreateCheckBox.IsChecked.GetValueOrDefault();
+			_viewModel.StashAndReapply = StashAndReapplyRadioButton.IsChecked.GetValueOrDefault();
 		}
 
 		protected override string GetCommandPreview()
 		{
-			string branchName = BranchNameTextBox.Text;
-			if (string.IsNullOrWhiteSpace(branchName))
-			{
-				return null;
-			}
-			bool checkout = CheckoutAfterCreateCheckBox.IsChecked.GetValueOrDefault();
-			var parts = new System.Collections.Generic.List<string> { "git" };
-			if (checkout)
-			{
-				parts.Add("checkout");
-				parts.Add("-b");
-			}
-			else
-			{
-				parts.Add("branch");
-			}
-			parts.Add(branchName);
-			string startPoint = _gitPoint?.FriendlyName;
-			if (!string.IsNullOrEmpty(startPoint))
-			{
-				parts.Add(startPoint);
-			}
-			string command = string.Join(" ", parts);
-			if (checkout && _workingDirectoryIsDirty && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
-			{
-				command = "git stash\n" + command;
-			}
-			return command;
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
 		}
 
 		public CreateBranchWindow(RepositoryUserControl repositoryUserControl, RepositoryReferences refs, IGitPoint gitPoint)
@@ -96,6 +71,7 @@ namespace ForkPlus.UI.Dialogs
 			_localBranches = refs.LocalBranches;
 			_gitPoint = gitPoint;
 			_workingDirectoryIsDirty = repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty();
+			_viewModel = new CreateBranchWindowViewModel(_localBranches, _gitPoint, _workingDirectoryIsDirty);
 			GitPointView.Value = gitPoint;
 			CheckoutAfterCreateCheckBox.IsChecked = ForkPlusSettings.Default.CreateBranch_Checkout;
 			bool checkout_StashAndReapply = ForkPlusSettings.Default.Checkout_StashAndReapply;

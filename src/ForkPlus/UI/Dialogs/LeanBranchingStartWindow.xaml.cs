@@ -28,29 +28,31 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly RepositoryReferences _repositoryReferences;
 
+		// 阶段 3：承接 LeanBranchingStart 的本地分支名校验 + 命令预览。
+		// 复用第 9 模式点 Validate() 4 元组 with RequiresTranslation
+		// （"Branch '{0}' already exists" 需 Translate+Format 翻译）。
+		private readonly LeanBranchingStartWindowViewModel _viewModel;
+
 		protected override bool IsSubmitAllowed
 		{
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string branchName = BranchNameTextBox.Text.ToLower();
-				if (string.IsNullOrEmpty(branchName))
+				PushSelectionToViewModel();
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage, bool requiresTranslation) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					return false;
+					string message = requiresTranslation ? string.Format(Translate(statusMessage ?? string.Empty), BranchNameTextBox.Text) : (statusMessage ?? string.Empty);
+					SetStatus(status, message);
 				}
-				string text = ReferenceNameValidator.Validate(branchName);
-				if (text != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text);
-					return false;
-				}
-				if (_localBranches.AnyItem((LocalBranch x) => x.Name.ToLower() == branchName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("Branch '{0}' already exists"), BranchNameTextBox.Text));
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.BranchName = BranchNameTextBox.Text;
+			_viewModel.StashAndReapply = StashAndReapplyRadioButton.IsChecked.GetValueOrDefault();
 		}
 
 		public LeanBranchingStartWindow(RepositoryUserControl repositoryUserControl, Branch mainBranch)
@@ -62,6 +64,8 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryReferences = repositoryUserControl.RepositoryData.References;
 			_localBranches = _repositoryReferences.LocalBranches;
 			_mainBranch = mainBranch;
+			bool workingDirectoryIsDirty = repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty();
+			_viewModel = new LeanBranchingStartWindowViewModel(_localBranches, mainBranch, workingDirectoryIsDirty);
 			GitPointView.Value = mainBranch;
 			bool checkout_StashAndReapply = ForkPlusSettings.Default.Checkout_StashAndReapply;
 			StashAndReapplyRadioButton.IsChecked = checkout_StashAndReapply;
@@ -116,23 +120,8 @@ namespace ForkPlus.UI.Dialogs
 		protected override string GetCommandPreview()
 		{
 			// LeanBranchingStartWindow 固定 checkout=true，对应 git checkout -b <branch> <mainBranch>
-			string branchName = BranchNameTextBox.Text;
-			if (string.IsNullOrWhiteSpace(branchName))
-			{
-				return null;
-			}
-			var parts = new System.Collections.Generic.List<string> { "git", "checkout", "-b", branchName };
-			string startPoint = _mainBranch?.Name;
-			if (!string.IsNullOrEmpty(startPoint))
-			{
-				parts.Add(startPoint);
-			}
-			string command = string.Join(" ", parts);
-			if (_repositoryUserControl.RepositoryStatus.WorkingDirectoryIsDirty() && StashAndReapplyRadioButton.IsChecked.GetValueOrDefault())
-			{
-				command = "git stash\n" + command;
-			}
-			return command;
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
 		}
 
 		protected override void OnSubmit()

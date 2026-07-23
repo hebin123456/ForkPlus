@@ -82,6 +82,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly Remote _remoteToEdit;
 
+		// 阶段 3：承接 EditRemote 的远端名/URL 校验 + 命令预览。
+		// 复用 Validate() 三元组（重名消息原文不翻译）。AccountItem 嵌套类留 View。
+		private readonly EditRemoteWindowViewModel _viewModel;
+
 		private bool _refreshingUrl;
 
 		protected override bool IsSubmitAllowed
@@ -89,53 +93,26 @@ namespace ForkPlus.UI.Dialogs
 			get
 			{
 				SetStatus(ForkPlusDialogStatus.None, string.Empty);
-				string remoteName = RemoteNameTextBox.Text.Trim();
-				string text = RepositoryUrlTextBox.Text.Trim();
-				if (string.IsNullOrWhiteSpace(remoteName) || string.IsNullOrWhiteSpace(text))
+				PushSelectionToViewModel();
+				(bool isAllowed, ForkPlusDialogStatus status, string statusMessage) = _viewModel.Validate();
+				if (status != ForkPlusDialogStatus.None)
 				{
-					return false;
+					SetStatus(status, statusMessage ?? string.Empty);
 				}
-				if (_remoteToEdit?.Name == remoteName && _remoteToEdit?.Url == text)
-				{
-					return false;
-				}
-				string text2 = ReferenceNameValidator.Validate(remoteName);
-				if (text2 != null)
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, text2);
-					return false;
-				}
-				if (_remoteToEdit?.Name != remoteName && _remotes.AnyItem((Remote x) => x.Name == remoteName))
-				{
-					SetStatus(ForkPlusDialogStatus.Warning, "Remote '" + remoteName + "' already exists");
-					return false;
-				}
-				return true;
+				return isAllowed;
 			}
+		}
+
+		private void PushSelectionToViewModel()
+		{
+			_viewModel.RemoteName = RemoteNameTextBox.Text;
+			_viewModel.RepositoryUrl = RepositoryUrlTextBox.Text;
 		}
 
 		protected override string GetCommandPreview()
 		{
-			string newName = RemoteNameTextBox.Text.Trim();
-			string newUrl = RepositoryUrlTextBox.Text.Trim();
-			if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(newUrl))
-			{
-				return null;
-			}
-			string Quote(string s) => s.Contains(" ") ? "\"" + s + "\"" : s;
-			if (_remoteToEdit == null)
-			{
-				return "git remote add " + Quote(newName) + " " + Quote(newUrl);
-			}
-			if (_remoteToEdit.Url != newUrl)
-			{
-				return "git remote set-url " + Quote(newName) + " " + Quote(newUrl);
-			}
-			if (_remoteToEdit.Name != newName)
-			{
-				return "git remote rename " + Quote(_remoteToEdit.Name) + " " + Quote(newName);
-			}
-			return null;
+			PushSelectionToViewModel();
+			return _viewModel.CommandPreview;
 		}
 
 		public EditRemoteWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remoteToEdit = null)
@@ -145,6 +122,7 @@ namespace ForkPlus.UI.Dialogs
 			_remoteToEdit = remoteToEdit;
 			GitCommandResult<RepositoryRemotes> gitCommandResult = new GetRemotesGitCommand().Execute(_gitModule);
 			_remotes = gitCommandResult.Result?.Items ?? new Remote[0];
+			_viewModel = new EditRemoteWindowViewModel(_remotes, _remoteToEdit);
 			InitializeComponent();
 			InitializeRemoteWindow();
 		}

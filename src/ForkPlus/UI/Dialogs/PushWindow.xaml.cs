@@ -138,58 +138,51 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _stopRefresh;
 
+		// 阶段 3：承接 Push 的远端/本地分支/远端分支选择 + 选项 + 命令预览。
+		// RemoteItem/RemoteBranchItem 嵌套类（含 WPF ImageSource/Visibility）整体留 View 作列表项；
+		// VM 仅持选中状态纯数据投影。
+		private readonly PushWindowViewModel _viewModel;
+
 		private RemoteItem[] RemoteItems { get; set; }
 
 		[Null]
 		private Remote SelectedRemote => (RemotesComboBox.SelectedItem as RemoteItem)?.Remote;
 
 		protected override bool IsSubmitAllowed
+{
+	get
 	{
-		get
+		PushSelectionToViewModel();
+		if (!_viewModel.IsSubmitAllowed)
 		{
-			if (!(LocalBranchesComboBox.SelectedItem is LocalBranch) || SelectedRemote == null)
-			{
-				return false;
-			}
-			return base.IsSubmitAllowed;
+			return false;
 		}
+		return base.IsSubmitAllowed;
 	}
+}
 
-	protected override string GetCommandPreview()
+private void PushSelectionToViewModel()
+{
+	LocalBranch localBranch = LocalBranchesComboBox.SelectedItem as LocalBranch;
+	_viewModel.SelectedLocalBranch = localBranch;
+	_viewModel.SelectedRemote = SelectedRemote;
+	_viewModel.SelectedRemoteBranch = (RemoteBranchesComboBox.SelectedItem as RemoteBranchItem)?.RemoteBranch;
+	_viewModel.CustomRefspec = _customRefspec;
+	_viewModel.PushAllTags = AllTagsCheckBox.IsChecked.GetValueOrDefault();
+	_viewModel.Force = ForcePushCheckBox.IsChecked.GetValueOrDefault();
+	bool track = false;
+	if (localBranch != null && localBranch.UpstreamFullReference == null)
 	{
-		Remote remote = SelectedRemote;
-		if (remote == null || !(LocalBranchesComboBox.SelectedItem is LocalBranch localBranch))
-		{
-			return null;
-		}
-		RemoteBranch remoteBranch = (RemoteBranchesComboBox.SelectedItem as RemoteBranchItem)?.RemoteBranch;
-		bool pushAllTags = AllTagsCheckBox.IsChecked.GetValueOrDefault();
-		bool force = ForcePushCheckBox.IsChecked.GetValueOrDefault();
-		bool track = false;
-		if (localBranch.UpstreamFullReference == null)
-		{
-			track = CreateTrackingReferenceCheckBox.IsChecked.GetValueOrDefault(true);
-		}
-		System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string> { "git", "push" };
-		if (force) { parts.Add("--force-with-lease"); }
-		if (pushAllTags) { parts.Add("--tags"); }
-		if (track) { parts.Add("--set-upstream"); }
-		parts.Add(remote.Name);
-		if (remoteBranch != null)
-		{
-			string dst = (remoteBranch.Remote == remote.Name) ? ("refs/heads/" + remoteBranch.ShortName) : ("refs/heads/" + localBranch.Name);
-			parts.Add(localBranch.FullReference + ":" + dst);
-		}
-		else if (_customRefspec != null)
-		{
-			parts.Add(localBranch.FullReference + ":" + _customRefspec);
-		}
-		else
-		{
-			parts.Add(localBranch.FullReference);
-		}
-		return string.Join(" ", parts);
+		track = CreateTrackingReferenceCheckBox.IsChecked.GetValueOrDefault(true);
 	}
+	_viewModel.Track = track;
+}
+
+protected override string GetCommandPreview()
+{
+	PushSelectionToViewModel();
+	return _viewModel.CommandPreview;
+}
 
 		public PushWindow(RepositoryUserControl repositoryUserControl, [Null] Remote remote = null, [Null] LocalBranch localBranch = null)
 		{
@@ -197,6 +190,7 @@ namespace ForkPlus.UI.Dialogs
 			_remoteToSelect = remote;
 			_localBranchToSelect = localBranch;
 			_customRefspec = null;
+			_viewModel = new PushWindowViewModel();
 			InitializeComponent();
 			base.DialogTitle = Translate("Push");
 			base.DialogDescription = Translate("Push your local changes to remote repository");
