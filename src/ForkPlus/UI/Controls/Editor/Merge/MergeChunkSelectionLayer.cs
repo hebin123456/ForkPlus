@@ -1,6 +1,8 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.UI.UserControls.Preferences;
@@ -22,11 +24,13 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			_textEditor = mergeCodeEditor;
 		}
 
-		protected override FrameworkElement CreateAdornerContent(TextEditor textEditor)
+		// 阶段 4 里程碑 4.7-a：WPF WeakEventManager → Avalonia 直接事件订阅。
+		// 阶段 6 改用 Avalonia WeakEvent 或 IDisposable 模式避免内存泄漏。
+		protected override Control CreateAdornerContent(TextEditor textEditor)
 		{
 			_selectButton = new FloatingButton(textEditor);
 			RefreshButtonsState();
-			WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_selectButton, "Click", delegate
+			_selectButton.Click += delegate
 			{
 				MergeConflictView.Chunk activeChunk = ActiveChunk;
 				if (activeChunk != null)
@@ -41,11 +45,11 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 					}
 					RefreshButtonsState();
 				}
-			});
+			};
 			StackPanel stackPanel = new StackPanel
 			{
 				Orientation = Orientation.Horizontal,
-				HorizontalAlignment = HorizontalAlignment.Right,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
 				Background = Brushes.Transparent
 			};
 			stackPanel.Children.Add(_selectButton);
