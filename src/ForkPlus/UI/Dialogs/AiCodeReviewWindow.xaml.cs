@@ -3,7 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Markdown.Avalonia;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,12 +25,11 @@ using ForkPlus.Git.Commands.LeanBranching;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json.Linq;
 using ForkPlus.UI.Helpers;
 
@@ -68,19 +70,20 @@ namespace ForkPlus.UI.Dialogs
 
 		private string _aiReviewMarkdown;
 
-		private string _aiReviewHtml;
-
 		private string _selectedFileReviewPath;
 
 		private string _aiReviewStatusMessage;
 
-		private readonly Dictionary<string, string> _fileReviewHtmlCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		// 文件级 Markdown 缓存（原 _fileReviewHtmlCache，阶段 4.7-c-4 改为缓存 Markdown 而非 HTML）
+		private readonly Dictionary<string, string> _fileReviewMarkdownCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 		private const int AiResultColumn = 2;
 
 		private const int FileReviewTreeColumn = 0;
 
-		// 流式渲染状态/协议/Markdown转换/CSS 由 VM 承载（零 WPF），本类仅负责 WebView2 实例操作 + UI 切换。
+		// 流式渲染状态/节流协议由 VM 承载（零 WPF），本类仅负责 MarkdownScrollViewer 实例操作 + UI 切换。
+		// 阶段 4.7-c-4：WebView2 + scroll-at-bottom JS 互操作 + 建议卡按钮 JS 回调 →
+		//   MarkdownScrollViewer + 原生 ScrollViewer.ScrollChanged + 原生 Button.Click。
 		private readonly AiCodeReviewWindowViewModel _viewModel = new AiCodeReviewWindowViewModel();
 
 		public AiCodeReviewWindow()
@@ -109,9 +112,9 @@ namespace ForkPlus.UI.Dialogs
 			_target = target;
 			_aiAgent = aiAgent;
 			ApplyLocalization();
-			base.Loaded += async delegate
+			base.Loaded += delegate
 			{
-				await aiCodeReviewWindow.InitializeWebView();
+				aiCodeReviewWindow.AttachScrollTracker();
 			};
 			base.SizeChanged += Window_SizeChanged;
 			base.Activated += Window_Activated;
@@ -152,7 +155,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				aiCodeReviewWindow.SaveFileReviewTreeColumnWidth();
 			};
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 原 WebView2 需订阅 ApplicationThemeChanged 更新 PreferredColorScheme；
+			// MarkdownScrollViewer 是原生 Avalonia 控件，主题由 Avalonia 主题系统自动应用，无需手动更新。
 			// 初始化模型下拉选择（后台拉取模型列表）
 			InitializeModelComboBox();
 		}
@@ -170,9 +174,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				localizableDiffControl.ApplyLocalization();
 			}
-			if (AiResponseWebView?.CoreWebView2 != null && !string.IsNullOrWhiteSpace(_aiReviewHtml))
+			if (AiResponseWebView != null && !string.IsNullOrWhiteSpace(_aiReviewMarkdown))
 			{
-				_fileReviewHtmlCache.Clear();
+				_fileReviewMarkdownCache.Clear();
 				RenderAiReviewOutput();
 			}
 		}
@@ -203,47 +207,38 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private async Task InitializeWebView()
+		/// <summary>订阅 AiResponseScrollViewer 的 ScrollChanged 事件，跟踪用户滚动位置（是否在底部）。
+		/// 原 WebView2 通过 JS postMessage 上报 scroll-at-bottom + NavigationCompleted 事件执行 scrollTo；
+		/// MarkdownScrollViewer 是原生 Avalonia 控件，直接用 ScrollViewer.ScrollChanged 即可。</summary>
+		private void AttachScrollTracker()
 		{
-			await AiResponseWebView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
-			UpdateWebViewTheme();
-			AiResponseWebView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
+			try
 			{
-				e.Handled = true;
-			};
-			AiResponseWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-			// 流式渲染时 NavigateToString 会重置滚动位置。这里监听导航完成事件，
-			// 如果渲染前用户在底部附近（_pendingStreamingScrollToEnd），就自动滚到底部，
-			// 保持"跟随最新内容"的体验。
-			AiResponseWebView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
-			{
-				if (!e.IsSuccess || !_viewModel.ConsumeScrollToEndRequest())
-				{
-					return;
-				}
-				try
-				{
-					// scrollHeight 在 NavigationCompleted 时已就绪，直接 scrollTo 到底部
-					AiResponseWebView.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)");
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Streaming scroll-to-end failed: " + ex.Message);
-				}
-			};
-		}
-
-		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
-		{
-			UpdateWebViewTheme();
-		}
-
-		private void UpdateWebViewTheme()
-		{
-			if (base.IsLoaded && AiResponseWebView.CoreWebView2 != null)
-			{
-				AiResponseWebView.CoreWebView2.Profile.PreferredColorScheme = (ForkPlusSettings.Default.Theme.IsDarkBase() ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light);
+				AiResponseScrollViewer.ScrollChanged += InnerScrollViewer_ScrollChanged;
 			}
+			catch (Exception ex)
+			{
+				Log.Warn("AiCodeReviewWindow scroll tracker attach failed: " + ex.Message);
+			}
+		}
+
+		/// <summary>ScrollChanged 事件处理：计算用户是否在底部，更新 VM 状态。
+		/// 原 WebView2 通过 JS postMessage('scroll-at-bottom:1/0') 上报；这里直接用 Avalonia 原生事件。
+		/// 判定：Offset.Y + Viewport.Height >= Extent.Height - 80（容差，与原 JS 脚本一致）。</summary>
+		private void InnerScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+		{
+			double offset = AiResponseScrollViewer.Offset.Y;
+			double viewport = AiResponseScrollViewer.Viewport.Height;
+			double extent = AiResponseScrollViewer.Extent.Height;
+			bool atBottom = viewport <= 0 || (offset + viewport >= extent - 80);
+			_viewModel.SetUserAtBottom(atBottom);
+		}
+
+		/// <summary>滚动 AiResponseScrollViewer 到底。
+		/// 原 WebView2 用 ExecuteScriptAsync("window.scrollTo(...)")；这里用原生 ScrollViewer.ScrollToEnd()。</summary>
+		private void ScrollInnerViewerToEnd()
+		{
+			AiResponseScrollViewer.ScrollToEnd();
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -397,12 +392,11 @@ namespace ForkPlus.UI.Dialogs
 			StatusProgressBar.Visibility = Visibility.Visible;
 			if (replaceAll)
 			{
-				AiResponseWebView.Collapse();
+				AiResponseScrollViewer.Collapse();
 				_suggestions.Clear();
 				_aiReviewMarkdown = "";
-				_aiReviewHtml = "";
 				_aiReviewStatusMessage = null;
-				_fileReviewHtmlCache.Clear();
+				_fileReviewMarkdownCache.Clear();
 			}
 			else if (target is AiCodeReviewTarget.Files files)
 			{
@@ -465,7 +459,7 @@ namespace ForkPlus.UI.Dialogs
 						StopButton.Visibility = Visibility.Collapsed;
 						StatusTextBlock.Text = "";
 						RetryButton.IsEnabled = true;
-						AiResponseWebView.Collapse();
+						AiResponseScrollViewer.Collapse();
 						AiResponseFallback.Show();
 						AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
 						AiResponseFallback.FallbackMessage = PreferencesLocalization.Current("Cannot get diff:\n") + patchResult.Error.FriendlyDescription;
@@ -496,23 +490,16 @@ namespace ForkPlus.UI.Dialogs
 					{
 						string aiReviewMarkdown = codeReviewResult.Result.Message;
 						string aiReviewDisplayMarkdown = RemoveSuggestionBlocks(aiReviewMarkdown);
-						GitCommandResult<string> btResult = AiStreamingMarkdownViewModel.ConvertMarkdownToHtml(aiReviewDisplayMarkdown);
+						// 原 WebView2 需 ConvertMarkdownToHtml 转为 HTML 再 NavigateToString；
+						// MarkdownScrollViewer 直接渲染 Markdown，无需 HTML 转换。
 						base.Dispatcher.Async(delegate
 						{
 							if (_isClosed || monitor.IsCanceled)
 							{
 								return;
 							}
-							if (!btResult.Succeeded)
-							{
-								ShowError(btResult.Error.FriendlyDescription);
-								SendAiReviewCompletedNotification(gitModule, success: false);
-							}
-							else
-							{
-								ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, btResult.Result, replaceAll);
-								SendAiReviewCompletedNotification(gitModule, success: true);
-							}
+							ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, replaceAll);
+							SendAiReviewCompletedNotification(gitModule, success: true);
 						});
 					}
 				}
@@ -568,23 +555,16 @@ namespace ForkPlus.UI.Dialogs
 				}
 				string aiReviewMarkdown = codeReviewResult.Result.Message;
 				string aiReviewDisplayMarkdown = RemoveSuggestionBlocks(aiReviewMarkdown);
-				GitCommandResult<string> btResult = AiStreamingMarkdownViewModel.ConvertMarkdownToHtml(aiReviewDisplayMarkdown);
+				// 原 WebView2 需 ConvertMarkdownToHtml 转为 HTML 再 NavigateToString；
+				// MarkdownScrollViewer 直接渲染 Markdown，无需 HTML 转换。
 				base.Dispatcher.Async(delegate
 				{
 					if (_isClosed || monitor.IsCanceled)
 					{
 						return;
 					}
-					if (!btResult.Succeeded)
-					{
-						ShowError(btResult.Error.FriendlyDescription);
-						SendAiReviewCompletedNotification(gitModule, success: false);
-					}
-					else
-					{
-						ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, btResult.Result, replaceAll);
-						SendAiReviewCompletedNotification(gitModule, success: true);
-					}
+					ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, replaceAll);
+					SendAiReviewCompletedNotification(gitModule, success: true);
 				});
 			});
 		}
@@ -693,7 +673,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			_selectedFileReviewPath = changedFile.Path;
-			if (!string.IsNullOrEmpty(_aiReviewHtml))
+			if (!string.IsNullOrEmpty(_aiReviewMarkdown))
 			{
 				RenderAiReviewOutput();
 			}
@@ -924,7 +904,7 @@ namespace ForkPlus.UI.Dialogs
 			return Regex.Replace(markdown, "```forkplus-ai-suggestions\\s*[\\s\\S]*?```", "", RegexOptions.IgnoreCase).Trim();
 		}
 
-		private void ApplyAiReviewResult(AiCodeReviewTarget target, string displayMarkdown, string rawMarkdown, string html, bool replaceAll)
+		private void ApplyAiReviewResult(AiCodeReviewTarget target, string displayMarkdown, string rawMarkdown, bool replaceAll)
 		{
 			// 检视成功完成：停止流式预览并清除状态栏（进度条/Stop 按钮/状态文字）
 			ClearStatus();
@@ -934,15 +914,13 @@ namespace ForkPlus.UI.Dialogs
 				ChangedFile[] reviewableFiles = ReviewableFiles(files.ChangedFiles);
 				displayMarkdown = MergeFileReviewMarkdown(_aiReviewMarkdown, displayMarkdown, reviewableFiles);
 				_suggestions = MergeSuggestions(_suggestions, newSuggestions, reviewableFiles);
-				GitCommandResult<string> mergedHtml = AiStreamingMarkdownViewModel.ConvertMarkdownToHtml(displayMarkdown);
-				html = mergedHtml.Succeeded ? mergedHtml.Result : html;
 				_aiReviewStatusMessage = PreferencesLocalization.FormatCurrent("Retried AI review for {0} files.", reviewableFiles.Length);
 			}
 			else
 			{
 				_suggestions = newSuggestions;
 			}
-			ShowMarkdownOutput(displayMarkdown, html, preserveStatusMessage: !replaceAll);
+			ShowMarkdownOutput(displayMarkdown, preserveStatusMessage: !replaceAll);
 		}
 
 		private static ChangedFile[] ReviewableFiles(IEnumerable<ChangedFile> files)
@@ -1074,7 +1052,7 @@ namespace ForkPlus.UI.Dialogs
 			StopButton.Visibility = Visibility.Collapsed;
 			StatusTextBlock.Text = "";
 			RetryButton.IsEnabled = true;
-			AiResponseWebView.Collapse();
+			AiResponseScrollViewer.Collapse();
 			AiResponseFallback.Show();
 			AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
 			AiResponseFallback.FallbackMessage = error;
@@ -1139,14 +1117,14 @@ namespace ForkPlus.UI.Dialogs
 			});
 		}
 
-		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入 WebView。</summary>
+		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 直接写入 MarkdownScrollViewer。</summary>
 		private void TryRenderStreamingPreview(int lengthSoFar)
 		{
 			if (_isClosed || !_viewModel.IsStreamingActive)
 			{
 				return;
 			}
-			if (AiResponseWebView?.CoreWebView2 == null)
+			if (AiResponseWebView == null)
 			{
 				return;
 			}
@@ -1167,20 +1145,23 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			// 渲染前快照用户是否在底部。如果在底部，标记待滚到底部，
-			// NavigationCompleted 事件中执行 scrollTo 滚到底部（跟随最新内容）。
+			// 渲染前快照用户是否在底部。如果在底部，渲染后延迟一轮布局再 ScrollToEnd（跟随最新内容）。
 			// 用户主动上滚时不滚动，保持阅读位置。（滚动状态由 VM 承载）
-			_viewModel.RequestScrollToEndIfNeeded();
-			string html = AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocumentWithScrollScript(md);
+			bool shouldScrollToEnd = _viewModel.StreamingUserAtBottom;
 			try
 			{
-				AiResponseWebView.NavigateToString(html);
-				AiResponseWebView.Show();
+				AiResponseScrollViewer.Show();
+				AiResponseWebView.Markdown = md;
 				BusyIndicator.Collapse();
+				if (shouldScrollToEnd)
+				{
+					// Markdown 渲染后需要一轮布局才能测得正确高度，延迟滚动到底
+					Dispatcher.Post(ScrollInnerViewerToEnd);
+				}
 			}
 			catch (Exception ex)
 			{
-				Log.Warn("Streaming WebView navigate failed: " + ex.Message);
+				Log.Warn("Streaming markdown render failed: " + ex.Message);
 			}
 		}
 
@@ -1266,117 +1247,108 @@ namespace ForkPlus.UI.Dialogs
 			AiModelListLoader.CurrentModel = selected;
 		}
 
-		private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-		{
-			string message = e.TryGetWebMessageAsString();
-			if (message != null && message.StartsWith("preview-suggestion:", StringComparison.Ordinal))
-			{
-				if (int.TryParse(message.Substring("preview-suggestion:".Length), out int index))
-				{
-					Dispatcher.BeginInvoke(new Action(delegate
-					{
-						PreviewSuggestion(index);
-					}));
-				}
-			}
-			else if (message != null && message.StartsWith("apply-suggestion:", StringComparison.Ordinal))
-			{
-				if (int.TryParse(message.Substring("apply-suggestion:".Length), out int index))
-				{
-					ApplySuggestion(index);
-				}
-			}
-			else
-			{
-				// 滚动位置上报（scroll-at-bottom:1/0）由 VM 解析并维护
-				bool? atBottom = AiStreamingMarkdownViewModel.TryParseScrollMessage(message);
-				if (atBottom.HasValue)
-				{
-					_viewModel.SetUserAtBottom(atBottom.Value);
-				}
-			}
-		}
+		// 原 CoreWebView2_WebMessageReceived 处理三种 JS postMessage：
+		//   preview-suggestion:{i} → PreviewSuggestion(i)
+		//   apply-suggestion:{i}   → ApplySuggestion(i)
+		//   scroll-at-bottom:1/0   → _viewModel.SetUserAtBottom
+		// 阶段 4.7-c-4：建议卡改为原生 Button.Click（见 BuildSuggestionCards），
+		//   滚动跟踪改为 ScrollViewer.ScrollChanged（见 InnerScrollViewer_ScrollChanged）。
+		//   该方法已删除。
 
-		private void ShowMarkdownOutput(string markdown, string html, bool preserveStatusMessage = false)
+		private void ShowMarkdownOutput(string markdown, bool preserveStatusMessage = false)
 		{
 			_aiReviewMarkdown = markdown ?? "";
-			_aiReviewHtml = html ?? "";
 			if (!preserveStatusMessage)
 			{
 				_aiReviewStatusMessage = null;
 			}
-			_fileReviewHtmlCache.Clear();
+			_fileReviewMarkdownCache.Clear();
 			RenderAiReviewOutput();
 		}
 
+		/// <summary>渲染 AI 审查结果：Markdown 正文 + 原生建议卡。
+		/// 原 WebView2 把状态/当前文件/审查结果/建议卡/所有结果拼成 HTML + NavigateToString；
+		/// MarkdownScrollViewer 直接渲染 Markdown，建议卡用原生 Border + Button（无需 JS 互操作）。</summary>
 		private void RenderAiReviewOutput()
 		{
 			BusyIndicator.Collapse();
 			RetryButton.IsEnabled = true;
 			AiResponseFallback.Collapse();
-			AiResponseWebView.Show();
-			string css = AiStreamingMarkdownViewModel.GetCss();
+			AiResponseScrollViewer.Show();
 			try
 			{
 				string selectedFile = SelectedFileReviewPath();
-				string htmlContent = "<!DOCTYPE html>\n<html>\n    <head>\n        <meta charset='utf-8'>\n        <style>\n            " + css + "\n            .ai-current-file{border:1px solid #8883;border-radius:4px;padding:8px;margin:0 0 12px;background:#8881;font-size:12px;}\n            .ai-status{border:1px solid #2e7d3233;border-radius:4px;padding:8px;margin:0 0 12px;background:#2e7d3218;}\n            .ai-suggestion{border:1px solid #8883;border-radius:4px;padding:8px;margin:10px 0;background:#8881;}\n            .ai-suggestion button{margin-top:8px;margin-right:6px;}\n            .ai-empty{color:#888;margin:8px 0 14px;}\n            .ai-all-results{margin-top:18px;padding-top:10px;border-top:1px solid #8883;}\n        </style>\n    </head>\n    <body>\n        " + CreateStatusHtml() + "\n        " + CreateReviewBodyHtml(selectedFile) + "\n        " + CreateSuggestionsHtml(selectedFile) + "\n        " + CreateAllReviewResultsHtml(selectedFile) + "\n        <script>function previewSuggestion(i){window.chrome.webview.postMessage('preview-suggestion:' + i);}function applySuggestion(i){window.chrome.webview.postMessage('apply-suggestion:' + i);}</script>\n    </body>\n</html>";
-				AiResponseWebView.NavigateToString(htmlContent);
+				// 组合 Markdown：状态 + 当前文件 + 审查结果 + 所有结果（建议卡由原生控件渲染，不在 Markdown 中）
+				StringBuilder markdownBuilder = new StringBuilder();
+				string statusMd = CreateStatusMarkdown();
+				if (!string.IsNullOrEmpty(statusMd))
+				{
+					markdownBuilder.Append(statusMd).Append("\n\n");
+				}
+				string bodyMd = CreateReviewBodyMarkdown(selectedFile);
+				if (!string.IsNullOrEmpty(bodyMd))
+				{
+					markdownBuilder.Append(bodyMd).Append("\n\n");
+				}
+				string allMd = CreateAllReviewResultsMarkdown(selectedFile);
+				if (!string.IsNullOrEmpty(allMd))
+				{
+					markdownBuilder.Append("---\n\n").Append(allMd);
+				}
+				AiResponseWebView.Markdown = markdownBuilder.ToString();
+				// 动态构建建议卡（原生控件，替代原 HTML <button onclick=...> + JS postMessage）
+				BuildSuggestionCards(selectedFile);
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to navigate WebView to markdown HTML", ex);
+				Log.Error("Failed to render AI review markdown", ex);
 			}
 		}
 
-		private string CreateStatusHtml()
+		/// <summary>状态信息 Markdown（引用块）。</summary>
+		private string CreateStatusMarkdown()
 		{
 			if (string.IsNullOrWhiteSpace(_aiReviewStatusMessage))
 			{
 				return "";
 			}
-			return "<div class='ai-status'>" + WebUtility.HtmlEncode(_aiReviewStatusMessage) + "</div>";
+			return "> " + _aiReviewStatusMessage.Replace("\n", "\n> ");
 		}
 
-		private string CreateReviewBodyHtml(string selectedFile)
+		/// <summary>审查结果 Markdown：文件审查模式下显示当前文件的审查结果，否则显示全部审查结果。</summary>
+		private string CreateReviewBodyMarkdown(string selectedFile)
 		{
 			if (!(_target is AiCodeReviewTarget.Files) || string.IsNullOrWhiteSpace(selectedFile))
 			{
-				return _aiReviewHtml ?? "";
+				return _aiReviewMarkdown ?? "";
 			}
-			string fileHtml = CreateSelectedFileReviewHtml(selectedFile);
+			string fileMarkdown = CreateSelectedFileReviewMarkdown(selectedFile);
 			StringBuilder builder = new StringBuilder();
-			builder.Append("<div class='ai-current-file'>")
-				.Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("Current file")))
-				.Append(": <b>")
-				.Append(WebUtility.HtmlEncode(selectedFile))
-				.Append("</b></div>");
-			if (string.IsNullOrWhiteSpace(fileHtml))
+			builder.Append("**").Append(PreferencesLocalization.Current("Current file")).Append(": ").Append(selectedFile).Append("**\n\n");
+			if (string.IsNullOrWhiteSpace(fileMarkdown))
 			{
-				builder.Append("<p class='ai-empty'>")
-					.Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("No findings were reported for this file.")))
-					.Append("</p>");
+				builder.Append("*").Append(PreferencesLocalization.Current("No findings were reported for this file.")).Append("*");
 			}
 			else
 			{
-				builder.Append(fileHtml);
+				builder.Append(fileMarkdown);
 			}
 			return builder.ToString();
 		}
 
-		private string CreateAllReviewResultsHtml(string selectedFile)
+		/// <summary>"所有审查结果" Markdown（文件审查模式下折叠显示完整审查结果）。</summary>
+		private string CreateAllReviewResultsMarkdown(string selectedFile)
 		{
-			if (string.IsNullOrWhiteSpace(_aiReviewHtml) || !(_target is AiCodeReviewTarget.Files) || string.IsNullOrWhiteSpace(selectedFile))
+			if (string.IsNullOrWhiteSpace(_aiReviewMarkdown) || !(_target is AiCodeReviewTarget.Files) || string.IsNullOrWhiteSpace(selectedFile))
 			{
 				return "";
 			}
-			return "<details class='ai-all-results'><summary>"
-				+ WebUtility.HtmlEncode(PreferencesLocalization.Current("All review results"))
-				+ "</summary>"
-				+ _aiReviewHtml
-				+ "</details>";
+			return "## " + PreferencesLocalization.Current("All review results") + "\n\n" + _aiReviewMarkdown;
 		}
 
-		private string CreateSelectedFileReviewHtml(string selectedFile)
+		/// <summary>从完整审查 Markdown 中提取指定文件的审查段落（带缓存）。
+		/// 原 _fileReviewHtmlCache 缓存 HTML；现 _fileReviewMarkdownCache 缓存 Markdown。</summary>
+		private string CreateSelectedFileReviewMarkdown(string selectedFile)
 		{
 			string markdown = ExtractFileReviewMarkdown(_aiReviewMarkdown, selectedFile);
 			if (string.IsNullOrWhiteSpace(markdown))
@@ -1384,24 +1356,24 @@ namespace ForkPlus.UI.Dialogs
 				return "";
 			}
 			string cacheKey = NormalizeReviewPath(selectedFile);
-			if (_fileReviewHtmlCache.TryGetValue(cacheKey, out string cachedHtml))
+			if (_fileReviewMarkdownCache.TryGetValue(cacheKey, out string cachedMarkdown))
 			{
-				return cachedHtml;
+				return cachedMarkdown;
 			}
-			GitCommandResult<string> htmlResult = AiStreamingMarkdownViewModel.ConvertMarkdownToHtml(markdown);
-			string html = htmlResult.Succeeded ? htmlResult.Result : "<pre>" + WebUtility.HtmlEncode(markdown) + "</pre>";
-			_fileReviewHtmlCache[cacheKey] = html;
-			return html;
+			_fileReviewMarkdownCache[cacheKey] = markdown;
+			return markdown;
 		}
 
-		private string CreateSuggestionsHtml(string selectedFile)
+		/// <summary>动态构建建议卡（原生 Avalonia 控件，替代原 HTML <button onclick=...> + JS postMessage）。
+		/// 每个建议卡是一个 Border + TextBlock（文件:行号 + 评论）+ 两个 Button（Preview/Apply）。
+		/// Button.Click 直接调用 PreviewSuggestion/ApplySuggestion，无需 JS 互操作。</summary>
+		private void BuildSuggestionCards(string selectedFile)
 		{
+			SuggestionsPanel.Children.Clear();
 			if (_suggestions == null || _suggestions.Count == 0)
 			{
-				return "";
+				return;
 			}
-			StringBuilder builder = new StringBuilder();
-			builder.Append("<h2>").Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("Applicable suggestions"))).Append("</h2>");
 			bool hasSuggestion = false;
 			for (int i = 0; i < _suggestions.Count; i++)
 			{
@@ -1411,28 +1383,76 @@ namespace ForkPlus.UI.Dialogs
 					continue;
 				}
 				hasSuggestion = true;
-				builder.Append("<div class='ai-suggestion'>");
-				builder.Append("<b>").Append(WebUtility.HtmlEncode(suggestion.File));
+				int index = i; // 闭包捕获
+				Border card = new Border
+				{
+					BorderBrush = new SolidColorBrush(Color.FromArgb(60, 0x88, 0x88, 0x88)),
+					BorderThickness = new Thickness(1),
+					CornerRadius = new CornerRadius(4),
+					Padding = new Thickness(8),
+					Margin = new Thickness(0, 10, 0, 0),
+					Background = new SolidColorBrush(Color.FromArgb(20, 0x88, 0x88, 0x88))
+				};
+				StackPanel cardPanel = new StackPanel();
+				// 文件:行号（粗体）
+				string header = suggestion.File ?? "";
 				if (suggestion.Line > 0)
 				{
-					builder.Append(":").Append(suggestion.Line);
+					header += ":" + suggestion.Line;
 				}
-				builder.Append("</b>");
+				TextBlock headerBlock = new TextBlock
+				{
+					Text = header,
+					FontWeight = FontWeights.Bold,
+					Margin = new Thickness(0, 0, 0, 4)
+				};
+				cardPanel.Children.Add(headerBlock);
+				// 评论（如有）
 				if (!string.IsNullOrWhiteSpace(suggestion.Comment))
 				{
-					builder.Append("<p>").Append(WebUtility.HtmlEncode(suggestion.Comment)).Append("</p>");
+					TextBlock commentBlock = new TextBlock
+					{
+						Text = suggestion.Comment,
+						TextWrapping = TextWrapping.Wrap,
+						Margin = new Thickness(0, 0, 0, 8)
+					};
+					cardPanel.Children.Add(commentBlock);
 				}
-				builder.Append("<button onclick='previewSuggestion(").Append(i).Append(")'>").Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("Preview replacement"))).Append("</button>");
-				builder.Append("<button onclick='applySuggestion(").Append(i).Append(")'>").Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("Apply suggestion"))).Append("</button>");
-				builder.Append("</div>");
+				// 按钮行：Preview replacement + Apply suggestion
+				StackPanel buttonPanel = new StackPanel
+				{
+					Orientation = Orientation.Horizontal,
+					Margin = new Thickness(0, 8, 0, 0)
+				};
+				Button previewButton = new Button
+				{
+					Content = PreferencesLocalization.Current("Preview replacement"),
+					Margin = new Thickness(0, 0, 6, 0),
+					Padding = new Thickness(10, 2, 10, 2)
+				};
+				previewButton.Click += delegate { PreviewSuggestion(index); };
+				Button applyButton = new Button
+				{
+					Content = PreferencesLocalization.Current("Apply suggestion"),
+					Padding = new Thickness(10, 2, 10, 2)
+				};
+				applyButton.Click += delegate { ApplySuggestion(index); };
+				buttonPanel.Children.Add(previewButton);
+				buttonPanel.Children.Add(applyButton);
+				cardPanel.Children.Add(buttonPanel);
+				card.Child = cardPanel;
+				SuggestionsPanel.Children.Add(card);
 			}
 			if (!hasSuggestion && !string.IsNullOrWhiteSpace(selectedFile))
 			{
-				builder.Append("<p class='ai-empty'>")
-					.Append(WebUtility.HtmlEncode(PreferencesLocalization.Current("No applicable suggestions for this file.")))
-					.Append("</p>");
+				TextBlock emptyBlock = new TextBlock
+				{
+					Text = PreferencesLocalization.Current("No applicable suggestions for this file."),
+					Foreground = new SolidColorBrush(Color.FromArgb(180, 0x88, 0x88, 0x88)),
+					Margin = new Thickness(0, 8, 0, 14)
+				};
+				SuggestionsPanel.Children.Add(emptyBlock);
 			}
-			return builder.ToString();
 		}
 
 		private string SelectedFileReviewPath()

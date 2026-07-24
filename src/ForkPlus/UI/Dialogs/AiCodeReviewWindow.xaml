@@ -1,4 +1,4 @@
-<ui:CustomWindow CanResize="True" Height="720" Width="1080" MinHeight="400" MinWidth="560" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiCodeReviewWindow" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
+<ui:CustomWindow CanResize="True" Height="720" Width="1080" MinHeight="400" MinWidth="560" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiCodeReviewWindow" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
   <Grid x:Name="AiResultGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" MinWidth="365" />
@@ -47,7 +47,12 @@
       </Grid>
       <Grid Grid.Row="2" Grid.Column="2">
         <Grid.Children>
-          <wv2:WebView2 x:Name="AiResponseWebView" />
+          <ScrollViewer x:Name="AiResponseScrollViewer" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <md:MarkdownScrollViewer x:Name="AiResponseWebView" />
+              <StackPanel x:Name="SuggestionsPanel" />
+            </StackPanel>
+          </ScrollViewer>
           <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
             <ProgressBar.Foreground>
               <DynamicResource ResourceKey="ForegroundBrush.Gray" />
