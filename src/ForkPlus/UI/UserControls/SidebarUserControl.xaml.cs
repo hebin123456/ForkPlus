@@ -1,16 +1,43 @@
-﻿using System;
+﻿// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Popup/TextBlock/Button/Image/Grid/SelectionChangedEventArgs/ContextMenuEventArgs/TextChangedEventArgs）
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ButtonBase.ClickEvent）
+// - using System.Windows.Documents → 移除（FrameworkContentElement 改用 Control）
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/PointerPressedEventArgs/TappedEventArgs/KeyBinding）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → 移除（本文件未直接引用 Media 类型）
+// - using System.Windows.Navigation → 移除（RequestNavigateEventArgs 改用 RoutedEventArgs）
+// - 新增 using Avalonia.Controls.ApplicationLifetimes（IClassicDesktopStyleApplicationLifetime）
+// - 新增 using Avalonia.Styling（Style）；新增 using Avalonia.VisualTree（GetVisualChildren/GetVisualParent/IVisual）
+// - WeakEventManager<NotificationCenter, EventArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 FileControlHeaderUserControl）
+// - AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(h)) → AddHandler(ButtonBase.ClickEvent, h)（方法组转换 EventHandler<RoutedEventArgs>）
+// - MouseDown/MouseDoubleClick + MouseButtonEventArgs → PointerPressed/DoubleTapped + PointerPressedEventArgs/TappedEventArgs
+// - PreviewKeyDown → KeyDown（Avalonia 无 Preview 变体）
+// - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown
+// - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - CommandBindings.Add(cmd.CreateShortcutCommandBinding) → KeyBindings.Add(cmd.CreateShortcutKeyBinding)（参考 IUICommandExtension/RepositoryManagerUserControl）
+// - Application.Current.TryFindResource("Key") as Style → Theme.FindStyle("Key")
+// - Dispatcher.BeginInvoke(new Action(...), DispatcherPriority.X) → Dispatcher.Post(...)（参考 MainWindow/SearchTabItem）
+// - Keyboard.Focus(element) → element.Focus()；IsKeyboardFocused → IsFocused（参考 CommitUserControl/SearchTabItem）
+// - VisualTreeHelper.GetChildrenCount/GetChild → IVisual.GetVisualChildren()（参考 NoUIAutomationListView/DependencyObjectExtensions）
+// - DependencyObject → IVisual；FrameworkElement → StyledElement（FindTemplatePart/FindVisualDescendantByName，Popup 可能非 Control 但属 StyledElement）
+// - Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl/RevisionChangesUserControl）
+// - RequestNavigateEventArgs → RoutedEventArgs（Avalonia 无 RequestNavigate）；FrameworkContentElement → Control
+// - ToolTipEventArgs → PointerEventArgs（Avalonia 无 ToolTipOpening 事件，XAML 需改绑 PointerEnter，参考 AutoTooltipTextBlock）
+// - ContextMenu.LayoutTransform 无 Avalonia 等价，注释（TODO 阶段 6）
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Navigation;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Styling;
+using Avalonia.VisualTree;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -124,15 +151,22 @@ namespace ForkPlus.UI.UserControls
 			SidebarTreeView.RootItem = _root;
 			SearchTabItem.Initialize(repositoryUserControl);
 			ServiceTabItem.Initialize(repositoryUserControl);
-			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ReferenceSortOrderChanged", ReferenceSortOrderChanged);
+			// 阶段 4.5：WPF WeakEventManager<NotificationCenter,EventArgs>.AddHandler(obj,"Event",h)
+			// → Avalonia 直接事件订阅 obj.Event += h（参考 FileControlHeaderUserControl/RevisionListViewUserControl）。
+			NotificationCenter.Current.ReferenceSortOrderChanged += ReferenceSortOrderChanged;
 			SidebarTreeView.ContextMenuOpening += SidebarTreeView_ContextMenuOpening;
-			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(SidebarTreeView_ButtonClick));
+			// 阶段 4.5：WPF AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(h))
+			// → Avalonia AddHandler(ButtonBase.ClickEvent, h)（方法组转换 EventHandler<RoutedEventArgs>）。
+			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, SidebarTreeView_ButtonClick);
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
-			SidebarTreeView.MouseDown += SidebarTreeView_MouseDown;
-			SidebarTreeView.MouseDoubleClick += SidebarTreeView_MouseDoubleClick;
-			SidebarTreeView.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF MouseDown/MouseDoubleClick → Avalonia PointerPressed/DoubleTapped。
+			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
+			SidebarTreeView.DoubleTapped += SidebarTreeView_MouseDoubleClick;
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（Avalonia 无 Preview 变体，参考 RevisionListViewUserControl）。
+			SidebarTreeView.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
+				// 阶段 4.5：WPF Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown。
+				if (e.Key == Key.F && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsShiftDown)
 				{
 					FilterTextBox.FocusAndSelectAllText();
 					e.Handled = true;
@@ -153,7 +187,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void SidebarTreeView_ButtonClick(object sender, RoutedEventArgs e)
 		{
-			if (e.OriginalSource is not Button button)
+			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+			if (e.Source is not Button button)
 			{
 				return;
 			}
@@ -331,7 +366,9 @@ namespace ForkPlus.UI.UserControls
 			Reload(_repositoryData, forceRefresh: true, SidebarTreeView.FilterString);
 		}
 
-		private void TagTitleTextBlock_ToolTipOpening(object sender, ToolTipEventArgs e)
+		// 阶段 4.5：WPF ToolTipEventArgs（ToolTipOpening 事件）→ Avalonia PointerEventArgs（PointerEnter 事件）。
+		// Avalonia 无 ToolTipOpening 事件，XAML 需改绑 PointerEnter（参考 AutoTooltipTextBlock）。
+		private void TagTitleTextBlock_ToolTipOpening(object sender, PointerEventArgs e)
 		{
 			if (sender is TextBlock { DataContext: TagSidebarItem { Reference: Tag reference } } textBlock)
 			{
@@ -339,9 +376,11 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void TruncateSidebarItem_RequestNavigate(object sender, RequestNavigateEventArgs e)
+		// 阶段 4.5：WPF RequestNavigateEventArgs（System.Windows.Navigation）→ Avalonia RoutedEventArgs。
+		// WPF FrameworkContentElement → Avalonia Control（Avalonia 无 FrameworkContentElement）。
+		private void TruncateSidebarItem_RequestNavigate(object sender, RoutedEventArgs e)
 		{
-			if ((sender as FrameworkContentElement)?.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
+			if ((sender as Control)?.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
 			{
 				ToggleTruncate(parent);
 			}
