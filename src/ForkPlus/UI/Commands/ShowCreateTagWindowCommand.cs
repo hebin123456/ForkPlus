@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "New Tag...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.T, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.T, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

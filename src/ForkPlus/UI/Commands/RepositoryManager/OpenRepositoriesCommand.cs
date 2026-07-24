@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands.RepositoryManager

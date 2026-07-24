@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Commands
 {
@@ -6,7 +6,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Activate Repository Navigator";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D1, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D1, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

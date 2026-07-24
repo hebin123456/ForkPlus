@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Copy Path";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.C, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.C, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

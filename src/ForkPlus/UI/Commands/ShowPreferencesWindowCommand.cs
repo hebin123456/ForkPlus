@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Commands
 		public string Title { get; } = "Preferences...";
 
 
-		public KeyGesture Shortcut => new KeyGesture(Key.OemComma, ModifierKeys.Control);
+		public KeyGesture Shortcut => new KeyGesture(Key.OemComma, KeyModifiers.Control);
 
 		public KeyGesture SecondaryShortcut => null;
 

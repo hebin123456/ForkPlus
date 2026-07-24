@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -14,10 +14,10 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Commit";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Return, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Return, KeyModifiers.Control | KeyModifiers.Shift);
 
 
-		public KeyGesture SecondaryShortcut => new KeyGesture(Key.Return, ModifierKeys.Control);
+		public KeyGesture SecondaryShortcut => new KeyGesture(Key.Return, KeyModifiers.Control);
 
 		public void Execute(CommitUserControl commitUserControl, bool commitAndPush = false)
 		{

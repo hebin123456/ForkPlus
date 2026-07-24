@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "New Tab";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.T, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.T, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut { get; }

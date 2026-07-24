@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Open";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, KeyModifiers.Alt | KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

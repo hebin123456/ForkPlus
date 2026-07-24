@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Accounts;
 using ForkPlus.UI.Dialogs;
 
@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Clone...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.N, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.N, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

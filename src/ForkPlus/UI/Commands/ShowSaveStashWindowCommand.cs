@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Save Stash...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.H, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.H, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

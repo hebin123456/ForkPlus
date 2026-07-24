@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Commands
@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Filter by Active Branch";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.A, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut => new KeyGesture(Key.A, KeyModifiers.Control | KeyModifiers.Shift);
 
 		public KeyGesture SecondaryShortcut => null;
 

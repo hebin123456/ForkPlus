@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
@@ -18,7 +18,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "New Branch...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.B, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.B, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

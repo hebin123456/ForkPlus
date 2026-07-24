@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Commands

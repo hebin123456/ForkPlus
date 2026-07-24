@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;

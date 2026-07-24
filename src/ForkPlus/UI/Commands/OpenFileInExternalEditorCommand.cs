@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia.Input;
 using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Diff.Presentation;

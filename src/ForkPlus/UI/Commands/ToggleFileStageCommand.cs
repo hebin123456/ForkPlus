@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Commands
 		public virtual KeyGesture Shortcut { get; } = new KeyGesture(Key.Return);
 
 
-		public virtual KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift);
+		public virtual KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.S, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public void Execute(CommitUserControl commitUserControl, RepositoryUserControl repositoryUserControl, ChangedFile[] changedFiles, bool amend)

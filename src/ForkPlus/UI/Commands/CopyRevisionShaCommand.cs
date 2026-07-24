@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Services;
 
@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Copy Commit SHA";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.C, ModifierKeys.Control);
+		public KeyGesture Shortcut => new KeyGesture(Key.C, KeyModifiers.Control);
 
 		public KeyGesture SecondaryShortcut => null;
 

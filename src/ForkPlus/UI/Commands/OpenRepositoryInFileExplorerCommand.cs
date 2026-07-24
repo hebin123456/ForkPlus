@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
 
@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Open In File Explorer";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Alt | ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, KeyModifiers.Alt | KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

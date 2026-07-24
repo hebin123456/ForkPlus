@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
@@ -17,7 +17,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Pull...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.L, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.L, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -14,7 +14,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Quick Pull";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.L, ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut => new KeyGesture(Key.L, KeyModifiers.Alt | KeyModifiers.Control | KeyModifiers.Shift);
 
 		public KeyGesture SecondaryShortcut => null;
 

@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Services;
 using ForkPlus.Settings;
 
@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Zoom In";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.OemPlus, ModifierKeys.Control);
+		public KeyGesture Shortcut => new KeyGesture(Key.OemPlus, KeyModifiers.Control);
 
 		public KeyGesture SecondaryShortcut => null;
 

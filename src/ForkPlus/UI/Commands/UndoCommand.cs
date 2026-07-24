@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Commands
@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Undo";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Z, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Z, KeyModifiers.Control);
 
 		public KeyGesture SecondaryShortcut => null;
 

@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Push...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.P, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.P, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

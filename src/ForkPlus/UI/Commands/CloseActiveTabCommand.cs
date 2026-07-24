@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Services;
 
 namespace ForkPlus.UI.Commands
@@ -7,10 +7,10 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Close Tab";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.W, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.W, KeyModifiers.Control);
 
 
-		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.F4, ModifierKeys.Control);
+		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.F4, KeyModifiers.Control);
 
 
 		public void Execute()

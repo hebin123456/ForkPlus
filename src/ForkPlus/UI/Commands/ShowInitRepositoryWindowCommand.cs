@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Init New Repository...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.N, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

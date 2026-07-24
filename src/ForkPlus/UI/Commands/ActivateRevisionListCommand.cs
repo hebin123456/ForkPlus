@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Commands
@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Show All Commits";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D2, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D2, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut { get; }

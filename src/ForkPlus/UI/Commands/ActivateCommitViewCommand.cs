@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Commands
 {
@@ -6,7 +6,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Show Uncommitted Changes";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D1, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D1, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut { get; }

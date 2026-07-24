@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Commands
 {
@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Compose WIP into commits...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Return, ModifierKeys.Control | ModifierKeys.Alt);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Return, KeyModifiers.Control | KeyModifiers.Alt);
 
 		public KeyGesture SecondaryShortcut => null;
 	}

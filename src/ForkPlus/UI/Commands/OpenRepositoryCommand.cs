@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
@@ -18,7 +18,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Open Repository...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;
