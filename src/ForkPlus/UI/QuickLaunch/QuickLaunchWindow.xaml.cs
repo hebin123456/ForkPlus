@@ -1,10 +1,22 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Input → using Avalonia.Input（KeyEventArgs / Key / PointerReleasedEventArgs）
+// - using System.Windows.Markup → 移除（无对应使用）
+// - 新增 using Avalonia.Threading（Dispatcher.UIThread）
+// - Application.Current.Dispatcher.BeginInvoke(action) → Dispatcher.UIThread.Post(action)
+//   （Application.Current.Dispatcher 在 Avalonia 不存在，改用 Dispatcher.UIThread，参考 SystemThemeHelper / RevisionsDataSource）
+// - base.Dispatcher.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
+// - OnPreviewKeyDown (tunneling) → OnKeyDown (bubbling)（Avalonia 无 Preview 前缀，参考 AutoCompleteTextBox / ReferenceTextBox）
+// - MouseButtonEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移 MouseUp→PointerReleased）
+// - Keyboard.IsKeyDown(Key.LeftCtrl) 为无副作用死语句（结果未使用），迁移时移除
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
@@ -52,7 +64,9 @@ namespace ForkPlus.UI.QuickLaunch
 			commandTextBox.CommandArgumentsCompleted = (EventHandler<object[]>)Delegate.Combine(commandTextBox.CommandArgumentsCompleted, (EventHandler<object[]>)delegate(object s, object[] e)
 			{
 				CloseWindow();
-				Application.Current.Dispatcher.BeginInvoke((Action)delegate
+				// 阶段 4.5：WPF Application.Current.Dispatcher.BeginInvoke → Avalonia Dispatcher.UIThread.Post。
+				// 关窗后再执行命令转换；用全局 UI 线程调度而非 base.Dispatcher，避免窗口关闭后 Dispatcher 失效。
+				Dispatcher.UIThread.Post((Action)delegate
 				{
 					CommandTextBox.CommandDescriptor.Converter(e, RepositoryUserControl);
 				});
@@ -76,7 +90,10 @@ namespace ForkPlus.UI.QuickLaunch
 			});
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		// 阶段 4.5：WPF OnPreviewKeyDown (tunneling) → Avalonia OnKeyDown (bubbling)。
+		// TODO(4.6-c): bubbling 在子控件已处理按键时不再触发本回调；若 CommandTextBox 拦截
+		// Escape/Return/Up/Down，需改用 AddHandler(KeyDownEvent, handler, handledEventsToo: true)。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.Escape)
 			{
@@ -104,10 +121,11 @@ namespace ForkPlus.UI.QuickLaunch
 					return;
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
-		private void RepositoriesListBox_MouseUp(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		private void RepositoriesListBox_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			SubmitSelectedItem();
 		}
@@ -146,7 +164,7 @@ namespace ForkPlus.UI.QuickLaunch
 					}
 					else if (commandProviderItem is RepositoryInfoItem repositoryInfoItem)
 					{
-						Keyboard.IsKeyDown(Key.LeftCtrl);
+						// 原始 WPF Keyboard.IsKeyDown(Key.LeftCtrl) 为无副作用死语句（结果未使用），迁移时移除。
 						CloseWindow();
 						RepositoryManagerUserControl.Commands.OpenRepository.Execute(repositoryInfoItem.Repository);
 					}

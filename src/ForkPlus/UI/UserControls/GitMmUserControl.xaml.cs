@@ -1,3 +1,38 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/TabItem/Button/TextBlock/StackPanel/DockPanel/Border/ScrollViewer/Image/CheckBox/TextBox/MenuItem/Separator/ContextMenu/Orientation/Dock）
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（Popup/PlacementMode/ScrollBarVisibility）
+// - using System.Windows.Input → using Avalonia.Input（DragEventArgs/DragDrop/DragDropEffects/PointerPressedEventArgs/PointerReleasedEventArgs/PointerEventArgs/PointerWheelEventArgs）
+// - using System.Windows.Media → using Avalonia.Media（IBrush/Brushes/SolidColorBrush/FontWeights/TextWrapping）
+// - using System.Windows.Media.Media3D → 移除（Visual3D 不再使用；GetParentObject 简化为 GetVisualParent）
+// - using System.Windows.Shapes → using Avalonia.Shapes（Ellipse）
+// - 新增 using Avalonia.Layout（Visibility/HorizontalAlignment/VerticalAlignment）
+// - 新增 using Avalonia.Threading（Dispatcher）、using Avalonia.VisualTree（GetVisualParent/GetVisualDescendants）
+// - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(obj, "Event", h) → obj.Event += h（参考 ClosableTabItem/FileControlHeaderUserControl）
+// - Dispatcher.BeginInvoke(new Action(() => ...)) → Dispatcher.Post(() => ...)
+// - Application.Current.TryFindResource("Key") as Brush/SolidColorBrush → Theme.FindBrush("Key")（参考 ActivityManagerUserControl）
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)（参考 StatusUserControl）
+// - popupContent.SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 Background/BorderBrush = Theme.FindBrush(key)
+// - Brush → IBrush（Foreground 属性类型）
+// - TabItem.AllowDrop 属性 → DragDrop.SetAllowDrop 附加属性（Avalonia 无 CLR AllowDrop）
+// - element.ToolTip = "..." → ToolTip.SetTip(element, "...")（参考 ClosableTabItem）
+// - FrameworkElement → Control
+// - DependencyObject → Visual（视觉树节点；AvaloniaObject 用于依赖属性场景）
+// - SubrepoTab PreviewMouseDown/Move/Up → PointerPressed/Moved/Released（无 Preview 变体，参考 ClosableTabItem）
+// - MouseButtonEventArgs → PointerPressedEventArgs/PointerReleasedEventArgs；MouseEventArgs → PointerEventArgs
+// - e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
+// - Mouse.PrimaryDevice.LeftButton → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
+// - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - SystemParameters.Minimum*DragDistance → 常量 10.0（参考 DragAndDropListViewItem）
+// - DragDrop.DoDragDrop(...) → _ = DragDrop.DoDragDrop(...)（返回 Task，丢弃；payload 用 WeakReference<TabItem>，参考 ClosableTabItem）
+// - e.Data.GetData(type) → e.Data.Get(type)
+// - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width（控件；RowDefinition.ActualHeight 保留）
+// - VisualTreeHelper.GetParent → GetVisualParent()；VisualTreeHelper.GetChildrenCount/GetChild → GetVisualDescendants().OfType<T>()
+// - PreviewMouseWheel + MouseWheelEventArgs → PointerWheelChanged + PointerWheelEventArgs（e.Delta int ±120 → Vector ±1，放大为像素步进）
+// - ScrollViewer.HorizontalOffset/ScrollToHorizontalOffset → Offset.X / 直接设置 Offset（参考 NoUIAutomationListView）
+// - Popup.StaysOpen=false → IsLightDismissEnabled=true；AllowsTransparency → 移除（参考 GraphCellView/DateRangeButton）
+// - MainWindow.Instance 已迁移为静态属性（基于 IClassicDesktopStyleApplicationLifetime），直接保留
+// - ShowDialog().GetValueOrDefault() 保持不变（代码库已统一处理 Avalonia ShowDialog 返回值）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,13 +40,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Shapes;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
@@ -126,8 +164,10 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			_workspace = new GitMmWorkspaceItem(workspacePath);
 			_workspace.PropertyChanged += Workspace_PropertyChanged;
-			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler(obj, "Event", h) → 直接事件订阅（参考 ClosableTabItem）。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.RepositoryNameChanged += RepositoryNameChanged;
+			NotificationCenter.Current.RepositoryColorChanged += RepositoryColorChanged;
 			SubreposTabControl.SelectionChanged += SubreposTabControl_SelectionChanged;
 			_saveSettingsAction = new DelayedAction<object>(delegate { SaveSettingsImmediate(); }, 1.0);
 			_updateTabWidthsAction = new DelayedAction<object>(delegate { UpdateSubrepoTabWidths(); }, 0.1);
@@ -175,25 +215,26 @@ namespace ForkPlus.UI.UserControls
 					Log.Error("Failed to check git-mm version on open", ex);
 				}
 				if (missing || unsupported)
+			{
+				// 阶段 4.5：WPF Dispatcher.BeginInvoke(new Action(() => ...)) → Avalonia Dispatcher.Post(() => ...)。
+				Dispatcher.Post(() =>
 				{
-					Dispatcher.BeginInvoke(new Action(() =>
+					string msg;
+					if (missing)
 					{
-						string msg;
-						if (missing)
-						{
-							msg = PreferencesLocalization.Current(
-								"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.");
-						}
-						else
-						{
-							string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
-							msg = PreferencesLocalization.FormatCurrent(
-								"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
-								versionText, minText);
-						}
-						new ErrorWindow(msg).ShowDialog();
-					}));
-				}
+						msg = PreferencesLocalization.Current(
+							"git-mm executable (git-mm.exe) was not found. git mm workspace features will be unavailable. Install git-mm 3.x and add it to PATH, or configure it in Preferences.");
+					}
+					else
+					{
+						string minText = GitMmVersionChecker.MinimumRequiredVersion.ToString(2);
+						msg = PreferencesLocalization.FormatCurrent(
+							"Detected git-mm version {0} is older than the required {1}. git mm workspace features may not work correctly. Please upgrade git-mm.",
+							versionText, minText);
+					}
+					new ErrorWindow(msg).ShowDialog();
+				});
+			}
 			});
 		}
 
@@ -351,9 +392,10 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshCommandButtonTooltips()
 		{
-			StartButton.ToolTip = Translate("Start") + Environment.NewLine + Translate("Hold Ctrl for Quick Start");
-			SyncButton.ToolTip = Translate("Sync") + Environment.NewLine + Translate("Hold Ctrl for Quick Sync");
-			UploadButton.ToolTip = Translate("Upload") + Environment.NewLine + Translate("Hold Ctrl for Quick Upload");
+			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性（参考 ClosableTabItem）。
+			ToolTip.SetTip(StartButton, Translate("Start") + Environment.NewLine + Translate("Hold Ctrl for Quick Start"));
+			ToolTip.SetTip(SyncButton, Translate("Sync") + Environment.NewLine + Translate("Hold Ctrl for Quick Sync"));
+			ToolTip.SetTip(UploadButton, Translate("Upload") + Environment.NewLine + Translate("Hold Ctrl for Quick Upload"));
 		}
 
 		private static string[] CreateQuickStartArgs()
@@ -408,7 +450,8 @@ namespace ForkPlus.UI.UserControls
 		private void RefreshSubreposTitle()
 		{
 			SubreposTitleTextBlock.Text = PreferencesLocalization.FormatCurrent("{0} repositories", _workspace.Subrepos.Count);
-			GitMmHelpButton.ToolTip = Translate("Show git mm reference");
+			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(GitMmHelpButton, Translate("Show git mm reference"));
 			RefreshSubrepoSummary();
 			RefreshSubrepoFilterButton();
 		}
@@ -482,9 +525,11 @@ namespace ForkPlus.UI.UserControls
 			Button button = GetOrCreateSummaryButton(key);
 			button.Tag = key;
 			button.Content = PreferencesLocalization.Current("Show all");
-			button.Foreground = Application.Current.TryFindResource("AccentBrush") as Brush;
+			// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")。
+			button.Foreground = Theme.FindBrush("AccentBrush");
 			button.Margin = new Thickness(0.0, 0.0, 8.0, 0.0);
-			button.ToolTip = Translate("Clear repository filter");
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(button, Translate("Clear repository filter"));
 		}
 
 		private void AddSummaryButton(string format, int value, string filterMode, HashSet<string> visibleButtonKeys)
@@ -497,9 +542,11 @@ namespace ForkPlus.UI.UserControls
 			Button button = GetOrCreateSummaryButton(filterMode);
 			button.Tag = filterMode;
 			button.Content = PreferencesLocalization.FormatCurrent(format, value);
-			button.Foreground = Application.Current.TryFindResource("SecondaryLabelBrush") as Brush;
+			// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → Theme.FindBrush("SecondaryLabelBrush")。
+			button.Foreground = Theme.FindBrush("SecondaryLabelBrush");
 			button.Margin = new Thickness(0.0, 0.0, 6.0, 0.0);
-			button.ToolTip = Translate("Click to show matching repositories");
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(button, Translate("Click to show matching repositories"));
 		}
 
 		private Button GetOrCreateSummaryButton(string key)
@@ -522,7 +569,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void SummaryButton_Click(object sender, RoutedEventArgs e)
 		{
-			string filterMode = (sender as FrameworkElement)?.Tag as string;
+			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 DiffEntryRowUserControl）。
+			string filterMode = (sender as Control)?.Tag as string;
 			if (filterMode == "clear")
 			{
 				ClearSubrepoFilter();
@@ -1171,20 +1219,22 @@ namespace ForkPlus.UI.UserControls
 			foreach (GitMmSubrepoItem subrepo in _workspace.Subrepos.Where(IsSubrepoVisible))
 			{
 				TabItem tabItem = new TabItem
-				{
-					Header = CreateSubrepoTabHeader(subrepo),
-					Content = CreateSubrepoPlaceholder(subrepo),
-					Tag = subrepo,
-					ToolTip = subrepo.Path,
-					ContextMenu = CreateSubrepoTabContextMenu(subrepo),
-					AllowDrop = true,
-					HorizontalContentAlignment = HorizontalAlignment.Stretch,
-					VerticalContentAlignment = VerticalAlignment.Stretch
-				};
-				tabItem.PreviewMouseDown += SubrepoTabItem_PreviewMouseDown;
-				tabItem.PreviewMouseMove += SubrepoTabItem_PreviewMouseMove;
-				tabItem.PreviewMouseUp += SubrepoTabItem_PreviewMouseUp;
-				tabItem.Drop += SubrepoTabItem_Drop;
+			{
+				Header = CreateSubrepoTabHeader(subrepo),
+				Content = CreateSubrepoPlaceholder(subrepo),
+				Tag = subrepo,
+				ContextMenu = CreateSubrepoTabContextMenu(subrepo),
+				HorizontalContentAlignment = HorizontalAlignment.Stretch,
+				VerticalContentAlignment = VerticalAlignment.Stretch
+			};
+			// 阶段 4.5：WPF AllowDrop 属性 → Avalonia DragDrop.SetAllowDrop 附加属性；ToolTip 属性 → ToolTip.SetTip。
+			DragDrop.SetAllowDrop(tabItem, true);
+			ToolTip.SetTip(tabItem, subrepo.Path);
+			// 阶段 4.5：WPF PreviewMouseDown/Move/Up → Avalonia PointerPressed/Moved/Released（无 Preview 变体，参考 ClosableTabItem）。
+			tabItem.PointerPressed += SubrepoTabItem_PointerPressed;
+			tabItem.PointerMoved += SubrepoTabItem_PointerMoved;
+			tabItem.PointerReleased += SubrepoTabItem_PointerReleased;
+			tabItem.Drop += SubrepoTabItem_Drop;
 				SubreposTabControl.Items.Add(tabItem);
 				if (IsSamePath(subrepo.Path, preferredSubrepoPath))
 				{
@@ -1217,7 +1267,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			double availableWidth = SubreposTabControl.ActualWidth;
+			// 阶段 4.5：WPF ActualWidth → Avalonia Bounds.Width（控件已布局后有效，参考 ModernTabControl）。
+			double availableWidth = SubreposTabControl.Bounds.Width;
 			if (availableWidth <= 0.0)
 			{
 				return;
@@ -1288,8 +1339,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				PlacementTarget = SubrepoFilterButton,
 				Placement = PlacementMode.Bottom,
-				StaysOpen = false,
-				AllowsTransparency = true
+				// 阶段 4.5：WPF StaysOpen=false → Avalonia IsLightDismissEnabled=true（点击外部关闭）；AllowsTransparency → 移除（参考 GraphCellView/DateRangeButton）。
+				IsLightDismissEnabled = true
 			};
 			StackPanel itemsPanel = new StackPanel();
 			TextBox searchTextBox = new TextBox
@@ -1297,9 +1348,10 @@ namespace ForkPlus.UI.UserControls
 				Width = 210.0,
 				Height = 30.0,
 				Margin = new Thickness(8.0),
-				Padding = new Thickness(6.0, 4.0, 6.0, 4.0),
-				ToolTip = Translate("Search repositories")
+				Padding = new Thickness(6.0, 4.0, 6.0, 4.0)
 			};
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(searchTextBox, Translate("Search repositories"));
 			CheckBox nonDefaultBranchCheckBox = CreateSubrepoQuickFilterCheckBox(Translate("Non-default branch"), _filterNonDefaultBranchOnly);
 			CheckBox failedOnlyCheckBox = CreateSubrepoQuickFilterCheckBox(Translate("Failed repositories"), _filterFailedOnly);
 			Button showAllButton = CreateSubrepoFilterIconButton("StageAllIcon", Translate("Show all repositories"), new Thickness(0.0, 8.0, 8.0, 8.0));
@@ -1381,8 +1433,9 @@ namespace ForkPlus.UI.UserControls
 				BorderThickness = new Thickness(1.0),
 				Padding = new Thickness(0.0)
 			};
-			popupContent.SetResourceReference(Border.BackgroundProperty, "BackgroundBrush");
-			popupContent.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
+			// 阶段 4.5：WPF SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 = Theme.FindBrush(key)（参考 KeyboardShortcutsWindow）。
+			popupContent.Background = Theme.FindBrush("BackgroundBrush");
+			popupContent.BorderBrush = Theme.FindBrush("BorderBrush");
 			popup.Child = popupContent;
 			searchTextBox.TextChanged += delegate
 			{
@@ -1414,17 +1467,20 @@ namespace ForkPlus.UI.UserControls
 				Height = 16.0,
 				VerticalAlignment = VerticalAlignment.Center
 			};
-			image.SetResourceReference(Image.SourceProperty, iconResourceKey);
-			return new Button
+			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)（参考 StatusUserControl）。
+			image.Source = Theme.FindImage(iconResourceKey);
+			Button button = new Button
 			{
 				Content = image,
 				Width = 28.0,
 				Height = 30.0,
 				Margin = margin,
 				Padding = new Thickness(4.0),
-				ToolTip = tooltip,
 				Style = Theme.TransparentButtonStyle
 			};
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(button, tooltip);
+			return button;
 		}
 
 		private void RefreshSubrepoFilterMenuItems(StackPanel itemsPanel, string filterText)
@@ -1433,15 +1489,16 @@ namespace ForkPlus.UI.UserControls
 			foreach (GitMmSubrepoItem subrepo in FilterSubrepos(filterText))
 			{
 				CheckBox checkBox = new CheckBox
+			{
+				Content = new TextBlock
 				{
-					Content = new TextBlock
-					{
-						Text = subrepo.DisplayName
-					},
-					IsChecked = IsSubrepoVisible(subrepo),
-					ToolTip = subrepo.Path,
-					Margin = new Thickness(8.0, 3.0, 8.0, 3.0)
-				};
+					Text = subrepo.DisplayName
+				},
+				IsChecked = IsSubrepoVisible(subrepo),
+				Margin = new Thickness(8.0, 3.0, 8.0, 3.0)
+			};
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(checkBox, subrepo.Path);
 				checkBox.Checked += delegate
 				{
 					_activeSummaryFilterMode = null;
@@ -1497,24 +1554,30 @@ namespace ForkPlus.UI.UserControls
 			RefreshSubrepoSummary();
 		}
 
-		private static FrameworkElement CreateSubrepoPlaceholder(GitMmSubrepoItem subrepo)
+		private static Control CreateSubrepoPlaceholder(GitMmSubrepoItem subrepo)
 		{
 			return new TextBlock
 			{
 				Text = subrepo.DisplayName,
 				Margin = new Thickness(10.0),
-				Foreground = Application.Current.TryFindResource("SecondaryLabelBrush") as Brush
+				// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → Theme.FindBrush("SecondaryLabelBrush")。
+				Foreground = Theme.FindBrush("SecondaryLabelBrush")
 			};
 		}
 
-		private void SubreposTabControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		// 阶段 4.5：WPF PreviewMouseWheel + MouseWheelEventArgs → Avalonia PointerWheelChanged + PointerWheelEventArgs。
+		// 阶段 4.5：WPF FindVisualChild<T>(parent) → parent.GetVisualDescendants().OfType<T>().FirstOrDefault()。
+		// 阶段 4.5：WPF e.Delta (int ±120) → Avalonia e.Delta.Y (double ±1，放大为像素步进)。
+		// 阶段 4.5：WPF ScrollViewer.HorizontalOffset/ScrollToHorizontalOffset → Avalonia Offset.X / 直接设置 Offset（参考 NoUIAutomationListView）。
+		private void SubreposTabControl_PointerWheelChanged(object sender, PointerWheelEventArgs e)
 		{
-			ScrollViewer scrollViewer = FindVisualChild<ScrollViewer>(SubreposTabControl);
-			if (scrollViewer == null || scrollViewer.ScrollableWidth <= 0)
+			ScrollViewer scrollViewer = SubreposTabControl.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+			if (scrollViewer == null || scrollViewer.Extent.Width - scrollViewer.Viewport.Width <= 0)
 			{
 				return;
 			}
-			scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+			double delta = e.Delta.Y * 120.0;
+			scrollViewer.Offset = new Vector(scrollViewer.Offset.X - delta, scrollViewer.Offset.Y);
 			e.Handled = true;
 		}
 
@@ -1526,19 +1589,26 @@ namespace ForkPlus.UI.UserControls
 				?? _workspace.PreferredSubrepoPath;
 		}
 
-		private void SubrepoTabItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF PreviewMouseDown + MouseButtonEventArgs → Avalonia PointerPressed + PointerPressedEventArgs（无 Preview 变体，参考 ClosableTabItem）。
+		// 阶段 4.5：WPF e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
+		// 阶段 4.5：WPF e.OriginalSource → e.Source；DependencyObject → Visual（视觉树节点）。
+		private void SubrepoTabItem_PointerPressed(object sender, PointerPressedEventArgs e)
 		{
 			_subrepoTabDragItem = null;
-			if (e.LeftButton == MouseButtonState.Pressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.OriginalSource as DependencyObject))
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as Visual))
 			{
 				_tabDragStartPoint = e.GetPosition(null);
 				_subrepoTabDragItem = tabItem;
 			}
 		}
 
-		private void SubrepoTabItem_PreviewMouseMove(object sender, MouseEventArgs e)
+		// 阶段 4.5：WPF PreviewMouseMove + MouseEventArgs → Avalonia PointerMoved + PointerEventArgs。
+		// 阶段 4.5：WPF Mouse.PrimaryDevice.LeftButton → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
+		// 阶段 4.5：WPF SystemParameters.MinimumHorizontalDragDistance/MinimumVerticalDragDistance → 常量 10.0（参考 DragAndDropListViewItem/ClosableTabItem）。
+		// 阶段 4.5：WPF DragDrop.DoDragDrop(...) → _ = DragDrop.DoDragDrop(...)（返回 Task，丢弃；payload 用 WeakReference<TabItem>，参考 ClosableTabItem）。
+		private void SubrepoTabItem_PointerMoved(object sender, PointerEventArgs e)
 		{
-			if (Mouse.PrimaryDevice.LeftButton != MouseButtonState.Pressed || !(sender is TabItem tabItem))
+			if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || !(sender is TabItem tabItem))
 			{
 				return;
 			}
@@ -1547,14 +1617,14 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			Point currentPoint = e.GetPosition(null);
-			if (Math.Abs(_tabDragStartPoint.X - currentPoint.X) < SystemParameters.MinimumHorizontalDragDistance
-				&& Math.Abs(_tabDragStartPoint.Y - currentPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+			if (Math.Abs(_tabDragStartPoint.X - currentPoint.X) < 10.0
+				&& Math.Abs(_tabDragStartPoint.Y - currentPoint.Y) < 10.0)
 			{
 				return;
 			}
 			try
 			{
-				DragDrop.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
+				_ = DragDrop.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
 			}
 			finally
 			{
@@ -1562,18 +1632,21 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void SubrepoTabItem_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF PreviewMouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs。
+		private void SubrepoTabItem_PointerReleased(object sender, PointerReleasedEventArgs e)
 		{
 			_subrepoTabDragItem = null;
 		}
 
+		// 阶段 4.5：WPF e.Data.GetData(type) → Avalonia e.Data.Get(type)。
+		// 阶段 4.5：WPF e.OriginalSource → e.Source；DependencyObject → Visual；ActualHeight/ActualWidth → Bounds.Height/Bounds.Width。
 		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is TabItem targetTabItem) || !(e.Data.GetData(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
+			if (!(sender is TabItem targetTabItem) || !(e.Data.Get(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
 			{
 				return;
 			}
-			if (!IsFromSubrepoTabHeader(targetTabItem, e.OriginalSource as DependencyObject) && e.GetPosition(targetTabItem).Y > targetTabItem.ActualHeight)
+			if (!IsFromSubrepoTabHeader(targetTabItem, e.Source as Visual) && e.GetPosition(targetTabItem).Y > targetTabItem.Bounds.Height)
 			{
 				return;
 			}
@@ -1587,7 +1660,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (e.GetPosition(targetTabItem).X > targetTabItem.ActualWidth / 2.0)
+			if (e.GetPosition(targetTabItem).X > targetTabItem.Bounds.Width / 2.0)
 			{
 				newIndex++;
 			}
@@ -1607,11 +1680,12 @@ namespace ForkPlus.UI.UserControls
 			e.Handled = true;
 		}
 
-		private static bool IsFromSubrepoTabHeader(TabItem tabItem, DependencyObject source)
+		// 阶段 4.5：WPF DependencyObject → Visual；VisualTreeHelper.GetParent/ContentOperations/Visual3D → GetVisualParent()（参考 ListViewScrollbarDoubleClickHelper）。
+		private static bool IsFromSubrepoTabHeader(TabItem tabItem, Visual source)
 		{
-			if (tabItem?.Header is DependencyObject header)
+			if (tabItem?.Header is Visual header)
 			{
-				for (DependencyObject current = source; current != null; current = GetParentObject(current))
+				for (Visual current = source; current != null; current = current.GetVisualParent())
 				{
 					if (current == header)
 					{
@@ -1620,29 +1694,6 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			return false;
-		}
-
-		[Null]
-		private static DependencyObject GetParentObject(DependencyObject source)
-		{
-			if (source == null)
-			{
-				return null;
-			}
-			if (source is ContentElement contentElement)
-			{
-				DependencyObject parent = ContentOperations.GetParent(contentElement);
-				if (parent != null)
-				{
-					return parent;
-				}
-				return (contentElement as FrameworkContentElement)?.Parent;
-			}
-			if (source is Visual || source is Visual3D)
-			{
-				return VisualTreeHelper.GetParent(source);
-			}
-			return null;
 		}
 
 		private void SaveSubrepoOrder()
@@ -1655,7 +1706,8 @@ namespace ForkPlus.UI.UserControls
 			SaveSettings();
 		}
 
-		private static FrameworkElement CreateSubrepoTabHeader(GitMmSubrepoItem subrepo)
+		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+		private static Control CreateSubrepoTabHeader(GitMmSubrepoItem subrepo)
 		{
 			DockPanel panel = new DockPanel
 			{
@@ -1793,7 +1845,8 @@ namespace ForkPlus.UI.UserControls
 				SolidColorBrush brush = RepositoryColorsUserControl.GetBrush(EnsureRepositoryManagerEntry(subrepo.Path).Color);
 				if (brush == null && subrepo.IsRootRepository)
 				{
-					brush = Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
+					// 阶段 4.5：WPF Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush → Theme.FindBrush("SystemAccentBrush") as SolidColorBrush。
+					brush = Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
 				}
 				colorEllipse.Visibility = brush == null ? Visibility.Collapsed : Visibility.Visible;
 				colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;
@@ -1801,7 +1854,8 @@ namespace ForkPlus.UI.UserControls
 				colorEllipse.StrokeThickness = subrepo.IsRootRepository ? 1.0 : 2.0;
 				colorEllipse.Stroke = brush;
 				colorEllipse.Fill = brush;
-				colorEllipse.ToolTip = subrepo.IsRootRepository ? Translate("Main repository") : null;
+				// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+				ToolTip.SetTip(colorEllipse, subrepo.IsRootRepository ? Translate("Main repository") : null);
 			}
 			StackPanel statusPanel = panel.Children.OfType<StackPanel>().FirstOrDefault((StackPanel stackPanel) => (stackPanel.Tag as string) == "StatusIcons");
 			if (statusPanel != null)
@@ -2165,7 +2219,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				AddSubrepoStatusIcon(statusPanel, "BranchIcon", BuildSubrepoStatusToolTip(subrepo));
 			}
-			statusPanel.ToolTip = statusPanel.Children.Count == 0 ? null : BuildSubrepoStatusToolTip(subrepo);
+			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(statusPanel, statusPanel.Children.Count == 0 ? null : BuildSubrepoStatusToolTip(subrepo));
 			statusPanel.Visibility = statusPanel.Children.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
 		}
 
@@ -2213,10 +2268,11 @@ namespace ForkPlus.UI.UserControls
 				Width = 13.0,
 				Height = 13.0,
 				Margin = new Thickness(2.0, 0.0, 0.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center,
-				ToolTip = tooltip
+				VerticalAlignment = VerticalAlignment.Center
 			};
-			image.SetResourceReference(Image.SourceProperty, iconResourceKey);
+			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)；ToolTip 属性 → ToolTip.SetTip。
+			image.Source = Theme.FindImage(iconResourceKey);
+			ToolTip.SetTip(image, tooltip);
 			statusPanel.Children.Add(image);
 		}
 
@@ -2320,7 +2376,8 @@ namespace ForkPlus.UI.UserControls
 			return orderedPaths;
 		}
 
-		private FrameworkElement CreateRepositoryContent(string path)
+		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+		private Control CreateRepositoryContent(string path)
 		{
 			GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(path);
 			if (!result.Succeeded)
@@ -2584,29 +2641,7 @@ namespace ForkPlus.UI.UserControls
 			return PathHelper.Normalize(path).TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar, '\\', '/');
 		}
 
-		[Null]
-		private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-		{
-			if (parent == null)
-			{
-				return null;
-			}
-			int childCount = VisualTreeHelper.GetChildrenCount(parent);
-			for (int i = 0; i < childCount; i++)
-			{
-				DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-				if (child is T result)
-				{
-					return result;
-				}
-				T nested = FindVisualChild<T>(child);
-				if (nested != null)
-				{
-					return nested;
-				}
-			}
-			return null;
-		}
+		// 阶段 4.5：WPF FindVisualChild<T> + VisualTreeHelper 已移除，替换为 GetVisualDescendants().OfType<T>()（见 SubreposTabControl_PointerWheelChanged）。
 
 		private static string Translate(string text)
 		{
@@ -2718,8 +2753,9 @@ namespace ForkPlus.UI.UserControls
 
 		public string DisplayName => BaseDisplayName + (IsRootRepository ? PreferencesLocalization.Current("[Main]") : IsSubmodule ? PreferencesLocalization.Current("[Submodule]") : PreferencesLocalization.Current("[Sub]"));
 
+		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
 		[Null]
-		public FrameworkElement RepositoryControl { get; set; }
+		public Control RepositoryControl { get; set; }
 
 		public GitMmSubrepoItem(string path, string rootPath, bool isSubmodule)
 		{

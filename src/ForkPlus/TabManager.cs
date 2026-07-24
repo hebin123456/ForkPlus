@@ -1,8 +1,16 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Application.Current）
+// - using System.Windows.Threading → using Avalonia.Threading（DispatcherPriority）
+// - Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, action)
+//   → Dispatcher.UIThread.Post(action, DispatcherPriority.Background)（参考 SystemThemeHelper / RevisionsDataSource）
+// - _tabControl.Items 转为 IEnumerable 遍历保持不变（Avalonia ItemCollection 实现 IEnumerable）
+// - ClosableTabItem.IsSelected = true 保持不变（Avalonia TabItem.IsSelected StyledProperty）
+// - ClosableTabControl 的 AddButtonClicked/TabItemRemoved/SelectedTabItemChanged 为公共字段，Delegate.Combine 保持
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -294,13 +302,15 @@ namespace ForkPlus
 					NotificationCenter.Current.RaiseActiveTabChanged(this, value);
 					SaveSession();
 					ForkPlusSettings.Default.Save();
-					Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(delegate
+					// 阶段 4.5：WPF Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, action)
+					// → Avalonia Dispatcher.UIThread.Post(action, DispatcherPriority.Background)（参考 MainWindow / GitMmUserControl.Output）。
+					Dispatcher.UIThread.Post(new Action(delegate
 					{
 						if (_tabControl.SelectedTab == value)
 						{
 							value.Refresh();
 						}
-					}));
+					}), DispatcherPriority.Background);
 				}
 			}
 		}

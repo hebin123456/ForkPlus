@@ -1,6 +1,10 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - Application.Current.TabManager() 保持（ApplicationExtensions 扩展方法已迁移，
+//   内部转发 (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow）
 using System;
 using System.IO;
-using System.Windows;
+using Avalonia;
 using ForkPlus.UI;
 
 namespace ForkPlus
