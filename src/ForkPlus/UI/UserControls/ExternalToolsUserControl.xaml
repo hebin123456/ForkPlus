@@ -2,16 +2,28 @@
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
      - 移除 WPF 特有 RenderOptions.ClearTypeHint
-     - TODO：DataTemplate.Triggers/MultiDataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     - DataTemplate.Triggers (MultiDataTrigger 绑定祖先 ListBoxItem.IsSelected) → 顶层
+       <UserControl.Styles><Style Selector="ListBoxItem:selected TextBlock#PrimaryTextBlock">
+     - TextBlock.Visibility (经 BooleanToVisibilityConverter) → TextBlock.IsVisible (直接绑定 bool)
+     - FallbackUserControl.Visibility="Collapsed" → IsVisible="False"
+     - 移除未再使用的 BooleanToVisibilityConverter 资源（InverseBooleanToVisibility 返回 bool，
+       名字虽含 "ToVisibility" 但已迁移为 Avalonia IValueConverter 返回 bool）
      -->
 <UserControl xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ExternalToolsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <controls:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
     </ResourceDictionary>
   </UserControl.Resources>
+  <UserControl.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger。
+         原触发器：当祖先 ListBoxItem.IsSelected=true 时设置 ItemTemplate 内 PrimaryTextBlock.Foreground=ForegroundBrush.Light。
+         Avalonia 顶层 Style Selector 直接匹配 selected ListBoxItem 内名为 PrimaryTextBlock 的 TextBlock。 -->
+    <Style Selector="ListBoxItem:selected TextBlock#PrimaryTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </UserControl.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="160" />
@@ -34,9 +46,9 @@
                 <TextBlock.Text>
                   <Binding Path="PrimaryLabel" />
                 </TextBlock.Text>
-                <TextBlock.Visibility>
+                <TextBlock.IsVisible>
                   <Binding Path="IsPrimary" />
-                </TextBlock.Visibility>
+                </TextBlock.IsVisible>
               </TextBlock>
               <Image DockPanel.Dock="Left" Width="16" Height="16" VerticalAlignment="Center" Margin="0">
                 <Image.Source>
@@ -49,24 +61,9 @@
                 </TextBlock.Text>
               </TextBlock>
             </DockPanel>
-            <DataTemplate.Triggers>
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition>
-                    <Condition.Binding>
-                      <Binding Path="IsSelected">
-                        <Binding.RelativeSource>
-                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                    </Condition.Binding>
-                  </Condition>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.Setters>
-                  <Setter TargetName="PrimaryTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                </MultiDataTrigger.Setters>
-              </MultiDataTrigger>
-            </DataTemplate.Triggers>
+            <!-- 阶段 4.5：原 WPF DataTemplate.Triggers 中的 MultiDataTrigger 绑定祖先 ListBoxItem.IsSelected=true
+                 以设置 PrimaryTextBlock.Foreground=ForegroundBrush.Light。Avalonia DataTemplate 不支持 Triggers，
+                 已迁移为 UserControl.Styles 中的顶层 Style Selector="ListBoxItem:selected TextBlock#PrimaryTextBlock"。 -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
@@ -110,9 +107,9 @@
           <TextBlock.Text>
             <Binding ElementName="ToolsListBox" Path="SelectedItem.Name" />
           </TextBlock.Text>
-          <TextBlock.Visibility>
-            <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource BooleanToVisibilityConverter}" />
-          </TextBlock.Visibility>
+          <TextBlock.IsVisible>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" />
+          </TextBlock.IsVisible>
         </TextBlock>
         <TextBlock Grid.Row="1" Grid.Column="0" Text="Path:" FontSize="13" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
         <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="10,6,0,0" Padding="4,2,4,2" IsReadOnly="True" Placeholder="External tool location" x:Name="ToolPathTextBox">
@@ -132,6 +129,6 @@
         </Grid>
       </Grid>
     </Border>
-    <uc:FallbackUserControl Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Height="102" Visibility="Collapsed" x:Name="ToolsFallback" />
+    <uc:FallbackUserControl Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Height="102" IsVisible="False" x:Name="ToolsFallback" />
   </Grid>
 </UserControl>
