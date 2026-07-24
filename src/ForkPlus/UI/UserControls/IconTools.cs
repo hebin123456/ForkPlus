@@ -1,11 +1,23 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → 移除（Int32Rect 无 Avalonia 等价物，不再使用）
+// - 移除 using System.Windows.Interop（Imaging.CreateBitmapSourceFromHIcon 无 Avalonia 直接等价物）
+// - using System.Windows.Media → using Avalonia.Media（IImage 替代 ImageSource）
+// - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap
+//   （别名替代，避免与 System.Drawing.Bitmap 二义性；本文件 GDI+ Bitmap 与 Avalonia Bitmap 同时使用）
+// - 新增 using System.Drawing.Imaging（ImageFormat.Png，用于 GDI+ Bitmap → PNG 流转换）
+// - ImageSource → IImage（Avalonia.Media）
+// - Imaging.CreateBitmapSourceFromHIcon(handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())
+//   → CreateBitmapFromIcon(icon)：System.Drawing.Icon.ToBitmap() 得 GDI+ Bitmap，
+//     PNG 编码入 MemoryStream，再由 Avalonia.Media.Imaging.Bitmap(stream) 加载
+// - BitmapSource.Freeze() → 移除（Avalonia Bitmap 构造后即不可变）
+// 注：Icon / shell32 / user32 P/Invoke 仍为 Windows-only，跨平台替代见阶段 5（phase5-platform-crossplatform.md）。
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Media;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -37,7 +49,7 @@ namespace ForkPlus.UI.UserControls
 
 		private static readonly object Padlock = new object();
 
-		private static LruCache<string, ImageSource> _defaultFileIconCache = null;
+		private static LruCache<string, IImage> _defaultFileIconCache = null;
 
 		internal const uint SHGFI_ICON = 256u;
 
@@ -47,7 +59,7 @@ namespace ForkPlus.UI.UserControls
 
 		private const uint SHGFI_USEFILEATTRIBUTES = 16u;
 
-		public static LruCache<string, ImageSource> DefaultFileIconCache
+		public static LruCache<string, IImage> DefaultFileIconCache
 		{
 			get
 			{
@@ -55,7 +67,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					if (_defaultFileIconCache == null)
 					{
-						_defaultFileIconCache = new LruCache<string, ImageSource>(128);
+						_defaultFileIconCache = new LruCache<string, IImage>(128);
 					}
 					return _defaultFileIconCache;
 				}
@@ -85,7 +97,7 @@ namespace ForkPlus.UI.UserControls
 			return GetIconForFile(extension, size);
 		}
 
-		public static ImageSource GetImageSourceForPath(string relativeFilePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		public static IImage GetImageSourceForPath(string relativeFilePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
 			string extension;
 			try
@@ -99,9 +111,9 @@ namespace ForkPlus.UI.UserControls
 			return GetImageSourceForExtension(extension, iconsize);
 		}
 
-		public static ImageSource GetImageSourceForExtension(string extension, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		public static IImage GetImageSourceForExtension(string extension, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
-			LruCache<string, ImageSource> defaultFileIconCache = DefaultFileIconCache;
+			LruCache<string, IImage> defaultFileIconCache = DefaultFileIconCache;
 			if (defaultFileIconCache.TryGet(extension, out var value))
 			{
 				return value;
@@ -111,8 +123,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				try
 				{
-					value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-					value.Freeze();
+					// 阶段 4.5：WPF Imaging.CreateBitmapSourceFromHIcon + Freeze → CreateBitmapFromIcon（Avalonia Bitmap 构造后即不可变）。
+					value = CreateBitmapFromIcon(iconForExtension);
 				}
 				catch (Exception ex)
 				{
@@ -124,23 +136,37 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		public static ImageSource GetImageSourceForFile(string filePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		public static IImage GetImageSourceForFile(string filePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
-			ImageSource imageSource = null;
+			IImage imageSource = null;
 			if (!File.Exists(filePath))
 			{
 				return imageSource;
 			}
 			try
 			{
-				imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-				imageSource.Freeze();
+				// 阶段 4.5：WPF Imaging.CreateBitmapSourceFromHIcon + Freeze → CreateBitmapFromIcon。
+				imageSource = CreateBitmapFromIcon(Icon.ExtractAssociatedIcon(filePath));
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Failed to create bitmap source from icon handle", ex);
 			}
 			return imageSource;
+		}
+
+		// 阶段 4.5：WPF Imaging.CreateBitmapSourceFromHIcon(IntPtr, Int32Rect, BitmapSizeOptions) → Avalonia Bitmap。
+		// Avalonia 无 HIcon → Bitmap 直接转换 API；改走 System.Drawing.Icon.ToBitmap() 得到 GDI+ Bitmap，
+		// 再以 PNG 编码写入 MemoryStream，由 Avalonia.Media.Imaging.Bitmap(stream) 加载（不可变，无需 Freeze）。
+		private static Bitmap CreateBitmapFromIcon(Icon icon)
+		{
+			using (System.Drawing.Bitmap bitmap = icon.ToBitmap())
+			using (MemoryStream ms = new MemoryStream())
+			{
+				bitmap.Save(ms, ImageFormat.Png);
+				ms.Position = 0;
+				return new Bitmap(ms);
+			}
 		}
 	}
 }

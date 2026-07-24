@@ -1,10 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Input → using Avalonia.Input（KeyEventArgs / Key）
+// - using System.Windows.Markup → 移除（Avalonia code-behind 不需 IComponentConnector using）
+// - RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs（新增 using Avalonia.Interactivity）
+// - SelectionChangedEventArgs → Avalonia.Controls.SelectionChangedEventArgs（using Avalonia.Controls 覆盖）
+// - KeyEventArgs → Avalonia.Input.KeyEventArgs（using Avalonia.Input 覆盖）
+// - Key.Return/Delete/Back/Escape → Avalonia.Input.Key.*（同名枚举值）
+// - Dispatcher.BeginInvoke → Dispatcher.Post（参考 MainWindow 迁移注释；Dispatcher.Async 自定义扩展保持不变）
+// - UpdateLayout() / IsLoaded 保持（Avalonia Layoutable.UpdateLayout 存在；IsLoaded 参考已迁移 CustomColorsDialog）
+// - Thickness → Avalonia.Thickness（using Avalonia 覆盖）
+// - Separator/MenuItem/ContextMenu → Avalonia.Controls.*（using Avalonia.Controls 覆盖）
+// - HeaderMenuItem/ToggleMenuItem → ForkPlus.UI.Controls.*（自定义控件，using 已存在）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -99,7 +113,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (!FilterTextBox.IsFocused)
 			{
-				base.Dispatcher.BeginInvoke((Action)delegate
+				base.Dispatcher.Post((Action)delegate
 				{
 					UpdateLayout();
 					FilterTextBox.FocusAndSelectAllText();
@@ -245,11 +259,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			return query.Type switch
 			{
-				RevisionSearchType.Message => Translate("Message") + "\t", 
-				RevisionSearchType.Author => Translate("Author") + "\t", 
-				RevisionSearchType.DiffPath => Translate("Path") + "\t", 
-				RevisionSearchType.DiffContent => Translate("Diff Content") + "\t", 
-				_ => throw new Exception("Cannot reach here"), 
+				RevisionSearchType.Message => Translate("Message") + "\t",
+				RevisionSearchType.Author => Translate("Author") + "\t",
+				RevisionSearchType.DiffPath => Translate("Path") + "\t",
+				RevisionSearchType.DiffContent => Translate("Diff Content") + "\t",
+				_ => throw new Exception("Cannot reach here"),
 			};
 		}
 
@@ -337,11 +351,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			string text = searchType switch
 			{
-				RevisionSearchType.Message => "Commit Message", 
-				RevisionSearchType.Author => "Author", 
-				RevisionSearchType.DiffPath => "Path", 
-				RevisionSearchType.DiffContent => "Diff Content", 
-				_ => throw new Exception("Cannot reach here"), 
+				RevisionSearchType.Message => "Commit Message",
+				RevisionSearchType.Author => "Author",
+				RevisionSearchType.DiffPath => "Path",
+				RevisionSearchType.DiffContent => "Diff Content",
+				_ => throw new Exception("Cannot reach here"),
 			};
 			return Translate(text);
 		}
@@ -350,11 +364,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			string text = searchType switch
 			{
-				RevisionSearchType.Message => "Commit message", 
-				RevisionSearchType.Author => "Author or email", 
-				RevisionSearchType.DiffPath => "Path, e.g. 'src/*.js'", 
-				RevisionSearchType.DiffContent => "Source code", 
-				_ => throw new Exception("Cannot reach here"), 
+				RevisionSearchType.Message => "Commit message",
+				RevisionSearchType.Author => "Author or email",
+				RevisionSearchType.DiffPath => "Path, e.g. 'src/*.js'",
+				RevisionSearchType.DiffContent => "Source code",
+				_ => throw new Exception("Cannot reach here"),
 			};
 			return Translate(text);
 		}

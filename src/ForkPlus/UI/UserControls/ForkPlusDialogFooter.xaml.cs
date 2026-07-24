@@ -1,8 +1,15 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl、DockPanel、Dock）
+// - 移除 using System.Windows.Markup（WPF XAML 代码生成专用，Avalonia 不需要）
+// - 新增 using Avalonia.Interactivity（RoutedEventArgs 在 Avalonia 中位于 Avalonia.Interactivity）
+// - 新增 using Avalonia.Layout（HorizontalAlignment 在 Avalonia 中位于 Avalonia.Layout）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.UserControls
 {

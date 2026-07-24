@@ -1,9 +1,20 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除（Avalonia code-behind 不需 IComponentConnector using）
+// - using System.Windows.Shapes → using Avalonia.Shapes（Ellipse）
+// - RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs（新增 using Avalonia.Interactivity）
+// - Dispatcher.Async 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post）
+// - CheckBox.Checked/Unchecked 保持（Avalonia 11.3 ToggleButton 仍提供这两个路由事件）
+// TODO(4.5): account.ServiceType.Icon()（RemoteTypeBridgeExtensions.Icon，定义于 BridgeExtensions.cs，尚未迁移）
+//            仍返回 WPF System.Windows.Media.ImageSource。Avalonia Image.Source 期望 IImage。
+//            待 BridgeExtensions 迁移为返回 Avalonia.Media.IImage 后类型一致（参考 ReferencePanel 对 Remote.Icon 的处理）。
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Shapes;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;

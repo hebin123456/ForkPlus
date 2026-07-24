@@ -1,11 +1,19 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness 与 VisualTreeHelper 在 Avalonia 中均位于 Avalonia 命名空间）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Input → using Avalonia.Input
+// - using System.Windows.Media → 移除（VisualTreeHelper 已由 using Avalonia 覆盖；本文件无其他 Avalonia.Media 类型）
+// - 移除 using System.Windows.Markup（WPF XAML 代码生成专用，Avalonia 不需要）
+// - 新增 using Avalonia.Interactivity（RoutedEventArgs 在 Avalonia 中位于 Avalonia.Interactivity）
+// - ScrollViewer.VerticalOffset → ScrollViewer.Offset.Y（Avalonia 用 Vector Offset 替代标量属性，参考 AiTextResultWindow）
+// - ScrollViewer.ViewportHeight → ScrollViewer.Viewport.Height（Avalonia 用 Size Viewport 替代标量属性）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
@@ -217,8 +225,9 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			ScrollViewer scrollViewer = ScrollViewer;
-			double num = scrollViewer.VerticalOffset + scrollViewer.ViewportHeight;
-			if ((double)_root.Children.Count <= scrollViewer.ViewportHeight)
+			// 阶段 4.5：WPF ScrollViewer.VerticalOffset/ViewportHeight → Avalonia Offset.Y/Viewport.Height。
+			double num = scrollViewer.Offset.Y + scrollViewer.Viewport.Height;
+			if ((double)_root.Children.Count <= scrollViewer.Viewport.Height)
 			{
 				Log.Debug("Item list is smaller than the viewport. Loading more to fill empty space");
 				LoadNext();

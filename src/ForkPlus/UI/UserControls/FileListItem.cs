@@ -1,7 +1,18 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Input
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage（Avalonia.Media）
+// - DependencyObject → AvaloniaObject（StartDrag 参数，与已迁移基类 MultiselectionTreeViewItem 一致）
+// - DragDrop.DoDragDrop → _ = DragDrop.DoDragDrop（异步返回 Task<DragDropEffects>，丢弃；参考 LocalBranchSidebarItem）
+// - DataObject.SetData → DataObject.Set（Avalonia 11.3 方法名）
+// TODO(4.5): ChangeType.GetImageSource()（定义于 BridgeExtensions.cs ChangeTypeBridgeExtensions，尚未迁移）
+//            仍返回 WPF System.Windows.Media.ImageSource。待 BridgeExtensions 迁移为返回 Avalonia.Media.IImage 后，
+//            此赋值类型与 FileListItem.ChangeTypeIcon (IImage) 一致（参考 ReferencePanel 对 Remote.Icon 的处理）。
 using System;
 using System.IO;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -12,9 +23,9 @@ namespace ForkPlus.UI.UserControls
 	{
 		public ChangedFile ChangedFile { get; }
 
-		public ImageSource ChangeTypeIcon { get; }
+		public IImage ChangeTypeIcon { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public bool IsDirectory => ChangedFile.IsDirectory;
 
@@ -24,7 +35,7 @@ namespace ForkPlus.UI.UserControls
 
 		public string ToolTip { get; }
 
-		public FileListItem(ChangedFile changedFile, string name, ImageSource fileTypeIcon)
+		public FileListItem(ChangedFile changedFile, string name, IImage fileTypeIcon)
 		{
 			ChangedFile = changedFile;
 			ChangeTypeIcon = GetChangeTypeIcon(changedFile);
@@ -54,7 +65,7 @@ namespace ForkPlus.UI.UserControls
 			return false;
 		}
 
-		private static ImageSource GetChangeTypeIcon(ChangedFile changedFile)
+		private static IImage GetChangeTypeIcon(ChangedFile changedFile)
 		{
 			if (changedFile.IsDirectory)
 			{
@@ -80,11 +91,11 @@ namespace ForkPlus.UI.UserControls
 			return l.IsDirectory;
 		}
 
-		public override void StartDrag(DependencyObject dragSource, MultiselectionTreeViewItem[] nodes)
+		public override void StartDrag(AvaloniaObject dragSource, MultiselectionTreeViewItem[] nodes)
 		{
 			try
 			{
-				DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+				_ = DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
 			}
 			catch
 			{
@@ -94,7 +105,7 @@ namespace ForkPlus.UI.UserControls
 		protected override IDataObject GetDataObject(MultiselectionTreeViewItem[] nodes)
 		{
 			DataObject dataObject = new DataObject();
-			dataObject.SetData(FileListTreeView.DragItemsFormat, nodes);
+			dataObject.Set(FileListTreeView.DragItemsFormat, nodes);
 			return dataObject;
 		}
 	}

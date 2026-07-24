@@ -1,4 +1,9 @@
-using System.Windows;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia.Input（DragEventArgs / DragDropEffects 在 Avalonia.Input）
+// - e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()（Avalonia 文件拖放 API；参考 RepositoryUserControl.OnDrop）
+using System.Linq;
+using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 
@@ -20,7 +25,7 @@ namespace ForkPlus.UI.UserControls
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(DataFormats.FileDrop) is string[])
+			if (e.Data.GetFiles() != null)
 			{
 				return DragDropEffects.Move;
 			}
@@ -29,7 +34,8 @@ namespace ForkPlus.UI.UserControls
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			if (!(e.Data.GetData(DataFormats.FileDrop) is string[] array))
+			string[] array = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
+			if (array == null)
 			{
 				return;
 			}
