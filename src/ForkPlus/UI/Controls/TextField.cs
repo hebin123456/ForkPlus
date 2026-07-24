@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
@@ -11,43 +11,36 @@ namespace ForkPlus.UI.Controls
 	{
 		protected static readonly List<Range> Empty = new List<Range>();
 
-		public static readonly DependencyProperty StringValueProperty = DependencyProperty.RegisterAttached("StringValue", typeof(string), typeof(TextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as TextField).RefreshInlines();
-		}));
+		public static readonly StyledProperty<string> StringValueProperty =
+			AvaloniaProperty.Register<TextField, string>(nameof(StringValue));
 
-		public static readonly DependencyProperty HighlightPatternProperty = DependencyProperty.RegisterAttached("HighlightString", typeof(string), typeof(TextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as TextField).RefreshInlines();
-		}));
+		public static readonly StyledProperty<string> HighlightStringProperty =
+			AvaloniaProperty.Register<TextField, string>(nameof(HighlightString));
 
 		public string StringValue
 		{
-			get
-			{
-				return (string)GetValue(StringValueProperty);
-			}
-			set
-			{
-				SetValue(StringValueProperty, value);
-			}
+			get => GetValue(StringValueProperty);
+			set => SetValue(StringValueProperty, value);
 		}
 
 		public string HighlightString
 		{
-			get
+			get => GetValue(HighlightStringProperty);
+			set => SetValue(HighlightStringProperty, value);
+		}
+
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == StringValueProperty || change.Property == HighlightStringProperty)
 			{
-				return (string)GetValue(HighlightPatternProperty);
-			}
-			set
-			{
-				SetValue(HighlightPatternProperty, value);
+				RefreshInlines();
 			}
 		}
 
 		protected virtual void RefreshInlines()
 		{
-			base.Inlines.Clear();
+			base.Inlines!.Clear();
 			string stringValue = StringValue;
 			string highlightString = HighlightString;
 			if (string.IsNullOrEmpty(stringValue))
@@ -65,16 +58,11 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			// TODO(4.5-g): Avalonia Run 不支持 Background/Foreground 属性（WPF 才有）。
+			// 搜索匹配高亮着色需后续改用自定义 TextBlock 渲染（FormattedText + DrawText 范围着色）恢复。
 			new Range(0, stringValue.Length).Merge(new List<Range>[1] { searchMatchRanges }, delegate(Range range, int? searchIndex, int? _, int? __)
 			{
 				Run run = new Run(stringValue.Substring(range));
-				if (searchIndex.HasValue)
-				{
-					run.Background = matchBackgroundBrush;
-					run.Foreground = matchForegroundBrush;
-				}
 				base.Inlines.Add(run);
 			});
 		}
