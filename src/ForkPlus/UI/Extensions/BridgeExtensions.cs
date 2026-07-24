@@ -1,43 +1,47 @@
 using System;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using ForkPlus.Services;
+using System.IO;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ForkPlus.UI.Helpers;
 
 // ⚠ 临时桥接线 ─ 这些扩展方法与原有命名空间相同，因此调用方无需修改 using。
-// 在迁移到 Avalonia 时，直接删除此文件并在新 UI 中重写图标解析逻辑。
+// 阶段 4.5：WPF ImageSource/BitmapImage/pack:// URI/Freeze → Avalonia IImage/Bitmap/avares:// URI。
+// 迁移完全结束后可删除此文件，改为 Avalonia 原生图标系统。
 
 namespace ForkPlus.Git
 {
 	/// <summary>
-	/// 将 ChangeType/StatusType 图标键解析为 WPF ImageSource。
-	/// 迁移完成后删除此文件，改为 Avalonia 原生图标系统。
+	/// 将 ChangeType/StatusType 图标键解析为 Avalonia IImage。
 	/// </summary>
 	public static class ChangeTypeBridgeExtensions
 	{
-		private static readonly Uri AddIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Add.png");
-		private static readonly Uri EditIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png");
-		private static readonly Uri CopyIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Copy.png");
-		private static readonly Uri DeletedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Remove.png");
-		private static readonly Uri RenamedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Rename.png");
-		private static readonly Uri TypeChangedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png");
-		private static readonly Uri UnmergedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Warning.png");
+		private static readonly Uri AddIconUrl = new Uri("avares://ForkPlus/assets/status_add.png");
+		private static readonly Uri EditIconUrl = new Uri("avares://ForkPlus/assets/status_edit.png");
+		private static readonly Uri CopyIconUrl = new Uri("avares://ForkPlus/assets/status_copy.png");
+		private static readonly Uri DeletedIconUrl = new Uri("avares://ForkPlus/assets/status_remove.png");
+		private static readonly Uri RenamedIconUrl = new Uri("avares://ForkPlus/assets/status_rename.png");
+		private static readonly Uri TypeChangedIconUrl = new Uri("avares://ForkPlus/assets/status_edit.png");
+		private static readonly Uri UnmergedIconUrl = new Uri("avares://ForkPlus/assets/warning.png");
 
-		private static readonly ImageSource AddIcon = Freeze(new BitmapImage(AddIconUrl));
-		private static readonly ImageSource EditIcon = Freeze(new BitmapImage(EditIconUrl));
-		private static readonly ImageSource CopyIcon = Freeze(new BitmapImage(CopyIconUrl));
-		private static readonly ImageSource DeletedIcon = Freeze(new BitmapImage(DeletedIconUrl));
-		private static readonly ImageSource RenamedIcon = Freeze(new BitmapImage(RenamedIconUrl));
-		private static readonly ImageSource TypeChangedIcon = Freeze(new BitmapImage(TypeChangedIconUrl));
-		private static readonly ImageSource UnmergedIcon = Freeze(new BitmapImage(UnmergedIconUrl));
+		private static readonly IImage AddIcon = LoadBitmap(AddIconUrl);
+		private static readonly IImage EditIcon = LoadBitmap(EditIconUrl);
+		private static readonly IImage CopyIcon = LoadBitmap(CopyIconUrl);
+		private static readonly IImage DeletedIcon = LoadBitmap(DeletedIconUrl);
+		private static readonly IImage RenamedIcon = LoadBitmap(RenamedIconUrl);
+		private static readonly IImage TypeChangedIcon = LoadBitmap(TypeChangedIconUrl);
+		private static readonly IImage UnmergedIcon = LoadBitmap(UnmergedIconUrl);
 
-		private static ImageSource Freeze(ImageSource source)
+		private static IImage LoadBitmap(Uri assetUri)
 		{
-			if (source?.CanFreeze == true) source.Freeze();
-			return source;
+			// Avalonia Bitmap 构造后即不可变，无需 Freeze。
+			using (Stream stream = AssetLoader.Open(assetUri))
+			{
+				return new Bitmap(stream);
+			}
 		}
 
-		public static ImageSource GetImageSource(this ChangeType changeType)
+		public static IImage GetImageSource(this ChangeType changeType)
 		{
 			return changeType.GetIconKey() switch
 			{
@@ -51,7 +55,7 @@ namespace ForkPlus.Git
 			};
 		}
 
-		public static ImageSource GetImageSource(this StatusType statusType)
+		public static IImage GetImageSource(this StatusType statusType)
 		{
 			return statusType.GetIconKey() switch
 			{
@@ -65,7 +69,7 @@ namespace ForkPlus.Git
 			};
 		}
 
-		public static ImageSource GetConflictImageSource(this StatusType statusType)
+		public static IImage GetConflictImageSource(this StatusType statusType)
 		{
 			return statusType.GetIconKey() switch
 			{
@@ -77,12 +81,11 @@ namespace ForkPlus.Git
 	}
 
 	/// <summary>
-	/// 将 RemoteType 图标键解析为 WPF ImageSource/Geometry。
-	/// 迁移完成后删除此文件。
+	/// 将 RemoteType 图标键解析为 Avalonia IImage/Geometry。
 	/// </summary>
 	public static class RemoteTypeBridgeExtensions
 	{
-		public static ImageSource Icon(this RemoteType remoteType)
+		public static IImage Icon(this RemoteType remoteType)
 		{
 			string key = remoteType.GetIconKey();
 			return UI.Theme.FindImage(key) ?? UI.Theme.RemoteIcon;
@@ -101,7 +104,7 @@ namespace ForkPlus.Git
 	/// </summary>
 	public static class RemoteBridgeExtensions
 	{
-		public static ImageSource GetIconImage(this Remote remote)
+		public static IImage GetIconImage(this Remote remote)
 		{
 			return UI.Theme.FindImage(remote.IconKey) ?? UI.Theme.RemoteIcon;
 		}
@@ -116,12 +119,11 @@ namespace ForkPlus.Git
 namespace ForkPlus.Accounts
 {
 	/// <summary>
-	/// 将 GitServiceNotificationTargetType 图标键解析为 WPF ImageSource。
-	/// 迁移完成后删除此文件。
+	/// 将 GitServiceNotificationTargetType 图标键解析为 Avalonia IImage。
 	/// </summary>
 	public static class NotificationIconBridgeExtensions
 	{
-		public static ImageSource Icon(this GitServiceNotificationTargetType targetType)
+		public static IImage Icon(this GitServiceNotificationTargetType targetType)
 		{
 			string key = targetType.GetIconKey();
 			return key switch
