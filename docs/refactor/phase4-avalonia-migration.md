@@ -13,15 +13,23 @@
 
 ### 第三方库替换
 
-- [ ] `AvalonEdit` → `Avalonia.AvaloniaEdit`（社区移植，API 接近，需逐个核对）
-  - 涉及：`CommitUserControl`、Diff 编辑器、`CodeEditorSearchPanelUserControl`
-- [ ] `OxyPlot.Wpf` → `OxyPlot.Avalonia`（社区维护，落后于 Wpf 版）/ 或 `ScottPlot.Avalonia`
-  - 涉及：`StatisticsUserControl`
-- [ ] `Microsoft.Web.WebView2` → 调研替代方案（**最大风险**）
-  - 选项 A：`CefGlue` / `Avalonia.WebView`（包大、跨平台一致，保留富 HTML 渲染）
-  - 选项 B：`AvaloniaEdit` + 自写 Markdown→文档模型（中等工作量，跨平台干净）
-  - 涉及：`AiDevelopmentWindow` / `AiCodeReviewWindow` / `AiTextResultWindow` / `GitMmReferenceWindow`
-- [ ] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`
+- [x] `AvalonEdit` → `Avalonia.AvaloniaEdit`（4.7-a 完成）
+  - 涉及：`CodeEditor`、`DiffCodeEditor`、`MergeCodeEditor`、`HexEditor`、`HexContentControl`、`HexDiffUserControl`、`CodeEditorSearchPanelUserControl`、`SlidingPanelHelper` 等
+  - 已完成：命名空间替换、`StreamGeometryContext` API 适配、`WeakEventManager` → 直接订阅、`SetResourceReference` → 移除、`OnRenderSizeChanged` → `OnSizeChanged`、模板部件查找适配、`Brush` → `IBrush`、`Freeze()` 移除、`Pointer*` 事件替换
+  - 剩余：`MenuExtensions` + 依赖的命令文件（`HunkHistoryCommand`/`CopyCommand`/`OpenFileInExternalEditorCommand`）属于菜单系统迁移，单独处理
+- [x] `OxyPlot.Wpf` → `OxyPlot.Avalonia`（4.7-b 完成）
+  - 涉及：`StatisticsUserControl`、`StatisticsUserControlViewModel`
+  - 已完成：`OxyPlot.Wpf` → `OxyPlot.Avalonia`、`WeakEventManager` → 直接订阅、`ListCollectionView`/`CollectionViewSource` → 过滤 `ObservableCollection`、`Dispatcher.BeginInvoke` → `Dispatcher.Post`、`ToOxyColor()` 扩展方法（`OxyPlotExtensions.cs`）、XAML xmlns 替换、`{x:Type}` → Selector 语法
+- [ ] `Microsoft.Web.WebView2` → 调研替代方案（4.7-c 评估完成，**最大工作量**）
+  - **评估结论：推荐方案 B（Markdig + Avalonia 原生 Markdown 渲染）**
+  - 与 csproj 声明一致："阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除"
+  - 涉及：`AiDevelopmentWindow` / `AiCodeReviewWindow` / `AiTextResultWindow` / `GitMmReferenceWindow` / `WebView2EnvironmentHelper` / `AiStreamingMarkdownViewModel`
+  - 工作量：~3-4 周（需构建 `MarkdownAvaloniaRenderer` 组件，逐窗口迁移）
+  - 拒绝方案 A（CefNet/Avalonia.WebView）：CefNet 未维护，~150MB Chromium 依赖，不推进跨平台目标
+  - 拒绝方案 C（CefNet 直接使用）：同上风险更高
+  - 过渡方案 D（Windows 保留 WebView2 + 跨平台 fallback）：可作增量迁移过渡
+  - JS 互操作：`AiTextResultWindow`/`AiCodeReviewWindow` 用 `window.chrome.webview.postMessage` 做滚动追踪和建议卡按钮回调，需改为原生 Avalonia 事件
+- [ ] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d）
   - 涉及：`OpenDialog` 静态类（阶段 2 已迁移到 `IFileSystemDialogService`）
 
 ### 基类重写（里程碑 4.2，已完成）
