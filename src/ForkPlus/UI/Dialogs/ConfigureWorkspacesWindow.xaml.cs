@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.UserControls.Preferences;
 using System.ComponentModel;
 
@@ -48,7 +50,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void WorkspacesListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
+			if ((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{
 				WorkspacesListBox.ContextMenu.Items.Clear();
 				WorkspacesListBox.ContextMenu.SetItems(GetContextMenu(dataContext));
@@ -62,7 +64,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void WorkspacesListBox_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.F2 && ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
+			if (e.Key == Key.F2 && (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{
 				dataContext.IsInEditMode = true;
 			}

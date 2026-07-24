@@ -74,8 +74,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			RepositoryOverviewWindow repositoryOverviewWindow = this;
 			_gitModule = gitModule;
-			_titleGlyphDrawer = new TextDrawer(_typeface, 12.0, VisualTreeHelper.GetDpi(this).PixelsPerDip);
-			_secondaryLabelGlyphDrawer = new TextDrawer(_typeface, 11.0, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			_titleGlyphDrawer = new TextDrawer(_typeface, 12.0, 1.0);
+			_secondaryLabelGlyphDrawer = new TextDrawer(_typeface, 11.0, 1.0);
 			base.Title = string.Format(Translate("{0} - Repository Overview"), gitModule.RepositoryName);
 			base.ShowInTaskbar = true;
 			base.WindowStartupLocation = WindowStartupLocation.CenterScreen;

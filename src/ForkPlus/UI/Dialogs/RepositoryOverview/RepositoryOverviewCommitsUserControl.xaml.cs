@@ -1,7 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
 using ForkPlus.Git;
+using ForkPlus.UI;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -34,7 +36,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			e.Handled = true;
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
+			if ((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -46,7 +48,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 
 		private void RevisionsListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
-			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: var dataContext }))
+			if (!((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: var dataContext }))
 			{
 				return;
 			}

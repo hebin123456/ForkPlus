@@ -1,17 +1,21 @@
+using Avalonia;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor.Diff;
@@ -93,25 +97,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _startUpFinished;
 
-		private ScrollViewer RevisionListScrollViewer
-		{
-			get
-			{
-				if (VisualTreeHelper.GetChildrenCount(BlameListBox) <= 0)
-				{
-					return null;
-				}
-				if (!(VisualTreeHelper.GetChild(BlameListBox, 0) is Border reference))
-				{
-					return null;
-				}
-				if (!(VisualTreeHelper.GetChild(reference, 0) is ScrollViewer result))
-				{
-					return null;
-				}
-				return result;
-			}
-		}
+		private ScrollViewer RevisionListScrollViewer => BlameListBox.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 
 		public BlameWindow(RepositoryUserControl repositoryUserControl, string filePath, Sha? shaToSelect, [Null] ForkPlus.Git.Reference targetReference)
 		{
@@ -470,7 +456,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			e.Handled = true;
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
+			if ((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: BlameItemViewModel dataContext })
 			{
 				GitModule gitModule = _repositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -482,7 +468,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void BlameListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
-			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: var dataContext }))
+			if (!((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: var dataContext }))
 			{
 				return;
 			}

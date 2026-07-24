@@ -5,9 +5,7 @@
 // - DependencyObject → AvaloniaObject（StartDrag 参数，与已迁移基类 MultiselectionTreeViewItem 一致）
 // - DragDrop.DoDragDrop → _ = DragDrop.DoDragDrop（异步返回 Task<DragDropEffects>，丢弃；参考 LocalBranchSidebarItem）
 // - DataObject.SetData → DataObject.Set（Avalonia 11.3 方法名）
-// NOTE(4.5): ChangeType.GetImageSource()（定义于 BridgeExtensions.cs ChangeTypeBridgeExtensions，尚未迁移）
-//            仍返回 WPF System.Windows.Media.ImageSource。待 BridgeExtensions 迁移为返回 Avalonia.Media.IImage 后，
-//            此赋值类型与 FileListItem.ChangeTypeIcon (IImage) 一致（参考 ReferencePanel 对 Remote.Icon 的处理）。
+// 阶段 4.5：ChangeType.GetImageSource()（ChangeTypeBridgeExtensions）已返回 Avalonia.Media.IImage，与 FileListItem.ChangeTypeIcon (IImage) 一致。
 using System;
 using System.IO;
 using Avalonia;

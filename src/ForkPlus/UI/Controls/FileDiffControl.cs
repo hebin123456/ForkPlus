@@ -139,8 +139,8 @@ namespace ForkPlus.UI.Controls
 		// 通过 e.Handled = true 阻止后续处理，达到 Preview 的效果。
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			// NOTE(4.5): WPF Keyboard.FocusedElement → Avalonia FocusManager.GetFocusedElement()，需验证
-			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(Keyboard.FocusedElement is TextBox))
+			// NOTE(4.5): WPF Keyboard.FocusedElement → Avalonia FocusManager.Instance?.Current，已迁移
+			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(FocusManager.Instance?.Current is TextBox))
 			{
 				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
 				if (repositoryUserControl != null)

@@ -47,7 +47,7 @@ namespace ForkPlus.UI.Dialogs
 			base.CancelButtonTitle = Translate("Close");
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
+				if (e.Key == Key.F && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
 				{
 					gitLfsStatusWindow.FilterTextBox.Focus();
 					e.Handled = true;

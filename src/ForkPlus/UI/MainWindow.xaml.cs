@@ -331,60 +331,57 @@ namespace ForkPlus.UI
 
 		private void InitializeKeyBindings()
 		{
-			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
-			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
-			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
-			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
-#if false
-			base.CommandBindings.Add(Commands.ActivateCommitView.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF CommandBindings/RoutedCommand → Avalonia InputElement.KeyBindings。
+			// IUICommandExtension.CreateShortcutKeyBinding 返回 Avalonia.Input.KeyBinding，通过 KeyBindings.Add 注册。
+			base.KeyBindings.Add(Commands.ActivateCommitView.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ActivateCommitView.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateRevisionList.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ActivateRevisionList.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ActivateRevisionList.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateRepositoryTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ActivateRepositoryTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ActivateRepositoryTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateSearchTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ActivateSearchTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ActivateSearchTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowHead.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowHead.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowHead.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ToggleShowReflogInRevisionList.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ToggleShowReflogInRevisionList.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ToggleShowReflogInRevisionList.Execute();
 			}));
-			base.CommandBindings.Add(Commands.CloseActiveTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.CloseActiveTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.CloseActiveTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.NewTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.NewTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.NewTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.OpenRepository.CreateShortcutKeyBinding(delegate
 			{
 				Commands.OpenRepository.Execute();
 			}));
-			base.CommandBindings.Add(Commands.RefreshRepositoryData.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.RefreshRepositoryData.CreateShortcutKeyBinding(delegate
 			{
 				Commands.RefreshRepositoryData.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCloneWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowCloneWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowCloneWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowInitGitMmRepositoryWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowInitGitMmRepositoryWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowInitGitMmRepositoryWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateBranchWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowCreateBranchWindow.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl8 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl8 != null)
@@ -392,11 +389,11 @@ namespace ForkPlus.UI
 					Commands.ShowCreateBranchWindow.Execute(activeRepositoryUserControl8, null);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateRepositoryWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowCreateRepositoryWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowCreateRepositoryWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateTagWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowCreateTagWindow.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl7 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl7 != null)
@@ -404,7 +401,7 @@ namespace ForkPlus.UI
 					Commands.ShowCreateTagWindow.Execute(activeRepositoryUserControl7, null);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowFetchWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowFetchWindow.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl6 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl6 != null)
@@ -412,19 +409,19 @@ namespace ForkPlus.UI
 					Commands.ShowFetchWindow.Execute(activeRepositoryUserControl6, activeRepositoryUserControl6.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowQuickLaunchWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowQuickLaunchWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowQuickLaunchWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowQuickLaunchCheckoutWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowQuickLaunchCheckoutWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowQuickLaunchCheckoutWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowPullWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowPullWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowPullWindow.Execute(TabManager.ActiveRepositoryUserControl);
 			}));
-			base.CommandBindings.Add(Commands.QuickPull.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.QuickPull.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl5 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl5 != null)
@@ -432,7 +429,7 @@ namespace ForkPlus.UI
 					Commands.QuickPull.Execute(activeRepositoryUserControl5);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowPushWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowPushWindow.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl4 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl4 != null)
@@ -440,7 +437,7 @@ namespace ForkPlus.UI
 					Commands.ShowPushWindow.Execute(activeRepositoryUserControl4);
 				}
 			}));
-			base.CommandBindings.Add(Commands.QuickPush.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.QuickPush.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl3 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl3 != null)
@@ -448,15 +445,15 @@ namespace ForkPlus.UI
 					Commands.QuickPush.Execute(activeRepositoryUserControl3);
 				}
 			}));
-			base.CommandBindings.Add(Commands.SelectNextTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.SelectNextTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.SelectNextTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.SelectPreviousTab.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.SelectPreviousTab.CreateShortcutKeyBinding(delegate
 			{
 				Commands.SelectPreviousTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowSaveStashWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowSaveStashWindow.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl2 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl2 != null)
@@ -464,7 +461,7 @@ namespace ForkPlus.UI
 					Commands.ShowSaveStashWindow.Execute(activeRepositoryUserControl2, activeRepositoryUserControl2.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.OpenRepositoryInShellTool.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.OpenRepositoryInShellTool.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl != null)
@@ -472,23 +469,23 @@ namespace ForkPlus.UI
 					Commands.OpenRepositoryInShellTool.Execute(activeRepositoryUserControl.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ToggleReferenceFilter.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ToggleReferenceFilter.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ToggleReferenceFilter.Execute();
 			}));
-			base.CommandBindings.Add(Commands.IncreaseLayoutScale.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.IncreaseLayoutScale.CreateShortcutKeyBinding(delegate
 			{
 				Commands.IncreaseLayoutScale.Execute();
 			}));
-			base.CommandBindings.Add(Commands.DecreaseLayoutScale.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.DecreaseLayoutScale.CreateShortcutKeyBinding(delegate
 			{
 				Commands.DecreaseLayoutScale.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowPreferencesWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ShowPreferencesWindow.CreateShortcutKeyBinding(delegate
 			{
 				Commands.ShowPreferencesWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.Undo.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.Undo.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepoForUndo = TabManager.ActiveRepositoryUserControl;
 				if (activeRepoForUndo != null)
@@ -496,7 +493,7 @@ namespace ForkPlus.UI
 					Commands.Undo.Execute(activeRepoForUndo);
 				}
 			}));
-			base.CommandBindings.Add(Commands.Redo.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.Redo.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl activeRepoForRedo = TabManager.ActiveRepositoryUserControl;
 				if (activeRepoForRedo != null)
@@ -504,7 +501,6 @@ namespace ForkPlus.UI
 					Commands.Redo.Execute(activeRepoForRedo);
 				}
 			}));
-#endif
 		}
 
 		private void Window_Closing(object sender, WindowClosingEventArgs e)

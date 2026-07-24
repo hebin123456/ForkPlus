@@ -75,7 +75,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private static void AddFlag(List<string> args, System.Windows.Controls.CheckBox checkBox, string flag)
+		private static void AddFlag(List<string> args, CheckBox checkBox, string flag)
 		{
 			if (checkBox.IsChecked.GetValueOrDefault())
 			{
@@ -110,7 +110,7 @@ namespace ForkPlus.UI.Dialogs
 			TopicTextBox.TextChanged += delegate { RefreshCommandPreview(); };
 			ReviewersTextBox.TextChanged += delegate { RefreshCommandPreview(); };
 			CcTextBox.TextChanged += delegate { RefreshCommandPreview(); };
-			foreach (System.Windows.Controls.CheckBox checkBox in new System.Windows.Controls.CheckBox[]
+			foreach (CheckBox checkBox in new CheckBox[]
 			{
 				ForceUploadCheckBox,
 				AssumeYesCheckBox,
@@ -174,7 +174,7 @@ namespace ForkPlus.UI.Dialogs
 			ForkPlusSettings.Default.Save();
 		}
 
-		private static void SaveCheckBox(Dictionary<string, string> dialogOptions, string key, System.Windows.Controls.CheckBox checkBox)
+		private static void SaveCheckBox(Dictionary<string, string> dialogOptions, string key, CheckBox checkBox)
 		{
 			dialogOptions[key] = checkBox.IsChecked.GetValueOrDefault() ? "true" : "false";
 		}

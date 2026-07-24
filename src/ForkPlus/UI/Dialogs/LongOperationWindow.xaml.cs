@@ -58,7 +58,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void LongOperationWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async delegate
+			Dispatcher.Post(new Action(async delegate
 			{
 				try
 				{
@@ -72,7 +72,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					CloseWithOk();
 				}
-			}));
+			}), DispatcherPriority.ApplicationIdle);
 		}
 
 		private static string Translate(string text)

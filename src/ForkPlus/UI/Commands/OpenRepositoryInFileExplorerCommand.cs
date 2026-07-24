@@ -30,7 +30,10 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute([Null] string repositoryPath)
 		{
-			if (Keyboard.IsKeyDown(Key.RightAlt) || string.IsNullOrEmpty(repositoryPath) || !Directory.Exists(repositoryPath))
+			// NOTE(4.5): WPF Keyboard.IsKeyDown(Key.RightAlt) 在 Avalonia 无等价物（KeyModifiers.Alt
+			// 不区分左右 Alt）。本命令快捷键为 Alt+Ctrl+O，若用 KeyboardHelper.IsAltDown 会在快捷键
+			// 触发时误返回（Alt 必然按下），故此处置 false 保留主路径行为。
+			if (false || string.IsNullOrEmpty(repositoryPath) || !Directory.Exists(repositoryPath))
 			{
 				return;
 			}

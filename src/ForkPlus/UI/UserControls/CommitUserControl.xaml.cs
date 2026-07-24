@@ -289,12 +289,9 @@ namespace ForkPlus.UI.UserControls
 			stageFileUserControl2.StagedFilesItemSourceChanged += StageFileUserControl_StagedFilesItemSourceChanged;
 			StageFileUserControl stageFileUserControl3 = StageFileUserControl;
 			stageFileUserControl3.SelectionChanged += StageFileUserControl_SelectionChanged;
-			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
-			// 需改用 Avalonia.Input.KeyBinding + ICommand 包装，并迁移
-			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
-			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
-#if false
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF CommandBindings/RoutedCommand → Avalonia InputElement.KeyBindings。
+			// IUICommandExtension.CreateShortcutKeyBinding 返回 Avalonia.Input.KeyBinding，通过 KeyBindings.Add 注册。
+			StageFileUserControl.KeyBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutKeyBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -305,7 +302,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(GitModule, StageFileUserControl.SelectedUnstagedFiles.FirstItem()?.Path);
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.KeyBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -316,7 +313,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyFilePaths.Execute(StageFileUserControl.SelectedUnstagedFiles.Map((ChangedFile x) => x.Path));
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.KeyBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -327,7 +324,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyAbsoluteFilePaths.Execute(GitModule, StageFileUserControl.SelectedUnstagedFiles.Map((ChangedFile x) => x.Path));
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.KeyBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutKeyBinding(delegate
 			{
 				ChangedFile changedFile;
 				RunExternalDiffToolCommand.DiffTarget diffTarget;
@@ -364,15 +361,14 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(Commands.ToggleFileStage.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.KeyBindings.Add(Commands.ToggleFileStage.CreateShortcutKeyBinding(delegate
 			{
 				ToggleStageForSelectedFiles();
 			}));
-			StageFileUserControl.CommandBindings.Add(Commands.DiscardChangedFilesCommand.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.KeyBindings.Add(Commands.DiscardChangedFilesCommand.CreateShortcutKeyBinding(delegate
 			{
 				DiscardSelectedFiles();
 			}));
-#endif
 			StageFileUserControl.StageAll += delegate
 			{
 				StageAllFiles();
@@ -434,12 +430,9 @@ namespace ForkPlus.UI.UserControls
 			{
 				UpdateCommitButtonTitle();
 			};
-			// NOTE (Avalonia 迁移): WPF DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
-			// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为，可在 CommitSubjectTextBox 上
-			// 监听 AvaloniaEdit 的 TextInput 或自己实现 Paste 命令覆盖。原 OnCommitSubjectPaste 暂用 #if false 关闭。
-#if false
-			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
-#endif
+			// NOTE (Avalonia limitation): WPF DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+			// Avalonia TextBox 无粘贴预拦截事件；如需自定义粘贴行为（subject/description 分流），
+			// 需在 CommitSubjectTextBox 上监听 TextInput 或覆盖 Paste 命令。原 OnCommitSubjectPaste 已移除。
 		}
 
 		public void ApplyLocalization()
@@ -483,51 +476,9 @@ namespace ForkPlus.UI.UserControls
 			CommitSubjectTextBox.Focus();
 		}
 
-		// NOTE (Avalonia 迁移): WPF DataObjectPastingEventArgs / DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
-		// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为（subject/description 分流），需在
-		// CommitSubjectTextBox 上监听 TextInput 或覆盖 Paste 命令。原方法体暂用 #if false 关闭编译。
-#if false
-		private void OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e)
-		{
-			if (e.DataObject.GetDataPresent(DataFormats.UnicodeText) && e.DataObject.GetData(DataFormats.UnicodeText) is string text)
-			{
-				e.CancelCommand();
-				string text2 = FullCommitMessage;
-				if (CommitSubjectTextBox.IsSelectionActive)
-				{
-					int selectionStart = CommitSubjectTextBox.SelectionStart;
-					int selectionLength = CommitSubjectTextBox.SelectionLength;
-					text2 = FullCommitMessage.Remove(selectionStart, selectionLength);
-				}
-				int num = Math.Min(text2.Length, CommitSubjectTextBox.CaretIndex);
-				text2 = text2.Insert(num, text);
-				int num2 = num + text.Length;
-				string[] array = text2.Split(new string[1] { "\n" }, 2, StringSplitOptions.RemoveEmptyEntries);
-				if (array.Length == 2)
-				{
-					int num3 = 0;
-					num3 += array[0].Length;
-					num3 += array[1].Length;
-					CommitSubjectTextBox.Text = array[0].Trim();
-					CommitDescriptionTextBox.Text = array[1].TrimStart();
-					num3 -= CommitSubjectTextBox.Text.Length;
-					num3 -= CommitDescriptionTextBox.Text.Length;
-					num2 -= num3;
-				}
-				else
-				{
-					CommitSubjectTextBox.Text = text2.TrimStart().TrimEnd('\r', '\n');
-				}
-				if (num2 <= CommitSubjectTextBox.Text.Length)
-				{
-					CommitSubjectTextBox.CaretIndex = num2;
-					return;
-				}
-				CommitDescriptionTextBox.CaretIndex = Math.Max(0, num2 - CommitSubjectTextBox.Text.Length - "\n".Length);
-				CommitDescriptionTextBox.Focus();
-			}
-		}
-#endif
+		// NOTE (Avalonia limitation): WPF DataObjectPastingEventArgs / DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+		// 原 OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e) 依赖此 API 实现 subject/description 分流粘贴，
+		// 已移除。如需恢复该行为，需在 CommitSubjectTextBox 上监听 TextInput 或覆盖 Paste 命令重新实现。
 
 		private void ToggleHideUntrackedFiles()
 		{
@@ -1349,21 +1300,18 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
-			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
-			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
-			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
-			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
-#if false
-			base.CommandBindings.Add(Commands.Commit.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF CommandBindings/RoutedCommand → Avalonia InputElement.KeyBindings。
+			// IUICommandExtension.CreateShortcutKeyBinding 返回 Avalonia.Input.KeyBinding，通过 KeyBindings.Add 注册。
+			base.KeyBindings.Add(Commands.Commit.CreateShortcutKeyBinding(delegate
 			{
 				Commands.Commit.Execute(this, CommitAndPush);
 			}));
 			// v3.4.1：WIP 编排为提交绑定 Ctrl+Alt+Enter，避免和 Commit 的 Ctrl+Shift+Enter / Ctrl+Enter 重叠
-			base.CommandBindings.Add(Commands.ComposeWipCommit.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ComposeWipCommit.CreateShortcutKeyBinding(delegate
 			{
 				OpenAiCommitComposer();
 			}));
-			base.CommandBindings.Add(Commands.ToggleAllFilesStageCommand.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(Commands.ToggleAllFilesStageCommand.CreateShortcutKeyBinding(delegate
 			{
 				if (StageFileUserControl.IsUnstagedListSelected)
 				{
@@ -1381,10 +1329,8 @@ namespace ForkPlus.UI.UserControls
 					{
 						Commands.ToggleAllFilesStageCommand.Execute(this, RepositoryUserControl, array2, AmendMode);
 						StageFileUserControl.RefreshStageAllButton();
-					}
 				}
 			}));
-#endif
 		}
 
 		private void RestoreGridColumnWidth()

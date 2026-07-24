@@ -351,12 +351,12 @@ namespace ForkPlus.UI.Dialogs
 					array2[i].Action = InteractiveRebaseAction.Drop;
 				}
 			}
-			else if (e.Key == Key.Up && Keyboard.IsKeyDown(Key.LeftCtrl))
+			else if (e.Key == Key.Up && e.KeyModifiers.HasFlag(KeyModifiers.Control))
 			{
 				e.Handled = true;
 				MoveUp(array);
 			}
-			else if (e.Key == Key.Down && Keyboard.IsKeyDown(Key.LeftCtrl))
+			else if (e.Key == Key.Down && e.KeyModifiers.HasFlag(KeyModifiers.Control))
 			{
 				e.Handled = true;
 				MoveDown(array);

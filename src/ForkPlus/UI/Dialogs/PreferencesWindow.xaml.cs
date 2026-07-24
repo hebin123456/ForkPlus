@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -100,7 +101,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (selectedTab.Content is DependencyObject content)
+			if (selectedTab.Content is AvaloniaObject content)
 			{
 				PreferencesLocalization.Apply(content, language);
 				if (selectedTab.Content is IntegrationUserControl integrationUserControl)

@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_delayedAction.ReinvokeNow();
 			});
-			base.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutKeyBinding(delegate
 			{
 				HistoryEntryViewModel historyEntryViewModel4 = _selectedHistoryEntries?.FirstItem();
 				if (historyEntryViewModel4 != null)
@@ -103,7 +103,7 @@ namespace ForkPlus.UI.Dialogs
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(GitModule, historyEntryViewModel4.Sha.ToString(), historyEntryViewModel4.ChangedFile);
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutKeyBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries4 = _selectedHistoryEntries;
 				List<Revision> list3 = new List<Revision>((selectedHistoryEntries4 != null) ? selectedHistoryEntries4.Length : 0);
@@ -114,7 +114,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				RepositoryUserControl.Commands.CopyRevisionSha.Execute(list3.ToArray());
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutKeyBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries2 = _selectedHistoryEntries;
 				List<Revision> list2 = new List<Revision>((selectedHistoryEntries2 != null) ? selectedHistoryEntries2.Length : 0);
@@ -125,7 +125,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(list2.ToArray());
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutKeyBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries = _selectedHistoryEntries;
 				int num = ((selectedHistoryEntries != null) ? selectedHistoryEntries.Length : 0);

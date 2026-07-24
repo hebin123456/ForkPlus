@@ -1,5 +1,5 @@
 using System;
-using WindowState = System.Windows.WindowState;
+using WindowState = Avalonia.Controls.WindowState;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 

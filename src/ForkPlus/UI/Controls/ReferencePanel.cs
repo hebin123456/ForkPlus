@@ -34,8 +34,7 @@ namespace ForkPlus.UI.Controls
 					}
 					else
 					{
-						// NOTE(4.5): Remote.Icon（定义于 Remote.partial.cs，尚未迁移）仍返回 WPF System.Windows.Media.ImageSource。
-						// 待 Remote.partial.cs 迁移为 Avalonia.Media.IImage 后，此赋值类型与 ReferencePanelRemoteBranchViewModel(IImage) 一致。
+						// 阶段 4.5：Remote.Icon 已返回 Avalonia.Media.IImage（Remote.partial.cs），与 ReferencePanelRemoteBranchViewModel(IImage) 一致。
 						IImage remoteIcon = IReadOnlyListExtensions.FirstItem(remotes, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
 						array[i] = new ReferencePanelRemoteBranchViewModel(remoteBranch, remoteIcon);
 					}

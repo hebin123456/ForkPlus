@@ -37,6 +37,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
@@ -559,7 +560,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.KeyBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutKeyBinding(delegate
 			{
 				GitModule gitModule2 = RepositoryUserControl.GitModule;
 				if (gitModule2 != null && SidebarTreeView.SelectedItems.Count == 1 && SidebarTreeView.SelectedItems[0] is LocalBranchSidebarItem { Reference: LocalBranch reference })
@@ -567,7 +568,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.Execute(RepositoryUserControl, gitModule2, _repositoryData.References, reference);
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.KeyBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutKeyBinding(delegate
 			{
 				if (RepositoryUserControl.GitModule != null)
 				{
@@ -601,7 +602,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.KeyBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				SubmoduleSidebarItem[] array2 = SidebarTreeView.SelectedItems.CompactMap((object x) => x as SubmoduleSidebarItem);
 				if (array2.Length != 0)
@@ -609,7 +610,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyFilePaths.Execute(array2.Map((SubmoduleSidebarItem x) => x.Submodule.Path));
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.KeyBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -1343,9 +1344,9 @@ namespace ForkPlus.UI.UserControls
 			// 因此用 Dispatcher.BeginInvoke 延迟到下一轮渲染后再查找部件。
 			groupItem.SubmenuOpened += delegate
 			{
-				groupItem.Dispatcher.BeginInvoke(new Action(delegate
-				{
-					PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
+				groupItem.Dispatcher.Post(new Action(delegate
+			{
+				PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
 					if (searchBox == null)
 					{
 						return;
@@ -1394,20 +1395,18 @@ namespace ForkPlus.UI.UserControls
 					branchItem.Visibility = Visibility.Collapsed;
 				}
 			}
-			// 过滤改变子项可见性后，WPF 菜单的焦点管理可能把键盘焦点抢到第一个可见 MenuItem，
+			// 过滤改变子项可见性后，菜单的焦点管理可能把键盘焦点抢到第一个可见 MenuItem，
 			// 导致搜索框失焦、无法继续输入。过滤完成后立即把焦点夺回搜索框。
-			// 用 Keyboard.Focus（比 Control.Focus 更可靠）并配合 Dispatcher.BeginInvoke 确保在
-			// 菜单焦点逻辑之后执行。
-			groupItem.Dispatcher.BeginInvoke(new Action(delegate
+			// 配合 Dispatcher.Post 确保在菜单焦点逻辑之后执行。
+			groupItem.Dispatcher.Post(new Action(delegate
 			{
-				if (searchBox.IsVisible && !searchBox.IsKeyboardFocused)
+				if (searchBox.IsVisible && !searchBox.IsFocused)
 				{
-					Keyboard.Focus(searchBox);
 					searchBox.Focus();
 					// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
 					searchBox.CaretIndex = searchBox.Text.Length;
 				}
-			}), System.Windows.Threading.DispatcherPriority.Background);
+			}), DispatcherPriority.Background);
 		}
 
 		/// <summary>在 MenuItem 的子菜单 Popup 视觉树里按名字查找模板部件。</summary>
@@ -1417,7 +1416,7 @@ namespace ForkPlus.UI.UserControls
 		/// 再从 popup.Child 往下遍历找到目标部件。
 		/// </remarks>
 		[Null]
-		private static T FindTemplatePart<T>(MenuItem menuItem, string name) where T : FrameworkElement
+		private static T FindTemplatePart<T>(MenuItem menuItem, string name) where T : StyledElement
 		{
 			if (menuItem == null)
 			{
@@ -1439,16 +1438,14 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>递归在视觉树里按名字查找指定类型的后代。</summary>
 		[Null]
-		private static T FindVisualDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
+		private static T FindVisualDescendantByName<T>(IVisual root, string name) where T : StyledElement
 		{
 			if (root == null)
 			{
 				return null;
 			}
-			int count = VisualTreeHelper.GetChildrenCount(root);
-			for (int i = 0; i < count; i++)
+			foreach (IVisual child in root.GetVisualChildren())
 			{
-				DependencyObject child = VisualTreeHelper.GetChild(root, i);
 				if (child is T typed && typed.Name == name)
 				{
 					return typed;

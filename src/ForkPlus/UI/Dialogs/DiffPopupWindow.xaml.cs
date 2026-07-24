@@ -53,7 +53,7 @@ namespace ForkPlus.UI.Dialogs
 			});
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
+				if (e.Key == Key.Space && !e.KeyModifiers.HasFlag(KeyModifiers.Control))
 				{
 					e.Handled = true;
 					Close();

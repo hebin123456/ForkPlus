@@ -29,6 +29,8 @@ using ForkPlus.UI.Dialogs;
 using Microsoft.Win32;
 using NLog;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace ForkPlus
 {
@@ -395,10 +397,10 @@ namespace ForkPlus
 			}
 			_loggedVisualParentingFirstChanceException = true;
 			string activeWindow = Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive)?.GetType().FullName ?? "<none>";
-			IInputElement focusedInputElement = Keyboard.FocusedElement;
-			DependencyObject focusedDependencyObject = focusedInputElement as DependencyObject;
+			IInputElement focusedInputElement = FocusManager.Instance?.Current;
+			AvaloniaObject focusedAvaloniaObject = focusedInputElement as AvaloniaObject;
 			string focusedElement = DescribeInputElement(focusedInputElement);
-			string focusedElementAncestors = DescribeAncestors(focusedDependencyObject);
+			string focusedElementAncestors = DescribeAncestors(focusedAvaloniaObject);
 			string scrollContentPresenterDiagnostics = DescribeScrollContentPresenters(Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive));
 			string stackTrace = new StackTrace(1, fNeedFileInfo: true).ToString();
 			Log.Warn("First-chance visual parenting exception" + Environment.NewLine + "ActiveWindow: " + activeWindow + Environment.NewLine + "FocusedElement: " + focusedElement + Environment.NewLine + "FocusedElementAncestors: " + focusedElementAncestors + Environment.NewLine + "ScrollContentPresenters:" + Environment.NewLine + scrollContentPresenterDiagnostics + Environment.NewLine + "CurrentStack:" + Environment.NewLine + stackTrace, e.Exception);
@@ -426,47 +428,12 @@ namespace ForkPlus
 
 		private static void RegisterScrollViewerContentTemplateGuard()
 		{
-			try
-			{
-				ContentControl.ContentTemplateProperty.OverrideMetadata(typeof(ScrollViewer), new FrameworkPropertyMetadata(null, ScrollViewerContentTemplateChanged));
-				ContentPresenter.ContentTemplateProperty.OverrideMetadata(typeof(ScrollContentPresenter), new FrameworkPropertyMetadata(null, ScrollContentPresenterContentTemplateChanged));
-			}
-			catch (InvalidOperationException)
-			{
-			}
+			// NOTE (Avalonia limitation): WPF OverrideMetadata not supported in Avalonia; diagnostic guard stubbed.
 		}
 
-		private static void ScrollViewerContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (e.NewValue == null || !(d is ScrollViewer scrollViewer))
-			{
-				return;
-			}
-			try
-			{
-				scrollViewer.ContentTemplate = null;
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Failed to clear ScrollViewer.ContentTemplate on " + VisualTreeAttachmentHelper.Describe(scrollViewer) + ".", ex);
-			}
-		}
-
-		private static void ScrollContentPresenterContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (e.NewValue == null || !(d is ScrollContentPresenter scrollContentPresenter))
-			{
-				return;
-			}
-			try
-			{
-				scrollContentPresenter.ContentTemplate = null;
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Failed to clear ScrollContentPresenter.ContentTemplate on " + VisualTreeAttachmentHelper.Describe(scrollContentPresenter) + ".", ex);
-			}
-		}
+		// NOTE (Avalonia limitation): WPF OverrideMetadata callbacks; stubbed since RegisterScrollViewerContentTemplateGuard is no-op.
+		private static void ScrollViewerContentTemplateChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e) { }
+		private static void ScrollContentPresenterContentTemplateChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e) { }
 
 		private static string DescribeInputElement(IInputElement element)
 		{
@@ -474,7 +441,7 @@ namespace ForkPlus
 			{
 				return "<none>";
 			}
-			if (!(element is DependencyObject dependencyObject))
+			if (!(element is AvaloniaObject dependencyObject))
 			{
 				return element.GetType().FullName;
 			}
@@ -482,27 +449,22 @@ namespace ForkPlus
 			{
 				VisualTreeAttachmentHelper.Describe(dependencyObject)
 			};
-			if (dependencyObject is FrameworkElement frameworkElement)
+			if (dependencyObject is Control frameworkElement)
 			{
 				parts.Add("DataContext=" + (frameworkElement.DataContext?.GetType().FullName ?? "<null>"));
 				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkElement.TemplatedParent));
 			}
-			else if (dependencyObject is FrameworkContentElement frameworkContentElement)
-			{
-				parts.Add("DataContext=" + (frameworkContentElement.DataContext?.GetType().FullName ?? "<null>"));
-				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkContentElement.TemplatedParent));
-			}
 			return string.Join(", ", parts);
 		}
 
-		private static string DescribeAncestors(DependencyObject dependencyObject, int maxDepth = 10)
+		private static string DescribeAncestors(AvaloniaObject dependencyObject, int maxDepth = 10)
 		{
 			if (dependencyObject == null)
 			{
 				return "<none>";
 			}
 			List<string> parts = new List<string>();
-			DependencyObject dependencyObject2 = dependencyObject;
+			AvaloniaObject dependencyObject2 = dependencyObject;
 			for (int i = 0; dependencyObject2 != null && i < maxDepth; i++)
 			{
 				parts.Add(VisualTreeAttachmentHelper.Describe(dependencyObject2));
@@ -515,25 +477,25 @@ namespace ForkPlus
 			return string.Join(" -> ", parts);
 		}
 
-		private static DependencyObject GetDebugParent(DependencyObject child)
+		private static AvaloniaObject GetDebugParent(AvaloniaObject child)
 		{
 			if (child == null)
 			{
 				return null;
 			}
-			DependencyObject parent = LogicalTreeHelper.GetParent(child);
+			AvaloniaObject parent = (child as ILogical)?.LogicalParent;
 			if (parent != null)
 			{
 				return parent;
 			}
-			if (child is Visual || child is Visual3D)
+			if (child is IVisual)
 			{
-				return VisualTreeHelper.GetParent(child);
+				return (child as IVisual)?.GetVisualParent();
 			}
 			return null;
 		}
 
-		private static string DescribeScrollContentPresenters(DependencyObject root)
+		private static string DescribeScrollContentPresenters(AvaloniaObject root)
 		{
 			if (root == null)
 			{
@@ -548,7 +510,7 @@ namespace ForkPlus
 			return string.Join(Environment.NewLine, parts.Take(40));
 		}
 
-		private static void CollectScrollContentPresenterDiagnostics(DependencyObject item, List<string> parts, int depth)
+		private static void CollectScrollContentPresenterDiagnostics(AvaloniaObject item, List<string> parts, int depth)
 		{
 			if (item == null || depth > 80)
 			{
@@ -568,10 +530,10 @@ namespace ForkPlus
 				{
 					parts.Add("Scroll-like ContentPresenter " + VisualTreeAttachmentHelper.Describe(contentPresenter) + ", Content=" + DescribeObject(contentPresenter.Content) + ", ContentTemplate=" + DescribeObject(contentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(contentPresenter, 8));
 				}
-				int childrenCount = VisualTreeHelper.GetChildrenCount(item);
+				int childrenCount = item.GetVisualChildren().Count();
 				for (int i = 0; i < childrenCount; i++)
 				{
-					CollectScrollContentPresenterDiagnostics(VisualTreeHelper.GetChild(item, i), parts, depth + 1);
+					CollectScrollContentPresenterDiagnostics(item.GetVisualChildren().ElementAt(i), parts, depth + 1);
 				}
 			}
 			catch (Exception ex)
@@ -586,7 +548,7 @@ namespace ForkPlus
 			{
 				return "<null>";
 			}
-			if (item is DependencyObject dependencyObject)
+			if (item is AvaloniaObject dependencyObject)
 			{
 				return VisualTreeAttachmentHelper.Describe(dependencyObject);
 			}
@@ -739,24 +701,13 @@ namespace ForkPlus
 
 		private void InitializeTextEditorContextMenuStyle()
 		{
-			try
-			{
-				Type nestedType = typeof(TextElement).Assembly.GetType("System.Windows.Documents.TextEditorContextMenu").GetNestedType("EditorContextMenu", BindingFlags.NonPublic);
-				Style value = Application.Current.Resources[typeof(ContextMenu)] as Style;
-				Application.Current.Resources.Add(nestedType, value);
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Cannot initialize TextEditorContextMenu style: " + ex.Message);
-			}
+			// NOTE (Avalonia limitation): WPF TextEditorContextMenu internal type not available in Avalonia.
 		}
 
 		private void InitializeRenderMode()
 		{
-			if (ForkPlusSettings.Default.DisableHardwareAcceleration)
-			{
-				RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
-			}
+			// NOTE (Avalonia limitation): WPF RenderOptions.ProcessRenderMode not available in Avalonia.
+			// Avalonia rendering configuration is handled via RenderOptions edge mode or platform-specific options.
 		}
 
 		private void SubscribeToUserPreferences()

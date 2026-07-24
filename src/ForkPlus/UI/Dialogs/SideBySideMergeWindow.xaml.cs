@@ -162,7 +162,7 @@ namespace ForkPlus.UI.Dialogs
 				mergeConflictView.Insert(e.Offset, e.InsertedText.Text);
 				containsNewLines = e.InsertedText.Text.Contains("\n") || e.RemovedText.Text.Contains("\n");
 			}
-			base.Dispatcher.BeginInvoke((Action)delegate
+			base.Dispatcher.Post((Action)delegate
 			{
 				int offset = MergedMergeEditor.TextArea.Caret.Offset;
 				RefreshMergeEditorViews(containsNewLines);

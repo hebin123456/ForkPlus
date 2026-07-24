@@ -10,10 +10,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
@@ -43,7 +45,7 @@ namespace ForkPlus.UI.UserControls
 
 		private string _searchQuery;
 
-		private ScrollViewer ScrollViewer => (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(TreeView, 0), 0);
+		private ScrollViewer ScrollViewer => TreeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 
 		public RepositoryUserControl RepositoryUserControl { get; private set; }
 
@@ -218,7 +220,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (VisualTreeHelper.GetChildrenCount(TreeView) == 0)
+			if (!TreeView.GetVisualChildren().Any())
 			{
 				Log.Debug("Refresh: Layout is not initialized. Request the first page");
 				LoadNext();

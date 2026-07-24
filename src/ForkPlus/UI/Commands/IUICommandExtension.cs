@@ -46,15 +46,6 @@ namespace ForkPlus.UI.Commands
 			};
 		}
 
-		// 阶段 4.5：保留旧方法签名以兼容调用方，但实现改为返回 KeyBinding。
-		// 调用方需逐步从 CommandBinding 切换到 KeyBinding。
-		// 标记 [Obsolete] 提示调用方迁移到 CreateShortcutKeyBinding。
-		[Obsolete("Use CreateShortcutKeyBinding instead. WPF CommandBinding has no Avalonia equivalent.")]
-		public static KeyBinding CreateShortcutCommandBinding(this IUICommand command, EventHandler<RoutedEventArgs> handler)
-		{
-			return command.CreateShortcutKeyBinding(handler);
-		}
-
 		public static MenuItem CreateMenuItem(this IUICommand command, EventHandler<RoutedEventArgs> clickHandler = null, bool isEnabled = true, bool showShortcut = true)
 		{
 			return command.CreateMenuItem(command.Title, clickHandler, isEnabled, null, showShortcut);

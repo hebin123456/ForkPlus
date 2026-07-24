@@ -6,9 +6,7 @@
 // - RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs（新增 using Avalonia.Interactivity）
 // - Dispatcher.Async 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 // - CheckBox.Checked/Unchecked 保持（Avalonia 11.3 ToggleButton 仍提供这两个路由事件）
-// NOTE(4.5): account.ServiceType.Icon()（RemoteTypeBridgeExtensions.Icon，定义于 BridgeExtensions.cs，尚未迁移）
-//            仍返回 WPF System.Windows.Media.ImageSource。Avalonia Image.Source 期望 IImage。
-//            待 BridgeExtensions 迁移为返回 Avalonia.Media.IImage 后类型一致（参考 ReferencePanel 对 Remote.Icon 的处理）。
+// 阶段 4.5：account.ServiceType.Icon()（RemoteTypeBridgeExtensions.Icon）已返回 Avalonia.Media.IImage，与 Image.Source 类型一致。
 using System;
 using System.ComponentModel;
 using Avalonia;

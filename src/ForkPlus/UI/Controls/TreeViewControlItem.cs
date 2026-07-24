@@ -144,8 +144,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// NOTE(4.5): ParentTreeView (MultiselectionTreeView) 尚未迁移到 Avalonia，其 HandleDrag* 方法仍接受 System.Windows.DragEventArgs。
-		// 此处传入 Avalonia.Input.DragEventArgs，存在跨阶段类型不匹配；待 MultiselectionTreeView 迁移后自动消解。
+		// 阶段 4.5：ParentTreeView.HandleDrag* 已迁移为接受 Avalonia.Input.DragEventArgs，与此处 override 类型一致。
 		protected override void OnDragEnter(DragEventArgs e)
 		{
 			ParentTreeView.HandleDragEnter(this, e);
