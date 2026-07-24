@@ -1,5 +1,16 @@
 <!-- 已从 WPF 迁移到 Avalonia：根元素添加 xmlns="https://github.com/avaloniaui"；删除 Grid 及子控件上的重复 xmlns / xmlns:x 声明；移除 RenderOptions.ClearTypeHint 属性。 -->
 <dialogs:ForkPlusDialogWindow Width="1000" Height="400" xmlns:local="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.EditCustomCommandUIControlsWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns="https://github.com/avaloniaui">
+  <dialogs:ForkPlusDialogWindow.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger。
+         当祖先 ListBoxItem.IsSelected=True 且 IsFocused=True 时设置
+         VariableTextBlock/ControlTypeTextBlock.Foreground=ForegroundBrush.Light。 -->
+    <Style Selector="ListBoxItem:selected:focus TextBlock#VariableTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected:focus TextBlock#ControlTypeTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
