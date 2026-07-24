@@ -1,42 +1,49 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved.
+     - Property prefixes stripped: FrameworkElement.OverridesDefaultStyle -> OverridesDefaultStyle,
+       Panel.Background -> Background, UIElement.Focusable -> Focusable, Control.Template -> Template,
+       FrameworkElement.Height -> Height, FrameworkElement.Width -> Width, Border.BorderBrush -> BorderBrush,
+       Border.BorderThickness -> BorderThickness, TextElement.Foreground -> Foreground,
+       FrameworkElement.MinHeight -> MinHeight.
+     - TemplateBinding class prefixes stripped ({TemplateBinding FrameworkElement.Height} -> {TemplateBinding Height},
+       {TemplateBinding FrameworkElement.Width} -> {TemplateBinding Width}, {TemplateBinding Panel.Background} ->
+       {TemplateBinding Background}, {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush},
+       {TemplateBinding Border.BorderThickness} -> {TemplateBinding BorderThickness},
+       {TemplateBinding FrameworkElement.MinHeight} -> {TemplateBinding MinHeight}).
+     - SliderThumbHorizontalDefault ControlTemplate.Triggers (3 triggers on Thumb) converted to nested
+       <Style.Styles> inside OnionSkinSliderStyle, using /template/ Thumb#Thumb /template/ Ellipse#grip
+       selectors: IsMouseOver->:pointerover, Thumb.IsDragging->:dragging, IsEnabled=False->:disabled.
+       (Standalone ControlTemplate resource preserved for DynamicResource reference; selectors are scoped
+       to the OnionSkinSliderStyle so they only match Thumbs within OnionSkinSlider Sliders.)
+     - OnionSkinSliderTemplate ControlTemplate.Triggers (Slider.IsSelectionRangeEnabled=True ->
+       PART_SelectionRange Visibility=Visible) has no direct Avalonia pseudoclass; left as TODO comment.
+     - Visibility="Hidden" attribute on PART_SelectionRange converted to IsVisible="False". -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
-    <Setter Property="Panel.Background" Value="#00FFFFFF" />
-    <Setter Property="UIElement.Focusable" Value="False" />
+  <Style x:Key="RepeatButtonTransparent" Selector="RepeatButton">
+    <Setter Property="OverridesDefaultStyle" Value="True" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Focusable" Value="False" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type RepeatButton}">
-          <Rectangle Height="{TemplateBinding FrameworkElement.Height}" Width="{TemplateBinding FrameworkElement.Width}" Fill="{TemplateBinding Panel.Background}" />
+          <Rectangle Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Fill="{TemplateBinding Background}" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="{x:Type Thumb}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="{x:Type Thumb}">
     <Grid HorizontalAlignment="Center" UseLayoutRounding="True" VerticalAlignment="Center">
       <Ellipse Width="11" Height="11" VerticalAlignment="Center" Stretch="Fill" UseLayoutRounding="True" SnapsToDevicePixels="True" StrokeThickness="1" Fill="{DynamicResource SliderThumb.Static.Background}" Stroke="{DynamicResource SliderThumb.Static.Border}" x:Name="grip" />
     </Grid>
-    <ControlTemplate.Triggers>
-      <Trigger Property="UIElement.IsMouseOver" Value="true">
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Background}" Property="Shape.Fill" />
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Border}" Property="Shape.Stroke" />
-      </Trigger>
-      <Trigger Property="Thumb.IsDragging" Value="true">
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Background}" Property="Shape.Fill" />
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Border}" Property="Shape.Stroke" />
-      </Trigger>
-      <Trigger Property="UIElement.IsEnabled" Value="false">
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Background}" Property="Shape.Fill" />
-        <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Border}" Property="Shape.Stroke" />
-      </Trigger>
-    </ControlTemplate.Triggers>
   </ControlTemplate>
-  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="{x:Type Slider}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border SnapsToDevicePixels="True" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" x:Name="border">
-      <Grid MinHeight="{TemplateBinding FrameworkElement.MinHeight}">
+  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="{x:Type Slider}">
+    <Border SnapsToDevicePixels="True" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+      <Grid MinHeight="{TemplateBinding MinHeight}">
         <Border Grid.Row="1" Height="4.0" Margin="5,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SliderThumb.Track.Border}" Background="{DynamicResource SliderThumb.Track.Background}" x:Name="TrackBackground">
           <Canvas Margin="-6,-1">
-            <Rectangle Height="4.0" Visibility="Hidden" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" x:Name="PART_SelectionRange" />
+            <Rectangle Height="4.0" IsVisible="False" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" x:Name="PART_SelectionRange" />
           </Canvas>
         </Border>
         <Track Grid.Row="1" x:Name="PART_Track">
@@ -52,17 +59,33 @@
         </Track>
       </Grid>
     </Border>
-    <ControlTemplate.Triggers>
-      <Trigger Property="Slider.IsSelectionRangeEnabled" Value="true">
-        <Setter TargetName="PART_SelectionRange" Property="UIElement.Visibility" Value="Visible" />
-      </Trigger>
-    </ControlTemplate.Triggers>
+    <!-- TODO: ControlTemplate.Triggers Slider.IsSelectionRangeEnabled=True -> PART_SelectionRange IsVisible=True.
+         Avalonia Slider has no IsSelectionRangeEnabled pseudoclass; reimplement using a custom pseudoclass
+         toggled from code-behind, or remove if the selection-range feature is unused. -->
   </ControlTemplate>
-  <Style x:Key="OnionSkinSliderStyle" TargetType="{x:Type Slider}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="OnionSkinSliderStyle" Selector="Slider">
     <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
-    <Setter Property="Panel.Background" Value="#00FFFFFF" />
-    <Setter Property="Border.BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
-    <Setter Property="Control.Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
+    <Setter Property="Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
+    <Style.Styles>
+      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsMouseOver on Thumb).
+           Selector descends: Slider template -> Thumb#Thumb -> Thumb template -> Ellipse#grip. -->
+      <Style Selector="^ /template/ Thumb#Thumb:pointerover /template/ Ellipse#grip">
+        <Setter Property="Fill" Value="{DynamicResource SliderThumb.MouseOver.Background}" />
+        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.MouseOver.Border}" />
+      </Style>
+      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (Thumb.IsDragging). -->
+      <Style Selector="^ /template/ Thumb#Thumb:dragging /template/ Ellipse#grip">
+        <Setter Property="Fill" Value="{DynamicResource SliderThumb.Pressed.Background}" />
+        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Pressed.Border}" />
+      </Style>
+      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsEnabled=False on Thumb). -->
+      <Style Selector="^ /template/ Thumb#Thumb:disabled /template/ Ellipse#grip">
+        <Setter Property="Fill" Value="{DynamicResource SliderThumb.Disabled.Background}" />
+        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Disabled.Border}" />
+      </Style>
+    </Style.Styles>
   </Style>
 </ResourceDictionary>

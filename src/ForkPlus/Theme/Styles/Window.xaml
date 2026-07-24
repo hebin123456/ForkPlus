@@ -1,17 +1,43 @@
+<!-- Migration notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
+     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
+     - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled.
+     - Property prefixes stripped in Setters (Panel.Background->Background, Border.BorderBrush->BorderBrush,
+       FrameworkElement.* -> *, UIElement.* -> *, Shape.* -> *, Control.* -> *, TextElement.* -> *).
+       Attached properties (RenderOptions.*, WindowChrome.*) kept as-is.
+     - UIElement.Visibility in Setters and literal template attrs -> IsVisible (bool: Visible->True,
+       Collapsed/Hidden->False). Label.Visibility bound via BooleanToVisibilityConverter -> Label.IsVisible
+       with direct bool binding (converter no longer needed at usage site).
+     - TemplateBinding paths stripped of class prefixes (Panel.Background->Background, Border.*->*,
+       Window.Icon->Icon, Window.Title->Title, TextElement.Foreground->Foreground, Control.Padding->Padding).
+       ui:CustomWindow.WindowResizeBorderThickness kept (namespaced/custom property).
+     - Style.Triggers MultiDataTrigger binding to ancestor Button state (FindAncestor) could not be
+       converted to nested selectors (Avalonia nested ^ selectors only match the styled element's own
+       pseudoclasses, not ancestors') -> preserved as TODO comments.
+     - ControlTemplate.Triggers MultiTrigger on Window.ResizeMode (enum, no pseudoclass) + Window.WindowState
+       (enum, no pseudoclass) could not be converted -> preserved as TODO comments.
+     - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <BooleanToVisibilityConverter x:Key="BooleanToVisibility" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <controls:ResizeModeToVisibilityConverter x:Key="ResizeModeToVisibilityConverter" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <Geometry x:Key="MinimizeGeometry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M0,0 L10,0 10,1.0 10,1.0 1,1.0 0,1.0 z</Geometry>
-  <Geometry x:Key="MaximizeGeometry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M1,1 L1,11 11,11 11,1 z M0,0 L12,0 12,12 0,12 z</Geometry>
-  <Geometry x:Key="RestoreGeometry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M1,4.56 L1,14.56 11,14.56 11,4.56z M4.0,1 L4.0,3.56 12,3.56 12,11 14.0,11 14.0,1 z M3.0,0 L15.0,0 15.0,12 12,12 12,15.56 0,15.56 0,3.56 3.0,3.56 z</Geometry>
-  <Geometry x:Key="CloseGeometry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M0.71,0 L4.6,3.8 8.5,0 9.2,0.71 5.3,4.6 9.2,8.48 8.48,9.2 4.6,5.3 0.71,9.2 0,8.48 3.89,4.6 4.77E-07,0.71 z</Geometry>
-  <Style x:Key="WindowPathStyle" TargetType="{x:Type Path}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="10" />
-    <Setter Property="FrameworkElement.Width" Value="10" />
-    <Setter Property="FrameworkElement.Margin" Value="0" />
-    <Setter Property="Shape.Stretch" Value="Uniform" />
-    <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
-    <Setter Property="Shape.Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+  <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+  <controls:ResizeModeToVisibilityConverter x:Key="ResizeModeToVisibilityConverter" />
+  <Geometry x:Key="MinimizeGeometry">M0,0 L10,0 10,1.0 10,1.0 1,1.0 0,1.0 z</Geometry>
+  <Geometry x:Key="MaximizeGeometry">M1,1 L1,11 11,11 11,1 z M0,0 L12,0 12,12 0,12 z</Geometry>
+  <Geometry x:Key="RestoreGeometry">M1,4.56 L1,14.56 11,14.56 11,4.56z M4.0,1 L4.0,3.56 12,3.56 12,11 14.0,11 14.0,1 z M3.0,0 L15.0,0 15.0,12 12,12 12,15.56 0,15.56 0,3.56 3.0,3.56 z</Geometry>
+  <Geometry x:Key="CloseGeometry">M0.71,0 L4.6,3.8 8.5,0 9.2,0.71 5.3,4.6 9.2,8.48 8.48,9.2 4.6,5.3 0.71,9.2 0,8.48 3.89,4.6 4.77E-07,0.71 z</Geometry>
+  <Style x:Key="WindowPathStyle" Selector="Path">
+    <Setter Property="Height" Value="10" />
+    <Setter Property="Width" Value="10" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+    <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+         (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
+         match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
+           Shape.Fill = {DynamicResource Window.Button.MouseOver.Foreground}
+         Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
+         or by moving the Path fill logic into the Button ControlTemplate styles.
     <Style.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -37,14 +63,21 @@
         <Setter Property="Shape.Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
       </MultiDataTrigger>
     </Style.Triggers>
+    -->
   </Style>
-  <Style x:Key="WindowCloseButtonPathStyle" TargetType="{x:Type Path}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="10" />
-    <Setter Property="FrameworkElement.Width" Value="10" />
-    <Setter Property="FrameworkElement.Margin" Value="0" />
-    <Setter Property="Shape.Stretch" Value="Uniform" />
-    <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
-    <Setter Property="Shape.Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+  <Style x:Key="WindowCloseButtonPathStyle" Selector="Path">
+    <Setter Property="Height" Value="10" />
+    <Setter Property="Width" Value="10" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+    <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+         (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
+         match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
+           Shape.Fill = #FFFFFFFF
+         Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
+         or by moving the Path fill logic into the Button ControlTemplate styles.
     <Style.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -70,145 +103,148 @@
         <Setter Property="Shape.Fill" Value="#FFFFFFFF" />
       </MultiDataTrigger>
     </Style.Triggers>
+    -->
   </Style>
-  <Style x:Key="WindowButton" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="26" />
-    <Setter Property="FrameworkElement.Width" Value="46" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Window.Button.Static.Background}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="Control.Template">
+  <Style x:Key="WindowButton" Selector="Button">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Button}">
-          <Border Background="{TemplateBinding Panel.Background}" x:Name="border">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" x:Name="border">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.MouseOver.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.Pressed.Background}" Property="Panel.Background" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowRoundedButton" TargetType="{x:Type Button}" BasedOn="{StaticResource WindowButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Margin" Value="0,2,6,0" />
-    <Setter Property="FrameworkElement.Height" Value="24" />
-    <Setter Property="Control.Template">
+  <Style x:Key="WindowRoundedButton" Selector="Button" BasedOn="{StaticResource WindowButton}">
+    <Setter Property="Margin" Value="0,2,6,0" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Button}">
-          <Border Background="{TemplateBinding Panel.Background}" CornerRadius="3" x:Name="border">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.MouseOver.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.Pressed.Background}" Property="Panel.Background" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowToggleButton" TargetType="{x:Type ToggleButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="26" />
-    <Setter Property="FrameworkElement.Width" Value="30" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Window.Button.Static.Background}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="Control.Template">
+  <Style x:Key="WindowToggleButton" Selector="ToggleButton">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="30" />
+    <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ToggleButton}">
-          <Border Background="{TemplateBinding Panel.Background}" x:Name="border">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" x:Name="border">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.MouseOver.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.Pressed.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="border" Property="UIElement.Opacity" Value="0.4" />
-              <Setter TargetName="border" Property="Panel.Background" Value="#00FFFFFF" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
+          <Style Selector="^:disabled /template/ Border#border">
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Background" Value="#00FFFFFF" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowRoundedToggleButton" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource WindowToggleButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Margin" Value="0,2,6,0" />
-    <Setter Property="FrameworkElement.Height" Value="24" />
-    <Setter Property="Control.Template">
+  <Style x:Key="WindowRoundedToggleButton" Selector="ToggleButton" BasedOn="{StaticResource WindowToggleButton}">
+    <Setter Property="Margin" Value="0,2,6,0" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ToggleButton}">
-          <Border Background="{TemplateBinding Panel.Background}" CornerRadius="3" x:Name="border">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.MouseOver.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.Button.Pressed.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="border" Property="UIElement.Opacity" Value="0.4" />
-              <Setter TargetName="border" Property="Panel.Background" Value="#00FFFFFF" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
+          <Style Selector="^:disabled /template/ Border#border">
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Background" Value="#00FFFFFF" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowCloseButton" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="26" />
-    <Setter Property="FrameworkElement.Width" Value="46" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Window.CloseButton.Static.Background}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="Control.Template">
+  <Style x:Key="WindowCloseButton" Selector="Button">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Button}">
-          <Border Background="{TemplateBinding Panel.Background}" x:Name="border">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" x:Name="border">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="border" Value="{DynamicResource Window.CloseButton.Pressed.Background}" Property="Panel.Background" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ui:CustomWindow}" TargetType="{x:Type ui:CustomWindow}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource Window.BackgroundBrush}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource Window.Foreground}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="TextElement.FontSize" Value="12" />
-    <Setter Property="FrameworkElement.Margin" Value="0" />
-    <Setter Property="Control.Padding" Value="0" />
-    <Setter Property="FrameworkElement.MinWidth" Value="240" />
-    <Setter Property="FrameworkElement.MinHeight" Value="80" />
+  <Style x:Key="{x:Type ui:CustomWindow}" Selector="ui:CustomWindow">
+    <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Window.Foreground}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinWidth" Value="240" />
+    <Setter Property="MinHeight" Value="80" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ui:CustomWindow}">
+        <ControlTemplate>
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}">
+            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
               <Grid LayoutTransform="{DynamicResource LayoutScaleTransform}">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -232,11 +268,11 @@
                     </StackPanel>
                     <Border Background="{DynamicResource Window.TitleBar.Background}">
                       <StackPanel Orientation="Horizontal">
-                        <Image Source="{TemplateBinding Window.Icon}" />
-                        <Label Content="{TemplateBinding Window.Title}" Foreground="{TemplateBinding TextElement.Foreground}">
-                          <Label.Visibility>
-                            <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
-                          </Label.Visibility>
+                        <Image Source="{TemplateBinding Icon}" />
+                        <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
+                          <Label.IsVisible>
+                            <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
+                          </Label.IsVisible>
                         </Label>
                       </StackPanel>
                     </Border>
@@ -245,10 +281,15 @@
                 <AdornerDecorator Grid.Row="1">
                   <ContentPresenter ClipToBounds="True" />
                 </AdornerDecorator>
-                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" Visibility="Collapsed" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
+                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" IsVisible="False" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
               </Grid>
             </Border>
           </Border>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
+               Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
+               Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
+               ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or
+               code-behind.
           <ControlTemplate.Triggers>
             <MultiTrigger>
               <MultiTrigger.Conditions>
@@ -258,18 +299,19 @@
               <Setter TargetName="ResizeGrip" Property="UIElement.Visibility" Value="Visible" />
             </MultiTrigger>
           </ControlTemplate.Triggers>
+          -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ForkPlusDialogWindowStyle" TargetType="{x:Type dialogs:ForkPlusDialogWindow}" BasedOn="{StaticResource {x:Type ui:CustomWindow}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="ForkPlusDialogWindowStyle" Selector="dialogs:ForkPlusDialogWindow" BasedOn="{StaticResource {x:Type ui:CustomWindow}}">
     <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Window.Dialog.Background}" />
-    <Setter Property="Control.Template">
+    <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ui:CustomWindow}">
+        <ControlTemplate>
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}">
+            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
               <Grid LayoutTransform="{DynamicResource LayoutScaleTransform}">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -293,11 +335,11 @@
                     </StackPanel>
                     <Border>
                       <StackPanel Orientation="Horizontal">
-                        <Image Source="{TemplateBinding Window.Icon}" />
-                        <Label Content="{TemplateBinding Window.Title}" Foreground="{TemplateBinding TextElement.Foreground}">
-                          <Label.Visibility>
-                            <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
-                          </Label.Visibility>
+                        <Image Source="{TemplateBinding Icon}" />
+                        <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
+                          <Label.IsVisible>
+                            <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
+                          </Label.IsVisible>
                         </Label>
                       </StackPanel>
                     </Border>
@@ -306,10 +348,15 @@
                 <AdornerDecorator Grid.Row="1">
                   <ContentPresenter ClipToBounds="True" />
                 </AdornerDecorator>
-                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" Visibility="Collapsed" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
+                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" IsVisible="False" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
               </Grid>
             </Border>
           </Border>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
+               Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
+               Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
+               ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or
+               code-behind.
           <ControlTemplate.Triggers>
             <MultiTrigger>
               <MultiTrigger.Conditions>
@@ -319,6 +366,7 @@
               <Setter TargetName="ResizeGrip" Property="UIElement.Visibility" Value="Visible" />
             </MultiTrigger>
           </ControlTemplate.Triggers>
+          -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>

@@ -1,9 +1,34 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved.
+     - Property prefixes stripped: Control.Template -> Template, Control.Padding -> Padding,
+       TextElement.Foreground -> Foreground, TextElement.FontSize -> FontSize, Panel.Background -> Background,
+       Control.HorizontalContentAlignment -> HorizontalContentAlignment,
+       Control.VerticalContentAlignment -> VerticalContentAlignment, Border.BorderBrush -> BorderBrush,
+       Border.BorderThickness -> BorderThickness, UIElement.Visibility -> IsVisible,
+       TextElement.FontWeight -> FontWeight, TextElement.FontStyle -> FontStyle,
+       TextElement.FontStretch -> FontStretch, TextElement.FontFamily -> FontFamily,
+       HeaderedContentControl.HeaderTemplate -> HeaderTemplate,
+       HeaderedContentControl.HeaderTemplateSelector -> HeaderTemplateSelector,
+       HeaderedContentControl.Header -> Header, FrameworkElement.Cursor -> Cursor,
+       Shape.Stroke -> Stroke, Shape.Fill -> Fill, Path.Data -> Data.
+     - TemplateBinding class prefixes stripped ({TemplateBinding Control.Padding} -> {TemplateBinding Padding},
+       {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush}, etc.).
+     - ExpanderDownHeaderStyle ControlTemplate.Triggers (4 triggers) converted to nested <Style.Styles> with
+       /template/ selectors: ToggleButton.IsChecked=True -> :checked, UIElement.IsMouseOver=True -> :pointerover,
+       ButtonBase.IsPressed=True -> :pressed, UIElement.IsEnabled=False -> :disabled.
+       IsChecked trigger on SeparatorBorder (Visibility=Visible) -> IsVisible=True; Arrow Path.Data setter
+       preserved. IsMouseOver trigger on templated parent Cursor=Hand kept as ^:pointerover (no /template/).
+     - DiffListExpanderStyle ControlTemplate.Triggers (Expander.IsExpanded=True -> ExpandSite Visibility=Visible)
+       converted to ^:expanded /template/ ContentPresenter#ExpandSite with IsVisible=True.
+       Visibility="Collapsed" attribute on ExpandSite converted to IsVisible="False".
+       Visibility="Hidden" attribute on SeparatorBorder converted to IsVisible="False". -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Control.Template">
+  <Style x:Key="ExpanderDownHeaderStyle" Selector="ToggleButton">
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ToggleButton}">
-          <Border Padding="{TemplateBinding Control.Padding}" Background="#00FFFFFF" x:Name="Border">
+          <Border Padding="{TemplateBinding Padding}" Background="#00FFFFFF" x:Name="Border">
             <Grid SnapsToDevicePixels="False">
               <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -15,44 +40,55 @@
               </Grid.ColumnDefinitions>
               <Path Grid.Row="0" Grid.Column="0" Data="M0,0L3.5,3.5 0,7" Margin="25,1,0,0" HorizontalAlignment="Right" SnapsToDevicePixels="false" Stroke="{DynamicResource Expander.Static.Arrow.Stroke}" StrokeThickness="1.5" VerticalAlignment="Center" x:Name="Arrow" />
               <ContentPresenter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center" x:Name="ContentPresenter" />
-              <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="1" HorizontalAlignment="Stretch" Background="{DynamicResource BorderBrush}" Visibility="Hidden" x:Name="SeparatorBorder" />
+              <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="1" HorizontalAlignment="Stretch" Background="{DynamicResource BorderBrush}" IsVisible="False" x:Name="SeparatorBorder" />
             </Grid>
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="ToggleButton.IsChecked" Value="true">
-              <Setter TargetName="SeparatorBorder" Property="UIElement.Visibility" Value="Visible" />
-              <Setter TargetName="Arrow" Property="Path.Data" Value="M0,0L3.5,3.5 7,0" />
-            </Trigger>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="ContentPresenter" Value="{DynamicResource AccentBrush}" Property="TextElement.Foreground" />
-              <Setter TargetName="Arrow" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" Property="Shape.Stroke" />
-              <Setter Property="FrameworkElement.Cursor" Value="Hand" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="Arrow" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}" Property="Shape.Stroke" />
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="Arrow" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}" Property="Shape.Stroke" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <!-- Converted from ControlTemplate.Triggers: ToggleButton.IsChecked=True -> :checked -->
+      <Style Selector="^:checked /template/ Border#SeparatorBorder">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:checked /template/ Path#Arrow">
+        <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
+      </Style>
+      <!-- Converted from ControlTemplate.Triggers: UIElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover /template/ ContentPresenter#ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Path#Arrow">
+        <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" />
+      </Style>
+      <!-- Cursor=Hand targets the templated parent (ToggleButton), no /template/ needed. -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Cursor" Value="Hand" />
+      </Style>
+      <!-- Converted from ControlTemplate.Triggers: ButtonBase.IsPressed=True -> :pressed -->
+      <Style Selector="^:pressed /template/ Path#Arrow">
+        <Setter Property="Stroke" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}" />
+      </Style>
+      <!-- Converted from ControlTemplate.Triggers: UIElement.IsEnabled=False -> :disabled -->
+      <Style Selector="^:disabled /template/ Path#Arrow">
+        <Setter Property="Stroke" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="DiffListExpanderStyle" TargetType="{x:Type Expander}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="TextElement.FontSize" Value="13" />
-    <Setter Property="Panel.Background" Value="#00FFFFFF" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Border.BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="Control.Template">
+  <Style x:Key="DiffListExpanderStyle" Selector="Expander">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Expander}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="true">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
             <DockPanel>
-              <ToggleButton ContentTemplate="{TemplateBinding HeaderedContentControl.HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderedContentControl.HeaderTemplateSelector}" Content="{TemplateBinding HeaderedContentControl.Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding TextElement.Foreground}" FontWeight="{TemplateBinding TextElement.FontWeight}" FontStyle="{TemplateBinding TextElement.FontStyle}" FontStretch="{TemplateBinding TextElement.FontStretch}" FontSize="{TemplateBinding TextElement.FontSize}" FontFamily="{TemplateBinding TextElement.FontFamily}" HorizontalContentAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Control.Padding}" Style="{StaticResource ExpanderDownHeaderStyle}" VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}">
+              <ToggleButton ContentTemplate="{TemplateBinding HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Style="{StaticResource ExpanderDownHeaderStyle}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
                 <ToggleButton.FocusVisualStyle>
                   <x:Null />
                 </ToggleButton.FocusVisualStyle>
@@ -60,16 +96,17 @@
                   <Binding Path="IsExpanded"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                 </ToggleButton.IsChecked>
               </ToggleButton>
-              <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Margin="{TemplateBinding Control.Padding}" Visibility="Collapsed" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="ExpandSite" />
+              <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" IsVisible="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ExpandSite" />
             </DockPanel>
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="Expander.IsExpanded" Value="true">
-              <Setter TargetName="ExpandSite" Property="UIElement.Visibility" Value="Visible" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <!-- Converted from ControlTemplate.Triggers: Expander.IsExpanded=True -> :expanded -->
+      <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style.Styles>
   </Style>
 </ResourceDictionary>

@@ -1,144 +1,164 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved, BasedOn preserved.
+     - Property prefixes stripped: TextElement.FontSize -> FontSize, TextElement.FontWeight -> FontWeight,
+       TextElement.Foreground -> Foreground, FrameworkElement.Margin -> Margin,
+       FrameworkElement.HorizontalAlignment -> HorizontalAlignment, FrameworkElement.VerticalAlignment -> VerticalAlignment,
+       FrameworkElement.Height -> Height, FrameworkElement.Width -> Width, UIElement.Focusable -> Focusable,
+       Panel.Background -> Background, FrameworkContentElement.FocusVisualStyle -> FocusVisualStyle,
+       Inline.TextDecorations -> TextDecorations, TextBlock.Text -> Text, FrameworkElement.ToolTip -> ToolTip,
+       Control.Template -> Template.
+     - TemplateBinding class prefixes stripped ({TemplateBinding FrameworkElement.Width} -> {TemplateBinding Width},
+       {TemplateBinding Panel.Background} -> {TemplateBinding Background}, {TemplateBinding TextElement.FontSize} ->
+       {TemplateBinding FontSize}, {TemplateBinding TextElement.Foreground} -> {TemplateBinding Foreground}).
+     - 5 Hyperlink Style.Triggers (ContentElement.IsMouseOver=True) converted to nested <Style.Styles> with
+       ^:pointerover selectors (scoped to each named style via parent x:Key). -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="SettingsHeaderTextBlockStyle" TargetType="{x:Type TextBlock}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextElement.FontSize" Value="14" />
-    <Setter Property="TextElement.FontWeight" Value="Medium" />
-    <Setter Property="FrameworkElement.Margin" Value="0,12,0,6" />
+  <Style x:Key="SettingsHeaderTextBlockStyle" Selector="TextBlock">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Margin" Value="0,12,0,6" />
   </Style>
-  <Style x:Key="ReferenceLabelTextBlockStyle" TargetType="{x:Type TextBlock}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceForeground}" />
-    <Setter Property="TextElement.FontWeight" Value="Normal" />
-    <Setter Property="FrameworkElement.Margin" Value="2,-1,2,1" />
+  <Style x:Key="ReferenceLabelTextBlockStyle" Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceForeground}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Margin" Value="2,-1,2,1" />
   </Style>
-  <Style x:Key="ToolbarButtonTitle" TargetType="{x:Type TextBlock}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center" />
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Top" />
-    <Setter Property="TextElement.FontSize" Value="11" />
-    <Setter Property="FrameworkElement.Margin" Value="4,-3,4,2" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ToolbarForeground}" />
+  <Style x:Key="ToolbarButtonTitle" Selector="TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Margin" Value="4,-3,4,2" />
+    <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
   </Style>
-  <Style x:Key="LfsLabel" TargetType="{x:Type Label}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="16" />
-    <Setter Property="FrameworkElement.Width" Value="28" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="FrameworkElement.HorizontalAlignment" Value="Left" />
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Center" />
-    <Setter Property="Panel.Background" Value="{DynamicResource AccentSecondaryBrush}" />
-    <Setter Property="TextElement.FontSize" Value="11" />
-    <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
-    <Setter Property="Control.Template">
+  <Style x:Key="LfsLabel" Selector="Label">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="28" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Label}">
-          <Border Width="{TemplateBinding FrameworkElement.Width}" Background="{TemplateBinding Panel.Background}" CornerRadius="4">
-            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding TextElement.FontSize}" Foreground="{TemplateBinding TextElement.Foreground}" x:Name="ContentTextBlock" />
+          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
+            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="NotLfsLabel" TargetType="{x:Type Label}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Height" Value="16" />
-    <Setter Property="FrameworkElement.Width" Value="42" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Center" />
-    <Setter Property="Panel.Background" Value="#FFFF6663" />
-    <Setter Property="TextElement.FontSize" Value="11" />
-    <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
-    <Setter Property="Control.Template">
+  <Style x:Key="NotLfsLabel" Selector="Label">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="#FFFF6663" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Label}">
-          <Border Width="{TemplateBinding FrameworkElement.Width}" Background="{TemplateBinding Panel.Background}" CornerRadius="4">
-            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding TextElement.FontSize}" Foreground="{TemplateBinding TextElement.Foreground}" x:Name="ContentTextBlock" />
+          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
+            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="BugtrackerHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkContentElement.FocusVisualStyle">
+  <Style x:Key="BugtrackerHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-    <Setter Property="Inline.TextDecorations">
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Triggers>
-      <Trigger Property="ContentElement.IsMouseOver" Value="True">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="Inline.TextDecorations" Value="Underline" />
-      </Trigger>
-    </Style.Triggers>
+    <Style.Styles>
+      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="BlueHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkContentElement.FocusVisualStyle">
+  <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-    <Style.Triggers>
-      <Trigger Property="ContentElement.IsMouseOver" Value="True">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-      </Trigger>
-    </Style.Triggers>
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    <Style.Styles>
+      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="BlueUnderlineHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkContentElement.FocusVisualStyle">
+  <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-    <Setter Property="Inline.TextDecorations">
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Triggers>
-      <Trigger Property="ContentElement.IsMouseOver" Value="True">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="Inline.TextDecorations" Value="Underline" />
-      </Trigger>
-    </Style.Triggers>
+    <Style.Styles>
+      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="GrayHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkContentElement.FocusVisualStyle">
+  <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
-    <Style.Triggers>
-      <Trigger Property="ContentElement.IsMouseOver" Value="True">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-      </Trigger>
-    </Style.Triggers>
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
+    <Style.Styles>
+      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="GrayUnderlineHyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource GrayHyperlinkStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Inline.TextDecorations">
+  <Style x:Key="GrayUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource GrayHyperlinkStyle}">
+    <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Triggers>
-      <Trigger Property="ContentElement.IsMouseOver" Value="True">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="Inline.TextDecorations" Value="Underline" />
-      </Trigger>
-    </Style.Triggers>
+    <Style.Styles>
+      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="HintTextBlock" TargetType="{x:Type TextBlock}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextBlock.Text" Value="?" />
-    <Setter Property="FrameworkElement.Margin" Value="4,2,6,2" />
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Center" />
-    <Setter Property="FrameworkElement.HorizontalAlignment" Value="Right" />
-    <Setter Property="TextElement.FontWeight" Value="Medium" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="FrameworkElement.ToolTip">
+  <Style x:Key="HintTextBlock" Selector="TextBlock">
+    <Setter Property="Text" Value="?" />
+    <Setter Property="Margin" Value="4,2,6,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="ToolTip">
       <Setter.Value>
         <ToolTip>
           <ToolTip.DataContext>
