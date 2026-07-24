@@ -45,9 +45,9 @@
                   <Ellipse.Fill>
                     <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
                   </Ellipse.Fill>
-                  <Ellipse.Visibility>
+                  <Ellipse.IsVisible>
                     <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
-                  </Ellipse.Visibility>
+                  </Ellipse.IsVisible>
                 </Ellipse>
                 <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
                   <ItemsControl.ItemsSource>
@@ -262,9 +262,9 @@
                     <Ellipse.Fill>
                       <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
                     </Ellipse.Fill>
-                    <Ellipse.Visibility>
+                    <Ellipse.IsVisible>
                       <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
-                    </Ellipse.Visibility>
+                    </Ellipse.IsVisible>
                   </Ellipse>
                   <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
                     <ItemsControl.ItemsSource>
