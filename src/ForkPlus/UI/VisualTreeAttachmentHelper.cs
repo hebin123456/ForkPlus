@@ -1,14 +1,20 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF DependencyObject/UIElement/FrameworkElement/FrameworkContentElement/Visual/Visual3D
+	// → Avalonia AvaloniaObject/Control/Visual。
+	// WPF LogicalTreeHelper.GetParent + VisualTreeHelper.GetParent
+	// → Avalonia ILogical.GetLogicalParent() + IVisual.GetVisualParent()。
+	// Avalonia 没有 FrameworkContentElement 概念（WPF 流文档模型），Describe 简化只判断 Control.Name。
 	internal static class VisualTreeAttachmentHelper
 	{
-		public static bool TryAddChild(Panel panel, UIElement child, string targetDescription)
+		public static bool TryAddChild(Panel panel, Control child, string targetDescription)
 		{
 			if (panel == null)
 			{
@@ -26,7 +32,7 @@ namespace ForkPlus.UI
 			return true;
 		}
 
-		public static bool TrySetChild(Decorator decorator, UIElement child, string targetDescription)
+		public static bool TrySetChild(Decorator decorator, Control child, string targetDescription)
 		{
 			if (decorator == null)
 			{
@@ -40,7 +46,7 @@ namespace ForkPlus.UI
 			return true;
 		}
 
-		public static bool TrySetPopupChild(Popup popup, UIElement child, string targetDescription)
+		public static bool TrySetPopupChild(Popup popup, Control child, string targetDescription)
 		{
 			if (popup == null)
 			{
@@ -60,7 +66,7 @@ namespace ForkPlus.UI
 			{
 				return false;
 			}
-			if (content is DependencyObject dependencyObject && !PrepareForNewParent(dependencyObject, targetDescription))
+			if (content is AvaloniaObject dependencyObject && !PrepareForNewParent(dependencyObject, targetDescription))
 			{
 				return false;
 			}
@@ -68,13 +74,13 @@ namespace ForkPlus.UI
 			return true;
 		}
 
-		public static bool PrepareForNewParent(DependencyObject child, string targetDescription)
+		public static bool PrepareForNewParent(AvaloniaObject child, string targetDescription)
 		{
 			if (child == null)
 			{
 				return true;
 			}
-			DependencyObject parent = GetParent(child);
+			AvaloniaObject parent = GetParent(child);
 			if (parent == null)
 			{
 				return true;
@@ -88,7 +94,7 @@ namespace ForkPlus.UI
 				Log.Warn("Cannot detach " + Describe(child) + " from " + Describe(parent) + " before attaching to " + targetDescription + ".");
 				return false;
 			}
-			DependencyObject parent2 = GetParent(child);
+			AvaloniaObject parent2 = GetParent(child);
 			if (parent2 != null)
 			{
 				Log.Warn("Detached " + Describe(child) + " from " + Describe(parent) + " but it is still parented by " + Describe(parent2) + " before attaching to " + targetDescription + ".");
@@ -97,50 +103,55 @@ namespace ForkPlus.UI
 			return true;
 		}
 
-		public static string Describe(DependencyObject item)
+		public static string Describe(AvaloniaObject item)
 		{
 			if (item == null)
 			{
 				return "null";
 			}
-			if (item is FrameworkElement frameworkElement && !string.IsNullOrEmpty(frameworkElement.Name))
+			if (item is Control control && !string.IsNullOrEmpty(control.Name))
 			{
-				return item.GetType().Name + "('" + frameworkElement.Name + "')";
-			}
-			if (item is FrameworkContentElement frameworkContentElement && !string.IsNullOrEmpty(frameworkContentElement.Name))
-			{
-				return item.GetType().Name + "('" + frameworkContentElement.Name + "')";
+				return item.GetType().Name + "('" + control.Name + "')";
 			}
 			return item.GetType().Name;
 		}
 
-		private static DependencyObject GetParent(DependencyObject child)
+		private static AvaloniaObject GetParent(AvaloniaObject child)
 		{
-			DependencyObject parent = LogicalTreeHelper.GetParent(child);
-			if (parent != null)
+			// 阶段 4.5：WPF LogicalTreeHelper.GetParent + VisualTreeHelper.GetParent
+			// → Avalonia ILogical.GetLogicalParent + IVisual.GetVisualParent。
+			if (child is ILogical logical)
 			{
-				return parent;
+				ILogical logicalParent = logical.GetLogicalParent();
+				if (logicalParent is AvaloniaObject logicalParentObj)
+				{
+					return logicalParentObj;
+				}
 			}
-			if (child is Visual || child is Visual3D)
+			if (child is IVisual visual)
 			{
-				return VisualTreeHelper.GetParent(child);
+				IVisual visualParent = visual.GetVisualParent();
+				if (visualParent is AvaloniaObject visualParentObj)
+				{
+					return visualParentObj;
+				}
 			}
 			return null;
 		}
 
-		private static bool DetachFromParent(DependencyObject child, DependencyObject parent)
+		private static bool DetachFromParent(AvaloniaObject child, AvaloniaObject parent)
 		{
-			if (parent is Popup popup && child is UIElement uIElement && ReferenceEquals(popup.Child, uIElement))
+			if (parent is Popup popup && child is Control uIElement && ReferenceEquals(popup.Child, uIElement))
 			{
 				popup.Child = null;
 				return true;
 			}
-			if (parent is Panel panel && child is UIElement uIElement2 && panel.Children.Contains(uIElement2))
+			if (parent is Panel panel && child is Control uIElement2 && panel.Children.Contains(uIElement2))
 			{
 				panel.Children.Remove(uIElement2);
 				return true;
 			}
-			if (parent is Decorator decorator && child is UIElement uIElement3 && ReferenceEquals(decorator.Child, uIElement3))
+			if (parent is Decorator decorator && child is Control uIElement3 && ReferenceEquals(decorator.Child, uIElement3))
 			{
 				decorator.Child = null;
 				return true;

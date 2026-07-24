@@ -1,19 +1,23 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF DependencyObject + VisualTreeHelper.GetParent
+	// → Avalonia AvaloniaObject + IVisual.GetVisualParent。
+	// Avalonia 没有 LogicalTreeHelper，逻辑父级通过 ILogical 接口获取；
+	// 这里使用 GetVisualParent 满足 GetParent<T> 在控件树上向上查找的语义。
 	public static class DependencyObjectExtensions
 	{
 		[Null]
-		public static T GetParent<T>(this DependencyObject _this) where T : DependencyObject
+		public static T GetParent<T>(this AvaloniaObject _this) where T : AvaloniaObject
 		{
-			DependencyObject dependencyObject = _this;
-			while (dependencyObject != null && !(dependencyObject is T))
+			AvaloniaObject current = _this;
+			while (current != null && !(current is T))
 			{
-				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+				current = (current as IVisual)?.GetVisualParent() as AvaloniaObject;
 			}
-			return dependencyObject as T;
+			return current as T;
 		}
 	}
 }
