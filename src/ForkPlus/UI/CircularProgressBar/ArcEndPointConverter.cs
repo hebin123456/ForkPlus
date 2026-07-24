@@ -1,3 +1,4 @@
+// 阶段 4.5：WPF Binding.DoNothing → Avalonia AvaloniaProperty.UnsetValue（信号绑定不更新目标，使用 fallback value）。
 using System;
 using System.Globalization;
 using Avalonia;
@@ -16,8 +17,7 @@ namespace ForkPlus.UI.CircularProgressBar
 			double num4 = values[3].ExtractDouble();
 			if (new double[4] { num, num2, num3, num4 }.AnyNan())
 			{
-				// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingOperations.DoNothing (skip target update).
-				return BindingOperations.DoNothing;
+				return AvaloniaProperty.UnsetValue;
 			}
 			if (values.Length == 5)
 			{

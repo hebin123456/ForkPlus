@@ -1,5 +1,7 @@
+// 阶段 4.5：WPF Binding.DoNothing → Avalonia AvaloniaProperty.UnsetValue（信号绑定不更新目标，使用 fallback value）。
 using System;
 using System.Globalization;
+using Avalonia;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 
@@ -14,8 +16,7 @@ namespace ForkPlus.UI.CircularProgressBar
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingOperations.DoNothing (skip target update).
-			return BindingOperations.DoNothing;
+			return AvaloniaProperty.UnsetValue;
 		}
 	}
 }
