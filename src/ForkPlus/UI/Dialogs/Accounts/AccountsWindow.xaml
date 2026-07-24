@@ -47,7 +47,11 @@
                 </TextBlock.Text>
               </TextBlock>
             </Grid>
-            <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
               <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                   <Condition>
@@ -74,7 +78,7 @@
                   <Setter TargetName="UserNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiDataTrigger.Setters>
               </MultiDataTrigger>
-            </DataTemplate.Triggers>
+            </DataTemplate.Triggers> -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>

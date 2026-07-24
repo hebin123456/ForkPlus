@@ -59,7 +59,11 @@
             </Button.ToolTip>
           </Button>
         </Grid>
-        <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
               <Binding Path="SourceBranch" />
@@ -70,7 +74,7 @@
             <Setter TargetName="SourceBranchIcon" Property="IsVisible" Value="False" />
             <Setter TargetName="SourceBranchButton" Property="IsVisible" Value="False" />
           </DataTrigger>
-        </DataTemplate.Triggers>
+        </DataTemplate.Triggers> -->
       </DataTemplate>
     </ResourceDictionary>
   </TabItem.Resources>

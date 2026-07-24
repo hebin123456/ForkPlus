@@ -32,7 +32,11 @@
               </TextBlock>
             </StackPanel>
           </Border>
-          <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
             <DataTrigger Value="True">
               <DataTrigger.Binding>
                 <Binding Path="IsSelected">
@@ -44,7 +48,7 @@
               <Setter TargetName="Border" Value="{DynamicResource Item.SelectedActive.Background}" Property="BorderBrush" />
               <Setter TargetName="Border" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
             </DataTrigger>
-          </DataTemplate.Triggers>
+          </DataTemplate.Triggers> -->
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

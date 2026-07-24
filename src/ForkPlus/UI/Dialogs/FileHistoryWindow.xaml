@@ -69,7 +69,11 @@
             </controls:AutoTooltipTextBlock.Text>
           </controls:AutoTooltipTextBlock>
         </Grid>
-        <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
           <DataTrigger Value="True">
             <DataTrigger.Binding>
               <Binding Path="IsSelected">
@@ -83,7 +87,7 @@
             <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
             <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
-        </DataTemplate.Triggers>
+        </DataTemplate.Triggers> -->
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:FolderHistoryEntryViewModel}}" DataType="{x:Type dialogs:FolderHistoryEntryViewModel}">
         <Grid Height="18">
@@ -163,7 +167,11 @@
             </controls:AutoTooltipTextBlock.Text>
           </controls:AutoTooltipTextBlock>
         </Grid>
-        <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
           <DataTrigger Value="True">
             <DataTrigger.Binding>
               <Binding Path="IsSelected">
@@ -174,7 +182,7 @@
             </DataTrigger.Binding>
             <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
-        </DataTemplate.Triggers>
+        </DataTemplate.Triggers> -->
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>

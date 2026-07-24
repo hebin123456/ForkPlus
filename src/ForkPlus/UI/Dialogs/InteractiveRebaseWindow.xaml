@@ -128,7 +128,11 @@
                         </DataTemplate>
                       </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                       <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                           <Condition Value="True">
@@ -144,7 +148,7 @@
                         </MultiDataTrigger.Conditions>
                         <Setter TargetName="ActionsComboBox" Value="{DynamicResource ForegroundBrush}" Property="Foreground" />
                       </MultiDataTrigger>
-                    </DataTemplate.Triggers>
+                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -161,7 +165,11 @@
                       <ContentControl.Style>
                         <Style TargetType="{x:Type ContentControl}">
                           <Setter Property="ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
-                          <Style.Triggers>
+<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <Style.Triggers>
                             <DataTrigger Value="None">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
@@ -192,7 +200,7 @@
                               </DataTrigger.Binding>
                               <Setter Property="ContentTemplate" Value="{StaticResource TargetDataTemplate}" />
                             </DataTrigger>
-                          </Style.Triggers>
+                          </Style.Triggers> -->
                         </Style>
                       </ContentControl.Style>
                     </ContentControl>
@@ -220,7 +228,11 @@
                         </TextBlock.Foreground>
                       </TextBlock>
                     </DockPanel>
-                    <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                       <DataTrigger Value="True">
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
@@ -233,7 +245,7 @@
                         </DataTrigger.Binding>
                         <Setter TargetName="SubjectTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
                       </DataTrigger>
-                    </DataTemplate.Triggers>
+                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -259,7 +271,11 @@
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
                     </TextBlock>
-                    <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                       <DataTrigger Value="True">
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
@@ -272,7 +288,7 @@
                         </DataTrigger.Binding>
                         <Setter TargetName="AuthorTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
                       </DataTrigger>
-                    </DataTemplate.Triggers>
+                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -287,7 +303,11 @@
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
                     </TextBlock>
-                    <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                       <DataTrigger Value="True">
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
@@ -300,7 +320,7 @@
                         </DataTrigger.Binding>
                         <Setter TargetName="AbbreviatedShaTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
                       </DataTrigger>
-                    </DataTemplate.Triggers>
+                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -315,7 +335,11 @@
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
                     </TextBlock>
-                    <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                       <DataTrigger Value="True">
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
@@ -328,7 +352,7 @@
                         </DataTrigger.Binding>
                         <Setter TargetName="AuthorDateTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
                       </DataTrigger>
-                    </DataTemplate.Triggers>
+                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>

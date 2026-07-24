@@ -8,11 +8,15 @@
           </Setter.Value>
         </Setter>
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Style.Triggers>
+<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <Style.Triggers>
           <Trigger Property="ContentElement.IsMouseOver" Value="True">
             <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
           </Trigger>
-        </Style.Triggers>
+        </Style.Triggers> -->
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>

@@ -15,7 +15,11 @@
         <Setter Property="Margin" Value="0" />
         <Setter Property="AllowDrop" Value="True" />
         <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
-        <Style.Triggers>
+<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <Style.Triggers>
           <DataTrigger Value="True">
             <DataTrigger.Binding>
               <Binding Path="IsHead" />
@@ -28,7 +32,7 @@
             </DataTrigger.Binding>
             <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
           </DataTrigger>
-        </Style.Triggers>
+        </Style.Triggers> -->
       </Style>
       <GridView x:Key="SingleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
         <GridViewColumn>
@@ -72,7 +76,11 @@
                   </controls:RevisionSubjectTextField.HighlightString>
                 </controls:RevisionSubjectTextField>
               </Grid>
-              <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                 <MultiDataTrigger>
                   <MultiDataTrigger.Conditions>
                     <Condition Value="False">
@@ -119,7 +127,7 @@
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
                 </MultiDataTrigger>
-              </DataTemplate.Triggers>
+              </DataTemplate.Triggers> -->
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -190,14 +198,18 @@
           <GridViewColumn.CellTemplate>
             <DataTemplate>
               <Border Margin="-4,0,0,0" Width="4" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
-              <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                 <DataTrigger Value="True">
                   <DataTrigger.Binding>
                     <Binding Path="IsSearchMatch" />
                   </DataTrigger.Binding>
                   <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Background" />
                 </DataTrigger>
-              </DataTemplate.Triggers>
+              </DataTemplate.Triggers> -->
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -295,7 +307,11 @@
                 <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,-8,0" BorderBrush="{DynamicResource BorderBrush}" />
                 <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,-8,0" Width="4" HorizontalAlignment="Right" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
               </Grid>
-              <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
                 <DataTrigger Value="True">
                   <DataTrigger.Binding>
                     <Binding Path="IsSearchMatch" />
@@ -362,7 +378,7 @@
                   <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                   <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
                 </MultiDataTrigger>
-              </DataTemplate.Triggers>
+              </DataTemplate.Triggers> -->
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>

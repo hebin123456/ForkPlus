@@ -14,7 +14,11 @@
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
-              <ControlTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): ControlTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <ControlTemplate.Triggers>
                 <MultiTrigger>
                   <MultiTrigger.Conditions>
                     <Condition Property="IsSelectionActive" Value="False" />
@@ -33,7 +37,7 @@
                   <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
                   <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiTrigger>
-              </ControlTemplate.Triggers>
+              </ControlTemplate.Triggers> -->
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -67,7 +71,11 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-        <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
           <DataTrigger Value="True">
             <DataTrigger.Binding>
               <Binding Path="IsSelected">
@@ -84,7 +92,7 @@
               </Setter.Value>
             </Setter>
           </DataTrigger>
-        </DataTemplate.Triggers>
+        </DataTemplate.Triggers> -->
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
@@ -124,7 +132,11 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-        <DataTemplate.Triggers>
+<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
+         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
+         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
+         for view-model-bound triggers. Original WPF trigger block preserved for reference.
+    <DataTemplate.Triggers>
           <DataTrigger Value="True">
             <DataTrigger.Binding>
               <Binding Path="IsSelected">
@@ -141,7 +153,7 @@
               </Setter.Value>
             </Setter>
           </DataTrigger>
-        </DataTemplate.Triggers>
+        </DataTemplate.Triggers> -->
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
