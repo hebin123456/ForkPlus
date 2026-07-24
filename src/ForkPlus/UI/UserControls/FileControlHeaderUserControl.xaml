@@ -3,19 +3,66 @@
      - 删除子元素重复 xmlns（presentation / x）
      - <Grid.Children>/<StackPanel.Children> 展开为直接子元素
      - FilePathTextBlock 改用 controls: 前缀（移除 xmlns 默认命名空间覆盖）
-     - TODO：Style.Triggers/DataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     - 6 个 ToggleButton.IsChecked->Image.Source 的 Style.Triggers/DataTrigger 块
+       (IgnoreWhitespaces/ShowHiddenSymbols/WordWrap/ShowEntireFile/DiffLayoutMode/HighlightPixels)
+       → 顶层 <UserControl.Styles> 中
+         <Style Selector="ToggleButton#<name> > Image"> 设默认 (unchecked) 图标
+         <Style Selector="ToggleButton#<name>:checked > Image"> 设选中 (checked) 图标
+       原来的内联 <Image.Style><Style.Triggers> 全部移除。
+     - Visibility="Collapsed" → IsVisible="False"（3 个容器 StackPanel）
      -->
 <UserControl BorderThickness="0,0,0,1" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileControlHeaderUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.BorderBrush>
     <DynamicResource ResourceKey="BorderBrush" />
   </UserControl.BorderBrush>
+  <UserControl.Styles>
+    <!-- 阶段 4.5：替代原 6 个 <Image.Style><Style.Triggers> 块。
+         每对样式对应一个 ToggleButton，原 DataTrigger 绑定祖先 ToggleButton.IsChecked=True/False
+         转换为 :checked 伪类选择器。unchecked 状态由默认 Style 提供 Source。 -->
+    <Style Selector="ToggleButton#IgnoreWhitespacesToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource IgnoreWhiteSpacesIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#IgnoreWhitespacesToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource IgnoreWhiteSpacesOnIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#ShowHiddenSymbolsToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource ShowHiddenSymbolsIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#ShowHiddenSymbolsToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource ShowHiddenSymbolsOnIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#WordWrapToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource WordWrapIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#WordWrapToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource WordWrapOnIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#ShowEntireFileToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource ShowEntireFileIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#ShowEntireFileToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource ShowEntireFileOnIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#DiffLayoutModeToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource SideBySideIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#DiffLayoutModeToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource SideBySideOnIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#HighlightPixelsToggleButton > Image">
+      <Setter Property="Source" Value="{DynamicResource HighlightPixelsIcon}" />
+    </Style>
+    <Style Selector="ToggleButton#HighlightPixelsToggleButton:checked > Image">
+      <Setter Property="Source" Value="{DynamicResource HighlightPixelsOnIcon}" />
+    </Style>
+  </UserControl.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="100" />
       <ColumnDefinition Width="*" />
       <ColumnDefinition Width="140" />
     </Grid.ColumnDefinitions>
-    <StackPanel Grid.Column="0" Orientation="Horizontal" Visibility="Collapsed" x:Name="TextModeNavigationButtonsContainer">
+    <StackPanel Grid.Column="0" Orientation="Horizontal" IsVisible="False" x:Name="TextModeNavigationButtonsContainer">
       <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
         <Button.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
@@ -50,117 +97,27 @@
         <controls:FilePathTextBlock.Margin>0</controls:FilePathTextBlock.Margin>
       </controls:FilePathTextBlock>
     </DockPanel>
-    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed" x:Name="TextModeButtonsContainer">
+    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="False" x:Name="TextModeButtonsContainer">
       <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
         <ToggleButton.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
         <ToolTipService.ToolTip>Ignore whitespaces</ToolTipService.ToolTip>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="IgnoreWhiteSpacesOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="IgnoreWhiteSpacesIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="ShowHiddenSymbolsToggleButton_Click" x:Name="ShowHiddenSymbolsToggleButton">
         <ToggleButton.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
         <ToolTipService.ToolTip>Show hidden symbols</ToolTipService.ToolTip>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="ShowHiddenSymbolsOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="ShowHiddenSymbolsIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="WordWrapToggleButton_Click" x:Name="WordWrapToggleButton">
         <ToggleButton.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
         <ToolTipService.ToolTip>Word wrap</ToolTipService.ToolTip>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="WordWrapOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="WordWrapIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
       <Button IsTabStop="False" Click="DecreaseVisibleLines_Click" x:Name="DecreaseNumberOfVisibleLinesButton">
         <Button.Style>
@@ -189,112 +146,22 @@
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
         <ToolTipService.ToolTip>Show entire file</ToolTipService.ToolTip>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="ShowEntireFileOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="ShowEntireFileIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="DiffLayoutModeToggleButton_Click" x:Name="DiffLayoutModeToggleButton">
         <ToggleButton.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="SideBySideOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="SideBySideIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
     </StackPanel>
-    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed" x:Name="ImageModeButtonsContainer">
+    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="False" x:Name="ImageModeButtonsContainer">
       <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
         <ToggleButton.Style>
           <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
         </ToggleButton.Style>
         <ToolTipService.ToolTip>Highlight pixels</ToolTipService.ToolTip>
-        <Image>
-          <Image.Style>
-            <Style>
-              <Style.TargetType>
-                <x:Type Type="Image" />
-              </Style.TargetType>
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="HighlightPixelsOnIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="False">
-                  <Setter>
-                    <Setter.Property>
-                      <x:Static Member="Image.SourceProperty" />
-                    </Setter.Property>
-                    <Setter.Value>
-                      <DynamicResource ResourceKey="HighlightPixelsIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Image.Style>
-        </Image>
+        <Image />
       </ToggleButton>
     </StackPanel>
   </Grid>
