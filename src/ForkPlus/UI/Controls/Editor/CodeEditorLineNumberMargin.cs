@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit.Rendering;
 
@@ -9,11 +9,14 @@ namespace ForkPlus.UI.Controls.Editor
 {
 	internal class CodeEditorLineNumberMargin : ClearTypeLineNumberMargin
 	{
+		// 阶段 4 里程碑 4.7-a：WPF Typeface(主字体, 样式, 字重, 字距, 回退字体) →
+		// Avalonia Typeface(FontFamily, FontStyle, FontWeight, FontStretch)。Avalonia 用逗号
+		// 分隔的 FontFamily 表达回退；Freeze() 移除（Avalonia 画刷默认不可变）。
 		private static readonly Typeface _typeface;
 
-		private static readonly Brush _lightBrush;
+		private static readonly IBrush _lightBrush;
 
-		private static readonly Brush _darkBrush;
+		private static readonly IBrush _darkBrush;
 
 		private static readonly Pen _separatorPenLight;
 
@@ -21,7 +24,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private static readonly double HorizontalMargin;
 
-		private Brush _brush;
+		private IBrush _brush;
 
 		private Pen _separatorPen;
 
@@ -29,16 +32,12 @@ namespace ForkPlus.UI.Controls.Editor
 
 		static CodeEditorLineNumberMargin()
 		{
-			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+			_typeface = new Typeface(new FontFamily("Consolas, Courier New"), FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 			_lightBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 			_darkBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160));
 			_separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
 			_separatorPenDark = new Pen(new SolidColorBrush(Color.FromRgb(110, 110, 110)), 1.0);
 			HorizontalMargin = 5.0;
-			_lightBrush.Freeze();
-			_darkBrush.Freeze();
-			_separatorPenLight.Freeze();
-			_separatorPenDark.Freeze();
 		}
 
 		public CodeEditorLineNumberMargin()
@@ -46,8 +45,8 @@ namespace ForkPlus.UI.Controls.Editor
 			typeface = _typeface;
 			emSize = 11.0;
 			RefreshBrushes();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			// 阶段 4 里程碑 4.7-a：WeakEventManager → 直接事件订阅。阶段 6 改用 WeakEvent。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
 		public void UpdateLineNumbersData()
@@ -93,13 +92,13 @@ namespace ForkPlus.UI.Controls.Editor
 
 	private static Color? TryFindColor(string key)
 	{
-		object res = Application.Current?.TryFindResource(key);
+		object res = Theme.FindResource(key);
 		if (res is Color c) return c;
 		if (res is SolidColorBrush b) return b.Color;
 		return null;
 	}
 
-	private static Brush TryFindColorBrush(string key)
+	private static IBrush TryFindColorBrush(string key)
 	{
 		Color? c = TryFindColor(key);
 		return c.HasValue ? new SolidColorBrush(c.Value) : null;
@@ -107,7 +106,9 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private FormattedText CreateFormattedText(string text)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			// 阶段 4 里程碑 4.7-a：WPF FormattedText(..., pixelsPerDip) → Avalonia FormattedText
+			// （无 pixelsPerDip 参数，Avalonia 内部按渲染缩放处理）。
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
 		}
 	}
 }
