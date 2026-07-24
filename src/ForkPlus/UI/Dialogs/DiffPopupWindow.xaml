@@ -7,16 +7,16 @@
     <Grid.Children>
       <Border x:Name="FileDiffControlContainer">
         <Border.BorderBrush>
-          <DynamicResource ResourceKey="BorderBrush" xmlns="https://github.com/avaloniaui" />
+          <DynamicResource ResourceKey="BorderBrush" />
         </Border.BorderBrush>
         <Border.BorderThickness>1</Border.BorderThickness>
         <Border.Background>
-          <DynamicResource ResourceKey="BackgroundBrush" xmlns="https://github.com/avaloniaui" />
+          <DynamicResource ResourceKey="BackgroundBrush" />
         </Border.Background>
       </Border>
       <TextBlock Grid.Row="1" Margin="0,4,0,0" Text="Space bar: close, Up/Down: move file selection">
         <TextBlock.Foreground>
-          <DynamicResource ResourceKey="SecondaryLabelBrush" xmlns="https://github.com/avaloniaui" />
+          <DynamicResource ResourceKey="SecondaryLabelBrush" />
         </TextBlock.Foreground>
       </TextBlock>
     </Grid.Children>

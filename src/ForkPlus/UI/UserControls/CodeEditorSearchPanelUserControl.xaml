@@ -55,14 +55,14 @@
               <Image.VerticalAlignment>Center</Image.VerticalAlignment>
             </Image>
           </Button>
-          <PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="SearchTextBox">
-            <PlaceholderTextBox.Style>
+          <controls:PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" x:Name="SearchTextBox">
+            <controls:PlaceholderTextBox.Style>
               <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" />
-            </PlaceholderTextBox.Style>
-            <PlaceholderTextBox.Icon>
+            </controls:PlaceholderTextBox.Style>
+            <controls:PlaceholderTextBox.Icon>
               <DynamicResource ResourceKey="SearchIcon" />
-            </PlaceholderTextBox.Icon>
-          </PlaceholderTextBox>
+            </controls:PlaceholderTextBox.Icon>
+          </controls:PlaceholderTextBox>
         </DockPanel.Children>
       </DockPanel>
     </Border.Child>

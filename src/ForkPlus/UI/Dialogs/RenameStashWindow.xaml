@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="500" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RenameStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="500" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RenameStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -15,7 +15,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Message:" />
-      <controls:PlaceholderTextBox TextChanged="StashName_TextChanged" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Enter new stash message" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StashNameTextBox" />
+      <controls:PlaceholderTextBox TextChanged="StashName_TextChanged" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Enter new stash message" x:Name="StashNameTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

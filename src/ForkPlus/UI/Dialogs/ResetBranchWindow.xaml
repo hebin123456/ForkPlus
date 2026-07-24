@@ -20,11 +20,11 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ActiveBranchGitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="ActiveBranchGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Move to:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DestinationGitPointView" />
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Reset type:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="ResetTypeCombobox_SelectionChanged" x:Name="ResetTypeCombobox">
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="ResetTypeCombobox_SelectionChanged" x:Name="ResetTypeCombobox">
         <ComboBoxItem Tag="{x:Static commands:BranchResetType.Soft}">
           <DockPanel Width="420">
             <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Fill="#FF34C84A" Margin="0,0,4,0" />

@@ -170,14 +170,14 @@
   <Style Selector="TreeViewControlItem:selected:focus-within Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagSelectedIcon}" />
   </Style>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="{x:Type ui:SidebarGroupItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="{x:Type ui:SidebarGroupItem}">
     <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
       <TextBlock.Text>
         <Binding Path="Title" />
       </TextBlock.Text>
     </TextBlock>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="{x:Type ui:RemoteSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="{x:Type ui:RemoteSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -198,7 +198,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="{x:Type ui:FilterableRemoteSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="{x:Type ui:FilterableRemoteSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -233,7 +233,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="{x:Type ui:FolderSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="{x:Type ui:FolderSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -247,7 +247,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="{x:Type ui:FilterableFolderSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="{x:Type ui:FilterableFolderSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="18" />
@@ -275,7 +275,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="{x:Type ui:TruncateSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="{x:Type ui:TruncateSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -292,7 +292,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="{x:Type ui:TagSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="{x:Type ui:TagSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -327,7 +327,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="{x:Type ui:RemoteBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="{x:Type ui:RemoteBranchSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -365,7 +365,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="{x:Type ui:LocalBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="{x:Type ui:LocalBranchSidebarItem}">
     <Grid HorizontalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -413,7 +413,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="{x:Type ui:StashSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="{x:Type ui:StashSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -430,7 +430,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="{x:Type ui:SubmoduleSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="{x:Type ui:SubmoduleSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -444,7 +444,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="{x:Type ui:WorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="{x:Type ui:WorktreeSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -461,7 +461,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="{x:Type ui:MainWorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="{x:Type ui:MainWorktreeSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />

@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="620" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.OpenRepositoryAlertWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="620" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.OpenRepositoryAlertWindow" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -9,6 +9,6 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <Button Grid.Row="2" Grid.Column="1" Margin="0,14,4,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="FirstButton_Click" x:Name="FirstButton" />
+    <Button Grid.Row="2" Grid.Column="1" Margin="0,14,4,4" HorizontalAlignment="Left" Click="FirstButton_Click" x:Name="FirstButton" />
   </Grid>
 </dialogs:ForkPlusDialogWindow>

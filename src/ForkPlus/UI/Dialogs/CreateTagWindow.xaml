@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow MinHeight="290" Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow MinHeight="290" Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateTagWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,12 +21,12 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Create tag at:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" Height="18" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" Height="18" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Tag Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:ReferenceTextBox TextChanged="TagNameTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" VerticalAlignment="Center" Placeholder="Enter tag name" Icon="{DynamicResource TagIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagNameTextBox" />
+      <controls:ReferenceTextBox TextChanged="TagNameTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" VerticalAlignment="Center" Placeholder="Enter tag name" Icon="{DynamicResource TagIcon}" x:Name="TagNameTextBox" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Message:" FontSize="13" VerticalAlignment="Top" Margin="0,7,0,0" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TagMessageTextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter tag message (optional)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagMessageTextBox" />
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="PushCheckBox_Changed" Unchecked="PushCheckBox_Changed" x:Name="PushCheckBox" />
+      <controls:PlaceholderTextBox TextChanged="TagMessageTextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter tag message (optional)" x:Name="TagMessageTextBox" />
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Checked="PushCheckBox_Changed" Unchecked="PushCheckBox_Changed" x:Name="PushCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

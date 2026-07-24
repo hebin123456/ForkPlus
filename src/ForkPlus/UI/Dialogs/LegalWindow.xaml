@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Height="500" Width="770" MinHeight="250" MinWidth="450" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.LegalWindow">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Height="500" Width="770" MinHeight="250" MinWidth="450" CanResize="True" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.LegalWindow" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
       <ColumnDefinition Width="*" />
@@ -9,6 +9,6 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="13" IsReadOnly="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LicencesTextBox" />
+    <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="13" IsReadOnly="True" x:Name="LicencesTextBox" />
   </Grid>
 </dialogs:ForkPlusDialogWindow>

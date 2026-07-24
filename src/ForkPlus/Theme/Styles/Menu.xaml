@@ -20,8 +20,8 @@
        reimplemented using parent-type-based styles or a single adaptive ControlTemplate.
      - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Geometry x:Key="MenuArrowGeometry" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">M5.51,5L0.792,9.718L0.115,9.039L4.154,5L0.115,0.961L0.792,0.282L5.51,5Z</Geometry>
-  <Style x:Key="MenuShadowBorderStyle" TargetType="{x:Type Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Geometry x:Key="MenuArrowGeometry">M5.51,5L0.792,9.718L0.115,9.039L4.154,5L0.115,0.961L0.792,0.282L5.51,5Z</Geometry>
+  <Style x:Key="MenuShadowBorderStyle" TargetType="{x:Type Border}">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Padding" Value="8" />
     <Setter Property="CornerRadius" Value="6" />
@@ -31,8 +31,8 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <ScaleTransform x:Key="LayoutScaleTransform" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <Style x:Key="{x:Type ContextMenu}" TargetType="{x:Type ContextMenu}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScaleTransform x:Key="LayoutScaleTransform" />
+  <Style x:Key="{x:Type ContextMenu}" TargetType="{x:Type ContextMenu}">
     <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
@@ -60,7 +60,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:StaticExtension MenuItem.SeparatorStyleKey}" TargetType="{x:Type Separator}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{x:StaticExtension MenuItem.SeparatorStyleKey}" TargetType="{x:Type Separator}">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Separator}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.Static.Separator}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
@@ -73,7 +73,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CustomContentMenuItemStyle" TargetType="{x:Type MenuItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="CustomContentMenuItemStyle" TargetType="{x:Type MenuItem}">
     <Setter Property="Height" Value="22" />
     <Setter Property="Template">
       <Setter.Value>
@@ -94,7 +94,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="MenuRepeatButtonStyle" TargetType="{x:Type RepeatButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="MenuRepeatButtonStyle" TargetType="{x:Type RepeatButton}">
     <Setter Property="ButtonBase.ClickMode" Value="Hover" />
     <Setter Property="Template">
       <Setter.Value>
@@ -106,7 +106,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}" TargetType="{x:Type ScrollViewer}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}" TargetType="{x:Type ScrollViewer}">
     <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
@@ -373,7 +373,7 @@
       <Setter Property="BorderBrush" Value="#21000000" />
     </Style>
   </ControlTemplate>
-  <controls:PlacementRectangleConverter x:Key="PlacementRectangleConverter" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <controls:PlacementRectangleConverter x:Key="PlacementRectangleConverter" />
   <ControlTemplate x:Key="{ComponentResourceKey ResourceId=SubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
       <Grid Margin="-1" x:Name="Grid">
@@ -466,7 +466,7 @@
            OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
   </ControlTemplate>
   <!-- 可搜索子菜单模板：Popup 内容改为 Grid(Rows: Auto, *)，第 0 行是置顶搜索框（不随列表滚动），第 1 行是可滚动的分支列表 -->
-  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=SearchableSubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}" TargetType="{x:Type MenuItem}" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=SearchableSubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
       <Grid Margin="-1" x:Name="Grid">
         <Grid.ColumnDefinitions>
@@ -565,10 +565,10 @@
            OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
            OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
   </ControlTemplate>
-  <Style x:Key="SearchableSubmenuMenuItem" TargetType="{x:Type MenuItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="SearchableSubmenuMenuItem" TargetType="{x:Type MenuItem}">
     <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SearchableSubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}" />
   </Style>
-  <Style x:Key="{x:Type MenuItem}" TargetType="{x:Type MenuItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{x:Type MenuItem}" TargetType="{x:Type MenuItem}">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
@@ -604,7 +604,7 @@
     </Style.Triggers>
     -->
   </Style>
-  <Style x:Key="{x:Type Menu}" TargetType="{x:Type Menu}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{x:Type Menu}" TargetType="{x:Type Menu}">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
     <Setter Property="FontSize" Value="12" />

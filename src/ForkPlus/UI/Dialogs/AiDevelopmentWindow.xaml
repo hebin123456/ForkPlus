@@ -50,7 +50,7 @@
         <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
         <Button Grid.Column="1" x:Name="ClearConversationButton" Content="Clear" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" Click="ClearConversationButton_Click" MinHeight="28" ToolTip="Clear conversation history" />
         <Button Grid.Column="2" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
-        <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+        <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu x:Name="SendModeContextMenu">
               <MenuItem x:Name="SendModeEnter" Header="Send on Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />

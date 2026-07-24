@@ -1,5 +1,5 @@
-<local:ForkPlusDialogWindow Title="Merge" Height="720" MinWidth="980" Width="1020" CanResize="True" xmlns:local="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SideBySideMergeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:mergeControls="clr-namespace:ForkPlus.UI.Controls.Editor.Merge">
-  <Grid xmlns="https://github.com/avaloniaui">
+<local:ForkPlusDialogWindow Title="Merge" Height="720" MinWidth="980" Width="1020" CanResize="True" xmlns:local="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.SideBySideMergeWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:mergeControls="clr-namespace:ForkPlus.UI.Controls.Editor.Merge" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -8,17 +8,17 @@
     </Grid.RowDefinitions>
     <DockPanel Margin="0,-4,0,2">
       <TextBlock Text="Merge" DockPanel.Dock="Left" Margin="2,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
-      <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FileIcon" />
-      <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FilePathTextBlock" />
+      <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" x:Name="FileIcon" />
+      <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" x:Name="FilePathTextBlock" />
     </DockPanel>
     <Grid Grid.Row="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
-        <ColumnDefinition xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TopCheckBoxMiddleColumn" />
+        <ColumnDefinition x:Name="TopCheckBoxMiddleColumn" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <DockPanel Grid.Column="0">
-        <CheckBox Margin="0,0,0,0" Width="320" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="AllRemoteCheckBox_Changed" Unchecked="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox">
+        <CheckBox Margin="0,0,0,0" Width="320" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" Checked="AllRemoteCheckBox_Changed" Unchecked="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox">
           <Grid HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
               <RowDefinition Height="18" />
@@ -34,9 +34,9 @@
           </Grid>
         </CheckBox>
       </DockPanel>
-      <TextBlock Grid.Column="1" Margin="4,0,4,2" FontSize="14" Text="Resolved" VerticalAlignment="Bottom" HorizontalAlignment="Center" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ResolvedTextBlock" />
+      <TextBlock Grid.Column="1" Margin="4,0,4,2" FontSize="14" Text="Resolved" VerticalAlignment="Bottom" HorizontalAlignment="Center" x:Name="ResolvedTextBlock" />
       <DockPanel Grid.Column="2">
-        <DockPanel DockPanel.Dock="Right" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="NextPrevMergeButtonsContainer">
+        <DockPanel DockPanel.Dock="Right" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Right" x:Name="NextPrevMergeButtonsContainer">
           <Border DockPanel.Dock="Top" Padding="4,0,4,0" HorizontalAlignment="Center" CornerRadius="4" Background="{DynamicResource Merge.StatusLabelBrush.Red}" x:Name="MergeStatusBorder">
             <TextBlock Margin="0" FontSize="11" Foreground="#FFFFFFFF" Text="0/1" x:Name="MergeStatusTextBlock" />
           </Border>
@@ -50,7 +50,7 @@
           </StackPanel>
         </DockPanel>
         <DockPanel>
-          <CheckBox Margin="0,0,0,0" Width="360" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="AllLocalCheckBox_Changed" Unchecked="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox">
+          <CheckBox Margin="0,0,0,0" Width="360" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" Checked="AllLocalCheckBox_Changed" Unchecked="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox">
             <Grid HorizontalAlignment="Stretch">
               <Grid.RowDefinitions>
                 <RowDefinition Height="18" />
@@ -67,7 +67,7 @@
         </DockPanel>
       </DockPanel>
     </Grid>
-    <Border Grid.Row="2" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="MergeCodeEditorContainer">
+    <Border Grid.Row="2" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" x:Name="MergeCodeEditorContainer">
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="3*" />
@@ -86,14 +86,14 @@
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,-16" Text="editing allowed" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="{DynamicResource SecondaryLabelBrush}" />
       </Grid>
     </Border>
-    <Border Grid.Row="2" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FileMergeControlContainer">
+    <Border Grid.Row="2" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" x:Name="FileMergeControlContainer">
       <controls:FileMergeControl Grid.Row="2" x:Name="FileMergeControl" />
     </Border>
     <DockPanel Grid.Row="3" Margin="0,12,0,2" HorizontalAlignment="Left">
-      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip="Switch orientation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
+      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip="Switch orientation" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
         <Image Source="{DynamicResource HorizontalMergerIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LayoutOrientationToggleButtonImage" />
       </ToggleButton>
-      <Button Margin="6,0,0,0" Padding="8,0" Height="22" FontSize="12" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts" x:Name="AiResolveButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <Button Margin="6,0,0,0" Padding="8,0" Height="22" FontSize="12" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts" x:Name="AiResolveButton">
         <TextBlock Text="🤖 AI Resolve" FontFamily="Segoe UI, Segoe UI Emoji" />
       </Button>
     </DockPanel>

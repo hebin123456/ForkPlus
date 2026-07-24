@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Title="Login to Bitbucket Server" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.BitbucketServerLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Title="Login to Bitbucket Server" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.BitbucketServerLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
       <ColumnDefinition Width="*" />
@@ -27,10 +27,10 @@
       </StackPanel>
       <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Server:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="https://code.yourcompany.com" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ServerTextBox" />
+      <controls:PlaceholderTextBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="https://code.yourcompany.com" x:Name="ServerTextBox" />
       <TextBlock Grid.Row="3" Grid.Column="0" Text="Personal Access Token:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TokenTextBox" />
-      <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,-6,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PersonalAccessTokenHint">
+      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" x:Name="TokenTextBox" />
+      <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,-6,0,0" x:Name="PersonalAccessTokenHint">
         <TextBlock Margin="8,4,0,0" FontSize="12" Text="Manage " x:Name="StatusTextBlock" />
         <Button Content="personal access tokens" Margin="0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" x:Name="OpenPersonalAccessTokenConfigurationUrlButton" />
       </StackPanel>

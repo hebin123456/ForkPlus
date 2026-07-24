@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow MinWidth="500" MaxWidth="670" SizeToContent="WidthAndHeight" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow MinWidth="500" MaxWidth="670" SizeToContent="WidthAndHeight" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -20,11 +20,11 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" Margin="0" HorizontalAlignment="Right" Text="Switch to:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
-      <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Fast-Forward to:" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FastForwardTextBlock" />
-      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FastForwardGitPointView" />
-      <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Local changes:" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesTextBlock" />
-      <Grid Grid.Row="2" Grid.Column="1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesOptionsContainer">
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" x:Name="GitPointView" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Fast-Forward to:" FontSize="13" x:Name="FastForwardTextBlock" />
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" x:Name="FastForwardGitPointView" />
+      <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Local changes:" FontSize="13" x:Name="LocalChangesTextBlock" />
+      <Grid Grid.Row="2" Grid.Column="1" x:Name="LocalChangesOptionsContainer">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />

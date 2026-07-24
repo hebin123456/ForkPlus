@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow CanResize="False" SizeToContent="Height" Width="490" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GenerateNewSshKeyWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow CanResize="False" SizeToContent="Height" Width="490" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GenerateNewSshKeyWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -19,9 +19,9 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Key File Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="KeyFileNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="For example: fork_ssh_key" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="KeyFileNameTextBox" />
+      <controls:PlaceholderTextBox TextChanged="KeyFileNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="For example: fork_ssh_key" x:Name="KeyFileNameTextBox" />
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Email:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="email@domain.com" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="EmailTextBox" />
+      <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="email@domain.com" x:Name="EmailTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

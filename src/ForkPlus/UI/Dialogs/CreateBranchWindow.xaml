@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Width="600" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="600" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CreateBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,12 +21,12 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Create branch at:" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" Height="18" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" Height="18" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Branch name:" />
-      <controls:ReferenceTextBox TextChanged="BranchName_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" Padding="1,2,2,2" Placeholder="Enter branch name" Icon="{DynamicResource BranchIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchNameTextBox" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,5,0,0" HorizontalAlignment="Left" Content="Check out after create" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="CheckoutAfterCreateCheckBox_Changed" Unchecked="CheckoutAfterCreateCheckBox_Changed" x:Name="CheckoutAfterCreateCheckBox" />
-      <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Local changes:" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesTextBlock" />
-      <Grid Grid.Row="3" Grid.Column="1" Margin="0,5,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LocalChangesOptionsContainer">
+      <controls:ReferenceTextBox TextChanged="BranchName_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" Padding="1,2,2,2" Placeholder="Enter branch name" Icon="{DynamicResource BranchIcon}" x:Name="BranchNameTextBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,5,0,0" HorizontalAlignment="Left" Content="Check out after create" Checked="CheckoutAfterCreateCheckBox_Changed" Unchecked="CheckoutAfterCreateCheckBox_Changed" x:Name="CheckoutAfterCreateCheckBox" />
+      <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Local changes:" FontSize="13" x:Name="LocalChangesTextBlock" />
+      <Grid Grid.Row="3" Grid.Column="1" Margin="0,5,0,0" x:Name="LocalChangesOptionsContainer">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />

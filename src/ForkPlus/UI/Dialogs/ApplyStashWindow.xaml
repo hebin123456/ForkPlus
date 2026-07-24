@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow MinHeight="195" Width="540" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ApplyStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow MinHeight="195" Width="540" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ApplyStashWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -20,9 +20,9 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Stash to Apply:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,2,0,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GitPointView" />
-      <Image Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False" Source="avares://ForkPlus/Assets/Warning.png" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DeleteStashWarningImage" />
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" HorizontalAlignment="Left" Content="Delete stash after applying" ToolTip="pop" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="DeleteStashAfterApplyCheckBox_Changed" Unchecked="DeleteStashAfterApplyCheckBox_Changed" x:Name="DeleteStashAfterApplyCheckBox" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,2,0,0" x:Name="GitPointView" />
+      <Image Grid.Row="1" Grid.Column="0" Margin="0,5,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False" Source="avares://ForkPlus/Assets/Warning.png" x:Name="DeleteStashWarningImage" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,5,0,0" HorizontalAlignment="Left" Content="Delete stash after applying" ToolTip="pop" Checked="DeleteStashAfterApplyCheckBox_Changed" Unchecked="DeleteStashAfterApplyCheckBox_Changed" x:Name="DeleteStashAfterApplyCheckBox" />
       <TextBlock Margin="30,0,0,0" Grid.Row="2" Grid.Column="1" FontSize="12" Text="Stash will not be deleted if a conflict occurs" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
     </Grid>
   </Grid>

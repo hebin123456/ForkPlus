@@ -1,5 +1,5 @@
-<dialogs:ForkPlusDialogWindow Height="200" Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AddSubmoduleWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Height="200" Width="590" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AddSubmoduleWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />
@@ -21,11 +21,11 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Repository URL:" />
-      <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RepositoryUrlTextBox" />
+      <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Folder:" />
-      <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Relative Local Path" Icon="{DynamicResource OpenedFolderIcon}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PathTextBox" />
-      <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Margin="8,4,0,0" VerticalAlignment="Center" IsVisible="False" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FinalPathHintTextBlock" />
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,6,0,0" HorizontalAlignment="Left" IsChecked="False" Content="Fetch nested submodules" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FetchNestedSubmodulesCheckBox" />
+      <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Relative Local Path" Icon="{DynamicResource OpenedFolderIcon}" x:Name="PathTextBox" />
+      <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Margin="8,4,0,0" VerticalAlignment="Center" IsVisible="False" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="FinalPathHintTextBlock" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,6,0,0" HorizontalAlignment="Left" IsChecked="False" Content="Fetch nested submodules" x:Name="FetchNestedSubmodulesCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
