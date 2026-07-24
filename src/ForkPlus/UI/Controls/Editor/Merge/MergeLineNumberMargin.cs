@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Settings;
@@ -13,19 +13,21 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 {
 	internal class MergeLineNumberMargin : ClearTypeLineNumberMargin
 	{
-		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+		// 阶段 4 里程碑 4.7-a：WPF Typeface → Avalonia Typeface（逗号分隔回退字体）；
+		// WPF Brush → Avalonia IBrush；Freeze() 移除（Avalonia 画刷默认不可变）。
+		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas, Courier New"), FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 
-		private static readonly Brush _textBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
+		private static readonly IBrush _textBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 
 		private static readonly Pen _separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
 
 		private static readonly Pen _separatorPenDark = new Pen(new SolidColorBrush(Color.FromRgb(110, 110, 110)), 1.0);
 
-		private static readonly Brush _mergeConflictMouseOverBrushLight = new SolidColorBrush(Color.FromRgb(216, 216, 216));
+		private static readonly IBrush _mergeConflictMouseOverBrushLight = new SolidColorBrush(Color.FromRgb(216, 216, 216));
 
-		private static readonly Brush _mergeConflictMouseOverBrushDark = new SolidColorBrush(Color.FromRgb(165, 165, 165));
+		private static readonly IBrush _mergeConflictMouseOverBrushDark = new SolidColorBrush(Color.FromRgb(165, 165, 165));
 
-		private static readonly Brush _mergeConflictSelectedBrush = new SolidColorBrush(Color.FromRgb(59, 137, 218));
+		private static readonly IBrush _mergeConflictSelectedBrush = new SolidColorBrush(Color.FromRgb(59, 137, 218));
 
 		private static readonly double HorizontalMargin = 10.0;
 
@@ -35,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private Pen _separatorPen;
 
-		private Brush _mergeConflictMouseOverBrush;
+		private IBrush _mergeConflictMouseOverBrush;
 
 		private int _lineNumberLength = 2;
 
@@ -47,8 +49,8 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			typeface = _typeface;
 			emSize = 11.0;
 			RefreshPen();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			// 阶段 4 里程碑 4.7-a：WeakEventManager → 直接事件订阅。阶段 6 改用 WeakEvent。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
 		public void UpdateLineNumbersData(MergeConflictView mergeConflictView)
@@ -97,12 +99,16 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			double num = base.RenderSize.Width - 3.0;
 			double num2 = 16.0;
-			streamGeometryContext.BeginFigure(origin, isFilled: true, isClosed: false);
-			streamGeometryContext.LineTo(Offset(origin, num - 5.0, 0.0), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, num, num2 / 2.0), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, num - 5.0, num2), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, 0.0, num2), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(origin, isStroked: true, isSmoothJoin: false);
+			// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / LineTo(p, isStroked, isSmoothJoin) →
+			// Avalonia BeginFigure(p, isFilled) / LineTo(p, isStroked) + EndFigure(isClosed)。原 isClosed:false，
+			// 视觉上最后一条 LineTo 已回到 origin，逻辑上保持 open 以匹配 WPF 行为。
+			streamGeometryContext.BeginFigure(origin, isFilled: true);
+			streamGeometryContext.LineTo(Offset(origin, num - 5.0, 0.0), isStroked: true);
+			streamGeometryContext.LineTo(Offset(origin, num, num2 / 2.0), isStroked: true);
+			streamGeometryContext.LineTo(Offset(origin, num - 5.0, num2), isStroked: true);
+			streamGeometryContext.LineTo(Offset(origin, 0.0, num2), isStroked: true);
+			streamGeometryContext.LineTo(origin, isStroked: true);
+			streamGeometryContext.EndFigure(isClosed: false);
 			return streamGeometry;
 		}
 
@@ -111,7 +117,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			base.OnRender(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
-				Brush brush = _textBrush;
+				IBrush brush = _textBrush;
 				if (_editor.ViewMode == MergeConflictPart.Local || _editor.ViewMode == MergeConflictPart.Remote)
 				{
 					if (IsLineSelected(visualLine.FirstDocumentLine.LineNumber - 1))
@@ -135,16 +141,19 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			drawingContext.DrawLine(_separatorPen, new Point(base.RenderSize.Width - 2.0, 0.0), new Point(base.RenderSize.Width - 2.0, base.RenderSize.Height));
 		}
 
-		protected override void OnMouseLeave(MouseEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF Mouse* 事件 → Avalonia Pointer* 事件。
+		// OnMouseLeave → OnPointerLeave, OnMouseMove → OnPointerMoved,
+		// OnMouseLeftButtonDown → OnPointerPressed。e.GetPosition API 一致。
+		protected override void OnPointerLeave(PointerEventArgs e)
 		{
-			base.OnMouseLeave(e);
+			base.OnPointerLeave(e);
 			_mouseOverLine = -1;
 			InvalidateVisual();
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(PointerEventArgs e)
 		{
-			base.OnMouseMove(e);
+			base.OnPointerMoved(e);
 			Point position = e.GetPosition(base.TextView);
 			VisualLine visualLineFromVisualTop = base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.VerticalOffset);
 			if (visualLineFromVisualTop == null)
@@ -166,10 +175,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			e.Handled = true;
-			base.OnMouseLeftButtonDown(e);
+			base.OnPointerPressed(e);
 			int lineUnderCursor = GetLineUnderCursor(e);
 			if (lineUnderCursor != -1)
 			{
@@ -186,7 +195,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		private int GetLineUnderCursor(MouseEventArgs e)
+		private int GetLineUnderCursor(PointerEventArgs e)
 		{
 			Point position = e.GetPosition(base.TextView);
 			return base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.VerticalOffset)?.FirstDocumentLine.LineNumber ?? (-1);
@@ -272,21 +281,22 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 	private static Color? TryFindColor(string key)
 	{
-		object res = Application.Current?.TryFindResource(key);
+		object res = Theme.FindResource(key);
 		if (res is Color c) return c;
 		if (res is SolidColorBrush b) return b.Color;
 		return null;
 	}
 
-	private static Brush TryFindColorBrush(string key)
+	private static IBrush TryFindColorBrush(string key)
 	{
 		Color? c = TryFindColor(key);
 		return c.HasValue ? new SolidColorBrush(c.Value) : null;
 	}
 
-		private FormattedText CreateFormattedText(string text, Brush brush)
+		private FormattedText CreateFormattedText(string text, IBrush brush)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			// 阶段 4 里程碑 4.7-a：WPF FormattedText(..., pixelsPerDip) → Avalonia FormattedText（无 pixelsPerDip）。
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush);
 		}
 	}
 }
