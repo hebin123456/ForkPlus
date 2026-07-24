@@ -207,7 +207,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				MaxWidth = 500.0,
 				TextWrapping = TextWrapping.Wrap,
 				Text = VerboseGitOutputTooltip
-			})
+			});
 			UserIdentity result = new GetGlobalUserIdentityGitCommand().Execute().Result;
 			UserNameTextBox.Text = result.Name ?? "";
 			EmailTextBox.Text = result.Email ?? "";

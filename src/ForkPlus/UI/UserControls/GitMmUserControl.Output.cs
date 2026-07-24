@@ -15,7 +15,7 @@
 // - Brush → IBrush（Avalonia.Media.IBrush，Brushes.XXX 返回 ISolidColorBrush）
 // - ToolTip.SetTip(button, link → ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）
 // - OutputTextBox.ScrollToEnd() → 查找父 ScrollViewer.ScrollToEnd()（Avalonia ScrollViewer.ScrollToEnd 存在）
-using System)
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -455,7 +455,7 @@ namespace ForkPlus.UI.UserControls
 					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)
 				};
 				// 阶段 4.5：WPF ToolTip.SetTip(button, link → Avalonia ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）。
-				ToolTip.SetTip(button, link))
+				ToolTip.SetTip(button, link);
 				button.Click += delegate
 				{
 					OpenUrl(link);

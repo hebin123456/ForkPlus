@@ -16,7 +16,7 @@ using Avalonia.Layout;
 // - TranslatePoint 返回 Point? → ?? default(Point)（Avalonia TranslatePoint 返回可空）
 // - MenuItem.IsCheckable = true → MenuItem.ToggleType = MenuItemToggleType.CheckBox（Avalonia 用 ToggleType 枚举控制勾选行为）
 // - Dispatcher.Async → 保留（Avalonia Dispatcher 兼容扩展，参考 CommitCommand）
-using System)
+using System;
 using System.Collections;
 using System.ComponentModel;
 using Avalonia;
@@ -46,7 +46,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）。
-			ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch")))
+			ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch"));
 			ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull"));
 			ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push"));
 			// 阶段 4.5：WPF WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → 直接订阅 obj.Event（参考 FileControlHeaderUserControl）。
@@ -252,7 +252,7 @@ namespace ForkPlus.UI.UserControls
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
 			AiDevelopmentToolbarButton.Title = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
 			// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)。
-		ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language)))
+		ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language));
 		ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language));
 		ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language));
 			RefreshWorkspacesButton();
@@ -403,7 +403,7 @@ namespace ForkPlus.UI.UserControls
 		// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)。
 		ToolTip.SetTip(UndoToolbarButton, canUndo
 			? undoLabel + ": " + repo.UndoRedoStack.LastUndoOperationName
-			: undoLabel))
+			: undoLabel);
 		ToolTip.SetTip(RedoToolbarButton, canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
 			: redoLabel);

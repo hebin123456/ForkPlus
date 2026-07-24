@@ -33,7 +33,7 @@
 // - Popup.StaysOpen=false → IsLightDismissEnabled=true；AllowsTransparency → 移除（参考 GraphCellView/DateRangeButton）
 // - MainWindow.Instance 已迁移为静态属性（基于 IClassicDesktopStyleApplicationLifetime），直接保留
 // - ShowDialog().GetValueOrDefault() 保持不变（代码库已统一处理 Avalonia ShowDialog 返回值）
-using System)
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
