@@ -19,7 +19,7 @@
 // - FrameworkElement → Control
 // - DependencyObject → Visual（视觉树节点；AvaloniaObject 用于依赖属性场景）
 // - SubrepoTab PreviewMouseDown/Move/Up → PointerPressed/Moved/Released（无 Preview 变体，参考 ClosableTabItem）
-// - MouseButtonEventArgs → PointerPressedEventArgs/PointerReleasedEventArgs；MouseEventArgs → PointerEventArgs
+// - PointerPressedEventArgs → PointerPressedEventArgs/PointerReleasedEventArgs；PointerEventArgs → PointerEventArgs
 // - e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
 // - Mouse.PrimaryDevice.LeftButton → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
 // - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
@@ -1589,7 +1589,7 @@ namespace ForkPlus.UI.UserControls
 				?? _workspace.PreferredSubrepoPath;
 		}
 
-		// 阶段 4.5：WPF PreviewMouseDown + MouseButtonEventArgs → Avalonia PointerPressed + PointerPressedEventArgs（无 Preview 变体，参考 ClosableTabItem）。
+		// 阶段 4.5：WPF PreviewMouseDown + PointerPressedEventArgs → Avalonia PointerPressed + PointerPressedEventArgs（无 Preview 变体，参考 ClosableTabItem）。
 		// 阶段 4.5：WPF e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
 		// 阶段 4.5：WPF e.OriginalSource → e.Source；DependencyObject → Visual（视觉树节点）。
 		private void SubrepoTabItem_PointerPressed(object sender, PointerPressedEventArgs e)
@@ -1602,7 +1602,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// 阶段 4.5：WPF PreviewMouseMove + MouseEventArgs → Avalonia PointerMoved + PointerEventArgs。
+		// 阶段 4.5：WPF PreviewMouseMove + PointerEventArgs → Avalonia PointerMoved + PointerEventArgs。
 		// 阶段 4.5：WPF Mouse.PrimaryDevice.LeftButton → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
 		// 阶段 4.5：WPF SystemParameters.MinimumHorizontalDragDistance/MinimumVerticalDragDistance → 常量 10.0（参考 DragAndDropListViewItem/ClosableTabItem）。
 		// 阶段 4.5：WPF DragDrop.DoDragDrop(...) → _ = DragDrop.DoDragDrop(...)（返回 Task，丢弃；payload 用 WeakReference<TabItem>，参考 ClosableTabItem）。
@@ -1632,7 +1632,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// 阶段 4.5：WPF PreviewMouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs。
+		// 阶段 4.5：WPF PreviewMouseUp + PointerPressedEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs。
 		private void SubrepoTabItem_PointerReleased(object sender, PointerReleasedEventArgs e)
 		{
 			_subrepoTabDragItem = null;

@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls + Avalonia.Controls.Primitives。
 // WPF PreviewMouseWheel → Avalonia PointerWheelChanged（参考已迁移的 FileDiffControl.cs）。
-// WPF ContextMenu/Separator/ContextMenuEventArgs → Avalonia.Controls 同名类型。
+// WPF ContextMenu/Separator/ContextRequestedEventArgs → Avalonia.Controls 同名类型。
 // WPF ScrollBarVisibility → Avalonia.Controls.Primitives.ScrollBarVisibility。
 using System;
 using Avalonia.Controls;
@@ -178,7 +178,7 @@ namespace ForkPlus.UI.Controls
 					{
 						c.IsStaged = changedFile.Staged;
 						c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
-						c.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+						c.EditorContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 						{
 							DiffCodeEditor diffCodeEditor2 = e.Source as DiffCodeEditor;
 							ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
@@ -251,7 +251,7 @@ namespace ForkPlus.UI.Controls
 				{
 					c.IsStaged = changedFile.Staged;
 					c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
-					c.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+					c.EditorContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 					{
 						DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor;
 						ContextMenu contextMenu = diffCodeEditor.ContextMenu;

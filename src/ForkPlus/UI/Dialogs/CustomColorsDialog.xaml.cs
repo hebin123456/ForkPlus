@@ -120,7 +120,7 @@ namespace ForkPlus.UI.Dialogs
 
 		#region HSV 调色盘
 
-		private void Swatch_Click(object sender, MouseButtonEventArgs e)
+		private void Swatch_Click(object sender, PointerPressedEventArgs e)
 		{
 			if (sender is Border b && b.Tag is string hex)
 			{
@@ -132,7 +132,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		/// <summary>颜色预览块点击 → 打开颜色选择 Popup。</summary>
-		private void ColorPreview_Click(object sender, MouseButtonEventArgs e)
+		private void ColorPreview_Click(object sender, PointerPressedEventArgs e)
 		{
 			if (sender is FrameworkElement fe && fe.Tag is CustomColorItem item)
 			{
@@ -213,20 +213,20 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		// HSV 方块鼠标交互
-		private void HsvCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+		private void HsvCanvas_MouseDown(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHsv = true;
 			HsvCanvas.CaptureMouse();
 			UpdateHsvFromMouse(e.GetPosition(HsvCanvas));
 		}
 
-		private void HsvCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+		private void HsvCanvas_MouseUp(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHsv = false;
 			HsvCanvas.ReleaseMouseCapture();
 		}
 
-		private void HsvCanvas_MouseMove(object sender, MouseEventArgs e)
+		private void HsvCanvas_MouseMove(object sender, PointerEventArgs e)
 		{
 			if (_isDraggingHsv)
 				UpdateHsvFromMouse(e.GetPosition(HsvCanvas));
@@ -252,20 +252,20 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		// 色相条鼠标交互
-		private void HueCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+		private void HueCanvas_MouseDown(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHue = true;
 			HueCanvas.CaptureMouse();
 			UpdateHueFromMouse(e.GetPosition(HueCanvas));
 		}
 
-		private void HueCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+		private void HueCanvas_MouseUp(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHue = false;
 			HueCanvas.ReleaseMouseCapture();
 		}
 
-		private void HueCanvas_MouseMove(object sender, MouseEventArgs e)
+		private void HueCanvas_MouseMove(object sender, PointerEventArgs e)
 		{
 			if (_isDraggingHue)
 				UpdateHueFromMouse(e.GetPosition(HueCanvas));

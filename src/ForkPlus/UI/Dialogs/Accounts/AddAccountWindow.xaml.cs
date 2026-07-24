@@ -5,6 +5,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Controls;
 using Avalonia.Media;
 using System.ComponentModel;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
@@ -71,7 +72,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			}
 		}
 
-		private void ServicesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void ServicesListBox_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			ForkPlusDialogWindow loginWindow = SelectedService.ServiceType.GetLoginWindow();
 			if (loginWindow != null && loginWindow.ShowDialog().GetValueOrDefault())

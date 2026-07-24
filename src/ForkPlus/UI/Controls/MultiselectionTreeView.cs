@@ -258,7 +258,7 @@ namespace ForkPlus.UI.Controls
 		}
 
 		// 阶段 4.5：WPF OnPreviewMouseRightButtonDown (tunneling) → Avalonia OnPointerPressed + IsRightButtonPressed 检查。
-		// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs。
+		// WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs。
 		// WPF Mouse.PrimaryDevice.RightButton → Avalonia GetCurrentPoint().Properties.IsRightButtonPressed。
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
@@ -270,8 +270,8 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// 阶段 4.5：WPF OnMouseDoubleClick(MouseButtonEventArgs) → Avalonia OnDoubleTapped(TappedEventArgs)。
-		// WPF MouseButtonEventArgs → Avalonia.Input.TappedEventArgs。
+		// 阶段 4.5：WPF OnMouseDoubleClick(PointerPressedEventArgs) → Avalonia OnDoubleTapped(TappedEventArgs)。
+		// WPF PointerPressedEventArgs → Avalonia.Input.TappedEventArgs。
 		protected override void OnDoubleTapped(TappedEventArgs e)
 		{
 			Point position = e.GetPosition(this);

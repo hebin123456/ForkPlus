@@ -56,7 +56,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening;
+		public event EventHandler<ContextRequestedEventArgs> EditorContextMenuOpening;
 
 		public void SetDiff([Null] ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location)
 		{
@@ -118,7 +118,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				_child.PositionCache = child.PositionCache;
 				_child.SetDiff(child.Diff, child.TabWidth, child.EntireFile, child.Location);
 			}
-			_child.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+			_child.EditorContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
@@ -127,7 +127,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			base.Children.Add(_child as Grid);
 		}
 
-		protected void RaiseEditorContextMenuOpening(object sender, ContextMenuEventArgs e)
+		protected void RaiseEditorContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			this.EditorContextMenuOpening?.Invoke(this, e);
 		}

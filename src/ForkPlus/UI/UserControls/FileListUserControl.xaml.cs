@@ -10,7 +10,7 @@
 // - ImageSource → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
 // - DependencyProperty.RegisterAttached + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override（EnableMultiSelection 仅作普通属性用于 XAML）
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
-// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
+// - MouseDoubleClick + PointerPressedEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
 // - Delegate.Combine(field, handler) → field += handler
 // - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）；GridViewColumn.ActualWidth 保留（GridView 兼容层属性）
 // - (DataTemplate)base.Resources[key] → (IDataTemplate)base.Resources[key]（Avalonia ItemsControl.ItemTemplate 为 IDataTemplate）

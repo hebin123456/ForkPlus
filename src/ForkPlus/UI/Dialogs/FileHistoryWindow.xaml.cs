@@ -269,7 +269,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void TreeView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			if (TreeView.LastClickedItem is HistoryEntryViewModel historyEntryViewModel)
 			{
@@ -300,7 +300,7 @@ namespace ForkPlus.UI.Dialogs
 			_delayedAction.InvokeWithDelay(_selectedHistoryEntries);
 		}
 
-		private void TreeView_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void TreeView_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			HistoryEntryViewModel[] array = ClickedItems(TreeView);
 			if (array.Length == 2)

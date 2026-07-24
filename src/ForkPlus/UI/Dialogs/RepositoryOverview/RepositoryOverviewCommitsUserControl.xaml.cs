@@ -5,6 +5,7 @@ using ForkPlus.Git;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Dialogs.RepositoryOverview
 {
@@ -30,7 +31,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 			RevisionsListBox.ItemsSource = revisions.Map((Revision x) => new RepositoryOverviewCommitViewModel(x));
 		}
 
-		private void RevisionsListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void RevisionsListBoxItem_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			e.Handled = true;
 			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
@@ -43,7 +44,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 			}
 		}
 
-		private void RevisionsListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void RevisionsListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: var dataContext }))
 			{

@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Dialogs
 			base.OnClosing(e);
 		}
 
-		private void WorkspacesListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void WorkspacesListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{

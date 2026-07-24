@@ -2,7 +2,7 @@
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Markup → 移除
-// - SelectionChangedEventArgs/ContextMenuEventArgs → Avalonia.Controls 同名类型
+// - SelectionChangedEventArgs/ContextRequestedEventArgs → Avalonia.Controls 同名类型
 // - ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
 //   → 视觉树遍历 GetVisualParent() 向上查找 ListBoxItem（参考 ItemsControlExtensions.GetContainerAtPoint）
 // - e.OriginalSource → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
@@ -142,7 +142,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void ToolsListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void ToolsListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			// 阶段 4.5：WPF ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
 			// → Avalonia 视觉树遍历：从 e.Source 沿 GetVisualParent() 向上查找 ListBoxItem（参考 ItemsControlExtensions.GetContainerAtPoint）。

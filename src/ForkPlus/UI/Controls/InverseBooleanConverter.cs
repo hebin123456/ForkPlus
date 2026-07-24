@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Controls
 {
-	[ValueConversion(typeof(bool), typeof(bool))]
+	// 阶段 4.5：WPF [ValueConversion] 特性在 Avalonia 无对应，移除。
 	public class InverseBooleanConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Controls
 {
 	// 阶段 4.5：WPF System.Windows.Controls.TabItem → Avalonia.Controls.TabItem。
 	// WPF PreviewMouseDown/PreviewMouseMove → Avalonia PointerPressed/PointerMoved（无 Preview 变体）。
-	// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs/PointerEventArgs。
+	// WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs/PointerEventArgs。
 	// WPF Mouse.PrimaryDevice.LeftButton → Avalonia PointerEventArgs.GetCurrentPoint().Properties.IsLeftButtonPressed。
 	// WPF DragDrop.DoDragDrop + DragEventArgs → Avalonia DragDrop.DoDragDrop + DragEventArgs（API 兼容）。
 	// WPF WeakEventManager<T,S> → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）。
@@ -105,7 +105,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			// 阶段 4.5：WPF PreviewMouseDown + MouseButtonEventArgs.MiddleButton
+			// 阶段 4.5：WPF PreviewMouseDown + PointerPressedEventArgs.MiddleButton
 			// → Avalonia PointerPressed + PointerPressedEventArgs.GetCurrentPoint().Properties.IsMiddleButtonPressed。
 			centeredDockPanel.PointerPressed += delegate(object s, PointerPressedEventArgs e)
 			{

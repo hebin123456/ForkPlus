@@ -1,6 +1,6 @@
 ﻿// 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
-// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Popup/TextBlock/Button/Image/Grid/SelectionChangedEventArgs/ContextMenuEventArgs/TextChangedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Popup/TextBlock/Button/Image/Grid/SelectionChangedEventArgs/ContextRequestedEventArgs/TextChangedEventArgs）
 // - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ButtonBase.ClickEvent）
 // - using System.Windows.Documents → 移除（FrameworkContentElement 改用 Control）
 // - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/PointerPressedEventArgs/TappedEventArgs/KeyBinding）
@@ -11,7 +11,7 @@
 // - 新增 using Avalonia.Styling（Style）；新增 using Avalonia.VisualTree（GetVisualChildren/GetVisualParent/IVisual）
 // - WeakEventManager<NotificationCenter, EventArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 FileControlHeaderUserControl）
 // - AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(h)) → AddHandler(ButtonBase.ClickEvent, h)（方法组转换 EventHandler<RoutedEventArgs>）
-// - MouseDown/MouseDoubleClick + MouseButtonEventArgs → PointerPressed/DoubleTapped + PointerPressedEventArgs/TappedEventArgs
+// - MouseDown/MouseDoubleClick + PointerPressedEventArgs → PointerPressed/DoubleTapped + PointerPressedEventArgs/TappedEventArgs
 // - PreviewKeyDown → KeyDown（Avalonia 无 Preview 变体）
 // - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown
 // - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
@@ -639,7 +639,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void SidebarTreeView_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void SidebarTreeView_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
 			if (repositoryUserControl == null)
@@ -1955,7 +1955,7 @@ namespace ForkPlus.UI.UserControls
 			return new SidebarGroupItem(Preferences.PreferencesLocalization.Current(sidebarGroup.ToString()), null, sidebarGroup, this);
 		}
 
-		private void SidebarTreeView_MouseDown(object sender, MouseButtonEventArgs e)
+		private void SidebarTreeView_MouseDown(object sender, PointerPressedEventArgs e)
 		{
 			Point position = e.GetPosition(SidebarTreeView);
 			if (SidebarTreeView.GetObjectAtPoint<TreeViewControlItem>(position) is MultiselectionTreeViewItem { IsSelected: not false })
@@ -2606,7 +2606,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void SidebarTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void SidebarTreeView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			if (e.IsClickedOnScrollbar())
 			{

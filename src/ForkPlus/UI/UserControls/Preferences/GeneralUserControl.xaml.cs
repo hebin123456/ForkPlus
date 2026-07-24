@@ -6,7 +6,7 @@
 // - ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject) → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()
 //   （Avalonia 无 ContainerFromElement；用 DependencyObjectExtensions.GetParent<T> 向上遍历可视树查找容器）
 // - e.OriginalSource → e.Source（Avalonia RoutedEventArgs 仅有 Source，无 OriginalSource）
-// - ContextMenuEventArgs/SelectionChangedEventArgs/TextChangedEventArgs → Avalonia.Controls 同名类型
+// - ContextRequestedEventArgs/SelectionChangedEventArgs/TextChangedEventArgs → Avalonia.Controls 同名类型
 // - Visibility.Collapsed/Visible 保持原样（Avalonia.Controls.Visibility 兼容）
 // - MenuItem.Header 保持原样（Avalonia.Controls.MenuItem 兼容）
 using System;
@@ -135,7 +135,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 		}
 
-		private void SrcDirsListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void SrcDirsListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			// 阶段 4.5：WPF ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
 			// → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()（向上遍历可视树查找 ListBoxItem 容器）。

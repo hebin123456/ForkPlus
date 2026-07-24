@@ -17,6 +17,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.Services;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
+using Avalonia;
 
 namespace ForkPlus.UI.Commands
 {

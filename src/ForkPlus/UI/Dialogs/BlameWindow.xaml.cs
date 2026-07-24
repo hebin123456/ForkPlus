@@ -416,7 +416,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnMouseDown(MouseButtonEventArgs e)
+		protected override void OnMouseDown(PointerPressedEventArgs e)
 		{
 			base.OnMouseDown(e);
 			if (e.ChangedButton == MouseButton.XButton1)
@@ -467,7 +467,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void RevisionsListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void RevisionsListBoxItem_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			e.Handled = true;
 			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
@@ -480,7 +480,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void BlameListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void BlameListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: var dataContext }))
 			{

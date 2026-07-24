@@ -411,7 +411,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void UnstagedFilesFileListUserControl_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void UnstagedFilesFileListUserControl_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!HasSelectedItems(UnstagedFilesFileListUserControl))
 			{
@@ -423,7 +423,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void StagedFilesFileListUserControl_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void StagedFilesFileListUserControl_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!HasSelectedItems(StagedFilesFileListUserControl))
 			{

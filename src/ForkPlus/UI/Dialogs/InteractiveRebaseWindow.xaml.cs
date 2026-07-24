@@ -396,7 +396,7 @@ namespace ForkPlus.UI.Dialogs
 			gridView.Columns[2].Width = ((num2 > 0.0) ? num2 : 0.0);
 		}
 
-		private void RevisionListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void RevisionListView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			if (!e.IsClickedOnScrollbar() && RevisionListView.SelectedItem is RevisionEntry { Action: not InteractiveRebaseAction.Drop, Action: not InteractiveRebaseAction.Fixup, Action: not InteractiveRebaseAction.Squash } revisionEntry)
 			{

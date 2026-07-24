@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 namespace ForkPlus.UI.Helpers
 {
 	// 阶段 4.5：WPF System.Windows.* → Avalonia.*。
-	// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs。
+	// WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs。
 	// WPF args.OriginalSource → Avalonia args.Source。
 	// WPF VisualTreeHelper.GetParent → Avalonia GetVisualParent()。
 	// WPF DependencyObject → Avalonia Visual（视觉树节点）。

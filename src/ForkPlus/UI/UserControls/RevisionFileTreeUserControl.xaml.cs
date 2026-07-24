@@ -1,10 +1,10 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
-// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBoxItem/Separator/MenuItem/ContextMenu/ContextMenuEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBoxItem/Separator/MenuItem/ContextMenu/ContextRequestedEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType）
 // - using System.Windows.Input → using Avalonia.Input（Key/TappedEventArgs）
 // - using System.Windows.Markup → 移除
 // - CommandBindings.Add(command.CreateShortcutCommandBinding(h)) → KeyBindings.Add(command.CreateShortcutKeyBinding(h))（参考 IUICommandExtension/RevisionListViewUserControl）
-// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）
+// - MouseDoubleClick + PointerPressedEventArgs → DoubleTapped + RoutedEventArgs（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）
 //   构造函数中显式订阅 FilesTreeView.DoubleTapped += FilesTreeView_MouseDoubleClick（XAML 的 MouseDoubleClick 事件在 Avalonia 不存在，由 XAML 迁移阶段移除）
 // - e.OriginalSource → e.Source（参考 MultiselectionTreeView）
 // - (e.Source as DependencyObject)?.GetParent<ListBoxItem>() → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()（参考 DependencyObjectExtensions）
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// 阶段 4.5：WPF MouseDoubleClick(MouseButtonEventArgs) → Avalonia DoubleTapped(RoutedEventArgs)（参考 FileListUserControl）。
+		// 阶段 4.5：WPF MouseDoubleClick(PointerPressedEventArgs) → Avalonia DoubleTapped(RoutedEventArgs)（参考 FileListUserControl）。
 		// e.OriginalSource → e.Source（参考 MultiselectionTreeView）；DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
 		private void FilesTreeView_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
@@ -198,7 +198,7 @@ namespace ForkPlus.UI.UserControls
 			Expand(pathComponents, FilesTreeView.RootItem.Children);
 		}
 
-		private void FilesTreeView_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void FilesTreeView_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!(FilesTreeView.SelectedItem is RevisionFileTreeViewItem revisionFileTreeViewItem))
 			{

@@ -71,7 +71,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening
+		public event EventHandler<ContextRequestedEventArgs> EditorContextMenuOpening
 		{
 			add
 			{

@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Application/AvaloniaObject/IVisual）+ using Avalonia.Interactivity（RoutedEventArgs）
-// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListBoxItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextMenuEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListBoxItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextRequestedEventArgs）
 // - using System.Windows.Documents → using Avalonia.Controls.Documents（Run）
 // - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/KeyboardNavigation/KeyboardNavigationMode/DragEventArgs/PointerPressedEventArgs）
 // - using System.Windows.Markup → 移除
@@ -14,7 +14,7 @@
 // - VisualTreeHelper.GetParent → (x as IVisual)?.GetVisualParent()（参考 DependencyObjectExtensions）
 // - DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
 // - ScrollViewer.VerticalOffset/ViewportHeight → Offset.Y/Viewport.Height（参考 NoUIAutomationListView）
-// - MouseDoubleClick + MouseButtonEventArgs → PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap；XAML 需同步迁移）
+// - MouseDoubleClick + PointerPressedEventArgs → PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap；XAML 需同步迁移）
 // - e.Data.GetData → e.Data.Get（参考 FileListTreeView）
 // - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
 // - MoveFocus(TraversalRequest) → 无 Avalonia 等价，注释（参考 MultiselectionTreeView）
@@ -400,10 +400,10 @@ namespace ForkPlus.UI.UserControls
 			this.SelectionChanged?.Invoke(this, new EventArgs<DecoratedRevision[]>(array));
 		}
 
-		// 阶段 4.5：WPF MouseDoubleClick + MouseButtonEventArgs → Avalonia PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap）。
+		// 阶段 4.5：WPF MouseDoubleClick + PointerPressedEventArgs → Avalonia PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap）。
 		private void RevisionListView_PointerPressed(object sender, PointerPressedEventArgs e)
 		{
-			// 阶段 4.5：WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs；ClickCount==2 区分双击。
+			// 阶段 4.5：WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs；ClickCount==2 区分双击。
 			if (e.ClickCount != 2)
 			{
 				return;
@@ -439,7 +439,7 @@ namespace ForkPlus.UI.UserControls
 			_refreshContextSearch.InvokeWithDelay(RevisionSearchPanelUserControl.SearchString);
 		}
 
-		private void RevisionListView_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void RevisionListView_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (sender is ListBox listBox)
 			{
@@ -492,7 +492,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		// 阶段 4.5：WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs；DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+		// 阶段 4.5：WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs；DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）。
 		private Branch GetClickedBranch(PointerPressedEventArgs args)
 		{
 			AvaloniaObject dependencyObject = args.Source as AvaloniaObject;

@@ -12,6 +12,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Undo;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -108,7 +109,7 @@ namespace ForkPlus.UI.Dialogs
 			JumpButton.IsEnabled = ReflogListView.SelectedItem is ReflogViewItem;
 		}
 
-		private void ReflogListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void ReflogListView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			JumpToSelected();
 		}

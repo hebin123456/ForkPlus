@@ -4,7 +4,7 @@
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
 // - base.RenderSize → Bounds.Size
 // - OnRenderSizeChanged(SizeChangedInfo) → ArrangeOverride 检测尺寸变化（Avalonia 无 OnRenderSizeChanged）
-// - Mouse* 事件 → Pointer* 事件（OnMouseLeave → OnPointerExited）；MouseButtonEventArgs → PointerPressedEventArgs；MouseEventArgs → PointerEventArgs
+// - Mouse* 事件 → Pointer* 事件（OnMouseLeave → OnPointerExited）；PointerPressedEventArgs → PointerPressedEventArgs；PointerEventArgs → PointerEventArgs
 // - Point.Offset(double,double) → Point + Vector（Avalonia Point 为只读结构体）
 // - DrawRectangle/DrawLine/DrawText/DrawGeometry 签名兼容，保持不变
 using System;

@@ -5,7 +5,7 @@
 // - using System.Windows.Input → using Avalonia.Input（PointerReleasedEventArgs）
 // - using System.Windows.Media → using Avalonia.Media（Geometry）
 // - FrameworkElement → Avalonia.Controls.Control（参数类型，参考 FileContentControl）
-// - OnPreviewMouseLeftButtonUp(MouseButtonEventArgs) → OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）
+// - OnPreviewMouseLeftButtonUp(PointerPressedEventArgs) → OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）
 // - e.OriginalSource → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
 // - DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）
 // - Visibility.Collapsed/Visible → Avalonia.Layout.Visibility（需 using Avalonia.Layout）
@@ -106,7 +106,7 @@ namespace ForkPlus.UI.UserControls
 			e.Handled = true;
 		}
 
-		// 阶段 4.5：WPF OnPreviewMouseLeftButtonUp(MouseButtonEventArgs) → Avalonia OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）。
+		// 阶段 4.5：WPF OnPreviewMouseLeftButtonUp(PointerPressedEventArgs) → Avalonia OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）。
 		// WPF e.OriginalSource → Avalonia e.Source（参考 ClosableTabItem）。WPF DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
 		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{

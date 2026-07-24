@@ -288,7 +288,7 @@ namespace ForkPlus.UI.Controls
 						return textDiffControl3;
 					}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
 					{
-						c.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+						c.EditorContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 						{
 							DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor;
 							ContextMenu contextMenu = diffCodeEditor.ContextMenu;
