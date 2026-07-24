@@ -1,4 +1,16 @@
 <dialogs:ForkPlusDialogWindow Title="Accounts" Height="500" Width="700" xmlns="https://github.com/avaloniaui" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.AccountsWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
+  <dialogs:ForkPlusDialogWindow.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger。
+         原触发器：当祖先 ListBoxItem.IsSelected=True 且 IsFocused=True 时
+         设置 ItemTemplate 内 ServiceTextBlock/UserNameTextBlock.Foreground=ForegroundBrush.Light。
+         AutoTooltipTextBlock 继承自 TextBlock，因此 TextBlock#ServiceTextBlock 选择器可命中。 -->
+    <Style Selector="ListBoxItem:selected:focus TextBlock#ServiceTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected:focus TextBlock#UserNameTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
@@ -47,38 +59,6 @@
                 </TextBlock.Text>
               </TextBlock>
             </Grid>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition>
-                    <Condition.Binding>
-                      <Binding Path="IsSelected">
-                        <Binding.RelativeSource>
-                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                    </Condition.Binding>
-                  </Condition>
-                  <Condition>
-                    <Condition.Binding>
-                      <Binding Path="IsFocused">
-                        <Binding.RelativeSource>
-                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                    </Condition.Binding>
-                  </Condition>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.Setters>
-                  <Setter TargetName="ServiceTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="UserNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                </MultiDataTrigger.Setters>
-              </MultiDataTrigger>
-            </DataTemplate.Triggers> -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>

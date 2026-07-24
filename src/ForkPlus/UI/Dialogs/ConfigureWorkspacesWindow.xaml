@@ -4,6 +4,16 @@
       <Style x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="{x:Type controls:RepositoryManagerEditableTextBlock}" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" />
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
+  <dialogs:ForkPlusDialogWindow.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger。
+         原触发器：当祖先 ListBoxItem.IsSelected=True 且 IsFocused=True 时
+         设置 ItemTemplate 内 NameTextBlock.Foreground=ForegroundBrush.Light。
+         RepositoryManagerEditableTextBlock 继承自 Control（非 TextBlock），故用 Control#NameTextBlock
+         选择器命中任意名为 NameTextBlock 的控件。 -->
+    <Style Selector="ListBoxItem:selected:focus Control#NameTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
@@ -34,37 +44,6 @@
                 <Binding Path="IsInEditMode" />
               </controls:RepositoryManagerEditableTextBlock.IsInEditMode>
             </controls:RepositoryManagerEditableTextBlock>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition>
-                    <Condition.Binding>
-                      <Binding Path="IsSelected">
-                        <Binding.RelativeSource>
-                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                    </Condition.Binding>
-                  </Condition>
-                  <Condition>
-                    <Condition.Binding>
-                      <Binding Path="IsFocused">
-                        <Binding.RelativeSource>
-                          <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                    </Condition.Binding>
-                  </Condition>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.Setters>
-                  <Setter TargetName="NameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                </MultiDataTrigger.Setters>
-              </MultiDataTrigger>
-            </DataTemplate.Triggers> -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
