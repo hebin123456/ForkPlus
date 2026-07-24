@@ -1,40 +1,36 @@
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
 	public class RevisionSubjectTextField : TextField
 	{
-		public static readonly DependencyProperty IsParentSelectedProperty = DependencyProperty.RegisterAttached("IsParentSelected", typeof(bool), typeof(RevisionSubjectTextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as RevisionSubjectTextField).RefreshInlines();
-		}));
+		public static readonly StyledProperty<bool> IsParentSelectedProperty =
+			AvaloniaProperty.Register<RevisionSubjectTextField, bool>(nameof(IsParentSelected));
 
-		public static readonly DependencyProperty HasBodyProperty = DependencyProperty.RegisterAttached("HasBody", typeof(bool), typeof(RevisionSubjectTextField));
+		public static readonly StyledProperty<bool> HasBodyProperty =
+			AvaloniaProperty.Register<RevisionSubjectTextField, bool>(nameof(HasBody));
 
 		public bool IsParentSelected
 		{
-			get
-			{
-				return (bool)GetValue(IsParentSelectedProperty);
-			}
-			set
-			{
-				SetValue(IsParentSelectedProperty, value);
-			}
+			get => GetValue(IsParentSelectedProperty);
+			set => SetValue(IsParentSelectedProperty, value);
 		}
 
 		public bool HasBody
 		{
-			get
+			get => GetValue(HasBodyProperty);
+			set => SetValue(HasBodyProperty, value);
+		}
+
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == IsParentSelectedProperty || change.Property == HasBodyProperty)
 			{
-				return (bool)GetValue(HasBodyProperty);
-			}
-			set
-			{
-				SetValue(HasBodyProperty, value);
+				RefreshInlines();
 			}
 		}
 
@@ -42,7 +38,7 @@ namespace ForkPlus.UI.Controls
 		{
 			string stringValue = base.StringValue;
 			string highlightString = base.HighlightString;
-			base.Inlines.Clear();
+			base.Inlines!.Clear();
 			if (string.IsNullOrEmpty(stringValue))
 			{
 				return;
@@ -55,36 +51,16 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
-			Brush codeSolidBackgroundBrush = Theme.FindBrush("RevisionList.Code.BackgroundBrush");
-			Brush codeTransparentBackgroundBrush = Theme.FindBrush("RevisionList.Code.Selected.BackgroundBrush");
+			// TODO(4.5-g): Avalonia Run 不支持 FontWeight/FontFamily/FontSize/Background/Foreground 属性。
+			// 前缀粗体、代码块着色、搜索匹配高亮待后续自定义 TextBlock 渲染恢复。
 			new Range(0, stringValue.Length).Merge(new List<Range>[3] { prefixHighlighting, codeHighlighting, searchMatchRanges }, delegate(Range range, int? prefixIndex, int? codeIndex, int? searchIndex)
 			{
 				Run run2 = new Run(stringValue.Substring(range));
-				if (prefixIndex.HasValue)
-				{
-					run2.FontWeight = FontWeights.SemiBold;
-				}
-				if (codeIndex.HasValue)
-				{
-					run2.FontFamily = FontConstants.MonospaceFontFamily;
-					run2.FontSize = 11.0;
-					run2.Background = (IsParentSelected ? codeTransparentBackgroundBrush : codeSolidBackgroundBrush);
-				}
-				if (searchIndex.HasValue)
-				{
-					run2.Background = matchBackgroundBrush;
-					run2.Foreground = matchForegroundBrush;
-				}
 				base.Inlines.Add(run2);
 			});
 			if (HasBody)
 			{
-				Run run = new Run(" ↩");
-				run.FontSize = 10.0;
-				run.Foreground = (IsParentSelected ? Theme.FindBrush("RevisionList.BodyIndicator.Selected.ForegroundBrush") : Theme.FindBrush("RevisionList.BodyIndicator.ForegroundBrush"));
-				base.Inlines.Add(run);
+				base.Inlines.Add(new Run(" ↩"));
 			}
 		}
 

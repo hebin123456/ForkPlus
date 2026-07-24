@@ -1,63 +1,63 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Collections.Generic;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
 	public class FilePathTextBlock : SelectableTextBlock
 	{
-		public static readonly DependencyProperty FilePathProperty = DependencyProperty.RegisterAttached("FilePath", typeof(string), typeof(FilePathTextBlock), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as FilePathTextBlock).Refresh();
-		}));
+		public static readonly StyledProperty<string> FilePathProperty =
+			AvaloniaProperty.Register<FilePathTextBlock, string>(nameof(FilePath));
 
-		public static readonly DependencyProperty OldFilePathProperty = DependencyProperty.RegisterAttached("OldFilePath", typeof(string), typeof(FilePathTextBlock));
+		public static readonly StyledProperty<string> OldFilePathProperty =
+			AvaloniaProperty.Register<FilePathTextBlock, string>(nameof(OldFilePath));
 
-		private Brush _labelBrush;
+		private IBrush _labelBrush;
 
-		private Brush _secondaryLabelBrush;
+		private IBrush _secondaryLabelBrush;
 
 		public string FilePath
 		{
-			get
-			{
-				return (string)GetValue(FilePathProperty);
-			}
-			set
-			{
-				SetValue(FilePathProperty, value);
-			}
+			get => GetValue(FilePathProperty);
+			set => SetValue(FilePathProperty, value);
 		}
 
 		public string OldFilePath
 		{
-			get
-			{
-				return (string)GetValue(OldFilePathProperty);
-			}
-			set
-			{
-				SetValue(OldFilePathProperty, value);
-			}
+			get => GetValue(OldFilePathProperty);
+			set => SetValue(OldFilePathProperty, value);
 		}
 
 		public FilePathTextBlock()
 		{
 			RefreshBrushes();
-			base.MouseEnter += delegate(object s, MouseEventArgs e)
+			// 阶段 4.5：WPF MouseEnter → Avalonia PointerEnter。
+			PointerEnter += delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
-				base.ToolTip = (TextIsTrimmed() ? GetToolTipText() : null);
+				ToolTip.SetTip(this, TextIsTrimmed() ? GetToolTipText() : null);
 			};
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4.5：WPF WeakEventManager → 直接事件订阅。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
+		}
+
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == FilePathProperty || change.Property == OldFilePathProperty)
+			{
+				Refresh();
+			}
 		}
 
 		private void Refresh()
 		{
-			base.Inlines.Clear();
+			base.Inlines!.Clear();
 			string oldFilePath = OldFilePath;
 			if (oldFilePath != null)
 			{
@@ -65,19 +65,11 @@ namespace ForkPlus.UI.Controls
 				int num = oldFilePath.Length - readableFileName.Length;
 				if (num != 0)
 				{
-					base.Inlines.Add(new Run(oldFilePath.Substring(0, num))
-					{
-						Foreground = _secondaryLabelBrush
-					});
+					// TODO(4.5-g): Avalonia Run 不支持 Foreground 属性。路径着色待后续自定义渲染恢复。
+					base.Inlines.Add(new Run(oldFilePath.Substring(0, num)));
 				}
-				base.Inlines.Add(new Run(readableFileName)
-				{
-					Foreground = _labelBrush
-				});
-				base.Inlines.Add(new Run(" → ")
-				{
-					Foreground = _labelBrush
-				});
+				base.Inlines.Add(new Run(readableFileName));
+				base.Inlines.Add(new Run(" → "));
 			}
 			string filePath = FilePath;
 			if (filePath != null)
@@ -86,15 +78,9 @@ namespace ForkPlus.UI.Controls
 				int num2 = filePath.Length - readableFileName2.Length;
 				if (num2 != 0)
 				{
-					base.Inlines.Add(new Run(filePath.Substring(0, num2))
-					{
-						Foreground = _secondaryLabelBrush
-					});
+					base.Inlines.Add(new Run(filePath.Substring(0, num2)));
 				}
-				base.Inlines.Add(new Run(readableFileName2)
-				{
-					Foreground = _labelBrush
-				});
+				base.Inlines.Add(new Run(readableFileName2));
 			}
 		}
 
@@ -112,15 +98,17 @@ namespace ForkPlus.UI.Controls
 
 		private bool TextIsTrimmed()
 		{
-			if (!(base.Parent is Panel { ActualWidth: var num } panel))
+			// 阶段 4.5：WPF Panel.ActualWidth + FrameworkElement.ActualWidth → Avalonia Bounds.Width + Control.Bounds.Width。
+			if (!(base.Parent is Panel panel))
 			{
 				return false;
 			}
-			foreach (FrameworkElement child in panel.Children)
+			double num = panel.Bounds.Width;
+			foreach (Control child in panel.Children)
 			{
 				if (child != this)
 				{
-					num -= child.ActualWidth + child.Margin.Left + child.Margin.Right;
+					num -= child.Bounds.Width + child.Margin.Left + child.Margin.Right;
 				}
 			}
 			Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
