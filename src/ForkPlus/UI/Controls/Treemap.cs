@@ -1,9 +1,18 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Controls + using Avalonia.Input + using Avalonia.Media
+// - FrameworkElement → Avalonia.Controls.Control
+// - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
+// - base.RenderSize → Bounds.Size
+// - OnRenderSizeChanged(SizeChangedInfo) → ArrangeOverride 检测尺寸变化（Avalonia 无 OnRenderSizeChanged）
+// - Mouse* 事件 → Pointer* 事件（OnMouseLeave → OnPointerExited）；MouseButtonEventArgs → PointerPressedEventArgs；MouseEventArgs → PointerEventArgs
+// - Point.Offset(double,double) → Point + Vector（Avalonia Point 为只读结构体）
+// - DrawRectangle/DrawLine/DrawText/DrawGeometry 签名兼容，保持不变
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
@@ -12,7 +21,7 @@ using ForkPlus;
 
 namespace ForkPlus.UI.Controls
 {
-	public class Treemap : FrameworkElement
+	public class Treemap : Control
 	{
 		private struct LayoutItem
 		{
@@ -124,6 +133,10 @@ namespace ForkPlus.UI.Controls
 
 		private bool _needRecalculateLayout = true;
 
+		// TODO(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia 无直接等价物。
+		// 用 ArrangeOverride 检测尺寸变化，触发布局重算（替代 OnRenderSizeChanged）。
+		private Size _lastArrangeSize;
+
 		[Null]
 		public ITreemapDataSource DataSource
 		{
@@ -160,7 +173,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.RenderSize.Width, base.RenderSize.Height));
+		private Rect _bounds => new Rect(new Point(0.0, 0.0), Bounds.Size);
 
 		private Canvas Canvas => ((base.Parent as Grid).Parent as Grid).Parent as Canvas;
 
@@ -213,15 +226,21 @@ namespace ForkPlus.UI.Controls
 			_showTooltipAction = new DelayedAction<IndexPath>(ShowTooltip, 0.5);
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		// TODO(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia ArrangeOverride 检测尺寸变化。
+		protected override Size ArrangeOverride(Size finalSize)
 		{
-			_needRecalculateLayout = true;
-			base.OnRenderSizeChanged(sizeInfo);
+			Size result = base.ArrangeOverride(finalSize);
+			if (result != _lastArrangeSize)
+			{
+				_lastArrangeSize = result;
+				_needRecalculateLayout = true;
+			}
+			return result;
 		}
 
-		protected override void OnRender(DrawingContext ctx)
+		public override void Render(DrawingContext ctx)
 		{
-			base.OnRender(ctx);
+			base.Render(ctx);
 			try
 			{
 				RecalculateLayoutIfNeeded();
@@ -235,23 +254,23 @@ namespace ForkPlus.UI.Controls
 			}
 			catch (Exception ex)
 			{
-				// 渲染期间任何异常（含 native biturbo 调用失败）都不应冒到 WPF 渲染线程导致应用崩溃。
+				// 渲染期间任何异常（含 native biturbo 调用失败）都不应冒到 Avalonia 渲染线程导致应用崩溃。
 				Log.Error("Treemap OnRender failed", ex);
 			}
 		}
 
-		protected override void OnMouseEnter(MouseEventArgs e)
+		protected override void OnPointerEntered(PointerEventArgs e)
 		{
-			base.OnMouseEnter(e);
+			base.OnPointerEntered(e);
 			if (!hovered)
 			{
 				hovered = true;
 			}
 		}
 
-		protected override void OnMouseLeave(MouseEventArgs e)
+		protected override void OnPointerExited(PointerEventArgs e)
 		{
-			base.OnMouseLeave(e);
+			base.OnPointerExited(e);
 			if (hovered)
 			{
 				hovered = false;
@@ -259,17 +278,20 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(PointerEventArgs e)
 		{
 			Point position = e.GetPosition(this);
 			UpdateHoverIndexPath(position);
 			UpdateTooltipPosition();
-			base.OnMouseMove(e);
+			base.OnPointerMoved(e);
 		}
 
-		protected override void OnMouseDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
+			// TODO(4.5): Avalonia PointerPressedEventArgs.ClickCount 标记为 Obsolete，
+			// 官方建议改用 DoubleTapped 事件区分双击；当前保留 ClickCount 以维持原有业务逻辑，
+			// 后续阶段改用 DoubleTapped 区分单击/双击。
 			if (e.ClickCount == 1)
 			{
 				SelectedIndexPath = FindItemAtPoint(_layout, position, new IndexPath());
@@ -278,7 +300,7 @@ namespace ForkPlus.UI.Controls
 			{
 				OpenIndexPath = FindItemAtPoint(_layout, position, new IndexPath());
 			}
-			base.OnMouseDown(e);
+			base.OnPointerPressed(e);
 		}
 
 		private void ShowTooltip(IndexPath indexPath)
@@ -302,8 +324,11 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_tooltipView != null)
 			{
+				// TODO(4.5): WPF Visual.PointFromScreen → Avalonia 无 Canvas.PointFromScreen 等价物，需运行时验证。
+				// MouseHelper 仍为 WPF 实现，待其迁移后一并处理（PointToClient / 屏幕坐标转换）。
 				Point point = Canvas.PointFromScreen(MouseHelper.GetMousePosition());
-				point.Offset(10.0, 10.0);
+				// TODO(4.5): WPF Point.Offset(double,double) → Avalonia Point + Vector（Point 为只读结构体）。
+				point = point + new Vector(10.0, 10.0);
 				Canvas.SetLeft(_tooltipView, point.X);
 				Canvas.SetTop(_tooltipView, point.Y);
 			}
@@ -381,7 +406,7 @@ namespace ForkPlus.UI.Controls
 			if (!gitCommandResult.Succeeded)
 			{
 				// biturbo native 布局计算失败（可能因仓库文件数过多、值异常或 native 内部 bug）。
-				// 不抛异常——抛在 OnRender 期间会冒到 WPF 渲染线程导致应用整体崩溃。
+			// 不抛异常——抛在 OnRender 期间会冒到 Avalonia 渲染线程导致应用整体崩溃。
 				// 返回空布局，Treemap 显示空白，并记录错误日志便于诊断。
 				Log.Error("bt_layout_treemap failed: " + gitCommandResult.Error.FriendlyDescription);
 				return new LayoutItem[0];

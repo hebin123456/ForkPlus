@@ -1,11 +1,23 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Controls
+// - using System.Windows.Media → using Avalonia.Media
+// - DependencyProperty.Register + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override
+// - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
+// - Brush（字段/属性类型）→ IBrush；SolidColorBrush 保持
+// - Application.Current.TryFindResource → Theme.FindResource
+// - FrameworkElement.ToolTip 属性 → ToolTip.SetTip 附加属性
+// - WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）
+// - Freeze() 移除（Avalonia 画刷默认不可变）
+// - Grid 基类保持（Avalonia.Controls.Grid）
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
@@ -19,15 +31,16 @@ namespace ForkPlus.UI.Controls
 	// (total contributions / longest streak / most active day).
 	public class ContributionHeatmap : Grid
 	{
-		public static readonly DependencyProperty CommitsByDateProperty = DependencyProperty.Register(
-			"CommitsByDate", typeof(Dictionary<DateTime, DayContributionInfo>), typeof(ContributionHeatmap),
-			new PropertyMetadata(null, OnCommitsByDateChanged));
+		// 阶段 4.5：WPF DependencyProperty.Register + PropertyMetadata 回调
+		// → Avalonia StyledProperty（AvaloniaProperty.Register<TOwner, TType>）+ OnPropertyChanged override。
+		public static readonly StyledProperty<Dictionary<DateTime, DayContributionInfo>> CommitsByDateProperty =
+			AvaloniaProperty.Register<ContributionHeatmap, Dictionary<DateTime, DayContributionInfo>>(nameof(CommitsByDate));
 
 		public Dictionary<DateTime, DayContributionInfo> CommitsByDate
 		{
 			get
 			{
-				return (Dictionary<DateTime, DayContributionInfo>)GetValue(CommitsByDateProperty);
+				return GetValue(CommitsByDateProperty);
 			}
 			set
 			{
@@ -136,7 +149,20 @@ namespace ForkPlus.UI.Controls
 			};
 			bottomPanel.Children.Add(_summaryText);
 
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
+		}
+
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) 静态回调
+		// → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs) override（change.Property API 兼容）。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == CommitsByDateProperty)
+			{
+				RebuildCells();
+			}
 		}
 
 		private static string TranslateLegend(string text)
@@ -147,11 +173,6 @@ namespace ForkPlus.UI.Controls
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
 		{
 			RebuildCells();
-		}
-
-		private static void OnCommitsByDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((ContributionHeatmap)d).RebuildCells();
 		}
 
 		private void RebuildCells()
@@ -175,7 +196,7 @@ namespace ForkPlus.UI.Controls
 					maxCommits = kvp.Value.Commits;
 				}
 			}
-			Brush[] palette = GetPalette();
+			IBrush[] palette = GetPalette();
 			string tooltipFormat = PreferencesLocalization.Translate("{0} contributions on {1}", ForkPlusSettings.Default.UiLanguage);
 			string authorsFormat = PreferencesLocalization.Translate("Authors: {0}", ForkPlusSettings.Default.UiLanguage);
 			string moreFormat = PreferencesLocalization.Translate("+{0} more", ForkPlusSettings.Default.UiLanguage);
@@ -197,10 +218,11 @@ namespace ForkPlus.UI.Controls
 						Height = CellSize,
 						Background = palette[level],
 						CornerRadius = new CornerRadius(2),
-						ToolTip = BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info),
 						HorizontalAlignment = HorizontalAlignment.Left,
 						VerticalAlignment = VerticalAlignment.Top
 					};
+					// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+					ToolTip.SetTip(border, BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info));
 					SetColumn(border, week);
 					SetRow(border, dow);
 					_heatmapGrid.Children.Add(border);
@@ -327,49 +349,45 @@ namespace ForkPlus.UI.Controls
 			return 4;
 		}
 
-		private static Brush[] GetPalette()
-	{
-		// 优先读 Heatmap.LevelNColor 资源（CustomColorsDialog 覆盖或主题字典），取不到回退到硬编码默认值。
-		// 不 Freeze 资源画刷，使其能随主题/自定义颜色变化更新。
-		bool isDark = ForkPlusSettings.Default.Theme.IsDarkBase();
-		Color[] defaults = isDark
-			? new Color[5]
+		private static IBrush[] GetPalette()
+		{
+			// 优先读 Heatmap.LevelNColor 资源（CustomColorsDialog 覆盖或主题字典），取不到回退到硬编码默认值。
+			// 不 Freeze 资源画刷，使其能随主题/自定义颜色变化更新。
+			// 阶段 4.5：Avalonia 画刷默认不可变，无需 Freeze()。
+			bool isDark = ForkPlusSettings.Default.Theme.IsDarkBase();
+			Color[] defaults = isDark
+				? new Color[5]
+				{
+					Color.FromRgb(22, 27, 34),
+					Color.FromRgb(3, 58, 22),
+					Color.FromRgb(25, 111, 26),
+					Color.FromRgb(46, 160, 67),
+					Color.FromRgb(63, 217, 94)
+				}
+				: new Color[5]
+				{
+					Color.FromRgb(235, 237, 240),
+					Color.FromRgb(155, 233, 168),
+					Color.FromRgb(64, 196, 99),
+					Color.FromRgb(48, 161, 78),
+					Color.FromRgb(33, 110, 57)
+				};
+			IBrush[] palette = new IBrush[5];
+			for (int i = 0; i < 5; i++)
 			{
-				Color.FromRgb(22, 27, 34),
-				Color.FromRgb(3, 58, 22),
-				Color.FromRgb(25, 111, 26),
-				Color.FromRgb(46, 160, 67),
-				Color.FromRgb(63, 217, 94)
+				Color c = TryFindColor("Heatmap.Level" + i + "Color") ?? defaults[i];
+				palette[i] = new SolidColorBrush(c);
 			}
-			: new Color[5]
-			{
-				Color.FromRgb(235, 237, 240),
-				Color.FromRgb(155, 233, 168),
-				Color.FromRgb(64, 196, 99),
-				Color.FromRgb(48, 161, 78),
-				Color.FromRgb(33, 110, 57)
-			};
-		Brush[] palette = new Brush[5];
-		for (int i = 0; i < 5; i++)
-		{
-			Color c = TryFindColor("Heatmap.Level" + i + "Color") ?? defaults[i];
-			palette[i] = new SolidColorBrush(c);
+			return palette;
 		}
-		return palette;
-	}
 
-	private static Color? TryFindColor(string key)
-	{
-		object res = Application.Current?.TryFindResource(key);
-		if (res is Color c) return c;
-		if (res is SolidColorBrush b) return b.Color;
-		return null;
-	}
-
-		private static Brush Freeze(Brush brush)
+		private static Color? TryFindColor(string key)
 		{
-			brush.Freeze();
-			return brush;
+			// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindResource。
+			object res = Theme.FindResource(key);
+			if (res is Color c) return c;
+			if (res is SolidColorBrush b) return b.Color;
+			return null;
 		}
 	}
 }
