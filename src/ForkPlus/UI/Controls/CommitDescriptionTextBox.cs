@@ -1,37 +1,34 @@
 using System;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
 	public class CommitDescriptionTextBox : SpellingPlaceholderTextBox
 	{
-		public static readonly DependencyProperty GuideLineMarginProperty = DependencyProperty.Register("GuideLineMargin", typeof(Thickness), typeof(CommitDescriptionTextBox), new FrameworkPropertyMetadata(new Thickness(0.0, 0.0, 0.0, 0.0)));
+		// 阶段 4.5：WPF DependencyProperty.Register + FrameworkPropertyMetadata → Avalonia StyledProperty.Register。
+		public static readonly StyledProperty<Thickness> GuideLineMarginProperty =
+			AvaloniaProperty.Register<CommitDescriptionTextBox, Thickness>(nameof(GuideLineMargin), new Thickness(0.0, 0.0, 0.0, 0.0));
 
 		public Thickness GuideLineMargin
 		{
-			get
-			{
-				return (Thickness)GetValue(GuideLineMarginProperty);
-			}
-			set
-			{
-				SetValue(GuideLineMarginProperty, value);
-			}
+			get => GetValue(GuideLineMarginProperty);
+			set => SetValue(GuideLineMarginProperty, value);
 		}
 
 		public CommitDescriptionTextBox()
 		{
 			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
-				WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "PageGuideLinePositionChanged", delegate
+				// 阶段 4.5：WPF WeakEventManager → 直接事件订阅。
+				NotificationCenter.Current.PageGuideLinePositionChanged += delegate
 				{
 					RefreshGuideLine();
-				});
+				};
 			}
 			base.Loaded += delegate
 			{

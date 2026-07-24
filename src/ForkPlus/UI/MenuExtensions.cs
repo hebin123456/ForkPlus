@@ -1,18 +1,60 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls。
+	// WPF ApplicationCommands.Cut/Copy/Paste (RoutedCommand + CommandTarget)
+	// → 自定义 ICommand 实现，目标 TextBox 通过 CommandParameter 传入（Avalonia MenuItem 无 CommandTarget）。
+	// WPF EditingCommands + SpellingError 在 Avalonia 中无内置等价物；
+	// AddSpellingMenuItems 改为空实现并标记 TODO，等阶段 6 引入第三方拼写检查库后再恢复。
 	public static class MenuExtensions
 	{
+		private class CutCommand : ICommand
+		{
+			public static readonly CutCommand Instance = new CutCommand();
+
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter)
+			{
+				return parameter is TextBox;
+			}
+
+			public void Execute(object parameter)
+			{
+				if (parameter is TextBox textBox)
+				{
+					textBox.Cut();
+				}
+			}
+		}
+
+		private class CopyCommand : ICommand
+		{
+			public static readonly CopyCommand Instance = new CopyCommand();
+
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter)
+			{
+				return parameter is TextBox;
+			}
+
+			public void Execute(object parameter)
+			{
+				if (parameter is TextBox textBox)
+				{
+					textBox.Copy();
+				}
+			}
+		}
+
 		private class PasteCommand : ICommand
 		{
 			public static readonly PasteCommand Instance = new PasteCommand();
@@ -21,12 +63,15 @@ namespace ForkPlus.UI
 
 			public bool CanExecute(object parameter)
 			{
-				return true;
+				return parameter is TextBox;
 			}
 
 			public void Execute(object parameter)
 			{
-				ApplicationCommands.Paste.Execute(parameter, Keyboard.FocusedElement);
+				if (parameter is TextBox textBox)
+				{
+					textBox.Paste();
+				}
 			}
 		}
 
@@ -40,7 +85,7 @@ namespace ForkPlus.UI
 			SetItems(menu.Items, items, VisualTreeAttachmentHelper.Describe(menu));
 		}
 
-		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader(header);
@@ -61,7 +106,7 @@ namespace ForkPlus.UI
 			return menuItem;
 		}
 
-		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = AddMenuItem(menu, header, clickHandler, icon, keyGesture, isEnabled);
 			menuItem.Header = PreferencesLocalization.FormatMenuHeader(header, args);
@@ -78,6 +123,7 @@ namespace ForkPlus.UI
 
 		private static Image CloneIcon(Image icon)
 		{
+			// 阶段 4.5：WPF SnapsToDevicePixels → Avalonia UseLayoutRounding。
 			return new Image
 			{
 				Source = icon.Source,
@@ -87,11 +133,11 @@ namespace ForkPlus.UI
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
 				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = icon.SnapsToDevicePixels
+				UseLayoutRounding = icon.UseLayoutRounding
 			};
 		}
 
-		private static void SetItems(ItemCollection targetItems, IEnumerable<Control> items, string ownerDescription)
+		private static void SetItems(IList<object> targetItems, IEnumerable<Control> items, string ownerDescription)
 		{
 			targetItems.Clear();
 			HashSet<Control> hashSet = new HashSet<Control>();
@@ -137,56 +183,32 @@ namespace ForkPlus.UI
 			return item;
 		}
 
-		public static void AddDefaultTextBoxMenuItems(this ContextMenu contextMenu, IInputElement commandTarget)
+		public static void AddDefaultTextBoxMenuItems(this ContextMenu contextMenu, TextBox commandTarget)
 		{
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader("Cut");
-			menuItem.Command = ApplicationCommands.Cut;
-			menuItem.CommandTarget = commandTarget;
+			menuItem.Command = CutCommand.Instance;
+			// 阶段 4.5：Avalonia MenuItem 无 CommandTarget；目标 TextBox 通过 CommandParameter 传入。
+			menuItem.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem);
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Copy");
-			menuItem2.Command = ApplicationCommands.Copy;
-			menuItem2.CommandTarget = commandTarget;
+			menuItem2.Command = CopyCommand.Instance;
+			menuItem2.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem2);
 			MenuItem menuItem3 = new MenuItem();
 			menuItem3.Header = PreferencesLocalization.MenuHeader("Paste");
 			menuItem3.Command = PasteCommand.Instance;
-			menuItem3.CommandTarget = commandTarget;
+			menuItem3.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem3);
 		}
 
-		public static void AddSpellingMenuItems(this ContextMenu contextMenu, SpellingError spellingError, IInputElement commandTarget)
+		// TODO(4.5-h): WPF SpellingError + EditingCommands.CorrectSpellingError/IgnoreSpellingError
+		// 在 Avalonia 中无内置等价物。当前为空实现；阶段 6 引入第三方拼写检查库后恢复。
+		// SpellingPlaceholderTextBox 调用方迁移后此签名可清理。
+		public static void AddSpellingMenuItems(this ContextMenu contextMenu, object spellingError, object commandTarget)
 		{
-			if (spellingError == null)
-			{
-				return;
-			}
-			bool flag = contextMenu.Items.Count == 0;
-			int num = 0;
-			foreach (string suggestion in spellingError.Suggestions)
-			{
-				MenuItem menuItem = new MenuItem();
-				menuItem.Header = suggestion;
-				menuItem.FontWeight = FontWeights.Bold;
-				menuItem.Command = EditingCommands.CorrectSpellingError;
-				menuItem.CommandParameter = suggestion;
-				menuItem.CommandTarget = commandTarget;
-				contextMenu.Items.Insert(num, menuItem);
-				num++;
-			}
-			contextMenu.Items.Insert(num, new Separator());
-			num++;
-			MenuItem menuItem2 = new MenuItem();
-			menuItem2.Header = PreferencesLocalization.MenuHeader("Ignore All");
-			menuItem2.Command = EditingCommands.IgnoreSpellingError;
-			menuItem2.CommandTarget = commandTarget;
-			contextMenu.Items.Insert(num, menuItem2);
-			if (!flag)
-			{
-				num++;
-				contextMenu.Items.Insert(num, new Separator());
-			}
+			// Avalonia TextBox 无内置拼写检查；保留方法签名以兼容现有调用方，但实际不添加菜单项。
 		}
 	}
 }

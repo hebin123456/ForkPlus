@@ -1,8 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
@@ -30,6 +32,12 @@ namespace ForkPlus.UI.Controls
 		public AutoCompleteTextBox()
 		{
 			_refreshSuggestions = new DelayedAction<bool>(RefreshSuggestions, 0.03);
+			// 阶段 4.5：WPF OnIsKeyboardFocusWithinChanged → Avalonia LostFocus 事件。
+			// Avalonia 没有 IsKeyboardFocusWithinChanged；用 LostFocus 近似替代。
+			LostFocus += delegate
+			{
+				ClosePopup();
+			};
 		}
 
 		public void SetAutocompleteProvider(IAutoCompleteProvider autoCompleteProvider)
@@ -56,17 +64,13 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)
-		{
-			base.OnIsKeyboardFocusWithinChanged(e);
-			FocusChanged((bool)e.NewValue);
-		}
-
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		// 阶段 4.5：WPF OnPreviewKeyDown (tunneling) → Avalonia OnKeyDown (bubbling)。
+		// 通过 e.Handled = true 阻止后续处理，达到 Preview 的效果。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.Escape)
 			{
-				if (_popup.IsOpen)
+				if (_popup?.IsOpen == true)
 				{
 					ClosePopup();
 					e.Handled = true;
@@ -75,14 +79,14 @@ namespace ForkPlus.UI.Controls
 			}
 			else if (e.Key == Key.Return || e.Key == Key.Tab)
 			{
-				if (_popup.IsOpen)
+				if (_popup?.IsOpen == true)
 				{
 					SubmitSelectedSuggestion(e.Key == Key.Tab);
 					e.Handled = true;
 					return;
 				}
 			}
-			else if (e.Key == Key.Down && !Keyboard.IsKeyDown(Key.LeftShift))
+			else if (e.Key == Key.Down && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
 			{
 				if (_listBox != null)
 				{
@@ -91,13 +95,13 @@ namespace ForkPlus.UI.Controls
 					return;
 				}
 			}
-			else if (e.Key == Key.Up && !Keyboard.IsKeyDown(Key.LeftShift) && _listBox != null)
+			else if (e.Key == Key.Up && !e.KeyModifiers.HasFlag(KeyModifiers.Shift) && _listBox != null)
 			{
 				_listBox.SelectPreviousRow(_listBox.SelectedIndex, loop: true);
 				e.Handled = true;
 				return;
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
 		private void RefreshSuggestions(bool _)
@@ -122,10 +126,12 @@ namespace ForkPlus.UI.Controls
 			if (_listBox == null)
 			{
 				_listBox = new ListBox();
-				_listBox.Style = Application.Current.TryFindResource("AutoCompleteListBoxStyle") as Style;
-				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as DataTemplate;
+				// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindStyle/FindResource 门面。
+				_listBox.Styles.Add(Theme.FindStyle("AutoCompleteListBoxStyle"));
+				_listBox.ItemTemplate = Theme.FindResource("AutocompleteListBoxItemTemplate") as IDataTemplate;
 				_listBox.MinWidth = 216.0;
-				_listBox.MouseUp += delegate
+				// 阶段 4.5：WPF MouseUp → Avalonia PointerReleased。
+				_listBox.PointerReleased += delegate
 				{
 					SubmitSelectedSuggestion();
 				};
@@ -138,9 +144,13 @@ namespace ForkPlus.UI.Controls
 			{
 				_listBox.Items.Add(newItem);
 			}
-			Rect rectFromCharacterIndex = GetRectFromCharacterIndex(autoComplete.DropdownPosition);
+			// 阶段 4.5：WPF TextBox.GetRectFromCharacterIndex → Avalonia TextBox.GetCursorBounds。
+			Rect cursorBounds = base.GetCursorBounds(autoComplete.DropdownPosition);
 			int num = 8;
-			_popup.PlacementRectangle = new Rect(new Point(rectFromCharacterIndex.X - (double)num, rectFromCharacterIndex.Y), rectFromCharacterIndex.Size);
+			// 阶段 4.5：WPF Popup.PlacementRectangle 不存在于 Avalonia；
+			// 通过 HorizontalOffset/VerticalOffset + PlacementTarget 实现相对定位。
+			_popup.HorizontalOffset = cursorBounds.X - (double)num;
+			_popup.VerticalOffset = cursorBounds.Y;
 			_popup.PlacementTarget = this;
 			_popup.IsOpen = true;
 		}
@@ -169,19 +179,6 @@ namespace ForkPlus.UI.Controls
 				ClosePopup();
 				Focus();
 			}
-		}
-
-		private void FocusChanged(bool hasFocus)
-		{
-			if (!hasFocus)
-			{
-				ClosePopup();
-			}
-		}
-
-		private bool HasFocus()
-		{
-			return base.IsFocused;
 		}
 	}
 }
