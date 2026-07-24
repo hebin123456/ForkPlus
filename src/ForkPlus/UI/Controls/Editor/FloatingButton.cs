@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using ICSharpCode.AvalonEdit;
+using AvaloniaEdit;
 
 namespace ForkPlus.UI.Controls.Editor
 {

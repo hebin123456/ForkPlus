@@ -2,8 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using ForkPlus.UI.Controls.Editor;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Editing;
+using AvaloniaEdit;
+using AvaloniaEdit.Editing;
 
 namespace ForkPlus.UI.Controls.Commands
 {

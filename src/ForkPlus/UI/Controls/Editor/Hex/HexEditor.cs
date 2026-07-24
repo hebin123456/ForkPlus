@@ -6,9 +6,9 @@ using Avalonia.Input;
 using Avalonia.Media;
 using ForkPlus.Services;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {
@@ -24,7 +24,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		private bool _showAscii = true;
 		private bool _showOffset = true;
 		private HexColorizer _colorizer;
-		private ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanel;
+		private AvaloniaEdit.Search.SearchPanel _searchPanel;
 		// v3.1.0：差异字节索引集合（用于 Hex Diff 视图高亮），null 表示不高亮
 		private HashSet<int> _highlightedBytes;
 
@@ -92,7 +92,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			if (_searchPanel == null)
 			{
-				_searchPanel = ICSharpCode.AvalonEdit.Search.SearchPanel.Install(base.TextArea);
+				_searchPanel = AvaloniaEdit.Search.SearchPanel.Install(base.TextArea);
 			}
 		}
 

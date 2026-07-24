@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Media;
-using ICSharpCode.AvalonEdit.Editing;
+using AvaloniaEdit.Editing;
 
 namespace ForkPlus.UI.Controls.Editor
 {

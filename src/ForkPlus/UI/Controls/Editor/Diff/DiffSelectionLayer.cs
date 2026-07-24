@@ -5,9 +5,9 @@ using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -123,7 +123,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			Range range = chunk.VisualChunk.CustomHunks[chunk.CustomHunkIndex];
 			for (int i = range.Start; i < range.End; i++)
 			{
-				ICSharpCode.AvalonEdit.Rendering.VisualLine visualLine = textView.GetVisualLine(chunk.VisualChunk.VisualLines[i].LineNumber + 1);
+				AvaloniaEdit.Rendering.VisualLine visualLine = textView.GetVisualLine(chunk.VisualChunk.VisualLines[i].LineNumber + 1);
 				if (visualLine != null)
 				{
 					int lineCount = range.End - i;

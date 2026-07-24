@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor.Diff

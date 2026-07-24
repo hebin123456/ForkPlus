@@ -6,7 +6,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit.Document;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor
 {

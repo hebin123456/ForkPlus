@@ -5,7 +5,7 @@ using Avalonia;
 using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -151,7 +151,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			base.OnRender(drawingContext);
 			if (_diffViewMode == DiffViewMode.Split)
 			{
-				foreach (ICSharpCode.AvalonEdit.Rendering.VisualLine visualLine in base.TextView.VisualLines)
+				foreach (AvaloniaEdit.Rendering.VisualLine visualLine in base.TextView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 					{
@@ -179,7 +179,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			else if (_diffViewMode == DiffViewMode.SideBySideOld)
 			{
-				foreach (ICSharpCode.AvalonEdit.Rendering.VisualLine visualLine2 in base.TextView.VisualLines)
+				foreach (AvaloniaEdit.Rendering.VisualLine visualLine2 in base.TextView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine2.FirstDocumentLine.LineNumber - 1, out var value2))
 					{
@@ -198,7 +198,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			else if (_diffViewMode == DiffViewMode.SideBySideNew)
 			{
-				foreach (ICSharpCode.AvalonEdit.Rendering.VisualLine visualLine3 in base.TextView.VisualLines)
+				foreach (AvaloniaEdit.Rendering.VisualLine visualLine3 in base.TextView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine3.FirstDocumentLine.LineNumber - 1, out var value3))
 					{

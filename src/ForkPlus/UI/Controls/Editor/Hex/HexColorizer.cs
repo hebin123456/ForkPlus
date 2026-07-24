@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {

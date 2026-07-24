@@ -7,11 +7,11 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using ForkPlus.UI;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
-using ICSharpCode.AvalonEdit.Utils;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Utils;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls.Editor
