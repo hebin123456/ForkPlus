@@ -1,50 +1,40 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Controls
 {
 	public class AvatarImage : Image
 	{
-		public static readonly DependencyProperty UserIdentityProperty = DependencyProperty.Register("UserIdentity", typeof(UserIdentity), typeof(AvatarImage), new PropertyMetadata((object)null));
+		public static readonly StyledProperty<UserIdentity> UserIdentityProperty =
+			AvaloniaProperty.Register<AvatarImage, UserIdentity>(nameof(UserIdentity));
 
-		public static readonly DependencyProperty UrlProperty = DependencyProperty.Register("Url", typeof(string), typeof(AvatarImage), new PropertyMetadata((object)null));
+		public static readonly StyledProperty<string> UrlProperty =
+			AvaloniaProperty.Register<AvatarImage, string>(nameof(Url));
 
 		[Null]
 		public UserIdentity UserIdentity
 		{
-			get
-			{
-				return (UserIdentity)GetValue(UserIdentityProperty);
-			}
-			set
-			{
-				SetValue(UserIdentityProperty, value);
-			}
+			get => GetValue(UserIdentityProperty);
+			set => SetValue(UserIdentityProperty, value);
 		}
 
 		[Null]
 		public string Url
 		{
-			get
-			{
-				return (string)GetValue(UrlProperty);
-			}
-			set
-			{
-				SetValue(UrlProperty, value);
-			}
+			get => GetValue(UrlProperty);
+			set => SetValue(UrlProperty, value);
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 		{
-			base.OnPropertyChanged(e);
-			if (e.Property == UserIdentityProperty)
+			base.OnPropertyChanged(change);
+			if (change.Property == UserIdentityProperty)
 			{
 				ShowAvatar(UserIdentity);
 			}
-			else if (e.Property == UrlProperty)
+			else if (change.Property == UrlProperty)
 			{
 				ShowAvatarUrl(Url);
 			}
@@ -67,7 +57,7 @@ namespace ForkPlus.UI.Controls
 			new AvatarManager().RequestAvatar(this, userIdentity);
 		}
 
-		public void SetImage(ImageSource imageSource, UserIdentity userIdentity)
+		public void SetImage(IImage imageSource, UserIdentity userIdentity)
 		{
 			if (UserIdentity?.Name == userIdentity?.Name && UserIdentity?.Email.ToLower() == userIdentity?.Email.ToLower())
 			{

@@ -1,22 +1,17 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.Controls
 {
 	public class ToolbarButton : Button
 	{
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(ToolbarButton), new PropertyMetadata(null));
+		public static readonly StyledProperty<string> TitleProperty =
+			AvaloniaProperty.Register<ToolbarButton, string>(nameof(Title));
 
 		public string Title
 		{
-			get
-			{
-				return (string)GetValue(TitleProperty);
-			}
-			set
-			{
-				SetValue(TitleProperty, value);
-			}
+			get => GetValue(TitleProperty);
+			set => SetValue(TitleProperty, value);
 		}
 	}
 }

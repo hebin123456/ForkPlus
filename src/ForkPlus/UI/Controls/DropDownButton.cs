@@ -1,5 +1,5 @@
-using System.Windows;
-using System.Windows.Controls.Primitives;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {
