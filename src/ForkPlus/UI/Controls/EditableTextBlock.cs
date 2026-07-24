@@ -1,41 +1,43 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF AdornerLayer + Adorner → Avalonia 无内置装饰层。
+	// 策略：将编辑 TextBox 添加到父 Panel.Children 作为普通控件叠加显示。
+	// 原 WPF AdornerLayer.GetAdornerLayer(this) 查找装饰层
+	// → 通过 this.GetVisualAncestor<Panel>() 查找父容器。
+	// 原 adornerLayer.Add/Remove(_adorner) → panel.Children.Add/Remove(_adorner)。
+	// WPF PreviewKeyDown (tunneling) → Avalonia KeyDown (bubbling)。
+	// WPF LostKeyboardFocus → Avalonia LostFocus。
+	// TODO(4.5-p): 父 Panel 叠加方案可能影响布局；如需绝对定位，
+	// 阶段 6 可改用 Avalonia OverlayLayer 或 Popup 实现。
 	public class EditableTextBlock : Control
 	{
-		public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(string), typeof(EditableTextBlock), new FrameworkPropertyMetadata(null));
+		// 阶段 4.5：WPF DependencyProperty.Register + FrameworkPropertyMetadata → Avalonia StyledProperty.Register。
+		public static readonly StyledProperty<string> ValueProperty =
+			AvaloniaProperty.Register<EditableTextBlock, string>(nameof(Value));
 
-		public static readonly DependencyProperty IsInEditModeProperty = DependencyProperty.Register("IsInEditMode", typeof(bool), typeof(EditableTextBlock), new FrameworkPropertyMetadata(false));
+		public static readonly StyledProperty<bool> IsInEditModeProperty =
+			AvaloniaProperty.Register<EditableTextBlock, bool>(nameof(IsInEditMode));
 
 		protected CustomAdorner _adorner;
 
 		public string Value
 		{
-			get
-			{
-				return (string)GetValue(ValueProperty);
-			}
-			set
-			{
-				SetValue(ValueProperty, value);
-			}
+			get => GetValue(ValueProperty);
+			set => SetValue(ValueProperty, value);
 		}
 
 		public bool IsInEditMode
 		{
-			get
-			{
-				return (bool)GetValue(IsInEditModeProperty);
-			}
-			set
-			{
-				SetValue(IsInEditModeProperty, value);
-			}
+			get => GetValue(IsInEditModeProperty);
+			set => SetValue(IsInEditModeProperty, value);
 		}
 
 		public void ShowEditor(string text, Action<bool, string> editedCallback, bool centeredHorizontally = false)
@@ -44,16 +46,17 @@ namespace ForkPlus.UI.Controls
 			{
 				HideEditor();
 			}
-			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
-			if (adornerLayer == null)
+			// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(this) → 查找父 Panel。
+			Panel parentPanel = this.GetVisualAncestor<Panel>();
+			if (parentPanel == null)
 			{
 				return;
 			}
 			_adorner = new CustomAdorner(this, centeredHorizontally);
 			_adorner.HorizontalAlignment = base.HorizontalAlignment;
 			_adorner.VerticalAlignment = base.VerticalAlignment;
-			_adorner.Child = CreateAdornerTextBox(text, editedCallback);
-			adornerLayer.Add(_adorner);
+			_adorner.Content = CreateAdornerTextBox(text, editedCallback);
+			parentPanel.Children.Add(_adorner);
 			IsInEditMode = true;
 		}
 
@@ -61,8 +64,10 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_adorner != null)
 			{
-				_adorner.Child = null;
-				AdornerLayer.GetAdornerLayer(this)?.Remove(_adorner);
+				_adorner.Content = null;
+				// 阶段 4.5：从父 Panel 移除（原 WPF AdornerLayer.Remove）。
+				Panel parentPanel = _adorner.GetVisualAncestor<Panel>();
+				parentPanel?.Children.Remove(_adorner);
 				_adorner = null;
 				IsInEditMode = false;
 			}
@@ -84,7 +89,8 @@ namespace ForkPlus.UI.Controls
 			{
 				textBox.Focus();
 			};
-			textBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown (tunneling) → Avalonia KeyDown (bubbling)。
+			textBox.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return)
 				{
@@ -97,7 +103,8 @@ namespace ForkPlus.UI.Controls
 					editedCallback(arg1: false, textBox.Text);
 				}
 			};
-			textBox.LostKeyboardFocus += delegate
+			// 阶段 4.5：WPF LostKeyboardFocus → Avalonia LostFocus。
+			textBox.LostFocus += delegate
 			{
 				if (IsInEditMode)
 				{
