@@ -16,6 +16,9 @@ _ReSharper*/
 # Logs
 *.log
 
+# Scratch / migration helper scripts (not part of source tree)
+tmp/
+
 # biturbo.dll 不再提交，构建期从 Biturbo 仓库最新 release 拉取
 third_party/biturbo.dll
 
