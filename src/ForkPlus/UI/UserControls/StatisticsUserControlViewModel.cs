@@ -9,9 +9,9 @@ namespace ForkPlus.UI.UserControls
 {
 	/// <summary>
 	/// 阶段 3：StatisticsUserControl 的 ViewModel。
-	/// 承载纯数据/纯逻辑（零 WPF 依赖）。View 保留 OxyPlot.Wpf 控件操作、事件处理，
-	/// 以及依赖 Theme（WPF 类型）的 PlotHelper 工厂方法。
-	/// 本 VM 只引用 OxyPlot 核心（平台无关），不引用 OxyPlot.Wpf 与 System.Windows.*。
+	/// 承载纯数据/纯逻辑（零 UI 框架依赖）。View 保留 OxyPlot.Avalonia 控件操作、事件处理，
+	/// 以及依赖 Theme（Avalonia 类型）的 PlotHelper 工厂方法。
+	/// 本 VM 只引用 OxyPlot 核心（平台无关），不引用 OxyPlot.Avalonia 与 Avalonia.*。
 	/// </summary>
 	public class StatisticsUserControlViewModel
 	{

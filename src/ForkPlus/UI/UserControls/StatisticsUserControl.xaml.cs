@@ -4,22 +4,25 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
-using OxyPlot.Wpf;
+using OxyPlot.Avalonia;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -244,8 +247,10 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>Ref 下拉的全部项（Workspace + 本地分支 + tag），用于 Popup 内 ListBox 绑定 + 搜索过滤。</summary>
 		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _codeLineRefs;
 
-		/// <summary>Ref 下拉的当前过滤视图（搜索框输入时刷新，Workspace 项始终保留）。</summary>
-		private System.Windows.Data.ListCollectionView _codeLineRefsView;
+		/// <summary>Ref 下拉的当前过滤列表（搜索框输入时刷新，Workspace 项始终保留）。
+		/// 阶段 4 里程碑 4.7-b：WPF ListCollectionView + CollectionViewSource → 简单过滤 ObservableCollection。
+		/// Avalonia 无 CollectionViewSource，改用独立过滤集合 + RefreshFilteredCodeLineRefs() 重建。</summary>
+		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _filteredCodeLineRefs;
 
 		private bool _isCalendarUpdatingInProgress;
 
@@ -261,7 +266,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			ApplyLocalization();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4 里程碑 4.7-b：WeakEventManager → 直接事件订阅。阶段 6 改用 WeakEvent。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 			_linePlotModel = PlotHelper.CreateLinePlotModel();
 			LinePlot.Model = _linePlotModel;
 			_piePlotModel = PlotHelper.CreatePiePlotModel();
@@ -392,8 +398,8 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 							if (_pendingScrollToCodeLines)
 							{
 								_pendingScrollToCodeLines = false;
-								Dispatcher.BeginInvoke(new Action(() => CodeLinesSection.BringIntoView()),
-									System.Windows.Threading.DispatcherPriority.Render);
+								// 阶段 4 里程碑 4.7-b：WPF Dispatcher.BeginInvoke + DispatcherPriority.Render → Avalonia Dispatcher.Post。
+								Dispatcher.Post(() => CodeLinesSection.BringIntoView(), DispatcherPriority.Render);
 							}
 						}
 					}
@@ -484,11 +490,12 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				Log.Error("Failed to list refs for CodeLines popup", ex);
 			}
-			_codeLineRefsView = (System.Windows.Data.ListCollectionView)
-				System.Windows.Data.CollectionViewSource.GetDefaultView(_codeLineRefs);
-			// Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本（忽略大小写）
-			_codeLineRefsView.Filter = obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
-			CodeLinesRefListBox.ItemsSource = _codeLineRefsView;
+			// 阶段 4 里程碑 4.7-b：WPF CollectionViewSource.GetDefaultView + ListCollectionView.Filter →
+			// 独立过滤 ObservableCollection，RefreshFilteredCodeLineRefs() 按 FilterCodeLineRefItem 重建。
+			// Avalonia 无 CollectionViewSource，改用 _filteredCodeLineRefs 直接绑定到 ListBox。
+			_filteredCodeLineRefs = new System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem>();
+			RefreshFilteredCodeLineRefs();
+			CodeLinesRefListBox.ItemsSource = _filteredCodeLineRefs;
 			// 按钮默认显示第一项（Workspace）
 			UpdateCodeLinesRefButton(_codeLineRefs[0]);
 			_isCodeLinesRefInitializing = false;
@@ -510,6 +517,24 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			return item.Display != null && item.Display.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
+		/// <summary>重建 _filteredCodeLineRefs：清空后按 FilterCodeLineRefItem 重新添加 _codeLineRefs 中匹配的项。
+		/// 阶段 4 里程碑 4.7-b：替代 WPF ListCollectionView.Filter + Refresh()，Avalonia 无 CollectionViewSource。</summary>
+		private void RefreshFilteredCodeLineRefs()
+		{
+			if (_filteredCodeLineRefs == null || _codeLineRefs == null)
+			{
+				return;
+			}
+			_filteredCodeLineRefs.Clear();
+			foreach (CodeLineRefItem item in _codeLineRefs)
+			{
+				if (FilterCodeLineRefItem(item))
+				{
+					_filteredCodeLineRefs.Add(item);
+				}
+			}
+		}
+
 		/// <summary>点按钮打开/关闭 Popup。</summary>
 		private void CodeLinesRefButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -523,15 +548,17 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				CodeLinesRefSearchBox.Text = "";
 			}
-			else if (_codeLineRefsView != null)
+			else
 			{
-				_codeLineRefsView.Refresh();
+				// 阶段 4 里程碑 4.7-b：WPF ListCollectionView.Refresh() → RefreshFilteredCodeLineRefs()。
+				RefreshFilteredCodeLineRefs();
 			}
-			CodeLinesRefSearchBox.Dispatcher.BeginInvoke(new Action(() =>
+			// 阶段 4 里程碑 4.7-b：WPF Dispatcher.BeginInvoke → Avalonia Dispatcher.Post。
+			CodeLinesRefSearchBox.Dispatcher.Post(() =>
 			{
 				CodeLinesRefSearchBox.Focus();
 				CodeLinesRefSearchBox.SelectAll();
-			}));
+			});
 		}
 
 		/// <summary>Popup 关闭：清空搜索框文本，避免下次打开还带着旧过滤。</summary>
@@ -543,10 +570,11 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			}
 		}
 
-		/// <summary>搜索框文本变化：刷新 CollectionView 重新过滤。</summary>
+		/// <summary>搜索框文本变化：刷新过滤列表重新过滤。
+		/// 阶段 4 里程碑 4.7-b：WPF ListCollectionView.Refresh() → RefreshFilteredCodeLineRefs()。</summary>
 		private void CodeLinesRefSearchBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			_codeLineRefsView?.Refresh();
+			RefreshFilteredCodeLineRefs();
 		}
 
 		/// <summary>Popup 内 ListBox 选中项变化：更新按钮显示、关闭 Popup、触发 tokei 查询。</summary>

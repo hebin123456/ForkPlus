@@ -1,8 +1,8 @@
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary xmlns="https://github.com/avaloniaui">
       <ControlTemplate x:Key="TrackerControlDataTemplate" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-        <oxy:TrackerControl VerticalLineVisibility="Collapsed" HorizontalLineVisibility="Collapsed" Background="#FFF1F2F7" BorderBrush="#FF767676" xmlns:oxy="http://oxyplot.org/wpf">
+        <oxy:TrackerControl VerticalLineVisibility="Collapsed" HorizontalLineVisibility="Collapsed" Background="#FFF1F2F7" BorderBrush="#FF767676" xmlns:oxy="http://oxyplot.org/avalonia">
           <oxy:TrackerControl.Position>
             <Binding Path="Position" />
           </oxy:TrackerControl.Position>
@@ -20,7 +20,7 @@
       </ControlTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid xmlns="https://github.com/avaloniaui">
     <Grid MinWidth="900" Margin="30,15,20,15" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StatsContainer">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -33,7 +33,7 @@
       </Grid.RowDefinitions>
       <controls:DateRangeButton Grid.Row="0" Margin="0,10,0,10" HorizontalAlignment="Left" x:Name="DateRangeButton" />
       <TextBlock Grid.Row="1" Text="Commits per month" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
-      <oxy:PlotView Grid.Row="2" Height="350" Margin="4,10,0,0" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="LinePlot" />
+      <oxy:PlotView Grid.Row="2" Height="350" Margin="4,10,0,0" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/avalonia" x:Name="LinePlot" />
       <TextBlock Grid.Row="3" Text="Contributions" Margin="10,20,0,0" FontSize="16" FontWeight="Medium" />
       <controls:ContributionHeatmap Grid.Row="4" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="Heatmap" />
       <Grid Grid.Row="5">
@@ -45,10 +45,10 @@
           <TextBlock Text="All contributors" Margin="10,0,0,10" FontSize="16" FontWeight="Medium" />
           <ListBox Width="350" Margin="35,0,0,0" BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="AuthorStatListBox">
             <ListBox.ItemContainerStyle>
-              <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
-                <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
-                <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
-                <Setter Property="Border.BorderBrush" Value="{DynamicResource BorderBrush}" />
+              <Style Selector="ListBoxItem">
+                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
               </Style>
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
@@ -75,11 +75,11 @@
         </StackPanel>
         <StackPanel Grid.Column="1" Margin="50,20,0,0">
           <TextBlock Text="Top contributors" FontSize="16" Margin="10,0,0,0" FontWeight="Medium" />
-          <oxy:PlotView Height="450" Width="450" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="PiePlot" />
+          <oxy:PlotView Height="450" Width="450" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/avalonia" x:Name="PiePlot" />
           <TextBlock Text="Commits per weekday" FontSize="16" Margin="10,0,0,0" FontWeight="Medium" />
-          <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="WeekDayPlot" />
+          <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/avalonia" x:Name="WeekDayPlot" />
           <TextBlock Text="Commits per day hour" FontSize="16" Margin="10,10,0,0" FontWeight="Medium" />
-          <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="DayHourPlot" />
+          <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/avalonia" x:Name="DayHourPlot" />
         </StackPanel>
       </Grid>
       <!-- Row 6: 代码行数统计（tokei）—— 标题行 + 模式切换 + 摘要 + 饼图 + 列表 -->
@@ -134,7 +134,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="CodeLinesPiePlot" />
+          <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/avalonia" x:Name="CodeLinesPiePlot" />
           <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
             <Grid Margin="0,0,0,4">
               <Grid.ColumnDefinitions>
