@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Helpers
 		public static bool IsClickedOnScrollbar(this PointerPressedEventArgs args)
 		{
 			Visual visual = args.Source as Visual;
-			while (visual != null && !(visual is ListViewItem))
+			while (visual != null && !(visual is ListBoxItem))
 			{
 				visual = visual.GetVisualParent();
 			}

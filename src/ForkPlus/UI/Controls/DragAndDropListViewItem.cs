@@ -3,7 +3,7 @@
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Documents → 移除（AdornerLayer 由 AttachTo/DetachFrom 替代）
 // - using System.Windows.Input → using Avalonia.Input
-// - 基类 ListViewItem → Avalonia.Controls.ListViewItem
+// - 基类 ListBoxItem → Avalonia.Controls.ListBoxItem
 // - OnMouseLeftButtonDown/Up/Move → OnPointerPressed/Released/Moved
 // - Mouse.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
 // - CaptureMouse/ReleaseMouseCapture/IsMouseCaptured → e.Pointer.Capture + _isPointerCaptured 字段
@@ -20,7 +20,7 @@ using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
-	internal class DragAndDropListViewItem : ListViewItem
+	internal class DragAndDropListViewItem : ListBoxItem
 	{
 		private bool _wasSelected;
 
@@ -89,7 +89,7 @@ namespace ForkPlus.UI.Controls
 				return;
 			}
 			// TODO(4.5): 验证 Avalonia ContainerFromItem。
-			ListViewItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ContainerFromItem(x) as ListViewItem);
+			ListBoxItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ContainerFromItem(x) as ListBoxItem);
 			ParentListView?.ItemDrag?.Invoke(this, EventArgs.Empty);
 			if (AllowDrag)
 			{
@@ -129,7 +129,7 @@ namespace ForkPlus.UI.Controls
 				item = decoratedRevision2;
 			}
 			// TODO(4.5): 验证 Avalonia ContainerFromItem。
-			if (ParentListView.ContainerFromItem(item) is ListViewItem targetListViewItem)
+			if (ParentListView.ContainerFromItem(item) is ListBoxItem targetListViewItem)
 			{
 				ClearDropAdorner();
 				DropPosition = GetDropPosition(e);
@@ -164,7 +164,7 @@ namespace ForkPlus.UI.Controls
 			return DropPosition.Over;
 		}
 
-		private void ShowDropAdorner(DropPosition dropPosition, ListViewItem targetListViewItem)
+		private void ShowDropAdorner(DropPosition dropPosition, ListBoxItem targetListViewItem)
 		{
 			_dropAdorner = new DropPlaceAdorner(this, dropPosition, targetListViewItem);
 			// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent)?.Add → _dropAdorner.AttachTo(parent)。

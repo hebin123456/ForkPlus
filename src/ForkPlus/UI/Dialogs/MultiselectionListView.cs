@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.* → using Avalonia.*
-// - ListView → Avalonia.Controls.ListView
+// - ListBox → Avalonia.Controls.ListBox
 // - DependencyObject → AvaloniaObject（GetContainerForItemOverride 返回类型）
 // - GetContainerForItemOverride/IsItemItsOwnContainerOverride/PrepareContainerForItemOverride（API 兼容）
 using Avalonia;
@@ -9,7 +9,7 @@ using ForkPlus.UI.Controls;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class MultiselectionListView : ListView
+	public class MultiselectionListView : ListBox
 	{
 		private readonly DragAutoScrollHelper _dragAutoScroll;
 

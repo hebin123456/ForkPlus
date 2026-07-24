@@ -291,7 +291,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.OnPreviewKeyDown(e);
 			RevisionEntry[] array = null;
-			if (e.OriginalSource is ListViewItem || e.OriginalSource is ListView)
+			if (e.OriginalSource is ListBoxItem || e.OriginalSource is ListBox)
 			{
 				array = RevisionListView.SelectedItems.CompactMap((object x) => x as RevisionEntry);
 			}
@@ -709,7 +709,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					rewordUserControl.Refresh(revision.Subject, revision.Description);
 				}
-				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is ListViewItem listViewItem)
+				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is ListBoxItem listViewItem)
 				{
 					UpdateAdornerMargin(listViewItem);
 					return;
@@ -719,7 +719,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void UpdateAdornerMargin(ListViewItem listViewItem)
+		private void UpdateAdornerMargin(ListBoxItem listViewItem)
 		{
 			int num = 130;
 			int num2 = 22;

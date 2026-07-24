@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Application/AvaloniaObject/IVisual）+ using Avalonia.Interactivity（RoutedEventArgs）
-// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListViewItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextMenuEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListBoxItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextMenuEventArgs）
 // - using System.Windows.Documents → using Avalonia.Controls.Documents（Run）
 // - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/KeyboardNavigation/KeyboardNavigationMode/DragEventArgs/PointerPressedEventArgs）
 // - using System.Windows.Markup → 移除
@@ -496,7 +496,7 @@ namespace ForkPlus.UI.UserControls
 		private Branch GetClickedBranch(PointerPressedEventArgs args)
 		{
 			AvaloniaObject dependencyObject = args.Source as AvaloniaObject;
-			while (dependencyObject != null && !(dependencyObject is ListViewItem))
+			while (dependencyObject != null && !(dependencyObject is ListBoxItem))
 			{
 				if (dependencyObject is Run run)
 				{

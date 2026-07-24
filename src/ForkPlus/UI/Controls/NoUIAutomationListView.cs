@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF System.Windows.* → Avalonia.* 迁移。
-// WPF ListView → Avalonia.Controls.ListView。
+// WPF ListBox → Avalonia.Controls.ListBox。
 // WPF AutomationPeer（UI 自动化桩）→ Avalonia 内置自动化系统，无需自定义 stub。
-// WPF GridView（ListView 多列视图）在 Avalonia 中无等价物。
+// WPF GridView（ListBox 多列视图）在 Avalonia 中无等价物。
 // WPF VisualTreeHelper → Avalonia GetVisualDescendants。
 // WPF Keyboard.Focus → Avalonia Control.Focus。
 // WPF ItemContainerGenerator.ContainerFromIndex → Avalonia ItemsControl.ContainerFromIndex。
@@ -16,7 +16,7 @@ using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Controls
 {
-	public class NoUIAutomationListView : Avalonia.Controls.ListView
+	public class NoUIAutomationListView : Avalonia.Controls.ListBox
 	{
 		public enum SelectOptions
 		{
@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO(4.5): WPF GridView（ListView 多列视图）在 Avalonia 中无等价物。UpdateResizableColumnWidth 功能需改用 DataGrid 或自定义列布局实现。
+		// TODO(4.5): WPF GridView（ListBox 多列视图）在 Avalonia 中无等价物。UpdateResizableColumnWidth 功能需改用 DataGrid 或自定义列布局实现。
 		public void UpdateResizableColumnWidth(int resizableColumnIndex)
 		{
 			// 阶段 4.5：WPF GridView 在 Avalonia 中无等价物，方法体已禁用。

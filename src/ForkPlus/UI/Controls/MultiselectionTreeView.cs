@@ -30,7 +30,7 @@ using ForkPlus.UI.Controls.Flattener;
 
 namespace ForkPlus.UI.Controls
 {
-	public class MultiselectionTreeView : ListView
+	public class MultiselectionTreeView : ListBox
 	{
 		private class DropTarget
 		{
@@ -144,7 +144,7 @@ namespace ForkPlus.UI.Controls
 			// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
 			RootItemProperty = AvaloniaProperty.Register<MultiselectionTreeView, MultiselectionTreeViewItem>(nameof(RootItem));
 			// TODO(4.5): WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata 在 Avalonia 中无等价物。
-			// Avalonia ListView 默认使用虚拟化，无需显式设置 Recycling 模式。原 WPF 代码（已注释）：
+			// Avalonia ListBox 默认使用虚拟化，无需显式设置 Recycling 模式。原 WPF 代码（已注释）：
 			// VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(typeof(MultiselectionTreeView), new FrameworkPropertyMetadata(VirtualizationMode.Recycling));
 		}
 
