@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
@@ -57,9 +57,15 @@ namespace ForkPlus.UI.Controls.Editor
 			ScrollToVerticalOffset(y);
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF OnPreviewKeyDown → Avalonia OnKeyDown（Avalonia 无 Preview 前缀，
+		// 隧道事件需用 AddHandler(RoutingStrategies.Tunnel) 注册，此处用冒泡 OnKeyDown 即可，
+		// 因为 SearchPanel/Escape 等快捷键不依赖隧道顺序）。KeyboardHelper.IsCtrlDown/IsShiftDown →
+		// e.KeyModifiers.HasFlag(...)（事件参数自带修饰键状态，避免依赖全局 Keyboard 静态查询）。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			if ((e.Key == Key.F3 || (e.Key == Key.F && KeyboardHelper.IsCtrlDown)) && !KeyboardHelper.IsShiftDown)
+			bool isCtrlDown = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+			bool isShiftDown = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+			if ((e.Key == Key.F3 || (e.Key == Key.F && isCtrlDown)) && !isShiftDown)
 			{
 				CodeEditorSearchPanelUserControl templatePartSearchPanel = _templatePartSearchPanel;
 				if (templatePartSearchPanel == null || !templatePartSearchPanel.IsTextBoxFocused)
@@ -80,13 +86,13 @@ namespace ForkPlus.UI.Controls.Editor
 			if (this is DiffCodeEditor editor)
 			{
 				CodeEditorSearchPanelUserControl templatePartSearchPanel3 = _templatePartSearchPanel;
-				if ((templatePartSearchPanel3 == null || !templatePartSearchPanel3.IsTextBoxFocused) && e.Key == Key.C && KeyboardHelper.IsCtrlDown && KeyboardHelper.IsShiftDown)
+				if ((templatePartSearchPanel3 == null || !templatePartSearchPanel3.IsTextBoxFocused) && e.Key == Key.C && isCtrlDown && isShiftDown)
 				{
 					CopyAsPatchCommand.Execute(editor);
 					e.Handled = true;
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 	}
 }
