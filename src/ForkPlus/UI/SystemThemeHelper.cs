@@ -1,7 +1,15 @@
+// 阶段 4.5：WPF → Avalonia 迁移。
+// WPF System.Windows.Media.Brush → Avalonia.Media.IBrush。
+// WPF SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变）。
+// WPF Application.Current.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post。
+// WPF System.Windows.Media.Color → Avalonia.Media.Color。
+// WinRT UISettings/ColorValuesChanged/GetColorValue/Windows.UI.Color 保留（Windows-only API）。
+// TODO 阶段 5：跨平台化时替换 WinRT UISettings 为 ISystemThemeService 抽象。
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Settings;
 using Windows.Foundation;
 using Windows.UI;
@@ -24,17 +32,16 @@ namespace ForkPlus.UI
 		}
 
 		[Null]
-		public static Brush GetSystemBrush(Theme.SystemColorType colorType)
+		public static IBrush GetSystemBrush(Theme.SystemColorType colorType)
 		{
 			SolidColorBrush solidColorBrush = new SolidColorBrush(GetColor(((UISettings)_uiSettings).GetColorValue(ToUIColorType(colorType))));
-			solidColorBrush.Freeze();
 			return solidColorBrush;
 		}
 
 		private static void UiSettings_ColorValuesChanged(object sender, object args)
 		{
 			Log.Info("System colors changed");
-			Application.Current.Dispatcher?.Invoke(delegate
+			Dispatcher.UIThread.Post(delegate
 			{
 				Theme.Refresh();
 			});
@@ -57,19 +64,19 @@ namespace ForkPlus.UI
 			{
 				if (ForkPlusSettings.Default.Theme.IsDarkBase())
 				{
-						return (UIColorType)7;
-					}
-					return (UIColorType)4;
+					return (UIColorType)7;
 				}
-				return (UIColorType)5;
-			default:
-				return (UIColorType)5;
+				return (UIColorType)4;
 			}
+			return (UIColorType)5;
+		default:
+			return (UIColorType)5;
 		}
+	}
 
-		private static System.Windows.Media.Color GetColor(Windows.UI.Color color)
+		private static Avalonia.Media.Color GetColor(Windows.UI.Color color)
 		{
-			return System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+			return Avalonia.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
 		}
 	}
 }

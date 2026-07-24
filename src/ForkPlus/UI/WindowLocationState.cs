@@ -1,4 +1,5 @@
-using System.Windows;
+// 阶段 4.5：WPF → Avalonia 迁移。System.Windows.WindowState → Avalonia.Controls.WindowState。
+using Avalonia.Controls;
 
 namespace ForkPlus.UI
 {

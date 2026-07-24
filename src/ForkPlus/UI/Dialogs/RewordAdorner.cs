@@ -1,15 +1,26 @@
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
+// 阶段 4.5：WPF Adorner → Avalonia Control。
+// WPF Adorner 基类提供 GetVisualChild/AddVisualChild/RemoveVisualChild/VisualChildrenCount
+// 和 AddLogicalChild/RemoveLogicalChild。Avalonia Visual/StyledElement 提供等价 API：
+// - AddVisualChild/RemoveVisualChild → Avalonia.Visual.AddVisualChild/RemoveVisualChild
+// - AddLogicalChild/RemoveLogicalChild → LogicalChildren.Add/Remove
+// - GetVisualChild/VisualChildrenCount → 同名 override（Avalonia.Visual）
+// WPF FrameworkElement → Avalonia.Control。
+// WPF UIElement → Avalonia.Control。
+// VisualTreeAttachmentHelper.PrepareForNewParent 已迁移（接受 AvaloniaObject）。
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
 using ForkPlus.UI;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class RewordAdorner : Adorner
+	public class RewordAdorner : Control
 	{
-		private FrameworkElement _child;
+		private Control _child;
 
-		public FrameworkElement Child
+		public Control Child
 		{
 			get
 			{
@@ -22,7 +33,7 @@ namespace ForkPlus.UI.Dialogs
 					if (_child != null)
 					{
 						RemoveVisualChild(_child);
-						RemoveLogicalChild(_child);
+						LogicalChildren.Remove(_child);
 					}
 					if (value != null && !VisualTreeAttachmentHelper.PrepareForNewParent(value, GetType().Name + ".Child"))
 					{
@@ -31,7 +42,7 @@ namespace ForkPlus.UI.Dialogs
 					_child = value;
 					if (_child != null)
 					{
-						AddLogicalChild(_child);
+						LogicalChildren.Add(_child);
 						AddVisualChild(_child);
 					}
 					InvalidateMeasure();
@@ -41,8 +52,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override int VisualChildrenCount => (Child != null) ? 1 : 0;
 
-		public RewordAdorner(UIElement adornernedElement)
-			: base(adornernedElement)
+		// 阶段 4.5：原 WPF Adorner 构造接收被装饰元素；Avalonia 无 Adorner 基类，
+		// 保留参数以兼容调用方，但不再持有引用（布局由调用方挂载位置决定）。
+		public RewordAdorner(Control adornernedElement)
 		{
 		}
 
@@ -74,6 +86,19 @@ namespace ForkPlus.UI.Dialogs
 			}
 			Child.Arrange(new Rect(finalSize));
 			return finalSize;
+		}
+
+		// 阶段 4.5：封装 OverlayLayer 挂载/卸载，替代 WPF AdornerLayer.Add/Remove。
+		public void AttachTo(Control parent)
+		{
+			OverlayLayer overlay = OverlayLayer.GetOverlayLayer(parent);
+			overlay?.Children.Add(this);
+		}
+
+		public void DetachFrom(Control parent)
+		{
+			OverlayLayer overlay = OverlayLayer.GetOverlayLayer(parent);
+			overlay?.Children.Remove(this);
 		}
 	}
 }

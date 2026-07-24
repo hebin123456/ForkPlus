@@ -1,4 +1,9 @@
-using System.Windows;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Input
+// - e.Data.GetData → e.Data.Get（Avalonia IDataObject 方法名为 Get，非 GetData）
+// - e.Effects → e.DragEffects（Avalonia DragEventArgs 属性名）
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
@@ -51,7 +56,7 @@ namespace ForkPlus.UI
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
+			if (e.Data.Get(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
 			{
 				return DragDropEffects.Move;
 			}
@@ -60,8 +65,8 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
-			if (!(e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
+			e.DragEffects = DragDropEffects.None;
+			if (!(e.Data.Get(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
 			{
 				return;
 			}
@@ -85,7 +90,7 @@ namespace ForkPlus.UI
 			if (repositoryData != null)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects = DragDropEffects.Move;
 				string newName = FullName + "/" + localBranchSidebarItem.LocalBranch.LastNameComponent();
 				SidebarUserControl.Dispatcher.Async(delegate
 				{
