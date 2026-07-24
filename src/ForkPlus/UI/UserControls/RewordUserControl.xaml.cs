@@ -6,7 +6,7 @@
 // - using System.Windows.Media → using Avalonia.Media（Brush）
 // - 新增 using ForkPlus.UI.Helpers（KeyboardHelper）
 // - Keyboard.IsKeyDown(Key.LeftCtrl) → KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）
-// - Application.Current.TryFindResource("X") as Brush → Theme.FindBrush("X")（参考 CommitUserControl）
+// - Application.Current.TryFindResource("X") as Brush → ForkPlus.UI.Theme.FindBrush("X")（参考 CommitUserControl）
 // - DataObject.AddPastingHandler + DataObjectPastingEventArgs 无 Avalonia 等价，移除并注释（参考 ReferenceTextBox）
 using System;
 using System.ComponentModel;
@@ -143,18 +143,18 @@ namespace ForkPlus.UI.UserControls
 				SubjectLengthLimitTextBlock.Hide();
 				return;
 			}
-			// 阶段 4.5：WPF Application.Current.TryFindResource("X") as Brush → Theme.FindBrush("X")（参考 CommitUserControl）。
+			// 阶段 4.5：WPF Application.Current.TryFindResource("X") as Brush → ForkPlus.UI.Theme.FindBrush("X")（参考 CommitUserControl）。
 			if (length > ForkPlusSettings.Default.CommitSubjectHighLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
 			}
 			else if (length > commitSubjectLowLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
 			}
 			else
 			{
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
 			}
 			int num = commitSubjectLowLimit - length;
 			SubjectLengthLimitTextBlock.Show();

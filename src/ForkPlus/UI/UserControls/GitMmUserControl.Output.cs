@@ -11,7 +11,7 @@
 // - Dispatcher.UIThread.BeginInvoke(action, DispatcherPriority) → Dispatcher.UIThread.Post(action, priority)（参考 AiDevelopmentWindow）
 // - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl）
 // - new Hyperlink(new Run(url)) → new Hyperlink + Inlines.Add(new Run(url))（Avalonia Span 无 Inline 构造函数）
-// - Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）
+// - Application.Current.TryFindResource("AccentBrush") as Brush → ForkPlus.UI.Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）
 // - Brush → IBrush（Avalonia.Media.IBrush，Brushes.XXX 返回 ISolidColorBrush）
 // - ToolTip.SetTip(button, link → ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）
 // - OutputTextBox.ScrollToEnd() → 查找父 ScrollViewer.ScrollToEnd()（Avalonia ScrollViewer.ScrollToEnd 存在）
@@ -444,12 +444,12 @@ namespace ForkPlus.UI.UserControls
 					Content = new TextBlock
 					{
 						Text = UploadLinkTitle(link),
-						TextTrimming = TextTrimming.CharacterEllipsis,
+						TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
 						MaxWidth = 260.0
 					},
-					Style = Theme.TransparentButtonStyle,
-					// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）。
-					Foreground = Theme.FindBrush("AccentBrush"),
+					Style = ForkPlus.UI.Theme.TransparentButtonStyle,
+					// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → ForkPlus.UI.Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）。
+					Foreground = ForkPlus.UI.Theme.FindBrush("AccentBrush"),
 					FontSize = 12.0,
 					Padding = new Thickness(6.0, 1.0, 6.0, 1.0),
 					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)

@@ -18,7 +18,7 @@ namespace ForkPlus.UI.Controls
 
 		public AutoTooltipTextBlock()
 		{
-			TextTrimming = TextTrimming.CharacterEllipsis;
+			TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis;
 			ToolTip.SetTip(this, "");
 			// 阶段 4.5：WPF ToolTipOpening 事件 → Avalonia PointerEnter（Avalonia 无 ToolTipOpening 事件）。
 			PointerEnter += AutoTooltipTextBlock_PointerEnter;

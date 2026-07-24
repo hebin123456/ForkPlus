@@ -58,9 +58,9 @@ namespace ForkPlus.UI.Controls
 					TextBlock textBlock3 = new TextBlock
 					{
 						Margin = new Thickness(0.0, 0.0, 0.0, 0.0),
-						VerticalAlignment = VerticalAlignment.Center,
-						HorizontalAlignment = HorizontalAlignment.Left,
-						TextTrimming = TextTrimming.CharacterEllipsis,
+						VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+						HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+						TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
 						Text = Description(_value)
 					};
 					// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
@@ -68,7 +68,7 @@ namespace ForkPlus.UI.Controls
 					if (!CustomFontStyle)
 					{
 						textBlock3.FontSize = 13.0;
-						textBlock3.Foreground = Theme.LabelBrush;
+						textBlock3.Foreground = ForkPlus.UI.Theme.LabelBrush;
 					}
 					textBlock3.SetValue(Grid.ColumnProperty, 2);
 					base.Children.Add(textBlock3);
@@ -100,8 +100,8 @@ namespace ForkPlus.UI.Controls
 				Source = GetIcon(type),
 				Width = 14.0,
 				Height = 14.0,
-				HorizontalAlignment = HorizontalAlignment.Left,
-				VerticalAlignment = VerticalAlignment.Center
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 		}
 
@@ -109,29 +109,29 @@ namespace ForkPlus.UI.Controls
 		{
 			if (type == typeof(StashRevision))
 			{
-				return Theme.StashIcon;
+				return ForkPlus.UI.Theme.StashIcon;
 			}
 			if (type == typeof(Revision))
 			{
-				return Theme.RevisionIcon;
+				return ForkPlus.UI.Theme.RevisionIcon;
 			}
 			if (type == typeof(RevisionDetails))
 			{
-				return Theme.RevisionIcon;
+				return ForkPlus.UI.Theme.RevisionIcon;
 			}
 			if (type == typeof(LocalBranch))
 			{
-				return Theme.BranchIcon;
+				return ForkPlus.UI.Theme.BranchIcon;
 			}
 			if (type == typeof(RemoteBranch))
 			{
-				return Theme.BranchIcon;
+				return ForkPlus.UI.Theme.BranchIcon;
 			}
 			if (type == typeof(Tag))
 			{
-				return Theme.TagIcon;
+				return ForkPlus.UI.Theme.TagIcon;
 			}
-			return Theme.BranchIcon;
+			return ForkPlus.UI.Theme.BranchIcon;
 		}
 
 		private static TextBlock CreateIdTextBlock(string identifier)
@@ -139,10 +139,10 @@ namespace ForkPlus.UI.Controls
 			return new TextBlock
 			{
 				Margin = new Thickness(0.0, 0.0, 6.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
 				FontSize = 13.0,
-				Foreground = Theme.LabelBrush,
+				Foreground = ForkPlus.UI.Theme.LabelBrush,
 				Text = identifier
 			};
 		}

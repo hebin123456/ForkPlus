@@ -1731,13 +1731,13 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShowCommitDropdown()
 		{
-			CommitButton.Style = Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
+			CommitButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
 			CommitDropdownButton.Show();
 		}
 
 		private void HideCommitButtonDropdown()
 		{
-			CommitButton.Style = Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
+			CommitButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
 			CommitDropdownButton.Collapse();
 		}
 
@@ -1821,8 +1821,8 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (isError)
 			{
-				// Avalonia: Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)
-				WarningTextBlock.Foreground = Theme.FindBrush("Diff.Removed.Foreground");
+				// Avalonia: Application.Current.TryFindResource(key) as Brush → ForkPlus.UI.Theme.FindBrush(key)
+				WarningTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("Diff.Removed.Foreground");
 			}
 			else
 			{
@@ -1844,16 +1844,16 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (length > ForkPlusSettings.Default.CommitSubjectHighLimit)
 			{
-				// Avalonia: Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
+				// Avalonia: Application.Current.TryFindResource(key) as Brush → ForkPlus.UI.Theme.FindBrush(key)
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
 			}
 			else if (length > commitSubjectLowLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
 			}
 			else
 			{
-				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
+				SubjectLengthLimitTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
 			}
 			int num = commitSubjectLowLimit - length;
 			SubjectLengthLimitTextBlock.Show();

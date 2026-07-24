@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Controls
 	// WPF DrawingContext.DrawLine → Avalonia DrawingContext.DrawLine（签名兼容）。
 	public class DropPlaceAdorner : Control
 	{
-		private static readonly Pen _pen = new Pen(Theme.AccentBrush, 2.0);
+		private static readonly Pen _pen = new Pen(ForkPlus.UI.Theme.AccentBrush, 2.0);
 
 		private readonly DropPosition _dropPosition;
 
@@ -27,8 +27,8 @@ namespace ForkPlus.UI.Controls
 			_dropPosition = position;
 			_listViewItem = listViewItem;
 			_adornedSize = adornedElement.Bounds.Size;
-			HorizontalAlignment = HorizontalAlignment.Stretch;
-			VerticalAlignment = VerticalAlignment.Stretch;
+			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
 		}
 
 		public override void Render(DrawingContext context)
@@ -44,15 +44,15 @@ namespace ForkPlus.UI.Controls
 			}
 			else if (_dropPosition == DropPosition.Over)
 			{
-				_listViewItem.Background = Theme.RevisionList.ItemSelectedInactiveBackgroundBrush;
+				_listViewItem.Background = ForkPlus.UI.Theme.RevisionList.ItemSelectedInactiveBackgroundBrush;
 			}
 		}
 
 		internal void ClearBackground()
 		{
-			if (_listViewItem.Background != Theme.RevisionList.ItemBackgroundBrush)
+			if (_listViewItem.Background != ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush)
 			{
-				_listViewItem.Background = Theme.RevisionList.ItemBackgroundBrush;
+				_listViewItem.Background = ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush;
 			}
 		}
 

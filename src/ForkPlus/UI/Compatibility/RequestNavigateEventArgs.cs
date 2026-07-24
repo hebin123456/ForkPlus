@@ -7,6 +7,7 @@
 // 并通过 CommandParameter 传递 Uri，届时删除本文件。
 using System;
 using Avalonia.Interactivity;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI
 {

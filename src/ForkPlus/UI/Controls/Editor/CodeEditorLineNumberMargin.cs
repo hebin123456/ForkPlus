@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 	private static Color? TryFindColor(string key)
 	{
-		object res = Theme.FindResource(key);
+		object res = ForkPlus.UI.Theme.FindResource(key);
 		if (res is Color c) return c;
 		if (res is SolidColorBrush b) return b.Color;
 		return null;

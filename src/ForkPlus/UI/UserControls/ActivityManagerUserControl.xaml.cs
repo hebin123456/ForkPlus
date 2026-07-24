@@ -9,7 +9,7 @@ using Theme = ForkPlus.UI.Theme;
 // - Visibility → Avalonia.Visibility（命名空间迁移，枚举值兼容，参考 CommandProviderItem）
 // - WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(..., "ApplicationThemeChanged", ...)
 //   → NotificationCenter.Current.ApplicationThemeChanged += ...（直接事件订阅，参考 RevisionListViewUserControl）
-// - Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush → Theme.FindBrush("CodeEditorLinkForeground")（参考 HighlightingTypeExtensions）
+// - Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush → ForkPlus.UI.Theme.FindBrush("CodeEditorLinkForeground")（参考 HighlightingTypeExtensions）
 // - DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容：Interval/Tick/Start/Stop）
 // - SelectionChangedEventArgs → Avalonia.Controls 同名类型
 using System;
@@ -381,8 +381,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshTheme()
 		{
-			// 阶段 4.5：WPF Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)（参考 HighlightingTypeExtensions）。
-			JobDetailsOutputEditor.TextArea.TextView.LinkTextForegroundBrush = Theme.FindBrush("CodeEditorLinkForeground");
+			// 阶段 4.5：WPF Application.Current.TryFindResource(key) as Brush → ForkPlus.UI.Theme.FindBrush(key)（参考 HighlightingTypeExtensions）。
+			JobDetailsOutputEditor.TextArea.TextView.LinkTextForegroundBrush = ForkPlus.UI.Theme.FindBrush("CodeEditorLinkForeground");
 		}
 
 		private void Sync()

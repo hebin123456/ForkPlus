@@ -819,12 +819,12 @@ namespace ForkPlus.UI.Dialogs
 			MergeStatusTextBlock.Text = $"{resolved}/{total}";
 			if (total == resolved)
 			{
-				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushGreen;
+				MergeStatusBorder.Background = ForkPlus.UI.Theme.MergeStatusLabelBrushGreen;
 				ToolTip.SetTip(MergeStatusBorder, PreferencesLocalization.Current("All conflicts resolved"));
 			}
 			else
 			{
-				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushRed;
+				MergeStatusBorder.Background = ForkPlus.UI.Theme.MergeStatusLabelBrushRed;
 				_ = 1;
 				ToolTip.SetTip(MergeStatusBorder, PreferencesLocalization.FormatCurrent("Resolved {0} conflicts of {1}", resolved, total));
 			}
@@ -932,7 +932,7 @@ namespace ForkPlus.UI.Dialogs
 		private void LayoutOrientationToggleButton_Changed(object sender, RoutedEventArgs e)
 		{
 			MergerLayoutOrientation mergerLayoutOrientation = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? MergerLayoutOrientation.Vertical : MergerLayoutOrientation.Horizontal);
-			LayoutOrientationToggleButtonImage.Source = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? Theme.VerticalMergerIcon : Theme.HorizontalMergerIcon);
+			LayoutOrientationToggleButtonImage.Source = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? ForkPlus.UI.Theme.VerticalMergerIcon : ForkPlus.UI.Theme.HorizontalMergerIcon);
 			UpdateLayoutOrientation(mergerLayoutOrientation);
 			ForkPlusSettings.Default.MergerLayoutOrientation = mergerLayoutOrientation;
 		}

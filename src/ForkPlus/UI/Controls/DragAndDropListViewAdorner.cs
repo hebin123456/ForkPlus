@@ -30,8 +30,8 @@ namespace ForkPlus.UI.Controls
 			_visualBrushes = listBoxItems.Map((ListBoxItem x) => new VisualBrush(x));
 			_visualBrushYOffset = listBoxItems.FirstItem()?.Bounds.Height ?? 0.0;
 			IsHitTestVisible = false;
-			HorizontalAlignment = HorizontalAlignment.Stretch;
-			VerticalAlignment = VerticalAlignment.Stretch;
+			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
 		}
 
 		public void UpdatePosition(Point position)

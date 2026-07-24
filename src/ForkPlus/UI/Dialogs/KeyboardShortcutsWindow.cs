@@ -6,8 +6,8 @@ using Theme = ForkPlus.UI.Theme;
 // - GridLength/GridLength.Auto/ColumnDefinition.Width/RowDefinition.Height（API 兼容）
 // - Grid.SetRow/Grid.SetColumn（API 兼容）
 // - FontWeights.Medium（API 兼容）
-// - SetResourceReference(ForegroundProperty, "Key") → 直接设置 Foreground = Theme.FindBrush("Key")
-//   （Theme.FindResource 已在内部用 TryGetResource 解析；动态主题切换由 IThemeService.Refresh 处理）
+// - SetResourceReference(ForegroundProperty, "Key") → 直接设置 Foreground = ForkPlus.UI.Theme.FindBrush("Key")
+//   （ForkPlus.UI.Theme.FindResource 已在内部用 TryGetResource 解析；动态主题切换由 IThemeService.Refresh 处理）
 // - TextWrapping.Wrap（API 兼容）
 // - IImage 未使用
 using System;
@@ -191,14 +191,14 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = Translate(row.Description),
 				FontSize = 13.0,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				TextWrapping = TextWrapping.Wrap,
 				Margin = new Thickness(8.0, 0.0, 0.0, 0.0)
 			};
 			// 阶段 4.5：WPF SetResourceReference(TextBlock.ForegroundProperty, "ForegroundBrush")
-			// → 直接设置 Foreground = Theme.FindBrush("ForegroundBrush")。
+			// → 直接设置 Foreground = ForkPlus.UI.Theme.FindBrush("ForegroundBrush")。
 			// 动态主题切换由 IThemeService.Refresh 全局失效处理；如需精确动态响应，阶段 6 可改用 DynamicResource。
-			descriptionTextBlock.Foreground = Theme.FindBrush("ForegroundBrush");
+			descriptionTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
 			Grid.SetColumn(descriptionTextBlock, 1);
 			grid.Children.Add(descriptionTextBlock);
 			return grid;
@@ -208,7 +208,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			WrapPanel panel = new WrapPanel
 			{
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			string[] alternatives = keys.Split(',');
 			for (int i = 0; i < alternatives.Length; i++)
@@ -250,7 +250,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = key,
 				FontFamily = FontConstants.MonospaceFontFamily,
 				FontSize = 12.0,
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			Border border = new Border
 			{
@@ -261,8 +261,8 @@ namespace ForkPlus.UI.Dialogs
 				Margin = new Thickness(1.0, 1.0, 1.0, 1.0)
 			};
 			// 阶段 4.5：WPF SetResourceReference → 直接设置（见 CreateShortcutRow 同样注释）。
-			border.BorderBrush = Theme.FindBrush("BorderBrush");
-			border.Background = Theme.FindBrush("TextBox.Static.Background");
+			border.BorderBrush = ForkPlus.UI.Theme.FindBrush("BorderBrush");
+			border.Background = ForkPlus.UI.Theme.FindBrush("TextBox.Static.Background");
 			return border;
 		}
 
@@ -272,10 +272,10 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = text,
 				Margin = new Thickness(3.0, 0.0, 3.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				FontSize = 12.0
 			};
-			textBlock.Foreground = Theme.FindBrush("SecondaryLabelBrush");
+			textBlock.Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush");
 			return textBlock;
 		}
 

@@ -10,9 +10,9 @@
 // - 新增 using Avalonia.Threading（Dispatcher）、using Avalonia.VisualTree（GetVisualParent/GetVisualDescendants）
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(obj, "Event", h) → obj.Event += h（参考 ClosableTabItem/FileControlHeaderUserControl）
 // - Dispatcher.UIThread.BeginInvoke(new Action(() => ...)) → Dispatcher.UIThread.Post(() => ...)
-// - Application.Current.TryFindResource("Key") as Brush/SolidColorBrush → Theme.FindBrush("Key")（参考 ActivityManagerUserControl）
-// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)（参考 StatusUserControl）
-// - popupContent.SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 Background/BorderBrush = Theme.FindBrush(key)
+// - Application.Current.TryFindResource("Key") as Brush/SolidColorBrush → ForkPlus.UI.Theme.FindBrush("Key")（参考 ActivityManagerUserControl）
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = ForkPlus.UI.Theme.FindImage(key)（参考 StatusUserControl）
+// - popupContent.SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 Background/BorderBrush = ForkPlus.UI.Theme.FindBrush(key)
 // - Brush → IBrush（Foreground 属性类型）
 // - TabItem.AllowDrop 属性 → DragDrop.SetAllowDrop 附加属性（Avalonia 无 CLR AllowDrop）
 // - ToolTip.SetTip(element, "..." → ToolTip.SetTip(element, "...")（参考 ClosableTabItem）
@@ -528,8 +528,8 @@ namespace ForkPlus.UI.UserControls
 			Button button = GetOrCreateSummaryButton(key);
 			button.Tag = key;
 			button.Content = PreferencesLocalization.Current("Show all");
-			// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")。
-			button.Foreground = Theme.FindBrush("AccentBrush");
+			// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → ForkPlus.UI.Theme.FindBrush("AccentBrush")。
+			button.Foreground = ForkPlus.UI.Theme.FindBrush("AccentBrush");
 			button.Margin = new Thickness(0.0, 0.0, 8.0, 0.0);
 			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(button, Translate("Clear repository filter"));
@@ -545,8 +545,8 @@ namespace ForkPlus.UI.UserControls
 			Button button = GetOrCreateSummaryButton(filterMode);
 			button.Tag = filterMode;
 			button.Content = PreferencesLocalization.FormatCurrent(format, value);
-			// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → Theme.FindBrush("SecondaryLabelBrush")。
-			button.Foreground = Theme.FindBrush("SecondaryLabelBrush");
+			// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush")。
+			button.Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush");
 			button.Margin = new Thickness(0.0, 0.0, 6.0, 0.0);
 			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(button, Translate("Click to show matching repositories"));
@@ -560,7 +560,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			button = new Button
 			{
-				Style = Theme.TransparentButtonStyle,
+				Style = ForkPlus.UI.Theme.TransparentButtonStyle,
 				FontSize = 12.0,
 				Padding = new Thickness(3.0, 0.0, 3.0, 0.0)
 			};
@@ -1436,9 +1436,9 @@ namespace ForkPlus.UI.UserControls
 				BorderThickness = new Thickness(1.0),
 				Padding = new Thickness(0.0)
 			};
-			// 阶段 4.5：WPF SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 = Theme.FindBrush(key)（参考 KeyboardShortcutsWindow）。
-			popupContent.Background = Theme.FindBrush("BackgroundBrush");
-			popupContent.BorderBrush = Theme.FindBrush("BorderBrush");
+			// 阶段 4.5：WPF SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 = ForkPlus.UI.Theme.FindBrush(key)（参考 KeyboardShortcutsWindow）。
+			popupContent.Background = ForkPlus.UI.Theme.FindBrush("BackgroundBrush");
+			popupContent.BorderBrush = ForkPlus.UI.Theme.FindBrush("BorderBrush");
 			popup.Child = popupContent;
 			searchTextBox.TextChanged += delegate
 			{
@@ -1468,10 +1468,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				Width = 16.0,
 				Height = 16.0,
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
-			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)（参考 StatusUserControl）。
-			image.Source = Theme.FindImage(iconResourceKey);
+			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)（参考 StatusUserControl）。
+			image.Source = ForkPlus.UI.Theme.FindImage(iconResourceKey);
 			Button button = new Button
 			{
 				Content = image,
@@ -1479,7 +1479,7 @@ namespace ForkPlus.UI.UserControls
 				Height = 30.0,
 				Margin = margin,
 				Padding = new Thickness(4.0),
-				Style = Theme.TransparentButtonStyle
+				Style = ForkPlus.UI.Theme.TransparentButtonStyle
 			};
 			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(button, tooltip);
@@ -1563,8 +1563,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				Text = subrepo.DisplayName,
 				Margin = new Thickness(10.0),
-				// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → Theme.FindBrush("SecondaryLabelBrush")。
-				Foreground = Theme.FindBrush("SecondaryLabelBrush")
+				// 阶段 4.5：WPF Application.Current.TryFindResource("SecondaryLabelBrush") as Brush → ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush")。
+				Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush")
 			};
 		}
 
@@ -1721,7 +1721,7 @@ namespace ForkPlus.UI.UserControls
 				Width = 8.0,
 				Height = 8.0,
 				Margin = new Thickness(0.0, 0.0, 6.0, -2.0),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				StrokeThickness = 2.0,
 				Tag = "ColorEllipse"
 			};
@@ -1731,7 +1731,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				Height = 22.0,
 				Margin = new Thickness(6.0, 2.0, 0.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Orientation = Orientation.Horizontal,
 				Tag = "StatusIcons"
 			};
@@ -1742,7 +1742,7 @@ namespace ForkPlus.UI.UserControls
 				Value = subrepo.DisplayName,
 				Height = 22.0,
 				Padding = new Thickness(0.0, 2.0, 0.0, 2.0),
-				HorizontalAlignment = HorizontalAlignment.Left,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
 				MaxWidth = 240.0,
 				Tag = "Title"
 			});
@@ -1807,7 +1807,7 @@ namespace ForkPlus.UI.UserControls
 			return new MenuItem
 			{
 				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
+				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
 			};
 		}
 
@@ -1848,8 +1848,8 @@ namespace ForkPlus.UI.UserControls
 				SolidColorBrush brush = RepositoryColorsUserControl.GetBrush(EnsureRepositoryManagerEntry(subrepo.Path).Color);
 				if (brush == null && subrepo.IsRootRepository)
 				{
-					// 阶段 4.5：WPF Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush → Theme.FindBrush("SystemAccentBrush") as SolidColorBrush。
-					brush = Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
+					// 阶段 4.5：WPF Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush → ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush。
+					brush = ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
 				}
 				colorEllipse.Visibility = brush == null ? Visibility.Collapsed : Visibility.Visible;
 				colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;
@@ -2271,10 +2271,10 @@ namespace ForkPlus.UI.UserControls
 				Width = 13.0,
 				Height = 13.0,
 				Margin = new Thickness(2.0, 0.0, 0.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
-			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)；ToolTip 属性 → ToolTip.SetTip。
-			image.Source = Theme.FindImage(iconResourceKey);
+			// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)；ToolTip 属性 → ToolTip.SetTip。
+			image.Source = ForkPlus.UI.Theme.FindImage(iconResourceKey);
 			ToolTip.SetTip(image, tooltip);
 			statusPanel.Children.Add(image);
 		}
@@ -2394,8 +2394,8 @@ namespace ForkPlus.UI.UserControls
 			}
 			RepositoryUserControl repositoryUserControl = new RepositoryUserControl
 			{
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Stretch,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
 				DataContext = null
 			};
 			repositoryUserControl.OpenRepository(result.Result);

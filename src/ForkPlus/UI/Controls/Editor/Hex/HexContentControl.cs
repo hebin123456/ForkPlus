@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			TextBlock bprLabel = new TextBlock
 			{
 				Text = PreferencesLocalization.Current("Bytes per row") + ":",
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 4, 0)
 			};
 			DockPanel.SetDock(bprLabel, Dock.Left);
@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			_bytesPerRowComboBox = new ComboBox
 			{
 				Width = 60,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			_bytesPerRowComboBox.Items.Add(8);
@@ -64,7 +64,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			{
 				Content = PreferencesLocalization.Current("Show ASCII"),
 				IsChecked = ForkPlusSettings.Default.HexViewShowAscii,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			// 阶段 4 里程碑 4.7-a：WPF CheckBox.Checked/Unchecked → Avalonia IsCheckedChanged
@@ -78,7 +78,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			{
 				Content = PreferencesLocalization.Current("Show offset"),
 				IsChecked = ForkPlusSettings.Default.HexViewShowOffset,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			_showOffsetCheckBox.IsCheckedChanged += ShowOffsetCheckBox_Changed;
@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Width = 28,
 				Height = 22,
 				Margin = new Thickness(0, 0, 4, 0),
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			searchButton.Click += SearchButton_Click;
 			DockPanel.SetDock(searchButton, Dock.Left);
@@ -105,7 +105,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Content = PreferencesLocalization.Current("Copy as raw bytes"),
 				Height = 22,
 				Padding = new Thickness(6, 0, 6, 0),
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			copyRawButton.Click += CopyRawButton_Click;
 			DockPanel.SetDock(copyRawButton, Dock.Left);

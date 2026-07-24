@@ -219,7 +219,7 @@ namespace ForkPlus.UI.UserControls
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
 					Dispatcher.UIThread.Async(delegate
 					{
-						repositoryItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
+						repositoryItem.RepositoryIcon = (isInvalid ? ForkPlus.UI.Theme.RepositoryWarningIcon : ForkPlus.UI.Theme.RepositoryIcon);
 					});
 				}, JobFlags.Hidden);
 			}
@@ -286,7 +286,7 @@ namespace ForkPlus.UI.UserControls
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
 					Dispatcher.UIThread.Async(delegate
 					{
-						newItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
+						newItem.RepositoryIcon = (isInvalid ? ForkPlus.UI.Theme.RepositoryWarningIcon : ForkPlus.UI.Theme.RepositoryIcon);
 					});
 				}, JobFlags.Hidden);
 			}
@@ -541,7 +541,7 @@ namespace ForkPlus.UI.UserControls
 			return new MenuItem
 			{
 				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
+				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
 			};
 		}
 

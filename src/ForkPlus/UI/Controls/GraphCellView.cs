@@ -285,7 +285,7 @@ namespace ForkPlus.UI.Controls
 				return;
 			}
 			Pen pen2 = (IsMouseOver ? _mouseOverPen : pen);
-			drawingContext.DrawEllipse(Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
+			drawingContext.DrawEllipse(ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using (StreamGeometryContext streamGeometryContext = streamGeometry.Open())
 			{

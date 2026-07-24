@@ -255,13 +255,13 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isCalendarUpdatingInProgress;
 
-		private static OxyColor BorderColor => Theme.BorderBrush.ToOxyColor();
+		private static OxyColor BorderColor => ForkPlus.UI.Theme.BorderBrush.ToOxyColor();
 
-		private static OxyColor BackgroundColor => Theme.BackgroundBrush.ToOxyColor();
+		private static OxyColor BackgroundColor => ForkPlus.UI.Theme.BackgroundBrush.ToOxyColor();
 
-		private static OxyColor SecondaryLabelColor => Theme.SecondaryLabelBrush.ToOxyColor();
+		private static OxyColor SecondaryLabelColor => ForkPlus.UI.Theme.SecondaryLabelBrush.ToOxyColor();
 
-		private static OxyColor LabelColor => Theme.LabelBrush.ToOxyColor();
+		private static OxyColor LabelColor => ForkPlus.UI.Theme.LabelBrush.ToOxyColor();
 
 		public StatisticsUserControl()
 		{

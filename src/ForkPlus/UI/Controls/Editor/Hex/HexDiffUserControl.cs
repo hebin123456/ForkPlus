@@ -55,7 +55,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			TextBlock bprLabel = new TextBlock
 			{
 				Text = PreferencesLocalization.Current("Bytes per row") + ":",
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 4, 0)
 			};
 			DockPanel.SetDock(bprLabel, Dock.Left);
@@ -64,7 +64,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			_bytesPerRowComboBox = new ComboBox
 			{
 				Width = 60,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			_bytesPerRowComboBox.Items.Add(8);
@@ -79,7 +79,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			{
 				Content = PreferencesLocalization.Current("Show ASCII"),
 				IsChecked = ForkPlusSettings.Default.HexViewShowAscii,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			// 阶段 4 里程碑 4.7-a：WPF CheckBox.Checked/Unchecked → Avalonia IsCheckedChanged。
@@ -91,7 +91,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			Content = PreferencesLocalization.Current("Show offset"),
 			IsChecked = ForkPlusSettings.Default.HexViewShowOffset,
-			VerticalAlignment = VerticalAlignment.Center,
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 			Margin = new Thickness(0, 0, 8, 0)
 		};
 		_showOffsetCheckBox.IsCheckedChanged += ShowOffsetCheckBox_Changed;
@@ -104,7 +104,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	{
 		Content = PreferencesLocalization.Current("Sync scroll"),
 		IsChecked = true,
-		VerticalAlignment = VerticalAlignment.Center,
+		VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 		Margin = new Thickness(0, 0, 8, 0)
 	};
 		DockPanel.SetDock(_syncScrollCheckBox, Dock.Left);
@@ -121,8 +121,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			TextBlock srcLabel = new TextBlock
 			{
 				Text = PreferencesLocalization.Current("Before Modification") + ":",
-				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
 				Margin = new Thickness(4, 2, 0, 2),
 				FontWeight = FontWeight.Medium
 			};
@@ -132,8 +132,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			TextBlock dstLabel = new TextBlock
 			{
 				Text = PreferencesLocalization.Current("After Modification") + ":",
-				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
 				Margin = new Thickness(4, 2, 0, 2),
 				FontWeight = FontWeight.Medium
 			};

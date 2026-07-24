@@ -100,7 +100,7 @@ namespace ForkPlus.UI
 			{
 				// Avalonia 自定义标题栏：扩展客户区到整个窗口
 				ExtendClientAreaToDecorationsHint = true;
-				ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
+				ExtendClientAreaChromeHints = Avalonia.Controls.ExtendClientAreaChromeHints.NoChrome;
 				ExtendClientAreaTitleBarHeightHint = -1;
 			}
 			base.Loaded += Window_Loaded;

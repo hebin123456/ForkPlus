@@ -150,12 +150,12 @@ namespace ForkPlus.UI.Controls
 			border.Padding = new Thickness(6.0, 0.0, 6.0, 2.0);
 			border.Margin = new Thickness(2.0, 0.0, 0.0, 0.0);
 			border.CornerRadius = new CornerRadius(3.0, 3.0, 3.0, 3.0);
-			border.Background = Theme.CommandTextBox.LabelBackgroundBrush;
+			border.Background = ForkPlus.UI.Theme.CommandTextBox.LabelBackgroundBrush;
 			TextBlock child = new TextBlock
 			{
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Text = text,
-				Foreground = Theme.CommandTextBox.LabelForegroundBrush
+				Foreground = ForkPlus.UI.Theme.CommandTextBox.LabelForegroundBrush
 			};
 			border.Child = child;
 			_labelsStackPanel.Children.Add(border);

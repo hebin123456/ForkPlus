@@ -121,7 +121,7 @@ namespace ForkPlus.UI.Dialogs
 			CopyReportButton.Hide();
 			ScoreProgressBar.Hide();
 			ScoreTextBlock.Text = "--";
-			ScoreTextBlock.Foreground = Theme.SecondaryLabelBrush;
+			ScoreTextBlock.Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
 		private static Brush GetElapsedBrush(double? value, double low, double high)
@@ -131,15 +131,15 @@ namespace ForkPlus.UI.Dialogs
 				double valueOrDefault = value.GetValueOrDefault();
 				if (valueOrDefault < low)
 				{
-					return Theme.ApplicationColors.GreenBrush;
+					return ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				}
 				if (valueOrDefault < high)
 				{
-					return Theme.ApplicationColors.YellowBrush;
+					return ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				}
-				return Theme.ApplicationColors.RedBrush;
+				return ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 			}
-			return Theme.SecondaryLabelBrush;
+			return ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
 		private static Brush GetScoreBrush(double? value, double low, double high)
@@ -149,15 +149,15 @@ namespace ForkPlus.UI.Dialogs
 				double valueOrDefault = value.GetValueOrDefault();
 				if (valueOrDefault < low)
 				{
-					return Theme.ApplicationColors.RedBrush;
+					return ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 				if (valueOrDefault < high)
 				{
-					return Theme.ApplicationColors.YellowBrush;
+					return ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				}
-				return Theme.ApplicationColors.GreenBrush;
+				return ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 			}
-			return Theme.LabelBrush;
+			return ForkPlus.UI.Theme.LabelBrush;
 		}
 
 		private static string Translate(string text)

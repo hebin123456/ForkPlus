@@ -9,7 +9,7 @@ using Avalonia.Layout;
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
 //   → NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）
 // - ToolTip.SetTip(control, value → ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）
-// - IImage → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
+// - IImage → IImage（ForkPlus.UI.Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
 // - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）
 // - Layoutable → Control（Avalonia 无 Layoutable，参考 ExternalToolsUserControl）
 // - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）
@@ -835,8 +835,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			// 阶段 4.5：WPF IImage → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
-		IImage consoleIcon = Theme.ConsoleIcon;
+			// 阶段 4.5：WPF IImage → Avalonia IImage（ForkPlus.UI.Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
+		IImage consoleIcon = ForkPlus.UI.Theme.ConsoleIcon;
 			if (!(ForkPlusSettings.Default.ShellTool is ShellTool.Default))
 			{
 				contextMenu.Items.Add(MainWindow.Commands.OpenRepositoryInDefaultShellTool.CreateMenuItem(new Image
@@ -856,7 +856,7 @@ namespace ForkPlus.UI.UserControls
 			}));
 			Image icon = new Image
 			{
-				Source = Theme.OpenInIcon
+				Source = ForkPlus.UI.Theme.OpenInIcon
 			};
 			contextMenu.Items.Add(MainWindow.Commands.OpenRepositoryInFileExplorer.CreateMenuItem(icon, delegate
 			{

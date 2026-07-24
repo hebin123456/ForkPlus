@@ -4,7 +4,7 @@
 // - DependencyProperty.Register + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
 // - Brush（字段/属性类型）→ IBrush；SolidColorBrush 保持
-// - Application.Current.TryFindResource → Theme.FindResource
+// - Application.Current.TryFindResource → ForkPlus.UI.Theme.FindResource
 // - Layoutable.ToolTip 属性 → ToolTip.SetTip 附加属性
 // - WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）
 // - Freeze() 移除（Avalonia 画刷默认不可变）
@@ -105,15 +105,15 @@ namespace ForkPlus.UI.Controls
 			StackPanel legendPanel = new StackPanel
 			{
 				Orientation = Orientation.Horizontal,
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			TextBlock lessLabel = new TextBlock
 			{
 				Text = TranslateLegend("Less"),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(0, 0, 4, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(lessLabel);
 			for (int k = 0; k < 5; k++)
@@ -124,7 +124,7 @@ namespace ForkPlus.UI.Controls
 					Height = LegendCellSize,
 					CornerRadius = new CornerRadius(2),
 					Margin = new Thickness(0, 0, 2, 0),
-					VerticalAlignment = VerticalAlignment.Center
+					VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 				};
 				_legendCells[k] = legendCell;
 				legendPanel.Children.Add(legendCell);
@@ -132,10 +132,10 @@ namespace ForkPlus.UI.Controls
 			TextBlock moreLabel = new TextBlock
 			{
 				Text = TranslateLegend("More"),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(4, 0, 16, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(moreLabel);
 			bottomPanel.Children.Add(legendPanel);
@@ -143,10 +143,10 @@ namespace ForkPlus.UI.Controls
 			// 摘要文本
 			_summaryText = new TextBlock
 			{
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				FontSize = 11,
 				TextWrapping = TextWrapping.NoWrap,
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			bottomPanel.Children.Add(_summaryText);
 
@@ -219,8 +219,8 @@ namespace ForkPlus.UI.Controls
 						Height = CellSize,
 						Background = palette[level],
 						CornerRadius = new CornerRadius(2),
-						HorizontalAlignment = HorizontalAlignment.Left,
-						VerticalAlignment = VerticalAlignment.Top
+						HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+						VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
 					};
 					// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 					ToolTip.SetTip(border, BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info));
@@ -384,8 +384,8 @@ namespace ForkPlus.UI.Controls
 
 		private static Color? TryFindColor(string key)
 		{
-			// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindResource。
-			object res = Theme.FindResource(key);
+			// 阶段 4.5：WPF Application.Current.TryFindResource → ForkPlus.UI.Theme.FindResource。
+			object res = ForkPlus.UI.Theme.FindResource(key);
 			if (res is Color c) return c;
 			if (res is SolidColorBrush b) return b.Color;
 			return null;

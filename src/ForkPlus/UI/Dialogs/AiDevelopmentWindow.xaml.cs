@@ -220,7 +220,7 @@ namespace ForkPlus.UI.Dialogs
 				CornerRadius = new CornerRadius(8),
 				Padding = new Thickness(16, 12, 16, 12),
 				Margin = new Thickness(0, 4, 0, 8),
-				HorizontalAlignment = HorizontalAlignment.Stretch
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
 			};
 			StackPanel panel = new StackPanel();
 			TextBlock title = new TextBlock
@@ -236,7 +236,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("Describe your development requirement below. The AI will analyze your codebase and generate file changes. You can have a continuous conversation - the AI remembers previous context in this session."),
 				FontSize = 12,
 				TextWrapping = TextWrapping.Wrap,
-				Foreground = Theme.FindBrush("SecondaryLabelBrush"),
+				Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush"),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 			panel.Children.Add(title);
@@ -714,7 +714,7 @@ namespace ForkPlus.UI.Dialogs
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
 				MaxWidth = 600,
-				HorizontalAlignment = HorizontalAlignment.Right
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
 			};
 
 			TextBlock header = new TextBlock
@@ -1808,7 +1808,7 @@ Additionally, the user has defined the following coding standards / skills that 
 				FontSize = 12,
 				Padding = new Thickness(8, 2, 8, 2),
 				Margin = new Thickness(8, 0, 0, 0),
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			DockPanel.SetDock(undoButton, Dock.Right);
 			undoButton.Click += UndoButton_Click;
@@ -1819,7 +1819,7 @@ Additionally, the user has defined the following coding standards / skills that 
 				FontSize = 13,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
-				VerticalAlignment = VerticalAlignment.Center
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
 			};
 			headerRow.Children.Add(diffHeader);
 			diffs.Children.Add(headerRow);

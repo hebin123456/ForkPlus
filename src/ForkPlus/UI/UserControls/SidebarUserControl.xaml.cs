@@ -16,7 +16,7 @@
 // - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown
 // - e.Source → e.Source（参考 ListViewScrollbarDoubleClickHelper）
 // - CommandBindings.Add(cmd.CreateShortcutCommandBinding) → KeyBindings.Add(cmd.CreateShortcutKeyBinding)（参考 IUICommandExtension/RepositoryManagerUserControl）
-// - Application.Current.TryFindResource("Key") as Style → Theme.FindStyle("Key")
+// - Application.Current.TryFindResource("Key") as Style → ForkPlus.UI.Theme.FindStyle("Key")
 // - Dispatcher.UIThread.BeginInvoke(new Action(...), DispatcherPriority.X) → Dispatcher.UIThread.Post(...)（参考 MainWindow/SearchTabItem）
 // - Keyboard.Focus(element) → element.Focus()；IsKeyboardFocused → IsFocused（参考 CommitUserControl/SearchTabItem）
 // - VisualTreeHelper.GetChildrenCount/GetChild → Visual.GetVisualChildren()（参考 NoUIAutomationListView/DependencyObjectExtensions）
@@ -534,13 +534,13 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (target is LocalBranch destinationBranch)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.LayoutTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
 					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.LayoutTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
 					SidebarTreeView.ContextMenu.Open();
 				}

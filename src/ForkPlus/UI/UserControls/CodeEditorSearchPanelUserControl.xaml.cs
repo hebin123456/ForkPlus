@@ -30,7 +30,7 @@ namespace ForkPlus.UI.UserControls
 			}
 
 			// 阶段 4 里程碑 4.7-a：WPF DrawingContext → Avalonia.Media.DrawingContext（同名不同类型）。
-			// WPF Brush → Avalonia IBrush。Application.Current.TryFindResource → Theme.FindBrush
+			// WPF Brush → Avalonia IBrush。Application.Current.TryFindResource → ForkPlus.UI.Theme.FindBrush
 			// （阶段 4.3-b 迁移后的资源查找门面，内部用 Application.Current.Resources.TryGetResource）。
 			public void Draw([Null] TextView textView, [Null] DrawingContext drawingContext)
 			{
@@ -39,7 +39,7 @@ namespace ForkPlus.UI.UserControls
 					Geometry geometry = CreateSearchResultsGeometry(textView, CurrentResults);
 					if (geometry != null)
 					{
-						IBrush brush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+						IBrush brush = ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 						drawingContext.DrawGeometry(brush, null, geometry);
 					}
 				}

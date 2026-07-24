@@ -31,8 +31,8 @@ namespace ForkPlus.UI.Controls
 			_adornedSize = adornedElement.Bounds.Size;
 			_visualBrush = new VisualBrush(adornedElement);
 			IsHitTestVisible = false;
-			HorizontalAlignment = HorizontalAlignment.Stretch;
-			VerticalAlignment = VerticalAlignment.Stretch;
+			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
 		}
 
 		public void UpdatePosition(Point position)

@@ -119,7 +119,7 @@ namespace ForkPlus.UI.Dialogs
 			_backupCurrentStateCheckBox = new CheckBox
 			{
 				Content = Translate("Backup current state with a temporary branch"),
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0.0, 2.0, 0.0, 0.0)
 			};
 			_backupCurrentStateCheckBox.IsChecked = ForkPlusSettings.Default.InteractiveRebase_CreateBackup;

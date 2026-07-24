@@ -324,7 +324,7 @@ namespace ForkPlus.UI.Dialogs
 			_dialogChromeInitialized = true;
 			RefreshWindowSize();
 			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
-			obj.Background = Theme.ForkPlusDialogBackgroundBrush;
+			obj.Background = ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			if (ShowHeader)
 			{
 				AddDialogHeader();
@@ -366,7 +366,7 @@ namespace ForkPlus.UI.Dialogs
 				TextWrapping = TextWrapping.Wrap,
 				FontSize = 13.0,
 				Margin = new Thickness(0.0, 2.0, 0.0, 0.0),
-				Foreground = Theme.FindBrush("ForkPlusDialogDescriptionForeground"),
+				Foreground = ForkPlus.UI.Theme.FindBrush("ForkPlusDialogDescriptionForeground"),
 				Text = "[Dialog Description]"
 			};
 			StackPanel stackPanel = new StackPanel();
@@ -475,8 +475,8 @@ namespace ForkPlus.UI.Dialogs
 			Text = PreferencesLocalization.Current("Git Command Preview"),
 			FontSize = 13.0,
 			FontWeight = FontWeights.Medium,
-			VerticalAlignment = VerticalAlignment.Top,
-			HorizontalAlignment = HorizontalAlignment.Right,
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
 			Margin = new Thickness(0.0, 4.0, 8.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
@@ -487,7 +487,7 @@ namespace ForkPlus.UI.Dialogs
 			FontFamily = new FontFamily("Consolas"),
 			FontSize = 12.0,
 			TextWrapping = TextWrapping.Wrap,
-			Foreground = Theme.FindBrush("SecondaryLabelBrush"),
+			Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush"),
 			Margin = new Thickness(8.0, 4.0, 0.0, 0.0),
 			Visibility = Visibility.Collapsed
 		};
@@ -508,8 +508,8 @@ namespace ForkPlus.UI.Dialogs
 		// 复制按钮：点击复制预览命令到剪贴板，ToolTip 国际化
 		_commandPreviewCopyButton = new Button
 		{
-			VerticalAlignment = VerticalAlignment.Top,
-			HorizontalAlignment = HorizontalAlignment.Left,
+			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
 			Margin = new Thickness(4.0, 2.0, 0.0, 0.0),
 			Padding = new Thickness(2.0),
 			Background = Brushes.Transparent,
@@ -606,8 +606,8 @@ namespace ForkPlus.UI.Dialogs
 				Source = new Bitmap(ForkPlusLogo),
 				Width = 64.0,
 				Height = 64.0,
-				HorizontalAlignment = HorizontalAlignment.Left,
-				VerticalAlignment = VerticalAlignment.Top
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
 			};
 			image.SetValue(Grid.RowSpanProperty, 2);
 			obj.Children.Add(image);
@@ -627,8 +627,8 @@ namespace ForkPlus.UI.Dialogs
 					Source = new Bitmap(WarningIcon),
 					Width = 24.0,
 					Height = 24.0,
-					HorizontalAlignment = HorizontalAlignment.Left,
-					VerticalAlignment = VerticalAlignment.Top,
+					HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+					VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
 					Margin = new Thickness(38.0, 38.0, 0.0, 0.0)
 				};
 				_warningIcon.SetValue(Grid.RowSpanProperty, 2);
@@ -709,7 +709,7 @@ namespace ForkPlus.UI.Dialogs
 			Grid obj = base.Content as Grid;
 			if (obj != null)
 			{
-				obj.Background = Theme.ForkPlusDialogBackgroundBrush;
+				obj.Background = ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			}
 		}
 	}

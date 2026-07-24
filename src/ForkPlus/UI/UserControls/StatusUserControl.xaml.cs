@@ -12,7 +12,7 @@
 // - base.MouseEnter/MouseLeave → base.PointerEntered/PointerLeave（参考 CommandHyperlink）
 // - PointerPressedEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移）
 // - Visibility.Collapsed/Visible → Avalonia.Layout.Visibility（需 using Avalonia.Layout）
-// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = ForkPlus.UI.Theme.FindImage(key)
 // - DoubleAnimation + BeginAnimation + Completed → Transitions + DoubleTransition + DispatcherTimer.RunOnce（参考 ModernTabControl）
 using System;
 using System.ComponentModel;
@@ -177,15 +177,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				FilterButton.Show();
 				ToolTip.SetTip(FilterButton, Translate("Clear Branch Filter"));
-				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
-				FilterButtonImage.Source = Theme.FindImage(BranchFilterOnIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)。
+				FilterButtonImage.Source = ForkPlus.UI.Theme.FindImage(BranchFilterOnIconName);
 			}
 			else if (_hovered && repositoryData.References.ActiveBranch != null)
 			{
 				FilterButton.Show();
 				ToolTip.SetTip(FilterButton, Translate("Filter by Active Branch"));
-				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
-				FilterButtonImage.Source = Theme.FindImage(BranchFilterOffIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)。
+				FilterButtonImage.Source = ForkPlus.UI.Theme.FindImage(BranchFilterOffIconName);
 			}
 			else
 			{

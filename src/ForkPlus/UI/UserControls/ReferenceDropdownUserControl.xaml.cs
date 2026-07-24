@@ -4,7 +4,7 @@
 // - using System.Windows.Markup → 移除
 // - using System.Windows.Media → using Avalonia.Media（IImage）
 // - System.Windows.Media.IImage → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
-// - Theme.BranchIcon/TagIcon/RemoteIcon 已返回 Avalonia IImage（参考 Theme.cs）
+// - ForkPlus.UI.Theme.BranchIcon/TagIcon/RemoteIcon 已返回 Avalonia IImage（参考 ForkPlus.UI.Theme.cs）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -74,11 +74,11 @@ namespace ForkPlus.UI.UserControls
 				string fullReference = reference.FullReference;
 				if (fullReference.StartsWith("refs/heads/"))
 				{
-					icon = Theme.BranchIcon;
+					icon = ForkPlus.UI.Theme.BranchIcon;
 				}
 				else if (fullReference.StartsWith("refs/tags/"))
 				{
-					icon = Theme.TagIcon;
+					icon = ForkPlus.UI.Theme.TagIcon;
 				}
 				else if (fullReference.StartsWith("refs/remotes/"))
 				{
@@ -97,7 +97,7 @@ namespace ForkPlus.UI.UserControls
 
 		private IImage GetRemoteIcon(string remoteName)
 		{
-			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? Theme.RemoteIcon;
+			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? ForkPlus.UI.Theme.RemoteIcon;
 		}
 
 	}

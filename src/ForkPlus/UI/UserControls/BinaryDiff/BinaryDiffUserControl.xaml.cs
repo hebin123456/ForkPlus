@@ -440,7 +440,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 10.0, 0.0);
 				string statusLabel = (showTitle ? "removed" : null);
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				SrcFileContentUserControl.SetContent(srcContent, statusLabel, Theme.Diff.RemovedForegroundBrush);
+				SrcFileContentUserControl.SetContent(srcContent, statusLabel, ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
 				SrcFileContentUserControl.Show();
 				DstFileContentUserControl.Collapse();
 			}
@@ -451,7 +451,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				DstFileContentUserControl.Margin = new Thickness(10.0, 0.0, 10.0, 0.0);
 				string statusLabel2 = (showTitle ? "created" : null);
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				DstFileContentUserControl.SetContent(dstContent, statusLabel2, Theme.Diff.AddedForegroundBrush, DiffImageSource);
+				DstFileContentUserControl.SetContent(dstContent, statusLabel2, ForkPlus.UI.Theme.Diff.AddedForegroundBrush, DiffImageSource);
 				DstFileContentUserControl.Show();
 				SrcFileContentUserControl.Collapse();
 			}
@@ -465,12 +465,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				Grid.SetColumnSpan(SrcFileContentUserControl, 1);
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 5.0, 0.0);
 				string statusLabel3 = (showTitle ? "old" : null);
-				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, Theme.Diff.RemovedForegroundBrush);
+				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
 				Grid.SetColumn(DstFileContentUserControl, 1);
 				Grid.SetColumnSpan(DstFileContentUserControl, 1);
 				DstFileContentUserControl.Margin = new Thickness(5.0, 0.0, 10.0, 0.0);
 				string statusLabel4 = (showTitle ? "new" : null);
-				DstFileContentUserControl.SetContent(_dstBinaryContent, statusLabel4, Theme.Diff.AddedForegroundBrush, DiffImageSource);
+				DstFileContentUserControl.SetContent(_dstBinaryContent, statusLabel4, ForkPlus.UI.Theme.Diff.AddedForegroundBrush, DiffImageSource);
 				SrcFileContentUserControl.Show();
 				DstFileContentUserControl.Show();
 			}

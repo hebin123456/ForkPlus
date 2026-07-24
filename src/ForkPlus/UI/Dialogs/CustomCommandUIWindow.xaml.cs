@@ -207,7 +207,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = title + ":",
 				TextAlignment = TextAlignment.Right,
-				VerticalAlignment = VerticalAlignment.Center,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(0.0, 4.0, 0.0, 4.0),
 				FontSize = 13.0
 			};
@@ -222,8 +222,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = genericTextBox.Text,
 				Placeholder = genericTextBox.Placeholder,
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(8.0, 4.0, 0.0, 4.0),
 				Padding = new Thickness(4.0, 2.0, 4.0, 2.0)
 			};
@@ -236,8 +236,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			PathTextBoxUserControl obj = new PathTextBoxUserControl(this, pathTextBox.PathDialogType)
 			{
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(8.0, 4.0, 0.0, 4.0)
 			};
 			string text = "";
@@ -265,8 +265,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			ReferenceDropdownUserControl obj = new ReferenceDropdownUserControl(_repositoryUserControl.RepositoryData, dropdown)
 			{
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(8.0, 4.0, 0.0, 4.0)
 			};
 			Grid.SetColumn(obj, 1);
@@ -278,8 +278,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			CustomCommandCheckBox obj = new CustomCommandCheckBox(checkBox)
 			{
-				HorizontalAlignment = HorizontalAlignment.Left,
-				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
 				Margin = new Thickness(8.0, 4.0, 0.0, 4.0),
 				FontSize = 13.0
 			};

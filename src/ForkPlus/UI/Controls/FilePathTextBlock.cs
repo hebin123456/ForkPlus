@@ -93,8 +93,8 @@ namespace ForkPlus.UI.Controls
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_secondaryLabelBrush = Theme.SecondaryLabelBrush;
+			_labelBrush = ForkPlus.UI.Theme.LabelBrush;
+			_secondaryLabelBrush = ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
 		private bool TextIsTrimmed()

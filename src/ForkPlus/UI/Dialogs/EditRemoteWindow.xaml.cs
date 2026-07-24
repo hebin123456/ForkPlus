@@ -419,7 +419,7 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = PreferencesLocalization.Current("Add Remote");
 			base.DialogDescription = PreferencesLocalization.Current("Add new remote repository reference");
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Add New Remote");
-			RemoteNameTextBox.Icon = Theme.RemoteIcon;
+			RemoteNameTextBox.Icon = ForkPlus.UI.Theme.RemoteIcon;
 			RemoteNameTextBox.Text = Consts.Git.DefaultRemoteName;
 			string text = ServiceLocator.Clipboard.GetText();
 			if (text != null)

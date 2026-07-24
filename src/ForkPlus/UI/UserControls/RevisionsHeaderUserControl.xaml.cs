@@ -36,13 +36,13 @@ namespace ForkPlus.UI.UserControls
 				Revision dstRevision = submoduleDiffContent.DstRevision;
 				if (dstRevision != null)
 				{
-					UpdateControls(dstRevision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.AddedBrush);
-					UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.RemovedBrush);
+					UpdateControls(dstRevision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush);
+					UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush);
 				}
 				else
 				{
-					UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.AddedBrush, GetCustomLabelString(submoduleDiffContent.DstSha));
-					UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.RemovedBrush);
+					UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush, GetCustomLabelString(submoduleDiffContent.DstSha));
+					UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush);
 				}
 			}
 			else
@@ -50,13 +50,13 @@ namespace ForkPlus.UI.UserControls
 				Revision dstRevision2 = submoduleDiffContent.DstRevision;
 				if (dstRevision2 != null)
 				{
-					UpdateControls(dstRevision2, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.AddedBrush);
-					UpdateControls(null, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.RemovedBrush, GetCustomLabelString(submoduleDiffContent.SrcSha));
+					UpdateControls(dstRevision2, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush);
+					UpdateControls(null, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush, GetCustomLabelString(submoduleDiffContent.SrcSha));
 				}
 				else
 				{
-					UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.AddedBrush, GetCustomLabelString(submoduleDiffContent.DstSha));
-					UpdateControls(null, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, Theme.Diff.RemovedBrush, GetCustomLabelString(submoduleDiffContent.SrcSha));
+					UpdateControls(null, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush, GetCustomLabelString(submoduleDiffContent.DstSha));
+					UpdateControls(null, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, submoduleDiffContent.Bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush, GetCustomLabelString(submoduleDiffContent.SrcSha));
 				}
 			}
 		}
@@ -75,16 +75,16 @@ namespace ForkPlus.UI.UserControls
 			if (compareToWorkingDirectory)
 			{
 				OtherRevisionDetailsContainer.Show();
-				UpdateControls(revision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, bugtrackers, Theme.Diff.RemovedBrush);
-				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, Theme.Diff.AddedBrush, "Local Changes");
+				UpdateControls(revision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush);
+				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush, "Local Changes");
 				SwapRevisionsButton.Disable();
 			}
 			else if (srcRevision != null)
 			{
 				OtherRevisionDetailsContainer.Show();
 				SwapRevisionsButton.Enable();
-				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, Theme.Diff.AddedBrush);
-				UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, bugtrackers, Theme.Diff.RemovedBrush);
+				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, ForkPlus.UI.Theme.Diff.AddedBrush);
+				UpdateControls(srcRevision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, bugtrackers, ForkPlus.UI.Theme.Diff.RemovedBrush);
 			}
 			else
 			{

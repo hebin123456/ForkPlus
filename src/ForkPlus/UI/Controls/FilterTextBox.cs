@@ -142,8 +142,8 @@ namespace ForkPlus.UI.Controls
 			}
 			if (UseSecondaryTextBoxBackground)
 			{
-				base.Background = Theme.FilterPanelSecondaryBackground;
-				base.BorderBrush = Theme.FilterPanelSecondaryBorder;
+				base.Background = ForkPlus.UI.Theme.FilterPanelSecondaryBackground;
+				base.BorderBrush = ForkPlus.UI.Theme.FilterPanelSecondaryBorder;
 			}
 			if (ShowDropdown)
 			{

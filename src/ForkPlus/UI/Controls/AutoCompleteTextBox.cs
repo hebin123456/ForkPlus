@@ -130,9 +130,9 @@ namespace ForkPlus.UI.Controls
 			if (_listBox == null)
 			{
 				_listBox = new ListBox();
-				// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindStyle/FindResource 门面。
-				_listBox.Styles.Add(Theme.FindStyle("AutoCompleteListBoxStyle"));
-				_listBox.ItemTemplate = Theme.FindResource("AutocompleteListBoxItemTemplate") as IDataTemplate;
+				// 阶段 4.5：WPF Application.Current.TryFindResource → ForkPlus.UI.Theme.FindStyle/FindResource 门面。
+				_listBox.Styles.Add(ForkPlus.UI.Theme.FindStyle("AutoCompleteListBoxStyle"));
+				_listBox.ItemTemplate = ForkPlus.UI.Theme.FindResource("AutocompleteListBoxItemTemplate") as IDataTemplate;
 				_listBox.MinWidth = 216.0;
 				// 阶段 4.5：WPF MouseUp → Avalonia PointerReleased。
 				_listBox.PointerReleased += delegate

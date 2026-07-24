@@ -8,7 +8,7 @@ using Theme = ForkPlus.UI.Theme;
 // - using System.Windows.Markup → 移除
 // - using System.Windows.Media → using Avalonia.Media（Brush）
 // - 新增 using Avalonia.Layout（Visibility）、using Avalonia.VisualTree（GetVisualRoot）
-// - Application.Current?.TryFindResource("TextButtonStyle") as Style → Theme.FindStyle("TextButtonStyle")（参考 AutoCompleteTextBox）
+// - Application.Current?.TryFindResource("TextButtonStyle") as Style → ForkPlus.UI.Theme.FindStyle("TextButtonStyle")（参考 AutoCompleteTextBox）
 // - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
 // - MessageBoxButton/MessageBoxImage 由 ForkPlus.Services 提供
 // - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 AiReviewPreferencesUserControl）
@@ -46,8 +46,8 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class RevisionSummaryUserControl : UserControl
 	{
-		// 阶段 4.5：WPF Application.Current.TryFindResource("TextButtonStyle") as Style → Theme.FindStyle（参考 AutoCompleteTextBox）。
-		private static Style ParentButtonStyle => Theme.FindStyle("TextButtonStyle");
+		// 阶段 4.5：WPF Application.Current.TryFindResource("TextButtonStyle") as Style → ForkPlus.UI.Theme.FindStyle（参考 AutoCompleteTextBox）。
+		private static Style ParentButtonStyle => ForkPlus.UI.Theme.FindStyle("TextButtonStyle");
 
 		[Null]
 		private RevisionSearchQuery _searchQuery;
@@ -258,7 +258,7 @@ namespace ForkPlus.UI.UserControls
 			button.Padding = new Thickness(0.0);
 			button.IsTabStop = false;
 			button.BorderThickness = new Thickness(0.0);
-			button.Style = Theme.TransparentButtonStyle;
+			button.Style = ForkPlus.UI.Theme.TransparentButtonStyle;
 			ToolTip.SetTip(button, Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName()));
 			button.Content = content;
 			button.Click += delegate

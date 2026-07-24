@@ -8,7 +8,7 @@
 // - WeakEventManager<TSender, TArgs>.AddHandler(obj, "Event", handler) → obj.Event += handler（直接订阅）
 // - base.PreviewKeyDown += → base.KeyDown +=（Avalonia 无 Preview 变体，参考 FilterTextBox）
 // - Keyboard.IsKeyDown(Key.LeftCtrl) → KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）
-// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)（参考 PaletteCommandItem）
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = ForkPlus.UI.Theme.FindImage(key)（参考 PaletteCommandItem）
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -237,15 +237,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				StageAllButton.IsEnabled = Enabled;
 				ToolTip.SetTip(StageAllButton, Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage));
-				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
-				StageAllButtonIcon.Source = Theme.FindImage(StageAllIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)。
+				StageAllButtonIcon.Source = ForkPlus.UI.Theme.FindImage(StageAllIconName);
 			}
 			else if (StagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
 				ToolTip.SetTip(StageAllButton, Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage));
-				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
-				StageAllButtonIcon.Source = Theme.FindImage(UnstageAllIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = ForkPlus.UI.Theme.FindImage(key)。
+				StageAllButtonIcon.Source = ForkPlus.UI.Theme.FindImage(UnstageAllIconName);
 			}
 			else
 			{

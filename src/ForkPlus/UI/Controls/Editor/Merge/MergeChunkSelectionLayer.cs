@@ -57,7 +57,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			return new Border
 			{
 				Child = stackPanel,
-				Background = Theme.Diff.FloatingButtonContainerBackground,
+				Background = ForkPlus.UI.Theme.Diff.FloatingButtonContainerBackground,
 				CornerRadius = new CornerRadius(3.0),
 				Margin = new Thickness(0.0, 0.0, 20.0, 0.0)
 			};

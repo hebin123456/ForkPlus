@@ -70,7 +70,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
-						StatusEllipse.Fill = Theme.ApplicationColors.RedBrush;
+						StatusEllipse.Fill = ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 						StatusTextBlock.Text = userResponse.Error.FriendlyMessage;
 						ToolTip.SetTip(StatusTextBlock, userResponse.Error.FriendlyMessage);
 					});
@@ -81,7 +81,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
-						StatusEllipse.Fill = Theme.ApplicationColors.GreenBrush;
+						StatusEllipse.Fill = ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 						StatusTextBlock.Text = Translate("Online");
 						ToolTip.SetTip(StatusTextBlock, null);
 					});

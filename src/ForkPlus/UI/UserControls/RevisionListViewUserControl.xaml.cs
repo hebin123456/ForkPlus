@@ -1911,9 +1911,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			ImageToggleButton pinButton = new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.PinOnIcon,
-				AlternativeImage = Theme.PinOffIcon,
+				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Image = ForkPlus.UI.Theme.PinOnIcon,
+				AlternativeImage = ForkPlus.UI.Theme.PinOffIcon,
 				State = references.IsPinned(reference),
 				ToolTip = PreferencesLocalization.Current("Pin '" + reference.Name + "'")
 			};
@@ -1931,17 +1931,17 @@ namespace ForkPlus.UI.UserControls
 			};
 			ImageToggleButton filterButton = new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.BranchFilterOnIcon,
-				AlternativeImage = Theme.BranchFilterOffIcon,
+				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Image = ForkPlus.UI.Theme.BranchFilterOnIcon,
+				AlternativeImage = ForkPlus.UI.Theme.BranchFilterOffIcon,
 				State = references.IsFiltered(reference),
 				ToolTip = PreferencesLocalization.Current("Show '" + reference.Name + "' commits only")
 			};
 			ImageToggleButton hideButton = new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.HideBranchOnIcon,
-				AlternativeImage = Theme.HideBranchOffIcon,
+				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Image = ForkPlus.UI.Theme.HideBranchOnIcon,
+				AlternativeImage = ForkPlus.UI.Theme.HideBranchOffIcon,
 				State = references.IsHidden(reference),
 				ToolTip = PreferencesLocalization.Current("Hide '" + reference.Name + "' in the commit list")
 			};
@@ -1975,7 +1975,7 @@ namespace ForkPlus.UI.UserControls
 			return new MenuItem
 			{
 				Header = stackPanel,
-				Style = Theme.CustomContentMenuItemStyle
+				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
 			};
 		}
 

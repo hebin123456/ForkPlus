@@ -34,8 +34,8 @@ namespace ForkPlus.UI.Dialogs
 		public TooltipView()
 		{
 			base.BorderThickness = new Thickness(1.0);
-			base.BorderBrush = Theme.BorderBrush;
-			base.Background = Theme.BackgroundBrush;
+			base.BorderBrush = ForkPlus.UI.Theme.BorderBrush;
+			base.Background = ForkPlus.UI.Theme.BackgroundBrush;
 			base.CornerRadius = new CornerRadius(3.0);
 			base.Padding = _padding;
 			base.Height = 62.0;
@@ -52,18 +52,18 @@ namespace ForkPlus.UI.Dialogs
 			stackPanel.Children.Add(_iconImage);
 			_filenameTextBlock = new TextBlock();
 			_filenameTextBlock.FontSize = 13.0;
-			_filenameTextBlock.Foreground = Theme.LabelBrush;
+			_filenameTextBlock.Foreground = ForkPlus.UI.Theme.LabelBrush;
 			stackPanel.Children.Add(_filenameTextBlock);
 			_stackPanel.Children.Add(stackPanel);
 			_pathTextBlock = new TextBlock();
 			_pathTextBlock.FontSize = 12.0;
-			_pathTextBlock.Foreground = Theme.SecondaryLabelBrush;
+			_pathTextBlock.Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush;
 			_pathTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
 			_stackPanel.Children.Add(_pathTextBlock);
 			_descriptionTextBlock = new TextBlock();
 			_descriptionTextBlock.Margin = new Thickness(0.0, 3.0, 0.0, 0.0);
 			_descriptionTextBlock.FontSize = 13.0;
-			_descriptionTextBlock.Foreground = Theme.LabelBrush;
+			_descriptionTextBlock.Foreground = ForkPlus.UI.Theme.LabelBrush;
 			_stackPanel.Children.Add(_descriptionTextBlock);
 			Child = _stackPanel;
 			// 阶段 4.5：WPF BindingOperations.SetBinding(_stackPanel, Layoutable.WidthProperty, binding)

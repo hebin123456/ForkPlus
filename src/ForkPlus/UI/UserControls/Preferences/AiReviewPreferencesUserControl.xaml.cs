@@ -69,7 +69,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)),
 				Background = new SolidColorBrush(Color.FromRgb(0xF0, 0xF0, 0xF0)),
 				TextWrapping = TextWrapping.NoWrap,
-				VerticalAlignment = VerticalAlignment.Top
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
 			};
 			Grid.SetColumn(_skillLineNumbers, 0);
 			innerGrid.Children.Add(_skillLineNumbers);
@@ -80,8 +80,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 				HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
 				BorderThickness = new Thickness(0),
 				Padding = new Thickness(0),
-				VerticalAlignment = VerticalAlignment.Stretch,
-				HorizontalAlignment = HorizontalAlignment.Stretch
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
 			};
 
 			_skillInputTextBox = new TextBox
@@ -93,8 +93,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 				Padding = new Thickness(4, 0, 0, 0),
 				FontFamily = new FontFamily("Consolas"),
 				FontSize = 12,
-				VerticalAlignment = VerticalAlignment.Top,
-				HorizontalAlignment = HorizontalAlignment.Stretch,
+				VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
 				MaxWidth = 2000
 			};
 			_skillInputTextBox.TextChanged += CustomSkillInputBox_TextChanged;
@@ -301,8 +301,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 				{
 					Text = $"{skill.Name} — {preview}",
 					FontSize = 12,
-					VerticalAlignment = VerticalAlignment.Center,
-					TextTrimming = TextTrimming.CharacterEllipsis
+					VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+					TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis
 				};
 				panel.Children.Add(textBlock);
 
