@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
 using Avalonia.Input;
-using System.Windows.Media;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using ForkPlus.Git;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Jobs;
@@ -20,8 +20,18 @@ using ICSharpCode.AvalonEdit.Document;
 
 namespace ForkPlus.UI.Commands
 {
+	// 阶段 4.5：WPF Mouse.GetPosition + VisualTreeHelper.HitTest
+	// → Avalonia 通过 InputElement.GetPosition + IVisual.GetVisualAt。
+	// WPF ContextMenu → Avalonia.Controls.ContextMenu。
+	// WPF MenuItem/Image → Avalonia.Controls.MenuItem/Image。
 	public class OpenFileInExternalEditorCommand
 	{
+		// 阶段 4.5：缓存最近一次指针位置（替代 WPF 静态 Mouse.GetPosition）。
+		// 调用方在 PointerPressed/PointerMoved 中更新此字段，菜单弹出时读取。
+		// TODO(4.5-n): 调用方需在 ContextMenuOpening 前更新 LastPointerPosition。
+		[Null]
+		public Point? LastPointerPosition { get; set; }
+
 		public void AddMenuItems(RepositoryUserControl repositoryUserControl, DiffCodeEditor diffCodeEditor, ContextMenu menu, string path)
 		{
 			VisualPatch visualPatch = diffCodeEditor.VisualPatch;
@@ -146,8 +156,16 @@ namespace ForkPlus.UI.Commands
 		[Null]
 		private int? GetCharIndexUnderMousePointer(CodeEditor editor)
 		{
-			Point position = Mouse.GetPosition(editor);
-			if (VisualTreeHelper.HitTest(editor, position) == null)
+			// 阶段 4.5：WPF Mouse.GetPosition(editor) → 通过 LastPointerPosition 缓存。
+			if (!LastPointerPosition.HasValue)
+			{
+				return null;
+			}
+			Point position = LastPointerPosition.Value;
+			// 阶段 4.5：WPF VisualTreeHelper.HitTest(editor, position)
+			// → Avalonia IVisual.GetVisualAt(point)。
+			IVisual visual = editor.GetVisualAt(position);
+			if (visual == null)
 			{
 				return null;
 			}

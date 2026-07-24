@@ -1,11 +1,13 @@
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Windows;
 using Avalonia.Input;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Commands
 {
+	// 阶段 4.5：WPF Application.Current.Resources.MergedDictionaries Add/Remove
+	// → App.InitializeTheme (RequestedThemeVariant)。
+	// WPF ResourceDictionary + Source = newTheme.ResourceUri() 在 Avalonia 中无对应操作；
+	// 主题切换由 App.InitializeTheme 通过 RequestedThemeVariant 完成，并触发 Theme.Refresh()
+	// + App.ApplyCustomColors()。
 	public class SwitchApplicationThemeCommand : IUICommand, IForkPlusCommand
 	{
 		public string Title => "Switch Theme";
@@ -25,29 +27,17 @@ namespace ForkPlus.UI.Commands
 		}
 
 		public void Execute(ThemeType newTheme, bool followSystemTheme = false)
-	{
-		ForkPlusSettings.Default.Theme = newTheme;
-		ForkPlusSettings.Default.FollowSystemTheme = followSystemTheme;
-		// 切换主题时关闭自定义颜色覆盖，使用新主题的原色（避免自定义覆盖与主题色混乱）。
-		// CustomColors 字典保留，用户重新勾选"自定义颜色"时可恢复。
-		ForkPlusSettings.Default.UseCustomColors = false;
-		App.RefreshWindowBorderBrush();
-			// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
-			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries
-				.Where((ResourceDictionary rd) => rd.Source != null)
-				.FirstOrDefault((ResourceDictionary rd) => Regex.Match(rd.Source.OriginalString, @"\/ForkPlus;component\/Theme\/Generic\.\w+\.xaml").Success);
-			ResourceDictionary item = new ResourceDictionary
-			{
-				Source = newTheme.ResourceUri()
-			};
-			Application.Current.Resources.MergedDictionaries.Add(item);
-			if (resourceDictionary != null)
-			{
-				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
-			}
-			Theme.Refresh();
-			// 切换皮肤后重新应用用户自定义颜色覆盖（旧字典随主题字典移除后需重建）
-			App.ApplyCustomColors();
+		{
+			ForkPlusSettings.Default.Theme = newTheme;
+			ForkPlusSettings.Default.FollowSystemTheme = followSystemTheme;
+			// 切换主题时关闭自定义颜色覆盖，使用新主题的原色（避免自定义覆盖与主题色混乱）。
+			// CustomColors 字典保留，用户重新勾选"自定义颜色"时可恢复。
+			ForkPlusSettings.Default.UseCustomColors = false;
+			App.RefreshWindowBorderBrush();
+			// 阶段 4.5：WPF MergedDictionaries Add/Remove Generic.{Skin}.xaml
+			// → App.InitializeTheme 通过 RequestedThemeVariant 切换主题，
+			// 内部已调用 Theme.Refresh() + App.ApplyCustomColors()。
+			App.InitializeTheme();
 			NotificationCenter.Current.RaiseApplicationThemeChanged(this, newTheme);
 		}
 	}
