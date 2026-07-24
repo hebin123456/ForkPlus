@@ -1,22 +1,36 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs/RoutedEventHandler）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - TextAlignment → Avalonia.Media.TextAlignment（需 using Avalonia.Media）
+// - HorizontalAlignment → Avalonia.Layout.HorizontalAlignment（需 using Avalonia.Layout）
+// - DependencyProperty.RegisterAttached → StyledProperty<T> + AvaloniaProperty.Register<TOwner, TType>
+//   （这些属性仅在 FallbackUserControl 自身用 GetValue/SetValue 访问，非真正附加属性，故用 StyledProperty）
+// - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
+// - OnPropertyChanged(DependencyPropertyChangedEventArgs) → OnPropertyChanged(AvaloniaPropertyChangedEventArgs)
+// - e.Property.Name == "X" → e.Property == XProperty（直接比较属性字段，参考 FileContentControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls
 {
 	public partial class FallbackUserControl : UserControl
 	{
-		public static readonly DependencyProperty FallbackTitleProperty = DependencyProperty.RegisterAttached("FallbackTitle", typeof(string), typeof(FallbackUserControl));
+		// 阶段 4.5：WPF DependencyProperty.RegisterAttached → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
+		public static readonly StyledProperty<string> FallbackTitleProperty = AvaloniaProperty.Register<FallbackUserControl, string>(nameof(FallbackTitle));
 
-		public static readonly DependencyProperty HideFallbackImageProperty = DependencyProperty.RegisterAttached("HideFallbackImage", typeof(bool), typeof(FallbackUserControl));
+		public static readonly StyledProperty<bool> HideFallbackImageProperty = AvaloniaProperty.Register<FallbackUserControl, bool>(nameof(HideFallbackImage));
 
-		public static readonly DependencyProperty FallbackMessageProperty = DependencyProperty.RegisterAttached("FallbackMessage", typeof(string), typeof(FallbackUserControl));
+		public static readonly StyledProperty<string> FallbackMessageProperty = AvaloniaProperty.Register<FallbackUserControl, string>(nameof(FallbackMessage));
 
-		public static readonly DependencyProperty IsMonospaceProperty = DependencyProperty.RegisterAttached("IsMonospace", typeof(bool), typeof(FallbackUserControl));
+		public static readonly StyledProperty<bool> IsMonospaceProperty = AvaloniaProperty.Register<FallbackUserControl, bool>(nameof(IsMonospace));
 
-		public static readonly DependencyProperty Button1TitleProperty = DependencyProperty.RegisterAttached("Button1Title", typeof(string), typeof(FallbackUserControl));
+		public static readonly StyledProperty<string> Button1TitleProperty = AvaloniaProperty.Register<FallbackUserControl, string>(nameof(Button1Title));
 
 		public string FallbackTitle
 		{
@@ -102,10 +116,12 @@ namespace ForkPlus.UI.UserControls
 			this.Button1Click = null;
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
+		// e.Property.Name == "X" → e.Property == XProperty（参考 FileContentControl）。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
-			if (e.Property.Name == "FallbackTitle")
+			if (e.Property == FallbackTitleProperty)
 			{
 				if (string.IsNullOrWhiteSpace(FallbackTitle))
 				{
@@ -115,7 +131,7 @@ namespace ForkPlus.UI.UserControls
 				FallbackTitleTextBlock.Text = FallbackTitle;
 				FallbackTitleTextBlock.Show();
 			}
-			else if (e.Property.Name == "FallbackMessage")
+			else if (e.Property == FallbackMessageProperty)
 			{
 				if (string.IsNullOrWhiteSpace(FallbackMessage))
 				{
@@ -125,14 +141,14 @@ namespace ForkPlus.UI.UserControls
 				FallbackMessageTextBlock.Text = FallbackMessage;
 				FallbackMessageTextBlock.Show();
 			}
-			else if (e.Property.Name == "IsMonospace")
+			else if (e.Property == IsMonospaceProperty)
 			{
 				FallbackMessageTextBlock.FontFamily = FontConstants.MonospaceFontFamily;
 				FallbackMessageTextBlock.FontSize = 14.0;
 				FallbackMessageTextBlock.TextAlignment = TextAlignment.Left;
 				FallbackMessageTextBlock.HorizontalAlignment = HorizontalAlignment.Left;
 			}
-			else if (e.Property.Name == "Button1Title")
+			else if (e.Property == Button1TitleProperty)
 			{
 				if (string.IsNullOrWhiteSpace(Button1Title))
 				{
@@ -142,7 +158,7 @@ namespace ForkPlus.UI.UserControls
 				Button1.Content = Button1Title;
 				Button1.Show();
 			}
-			else if (e.Property.Name == "HideFallbackImage")
+			else if (e.Property == HideFallbackImageProperty)
 			{
 				if (HideFallbackImage)
 				{

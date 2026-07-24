@@ -1,7 +1,10 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Inline/Run）
+// - Inline[]/Run 用法保持原样（Avalonia InlineCollection 兼容；参考 EditCustomActionWindow）
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Documents;
+using Avalonia.Controls.Documents;
 using ForkPlus.UI.CustomCommands;
 
 namespace ForkPlus.UI.UserControls.Preferences

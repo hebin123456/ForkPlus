@@ -1,15 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using ForkPlus.UI → 引入 GetParent<T>/SetItems 扩展方法
+// - ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject) → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()
+//   （Avalonia 无 ContainerFromElement；用 DependencyObjectExtensions.GetParent<T> 向上遍历可视树查找容器）
+// - e.OriginalSource → e.Source（Avalonia RoutedEventArgs 仅有 Source，无 OriginalSource）
+// - ContextMenuEventArgs/SelectionChangedEventArgs/TextChangedEventArgs → Avalonia.Controls 同名类型
+// - Visibility.Collapsed/Visible 保持原样（Avalonia.Controls.Visibility 兼容）
+// - MenuItem.Header 保持原样（Avalonia.Controls.MenuItem 兼容）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Parsing;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.Dialogs;
 
@@ -125,7 +137,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void SrcDirsListBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem { DataContext: SrcDirViewModel dataContext })
+			// 阶段 4.5：WPF ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
+			// → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()（向上遍历可视树查找 ListBoxItem 容器）。
+			if ((e.Source as AvaloniaObject)?.GetParent<ListBoxItem>() is ListBoxItem { DataContext: SrcDirViewModel dataContext })
 			{
 				SrcDirsListBox.ContextMenu.Items.Clear();
 				SrcDirsListBox.ContextMenu.SetItems(CreateSrcDirContextMenu(dataContext));

@@ -1,9 +1,14 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - SelectionChangedEventArgs/TextChangedEventArgs → Avalonia.Controls 同名类型
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 

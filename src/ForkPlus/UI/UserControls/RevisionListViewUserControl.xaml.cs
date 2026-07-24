@@ -1,13 +1,35 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Application/AvaloniaObject/IVisual）+ using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListViewItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextMenuEventArgs）
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Run）
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/KeyboardNavigation/KeyboardNavigationMode/DragEventArgs/PointerPressedEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → 移除（本文件未直接引用 Media 类型；Visual/IVisual 由 using Avalonia 提供）
+// - 新增 using Avalonia.Layout（Orientation）、using Avalonia.VisualTree（GetVisualDescendants/GetVisualParent）
+// - 新增 using ForkPlus.Services（ServiceLocator/MessageBoxButton/MessageBoxImage，替代 System.Windows.MessageBox）
+// - KeyboardNavigation.TabNavigationProperty.OverrideMetadata + FrameworkPropertyMetadata → OverrideDefaultValue<T>（参考 StageFileUserControl）
+// - WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 StageFileUserControl）
+// - base.PreviewKeyDown/RevisionListView.PreviewKeyDown → base.KeyDown/RevisionListView.KeyDown（Avalonia 无 Preview 变体）
+// - VisualTreeHelper.GetChildrenCount/GetChild → GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault()（参考 NoUIAutomationListView）
+// - VisualTreeHelper.GetParent → (x as IVisual)?.GetVisualParent()（参考 DependencyObjectExtensions）
+// - DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - ScrollViewer.VerticalOffset/ViewportHeight → Offset.Y/Viewport.Height（参考 NoUIAutomationListView）
+// - MouseDoubleClick + MouseButtonEventArgs → PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap；XAML 需同步迁移）
+// - e.Data.GetData → e.Data.Get（参考 FileListTreeView）
+// - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
+// - MoveFocus(TraversalRequest) → 无 Avalonia 等价，注释（参考 MultiselectionTreeView）
+// - FrameworkElement → Control（参考 DiffEntryRowUserControl）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.VisualTree;
 using ForkPlus.Biturbo;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
@@ -15,6 +37,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Git.Commands.LeanBranching;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
@@ -72,7 +95,8 @@ namespace ForkPlus.UI.UserControls
 
 		static RevisionListViewUserControl()
 		{
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(RevisionListViewUserControl), new FrameworkPropertyMetadata(KeyboardNavigationMode.Local));
+			// 阶段 4.5：WPF OverrideMetadata + FrameworkPropertyMetadata → Avalonia OverrideDefaultValue<T>。
+			KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<RevisionListViewUserControl>(KeyboardNavigationMode.Local);
 		}
 
 		public RevisionListViewUserControl()
@@ -92,7 +116,10 @@ namespace ForkPlus.UI.UserControls
 			RevisionListView.ItemsSource = RevisionsDataSource;
 			DragAndDropListView revisionListView = RevisionListView;
 			revisionListView.ItemDrag = (EventHandler<EventArgs>)Delegate.Combine(revisionListView.ItemDrag, new EventHandler<EventArgs>(ValidateDrag));
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF MouseDoubleClick → Avalonia PointerPressed + ClickCount==2（XAML 需同步迁移：移除 MouseDoubleClick 绑定）。
+			RevisionListView.PointerPressed += RevisionListView_PointerPressed;
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体，参考 StageFileUserControl）。
+			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if ((e.Key == Key.F3 || (e.Key == Key.F && KeyboardHelper.IsCtrlDown)) && !KeyboardHelper.IsShiftDown)
 				{
@@ -122,22 +149,25 @@ namespace ForkPlus.UI.UserControls
 					e.Handled = true;
 				}
 			};
-			RevisionListView.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown。
+			RevisionListView.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.A && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsShiftDown)
 				{
 					e.Handled = true;
 				}
 			};
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF CommandBindings.Add(RoutedCommand binding) → Avalonia KeyBindings.Add(KeyBinding)。
+			// CreateShortcutCommandBinding 已改为返回 KeyBinding（参考 IUICommandExtension）。
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionSha.Execute(SelectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutKeyBinding(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(SelectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutKeyBinding(delegate
 			{
 				GitModule gitModule2 = RepositoryUserControl.GitModule;
 				if (gitModule2 != null)
@@ -156,7 +186,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutKeyBinding(delegate
 			{
 				DecoratedRevision[] array = RevisionListView.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
 				if (array.All((DecoratedRevision x) => x.IsStash()))
@@ -174,7 +204,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateShortcutKeyBinding(delegate
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -190,11 +220,12 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RevisionListOrientation>>.AddHandler(NotificationCenter.Current, "RevisionListOrientatioChanged", delegate
+			// 阶段 4.5：WPF WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → 直接订阅 obj.Event（参考 StageFileUserControl）。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
+			NotificationCenter.Current.RevisionListOrientatioChanged += delegate
 			{
 				RefreshRevisionListViewTemplate();
-			});
+			};
 			RefreshRevisionListViewTemplate();
 		}
 
@@ -207,12 +238,14 @@ namespace ForkPlus.UI.UserControls
 
 		public Sha? GetBottomShaInViewPort()
 		{
-			if (VisualTreeHelper.GetChildrenCount(RevisionListView) == 0)
+			// 阶段 4.5：WPF VisualTreeHelper.GetChildrenCount/GetChild 逐层查找 → Avalonia GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault()（参考 NoUIAutomationListView）。
+			ScrollViewer scrollViewer = RevisionListView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+			if (scrollViewer == null)
 			{
 				return null;
 			}
-			ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(RevisionListView, 0), 0);
-			int num = (int)(scrollViewer.VerticalOffset + scrollViewer.ViewportHeight) - 1;
+			// 阶段 4.5：WPF ScrollViewer.VerticalOffset/ViewportHeight → Avalonia Offset.Y/Viewport.Height（参考 NoUIAutomationListView）。
+			int num = (int)(scrollViewer.Offset.Y + scrollViewer.Viewport.Height) - 1;
 			if (num < 0 || num >= RevisionsDataSource.Count)
 			{
 				return null;
@@ -367,8 +400,14 @@ namespace ForkPlus.UI.UserControls
 			this.SelectionChanged?.Invoke(this, new EventArgs<DecoratedRevision[]>(array));
 		}
 
-		private void RevisionListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseDoubleClick + MouseButtonEventArgs → Avalonia PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap）。
+		private void RevisionListView_PointerPressed(object sender, PointerPressedEventArgs e)
 		{
+			// 阶段 4.5：WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs；ClickCount==2 区分双击。
+			if (e.ClickCount != 2)
+			{
+				return;
+			}
 			if (e.IsClickedOnScrollbar())
 			{
 				return;
@@ -382,7 +421,8 @@ namespace ForkPlus.UI.UserControls
 			else if (RevisionListView.SelectedItem is DecoratedRevision decoratedRevision)
 			{
 				bool flag = decoratedRevision.GetParents().Length > 1;
-				if (!(e.OriginalSource is GraphCellView && flag))
+				// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+				if (!(e.Source is GraphCellView && flag))
 				{
 					this.RevisionDoubleClick?.Invoke(this, new EventArgs<DecoratedRevision>(decoratedRevision));
 				}
@@ -416,7 +456,8 @@ namespace ForkPlus.UI.UserControls
 							if (commitGraphCache != null)
 							{
 								DecoratedRevision[] array = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
-								if (e.OriginalSource is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
+								// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+								if (e.Source is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
 								{
 									listBox.ContextMenu.SetItems(CreateCollapseContextMenu(dataContext));
 									return;
@@ -451,9 +492,10 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private Branch GetClickedBranch(MouseButtonEventArgs args)
+		// 阶段 4.5：WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs；DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+		private Branch GetClickedBranch(PointerPressedEventArgs args)
 		{
-			DependencyObject dependencyObject = args.OriginalSource as DependencyObject;
+			AvaloniaObject dependencyObject = args.Source as AvaloniaObject;
 			while (dependencyObject != null && !(dependencyObject is ListViewItem))
 			{
 				if (dependencyObject is Run run)
@@ -464,7 +506,8 @@ namespace ForkPlus.UI.UserControls
 					}
 					return null;
 				}
-				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+				// 阶段 4.5：WPF VisualTreeHelper.GetParent → Avalonia (x as Visual)?.GetVisualParent()（参考 DependencyObjectExtensions）。
+				dependencyObject = (dependencyObject as Visual)?.GetVisualParent();
 				if (dependencyObject is ContentPresenter { DataContext: BranchViewModel dataContext })
 				{
 					return dataContext.Reference as Branch;
@@ -556,7 +599,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void RevisionListViewItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.Data.GetData(typeof(DecoratedRevision[])) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
+			// 阶段 4.5：WPF e.Data.GetData(Type) → Avalonia e.Data.Get(string)（参考 FileListTreeView）。
+			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.Data.Get(typeof(DecoratedRevision[]).FullName) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
 			{
 				e.Handled = true;
 				return;
@@ -1416,7 +1460,8 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
+				// 阶段 4.5：WPF MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）。
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
 					PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
 					MessageBoxButton.OK,
@@ -1692,7 +1737,8 @@ namespace ForkPlus.UI.UserControls
 		private void RevisionSearchPanelUserControl_Closed(object sender, EventArgs e)
 		{
 			RefreshContextSearch(null);
-			RevisionSearchPanelUserControl.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+			// 阶段 4.5：WPF MoveFocus(TraversalRequest) → 无 Avalonia 等价，注释（参考 MultiselectionTreeView）。
+			// RevisionSearchPanelUserControl.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 		}
 
 		private void RefreshContextSearch(string searchString)
@@ -1930,9 +1976,10 @@ namespace ForkPlus.UI.UserControls
 			};
 		}
 
+		// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 DiffEntryRowUserControl）。
 		private static void HideParentContextMenu(object ctrl)
 		{
-			for (FrameworkElement frameworkElement = ctrl as FrameworkElement; frameworkElement != null; frameworkElement = frameworkElement.Parent as FrameworkElement)
+			for (Control frameworkElement = ctrl as Control; frameworkElement != null; frameworkElement = frameworkElement.Parent as Control)
 			{
 				if (frameworkElement is ContextMenu contextMenu)
 				{

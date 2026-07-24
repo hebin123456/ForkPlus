@@ -1,10 +1,18 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（Grid/TextChangedEventArgs）
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（TranslateTransform 类型）
+// - DependencyProperty.Register + PropertyMetadata → StyledProperty<T> + AvaloniaProperty.Register<TOwner, TType>
+// - SearchTextBox.PreviewKeyDown → SearchTextBox.KeyDown（Avalonia 无 Preview 变体，参考 FilterTextBox）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Helpers;
 
@@ -14,7 +22,8 @@ namespace ForkPlus.UI.UserControls
 	{
 		private static readonly double SearchPanelHeight = 30.0;
 
-		public static readonly DependencyProperty SearchPanelPlaceholderProperty = DependencyProperty.Register("SearchPanelPlaceholder", typeof(Grid), typeof(RevisionSearchPanelUserControl), new PropertyMetadata((object)null));
+		// 阶段 4.5：WPF DependencyProperty.Register + PropertyMetadata → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
+		public static readonly StyledProperty<Grid> SearchPanelPlaceholderProperty = AvaloniaProperty.Register<RevisionSearchPanelUserControl, Grid>(nameof(SearchPanelPlaceholder));
 
 		private bool _isBusyIndicatorVisible;
 
@@ -65,7 +74,8 @@ namespace ForkPlus.UI.UserControls
 				TranslateTransform.Y = 0.0 - SearchPanelHeight;
 				SearchPanelPlaceholder.Height = 0.0;
 			};
-			SearchTextBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体，参考 FilterTextBox）。
+			SearchTextBox.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return || e.Key == Key.F3)
 				{

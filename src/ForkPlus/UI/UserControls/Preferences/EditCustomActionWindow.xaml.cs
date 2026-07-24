@@ -1,11 +1,21 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Inline/Run）
+// - using System.Windows.Markup → 移除
+// - SelectionChangedEventArgs → Avalonia.Controls.SelectionChangedEventArgs
+// - TextChangedEventArgs → Avalonia.Controls.TextChangedEventArgs
+// - FontWeights.Medium → FontWeight.Medium（Avalonia.Media 单数形式）
+// - Inlines.Add(string)/AddRange(IEnumerable<Inline>) 保持原样（Avalonia InlineCollection 兼容）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
@@ -209,7 +219,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			DescriptionTextBlock.Inlines.Add(new Run(Translate("Available variables:"))
 			{
 				FontSize = 13.0,
-				FontWeight = FontWeights.Medium
+				// 阶段 4.5：WPF FontWeights.Medium → Avalonia FontWeight.Medium（单数）。
+				FontWeight = FontWeight.Medium
 			});
 			DescriptionTextBlock.Inlines.Add(Environment.NewLine);
 			DescriptionTextBlock.Inlines.Add(Environment.NewLine);

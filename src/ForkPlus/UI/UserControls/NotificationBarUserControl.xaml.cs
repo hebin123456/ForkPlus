@@ -1,12 +1,21 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/Button）
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Inline/Run）
+// - using System.Windows.Markup → 移除
+// - Inline/Run/CommandHyperlink/TextBlock.Inlines API 兼容，仅命名空间变化。
+// - CommandHyperlink 已迁移为 Avalonia Hyperlink 子类（仍为 Inline），List<Inline> 兼容。
+// - Show()/Collapse()/Hide() 扩展方法已迁移为 Control.IsVisible（参考 UIElementExtensions）。
+// - Button.Content/ProgressBar.Value/Maximum API 兼容。
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;

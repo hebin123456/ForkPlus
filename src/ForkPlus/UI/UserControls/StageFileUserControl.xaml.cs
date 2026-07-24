@@ -1,11 +1,22 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/KeyboardNavigation/KeyboardNavigationMode）
+// - using System.Windows.Markup → 移除
+// - KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(T), new FrameworkPropertyMetadata(...))
+//   → KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<T>(...)（Avalonia 设置类型默认值）
+// - WeakEventManager<TSender, TArgs>.AddHandler(obj, "Event", handler) → obj.Event += handler（直接订阅）
+// - base.PreviewKeyDown += → base.KeyDown +=（Avalonia 无 Preview 变体，参考 FilterTextBox）
+// - Keyboard.IsKeyDown(Key.LeftCtrl) → KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)（参考 PaletteCommandItem）
 using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
@@ -109,7 +120,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			StageAllIconName = "StageAllIcon";
 			UnstageAllIconName = "UnstageAllIcon";
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(StageFileUserControl), new FrameworkPropertyMetadata(KeyboardNavigationMode.Local));
+			// 阶段 4.5：WPF OverrideMetadata + FrameworkPropertyMetadata → Avalonia OverrideDefaultValue<T>。
+			KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<StageFileUserControl>(KeyboardNavigationMode.Local);
 		}
 
 		public StageFileUserControl()
@@ -133,15 +145,18 @@ namespace ForkPlus.UI.UserControls
 			FileListUserControl stagedFilesFileListUserControl3 = StagedFilesFileListUserControl;
 			stagedFilesFileListUserControl3.ItemsDrop = (EventHandler<FileListTreeView.DropEventArgs>)Delegate.Combine(stagedFilesFileListUserControl3.ItemsDrop, new EventHandler<FileListTreeView.DropEventArgs>(StageFilesFileListUserControl_ItemsDrop));
 			RefreshFileListMode();
-			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current, "FileListModeChanged", delegate
+			// 阶段 4.5：WPF WeakEventManager<TSender, TArgs>.AddHandler(obj, "Event", handler) → 直接订阅 obj.Event。
+			NotificationCenter.Current.FileListModeChanged += delegate
 			{
 				RefreshFileListMode();
-			});
+			};
 			StageButton.Click += StageButton_Click;
 			UnstageButton.Click += UnstageButton_Click;
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体，参考 FilterTextBox）。
+			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
+				// 阶段 4.5：WPF Keyboard.IsKeyDown → KeyboardHelper.IsCtrlDown/IsShiftDown。
+				if (e.Key == Key.F && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsShiftDown)
 				{
 					FilterTextBox.ShowWithAnimation();
 					e.Handled = true;
@@ -151,17 +166,19 @@ namespace ForkPlus.UI.UserControls
 					FilterTextBox.HideWithAnimation();
 				}
 			};
-			UnstagedFilesFileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown。
+			UnstagedFilesFileListUserControl.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
+				if (e.Key == Key.Space && !KeyboardHelper.IsCtrlDown)
 				{
 					e.Handled = true;
 					ShowDiffPopup?.Invoke(this, EventArgs.Empty);
 				}
 			};
-			StagedFilesFileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown。
+			StagedFilesFileListUserControl.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
+				if (e.Key == Key.Space && !KeyboardHelper.IsCtrlDown)
 				{
 					e.Handled = true;
 					ShowDiffPopup?.Invoke(this, EventArgs.Empty);
@@ -219,13 +236,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				StageAllButton.IsEnabled = Enabled;
 				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage);
-				StageAllButtonIcon.SetResourceReference(Image.SourceProperty, StageAllIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
+				StageAllButtonIcon.Source = Theme.FindImage(StageAllIconName);
 			}
 			else if (StagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
 				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage);
-				StageAllButtonIcon.SetResourceReference(Image.SourceProperty, UnstageAllIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
+				StageAllButtonIcon.Source = Theme.FindImage(UnstageAllIconName);
 			}
 			else
 			{

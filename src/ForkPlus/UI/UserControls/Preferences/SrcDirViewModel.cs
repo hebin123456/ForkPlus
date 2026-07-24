@@ -1,5 +1,8 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage（Avalonia.Media.IImage；Theme.FolderIcon/WarningIcon 返回 IImage）
 using System;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -7,7 +10,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 	{
 		public string Path { get; }
 
-		public ImageSource SrcFolderIcon { get; }
+		public IImage SrcFolderIcon { get; }
 
 		public string SrcFolderIconTooltip { get; }
 

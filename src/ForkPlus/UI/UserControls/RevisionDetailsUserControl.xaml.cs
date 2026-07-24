@@ -1,10 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness/Layoutable/AvaloniaObject）+ using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/Grid/SizeChangedEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（TranslateTransform）
+// - using System.Windows.Media.Animation → using Avalonia.Animation（Transitions/DoubleTransition）+ using Avalonia.Animation.Easings（QuadraticEaseOut）
+// - 新增 using Avalonia.Layout（Visibility）、using Avalonia.Threading（Dispatcher.UIThread）
+// - DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty/WidthProperty, anim) → Transitions + DoubleTransition + 修改 Height/Width 触发过渡（参考 ModernTabControl）
+// - DoubleAnimation + BeginAnimation(TranslateTransform.XProperty, anim) → TranslateTransform.Transitions + 修改 X 触发过渡（参考 ModernTabControl）
+// - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 StatusUserControl）
+// - BeginAnimation(prop, null)（停止动画）→ Transitions = null 后直接设置值（参考 ModernTabControl）
+// - base.Dispatcher.Async → Dispatcher.UIThread.Post（参考 StatusUserControl）
+// - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width（参考 ModernTabControl）
+// - Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 StatusUserControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -216,7 +233,8 @@ namespace ForkPlus.UI.UserControls
 					GitCommandResult<FullRevisionDetails> fullRevisionDetailsResponse = GetFullRevisionDetails(gitModule, submodules, target, monitor);
 					if (!monitor.IsCanceled)
 					{
-						base.Dispatcher.Async(delegate
+						// 阶段 4.5：WPF base.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post（参考 StatusUserControl）。
+					Dispatcher.UIThread.Post(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -452,14 +470,20 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(HeightProperty) → Avalonia Transitions + DoubleTransition + 修改 Height（参考 ModernTabControl）。
 		private void CollapseRevisionDetailsHeader()
 		{
-			DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.ActualHeight, 0.0, TimeSpan.FromSeconds(0.18));
-			doubleAnimation.EasingFunction = new QuadraticEase
+			RevisionDetailsHeaderUserControl.Transitions = new Transitions
 			{
-				EasingMode = EasingMode.EaseOut
+				new DoubleTransition
+				{
+					Property = Layoutable.HeightProperty,
+					Duration = TimeSpan.FromSeconds(0.18),
+					Easing = new QuadraticEaseOut()
+				}
 			};
-			RevisionDetailsHeaderUserControl.BeginAnimation(FrameworkElement.HeightProperty, doubleAnimation);
+			// 阶段 4.5：设置目标 Height 触发过渡（从当前值动画到 0.0）。
+			RevisionDetailsHeaderUserControl.Height = 0.0;
 			RevisionDetailsHeaderUserControl.SwapRevisionsButton.Hide();
 		}
 
@@ -468,12 +492,18 @@ namespace ForkPlus.UI.UserControls
 			double num = (isDoubleHeight ? RevisionDetailsHeaderDoubleHeight : RevisionDetailsHeaderNormalHeight);
 			if (animate)
 			{
-				DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.ActualHeight, num, TimeSpan.FromSeconds(0.18));
-				doubleAnimation.EasingFunction = new QuadraticEase
+				// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(HeightProperty) → Avalonia Transitions + DoubleTransition + 修改 Height（参考 ModernTabControl）。
+				RevisionDetailsHeaderUserControl.Transitions = new Transitions
 				{
-					EasingMode = EasingMode.EaseOut
+					new DoubleTransition
+					{
+						Property = Layoutable.HeightProperty,
+						Duration = TimeSpan.FromSeconds(0.18),
+						Easing = new QuadraticEaseOut()
+					}
 				};
-				RevisionDetailsHeaderUserControl.BeginAnimation(FrameworkElement.HeightProperty, doubleAnimation);
+				// 阶段 4.5：设置目标 Height 触发过渡（从当前值动画到 num）。
+				RevisionDetailsHeaderUserControl.Height = num;
 			}
 			else
 			{
@@ -489,31 +519,44 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(TranslateTransform.XProperty/WidthProperty) → Avalonia Transitions + DoubleTransition（参考 ModernTabControl）。
 		private void AnimateTabButtons(RevisionDetailsTab nextTab)
 		{
 			TranslateTransform translateTransform = new TranslateTransform();
 			IndicatorBorder.RenderTransform = translateTransform;
 			double tabXCoordinate = GetTabXCoordinate(_activeTab);
 			double tabXCoordinate2 = GetTabXCoordinate(nextTab);
-			DoubleAnimation animation = new DoubleAnimation(tabXCoordinate, tabXCoordinate2, TimeSpan.FromSeconds(0.2))
+			// 阶段 4.5：为 TranslateTransform.X 配置过渡动画。
+			translateTransform.Transitions = new Transitions
 			{
-				EasingFunction = new QuadraticEase
+				new DoubleTransition
 				{
-					EasingMode = EasingMode.EaseOut
+					Property = TranslateTransform.XProperty,
+					Duration = TimeSpan.FromSeconds(0.2),
+					Easing = new QuadraticEaseOut()
 				}
 			};
-			translateTransform.BeginAnimation(TranslateTransform.XProperty, animation);
-			double tabWidth = GetTabWidth(nextTab);
-			DoubleAnimation animation2 = new DoubleAnimation(_indicatorWidth, tabWidth, TimeSpan.FromSeconds(0.2))
+			// 阶段 4.5：设置起始位置后，在下一帧设置目标位置以触发过渡（参考 StatusUserControl）。
+			translateTransform.X = tabXCoordinate;
+			_ = Dispatcher.UIThread.Post(() =>
 			{
-				EasingFunction = new QuadraticEase
+				translateTransform.X = tabXCoordinate2;
+			});
+			double tabWidth = GetTabWidth(nextTab);
+			// 阶段 4.5：为 Border.Width 配置过渡动画。
+			IndicatorBorder.Transitions = new Transitions
+			{
+				new DoubleTransition
 				{
-					EasingMode = EasingMode.EaseOut
+					Property = Layoutable.WidthProperty,
+					Duration = TimeSpan.FromSeconds(0.2),
+					Easing = new QuadraticEaseOut()
 				}
 			};
 			if (_isTabIndicatorInitialized)
 			{
-				IndicatorBorder.BeginAnimation(FrameworkElement.WidthProperty, animation2);
+				// 阶段 4.5：设置目标 Width 触发过渡。
+				IndicatorBorder.Width = tabWidth;
 			}
 			_indicatorWidth = tabWidth;
 		}
@@ -524,10 +567,11 @@ namespace ForkPlus.UI.UserControls
 			{
 			case RevisionDetailsTab.Commit:
 				return 0.0;
+			// 阶段 4.5：WPF ActualWidth → Avalonia Bounds.Width（参考 ModernTabControl）。
 			case RevisionDetailsTab.Changes:
-				return CommitRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width;
 			case RevisionDetailsTab.FileTree:
-				return CommitRadioButton.ActualWidth + ChangesRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width + ChangesRadioButton.Bounds.Width;
 			default:
 				return 0.0;
 			}
@@ -538,11 +582,11 @@ namespace ForkPlus.UI.UserControls
 			switch (tab)
 			{
 			case RevisionDetailsTab.Commit:
-				return CommitRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width;
 			case RevisionDetailsTab.Changes:
-				return ChangesRadioButton.ActualWidth;
+				return ChangesRadioButton.Bounds.Width;
 			case RevisionDetailsTab.FileTree:
-				return FileTreeRadioButton.ActualWidth;
+				return FileTreeRadioButton.Bounds.Width;
 			default:
 				return 0.0;
 			}
@@ -568,7 +612,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void SyncTabIndicator()
 		{
-			IndicatorBorder.BeginAnimation(FrameworkElement.WidthProperty, null);
+			// 阶段 4.5：WPF BeginAnimation(WidthProperty, null)（停止动画）→ 清除 Transitions 后直接设置值（参考 ModernTabControl）。
+			IndicatorBorder.Transitions = null;
 			TranslateTransform translateTransform = IndicatorBorder.RenderTransform as TranslateTransform;
 			if (translateTransform == null)
 			{

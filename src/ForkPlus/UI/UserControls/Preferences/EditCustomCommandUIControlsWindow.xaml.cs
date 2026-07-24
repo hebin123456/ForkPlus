@@ -1,11 +1,22 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Inline/Run）
+// - using System.Windows.Markup → 移除
+// - e.Data.GetData(typeof(object[])) → e.Data.Get(typeof(object[]))（Avalonia IDataObject 方法名）
+// - FontWeights.Medium → FontWeight.Medium（Avalonia.Media 单数形式）
+// - DragDrop.DoDragDrop → _ = DragDrop.DoDragDrop（异步返回 Task<DragDropEffects>，丢弃；参考 DragAndDropListViewItem）
+// - Owner/WindowStartupLocation/ShowDialog().GetValueOrDefault() 保持原样（Avalonia API 兼容）
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
@@ -174,7 +185,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 				return;
 			}
 			CustomCommandUIControlViewModel targetItem = dataContext as CustomCommandUIControlViewModel;
-			if (targetItem == null || !(e.Data.GetData(typeof(object[])) is object[] array) || array.Length != 1)
+			// 阶段 4.5：WPF e.Data.GetData → Avalonia e.Data.Get。
+			if (targetItem == null || !(e.Data.Get(typeof(object[])) is object[] array) || array.Length != 1)
 			{
 				return;
 			}
@@ -296,7 +308,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 					DescriptionTextBlock.Inlines.Add(new Run("Generic Text Box\n\n")
 					{
 						FontSize = 13.0,
-						FontWeight = FontWeights.Medium
+						// 阶段 4.5：WPF FontWeights.Medium → Avalonia FontWeight.Medium（单数）。
+						FontWeight = FontWeight.Medium
 					});
 					DescriptionTextBlock.Inlines.Add(new Run($"Can be used to prompt a generic string.\n\nPossible use cases:\n- a name for a new branch\n- a commit message\n- a custom argument for a git command\n\nYou can set the default value and the placeholder text.\n\nThe entered string value can be used in the 'OK' action as `${num}{{text}}` variable."));
 					break;
@@ -305,7 +318,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					DescriptionTextBlock.Inlines.Add(new Run("File Path Text Box\n\n")
 					{
 						FontSize = 13.0,
-						FontWeight = FontWeights.Medium
+						FontWeight = FontWeight.Medium
 					});
 					DescriptionTextBlock.Inlines.Add(new Run($"Prompt file path using the system open file dialog.\n\nYou can set the default folder and the file name.\n\nThe selected path can be used in the 'OK' action as `${num}{{path}}` variable."));
 					break;
@@ -316,7 +329,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				DescriptionTextBlock.Inlines.Add(new Run("Branch Drop Down\n\n")
 				{
 					FontSize = 13.0,
-					FontWeight = FontWeights.Medium
+					FontWeight = FontWeight.Medium
 				});
 				DescriptionTextBlock.Inlines.Add(new Run($"Allows to select a branch or a tag (i.e a reference).\n\nThe list can be filtered by a full reference prefix.\nFor example:\n- `refs/heads` - local branches\n- `refs/remotes` - remote branches\n- `refs/tags` - tags\n\nYou can use more complex filters like:\n- `refs/heads/feature` - local feature branches\n- `refs/heads/john` - John's local branches\n- `refs/remotes/origin` - remote branches of the `origin` remote\n\nMultiple filters can be separated by space:\n- `refs/heads/develop refs/heads/main` - develop and main branches\n\nThe selected branch or tag name can be used in the 'OK' action as `${num}{{ref}}` variable."));
 				break;
@@ -325,7 +338,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				DescriptionTextBlock.Inlines.Add(new Run("Check Box\n\n")
 				{
 					FontSize = 13.0,
-					FontWeight = FontWeights.Medium
+					FontWeight = FontWeight.Medium
 				});
 				DescriptionTextBlock.Inlines.Add(new Run($"Can be used to pass optional argument relying on the check box state.\n\n- You can set value for both unchecked and checked states.\n- A value can be empty.\n\nPossible use cases:\n- an optional argument for a command (e.g. `--force` when enabled, and none otherwise)\n\nCheck box value can be used in the 'OK' action as `${num}{{value}}` variable."));
 				break;

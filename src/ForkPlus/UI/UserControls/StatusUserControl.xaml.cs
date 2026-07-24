@@ -1,13 +1,31 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（Popup/ToggleButton）
+// - using System.Windows.Input → using Avalonia.Input（PointerReleasedEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（TranslateTransform）
+// - using System.Windows.Media.Animation → using Avalonia.Animation + using Avalonia.Animation.Easings（DoubleTransition/QuadraticEaseOut）
+// - using System.Windows.Threading → using Avalonia.Threading（DispatcherTimer）
+// - DispatcherTimer（命名空间差异，API 兼容）
+// - PopupAnimation.Fade/Slide → 移除（Avalonia 无等价，参考 GraphCellView）
+// - base.MouseEnter/MouseLeave → base.PointerEntered/PointerLeave（参考 CommandHyperlink）
+// - MouseButtonEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移）
+// - Visibility.Collapsed/Visible → Avalonia.Layout.Visibility（需 using Avalonia.Layout）
+// - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)
+// - DoubleAnimation + BeginAnimation + Completed → Transitions + DoubleTransition + DispatcherTimer.RunOnce（参考 ModernTabControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
@@ -43,23 +61,25 @@ namespace ForkPlus.UI.UserControls
 			_refreshTimer.Start();
 			ActivityManagerPopup.Opened += delegate
 			{
-				ActivityManagerPopup.PopupAnimation = PopupAnimation.Fade;
+				// 阶段 4.5：WPF PopupAnimation.Fade → Avalonia 无等价（参考 GraphCellView），移除。
 				ShowActivityManagerToggleButton.Disable();
 				ActivityManagerUserControl.Start();
 				_isJobManagerPopopOpen = true;
 			};
 			ActivityManagerPopup.Closed += delegate
 			{
-				ActivityManagerPopup.PopupAnimation = PopupAnimation.Slide;
+				// 阶段 4.5：WPF PopupAnimation.Slide → Avalonia 无等价（参考 GraphCellView），移除。
 				ShowActivityManagerToggleButton.Enable();
 				ActivityManagerUserControl.Stop();
 				_isJobManagerPopopOpen = false;
 			};
-			base.MouseEnter += delegate
+			// 阶段 4.5：WPF MouseEnter → Avalonia PointerEntered（参考 CommandHyperlink）。
+			base.PointerEntered += delegate
 			{
 				_hovered = true;
 			};
-			base.MouseLeave += delegate
+			// 阶段 4.5：WPF MouseLeave → Avalonia PointerLeave（参考 ChunkSelectionLayer）。
+			base.PointerLeave += delegate
 			{
 				_hovered = false;
 			};
@@ -156,13 +176,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				FilterButton.Show();
 				FilterButton.ToolTip = Translate("Clear Branch Filter");
-				FilterButtonImage.SetResourceReference(Image.SourceProperty, BranchFilterOnIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
+				FilterButtonImage.Source = Theme.FindImage(BranchFilterOnIconName);
 			}
 			else if (_hovered && repositoryData.References.ActiveBranch != null)
 			{
 				FilterButton.Show();
 				FilterButton.ToolTip = Translate("Filter by Active Branch");
-				FilterButtonImage.SetResourceReference(Image.SourceProperty, BranchFilterOffIconName);
+				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
+				FilterButtonImage.Source = Theme.FindImage(BranchFilterOffIconName);
 			}
 			else
 			{
@@ -233,12 +255,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void DescriptionTextBlock_MouseUp(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		private void DescriptionTextBlock_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			ShowJobManager();
 		}
 
-		private void TitleTextBlock_MouseUp(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		private void TitleTextBlock_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			ShowJobManager();
 		}
@@ -256,21 +280,36 @@ namespace ForkPlus.UI.UserControls
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 
+		// 阶段 4.5：WPF DoubleAnimation + BeginAnimation + EasingFunction + Completed
+		// → Avalonia Transitions + DoubleTransition + Easing + DispatcherTimer.RunOnce（参考 ModernTabControl）。
+		// WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut。
+		// WPF transform.BeginAnimation(TranslateTransform.YProperty, animation) → 设置 Transitions 后修改 Y 触发过渡。
+		// WPF DoubleAnimation.Completed → DispatcherTimer.RunOnce 延迟执行完成回调（时长 = duration）。
 		public bool RunAnimation(TranslateTransform transform, double from, double to, TimeSpan duration, string newValue, int titleRow, int secondaryTitleRow)
 		{
-			DoubleAnimation doubleAnimation = new DoubleAnimation(from, to, duration);
-			doubleAnimation.EasingFunction = new QuadraticEase
+			transform.Transitions = new Transitions
 			{
-				EasingMode = EasingMode.EaseOut
+				new DoubleTransition
+				{
+					Property = TranslateTransform.YProperty,
+					Duration = duration,
+					Easing = new QuadraticEaseOut()
+				}
 			};
-			doubleAnimation.Completed += delegate
+			// 阶段 4.5：先设置到起始位置，再在下一帧设置目标位置以触发过渡（参考 ModernTabControl）。
+			transform.Y = from;
+			_ = Dispatcher.UIThread.Post(() =>
+			{
+				transform.Y = to;
+			});
+			// 阶段 4.5：WPF DoubleAnimation.Completed → DispatcherTimer.RunOnce 延迟执行完成回调。
+			DispatcherTimer.RunOnce(delegate
 			{
 				SecondaryTitleTextBlock.Text = newValue;
 				TitleTextBlock.Text = newValue;
 				Grid.SetRow(TitleGrid, titleRow);
 				Grid.SetRow(SecondaryTitleGrid, secondaryTitleRow);
-			};
-			transform.BeginAnimation(TranslateTransform.YProperty, doubleAnimation);
+			}, duration);
 			return true;
 		}
 

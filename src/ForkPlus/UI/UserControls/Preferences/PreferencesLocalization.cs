@@ -1,14 +1,23 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.LogicalTree（ILogical/LogicalChildren）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Data → 移除（BindingOperations.GetBindingExpressionBase 无 Avalonia 公开等价；HasBinding 暂返回 false，见 TODO）
+// - using System.Windows.Media → 移除（未使用）
+// - DependencyObject → AvaloniaObject（参数/HashSet/调用方均传 Control/Window，派生自 AvaloniaObject）
+// - DependencyProperty.RegisterAttached → AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TOwner,TType>
+// - LogicalTreeHelper.GetChildren(element) → ILogical.LogicalChildren（直接逻辑子级，等价 WPF 语义；构造期即可用）
+// - FrameworkElement → Control（Avalonia 无 FrameworkElement）；element is FrameworkElement { ContextMenu: ... } → element is Control { ContextMenu: ... }
+// - FrameworkElement.ToolTip 属性 → ToolTip.GetTip/SetTip 附加属性；FrameworkElement.ToolTipProperty → ToolTip.TipProperty
+// - BindingOperations.GetBindingExpressionBase → 无公开等价；HasBinding 暂返回 false（TODO(4.5)，Apply 主要面向对话框静态文案）
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
 using System.Text.RegularExpressions;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json.Linq;
@@ -28,17 +37,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private const string LanguagesDirectoryName = "Languages";
 
-		private static readonly DependencyProperty OriginalTextProperty = DependencyProperty.RegisterAttached("OriginalText", typeof(string), typeof(PreferencesLocalization));
+		// 阶段 4.5：WPF DependencyProperty.RegisterAttached → Avalonia AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TOwner,TType>。
+		// 这些属性通过 GetValue/SetValue 在任意 AvaloniaObject 上存取（TextBlock/ContentControl/Window 等），故用 AttachedProperty。
+		private static readonly AttachedProperty<string> OriginalTextProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalText");
 
-		private static readonly DependencyProperty OriginalHeaderProperty = DependencyProperty.RegisterAttached("OriginalHeader", typeof(string), typeof(PreferencesLocalization));
+		private static readonly AttachedProperty<string> OriginalHeaderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalHeader");
 
-		private static readonly DependencyProperty OriginalContentProperty = DependencyProperty.RegisterAttached("OriginalContent", typeof(string), typeof(PreferencesLocalization));
+		private static readonly AttachedProperty<string> OriginalContentProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalContent");
 
-		private static readonly DependencyProperty OriginalPlaceholderProperty = DependencyProperty.RegisterAttached("OriginalPlaceholder", typeof(string), typeof(PreferencesLocalization));
+		private static readonly AttachedProperty<string> OriginalPlaceholderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalPlaceholder");
 
-		private static readonly DependencyProperty OriginalToolTipProperty = DependencyProperty.RegisterAttached("OriginalToolTip", typeof(string), typeof(PreferencesLocalization));
+		private static readonly AttachedProperty<string> OriginalToolTipProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalToolTip");
 
-		private static readonly DependencyProperty OriginalTitleProperty = DependencyProperty.RegisterAttached("OriginalTitle", typeof(string), typeof(PreferencesLocalization));
+		private static readonly AttachedProperty<string> OriginalTitleProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalTitle");
 
 		private static readonly Dictionary<string, string> BuiltInLanguageNames = new Dictionary<string, string>
 		{
@@ -92,13 +103,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 		}
 
-		public static void Apply(DependencyObject root, string language)
+		public static void Apply(AvaloniaObject root, string language)
 		{
 			Dictionary<string, string> dictionary = GetDictionary(language);
-			ApplyRecursive(root, dictionary, new HashSet<DependencyObject>());
+			ApplyRecursive(root, dictionary, new HashSet<AvaloniaObject>());
 		}
 
-		public static void ApplyCurrent(DependencyObject root)
+		public static void ApplyCurrent(AvaloniaObject root)
 		{
 			Apply(root, ForkPlusSettings.Default.UiLanguage);
 		}
@@ -128,7 +139,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			return FormatCurrent(text, args).Replace("_", "__");
 		}
 
-		public static void ApplyElement(DependencyObject element, string language)
+		public static void ApplyElement(AvaloniaObject element, string language)
 		{
 			ApplyElementCore(element, GetDictionary(language));
 		}
@@ -269,7 +280,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			return result;
 		}
 
-		private static void ApplyRecursive(DependencyObject element, Dictionary<string, string> dictionary, HashSet<DependencyObject> visited)
+		private static void ApplyRecursive(AvaloniaObject element, Dictionary<string, string> dictionary, HashSet<AvaloniaObject> visited)
 		{
 			if (element == null || visited.Contains(element))
 			{
@@ -277,29 +288,33 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			visited.Add(element);
 			ApplyElementCore(element, dictionary);
-			IEnumerable logicalChildren;
+			// 阶段 4.5：WPF LogicalTreeHelper.GetChildren(element) → Avalonia ILogical.LogicalChildren（直接逻辑子级）。
+			// 逻辑树在 XAML 加载后即建立（构造期可用），与 WPF 语义一致；视觉树需模板应用后才完整。
+			IEnumerable<ILogical> logicalChildren;
 			try
 			{
-				logicalChildren = LogicalTreeHelper.GetChildren(element);
+				logicalChildren = (element as ILogical)?.LogicalChildren ?? Enumerable.Empty<ILogical>();
 			}
 			catch
 			{
 				return;
 			}
-			foreach (object child in logicalChildren)
+			foreach (ILogical child in logicalChildren)
 			{
-				if (child is DependencyObject dependencyObject)
+				// 阶段 4.5：WPF child is DependencyObject → child is AvaloniaObject（过滤字符串/裸对象等非控件逻辑子级）。
+				if (child is AvaloniaObject childAo)
 				{
-					ApplyRecursive(dependencyObject, dictionary, visited);
+					ApplyRecursive(childAo, dictionary, visited);
 				}
 			}
-			if (element is FrameworkElement { ContextMenu: ContextMenu contextMenu })
+			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（无 FrameworkElement）；ContextMenu 不在逻辑子级中，需单独遍历。
+			if (element is Control control && control.ContextMenu is ContextMenu contextMenu)
 			{
 				ApplyRecursive(contextMenu, dictionary, visited);
 			}
 		}
 
-		private static void ApplyElementCore(DependencyObject element, Dictionary<string, string> dictionary)
+		private static void ApplyElementCore(AvaloniaObject element, Dictionary<string, string> dictionary)
 		{
 			if (element is TextBlock textBlock)
 			{
@@ -337,10 +352,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 					placeholderTextBox.Placeholder = Translate(original, dictionary);
 				}
 			}
-			if (element is FrameworkElement frameworkElement && frameworkElement.ToolTip is string toolTip && !HasBinding(element, FrameworkElement.ToolTipProperty))
+			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.GetTip/SetTip 附加属性；
+			// FrameworkElement.ToolTipProperty → ToolTip.TipProperty。FrameworkElement → Control。
+			if (element is Control toolTipControl && ToolTip.GetTip(toolTipControl) is string toolTip && !HasBinding(element, ToolTip.TipProperty))
 			{
 				string original = GetOriginal(element, OriginalToolTipProperty, toolTip);
-				frameworkElement.ToolTip = Translate(original, dictionary);
+				ToolTip.SetTip(toolTipControl, Translate(original, dictionary));
 			}
 			if (element is ToolbarButton toolbarButton)
 			{
@@ -354,12 +371,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 		}
 
-		private static bool HasBinding(DependencyObject element, DependencyProperty property)
+		// 阶段 4.5：WPF BindingOperations.GetBindingExpressionBase 检查属性是否绑定。
+		// Avalonia 11.3 无公开 API 查询单个 AvaloniaProperty 的绑定表达式（绑定通过 Bind 返回 IDisposable，不挂载可查询状态）。
+		// 暂返回 false（视为无绑定）。Apply 主要面向对话框/窗口静态文案，数据绑定文案少见；
+		// 阶段 6 如需精确检测可走 ValueStore/反射或改用绑定守卫标记。TODO(4.5)。
+		private static bool HasBinding(AvaloniaObject element, AvaloniaProperty property)
 		{
-			return BindingOperations.GetBindingExpressionBase(element, property) != null;
+			return false;
 		}
 
-		private static string GetOriginal(DependencyObject element, DependencyProperty property, string current)
+		private static string GetOriginal(AvaloniaObject element, AvaloniaProperty property, string current)
 		{
 			string original = element.GetValue(property) as string;
 			if (original == null)

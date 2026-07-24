@@ -1,10 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls + using Avalonia.Controls.Primitives（ScrollBarVisibility）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（FontFamily/SolidColorBrush/Color/TextWrapping/TextTrimming）
+// - 新增 using Avalonia.Input（Key/KeyEventArgs/KeyModifiers）、Avalonia.Layout（Orientation/VerticalAlignment/HorizontalAlignment）、Avalonia.Platform.Storage（文件选择器）、Avalonia.VisualTree（GetVisualRoot）
+// - PreviewKeyDown → KeyDown（Avalonia 无 PreviewKeyDown；KeyDown 即隧道+冒泡）；e.Key + Keyboard.Modifiers → e.Key + e.KeyModifiers.HasFlag(KeyModifiers.Control)
+// - Microsoft.Win32.OpenFileDialog(Multiselect) → 内联 Avalonia StorageProvider.OpenFilePickerAsync(AllowMultiple=true)（保留原 Text files / All files 双过滤器；同步阻塞 GetAwaiter().GetResult()，参考 OpenDialog shim）
+// - MessageBox.Show(msg) → new MessageBoxWindow(title, msg, "OK", showCancelButton:false).ShowDialog()
+// - TextBox.LineCount（WPF 专属）→ 按 Text 中 '\n' 计数 +1
+// - TextBox.Clear()（WPF 专属）→ Text = ""
+// - BusyIndicator.Visibility = busy ? Visibility.Visible : Visibility.Collapsed → BusyIndicator.IsVisible = busy
+// - Dispatcher.Async（this.Dispatcher.Async 扩展，参考 DispatcherExtension）保持不变
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
@@ -79,7 +96,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 				MaxWidth = 2000
 			};
 			_skillInputTextBox.TextChanged += CustomSkillInputBox_TextChanged;
-			_skillInputTextBox.PreviewKeyDown += CustomSkillInputBox_PreviewKeyDown;
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 PreviewKeyDown；KeyDown 覆盖隧道+冒泡）。
+			_skillInputTextBox.KeyDown += CustomSkillInputBox_KeyDown;
 
 			scrollViewer.Content = _skillInputTextBox;
 			Grid.SetColumn(scrollViewer, 1);
@@ -97,7 +115,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void UpdateCustomSkillLineNumbers()
 		{
 			if (_skillInputTextBox == null || _skillLineNumbers == null) return;
-			int lineCount = _skillInputTextBox.LineCount;
+			// 阶段 4.5：WPF TextBox.LineCount（专属属性）→ 按 Text 中 '\n' 计数 +1（空文本算 1 行，与 WPF 一致）。
+			int lineCount = (_skillInputTextBox.Text ?? "").Count(c => c == '\n') + 1;
 			var sb = new System.Text.StringBuilder();
 			for (int i = 1; i <= lineCount; i++)
 			{
@@ -106,9 +125,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 			_skillLineNumbers.Text = sb.ToString();
 		}
 
-		private void CustomSkillInputBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		// 阶段 4.5：WPF PreviewKeyDown + System.Windows.Input.KeyEventArgs/Key/Keyboard.Modifiers/ModifierKeys
+		// → Avalonia KeyDown + Avalonia.Input.KeyEventArgs/Key/e.KeyModifiers（HasFlag(KeyModifiers.Control)）。
+		private void CustomSkillInputBox_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == System.Windows.Input.Key.Enter && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+			if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Control))
 			{
 				e.Handled = true;
 				AddSkillButton_Click(sender, null);
@@ -141,8 +162,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		 }
 
 		 RefreshSkillList();
-		 _skillInputTextBox.Clear();
-		 SkillNameTextBox.Clear();
+		 // 阶段 4.5：WPF TextBox.Clear()（专属方法）→ Text = ""。
+		 _skillInputTextBox.Text = "";
+		 SkillNameTextBox.Text = "";
 
 		 if (_initialized)
 		 {
@@ -152,17 +174,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void LoadSkillButton_Click(object sender, RoutedEventArgs e)
 		{
-		 Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog
-		 {
-		  Title = PreferencesLocalization.Current("Select skill file"),
-		  Filter = PreferencesLocalization.Current("Text files (*.md;*.txt)") + "|*.md;*.txt|" + PreferencesLocalization.Current("All files (*.*)") + "|*.*",
-		  CheckFileExists = true,
-		  Multiselect = true
-		 };
-		 if (dialog.ShowDialog() == true)
+		 // 阶段 4.5：WPF Microsoft.Win32.OpenFileDialog(Multiselect=true, Filter 双过滤器)
+		 // → Avalonia StorageProvider.OpenFilePickerAsync(AllowMultiple=true, FileTypeFilter 双类型)。
+		 // 原始 dialog.ShowDialog() 无 owner，用 GetVisualRoot() as Window ?? MainWindow.Instance 取宿主窗口。
+		 // StorageProvider API 异步，事件处理器在 UI 线程，用 GetAwaiter().GetResult() 同步阻塞（参考 OpenDialog shim）。
+		 string[] fileNames = PickSkillFiles();
+		 if (fileNames != null && fileNames.Length > 0)
 		 {
 		  int loadedCount = 0;
-		  foreach (string fileName in dialog.FileNames)
+		  foreach (string fileName in fileNames)
 		  {
 		   try
 		   {
@@ -184,7 +204,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 		   }
 		   catch (Exception ex)
 		   {
-		    MessageBox.Show(PreferencesLocalization.FormatCurrent("Failed to load file '{0}': {1}", fileName, ex.Message));
+		    // 阶段 4.5：WPF MessageBox.Show(msg) → MessageBoxWindow(title, msg, "OK", showCancelButton:false).ShowDialog()。
+		    new MessageBoxWindow(PreferencesLocalization.Current("Error"),
+			    PreferencesLocalization.FormatCurrent("Failed to load file '{0}': {1}", fileName, ex.Message),
+			    PreferencesLocalization.Current("OK"), showCancelButton: false).ShowDialog();
 		   }
 		  }
 			if (loadedCount > 0)
@@ -196,7 +219,42 @@ namespace ForkPlus.UI.UserControls.Preferences
 				}
 			}
 		  }
-		 }
+		}
+
+		// 阶段 4.5：Avalonia 多选文件选择器封装（等价 WPF OpenFileDialog.Multiselect + 双 Filter）。
+		private string[] PickSkillFiles()
+		{
+			try
+			{
+				Window owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance;
+				IStorageProvider storage = owner?.StorageProvider;
+				if (storage == null)
+				{
+					return null;
+				}
+				FilePickerOpenOptions options = new FilePickerOpenOptions
+				{
+					Title = PreferencesLocalization.Current("Select skill file"),
+					AllowMultiple = true,
+					FileTypeFilter = new[]
+					{
+						new FilePickerFileType(PreferencesLocalization.Current("Text files (*.md;*.txt)")) { Patterns = new[] { "*.md", "*.txt" } },
+						new FilePickerFileType(PreferencesLocalization.Current("All files (*.*)")) { Patterns = new[] { "*.*" } }
+					}
+				};
+				IReadOnlyList<IStorageFile> results = storage.OpenFilePickerAsync(options).GetAwaiter().GetResult();
+				if (results == null || results.Count == 0)
+				{
+					return null;
+				}
+				return results.Select(f => f.Path.LocalPath).ToArray();
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to show skill file picker", ex);
+				return null;
+			}
+		}
 
 		private void RemoveSkillButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -456,7 +514,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void SetBusy(bool busy)
 		{
-			BusyIndicator.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+			// 阶段 4.5：WPF UIElement.Visibility(Visible/Collapsed) → Avalonia Control.IsVisible(bool)。
+			BusyIndicator.IsVisible = busy;
 			RefreshModelsButton.IsEnabled = !busy;
 		}
 

@@ -1,12 +1,19 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brushes.Green/Red）
+// - SelectionChangedEventArgs/TextChangedEventArgs → Avalonia.Controls 同名类型
+// - Brushes.Green/Red → Avalonia.Media.Brushes.Green/Red（API 兼容）
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
