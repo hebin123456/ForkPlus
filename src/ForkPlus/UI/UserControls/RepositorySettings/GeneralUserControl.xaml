@@ -1,8 +1,16 @@
-<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。 -->
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。
+     - Style TargetType="{x:Type ComboBoxItem}" → Selector="ComboBoxItem"
+     - Style.Triggers DataTrigger 绑定 ItemType（视图模型枚举值，用于在 ComboBox 中渲染 Separator 分隔项）
+       Avalonia 不支持 Style.Triggers；原 WPF 触发器保留为 TODO 注释。后续可用 ItemContainerStyleSelector
+       或在 code-behind 中根据 ItemType 设置 Classes("separator") + 顶层 Style Selector="ComboBoxItem.separator"
+       重新实现 Separator 渲染。 -->
 <UserControl xmlns:RepositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositorySettings.GeneralUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <Style x:Key="MainBranchComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+      <Style x:Key="MainBranchComboBoxItemStyle" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        <!-- TODO 4.5 (Avalonia): 原 WPF Style.Triggers 中 DataTrigger 绑定 ItemType，匹配时把 ComboBoxItem
+             渲染为 Separator (Height=1, IsEnabled=False, 自定义 ControlTemplate 含 Separator)。
+             Avalonia 不支持 Style.Triggers/DataTrigger。原代码保留为注释：
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -19,6 +27,7 @@
             </Setter>
           </DataTrigger>
         </Style.Triggers>
+        -->
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>

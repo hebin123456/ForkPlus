@@ -1,7 +1,9 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - TODO：DataTemplate.Triggers/DataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     - DataTemplate.Triggers 中 DataTrigger (ChangeTypeIcon=null -> Image.IsVisible=False)
+       → Image.IsVisible 直接绑定 ChangeTypeIcon 并使用 NullToVisibilityConverter (返回 bool,
+       value != null)。Avalonia DataTemplate 不支持 Triggers。
      - TODO：GridView/GridViewColumn/GridViewColumnHeader 是 WPF ListView 视图模式，Avalonia 无直接对应，此处保留原样待后续迁移
      -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileListUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
@@ -14,7 +16,7 @@
             <ColumnDefinition Width="18" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0" x:Name="Image">
+          <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0" x:Name="Image" IsVisible="{Binding ChangeTypeIcon, Converter={controls:NullToVisibilityConverter}}">
             <Image.Source>
               <Binding Path="ChangeTypeIcon" />
             </Image.Source>
@@ -33,17 +35,6 @@
             </controls:AutoTooltipTextBlock.CustomToolTip>
           </controls:AutoTooltipTextBlock>
         </Grid>
-        <DataTemplate.Triggers>
-          <DataTrigger>
-            <DataTrigger.Binding>
-              <Binding Path="ChangeTypeIcon" />
-            </DataTrigger.Binding>
-            <DataTrigger.Value>
-              <x:Null />
-            </DataTrigger.Value>
-            <Setter TargetName="Image" Property="IsVisible" Value="False" />
-          </DataTrigger>
-        </DataTemplate.Triggers>
       </DataTemplate>
       <DataTemplate x:Key="ListViewTemplate">
         <Grid>
