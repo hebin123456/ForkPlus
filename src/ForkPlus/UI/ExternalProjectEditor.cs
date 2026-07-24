@@ -1,8 +1,12 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage（Avalonia.Media）
+// - IconTools.GetImageSourceForFile 已返回 IImage，可直接赋值
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI
@@ -15,7 +19,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -101,7 +105,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			protected override string[] ProjectExtensions => new string[5] { "*.sln", "*.slnf", "*.slnx", "*.csproj", "*.uproject" };
 
@@ -134,7 +138,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			protected override string[] ProjectExtensions => new string[3] { "*.sln", "*.slnf", "*.slnx" };
 
@@ -170,7 +174,7 @@ namespace ForkPlus.UI
 
 		public abstract string ApplicationPath { get; }
 
-		public abstract ImageSource Icon { get; }
+		public abstract IImage Icon { get; }
 
 		protected virtual string[] ProjectExtensions => new string[0];
 

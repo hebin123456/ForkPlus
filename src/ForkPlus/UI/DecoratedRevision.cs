@@ -1,6 +1,10 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - SolidColorBrush 解析为 Avalonia.Media.SolidColorBrush（UserColorBrushes.GetBrush 已返回 Avalonia 画刷）
+// 注：本文件仅使用 SolidColorBrush（Avalonia.Media 同名类），无 ImageSource/IBrush 接口替换。
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 

@@ -1,5 +1,9 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Inline/Run 在 Avalonia 中位于 Controls.Documents）
+// - Inline / Run 解析为 Avalonia.Controls.Documents.Inline / Run（Run(string) 构造兼容）
+// 注：本文件未使用 AdornerLayer，仅使用 Inline/Run 文档流元素，无需 AttachTo/DetachFrom 改造。
 using System.Collections.Generic;
-using System.Windows.Documents;
+using Avalonia.Controls.Documents;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 

@@ -1,4 +1,7 @@
-using System.Windows.Controls;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Controls → using Avalonia.Controls
+// - ProgressBar 解析为 Avalonia.Controls.ProgressBar
+using Avalonia.Controls;
 
 namespace ForkPlus.UI
 {

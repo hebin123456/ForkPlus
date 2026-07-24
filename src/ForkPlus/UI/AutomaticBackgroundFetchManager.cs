@@ -1,6 +1,11 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Threading → using Avalonia.Threading
+// - DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容：Interval/Tick/Start）
+// - Dispatcher 解析为 Avalonia.Threading.Dispatcher
+// - dispatcher.Async / repositoryUserControl.Dispatcher.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 using System;
 using System.Threading;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;

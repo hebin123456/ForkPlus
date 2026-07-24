@@ -1,6 +1,9 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Controls → using Avalonia.Controls
+// - MenuItem 解析为 Avalonia.Controls.MenuItem
 using System;
 using System.Collections;
-using System.Windows.Controls;
+using Avalonia.Controls;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
 
