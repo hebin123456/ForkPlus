@@ -1,9 +1,11 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls。
+	// WPF ItemCollection.IsEmpty → Avalonia ItemCollection.Count == 0（无 IsEmpty 属性）。
 	public class ClosableTabControl : TabControl
 	{
 		private const string AddButton = "PART_Add";
@@ -36,7 +38,8 @@ namespace ForkPlus.UI.Controls
 			}
 			base.Items.Remove(tab);
 			TabItemRemoved?.Invoke(this, null);
-			if (base.Items.IsEmpty)
+			// 阶段 4.5：WPF ItemCollection.IsEmpty → Avalonia Count == 0。
+			if (base.Items.Count == 0)
 			{
 				MainWindow.Commands.NewTab.Execute();
 			}
@@ -68,7 +71,8 @@ namespace ForkPlus.UI.Controls
 				base.Items.Remove(closableTabItem);
 			}
 			TabItemRemoved?.Invoke(this, null);
-			if (base.Items.IsEmpty)
+			// 阶段 4.5：WPF ItemCollection.IsEmpty → Avalonia Count == 0。
+			if (base.Items.Count == 0)
 			{
 				MainWindow.Commands.NewTab.Execute();
 			}

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
@@ -11,6 +11,14 @@ using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF System.Windows.Controls.TabItem → Avalonia.Controls.TabItem。
+	// WPF PreviewMouseDown/PreviewMouseMove → Avalonia PointerPressed/PointerMoved（无 Preview 变体）。
+	// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs/PointerEventArgs。
+	// WPF Mouse.PrimaryDevice.LeftButton → Avalonia PointerEventArgs.GetCurrentPoint().Properties.IsLeftButtonPressed。
+	// WPF DragDrop.DoDragDrop + DragEventArgs → Avalonia DragDrop.DoDragDrop + DragEventArgs（API 兼容）。
+	// WPF WeakEventManager<T,S> → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）。
+	// WPF DependencyProperty → Avalonia StyledProperty。
+	// WPF Brushes.Transparent → Avalonia Brushes.Transparent。
 	public class ClosableTabItem : TabItem
 	{
 		private const string CloseButton = "PART_Close";
@@ -21,13 +29,20 @@ namespace ForkPlus.UI.Controls
 
 		private const string RepositoryManagerTabHeader = "Repository Manager";
 
-		public static readonly SolidColorBrush IsDirtyDefaultBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#8E8E91"));
+		// 阶段 4.5：WPF ColorConverter.ConvertFromString → Avalonia Color.Parse。
+		public static readonly SolidColorBrush IsDirtyDefaultBrush = new SolidColorBrush(Color.Parse("#8E8E91"));
 
-		public static readonly DependencyProperty TagBrushProperty = DependencyProperty.Register("TagBrush", typeof(SolidColorBrush), typeof(ClosableTabItem), new PropertyMetadata(Brushes.Transparent));
+		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty.Register。
+		public static readonly StyledProperty<SolidColorBrush> TagBrushProperty =
+			AvaloniaProperty.Register<ClosableTabItem, SolidColorBrush>(nameof(TagBrush), Brushes.Transparent);
 
-		public static readonly DependencyProperty IsDirtyProperty = DependencyProperty.Register("IsDirty", typeof(bool), typeof(ClosableTabItem), new PropertyMetadata(false));
+		public static readonly StyledProperty<bool> IsDirtyProperty =
+			AvaloniaProperty.Register<ClosableTabItem, bool>(nameof(IsDirty), false);
 
 		private Point _dragStartPoint;
+
+		// 阶段 4.5：缓存左键按下状态（替代 WPF Mouse.PrimaryDevice.LeftButton 静态查询）。
+		private bool _isLeftButtonPressed;
 
 		public TabItemMode Mode { get; private set; }
 
@@ -42,44 +57,37 @@ namespace ForkPlus.UI.Controls
 
 		public SolidColorBrush TagBrush
 		{
-			get
-			{
-				return (SolidColorBrush)GetValue(TagBrushProperty);
-			}
-			set
-			{
-				SetValue(TagBrushProperty, value);
-			}
+			get => GetValue(TagBrushProperty);
+			set => SetValue(TagBrushProperty, value);
 		}
 
 		public bool IsDirty
 		{
-			get
-			{
-				return (bool)GetValue(IsDirtyProperty);
-			}
-			set
-			{
-				SetValue(IsDirtyProperty, value);
-			}
+			get => GetValue(IsDirtyProperty);
+			set => SetValue(IsDirtyProperty, value);
 		}
 
 		private EditableTextBlock TitleTextBlock => GetTemplateChild("PART_Title") as EditableTextBlock;
 
 		public ClosableTabItem()
 		{
-			IsDirtyDefaultBrush.Freeze();
-			base.PreviewMouseDown += TabItem_PreviewMouseDown;
-			base.PreviewMouseMove += TabItem_PreviewMouseMove;
+			// 阶段 4.5：Avalonia 画刷默认不可变，无需 WPF Freeze()。
+			// 阶段 4.5：WPF PreviewMouseDown → Avalonia PointerPressed。
+			base.PointerPressed += TabItem_PointerPressed;
+			// 阶段 4.5：WPF PreviewMouseMove → Avalonia PointerMoved。
+			base.PointerMoved += TabItem_PointerMoved;
 			base.Drop += TabItem_Drop;
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlTitleChanged", RepositoryUserControlTitleChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlColorChanged", RepositoryUserControlColorChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlIsDirtyChanged", RepositoryUserControlIsDirtyChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.RepositoryUserControlTitleChanged += RepositoryUserControlTitleChanged;
+			NotificationCenter.Current.RepositoryUserControlColorChanged += RepositoryUserControlColorChanged;
+			NotificationCenter.Current.RepositoryUserControlIsDirtyChanged += RepositoryUserControlIsDirtyChanged;
+			NotificationCenter.Current.RepositoryColorChanged += RepositoryColorChanged;
 		}
 
 		public void Close()
 		{
+			// 阶段 4.5：WPF FrameworkElement.Parent → Avalonia Control.Parent（类型为 IControl）。
 			(base.Parent as ClosableTabControl)?.RemoveTab(this);
 		}
 
@@ -97,14 +105,17 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			centeredDockPanel.PreviewMouseDown += delegate(object s, MouseButtonEventArgs e)
+			// 阶段 4.5：WPF PreviewMouseDown + MouseButtonEventArgs.MiddleButton
+			// → Avalonia PointerPressed + PointerPressedEventArgs.GetCurrentPoint().Properties.IsMiddleButtonPressed。
+			centeredDockPanel.PointerPressed += delegate(object s, PointerPressedEventArgs e)
 			{
-				if (e.MiddleButton == MouseButtonState.Pressed)
+				if (e.GetCurrentPoint(centeredDockPanel).Properties.IsMiddleButtonPressed)
 				{
 					Close();
 				}
 			};
-			centeredDockPanel.ToolTip = GetToolTip();
+			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			ToolTip.SetTip(centeredDockPanel, GetToolTip());
 			centeredDockPanel.ContextMenu = GetContextMenu();
 		}
 
@@ -168,22 +179,27 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private void TabItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		private void TabItem_PointerPressed(object sender, PointerPressedEventArgs e)
 		{
+			// 阶段 4.5：WPF e.GetPosition(null) → Avalonia e.GetPosition(null)（根坐标系）。
 			_dragStartPoint = e.GetPosition(null);
+			_isLeftButtonPressed = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
 		}
 
-		private void TabItem_PreviewMouseMove(object sender, MouseEventArgs e)
+		private void TabItem_PointerMoved(object sender, PointerEventArgs e)
 		{
-			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.OriginalSource is Button) && e.Source is ClosableTabItem closableTabItem)
+			// 阶段 4.5：WPF Mouse.PrimaryDevice.LeftButton → 缓存的 _isLeftButtonPressed。
+			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source。
+			if (_isLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
-				DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
+				// 阶段 4.5：Avalonia DragDrop.DoDragDrop 签名与 WPF 兼容（返回 Task，丢弃即可）。
+				_ = DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
 			}
 		}
 
 		private void TabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (e.Data.GetData(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			if (e.Data.Get(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
 			{
 				ClosableTabControl closableTabControl = closableTabItem.Parent as ClosableTabControl;
 				if (closableTabItem != target)
@@ -369,7 +385,7 @@ namespace ForkPlus.UI.Controls
 					contextMenu.Items.Add(CreateRepositoryColorsMenuItem(repository.GetValueOrDefault()));
 				}
 			}
-			// 若该仓是某个 git mm 工作区的子仓，提供“打开 git mm 仓”快捷入口
+			// 若该仓是某个 git mm 工作区的子仓，提供"打开 git mm 仓"快捷入口
 			if (Mode == TabItemMode.Repository && !string.IsNullOrWhiteSpace(managedRepositoryPath))
 			{
 				string gitMmWorkspacePath = MainWindow.Instance?.TabManager?.FindGitMmWorkspacePathForSubrepo(managedRepositoryPath);
@@ -387,7 +403,7 @@ namespace ForkPlus.UI.Controls
 				}
 			}
 			return contextMenu;
-	}
+		}
 
 		private static string GetCurrentRepositoryName(string repositoryPath, string fallbackName)
 		{
@@ -399,7 +415,9 @@ namespace ForkPlus.UI.Controls
 			return new MenuItem
 			{
 				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
+				// 阶段 4.5：WPF Style 属性 → Avalonia Styles 集合（单 Style 用 Styles.Add）。
+				// 此处简化为直接设置 Header；原 Theme.CustomContentMenuItemStyle 需在 XAML 模板中应用。
+				// TODO(4.6-b): 恢复 CustomContentMenuItemStyle 样式应用。
 			};
 		}
 
