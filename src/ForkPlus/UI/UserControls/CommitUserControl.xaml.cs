@@ -1323,14 +1323,15 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 				else if (StageFileUserControl.IsStagedListSelected)
+			{
+				ChangedFile[] array2 = (StageFileUserControl.IsFiltered ? StageFileUserControl.ExpandedStagedFiles.Filter((ChangedFile x) => !x.IsDirectory).ToArray() : StageFileUserControl.ExpandedStagedFiles);
+				if (array2.Length != 0)
 				{
-					ChangedFile[] array2 = (StageFileUserControl.IsFiltered ? StageFileUserControl.ExpandedStagedFiles.Filter((ChangedFile x) => !x.IsDirectory).ToArray() : StageFileUserControl.ExpandedStagedFiles);
-					if (array2.Length != 0)
-					{
-						Commands.ToggleAllFilesStageCommand.Execute(this, RepositoryUserControl, array2, AmendMode);
-						StageFileUserControl.RefreshStageAllButton();
+					Commands.ToggleAllFilesStageCommand.Execute(this, RepositoryUserControl, array2, AmendMode);
+					StageFileUserControl.RefreshStageAllButton();
 				}
-			}));
+			}
+		}));
 		}
 
 		private void RestoreGridColumnWidth()
