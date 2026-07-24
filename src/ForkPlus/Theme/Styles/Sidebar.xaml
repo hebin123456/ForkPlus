@@ -14,7 +14,8 @@
      - TemplateBinding paths stripped of class prefixes (Panel.Background->Background, etc.).
      - DataTemplate.Triggers (binding to view-model properties Pinned/FilterState/LocalBranch.IsActive/
        Worktree.IsActive and ancestor TreeViewControlItem state) are NOT converted here - they require
-       a different migration approach (bindings+converters or code-behind) and are left as WPF syntax. -->
+       a different migration approach (bindings+converters or code-behind). The 9 original WPF trigger
+       blocks are preserved verbatim inside <!-- TODO 4.5 (Avalonia): ... --> comments for reference. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="RepositoryTitleHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
     <Setter Property="FocusVisualStyle">
@@ -155,19 +156,23 @@
           <Binding Path="Tooltip" />
         </TextBlock.ToolTip>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" IsVisible="False" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" IsVisible="False" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <DataTrigger Value="True">
         <DataTrigger.Binding>
@@ -208,7 +213,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="{x:Type ui:FolderSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -238,19 +243,23 @@
           <Binding Path="Title" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" IsVisible="False" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" IsVisible="False" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <DataTrigger Value="True">
         <DataTrigger.Binding>
@@ -291,7 +300,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="{x:Type ui:TruncateSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -325,25 +334,29 @@
           <Binding Path="Title" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" IsVisible="False" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" IsVisible="False" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" IsVisible="False" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource SearchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -489,7 +502,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="{x:Type ui:RemoteBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -509,25 +522,29 @@
           <Binding Path="Tooltip" />
         </TextBlock.ToolTip>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" IsVisible="False" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" IsVisible="False" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" IsVisible="False" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -673,7 +690,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="{x:Type ui:LocalBranchSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid HorizontalAlignment="Stretch">
@@ -703,25 +720,29 @@
           <Binding Path="UpstreamStatusString" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarPinButton}" Visibility="Collapsed" x:Name="PinButton">
+      <Button Grid.Column="3" Style="{DynamicResource SidebarPinButton}" IsVisible="False" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarFilterButton}" Visibility="Collapsed" x:Name="FilterButton">
+      <Button Grid.Column="4" Style="{DynamicResource SidebarFilterButton}" IsVisible="False" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="5" Style="{DynamicResource SidebarHideButton}" Visibility="Collapsed" x:Name="HideButton">
+      <Button Grid.Column="5" Style="{DynamicResource SidebarHideButton}" IsVisible="False" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -898,7 +919,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="{x:Type ui:StashSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -916,6 +937,10 @@
         </TextBlock.ToolTip>
       </TextBlock>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -932,7 +957,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="StashImage" Value="{DynamicResource SidebarStashSelectedIcon}" Property="Image.Source" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="{x:Type ui:SubmoduleSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -947,6 +972,10 @@
         </TextBlock.Text>
       </TextBlock>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -963,7 +992,7 @@
         </MultiDataTrigger.Conditions>
         <Setter TargetName="SubmoduleImage" Value="{DynamicResource SubmoduleSelectedIcon}" Property="Image.Source" />
       </MultiDataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="{x:Type ui:WorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -981,6 +1010,10 @@
         </TextBlock.ToolTip>
       </TextBlock>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -1003,7 +1036,7 @@
         </DataTrigger.Binding>
         <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
       </DataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
   <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="{x:Type ui:MainWorktreeSidebarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -1021,6 +1054,10 @@
         </TextBlock.ToolTip>
       </TextBlock>
     </Grid>
+    <!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim — Avalonia DataTemplate does
+         not support Triggers. Reimplement via top-level <Style Selector="TreeViewItem:pointerover/..."> + ancestor
+         state bindings (with converters/code-behind), or by adding custom pseudoclasses to TreeViewControlItem
+         that mirror IsMouseOver/IsSelected/IsKeyboardFocusWithin, then binding view-model state to those.
     <DataTemplate.Triggers>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -1043,6 +1080,6 @@
         </DataTrigger.Binding>
         <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
       </DataTrigger>
-    </DataTemplate.Triggers>
+    </DataTemplate.Triggers> -->
   </DataTemplate>
 </ResourceDictionary>
