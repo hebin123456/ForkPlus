@@ -1,5 +1,6 @@
-using System.Windows.Controls;
-using System.Windows.Input;
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF KeyGesture → Avalonia.Input.KeyGesture。WPF ModifierKeys → Avalonia.Input.KeyModifiers。
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.UI.Controls.Editor;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
@@ -13,7 +14,7 @@ namespace ForkPlus.UI.Controls.Commands
 			menu.AddMenuItem("Copy", delegate
 			{
 				editor.Copy();
-			}, null, new KeyGesture(Key.C, ModifierKeys.Control), CanCopy(editor));
+			}, null, new KeyGesture(Key.C, KeyModifiers.Control), CanCopy(editor));
 		}
 
 		private static bool CanCopy(TextEditor editor)

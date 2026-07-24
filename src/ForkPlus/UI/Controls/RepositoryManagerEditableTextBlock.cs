@@ -1,10 +1,12 @@
-using System.Windows;
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF DependencyPropertyChangedEventArgs → Avalonia.AvaloniaPropertyChangedEventArgs。
+// WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)（e.Property/e.NewValue API 兼容）。
+using Avalonia;
 
 namespace ForkPlus.UI.Controls
 {
 	public class RepositoryManagerEditableTextBlock : EditableTextBlock
 	{
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property != EditableTextBlock.IsInEditModeProperty)

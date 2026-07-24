@@ -1,6 +1,8 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF Grid → Avalonia.Controls.Grid。WPF FrameworkElement → Avalonia.Controls.Control。
+// WPF GridLength/RowDefinition/Grid.RowProperty → Avalonia 同名 API（兼容）。WPF Panel.Children → Avalonia Panel.Children。
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Controls
@@ -12,7 +14,7 @@ namespace ForkPlus.UI.Controls
 			void ControlWillBeRemovedFromFileDiffControl();
 		}
 
-		private FrameworkElement _subView;
+		private Control _subView;
 
 		public FileControlHeaderUserControl Header { get; }
 
@@ -39,7 +41,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : FrameworkElement
+		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : Control
 		{
 			if (_subView == null)
 			{
@@ -67,7 +69,7 @@ namespace ForkPlus.UI.Controls
 			initialize?.Invoke(_subView as TChild, Header);
 		}
 
-		private bool AttachSubView(FrameworkElement subView)
+		private bool AttachSubView(Control subView)
 		{
 			if (subView == null)
 			{

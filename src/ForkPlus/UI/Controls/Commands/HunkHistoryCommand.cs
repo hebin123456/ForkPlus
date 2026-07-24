@@ -1,4 +1,5 @@
-using System.Windows.Controls;
+// 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls（ContextMenu 类型迁移）。
+using Avalonia.Controls;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;

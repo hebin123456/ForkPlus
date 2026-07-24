@@ -1,4 +1,8 @@
-using System.Windows;
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。
+// WPF SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor)) → Avalonia StyleKeyOverride。
+// WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）。
+using System;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor;
@@ -8,6 +12,10 @@ namespace ForkPlus.UI.Controls
 {
 	public class TextContentControl : CodeEditor, FileContentControl.IFileContentControlSubControl
 	{
+		// 阶段 4.5：WPF SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor))
+		// → Avalonia StyledElement.StyleKeyOverride（让派生控件复用基类 CodeEditor 的默认样式）。
+		protected override Type StyleKeyOverride => typeof(CodeEditor);
+
 		[Null]
 		private Content _content;
 
@@ -19,18 +27,20 @@ namespace ForkPlus.UI.Controls
 
 		public TextContentControl()
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// 阶段 4.5：WPF SetResourceReference → StyleKeyOverride（见上）。
 			_codeEditorLineNumberMargin = new CodeEditorLineNumberMargin();
 			base.TextArea.LeftMargins.Add(_codeEditorLineNumberMargin);
 			_syntaxHighlighting = new SyntaxHighlighting();
 			base.TextArea.TextView.LineTransformers.Add(_syntaxHighlighting);
 			base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.CodeEditorFontSizeChanged += delegate
 			{
 				base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
-			});
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DisableSyntaxHighlightingChanged", DisableSyntaxHighlightingChanged);
+			};
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
+			NotificationCenter.Current.DisableSyntaxHighlightingChanged += DisableSyntaxHighlightingChanged;
 		}
 
 		public void SetContent([Null] TextContent content)
