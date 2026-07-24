@@ -1,31 +1,27 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Controls
 {
 	public class BindableGitPointView : GitPointView
 	{
-		public static readonly DependencyProperty GitPointProperty = DependencyProperty.Register("GitPoint", typeof(IGitPoint), typeof(BindableGitPointView), new FrameworkPropertyMetadata(null));
+		// 阶段 4.5：WPF DependencyProperty.Register + FrameworkPropertyMetadata
+		// → Avalonia StyledProperty.Register + OnPropertyChanged override。
+		public static readonly StyledProperty<IGitPoint> GitPointProperty =
+			AvaloniaProperty.Register<BindableGitPointView, IGitPoint>(nameof(GitPoint));
 
 		public IGitPoint GitPoint
 		{
-			get
-			{
-				return (IGitPoint)GetValue(GitPointProperty);
-			}
-			set
-			{
-				SetValue(GitPointProperty, value);
-			}
+			get => GetValue(GitPointProperty);
+			set => SetValue(GitPointProperty, value);
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 		{
-			base.OnPropertyChanged(e);
-			if (e.Property == GitPointProperty)
+			base.OnPropertyChanged(change);
+			if (change.Property == GitPointProperty)
 			{
-				IGitPoint value = (IGitPoint)e.NewValue;
-				base.Value = value;
+				base.Value = GitPoint;
 			}
 		}
 	}

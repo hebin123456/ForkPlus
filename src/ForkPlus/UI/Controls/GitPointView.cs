@@ -1,14 +1,17 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Controls
 {
 	public class GitPointView : Grid
 	{
-		public static readonly DependencyProperty IconMarginProperty = DependencyProperty.Register("IconMargin", typeof(Thickness), typeof(GitPointView), new PropertyMetadata(new Thickness(1.0, 3.0, 7.0, 1.0)));
+		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty.Register。
+		public static readonly StyledProperty<Thickness> IconMarginProperty =
+			AvaloniaProperty.Register<GitPointView, Thickness>(nameof(IconMargin), new Thickness(1.0, 3.0, 7.0, 1.0));
 
 		private bool _customFontStyle;
 
@@ -16,34 +19,19 @@ namespace ForkPlus.UI.Controls
 
 		public Thickness IconMargin
 		{
-			get
-			{
-				return (Thickness)GetValue(IconMarginProperty);
-			}
-			set
-			{
-				SetValue(IconMarginProperty, value);
-			}
+			get => GetValue(IconMarginProperty);
+			set => SetValue(IconMarginProperty, value);
 		}
 
 		public bool CustomFontStyle
 		{
-			get
-			{
-				return _customFontStyle;
-			}
-			set
-			{
-				_customFontStyle = value;
-			}
+			get => _customFontStyle;
+			set => _customFontStyle = value;
 		}
 
 		public IGitPoint Value
 		{
-			get
-			{
-				return _value;
-			}
+			get => _value;
 			set
 			{
 				_value = value;
@@ -72,9 +60,10 @@ namespace ForkPlus.UI.Controls
 						VerticalAlignment = VerticalAlignment.Center,
 						HorizontalAlignment = HorizontalAlignment.Left,
 						TextTrimming = TextTrimming.CharacterEllipsis,
-						Text = Description(_value),
-						ToolTip = Description(_value)
+						Text = Description(_value)
 					};
+					// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+					ToolTip.SetTip(textBlock3, Description(_value));
 					if (!CustomFontStyle)
 					{
 						textBlock3.FontSize = 13.0;
@@ -90,11 +79,11 @@ namespace ForkPlus.UI.Controls
 		{
 			base.ColumnDefinitions.Add(new ColumnDefinition
 			{
-				Width = new GridLength(1.0, GridUnitType.Auto)
+				Width = GridLength.Auto
 			});
 			base.ColumnDefinitions.Add(new ColumnDefinition
 			{
-				Width = new GridLength(1.0, GridUnitType.Auto)
+				Width = GridLength.Auto
 			});
 			base.ColumnDefinitions.Add(new ColumnDefinition
 			{
@@ -115,7 +104,7 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
-		private ImageSource GetIcon(Type type)
+		private IImage GetIcon(Type type)
 		{
 			if (type == typeof(StashRevision))
 			{

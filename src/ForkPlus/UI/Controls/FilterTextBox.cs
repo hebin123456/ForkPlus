@@ -1,15 +1,18 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Controls
 {
-	[TemplatePart(Name = "PART_ClearButton", Type = typeof(FrameworkElement))]
+	// 阶段 4.5：WPF TemplatePart 特性在 Avalonia 同样存在（Avalonia.Controls.Primitives.TemplatedControl）。
+	// GetTemplateChild / OnApplyTemplate 在 Avalonia 11 中保留，签名兼容 WPF。
+	[TemplatePart(Name = "PART_ClearButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_TranslateTransform", Type = typeof(TranslateTransform))]
 	[TemplatePart(Name = "PART_DropDownButton", Type = typeof(DropDownButton))]
 	public class FilterTextBox : PlaceholderTextBox
@@ -36,13 +39,18 @@ namespace ForkPlus.UI.Controls
 
 		private DropDownButton _dropdownButton;
 
-		public static readonly DependencyProperty AnimationPlaceholderProperty = DependencyProperty.Register("AnimationPlaceholder", typeof(Grid), typeof(FilterTextBox), new PropertyMetadata(null));
+		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty.Register。
+		public static readonly StyledProperty<Grid> AnimationPlaceholderProperty =
+			AvaloniaProperty.Register<FilterTextBox, Grid>(nameof(AnimationPlaceholder));
 
-		public static readonly DependencyProperty UseSecondaryTextBoxBackgroundProperty = DependencyProperty.Register("UseSecondaryTextBoxBackground", typeof(bool), typeof(FilterTextBox), new PropertyMetadata(false));
+		public static readonly StyledProperty<bool> UseSecondaryTextBoxBackgroundProperty =
+			AvaloniaProperty.Register<FilterTextBox, bool>(nameof(UseSecondaryTextBoxBackground));
 
-		public static readonly DependencyProperty ShowDropdownProperty = DependencyProperty.Register("ShowDropdown", typeof(bool), typeof(FilterTextBox), new PropertyMetadata(false));
+		public static readonly StyledProperty<bool> ShowDropdownProperty =
+			AvaloniaProperty.Register<FilterTextBox, bool>(nameof(ShowDropdown));
 
-		public static readonly DependencyProperty HintProperty = DependencyProperty.Register("Hint", typeof(string), typeof(FilterTextBox), new PropertyMetadata(null));
+		public static readonly StyledProperty<string> HintProperty =
+			AvaloniaProperty.Register<FilterTextBox, string>(nameof(Hint));
 
 		public string FilterRequest => base.Text;
 
@@ -50,50 +58,26 @@ namespace ForkPlus.UI.Controls
 
 		public Grid AnimationPlaceholder
 		{
-			get
-			{
-				return (Grid)GetValue(AnimationPlaceholderProperty);
-			}
-			set
-			{
-				SetValue(AnimationPlaceholderProperty, value);
-			}
+			get => GetValue(AnimationPlaceholderProperty);
+			set => SetValue(AnimationPlaceholderProperty, value);
 		}
 
 		public bool UseSecondaryTextBoxBackground
 		{
-			get
-			{
-				return (bool)GetValue(UseSecondaryTextBoxBackgroundProperty);
-			}
-			set
-			{
-				SetValue(UseSecondaryTextBoxBackgroundProperty, value);
-			}
+			get => GetValue(UseSecondaryTextBoxBackgroundProperty);
+			set => SetValue(UseSecondaryTextBoxBackgroundProperty, value);
 		}
 
 		public bool ShowDropdown
 		{
-			get
-			{
-				return (bool)GetValue(ShowDropdownProperty);
-			}
-			set
-			{
-				SetValue(ShowDropdownProperty, value);
-			}
+			get => GetValue(ShowDropdownProperty);
+			set => SetValue(ShowDropdownProperty, value);
 		}
 
 		public string Hint
 		{
-			get
-			{
-				return (string)GetValue(HintProperty);
-			}
-			set
-			{
-				SetValue(HintProperty, value);
-			}
+			get => GetValue(HintProperty);
+			set => SetValue(HintProperty, value);
 		}
 
 		public event EventHandler FilterRequestChanged;
@@ -104,15 +88,14 @@ namespace ForkPlus.UI.Controls
 
 		public FilterTextBox()
 		{
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown (tunneling) → Avalonia KeyDown。Avalonia 事件路由是 bubbling，
+			// 没有 Preview 变体；这里只需在普通 KeyDown 中处理即可，因为 _dropdownButton 在模板加载后才存在。
+			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Down)
+				if (e.Key == Key.Down && _dropdownButton != null)
 				{
 					_dropdownButton.IsChecked = true;
 				}
-			};
-			base.KeyDown += delegate(object s, KeyEventArgs e)
-			{
 				if (e.Key == Key.Escape && !string.IsNullOrEmpty(base.Text))
 				{
 					Clear();
@@ -134,10 +117,13 @@ namespace ForkPlus.UI.Controls
 			}
 			_iconImage = GetTemplateChild("PART_Icon") as Image;
 			_dropdownButton = GetTemplateChild("PART_DropDownButton") as DropDownButton;
-			_dropdownButton.ContextMenu.Opened += delegate(object s, RoutedEventArgs e)
+			if (_dropdownButton?.ContextMenu != null)
 			{
-				this.DropdownContextMenuOpened?.Invoke(s, e);
-			};
+				_dropdownButton.ContextMenu.Opened += delegate(object s, EventArgs e)
+				{
+					this.DropdownContextMenuOpened?.Invoke(s, e);
+				};
+			}
 			_clearButton = GetTemplateChild("PART_ClearButton") as Button;
 			if (_clearButton != null)
 			{
@@ -157,13 +143,13 @@ namespace ForkPlus.UI.Controls
 			}
 			if (ShowDropdown)
 			{
-				_dropdownButton.Show();
-				_iconImage.Collapse();
+				_dropdownButton?.Show();
+				_iconImage?.Collapse();
 			}
 			else
 			{
-				_dropdownButton.Collapse();
-				_iconImage.Show();
+				_dropdownButton?.Collapse();
+				_iconImage?.Show();
 			}
 		}
 
@@ -212,10 +198,31 @@ namespace ForkPlus.UI.Controls
 			this.ClearButtonClicked?.Invoke(this, EventArgs.Empty);
 		}
 
+		// 阶段 4.5：WPF BeginAnimation(UIElement.OpacityProperty, DoubleAnimation)
+		// → Avalonia Animation.RunAsync。Avalonia 用 KeyFrame + Cue 描述关键帧，
+		// 取代 WPF 的 From/To/Duration 三元组。返回的 Task 丢弃即可（fire-and-forget）。
 		private void UpdateOpacity(double from, double to, TimeSpan duration)
 		{
-			DoubleAnimation animation = new DoubleAnimation(from, to, duration);
-			BeginAnimation(UIElement.OpacityProperty, animation);
+			Animation animation = new Animation
+			{
+				Duration = duration,
+				IterationCount = new IterationCount(1),
+				PlaybackDirection = PlaybackDirection.Normal,
+				FillMode = FillMode.Forward
+			};
+			KeyFrame fromFrame = new KeyFrame
+			{
+				Cue = new Cue(0.0)
+			};
+			fromFrame.Setters.Add(new Setter(Visual.OpacityProperty, from));
+			KeyFrame toFrame = new KeyFrame
+			{
+				Cue = new Cue(1.0)
+			};
+			toFrame.Setters.Add(new Setter(Visual.OpacityProperty, to));
+			animation.Children.Add(fromFrame);
+			animation.Children.Add(toFrame);
+			_ = animation.RunAsync(this);
 		}
 	}
 }

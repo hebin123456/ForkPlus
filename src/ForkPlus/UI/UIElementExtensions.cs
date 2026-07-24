@@ -1,35 +1,38 @@
-using System.Windows;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF UIElement.Visibility (Visible/Hidden/Collapsed) → Avalonia Control.IsVisible (bool)。
+	// Avalonia 没有 Visibility.Hidden（保留布局空间），所有 Hide 调用退化为 Collapsed 行为。
+	// 现有调用方多用于切换 busy/fallback 控件可见性，Collapsed 更符合预期。
 	public static class UIElementExtensions
 	{
-		public static void Show(this UIElement element)
+		public static void Show(this Control element)
 		{
-			element.Visibility = Visibility.Visible;
+			element.IsVisible = true;
 		}
 
-		public static void Collapse(this UIElement element)
+		public static void Collapse(this Control element)
 		{
-			element.Visibility = Visibility.Collapsed;
+			element.IsVisible = false;
 		}
 
-		public static void Hide(this UIElement element)
+		public static void Hide(this Control element)
 		{
-			element.Visibility = Visibility.Hidden;
+			element.IsVisible = false;
 		}
 
-		public static void Hide(this UIElement element, bool hide)
+		public static void Hide(this Control element, bool hide)
 		{
-			element.Visibility = (hide ? Visibility.Hidden : Visibility.Visible);
+			element.IsVisible = !hide;
 		}
 
-		public static void Disable(this UIElement element)
+		public static void Disable(this Control element)
 		{
 			element.IsEnabled = false;
 		}
 
-		public static void Enable(this UIElement element)
+		public static void Enable(this Control element)
 		{
 			element.IsEnabled = true;
 		}
