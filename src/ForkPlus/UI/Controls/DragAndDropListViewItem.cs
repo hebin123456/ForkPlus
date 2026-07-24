@@ -17,6 +17,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Presenters;
 
 namespace ForkPlus.UI.Controls
 {
@@ -43,9 +44,9 @@ namespace ForkPlus.UI.Controls
 		{
 			// 阶段 5：Avalonia 11 无 OnDragEnter/OnDragOver/OnDrop/OnDragLeave 虚方法，
 			// 改为在构造函数中通过 DragDrop.AddHandler 订阅路由事件。
-			DragDrop.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
-			DragDrop.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
-			DragDrop.AddHandler(DragDrop.DropEvent, OnDrop);
+			AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
+			AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+			AddHandler(DragDrop.DropEvent, OnDrop);
 		}
 
 		protected override void OnPointerPressed(PointerPressedEventArgs e)

@@ -22,6 +22,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Newtonsoft.Json;
 using ForkPlus.UI.Helpers;
 using Avalonia.Interactivity;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -293,11 +294,11 @@ namespace ForkPlus.UI.Dialogs
 		private void Window_KeyDown(object sender, KeyEventArgs e)
 		{
 			RevisionEntry[] array = null;
-			if (e.OriginalSource is ListBoxItem || e.OriginalSource is ListBox)
+			if (e.Source is ListBoxItem || e.Source is ListBox)
 			{
 				array = RevisionListView.SelectedItems.CompactMap((object x) => x as RevisionEntry);
 			}
-			else if (e.OriginalSource is ComboBoxItem container && ItemsControl.ItemsControlFromItemContainer(container)?.DataContext is RevisionEntry revisionEntry)
+			else if (e.Source is ComboBoxItem container && ItemsControl.ItemsControlFromItemContainer(container)?.DataContext is RevisionEntry revisionEntry)
 			{
 				array = new RevisionEntry[1] { revisionEntry };
 			}
@@ -394,7 +395,7 @@ namespace ForkPlus.UI.Dialogs
 					num += gridView.Columns[i].ActualWidth;
 				}
 			}
-			double num2 = RevisionListView.ActualWidth - SystemParameters.VerticalScrollBarWidth - 5.0 - num;
+			double num2 = RevisionListView.Bounds.Width - SystemParameters.VerticalScrollBarWidth - 5.0 - num;
 			gridView.Columns[2].Width = ((num2 > 0.0) ? num2 : 0.0);
 		}
 

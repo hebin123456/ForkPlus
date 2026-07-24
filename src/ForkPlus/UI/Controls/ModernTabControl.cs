@@ -6,16 +6,17 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
-	// 阶段 4.5：WPF FrameworkElement.BeginAnimation + DoubleAnimation/EasingFunction
+	// 阶段 4.5：WPF Layoutable.BeginAnimation + DoubleAnimation/EasingFunction
 	// → Avalonia Transitions + DoubleTransition/Easing。
 	// WPF TranslateTransform.BeginAnimation(XProperty, animation)
 	// → 在 TranslateTransform 上设置 Transitions，然后修改 X 属性触发过渡。
 	// WPF Border.BeginAnimation(WidthProperty, animation)
 	// → 在 Border 上设置 Transitions，然后修改 Width 触发过渡。
-	// WPF TabItem.ActualWidth → Avalonia TabItem.Bounds.Width（控件已布局后有效）。
+	// WPF TabItem.Bounds.Width → Avalonia TabItem.Bounds.Width（控件已布局后有效）。
 	// WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia SizeChanged(Size)。
 	public class ModernTabControl : TabControl
 	{
@@ -41,7 +42,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_indicatorBorder = GetTemplateChild("PART_IndicatorBorder") as Border;
+			_indicatorBorder = NameScope?.Find("PART_IndicatorBorder") as Border;
 			if (_indicatorBorder != null)
 			{
 				// 阶段 4.5：为 Border.Width 配置过渡动画。
@@ -119,7 +120,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_isTabIndicatorInitialized && _indicatorBorder != null && nextTabItem != null)
 			{
-				// 阶段 4.5：WPF TabItem.ActualWidth → Avalonia TabItem.Bounds.Width。
+				// 阶段 4.5：WPF TabItem.Bounds.Width → Avalonia TabItem.Bounds.Width。
 				double num = nextTabItem.Bounds.Width;
 				if (withAnimation)
 				{
@@ -146,7 +147,7 @@ namespace ForkPlus.UI.Controls
 			{
 				if (base.Items[i] is TabItem tabItem)
 				{
-					// 阶段 4.5：WPF TabItem.ActualWidth → Avalonia TabItem.Bounds.Width。
+					// 阶段 4.5：WPF TabItem.Bounds.Width → Avalonia TabItem.Bounds.Width。
 					num += tabItem.Bounds.Width;
 				}
 			}

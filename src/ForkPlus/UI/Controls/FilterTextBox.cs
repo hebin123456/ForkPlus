@@ -10,6 +10,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -118,8 +119,8 @@ namespace ForkPlus.UI.Controls
 			{
 				base.Placeholder = PreferencesLocalization.Translate("Filter", ForkPlusSettings.Default.UiLanguage);
 			}
-			_iconImage = GetTemplateChild("PART_Icon") as Image;
-			_dropdownButton = GetTemplateChild("PART_DropDownButton") as DropDownButton;
+			_iconImage = NameScope?.Find("PART_Icon") as Image;
+			_dropdownButton = NameScope?.Find("PART_DropDownButton") as DropDownButton;
 			if (_dropdownButton?.ContextMenu != null)
 			{
 				_dropdownButton.ContextMenu.Opened += delegate(object s, EventArgs e)
@@ -127,12 +128,12 @@ namespace ForkPlus.UI.Controls
 					this.DropdownContextMenuOpened?.Invoke(s, e);
 				};
 			}
-			_clearButton = GetTemplateChild("PART_ClearButton") as Button;
+			_clearButton = NameScope?.Find("PART_ClearButton") as Button;
 			if (_clearButton != null)
 			{
 				_clearButton.Click += ClearButton_Click;
 			}
-			_translateTransform = GetTemplateChild("PART_TranslateTransform") as TranslateTransform;
+			_translateTransform = NameScope?.Find("PART_TranslateTransform") as TranslateTransform;
 			if (AnimationPlaceholder != null && _translateTransform != null && !IsAnimationPlaceholderVisible)
 			{
 				_translateTransform.Y = 0.0 - FilterTextBoxAnimationHeight;

@@ -6,7 +6,7 @@
 // - using System.Windows.Media → using Avalonia.Media（IImage）
 // - using System.Windows.Navigation → 移除（Avalonia 无 RequestNavigateEventArgs）
 // - 新增 using Avalonia.Layout（Visibility）
-// - System.Windows.Media.ImageSource → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
+// - System.Windows.Media.IImage → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
 // - Visibility.Hidden/Visible → Avalonia.Layout.Visibility（参考 RevisionSummaryUserControl）
 // - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl/GitUserControl）
 // - SelectionChangedEventArgs → Avalonia.Controls 同名类型
@@ -35,7 +35,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			private readonly Remote _remote;
 
-			// 阶段 4.5：WPF ImageSource → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
+			// 阶段 4.5：WPF IImage → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
 			public IImage RemoteIcon => _remote.Icon;
 
 			public string Name => _remote.Name;

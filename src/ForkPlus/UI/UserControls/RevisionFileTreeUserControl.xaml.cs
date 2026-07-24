@@ -6,7 +6,7 @@
 // - CommandBindings.Add(command.CreateShortcutCommandBinding(h)) → KeyBindings.Add(command.CreateShortcutKeyBinding(h))（参考 IUICommandExtension/RevisionListViewUserControl）
 // - MouseDoubleClick + PointerPressedEventArgs → DoubleTapped + RoutedEventArgs（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）
 //   构造函数中显式订阅 FilesTreeView.DoubleTapped += FilesTreeView_MouseDoubleClick（XAML 的 MouseDoubleClick 事件在 Avalonia 不存在，由 XAML 迁移阶段移除）
-// - e.OriginalSource → e.Source（参考 MultiselectionTreeView）
+// - e.Source → e.Source（参考 MultiselectionTreeView）
 // - (e.Source as DependencyObject)?.GetParent<ListBoxItem>() → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()（参考 DependencyObjectExtensions）
 // - ItemContainerGenerator.ItemFromContainer → 保留（Avalonia API 兼容，参考 ItemsControlExtensions）
 // - GridSplitter.DragCompleted 保留（已在 RepositoryContentUserControl/CommitUserControl 等迁移文件中验证可用）
@@ -88,7 +88,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		// 阶段 4.5：WPF MouseDoubleClick(PointerPressedEventArgs) → Avalonia DoubleTapped(RoutedEventArgs)（参考 FileListUserControl）。
-		// e.OriginalSource → e.Source（参考 MultiselectionTreeView）；DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
+		// e.Source → e.Source（参考 MultiselectionTreeView）；DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
 		private void FilesTreeView_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
 			ListBoxItem listBoxItem = (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>();

@@ -1,5 +1,5 @@
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF Grid → Avalonia.Controls.Grid。
-// WPF FrameworkElement → Avalonia.Controls.Control（字段类型 + 泛型约束）。
+// WPF Layoutable → Avalonia.Controls.Control（字段类型 + 泛型约束）。
 // WPF DependencyProperty.Register + PropertyMetadata → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
 // WPF DependencyPropertyChangedEventArgs → Avalonia.AvaloniaPropertyChangedEventArgs（e.Property/e.NewValue API 兼容）。
 using System;
@@ -11,6 +11,7 @@ using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {

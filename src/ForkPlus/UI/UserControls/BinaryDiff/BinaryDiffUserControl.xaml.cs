@@ -1,4 +1,7 @@
 using Avalonia.Threading;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Media.Imaging;
+using Avalonia.Controls.Documents;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls
@@ -6,7 +9,7 @@ using Avalonia.Threading;
 // - using System.Windows.Media → using Avalonia.Media（Brush/IBrush）
 // - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap（别名替代 BitmapSource）
 // - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
-// - CreateBitmapSource：WPF BitmapImage+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
+// - CreateBitmapSource：WPF Bitmap+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
 //   → new Bitmap(stream)（Avalonia 不可变 Bitmap，构造时自动解码并处理格式，无需 Freeze，参考 AvatarManager）
 // - GetDiffImage：WPF BitmapSource.CopyPixels + FormatConvertedBitmap(Bgra32) + BitmapSource.Create
 //   → System.Drawing.Bitmap(LockBits/Format32bppArgb) 读取像素 + System.Drawing.Bitmap 写回 + PNG 编码 + new Bitmap(ms)
@@ -648,7 +651,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		public static Bitmap CreateBitmapSource(MemoryStream stream)
 		{
-			// 阶段 4.5：WPF BitmapImage+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
+			// 阶段 4.5：WPF Bitmap+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
 			// → Avalonia new Bitmap(stream)。Avalonia Bitmap 构造时自动解码并归一化格式，不可变无需 Freeze。
 			// 参考 AvatarManager.cs（new Bitmap(memoryStream)）与 IconTools.cs（new Bitmap(ms)）。
 			try

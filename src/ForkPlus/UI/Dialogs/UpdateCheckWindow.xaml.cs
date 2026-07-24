@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ForkPlus;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -66,7 +67,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				Dispatcher.Invoke(new Action(() => OnCheckCompleted(info)));
+				Dispatcher.UIThread.Invoke(new Action(() => OnCheckCompleted(info)));
 			}, token);
 		}
 

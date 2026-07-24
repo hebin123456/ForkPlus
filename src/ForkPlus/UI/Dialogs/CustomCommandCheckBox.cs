@@ -1,9 +1,10 @@
 // 阶段 4.5：WPF → Avalonia 迁移。
-// WPF SetResourceReference(FrameworkElement.StyleProperty, typeof(CheckBox))
+// WPF SetResourceReference(Layoutable.StyleProperty, typeof(CheckBox))
 // → Avalonia StyledElement.StyleKeyOverride（让派生控件复用基类 CheckBox 的默认样式）。
 using System;
 using Avalonia.Controls;
 using ForkPlus.UI.CustomCommands;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Dialogs
 {

@@ -7,6 +7,7 @@ using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus
 {

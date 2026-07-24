@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media.IImage；Theme.FolderIcon/WarningIcon 返回 IImage）
+// - IImage → IImage（Avalonia.Media.IImage；Theme.FolderIcon/WarningIcon 返回 IImage）
 using System;
 using Avalonia.Media;
 

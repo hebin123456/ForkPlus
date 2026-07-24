@@ -6,8 +6,8 @@
 // - DependencyObject → AvaloniaObject（参数/HashSet/调用方均传 Control/Window，派生自 AvaloniaObject）
 // - DependencyProperty.RegisterAttached → AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TOwner,TType>
 // - LogicalTreeHelper.GetChildren(element) → ILogical.LogicalChildren（直接逻辑子级，等价 WPF 语义；构造期即可用）
-// - FrameworkElement → Control（Avalonia 无 FrameworkElement）；element is FrameworkElement { ContextMenu: ... } → element is Control { ContextMenu: ... }
-// - FrameworkElement.ToolTip 属性 → ToolTip.GetTip/SetTip 附加属性；FrameworkElement.ToolTipProperty → ToolTip.TipProperty
+// - Layoutable → Control（Avalonia 无 Layoutable）；element is Layoutable { ContextMenu: ... } → element is Control { ContextMenu: ... }
+// - Layoutable.ToolTip 属性 → ToolTip.GetTip/SetTip 附加属性；Layoutable.ToolTipProperty → ToolTip.TipProperty
 // - BindingOperations.GetBindingExpressionBase → 无公开等价；HasBinding 暂返回 false（NOTE(4.5)，Apply 主要面向对话框静态文案）
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,8 @@ using Avalonia.LogicalTree;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json.Linq;
+using Avalonia.Layout;
+using Avalonia.Controls.Primitives;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -307,7 +309,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					ApplyRecursive(childAo, dictionary, visited);
 				}
 			}
-			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（无 FrameworkElement）；ContextMenu 不在逻辑子级中，需单独遍历。
+			// 阶段 4.5：WPF Layoutable → Avalonia Control（无 Layoutable）；ContextMenu 不在逻辑子级中，需单独遍历。
 			if (element is Control control && control.ContextMenu is ContextMenu contextMenu)
 			{
 				ApplyRecursive(contextMenu, dictionary, visited);
@@ -324,12 +326,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 					textBlock.Text = Translate(original, dictionary);
 				}
 			}
-			if (element is HeaderedContentControl headeredContentControl && headeredContentControl.Header is string header && !HasBinding(element, HeaderedContentControl.HeaderProperty))
+			if (element is ContentControl headeredContentControl && headeredContentControl.Header is string header && !HasBinding(element, ContentControl.HeaderProperty))
 			{
 				string original = GetOriginal(element, OriginalHeaderProperty, header);
 				headeredContentControl.Header = Translate(original, dictionary);
 			}
-			if (element is HeaderedItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, HeaderedItemsControl.HeaderProperty))
+			if (element is ItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, ItemsControl.HeaderProperty))
 			{
 				string original = GetOriginal(element, OriginalHeaderProperty, itemsHeader);
 				headeredItemsControl.Header = Translate(original, dictionary);
@@ -352,8 +354,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 					placeholderTextBox.Placeholder = Translate(original, dictionary);
 				}
 			}
-			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.GetTip/SetTip 附加属性；
-			// FrameworkElement.ToolTipProperty → ToolTip.TipProperty。FrameworkElement → Control。
+			// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.GetTip/SetTip 附加属性；
+			// Layoutable.ToolTipProperty → ToolTip.TipProperty。Layoutable → Control。
 			if (element is Control toolTipControl && ToolTip.GetTip(toolTipControl) is string toolTip && !HasBinding(element, ToolTip.TipProperty))
 			{
 				string original = GetOriginal(element, OriginalToolTipProperty, toolTip);

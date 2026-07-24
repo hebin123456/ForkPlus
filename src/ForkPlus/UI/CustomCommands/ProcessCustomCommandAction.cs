@@ -8,6 +8,7 @@ using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Threading;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.CustomCommands
 {

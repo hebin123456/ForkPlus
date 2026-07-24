@@ -1,5 +1,5 @@
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。
-// WPF SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor)) → Avalonia StyleKeyOverride。
+// WPF SetResourceReference(Layoutable.StyleProperty, typeof(CodeEditor)) → Avalonia StyleKeyOverride。
 // WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）。
 using System;
 using Avalonia;
@@ -7,12 +7,13 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
 	public class TextContentControl : CodeEditor, FileContentControl.IFileContentControlSubControl
 	{
-		// 阶段 4.5：WPF SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor))
+		// 阶段 4.5：WPF SetResourceReference(Layoutable.StyleProperty, typeof(CodeEditor))
 		// → Avalonia StyledElement.StyleKeyOverride（让派生控件复用基类 CodeEditor 的默认样式）。
 		protected override Type StyleKeyOverride => typeof(CodeEditor);
 

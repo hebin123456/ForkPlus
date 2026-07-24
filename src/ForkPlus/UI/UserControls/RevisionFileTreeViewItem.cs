@@ -1,8 +1,8 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Media → using Avalonia.Media
 // - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging
-// - BitmapImage → Avalonia.Media.Imaging.Bitmap
-// - ImageSource → IImage
+// - Bitmap → Avalonia.Media.Imaging.Bitmap
+// - IImage → IImage
 using System;
 using System.IO;
 using Avalonia.Media;
@@ -16,7 +16,7 @@ namespace ForkPlus.UI.UserControls
 {
 	public class RevisionFileTreeViewItem : MultiselectionTreeViewItem
 	{
-		// 阶段 4.5：WPF BitmapImage + pack:// URI → Avalonia Bitmap + AssetLoader.Open（不可变，无需 Freeze）。
+		// 阶段 4.5：WPF Bitmap + pack:// URI → Avalonia Bitmap + AssetLoader.Open（不可变，无需 Freeze）。
 		private static readonly Bitmap FolderIcon = LoadAsset(new Uri("avares://ForkPlus/assets/folder.png"));
 
 		private static Bitmap LoadAsset(Uri uri)

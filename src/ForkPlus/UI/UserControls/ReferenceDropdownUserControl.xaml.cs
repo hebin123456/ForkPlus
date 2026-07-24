@@ -3,7 +3,7 @@
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl）
 // - using System.Windows.Markup → 移除
 // - using System.Windows.Media → using Avalonia.Media（IImage）
-// - System.Windows.Media.ImageSource → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
+// - System.Windows.Media.IImage → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
 // - Theme.BranchIcon/TagIcon/RemoteIcon 已返回 Avalonia IImage（参考 Theme.cs）
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.CustomCommands;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -23,7 +24,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			public ForkPlus.Git.Reference Reference { get; private set; }
 
-			// 阶段 4.5：WPF ImageSource → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
+			// 阶段 4.5：WPF IImage → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
 			public IImage Icon { get; private set; }
 
 			public string Title { get; private set; }

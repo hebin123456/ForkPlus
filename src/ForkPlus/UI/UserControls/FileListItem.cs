@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Input
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - DependencyObject → AvaloniaObject（StartDrag 参数，与已迁移基类 MultiselectionTreeViewItem 一致）
 // - DragDrop.DoDragDrop → _ = DragDrop.DoDragDrop（异步返回 Task<DragDropEffects>，丢弃；参考 LocalBranchSidebarItem）
 // - DataObject.SetData → DataObject.Set（Avalonia 11.3 方法名）

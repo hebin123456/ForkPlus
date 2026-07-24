@@ -6,13 +6,13 @@
 // - using System.Windows.Media → using Avalonia.Media（IImage）
 // - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging（Bitmap）+ using Avalonia.Platform（AssetLoader）
 // - 新增 using Avalonia.Controls.Templates（IDataTemplate，替代 DataTemplate）
-// - BitmapImage(pack:// URI) → AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）
-// - ImageSource → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
+// - Bitmap(pack:// URI) → AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）
+// - IImage → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
 // - DependencyProperty.RegisterAttached + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override（EnableMultiSelection 仅作普通属性用于 XAML）
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
 // - MouseDoubleClick + PointerPressedEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
 // - Delegate.Combine(field, handler) → field += handler
-// - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）；GridViewColumn.ActualWidth 保留（GridView 兼容层属性）
+// - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）；GridViewColumn.Bounds.Width 保留（GridView 兼容层属性）
 // - (DataTemplate)base.Resources[key] → (IDataTemplate)base.Resources[key]（Avalonia ItemsControl.ItemTemplate 为 IDataTemplate）
 using System;
 using System.Collections;
@@ -32,6 +32,9 @@ using Avalonia.Platform;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -70,10 +73,10 @@ namespace ForkPlus.UI.UserControls
 		// 避免 UI 冻结。注意：不再据此把 Tree 降级为 List——变更多时也应保持树状显示。
 		private const int LargeFileListBackgroundBuildThreshold = 5000;
 
-		// 阶段 4.5：WPF BitmapImage(pack://application URI) → Avalonia AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）。
+		// 阶段 4.5：WPF Bitmap(pack://application URI) → Avalonia AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）。
 		private static readonly Bitmap FolderIcon = LoadFolderIcon();
 
-		// 阶段 4.5：WPF ImageSource → Avalonia IImage（IconTools.GetImageSourceForExtension 已返回 IImage）。
+		// 阶段 4.5：WPF IImage → Avalonia IImage（IconTools.GetImageSourceForExtension 已返回 IImage）。
 		private static readonly ChangedFileEqualityComparer _changedFileEqualityComparer = new ChangedFileEqualityComparer();
 
 		private readonly Dictionary<string, IImage> _fileIconCache = new Dictionary<string, IImage>(StringComparer.OrdinalIgnoreCase);
@@ -161,7 +164,7 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private static Bitmap LoadFolderIcon()
 		{
-			// 阶段 4.5：WPF pack://application URI + BitmapImage → Avalonia avares:// URI + AssetLoader.Open + Bitmap（参考 AvatarManager）。
+			// 阶段 4.5：WPF pack://application URI + Bitmap → Avalonia avares:// URI + AssetLoader.Open + Bitmap（参考 AvatarManager）。
 			using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")))
 			{
 				return new Bitmap(stream);
@@ -838,7 +841,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				int num = 55;
 				GridView gridView = TreeView.View as GridView;
-				// 阶段 4.5：WPF TreeView.ActualWidth → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
+				// 阶段 4.5：WPF TreeView.Bounds.Width → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
 				double actualWidth = TreeView.Bounds.Width;
 				double actualWidth2 = gridView.Columns[0].ActualWidth;
 				double num2 = actualWidth - actualWidth2;
@@ -858,7 +861,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			_restoringColumnWidth = true;
 			GridView obj = TreeView.View as GridView;
-			// 阶段 4.5：WPF TreeView.ActualWidth → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
+			// 阶段 4.5：WPF TreeView.Bounds.Width → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
 			double actualWidth = TreeView.Bounds.Width;
 			double num = ForkPlusSettings.Default.CommitViewCombinedListLocationColumnWidth;
 			double num2 = actualWidth - num;

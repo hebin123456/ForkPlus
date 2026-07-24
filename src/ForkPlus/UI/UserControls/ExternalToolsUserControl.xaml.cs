@@ -3,11 +3,11 @@
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Markup → 移除
 // - SelectionChangedEventArgs/ContextRequestedEventArgs → Avalonia.Controls 同名类型
-// - ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
+// - ItemsControl.ContainerFromElement(listBox, e.Source as DependencyObject)
 //   → 视觉树遍历 GetVisualParent() 向上查找 ListBoxItem（参考 ItemsControlExtensions.GetContainerAtPoint）
-// - e.OriginalSource → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
+// - e.Source → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
 // - DependencyObject → Visual（Avalonia.VisualTree 扩展方法 GetVisualParent 的接收类型）
-// - FrameworkElement → Control（Avalonia 无 FrameworkElement；Control.Parent 等价）
+// - Layoutable → Control（Avalonia 无 Layoutable；Control.Parent 等价）
 // - WindowStartupLocation → Avalonia.Controls.WindowStartupLocation（API 兼容，参考 IssueTrackerUserControl）
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ using Avalonia.VisualTree;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -144,7 +145,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void ToolsListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
-			// 阶段 4.5：WPF ItemsControl.ContainerFromElement(listBox, e.OriginalSource as DependencyObject)
+			// 阶段 4.5：WPF ItemsControl.ContainerFromElement(listBox, e.Source as DependencyObject)
 			// → Avalonia 视觉树遍历：从 e.Source 沿 GetVisualParent() 向上查找 ListBoxItem（参考 ItemsControlExtensions.GetContainerAtPoint）。
 			Visual source = e.Source as Visual;
 			while (source != null && !(source is ListBoxItem))

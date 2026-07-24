@@ -10,6 +10,7 @@ using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Settings;
 using AvaloniaEdit.Rendering;
 using Avalonia.Controls.Primitives;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
@@ -163,7 +164,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
-				double num4 = base.TextArea.ActualHeight - num3 * 2.0;
+				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
 				Block[] blocks = _blocks;
 				for (int i = 0; i < blocks.Length; i++)
 				{

@@ -13,6 +13,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI;
 using System.ComponentModel;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -136,7 +137,7 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>颜色预览块点击 → 打开颜色选择 Popup。</summary>
 		private void ColorPreview_Click(object sender, PointerPressedEventArgs e)
 		{
-			if (sender is FrameworkElement fe && fe.Tag is CustomColorItem item)
+			if (sender is Layoutable fe && fe.Tag is CustomColorItem item)
 			{
 				_popupEditingItem = item;
 				// 初始化阶段标志：用 item 当前 hex 填充 Popup 控件时不要回写 _workingCopy

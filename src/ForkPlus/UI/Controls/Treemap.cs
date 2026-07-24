@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Controls + using Avalonia.Input + using Avalonia.Media
-// - FrameworkElement → Avalonia.Controls.Control
+// - Layoutable → Avalonia.Controls.Control
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
 // - Bounds.Size → Bounds.Size
 // - OnRenderSizeChanged(SizeChangedInfo) → ArrangeOverride 检测尺寸变化（Avalonia 无 OnRenderSizeChanged）
@@ -18,6 +18,8 @@ using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.Helpers;
 using ForkPlus;
+using Avalonia.Controls.Documents;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {

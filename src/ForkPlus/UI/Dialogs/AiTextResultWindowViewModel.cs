@@ -1,4 +1,5 @@
 using ForkPlus.Jobs;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

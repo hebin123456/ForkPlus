@@ -30,6 +30,7 @@ using ForkPlus.Git;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {

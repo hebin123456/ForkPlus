@@ -33,6 +33,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Newtonsoft.Json.Linq;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -252,7 +253,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			this.SetWindowLocationState(ForkPlusSettings.Default.AiResultWindowLocationState);
-			if (Application.Current?.MainWindow?.WindowState == WindowState.Maximized)
+			if (App.GetDesktopMainWindow()?.WindowState == WindowState.Maximized)
 			{
 				WindowState = WindowState.Maximized;
 			}
@@ -294,7 +295,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private static void ActivateMainWindow()
 		{
-			Window mainWindow = Application.Current?.MainWindow;
+			Window mainWindow = App.GetDesktopMainWindow();
 			if (mainWindow == null)
 			{
 				return;
@@ -318,7 +319,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void FileReviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			double maxFileTreeWidth = Math.Max(160, FileReviewGrid.ActualWidth - 205);
+			double maxFileTreeWidth = Math.Max(160, FileReviewGrid.Bounds.Width - 205);
 			FileReviewGrid.ColumnDefinitions[0].MaxWidth = maxFileTreeWidth;
 		}
 
@@ -1158,7 +1159,7 @@ namespace ForkPlus.UI.Dialogs
 				if (shouldScrollToEnd)
 				{
 					// Markdown 渲染后需要一轮布局才能测得正确高度，延迟滚动到底
-					Dispatcher.Post(ScrollInnerViewerToEnd);
+					Dispatcher.UIThread.Post(ScrollInnerViewerToEnd);
 				}
 			}
 			catch (Exception ex)

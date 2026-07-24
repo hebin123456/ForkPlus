@@ -9,6 +9,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using AvaloniaEdit;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -100,7 +101,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			base.Render(drawingContext);
 			TextArea textArea = _textEditor.TextArea;
-			if (textArea.TextView.ActualWidth == 0.0)
+			if (textArea.TextView.Bounds.Width == 0.0)
 			{
 				return;
 			}

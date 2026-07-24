@@ -13,12 +13,13 @@ using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
 using ForkPlus.UI.Helpers;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls.Editor
 {
 	/// <summary>
 	/// 阶段 4 里程碑 4.7-a：WPF→Avalonia 迁移要点：
-	/// - FrameworkElement → Avalonia.Controls.Control
+	/// - Layoutable → Avalonia.Controls.Control
 	/// - Adorner/AdornerLayer → ButtonsOverlay (自定义 Control) + OverlayLayer (Avalonia.Controls.Primitives)
 	/// - IWeakEventListener/WeakEventManagerBase → 直接事件订阅
 	/// - VisualTreeHelper.HitTest → InputHitTest
@@ -231,7 +232,7 @@ namespace ForkPlus.UI.Controls.Editor
 			double num = 15.0;
 			double num2 = 20.0;
 			num -= _textEditor.SearchBarHeight;
-			double num3 = _textEditor.TextArea.TextView.ActualWidth - num2;
+			double num3 = _textEditor.TextArea.TextView.Bounds.Width - num2;
 			double top = popupTopPosition + num;
 			if (_overlay == null)
 			{
@@ -346,7 +347,7 @@ namespace ForkPlus.UI.Controls.Editor
 				num2 += item.Height;
 				flag = false;
 			}
-			Rect rect = new Rect(0.0, num, _textEditor.ActualWidth, num2);
+			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2);
 			DrawBorder(rect, drawingContext);
 			ShowChunkAdorner(num + _textEditor.SearchBarHeight);
 		}
@@ -393,7 +394,7 @@ namespace ForkPlus.UI.Controls.Editor
 				double num3 = textView.GetVisualLine(i)?.Height ?? 0.0;
 				num2 += num3;
 			}
-			return new Rect(0.0, num + 1.0, textView.ActualWidth, num2 - 1.0);
+			return new Rect(0.0, num + 1.0, textView.Bounds.Width, num2 - 1.0);
 		}
 
 		[Null]

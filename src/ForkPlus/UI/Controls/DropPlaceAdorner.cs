@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using ForkPlus.UI;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls
 {

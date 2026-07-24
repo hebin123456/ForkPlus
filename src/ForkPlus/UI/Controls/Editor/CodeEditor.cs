@@ -5,6 +5,7 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using AvaloniaEdit;
 using ForkPlus.UI.Helpers;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -36,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_templatePartSearchPanel = GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
+			_templatePartSearchPanel = NameScope?.Find("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
 			_templatePartSearchPanel?.Attach(base.TextArea);
 		}
 

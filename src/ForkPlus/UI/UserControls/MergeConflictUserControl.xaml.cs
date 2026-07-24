@@ -24,6 +24,8 @@ using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {

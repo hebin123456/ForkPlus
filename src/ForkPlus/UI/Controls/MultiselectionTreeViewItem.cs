@@ -3,7 +3,7 @@
 // - DependencyObject → AvaloniaObject
 // - DragEventArgs / DragDropEffects / IDataObject → Avalonia.Input 命名空间（同名类型）
 // - INotifyPropertyChanged 保持（System.ComponentModel，与 WPF/Avalonia 无关）
-// 本类为数据模型（继承 FlattenerNode），非控件；base.IsVisible 来自 FlattenerNode，非 FrameworkElement。
+// 本类为数据模型（继承 FlattenerNode），非控件；base.IsVisible 来自 FlattenerNode，非 Layoutable。
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Input;
 using ForkPlus.UI.Controls.Flattener;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {

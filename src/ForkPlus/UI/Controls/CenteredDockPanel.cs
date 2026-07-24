@@ -9,7 +9,7 @@ namespace ForkPlus.UI.Controls
 	// WPF DockPanel.GetDock(UIElement) → Avalonia DockPanel.GetDock(Control)（API 兼容）。
 	// WPF UIElement.Measure/Arrange/DesiredSize → Avalonia Control.Measure/Arrange/DesiredSize。
 	// WPF Layoutable.MeasureOverride/ArrangeOverride(Size) → Avalonia 同名签名（一致）。
-	// 注意：Avalonia DockPanel 的 LastChildFill 属性存在；Children 返回 IList<IVisual>，
+	// 注意：Avalonia DockPanel 的 LastChildFill 属性存在；Children 返回 IList<Visual>，
 	// 但实际元素是 Control，通过类型转换访问 DesiredSize/Arrange 等。
 	public class CenteredDockPanel : DockPanel
 	{

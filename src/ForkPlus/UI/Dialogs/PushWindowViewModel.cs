@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using ForkPlus.Git;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {
 	// 阶段 3：承接 PushWindow 的远端/本地分支/远端分支选择 + 选项 + 命令预览。
-	// RemoteItem/RemoteBranchItem 嵌套类（含 WPF ImageSource/Visibility）整体留 View 作列表项；
+	// RemoteItem/RemoteBranchItem 嵌套类（含 WPF IImage/Visibility）整体留 View 作列表项；
 	// VM 仅持选中状态纯数据投影 + CustomRefspec + 选项 + 命令预览。
 	// Refresh/RefreshRemoteBranches/RefreshRemotes/CheckSubmodules/SelectRemote 留 View。
 	internal sealed class PushWindowViewModel

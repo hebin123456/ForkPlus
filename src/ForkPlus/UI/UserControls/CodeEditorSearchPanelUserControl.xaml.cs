@@ -12,6 +12,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {

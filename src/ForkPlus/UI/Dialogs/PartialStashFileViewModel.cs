@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage
+// - IImage → IImage
 using System.ComponentModel;
 using System.IO;
 using Avalonia.Media;

@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls
 {
@@ -51,7 +52,7 @@ namespace ForkPlus.UI.Controls
 	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (GetTemplateChild("Popup") is Popup popup)
+			if (NameScope?.Find("Popup") is Popup popup)
 			{
 				_popup = popup;
 				_popup.PlacementTarget = this;

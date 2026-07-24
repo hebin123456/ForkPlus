@@ -6,7 +6,7 @@
 // - using System.Windows.Navigation → 移除（Avalonia 无 RequestNavigateEventArgs）
 // - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 GitUserControl）
 // - SelectionChangedEventArgs → Avalonia.Controls 同名类型
-// - e.OriginalSource → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
+// - e.Source → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
 using System;
 using System.ComponentModel;
 using Avalonia;

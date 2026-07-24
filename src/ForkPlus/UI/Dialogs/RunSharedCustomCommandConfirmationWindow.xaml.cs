@@ -1,6 +1,7 @@
 using Avalonia.Media;
 using System;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

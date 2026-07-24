@@ -2,10 +2,10 @@
 // - using System.Windows.Media → using Avalonia.Media
 // - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging
 // - 新增 using Avalonia.Platform（AssetLoader）+ using System.IO（Stream）
-// - ImageSource → IImage（Avalonia.Media）
-// - BitmapImage → Avalonia.Media.Imaging.Bitmap
+// - IImage → IImage（Avalonia.Media）
+// - Bitmap → Avalonia.Media.Imaging.Bitmap
 // - pack://application:,,,/ForkPlus;component/Assets/x.png → avares://ForkPlus/Assets/x.png
-// - BitmapImage(uri) + Freeze → AssetLoader.Open(uri) + new Bitmap(stream)（Avalonia Bitmap 不可变，无需 Freeze，参考 AvatarManager/FileListUserControl）
+// - Bitmap(uri) + Freeze → AssetLoader.Open(uri) + new Bitmap(stream)（Avalonia Bitmap 不可变，无需 Freeze，参考 AvatarManager/FileListUserControl）
 // - Geometry 解析为 Avalonia.Media.Geometry（Theme.FindGeometry 已返回 Avalonia Geometry）
 // - Theme.FindImage 已返回 IImage，TryFindResource 调用保持不变
 using System;
@@ -15,6 +15,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ForkPlus.Services;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
 
 // ⚠ 临时桥接线 ─ 这些扩展方法与原有命名空间相同，因此调用方无需修改 using。
 // 在迁移到 Avalonia 时，直接删除此文件并在新 UI 中重写图标解析逻辑。
@@ -43,7 +44,7 @@ namespace ForkPlus.Git
 		private static readonly IImage TypeChangedIcon = LoadBitmap(TypeChangedIconUrl);
 		private static readonly IImage UnmergedIcon = LoadBitmap(UnmergedIconUrl);
 
-		// 阶段 4.5：WPF BitmapImage(uri) + Freeze → Avalonia AssetLoader.Open(uri) + new Bitmap(stream)。
+		// 阶段 4.5：WPF Bitmap(uri) + Freeze → Avalonia AssetLoader.Open(uri) + new Bitmap(stream)。
 		// Avalonia Bitmap 构造时自动解码并归一化格式，且不可变，无需 Freeze（参考 AvatarManager.LoadBitmapFromAsset）。
 		private static IImage LoadBitmap(Uri assetUri)
 		{

@@ -8,14 +8,14 @@
 // - 新增 using Avalonia.Interactivity（RoutedEventArgs）、using Avalonia.VisualTree（GetVisualAncestors）
 // - RichTextBox.Document.Blocks（FlowDocument 模型）→ StackPanel.Children（每行一个 TextBlock + Inlines）
 //   Paragraph → TextBlock（Inlines 等价；Margin 兼容）。XAML 需同步迁移：RichTextBox → ScrollViewer+StackPanel。
-// - Dispatcher.BeginInvoke(action, DispatcherPriority) → Dispatcher.Post(action, priority)（参考 AiDevelopmentWindow）
+// - Dispatcher.UIThread.BeginInvoke(action, DispatcherPriority) → Dispatcher.UIThread.Post(action, priority)（参考 AiDevelopmentWindow）
 // - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl）
 // - new Hyperlink(new Run(url)) → new Hyperlink + Inlines.Add(new Run(url))（Avalonia Span 无 Inline 构造函数）
 // - Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）
 // - Brush → IBrush（Avalonia.Media.IBrush，Brushes.XXX 返回 ISolidColorBrush）
-// - button.ToolTip = link → ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）
+// - ToolTip.SetTip(button, link → ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）
 // - OutputTextBox.ScrollToEnd() → 查找父 ScrollViewer.ScrollToEnd()（Avalonia ScrollViewer.ScrollToEnd 存在）
-using System;
+using System)
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,6 +27,8 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.UI.Controls;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -81,8 +83,8 @@ namespace ForkPlus.UI.UserControls
 				}
 				_outputFlushScheduled = true;
 			}
-			// 阶段 4.5：WPF Dispatcher.BeginInvoke(action, DispatcherPriority) → Avalonia Dispatcher.Post(action, priority)（参考 AiDevelopmentWindow）。
-			Dispatcher.Post(FlushOutput, DispatcherPriority.Background);
+			// 阶段 4.5：WPF Dispatcher.UIThread.BeginInvoke(action, DispatcherPriority) → Avalonia Dispatcher.UIThread.Post(action, priority)（参考 AiDevelopmentWindow）。
+			Dispatcher.UIThread.Post(FlushOutput, DispatcherPriority.Background);
 		}
 
 		private void AppendOutputText(string text)
@@ -113,14 +115,14 @@ namespace ForkPlus.UI.UserControls
 				_pendingOutputLines.Clear();
 				_outputFlushScheduled = false;
 			}
-			if (Dispatcher.CheckAccess())
+			if (Dispatcher.UIThread.CheckAccess())
 			{
 				// 阶段 4.5：WPF OutputTextBox.Document.Blocks.Clear() → Avalonia OutputTextBox.Children.Clear()（StackPanel 模型）。
 				OutputTextBox.Children.Clear();
 				_outputLineCount = 0;
 				return;
 			}
-			Dispatcher.Invoke(delegate
+			Dispatcher.UIThread.Invoke(delegate
 			{
 				OutputTextBox.Children.Clear();
 				_outputLineCount = 0;
@@ -452,8 +454,8 @@ namespace ForkPlus.UI.UserControls
 					Padding = new Thickness(6.0, 1.0, 6.0, 1.0),
 					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)
 				};
-				// 阶段 4.5：WPF button.ToolTip = link → Avalonia ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）。
-				ToolTip.SetTip(button, link);
+				// 阶段 4.5：WPF ToolTip.SetTip(button, link → Avalonia ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）。
+				ToolTip.SetTip(button, link))
 				button.Click += delegate
 				{
 					OpenUrl(link);

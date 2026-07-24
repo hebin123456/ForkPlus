@@ -23,6 +23,7 @@ using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.QuickLaunch
 {

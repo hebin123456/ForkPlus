@@ -2,14 +2,14 @@
 // WPF DependencyProperty → Avalonia StyledProperty（AvaloniaProperty.Register<TOwner, TType>）。
 // WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
 // WPF DependencyObject（容器参数）→ Avalonia.Control。
-// WPF FrameworkElement → Avalonia.Control。
+// WPF Layoutable → Avalonia.Control。
 // WPF Brush → Avalonia.Media.IBrush。
 // WPF OnPreviewMouseRightButtonDown (tunneling) → Avalonia OnPointerPressed + IsRightButtonPressed 检查。
 // WPF OnMouseDoubleClick → Avalonia OnDoubleTapped。
-// WPF e.OriginalSource → Avalonia e.Source。
+// WPF e.Source → Avalonia e.Source。
 // WPF ItemContainerGenerator.ContainerFromItem → Avalonia ContainerFromItem。
 // WPF GetContainerForItemOverride → Avalonia CreateContainerForItemOverride。
-// WPF Dispatcher.BeginInvoke(DispatcherPriority, ...) → Avalonia Dispatcher.Async(...)。
+// WPF Dispatcher.UIThread.BeginInvoke(DispatcherPriority, ...) → Avalonia Dispatcher.UIThread.Async(...)。
 // WPF e.Effects → Avalonia e.DragEffects（DragEventArgs → Avalonia.Input.DragEventArgs）。
 // WPF Application.Current.TryFindResource → Theme.FindResource。
 // WPF ActualHeight → Avalonia Bounds.Height。
@@ -28,6 +28,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using ForkPlus.UI.Controls.Flattener;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
@@ -226,7 +227,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source。
+			// 阶段 4.5：WPF e.Source → Avalonia e.Source。
 			TreeViewControlItem treeViewControlItem = e.Source as TreeViewControlItem;
 			switch (e.Key)
 			{
@@ -332,8 +333,8 @@ namespace ForkPlus.UI.Controls
 			}
 			else
 			{
-				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, DispatcherOperationCallback, object)
-				// → Avalonia Dispatcher.Async(Action)。NOTE(4.5): 验证 DispatcherPriority.Loaded 等价性。
+				// 阶段 4.5：WPF Dispatcher.UIThread.BeginInvoke(DispatcherPriority.Loaded, DispatcherOperationCallback, object)
+				// → Avalonia Dispatcher.UIThread.Async(Action)。NOTE(4.5): 验证 DispatcherPriority.Loaded 等价性。
 				Dispatcher.UIThread.Async(() => OnFocusItem(node));
 			}
 		}
@@ -357,7 +358,7 @@ namespace ForkPlus.UI.Controls
 			if (multiselectionTreeViewItem != node)
 			{
 				ScrollIntoView((object)multiselectionTreeViewItem);
-				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, Action) → Avalonia Dispatcher.Async(Action)。
+				// 阶段 4.5：WPF Dispatcher.UIThread.BeginInvoke(DispatcherPriority.Loaded, Action) → Avalonia Dispatcher.UIThread.Async(Action)。
 				Dispatcher.UIThread.Async(() => ScrollIntoView((object)node));
 			}
 		}
@@ -385,7 +386,7 @@ namespace ForkPlus.UI.Controls
 		private object OnFocusItem(object item)
 		{
 			// 阶段 4.5：WPF ItemContainerGenerator.ContainerFromItem → Avalonia ContainerFromItem。
-			// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+			// 阶段 4.5：WPF Layoutable → Avalonia Control。
 			if (base.ContainerFromItem(item) is Control frameworkElement)
 			{
 				frameworkElement.Focus();
@@ -532,7 +533,7 @@ namespace ForkPlus.UI.Controls
 			List<DropTarget> list = new List<DropTarget>();
 			_ = item.Node;
 			TryAddDropTarget(list, item, e);
-			// 阶段 4.5：WPF FrameworkElement.ActualHeight → Avalonia Layoutable.Bounds.Height。
+			// 阶段 4.5：WPF Layoutable.Bounds.Height → Avalonia Layoutable.Bounds.Height。
 			double actualHeight = item.Bounds.Height;
 			double num = 0.2 * actualHeight;
 			double y = actualHeight / 2.0;

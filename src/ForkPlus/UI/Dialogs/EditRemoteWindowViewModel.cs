@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using ForkPlus.Git;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {
 	// 阶段 3：承接 EditRemote 的远端名/URL 校验 + 命令预览。
 	// 复用 Validate() 三元组：name/url 非空 + (name/url 至少一项变化) + ReferenceNameValidator(name) + 不重名 → Warning。
 	// 重名消息 "Remote '...' already exists" 用原文（不翻译）。
-	// AccountItem 嵌套类（含 WPF ImageSource）/TestButton/NetworkProtocolContextMenu/AccountsComboBox 留 View。
+	// AccountItem 嵌套类（含 WPF IImage）/TestButton/NetworkProtocolContextMenu/AccountsComboBox 留 View。
 	internal sealed class EditRemoteWindowViewModel
 	{
 		private readonly Remote[] _remotes;

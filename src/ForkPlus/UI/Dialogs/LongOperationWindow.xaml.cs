@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -58,7 +59,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void LongOperationWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			Dispatcher.Post(new Action(async delegate
+			Dispatcher.UIThread.Post(new Action(async delegate
 			{
 				try
 				{

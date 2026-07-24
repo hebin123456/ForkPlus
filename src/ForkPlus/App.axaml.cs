@@ -32,6 +32,7 @@ using NLog;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus
 {
@@ -494,7 +495,7 @@ namespace ForkPlus
 			{
 				return logicalParentObj;
 			}
-			// 阶段 5：Avalonia 11 移除 IVisual 接口，改用 Visual + VisualExtensions.GetVisualParent。
+			// 阶段 5：Avalonia 11 移除 Visual 接口，改用 Visual + VisualExtensions.GetVisualParent。
 			if (child is Visual visual)
 			{
 				return visual.GetVisualParent();
@@ -513,14 +514,14 @@ namespace ForkPlus
 			return Enumerable.Empty<Window>();
 		}
 
-		private static Window GetDesktopMainWindow()
+		public static Window GetDesktopMainWindow()
+	{
+		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-			{
-				return desktop.MainWindow;
-			}
-			return null;
+			return desktop.MainWindow;
 		}
+		return null;
+	}
 
 		private static string DescribeScrollContentPresenters(AvaloniaObject root)
 		{

@@ -7,10 +7,13 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	// 阶段 4.5：WPF FrameworkElement.OnRender → Avalonia.Control.Render。
+	// 阶段 4.5：WPF Layoutable.OnRender → Avalonia.Control.Render。
 	// WPF PointerEventArgs/OnMouseDown → Avalonia PointerEventArgs/OnPointerPressed。
 	// WPF Mouse.GetPosition 静态方法不存在于 Avalonia；改为在 OnPointerMoved 中缓存最新位置。
 	// WPF GuidelineSet 在 Avalonia 中不存在（Avalonia 用 UseLayoutRounding + SnapToPixels 像素对齐）；
@@ -175,7 +178,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// 阶段 4.5：WPF FrameworkElement.OnRender → Avalonia Control.Render。
+		// 阶段 4.5：WPF Layoutable.OnRender → Avalonia Control.Render。
 		public override void Render(DrawingContext drawingContext)
 		{
 			if (base.DataContext is DecoratedRevision decoratedRevision)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ForkPlus.Jobs.Impl;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Jobs
 {

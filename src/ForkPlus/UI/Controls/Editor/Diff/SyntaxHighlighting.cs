@@ -4,6 +4,7 @@ using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

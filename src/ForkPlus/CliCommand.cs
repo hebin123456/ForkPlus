@@ -1,3 +1,4 @@
+using Avalonia.Controls.Documents;
 namespace ForkPlus
 {
 	public abstract class CliCommand

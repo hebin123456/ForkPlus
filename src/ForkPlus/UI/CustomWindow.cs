@@ -9,6 +9,7 @@ using ForkPlus.UI.Helpers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {

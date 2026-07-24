@@ -99,7 +99,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void Refresh()
 		{
-			RepositoryData repositoryData = (Application.Current.MainWindow as MainWindow).TabManager.ActiveRepositoryUserControl.RepositoryData;
+			RepositoryData repositoryData = (App.GetDesktopMainWindow() as MainWindow).TabManager.ActiveRepositoryUserControl.RepositoryData;
 			_gitFlowSettings = repositoryData.GitFlowSettings;
 			_localBranches = repositoryData.References.LocalBranches;
 			_viewModel = new GitFlowStartFeatureWindowViewModel(_gitFlowSettings, _localBranches);

@@ -9,6 +9,7 @@ using ForkPlus.Shell;
 using ForkPlus.Shell.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

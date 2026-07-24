@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

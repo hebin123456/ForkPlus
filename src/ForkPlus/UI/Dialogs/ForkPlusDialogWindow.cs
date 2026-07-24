@@ -15,6 +15,7 @@ using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Dialogs
 {

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Avalonia.Interactivity;
+using Avalonia;
 
 namespace ForkPlus.UI.Controls
 {
@@ -12,7 +13,7 @@ namespace ForkPlus.UI.Controls
 	// WPF VisualTreeHelper.GetChildrenCount/GetChild → Avalonia GetVisualDescendants().OfType<ScrollViewer>()。
 	// WPF CLR 事件 DragOver/DragLeave/Drop (control.DragOver +=) → Avalonia RoutedEvent AddHandler(DragDrop.XxxEvent, handler)。
 	// WPF DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容）。
-	// WPF ItemsControl.ActualHeight → Avalonia Bounds.Height。
+	// WPF ItemsControl.Bounds.Height → Avalonia Bounds.Height。
 	public class DragAutoScrollHelper
 	{
 		private const double EdgeThreshold = 25.0;

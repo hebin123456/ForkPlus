@@ -9,31 +9,31 @@
 // - 新增 using Avalonia.Layout（Visibility/HorizontalAlignment/VerticalAlignment）
 // - 新增 using Avalonia.Threading（Dispatcher）、using Avalonia.VisualTree（GetVisualParent/GetVisualDescendants）
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(obj, "Event", h) → obj.Event += h（参考 ClosableTabItem/FileControlHeaderUserControl）
-// - Dispatcher.BeginInvoke(new Action(() => ...)) → Dispatcher.Post(() => ...)
+// - Dispatcher.UIThread.BeginInvoke(new Action(() => ...)) → Dispatcher.UIThread.Post(() => ...)
 // - Application.Current.TryFindResource("Key") as Brush/SolidColorBrush → Theme.FindBrush("Key")（参考 ActivityManagerUserControl）
 // - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)（参考 StatusUserControl）
 // - popupContent.SetResourceReference(Border.BackgroundProperty/BorderBrushProperty, key) → 直接设置 Background/BorderBrush = Theme.FindBrush(key)
 // - Brush → IBrush（Foreground 属性类型）
 // - TabItem.AllowDrop 属性 → DragDrop.SetAllowDrop 附加属性（Avalonia 无 CLR AllowDrop）
-// - element.ToolTip = "..." → ToolTip.SetTip(element, "...")（参考 ClosableTabItem）
-// - FrameworkElement → Control
+// - ToolTip.SetTip(element, "..." → ToolTip.SetTip(element, "...")（参考 ClosableTabItem）
+// - Layoutable → Control
 // - DependencyObject → Visual（视觉树节点；AvaloniaObject 用于依赖属性场景）
 // - SubrepoTab PreviewMouseDown/Move/Up → PointerPressed/Moved/Released（无 Preview 变体，参考 ClosableTabItem）
 // - PointerPressedEventArgs → PointerPressedEventArgs/PointerReleasedEventArgs；PointerEventArgs → PointerEventArgs
 // - e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
 // - Mouse.PrimaryDevice.LeftButton → e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
-// - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - e.Source → e.Source（参考 ListViewScrollbarDoubleClickHelper）
 // - SystemParameters.Minimum*DragDistance → 常量 10.0（参考 DragAndDropListViewItem）
 // - DragDrop.DoDragDrop(...) → _ = DragDrop.DoDragDrop(...)（返回 Task，丢弃；payload 用 WeakReference<TabItem>，参考 ClosableTabItem）
 // - e.Data.GetData(type) → e.Data.Get(type)
-// - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width（控件；RowDefinition.ActualHeight 保留）
+// - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width（控件；RowDefinition.Bounds.Height 保留）
 // - VisualTreeHelper.GetParent → GetVisualParent()；VisualTreeHelper.GetChildrenCount/GetChild → GetVisualDescendants().OfType<T>()
 // - PreviewMouseWheel + MouseWheelEventArgs → PointerWheelChanged + PointerWheelEventArgs（e.Delta int ±120 → Vector ±1，放大为像素步进）
 // - ScrollViewer.HorizontalOffset/ScrollToHorizontalOffset → Offset.X / 直接设置 Offset（参考 NoUIAutomationListView）
 // - Popup.StaysOpen=false → IsLightDismissEnabled=true；AllowsTransparency → 移除（参考 GraphCellView/DateRangeButton）
 // - MainWindow.Instance 已迁移为静态属性（基于 IClassicDesktopStyleApplicationLifetime），直接保留
 // - ShowDialog().GetValueOrDefault() 保持不变（代码库已统一处理 Avalonia ShowDialog 返回值）
-using System;
+using System)
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -60,6 +60,9 @@ using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Accounts;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -216,8 +219,8 @@ namespace ForkPlus.UI.UserControls
 				}
 				if (missing || unsupported)
 			{
-				// 阶段 4.5：WPF Dispatcher.BeginInvoke(new Action(() => ...)) → Avalonia Dispatcher.Post(() => ...)。
-				Dispatcher.Post(() =>
+				// 阶段 4.5：WPF Dispatcher.UIThread.BeginInvoke(new Action(() => ...)) → Avalonia Dispatcher.UIThread.Post(() => ...)。
+				Dispatcher.UIThread.Post(() =>
 				{
 					string msg;
 					if (missing)
@@ -392,7 +395,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshCommandButtonTooltips()
 		{
-			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性（参考 ClosableTabItem）。
+			// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性（参考 ClosableTabItem）。
 			ToolTip.SetTip(StartButton, Translate("Start") + Environment.NewLine + Translate("Hold Ctrl for Quick Start"));
 			ToolTip.SetTip(SyncButton, Translate("Sync") + Environment.NewLine + Translate("Hold Ctrl for Quick Sync"));
 			ToolTip.SetTip(UploadButton, Translate("Upload") + Environment.NewLine + Translate("Hold Ctrl for Quick Upload"));
@@ -426,7 +429,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					return;
 				}
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (monitor.IsCanceled)
 					{
@@ -450,7 +453,7 @@ namespace ForkPlus.UI.UserControls
 		private void RefreshSubreposTitle()
 		{
 			SubreposTitleTextBlock.Text = PreferencesLocalization.FormatCurrent("{0} repositories", _workspace.Subrepos.Count);
-			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(GitMmHelpButton, Translate("Show git mm reference"));
 			RefreshSubrepoSummary();
 			RefreshSubrepoFilterButton();
@@ -569,7 +572,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SummaryButton_Click(object sender, RoutedEventArgs e)
 		{
-			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 DiffEntryRowUserControl）。
+			// 阶段 4.5：WPF Layoutable → Avalonia Control（参考 DiffEntryRowUserControl）。
 			string filterMode = (sender as Control)?.Tag as string;
 			if (filterMode == "clear")
 			{
@@ -754,7 +757,7 @@ namespace ForkPlus.UI.UserControls
 							},
 							monitor);
 				}
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					AppendOutput("");
 					AppendOutput(string.Format(Translate("Exit code: {0}"), result.ExitCode));
@@ -777,7 +780,7 @@ namespace ForkPlus.UI.UserControls
 					if (ShouldRescanSubreposAfterCommand(args))
 					{
 						List<string> paths = ScanSubrepos(_workspace.Path, SubrepoScanDepth, out var submodulePaths);
-						Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							_submoduleSubrepoPaths = submodulePaths;
 							_workspace.PreferredSubrepoPath = _workspace.SelectedSubrepo?.Path ?? _workspace.PreferredSubrepoPath;
@@ -793,8 +796,8 @@ namespace ForkPlus.UI.UserControls
 					}
 					else
 					{
-						Dispatcher.Async(RefreshLoadedSubrepoControls);
-						Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(RefreshLoadedSubrepoControls);
+						Dispatcher.UIThread.Async(delegate
 						{
 							RefreshSubrepoRuntimeState();
 						});
@@ -908,7 +911,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				catch (Exception ex)
 				{
-					Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						AppendOutput(ex.ToString());
 						SetStatus(ex.Message);
@@ -916,7 +919,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				finally
 				{
-					Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_activeJob == job)
 						{
@@ -1591,7 +1594,7 @@ namespace ForkPlus.UI.UserControls
 
 		// 阶段 4.5：WPF PreviewMouseDown + PointerPressedEventArgs → Avalonia PointerPressed + PointerPressedEventArgs（无 Preview 变体，参考 ClosableTabItem）。
 		// 阶段 4.5：WPF e.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
-		// 阶段 4.5：WPF e.OriginalSource → e.Source；DependencyObject → Visual（视觉树节点）。
+		// 阶段 4.5：WPF e.Source → e.Source；DependencyObject → Visual（视觉树节点）。
 		private void SubrepoTabItem_PointerPressed(object sender, PointerPressedEventArgs e)
 		{
 			_subrepoTabDragItem = null;
@@ -1639,7 +1642,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		// 阶段 4.5：WPF e.Data.GetData(type) → Avalonia e.Data.Get(type)。
-		// 阶段 4.5：WPF e.OriginalSource → e.Source；DependencyObject → Visual；ActualHeight/ActualWidth → Bounds.Height/Bounds.Width。
+		// 阶段 4.5：WPF e.Source → e.Source；DependencyObject → Visual；ActualHeight/ActualWidth → Bounds.Height/Bounds.Width。
 		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
 			if (!(sender is TabItem targetTabItem) || !(e.Data.Get(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
@@ -1706,7 +1709,7 @@ namespace ForkPlus.UI.UserControls
 			SaveSettings();
 		}
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+		// 阶段 4.5：WPF Layoutable → Avalonia Control。
 		private static Control CreateSubrepoTabHeader(GitMmSubrepoItem subrepo)
 		{
 			DockPanel panel = new DockPanel
@@ -1924,7 +1927,7 @@ namespace ForkPlus.UI.UserControls
 					return;
 				}
 				monitor.Success(Translate("git mm status refresh finished"));
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (_activeStatusRefreshJob == job)
 					{
@@ -2376,7 +2379,7 @@ namespace ForkPlus.UI.UserControls
 			return orderedPaths;
 		}
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+		// 阶段 4.5：WPF Layoutable → Avalonia Control。
 		private Control CreateRepositoryContent(string path)
 		{
 			GitCommandResult<GitModule> result = new OpenGitRepositoryGitCommand().Execute(path);
@@ -2753,7 +2756,7 @@ namespace ForkPlus.UI.UserControls
 
 		public string DisplayName => BaseDisplayName + (IsRootRepository ? PreferencesLocalization.Current("[Main]") : IsSubmodule ? PreferencesLocalization.Current("[Submodule]") : PreferencesLocalization.Current("[Sub]"));
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+		// 阶段 4.5：WPF Layoutable → Avalonia Control。
 		[Null]
 		public Control RepositoryControl { get; set; }
 

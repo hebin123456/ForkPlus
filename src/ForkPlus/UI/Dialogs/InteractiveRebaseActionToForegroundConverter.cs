@@ -4,6 +4,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using ForkPlus.Git;
 using Avalonia;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Dialogs
 {

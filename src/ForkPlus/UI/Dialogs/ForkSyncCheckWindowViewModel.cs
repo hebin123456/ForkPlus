@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ForkPlus.Git.Commands;
+using Avalonia.Media.Imaging;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -11,7 +12,7 @@ namespace ForkPlus.UI.Dialogs
 	/// <remarks>
 	/// 极薄 VM：原 IsSubmitAllowed 仅 <c>_status.HasValue &amp;&amp; base.IsSubmitAllowed</c>。
 	/// VM 持 <see cref="Status"/>（<see cref="ForkSyncStatus"/>?），View override 合并 VM.HasValue 与 base.IsSubmitAllowed。
-	/// ConfigureForStatus 的 BitmapImage/TextBlock 等 UI 操作留 View。
+	/// ConfigureForStatus 的 Bitmap/TextBlock 等 UI 操作留 View。
 	/// </remarks>
 	public class ForkSyncCheckWindowViewModel : INotifyPropertyChanged
 	{

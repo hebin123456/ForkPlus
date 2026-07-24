@@ -1,3 +1,4 @@
+using Avalonia.Styling;
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
 	public struct Highlighting

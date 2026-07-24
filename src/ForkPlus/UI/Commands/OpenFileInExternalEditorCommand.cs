@@ -22,7 +22,7 @@ using Avalonia;
 namespace ForkPlus.UI.Commands
 {
 	// 阶段 4.5：WPF Mouse.GetPosition + VisualTreeHelper.HitTest
-	// → Avalonia 通过 InputElement.GetPosition + IVisual.GetVisualAt。
+	// → Avalonia 通过 InputElement.GetPosition + Visual.GetVisualAt。
 	// WPF ContextMenu → Avalonia.Controls.ContextMenu。
 	// WPF MenuItem/Image → Avalonia.Controls.MenuItem/Image。
 	public class OpenFileInExternalEditorCommand
@@ -164,8 +164,8 @@ namespace ForkPlus.UI.Commands
 			}
 			Point position = LastPointerPosition.Value;
 			// 阶段 4.5：WPF VisualTreeHelper.HitTest(editor, position)
-			// → Avalonia IVisual.GetVisualAt(point)。
-			IVisual visual = editor.GetVisualAt(position);
+			// → Avalonia Visual.GetVisualAt(point)。
+			Visual visual = editor.GetVisualAt(position);
 			if (visual == null)
 			{
 				return null;

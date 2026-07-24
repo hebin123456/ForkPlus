@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Commands
 {

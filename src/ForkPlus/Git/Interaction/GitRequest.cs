@@ -9,6 +9,7 @@ using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Interaction
 {

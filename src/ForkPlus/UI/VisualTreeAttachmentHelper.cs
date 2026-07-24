@@ -5,13 +5,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI
 {
-	// 阶段 4.5：WPF DependencyObject/UIElement/FrameworkElement/FrameworkContentElement/Visual/Visual3D
+	// 阶段 4.5：WPF DependencyObject/UIElement/Layoutable/FrameworkContentElement/Visual/Visual3D
 	// → Avalonia AvaloniaObject/Control/Visual。
 	// WPF LogicalTreeHelper.GetParent + VisualTreeHelper.GetParent
-	// → Avalonia ILogical.GetLogicalParent() + IVisual.GetVisualParent()。
+	// → Avalonia ILogical.GetLogicalParent() + Visual.GetVisualParent()。
 	// Avalonia 没有 FrameworkContentElement 概念（WPF 流文档模型），Describe 简化只判断 Control.Name。
 	internal static class VisualTreeAttachmentHelper
 	{
@@ -119,7 +120,7 @@ namespace ForkPlus.UI
 
 		private static AvaloniaObject GetParent(AvaloniaObject child)
 		{
-			// 阶段 5：Avalonia 11 移除了 IVisual 接口，改用 Visual 类 +
+			// 阶段 5：Avalonia 11 移除了 Visual 接口，改用 Visual 类 +
 			// VisualExtensions.GetVisualParent() 扩展方法（命名空间 Avalonia.VisualTree）。
 			if (child is ILogical logical)
 			{
@@ -157,12 +158,12 @@ namespace ForkPlus.UI
 				decorator.Child = null;
 				return true;
 			}
-			if (parent is HeaderedContentControl headeredContentControl && ReferenceEquals(headeredContentControl.Header, child))
+			if (parent is ContentControl headeredContentControl && ReferenceEquals(headeredContentControl.Header, child))
 			{
 				headeredContentControl.Header = null;
 				return true;
 			}
-			if (parent is HeaderedItemsControl headeredItemsControl && ReferenceEquals(headeredItemsControl.Header, child))
+			if (parent is ItemsControl headeredItemsControl && ReferenceEquals(headeredItemsControl.Header, child))
 			{
 				headeredItemsControl.Header = null;
 				return true;

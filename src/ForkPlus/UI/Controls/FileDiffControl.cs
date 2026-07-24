@@ -1,10 +1,11 @@
 using Avalonia.Threading;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF DependencyProperty → Avalonia StyledProperty。
 // WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
 // WPF Key/Keyboard → Avalonia.Input.Key/FocusManager（Keyboard.FocusedElement 暂保留 + NOTE）。
 // WPF MouseWheelEventArgs → PointerWheelEventArgs。WPF PreviewMouseWheel → PointerWheelChanged。
-// WPF FrameworkElement/UIElement → Avalonia.Controls.Control。
+// WPF Layoutable/UIElement → Avalonia.Controls.Control。
 // WPF ContextMenu/Separator → Avalonia.Controls.ContextMenu/Separator。
 // WPF RaiseEvent(MouseWheelEvent) 事件转发在 Avalonia 无等价物，标记 NOTE(4.5)。
 using System;
@@ -916,7 +917,7 @@ namespace ForkPlus.UI.Controls
 				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
 				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
 				// mouseWheelEventArgs.Source = sender;
-				// (((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// (((Layoutable)sender).Parent as Layoutable)?.RaiseEvent(mouseWheelEventArgs);
 			}
 		}
 
@@ -931,7 +932,7 @@ namespace ForkPlus.UI.Controls
 				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
 				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
 				// mouseWheelEventArgs.Source = sender;
-				// (((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// (((Layoutable)sender).Parent as Layoutable)?.RaiseEvent(mouseWheelEventArgs);
 			}
 		}
 

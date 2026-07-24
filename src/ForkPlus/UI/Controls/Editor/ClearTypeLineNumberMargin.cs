@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Media;
 using AvaloniaEdit.Editing;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls.Editor
 {

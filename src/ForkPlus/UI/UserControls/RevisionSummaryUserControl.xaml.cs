@@ -1,4 +1,5 @@
 using Avalonia.Styling;
+using Theme = ForkPlus.UI.Theme;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/Button/Image/Popup/Separator/MenuItem/ListBoxItem/Expander/ContextMenu）

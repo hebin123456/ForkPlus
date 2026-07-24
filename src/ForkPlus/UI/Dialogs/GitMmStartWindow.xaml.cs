@@ -67,7 +67,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.Post(RefreshCommandPreview);
+				Dispatcher.UIThread.Post(RefreshCommandPreview);
 				BranchNameTextBox.Focus();
 			};
 		}

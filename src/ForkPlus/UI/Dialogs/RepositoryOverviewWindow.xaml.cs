@@ -18,6 +18,7 @@ using ForkPlus.UI.Dialogs.RepositoryOverview;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -62,7 +63,7 @@ namespace ForkPlus.UI.Dialogs
 			_typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 			_itemBackgroundBrush = new SolidColorBrush(Color.FromArgb(8, 170, 170, 170));
 			_hoverBorderPen = new Pen(new SolidColorBrush(Colors.Gray), 1.0);
-			// 阶段 4.5：WPF BitmapImage + pack:// URI → Avalonia Bitmap + AssetLoader.Open。
+			// 阶段 4.5：WPF Bitmap + pack:// URI → Avalonia Bitmap + AssetLoader.Open。
 		using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/assets/folder.png")))
 		{
 			FolderIcon = new Bitmap(stream);
@@ -343,7 +344,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				return;
 			}
-			ImageSource imageSourceForPath = IconTools.GetImageSourceForPath(itemTitle);
+			IImage imageSourceForPath = IconTools.GetImageSourceForPath(itemTitle);
 			if (rect.Height > 70.0)
 			{
 				double num2 = Math.Min(32.0, Math.Min(rect.Width - 16.0, rect.Height - 16.0));
@@ -391,7 +392,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					text2 = text.Substring(num + 1);
 				}
-				ImageSource imageSourceForPath = IconTools.GetImageSourceForPath(text2);
+				IImage imageSourceForPath = IconTools.GetImageSourceForPath(text2);
 				long valueOrDefault = dataSource.GetItemValue(indexPath).GetValueOrDefault();
 				tooltipView.SetDetails(imageSourceForPath, text2, text.TrimStart('/'), string.Format(Translate("{0} commits"), valueOrDefault));
 				return tooltipView;

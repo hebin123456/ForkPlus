@@ -14,6 +14,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {

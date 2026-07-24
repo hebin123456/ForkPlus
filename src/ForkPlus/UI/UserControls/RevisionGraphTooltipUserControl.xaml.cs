@@ -7,9 +7,9 @@
 // - WeakEventManager<NotificationCenter,EventArgs<ThemeType>>.AddHandler(...,"ApplicationThemeChanged",h)
 //   → NotificationCenter.Current.ApplicationThemeChanged += h（参考 StatisticsUserControl）
 // - Dispatcher.UIThread.Async → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
-// - DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty, anim) → Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）
+// - DoubleAnimation + BeginAnimation(Layoutable.HeightProperty, anim) → Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）
 // - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 RevisionDetailsUserControl）
-// - base.ActualHeight → Bounds.Height（参考 RevisionDetailsUserControl）
+// - base.Bounds.Height → Bounds.Height（参考 RevisionDetailsUserControl）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -92,7 +92,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			int num = Math.Min(10, _revisionsDataSource.Count) * 23 + 22 + 16;
 			this.HeightChanged?.Invoke(this, new EventArgs<double>(num));
-			// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty, anim) → Avalonia Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）。
+			// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(Layoutable.HeightProperty, anim) → Avalonia Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）。
 			Transitions = new Transitions
 			{
 				new DoubleTransition
@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls
 					Easing = new QuadraticEaseOut()
 				}
 			};
-			// 阶段 4.5：WPF base.ActualHeight → Avalonia Bounds.Height（参考 RevisionDetailsUserControl）。
+			// 阶段 4.5：WPF base.Bounds.Height → Avalonia Bounds.Height（参考 RevisionDetailsUserControl）。
 			// 设置目标 Height 触发过渡（从当前 Bounds.Height 动画到 num）。
 			Height = num;
 		}

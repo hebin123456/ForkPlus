@@ -4,9 +4,9 @@
 // - using System.Windows.Controls.Primitives → 移除（ToggleButton 仅在 XAML 中使用，.cs 未直接引用类型）
 // - using System.Windows.Input → using Avalonia.Input（PointerReleasedEventArgs）
 // - using System.Windows.Media → using Avalonia.Media（Geometry）
-// - FrameworkElement → Avalonia.Controls.Control（参数类型，参考 FileContentControl）
+// - Layoutable → Avalonia.Controls.Control（参数类型，参考 FileContentControl）
 // - OnPreviewMouseLeftButtonUp(PointerPressedEventArgs) → OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）
-// - e.OriginalSource → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
+// - e.Source → e.Source（参考 ClosableTabItem/MultiselectionTreeView）
 // - DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）
 // - Visibility.Collapsed/Visible → Avalonia.Layout.Visibility（需 using Avalonia.Layout）
 // - Geometry.Parse（API 兼容，Avalonia.Media.Geometry.Parse）
@@ -69,7 +69,7 @@ namespace ForkPlus.UI.UserControls
 			SetDiffContent(null);
 		}
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia.Controls.Control（参考 FileContentControl）。
+		// 阶段 4.5：WPF Layoutable → Avalonia.Controls.Control（参考 FileContentControl）。
 		public void SetDiffContent(Control content)
 		{
 			if (content == null)
@@ -107,7 +107,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		// 阶段 4.5：WPF OnPreviewMouseLeftButtonUp(PointerPressedEventArgs) → Avalonia OnPointerReleased(PointerReleasedEventArgs)（参考 DragAndDropListViewItem）。
-		// WPF e.OriginalSource → Avalonia e.Source（参考 ClosableTabItem）。WPF DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
+		// WPF e.Source → Avalonia e.Source（参考 ClosableTabItem）。WPF DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
 		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
 			base.OnPointerReleased(e);

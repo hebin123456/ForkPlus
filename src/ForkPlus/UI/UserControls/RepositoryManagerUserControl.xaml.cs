@@ -1,4 +1,6 @@
 using Avalonia.Threading;
+using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextRequestedEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType/Separator）

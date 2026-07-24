@@ -5,7 +5,7 @@
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
 // - Brush（字段/属性类型）→ IBrush；SolidColorBrush 保持
 // - Application.Current.TryFindResource → Theme.FindResource
-// - FrameworkElement.ToolTip 属性 → ToolTip.SetTip 附加属性
+// - Layoutable.ToolTip 属性 → ToolTip.SetTip 附加属性
 // - WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）
 // - Freeze() 移除（Avalonia 画刷默认不可变）
 // - Grid 基类保持（Avalonia.Controls.Grid）
@@ -21,6 +21,7 @@ using Avalonia.Media;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls
 {
@@ -221,7 +222,7 @@ namespace ForkPlus.UI.Controls
 						HorizontalAlignment = HorizontalAlignment.Left,
 						VerticalAlignment = VerticalAlignment.Top
 					};
-					// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+					// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 					ToolTip.SetTip(border, BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info));
 					SetColumn(border, week);
 					SetRow(border, dow);

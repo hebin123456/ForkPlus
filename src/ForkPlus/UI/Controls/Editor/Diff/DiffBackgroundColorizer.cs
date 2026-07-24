@@ -54,7 +54,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				{
 					_rectangle.X = 0.0;
 					_rectangle.Y = item.Top;
-					_rectangle.Width = textView.ActualWidth + textView.HorizontalOffset;
+					_rectangle.Width = textView.Bounds.Width + textView.HorizontalOffset;
 					_rectangle.Height = item.Height;
 					drawingContext.DrawRectangle(highlightBrush, null, _rectangle);
 				}

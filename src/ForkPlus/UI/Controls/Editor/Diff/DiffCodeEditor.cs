@@ -8,6 +8,7 @@ using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using AvaloniaEdit.Document;
 using Avalonia.Controls.Primitives;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -104,9 +105,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				return;
 			}
 			double defaultLineHeight = base.TextArea.TextView.DefaultLineHeight;
-			if (defaultLineHeight > 0.0 && base.TextArea.ActualHeight > 0.0)
+			if (defaultLineHeight > 0.0 && base.TextArea.Bounds.Height > 0.0)
 			{
-				double num = base.TextArea.ActualHeight / defaultLineHeight;
+				double num = base.TextArea.Bounds.Height / defaultLineHeight;
 				if ((double)base.Document.LineCount <= num)
 				{
 					match.Data = null;
@@ -165,7 +166,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		private void AddLine(StreamGeometryContext ctx, int startLine, int blockLength, int totalLines, int x, int width)
 		{
 			double num = 12.0;
-			double num2 = base.TextArea.ActualHeight - num * 2.0;
+			double num2 = base.TextArea.Bounds.Height - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
 			// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / PolyLineTo(pts, isStroked, isSmoothJoin) →

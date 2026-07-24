@@ -27,6 +27,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using ForkPlus.UI.Helpers;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -1012,11 +1013,11 @@ namespace ForkPlus.UI.Dialogs
 		private static Range? MiddleLine(CodeEditor editor)
 		{
 			TextView textView = editor.TextArea.TextView;
-			if (editor.Document == null || textView.ActualHeight <= 0.0)
+			if (editor.Document == null || textView.Bounds.Height <= 0.0)
 			{
 				return null;
 			}
-			double middleVisualTop = editor.GetScrollPosition() + textView.ActualHeight / 2.0;
+			double middleVisualTop = editor.GetScrollPosition() + textView.Bounds.Height / 2.0;
 			DocumentLine documentLineByVisualTop = textView.GetDocumentLineByVisualTop(middleVisualTop);
 			if (documentLineByVisualTop == null)
 			{

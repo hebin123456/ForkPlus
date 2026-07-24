@@ -11,6 +11,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -48,7 +49,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.Post(RefreshCommandPreview);
+				Dispatcher.UIThread.Post(RefreshCommandPreview);
 				ManifestUrlTextBox.Focus();
 			};
 		}

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using ForkPlus.Jobs;
 using ForkPlus.Services;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -74,7 +75,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					try
 					{
@@ -217,7 +218,7 @@ namespace ForkPlus.UI.Dialogs
 			_currentMonitor = new JobMonitor();
 			_currentMonitor.SetCancellationAction(delegate
 			{
-				Dispatcher.Async(delegate { _viewModel.StopStreaming(); UpdateStreamingStoppedUi(); });
+				Dispatcher.UIThread.Async(delegate { _viewModel.StopStreaming(); UpdateStreamingStoppedUi(); });
 			});
 			// 后台线程执行 AI 请求
 			Task.Run(delegate
@@ -229,7 +230,7 @@ namespace ForkPlus.UI.Dialogs
 				catch (Exception ex)
 				{
 					Log.Error("AiTextResultWindow request action failed", ex);
-					Dispatcher.Async(delegate { ShowError(ex.Message); });
+					Dispatcher.UIThread.Async(delegate { ShowError(ex.Message); });
 				}
 			});
 		}
@@ -242,13 +243,13 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			Dispatcher.Async(delegate { TryRenderStreamingPreview(lengthSoFar); });
+			Dispatcher.UIThread.Async(delegate { TryRenderStreamingPreview(lengthSoFar); });
 		}
 
 		/// <summary>请求成功完成时调用：渲染最终内容并切到完成态。</summary>
 		public void OnSuccess(string finalMarkdown = null)
 		{
-			Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				_viewModel.StopStreaming();
 				UpdateStreamingStoppedUi();
@@ -264,7 +265,7 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>请求失败时调用：显示错误。</summary>
 		public void OnError(string errorMessage)
 		{
-			Dispatcher.Async(delegate { ShowError(errorMessage); });
+			Dispatcher.UIThread.Async(delegate { ShowError(errorMessage); });
 		}
 
 		private void ShowError(string message)
@@ -332,7 +333,7 @@ namespace ForkPlus.UI.Dialogs
 				if (scrollToEnd)
 				{
 					// Markdown 渲染后需要一轮布局才能测得正确高度，延迟滚动到底
-					Dispatcher.Post(ScrollInnerViewerToEnd);
+					Dispatcher.UIThread.Post(ScrollInnerViewerToEnd);
 				}
 			}
 			catch (Exception ex)

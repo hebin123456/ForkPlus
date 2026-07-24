@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Settings;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Shell.Interaction
 {

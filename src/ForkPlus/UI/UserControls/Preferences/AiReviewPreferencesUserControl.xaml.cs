@@ -467,7 +467,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			_jobQueue.Add(PreferencesLocalization.Current("Refresh AI models"), delegate
 			{
 				var response = OpenAiService.CreateFromAiReviewSettings().ListModels();
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetBusy(false);
 					if (!response.Succeeded)

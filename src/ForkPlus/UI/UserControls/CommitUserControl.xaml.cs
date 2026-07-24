@@ -29,6 +29,9 @@ using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -1478,7 +1481,7 @@ namespace ForkPlus.UI.UserControls
 			if (_diffPopupWindow == null)
 			{
 				_diffPopupWindow = CreateNewDiffPopupWindow();
-				// Avalonia: Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
+				// Avalonia: App.GetDesktopMainWindow() → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
 				_diffPopupWindow.ShowAtCenter((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
 				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
 			}

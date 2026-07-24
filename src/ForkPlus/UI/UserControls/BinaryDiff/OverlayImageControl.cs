@@ -6,7 +6,7 @@
 // - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 自定义控件绘制重写方法名）
 // - base.Background = Brushes.Red → 移除（Avalonia Control 无 Background 属性；该方法仅绘制图像，不依赖背景色，参考 DrawingContext 渲染流程）
-// - base.ActualWidth/base.ActualHeight → base.Bounds.Width/base.Bounds.Height
+// - base.Bounds.Width/base.Bounds.Height → base.Bounds.Width/base.Bounds.Height
 // - image.PixelWidth/image.PixelHeight → image.PixelSize.Width/image.PixelSize.Height（Avalonia Bitmap 用 PixelSize 描述像素尺寸）
 // - InvalidateMeasure/InvalidateVisual → API 兼容（Avalonia.Layoutable/Avalonia.Visual）
 // - MeasureOverride(Size) → API 兼容（Avalonia.Layoutable.MeasureOverride）

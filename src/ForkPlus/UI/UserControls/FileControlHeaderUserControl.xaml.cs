@@ -7,8 +7,8 @@
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs（OnPropertyChanged override）
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "EventName", handler)
 //   → NotificationCenter.Current.EventName += handler（参考 ForkPlusDialogWindow.ApplicationThemeChanged）
-// - control.ToolTip = value → ToolTip.SetTip(control, value)（参考 PreferencesLocalization）
-using System;
+// - ToolTip.SetTip(control, value → ToolTip.SetTip(control, value)（参考 PreferencesLocalization）
+using System)
 using System.ComponentModel;
 using System.IO;
 using Avalonia;
@@ -361,8 +361,8 @@ namespace ForkPlus.UI.UserControls
 			if (DiffLayoutMode == DiffLayoutMode.SideBySide)
 			{
 				DiffLayoutModeToggleButton.IsChecked = true;
-				// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)（参考 PreferencesLocalization）。
-				ToolTip.SetTip(DiffLayoutModeToggleButton, Translate("Split diff"));
+				// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)（参考 PreferencesLocalization）。
+				ToolTip.SetTip(DiffLayoutModeToggleButton, Translate("Split diff")))
 			}
 			else
 			{

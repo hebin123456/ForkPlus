@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 
 		private void RevealRevision(GitModule gitModule, Sha sha, string filePath)
 		{
-			Application.Current.MainWindow.Activate();
+			App.GetDesktopMainWindow().Activate();
 			if (MainWindow.ActiveRepositoryUserControl?.GitModule != gitModule)
 			{
 				Application.Current.TabManager()?.OpenRepository(gitModule.Path);

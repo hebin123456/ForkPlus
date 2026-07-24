@@ -202,12 +202,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 			RefreshGitInstanceComboBox();
 			RefreshGitMmInstanceComboBox();
 			VerboseGitOutputCheckBox.IsChecked = ForkPlusSettings.Default.VerboseGitOutput;
-			VerboseGitOutputCheckBox.ToolTip = new TextBlock
+			ToolTip.SetTip(VerboseGitOutputCheckBox, new TextBlock
 			{
 				MaxWidth = 500.0,
 				TextWrapping = TextWrapping.Wrap,
 				Text = VerboseGitOutputTooltip
-			};
+			})
 			UserIdentity result = new GetGlobalUserIdentityGitCommand().Execute().Result;
 			UserNameTextBox.Text = result.Name ?? "";
 			EmailTextBox.Text = result.Email ?? "";

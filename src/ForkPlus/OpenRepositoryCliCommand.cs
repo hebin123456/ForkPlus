@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using Avalonia;
 using ForkPlus.UI;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus
 {

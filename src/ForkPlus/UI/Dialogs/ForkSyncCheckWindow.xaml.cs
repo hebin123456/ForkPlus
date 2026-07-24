@@ -2,6 +2,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Media.Imaging;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -67,7 +68,7 @@ namespace ForkPlus.UI.Dialogs
 			switch (_viewModel.Status.Value)
 			{
 				case ForkSyncStatus.SafeToPush:
-					StatusIcon.Source = new BitmapImage(SuccessIcon);
+					StatusIcon.Source = new Bitmap(SuccessIcon);
 					StatusText.Text = PreferencesLocalization.Current("Safe to push");
 					DetailText.Text = PreferencesLocalization.FormatCurrent(
 						"'{0}' is up-to-date with {1}. You can push without syncing.",
@@ -76,7 +77,7 @@ namespace ForkPlus.UI.Dialogs
 					ShowCancelButton = false;
 					break;
 				case ForkSyncStatus.ShouldSyncNoConflict:
-					StatusIcon.Source = new BitmapImage(WarningIcon);
+					StatusIcon.Source = new Bitmap(WarningIcon);
 					StatusText.Text = PreferencesLocalization.Current("Recommended to sync");
 					DetailText.Text = PreferencesLocalization.FormatCurrent(
 						"{0} has new commits that are not in '{1}', but a merge would not produce conflicts. You can push now, but it's recommended to pull first to stay in sync.",
@@ -85,7 +86,7 @@ namespace ForkPlus.UI.Dialogs
 					CancelButtonTitle = PreferencesLocalization.Current("Skip and push later");
 					break;
 				case ForkSyncStatus.MustSyncWithConflict:
-					StatusIcon.Source = new BitmapImage(ErrorIcon);
+					StatusIcon.Source = new Bitmap(ErrorIcon);
 					StatusText.Text = PreferencesLocalization.Current("Conflicts detected");
 					DetailText.Text = PreferencesLocalization.FormatCurrent(
 						"{0} has new commits that would conflict with '{1}'. You must pull and resolve the conflicts before pushing.",
@@ -94,7 +95,7 @@ namespace ForkPlus.UI.Dialogs
 					CancelButtonTitle = PreferencesLocalization.Current("Close");
 					break;
 				case ForkSyncStatus.NoUpstreamBranch:
-					StatusIcon.Source = new BitmapImage(WarningIcon);
+					StatusIcon.Source = new Bitmap(WarningIcon);
 					StatusText.Text = PreferencesLocalization.Current("Upstream branch not found");
 					DetailText.Text = PreferencesLocalization.FormatCurrent(
 						"No remote branch '{0}' found on the upstream remote. Please verify the upstream remote and branch name.",
@@ -103,7 +104,7 @@ namespace ForkPlus.UI.Dialogs
 					ShowCancelButton = false;
 					break;
 				default:
-					StatusIcon.Source = new BitmapImage(WarningIcon);
+					StatusIcon.Source = new Bitmap(WarningIcon);
 					StatusText.Text = PreferencesLocalization.Current("Unable to determine sync status");
 					DetailText.Text = PreferencesLocalization.FormatCurrent(
 						"Could not determine whether '{0}' would conflict with {1}. Please pull manually to verify.",

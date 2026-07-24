@@ -21,6 +21,7 @@ using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -633,7 +634,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevealRevision(Sha sha, [Null] string filePath = null)
 		{
-			Application.Current.MainWindow.Activate();
+			App.GetDesktopMainWindow().Activate();
 			if (MainWindow.ActiveRepositoryUserControl?.GitModule != GitModule)
 			{
 				Application.Current.TabManager()?.OpenRepository(GitModule.Path);

@@ -8,20 +8,20 @@
 // - using System.Windows.Media → 移除（本文件未直接引用 Media 类型）
 // - using System.Windows.Navigation → 移除（RequestNavigateEventArgs 改用 RoutedEventArgs）
 // - 新增 using Avalonia.Controls.ApplicationLifetimes（IClassicDesktopStyleApplicationLifetime）
-// - 新增 using Avalonia.Styling（Style）；新增 using Avalonia.VisualTree（GetVisualChildren/GetVisualParent/IVisual）
+// - 新增 using Avalonia.Styling（Style）；新增 using Avalonia.VisualTree（GetVisualChildren/GetVisualParent/Visual）
 // - WeakEventManager<NotificationCenter, EventArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 FileControlHeaderUserControl）
 // - AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(h)) → AddHandler(ButtonBase.ClickEvent, h)（方法组转换 EventHandler<RoutedEventArgs>）
 // - MouseDown/MouseDoubleClick + PointerPressedEventArgs → PointerPressed/DoubleTapped + PointerPressedEventArgs/TappedEventArgs
 // - PreviewKeyDown → KeyDown（Avalonia 无 Preview 变体）
 // - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown
-// - e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - e.Source → e.Source（参考 ListViewScrollbarDoubleClickHelper）
 // - CommandBindings.Add(cmd.CreateShortcutCommandBinding) → KeyBindings.Add(cmd.CreateShortcutKeyBinding)（参考 IUICommandExtension/RepositoryManagerUserControl）
 // - Application.Current.TryFindResource("Key") as Style → Theme.FindStyle("Key")
-// - Dispatcher.BeginInvoke(new Action(...), DispatcherPriority.X) → Dispatcher.Post(...)（参考 MainWindow/SearchTabItem）
+// - Dispatcher.UIThread.BeginInvoke(new Action(...), DispatcherPriority.X) → Dispatcher.UIThread.Post(...)（参考 MainWindow/SearchTabItem）
 // - Keyboard.Focus(element) → element.Focus()；IsKeyboardFocused → IsFocused（参考 CommitUserControl/SearchTabItem）
-// - VisualTreeHelper.GetChildrenCount/GetChild → IVisual.GetVisualChildren()（参考 NoUIAutomationListView/DependencyObjectExtensions）
-// - DependencyObject → IVisual；FrameworkElement → StyledElement（FindTemplatePart/FindVisualDescendantByName，Popup 可能非 Control 但属 StyledElement）
-// - Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl/RevisionChangesUserControl）
+// - VisualTreeHelper.GetChildrenCount/GetChild → Visual.GetVisualChildren()（参考 NoUIAutomationListView/DependencyObjectExtensions）
+// - DependencyObject → Visual；Layoutable → StyledElement（FindTemplatePart/FindVisualDescendantByName，Popup 可能非 Control 但属 StyledElement）
+// - App.GetDesktopMainWindow() → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl/RevisionChangesUserControl）
 // - RequestNavigateEventArgs → RoutedEventArgs（Avalonia 无 RequestNavigate）；FrameworkContentElement → Control
 // - ToolTipEventArgs → PointerEventArgs（Avalonia 无 ToolTipOpening 事件，XAML 需改绑 PointerEnter，参考 AutoTooltipTextBlock）
 // - ContextMenu.LayoutTransform 无 Avalonia 等价，注释（NOTE 阶段 6）
@@ -51,6 +51,8 @@ using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -188,7 +190,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SidebarTreeView_ButtonClick(object sender, RoutedEventArgs e)
 		{
-			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+			// 阶段 4.5：WPF e.Source → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
 			if (e.Source is not Button button)
 			{
 				return;
@@ -1438,7 +1440,7 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>递归在视觉树里按名字查找指定类型的后代。</summary>
 		[Null]
-		private static T FindVisualDescendantByName<T>(Visual root, string name) where T : StyledElement // 阶段 5：IVisual 在 Avalonia 11 已移除，改用 Visual（Avalonia.VisualTree 扩展方法 GetVisualChildren 现以 Visual 为目标）
+		private static T FindVisualDescendantByName<T>(Visual root, string name) where T : StyledElement // 阶段 5：Visual 在 Avalonia 11 已移除，改用 Visual（Avalonia.VisualTree 扩展方法 GetVisualChildren 现以 Visual 为目标）
 		{
 			if (root == null)
 			{
@@ -2740,7 +2742,7 @@ namespace ForkPlus.UI.UserControls
 				string text = RepositoryUserControl.GitModule?.ParentRepoPath;
 				if (text != null)
 				{
-					Application.Current.MainWindow.Activate();
+					App.GetDesktopMainWindow().Activate();
 					Application.Current?.TabManager()?.OpenRepository(text);
 				}
 			}

@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Controls
 // - using System.Windows.Media → using Avalonia.Media
-// - FrameworkElement → Avalonia.Controls.Control
+// - Layoutable → Avalonia.Controls.Control
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
 // - Bounds.Size → Bounds.Size
 // - Brush（字段类型）→ IBrush；Pen 保持（Avalonia.Media.Pen，接收 IBrush）
@@ -16,6 +16,8 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {

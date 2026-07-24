@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - IconTools.GetImageSourceForExtension 已返回 IImage，可直接赋值
 using System.IO;
 using Avalonia.Media;

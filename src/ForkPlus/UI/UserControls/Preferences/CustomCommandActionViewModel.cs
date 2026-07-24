@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using ForkPlus.UI.CustomCommands;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {

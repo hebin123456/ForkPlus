@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using ForkPlus.Jobs;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Interaction
 {

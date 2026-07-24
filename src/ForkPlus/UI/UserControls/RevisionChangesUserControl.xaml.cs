@@ -8,7 +8,7 @@
 // - base.CommandBindings.Add(command.CreateShortcutCommandBinding(h)) → base.KeyBindings.Add(command.CreateShortcutKeyBinding(h))（参考 RevisionListViewUserControl/IUICommandExtension）
 // - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown（参考 KeyboardHelper）
 // - FileListUserControl.PreviewKeyDown → FileListUserControl.KeyDown（Avalonia 无 Preview 变体，参考 StageFileUserControl）
-// - Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）
+// - App.GetDesktopMainWindow() → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）
 // - diffPopupWindow.SelectPrevious/SelectNext = Delegate.Combine(field, handler) → field += handler（参考 CommitUserControl）
 // - fileListUserControl.SelectionChanged = Delegate.Combine(...) 保留（参考 StageFileUserControl，SelectionChanged 为 public 字段）
 // - GridSplitter.DragCompleted 保留（已在 RepositoryContentUserControl/CommitUserControl 等迁移文件中验证可用）
@@ -560,7 +560,7 @@ namespace ForkPlus.UI.UserControls
 			if (_diffPopupWindow == null)
 			{
 				_diffPopupWindow = CreateNewDiffPopupWindow();
-				// 阶段 4.5：WPF Application.Current.MainWindow → Avalonia (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）。
+				// 阶段 4.5：WPF App.GetDesktopMainWindow() → Avalonia (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）。
 				_diffPopupWindow.ShowAtCenter((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
 				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
 			}

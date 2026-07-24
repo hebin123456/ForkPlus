@@ -5,7 +5,7 @@
 // - using System.Windows.Input → using Avalonia.Input
 // - 基类 ListBoxItem → Avalonia.Controls.ListBoxItem
 // - OnPropertyChanged(DependencyPropertyChangedEventArgs) → OnPropertyChanged(AvaloniaPropertyChangedEventArgs)
-// - FrameworkElement.DataContextProperty → Control.DataContextProperty
+// - Layoutable.DataContextProperty → Control.DataContextProperty
 // - OnMouseLeftButtonDown/Up/Move → OnPointerPressed/Released/Moved
 // - Mouse.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
 // - CaptureMouse/ReleaseMouseCapture/IsMouseCaptured → e.Pointer.Capture + _isPointerCaptured 字段
@@ -19,6 +19,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using ForkPlus.UI.Helpers;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
@@ -47,7 +48,7 @@ namespace ForkPlus.UI.Controls
 		}
 
 		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
-		// WPF FrameworkElement.DataContextProperty → Avalonia Control.DataContextProperty。
+		// WPF Layoutable.DataContextProperty → Avalonia Control.DataContextProperty。
 		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);

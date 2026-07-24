@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Commands
 {

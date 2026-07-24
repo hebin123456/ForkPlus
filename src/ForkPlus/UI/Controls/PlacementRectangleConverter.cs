@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Controls
 				Point point2 = new Point(num - Margin.Right, num2 - Margin.Bottom);
 				return new Rect(point, point2);
 			}
-			return Rect.Empty;
+			return default(Rect);
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

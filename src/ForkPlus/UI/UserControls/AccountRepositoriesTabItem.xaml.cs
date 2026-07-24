@@ -4,7 +4,7 @@ using Avalonia.Threading;
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Markup → 移除（Avalonia code-behind 不需 IComponentConnector using）
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs（新增 using Avalonia.Interactivity）
 // - Dispatcher.Async 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 // 阶段 4.5：account.ServiceType.Icon() 与 AccountRepositoryItem 构造函数均已迁移为 Avalonia.Media.IImage，类型一致。

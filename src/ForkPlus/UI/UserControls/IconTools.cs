@@ -1,11 +1,11 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → 移除（Int32Rect 无 Avalonia 等价物，不再使用）
 // - 移除 using System.Windows.Interop（Imaging.CreateBitmapSourceFromHIcon 无 Avalonia 直接等价物）
-// - using System.Windows.Media → using Avalonia.Media（IImage 替代 ImageSource）
+// - using System.Windows.Media → using Avalonia.Media（IImage 替代 IImage）
 // - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap
 //   （别名替代，避免与 System.Drawing.Bitmap 二义性；本文件 GDI+ Bitmap 与 Avalonia Bitmap 同时使用）
 // - 新增 using System.Drawing.Imaging（ImageFormat.Png，用于 GDI+ Bitmap → PNG 流转换）
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - Imaging.CreateBitmapSourceFromHIcon(handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())
 //   → CreateBitmapFromIcon(icon)：System.Drawing.Icon.ToBitmap() 得 GDI+ Bitmap，
 //     PNG 编码入 MemoryStream，再由 Avalonia.Media.Imaging.Bitmap(stream) 加载

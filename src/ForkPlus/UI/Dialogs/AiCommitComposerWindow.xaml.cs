@@ -124,7 +124,7 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					try
 					{
@@ -252,7 +252,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<string> patchResult = new GetWorkingDirectoryFileChangesGitCommand().GetStagedPatch(_gitModule, _amend);
 					if (!patchResult.Succeeded)
 					{
-						Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							ShowError(patchResult.Error.FriendlyDescription);
 						});
@@ -276,7 +276,7 @@ namespace ForkPlus.UI.Dialogs
 							}
 							liveOutput.Append(chunk);
 							int chars = liveOutput.Length;
-							Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", chars);
 							});
@@ -288,7 +288,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					if (!response.Succeeded)
 					{
-						Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							ShowError(response.Error.FriendlyMessage);
 						});
@@ -297,7 +297,7 @@ namespace ForkPlus.UI.Dialogs
 
 					// 3. 解析为 WipCommitPlan
 					WipCommitPlan plan = OpenAiService.ParseWipCommitPlan(response.Result.Message, _stagedFiles);
-					Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (monitor.IsCanceled)
 						{
@@ -325,7 +325,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				finally
 				{
-					Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						_aiRunning = false;
 						_currentMonitor = null;
@@ -512,7 +512,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_currentMonitor = monitor;
 				GitCommandResult<string[]> result = new ComposeWipCommitsGitCommand().Execute(_gitModule, _plan, commitAndPush: false, monitor: monitor);
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					_applying = false;
 					_currentMonitor = null;

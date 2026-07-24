@@ -9,6 +9,7 @@ using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {

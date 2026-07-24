@@ -28,6 +28,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -188,7 +189,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (Application.Current?.MainWindow?.WindowState == WindowState.Maximized)
+			if (App.GetDesktopMainWindow()?.WindowState == WindowState.Maximized)
 			{
 				WindowState = WindowState.Maximized;
 			}

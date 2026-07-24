@@ -5,6 +5,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ForkPlus.Git;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {

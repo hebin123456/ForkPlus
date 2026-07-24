@@ -1,6 +1,7 @@
 using Avalonia.Controls.Metadata;
+using Theme = ForkPlus.UI.Theme;
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF TextBox → Avalonia.Controls.TextBox。
-// WPF FrameworkElement（TemplatePart 类型）→ Avalonia.Controls.Control。WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
+// WPF Layoutable（TemplatePart 类型）→ Avalonia.Controls.Control。WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
 // WPF Key/KeyEventArgs → Avalonia.Input.Key/KeyEventArgs。WPF VerticalAlignment → Avalonia.Layout.VerticalAlignment。
 using System;
 using System.Collections.Generic;
@@ -66,8 +67,8 @@ namespace ForkPlus.UI.Controls
 	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_labelsStackPanel = GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
-			_textBox = GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
+			_labelsStackPanel = NameScope?.Find("PART_LabelsStackPanel") as StackPanel;
+			_textBox = NameScope?.Find("PART_PlaceholderTextBox") as PlaceholderTextBox;
 			Placeholder = Translate("Command");
 			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
 			_textBox.KeyDown += delegate(object s, KeyEventArgs e)

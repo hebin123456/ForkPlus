@@ -1,9 +1,10 @@
-// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF Grid → Avalonia.Controls.Grid。WPF FrameworkElement → Avalonia.Controls.Control。
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF Grid → Avalonia.Controls.Grid。WPF Layoutable → Avalonia.Controls.Control。
 // WPF GridLength/RowDefinition/Grid.RowProperty → Avalonia 同名 API（兼容）。WPF Panel.Children → Avalonia Panel.Children。
 using System;
 using Avalonia;
 using Avalonia.Controls;
 using ForkPlus.UI.UserControls;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {

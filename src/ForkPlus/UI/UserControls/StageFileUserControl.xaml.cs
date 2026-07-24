@@ -21,6 +21,7 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {

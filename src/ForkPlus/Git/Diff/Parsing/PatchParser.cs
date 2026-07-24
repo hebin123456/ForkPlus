@@ -3,6 +3,7 @@ using System.Text;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff.Parsing.Tokens;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Diff.Parsing
 {

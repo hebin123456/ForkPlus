@@ -1,4 +1,4 @@
-// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF ItemsControl → Avalonia.Controls.ItemsControl。WPF System.Windows.Media.ImageSource → Avalonia.Media.IImage。
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF ItemsControl → Avalonia.Controls.ItemsControl。WPF System.Windows.Media.IImage → Avalonia.Media.IImage。
 // WPF ItemsControl.ItemsSource → Avalonia ItemsControl.ItemsSource（API 兼容）。
 using System.Collections.Generic;
 using Avalonia.Controls;

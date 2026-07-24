@@ -9,6 +9,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using AvaloniaEdit;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {

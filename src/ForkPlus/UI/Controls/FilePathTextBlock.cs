@@ -6,6 +6,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Controls
 {
@@ -98,7 +99,7 @@ namespace ForkPlus.UI.Controls
 
 		private bool TextIsTrimmed()
 		{
-			// 阶段 4.5：WPF Panel.ActualWidth + FrameworkElement.ActualWidth → Avalonia Bounds.Width + Control.Bounds.Width。
+			// 阶段 4.5：WPF Panel.Bounds.Width + Layoutable.Bounds.Width → Avalonia Bounds.Width + Control.Bounds.Width。
 			if (!(base.Parent is Panel panel))
 			{
 				return false;

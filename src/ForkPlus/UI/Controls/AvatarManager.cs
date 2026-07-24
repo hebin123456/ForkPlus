@@ -14,6 +14,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using ForkPlus.Git;
+using Avalonia.Controls.Documents;
 
 // AvatarManager 使用 WebClient 的事件回调模式（DownloadDataCompleted）来下载头像，
 // 改写为 HttpClient + Task.Run 涉及异步逻辑重写，风险较大。.NET 10 上 WebClient
@@ -347,7 +348,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return null;
 			}
-			// 阶段 4.5：WPF BitmapImage(StreamSource + BeginInit/EndInit + Freeze) → Avalonia Bitmap(MemoryStream)。
+			// 阶段 4.5：WPF Bitmap(StreamSource + BeginInit/EndInit + Freeze) → Avalonia Bitmap(MemoryStream)。
 			Bitmap bitmap;
 			using (MemoryStream memoryStream = new MemoryStream(imageData))
 			{
@@ -359,7 +360,7 @@ namespace ForkPlus.UI.Controls
 
 		private static Bitmap LoadBitmapFromAsset(Uri assetUri)
 		{
-			// 阶段 4.5：WPF pack://application URI + BitmapImage → Avalonia avares:// URI + AssetLoader.Open + Bitmap。
+			// 阶段 4.5：WPF pack://application URI + Bitmap → Avalonia avares:// URI + AssetLoader.Open + Bitmap。
 			using (Stream stream = AssetLoader.Open(assetUri))
 			{
 				return new Bitmap(stream);

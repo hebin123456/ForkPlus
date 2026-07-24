@@ -11,6 +11,7 @@ using ForkPlus.Git;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

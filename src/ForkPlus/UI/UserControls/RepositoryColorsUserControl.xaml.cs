@@ -5,7 +5,7 @@
 // - using System.Windows.Media → using Avalonia.Media（SolidColorBrush/Brushes/Color）
 // - (Color)ColorConverter.ConvertFromString("#RRGGBB") → Color.Parse("#RRGGBB")（参考 UserColorBrushes）
 // - SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变，参考 BranchViewModel）
-// - FrameworkElement → Control（Avalonia 无 FrameworkElement；Control.Parent 等价，参考 ExternalToolsUserControl）
+// - Layoutable → Control（Avalonia 无 Layoutable；Control.Parent 等价，参考 ExternalToolsUserControl）
 using System;
 using System.ComponentModel;
 using Avalonia;
@@ -13,6 +13,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using ForkPlus.Settings;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -67,7 +68,7 @@ namespace ForkPlus.UI.UserControls
 
 		private static void HideParentContextMenu(object ctrl)
 		{
-			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 ExternalToolsUserControl）。
+			// 阶段 4.5：WPF Layoutable → Avalonia Control（参考 ExternalToolsUserControl）。
 			for (Control control = ctrl as Control; control != null; control = control.Parent as Control)
 			{
 				if (control is ContextMenu contextMenu)

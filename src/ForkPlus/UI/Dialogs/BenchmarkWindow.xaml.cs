@@ -10,6 +10,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
 using Avalonia.Media;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.Dialogs
 {

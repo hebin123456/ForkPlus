@@ -23,6 +23,7 @@ using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
 using OxyPlot.Avalonia;
+using Theme = ForkPlus.UI.Theme;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -399,7 +400,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 							{
 								_pendingScrollToCodeLines = false;
 								// 阶段 4 里程碑 4.7-b：WPF Dispatcher.BeginInvoke + DispatcherPriority.Render → Avalonia Dispatcher.Post。
-								Dispatcher.Post(() => CodeLinesSection.BringIntoView(), DispatcherPriority.Render);
+								Dispatcher.UIThread.Post(() => CodeLinesSection.BringIntoView(), DispatcherPriority.Render);
 							}
 						}
 					}
@@ -657,7 +658,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			_codeLinesJobQueue.Add("CodeLinesStats", delegate (JobMonitor monitor)
 			{
 				var result = new GetCodeLineStatsGitCommand().Execute(gitModule, refSpecCopy, monitor, excludePatterns);
-				Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					// 用户可能在此期间又触发了新查询，校验是否还是当前选中的 ref
 					if (refSpecCopy != _currentCodeLinesRef)

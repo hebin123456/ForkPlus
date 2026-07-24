@@ -5,7 +5,7 @@
 // WPF VisualTreeHelper → Avalonia GetVisualDescendants。
 // WPF Keyboard.Focus → Avalonia Control.Focus。
 // WPF ItemContainerGenerator.ContainerFromIndex → Avalonia ItemsControl.ContainerFromIndex。
-// WPF FrameworkElement.ActualWidth → Avalonia Layoutable.Bounds.Width。
+// WPF Layoutable.Bounds.Width → Avalonia Layoutable.Bounds.Width。
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -13,6 +13,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
@@ -30,7 +31,7 @@ namespace ForkPlus.UI.Controls
 
 		public bool IsMultiselectionInProgress { get; set; }
 
-		// 阶段 4.5：WPF FrameworkElement.ActualWidth → Avalonia Layoutable.Bounds.Width。
+		// 阶段 4.5：WPF Layoutable.Bounds.Width → Avalonia Layoutable.Bounds.Width。
 		public double AvailableWidth => base.Bounds.Width - 15.0 - 4.0 - 4.0;
 
 		public void Select(int row, SelectOptions options = (SelectOptions)3)

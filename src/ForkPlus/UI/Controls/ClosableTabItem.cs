@@ -9,6 +9,8 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -68,7 +70,7 @@ namespace ForkPlus.UI.Controls
 			set => SetValue(IsDirtyProperty, value);
 		}
 
-		private EditableTextBlock TitleTextBlock => GetTemplateChild("PART_Title") as EditableTextBlock;
+		private EditableTextBlock TitleTextBlock => NameScope?.Find("PART_Title") as EditableTextBlock;
 
 		public ClosableTabItem()
 		{
@@ -88,7 +90,7 @@ namespace ForkPlus.UI.Controls
 
 		public void Close()
 		{
-			// 阶段 4.5：WPF FrameworkElement.Parent → Avalonia Control.Parent（类型为 IControl）。
+			// 阶段 4.5：WPF Layoutable.Parent → Avalonia Control.Parent（类型为 IControl）。
 			(base.Parent as ClosableTabControl)?.RemoveTab(this);
 		}
 
@@ -96,14 +98,14 @@ namespace ForkPlus.UI.Controls
 	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (GetTemplateChild("PART_Close") is Button button)
+			if (NameScope?.Find("PART_Close") is Button button)
 			{
 				button.Click += delegate
 				{
 					Close();
 				};
 			}
-			if (!(GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel))
+			if (!(NameScope?.Find("PART_Header") is CenteredDockPanel centeredDockPanel))
 			{
 				return;
 			}
@@ -116,7 +118,7 @@ namespace ForkPlus.UI.Controls
 					Close();
 				}
 			};
-			// 阶段 4.5：WPF FrameworkElement.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
+			// 阶段 4.5：WPF Layoutable.ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(centeredDockPanel, GetToolTip());
 			centeredDockPanel.ContextMenu = GetContextMenu();
 		}
@@ -191,7 +193,7 @@ namespace ForkPlus.UI.Controls
 		private void TabItem_PointerMoved(object sender, PointerEventArgs e)
 		{
 			// 阶段 4.5：WPF Mouse.PrimaryDevice.LeftButton → 缓存的 _isLeftButtonPressed。
-			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source。
+			// 阶段 4.5：WPF e.Source → Avalonia e.Source。
 			if (_isLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
 				// 阶段 4.5：Avalonia DragDrop.DoDragDrop 签名与 WPF 兼容（返回 Task，丢弃即可）。

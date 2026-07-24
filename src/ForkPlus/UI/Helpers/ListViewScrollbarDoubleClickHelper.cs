@@ -2,12 +2,14 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Documents;
+using Avalonia;
 
 namespace ForkPlus.UI.Helpers
 {
 	// 阶段 4.5：WPF System.Windows.* → Avalonia.*。
 	// WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs。
-	// WPF args.OriginalSource → Avalonia args.Source。
+	// WPF args.Source → Avalonia args.Source。
 	// WPF VisualTreeHelper.GetParent → Avalonia GetVisualParent()。
 	// WPF DependencyObject → Avalonia Visual（视觉树节点）。
 	// WPF Run.Parent 特殊处理移除（Avalonia Inline 不在视觉树中，Source 通常是 TextBlock）。

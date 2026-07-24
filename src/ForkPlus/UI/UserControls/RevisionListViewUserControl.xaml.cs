@@ -1,25 +1,27 @@
 using Avalonia.Threading;
+using Avalonia.Controls.Presenters;
+using Avalonia.Styling;
 // 阶段 4.5：WPF→Avalonia 迁移。
-// - using System.Windows → using Avalonia（Application/AvaloniaObject/IVisual）+ using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows → using Avalonia（Application/AvaloniaObject/Visual）+ using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListBoxItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextRequestedEventArgs）
 // - using System.Windows.Documents → using Avalonia.Controls.Documents（Run）
 // - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs/KeyboardNavigation/KeyboardNavigationMode/DragEventArgs/PointerPressedEventArgs）
 // - using System.Windows.Markup → 移除
-// - using System.Windows.Media → 移除（本文件未直接引用 Media 类型；Visual/IVisual 由 using Avalonia 提供）
+// - using System.Windows.Media → 移除（本文件未直接引用 Media 类型；Visual/Visual 由 using Avalonia 提供）
 // - 新增 using Avalonia.Layout（Orientation）、using Avalonia.VisualTree（GetVisualDescendants/GetVisualParent）
 // - 新增 using ForkPlus.Services（ServiceLocator/MessageBoxButton/MessageBoxImage，替代 System.Windows.MessageBox）
 // - KeyboardNavigation.TabNavigationProperty.OverrideMetadata + FrameworkPropertyMetadata → OverrideDefaultValue<T>（参考 StageFileUserControl）
 // - WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 StageFileUserControl）
 // - base.PreviewKeyDown/RevisionListView.PreviewKeyDown → base.KeyDown/RevisionListView.KeyDown（Avalonia 无 Preview 变体）
 // - VisualTreeHelper.GetChildrenCount/GetChild → GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault()（参考 NoUIAutomationListView）
-// - VisualTreeHelper.GetParent → (x as IVisual)?.GetVisualParent()（参考 DependencyObjectExtensions）
-// - DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）
+// - VisualTreeHelper.GetParent → (x as Visual)?.GetVisualParent()（参考 DependencyObjectExtensions）
+// - DependencyObject → AvaloniaObject；e.Source → e.Source（参考 ListViewScrollbarDoubleClickHelper）
 // - ScrollViewer.VerticalOffset/ViewportHeight → Offset.Y/Viewport.Height（参考 NoUIAutomationListView）
 // - MouseDoubleClick + PointerPressedEventArgs → PointerPressed + PointerPressedEventArgs + ClickCount==2（参考 Treemap；XAML 需同步迁移）
 // - e.Data.GetData → e.Data.Get（参考 FileListTreeView）
 // - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
 // - MoveFocus(TraversalRequest) → 无 Avalonia 等价，注释（参考 MultiselectionTreeView）
-// - FrameworkElement → Control（参考 DiffEntryRowUserControl）
+// - Layoutable → Control（参考 DiffEntryRowUserControl）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -422,7 +424,7 @@ namespace ForkPlus.UI.UserControls
 			else if (RevisionListView.SelectedItem is DecoratedRevision decoratedRevision)
 			{
 				bool flag = decoratedRevision.GetParents().Length > 1;
-				// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+				// 阶段 4.5：WPF e.Source → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
 				if (!(e.Source is GraphCellView && flag))
 				{
 					this.RevisionDoubleClick?.Invoke(this, new EventArgs<DecoratedRevision>(decoratedRevision));
@@ -457,7 +459,7 @@ namespace ForkPlus.UI.UserControls
 							if (commitGraphCache != null)
 							{
 								DecoratedRevision[] array = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
-								// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+								// 阶段 4.5：WPF e.Source → Avalonia e.Source（参考 ListViewScrollbarDoubleClickHelper）。
 								if (e.Source is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
 								{
 									listBox.ContextMenu.SetItems(CreateCollapseContextMenu(dataContext));
@@ -493,7 +495,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		// 阶段 4.5：WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs；DependencyObject → AvaloniaObject；e.OriginalSource → e.Source（参考 ListViewScrollbarDoubleClickHelper）。
+		// 阶段 4.5：WPF PointerPressedEventArgs → Avalonia PointerPressedEventArgs；DependencyObject → AvaloniaObject；e.Source → e.Source（参考 ListViewScrollbarDoubleClickHelper）。
 		private Branch GetClickedBranch(PointerPressedEventArgs args)
 		{
 			AvaloniaObject dependencyObject = args.Source as AvaloniaObject;
@@ -1401,7 +1403,7 @@ namespace ForkPlus.UI.UserControls
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			// window.Owner = Application.Current?.MainWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
+			// window.Owner = App.GetDesktopMainWindow();  // 阶段5：Avalonia Window.Owner 只读，已注释
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1473,7 +1475,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			// window.Owner = Application.Current?.MainWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
+			// window.Owner = App.GetDesktopMainWindow();  // 阶段5：Avalonia Window.Owner 只读，已注释
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1977,7 +1979,7 @@ namespace ForkPlus.UI.UserControls
 			};
 		}
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 DiffEntryRowUserControl）。
+		// 阶段 4.5：WPF Layoutable → Avalonia Control（参考 DiffEntryRowUserControl）。
 		private static void HideParentContextMenu(object ctrl)
 		{
 			for (Control frameworkElement = ctrl as Control; frameworkElement != null; frameworkElement = frameworkElement.Parent as Control)

@@ -1,11 +1,12 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - Geometry → Avalonia.Media.Geometry（命名空间迁移后自动解析）
 // 注：Theme.FindImage 已返回 IImage，Theme.FindGeometry 已返回 Avalonia.Media.Geometry。
 using Avalonia.Media;
 using ForkPlus.UI;
 using ForkPlus.UI.Helpers;
+using Theme = ForkPlus.UI.Theme;
 
 // ──────────────────────────────────────────────────────────────────────────
 //  UI 层对 Remote 的扩展 —— 提供 Avalonia 平台特定的图标属性。

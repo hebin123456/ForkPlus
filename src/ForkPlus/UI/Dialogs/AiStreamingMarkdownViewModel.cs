@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
 {

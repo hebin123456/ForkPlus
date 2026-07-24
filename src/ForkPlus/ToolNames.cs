@@ -1,3 +1,4 @@
+using Avalonia;
 namespace ForkPlus
 {
 	public static class ToolNames

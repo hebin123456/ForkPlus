@@ -8,6 +8,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.UserControls
 {

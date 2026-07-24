@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.* → using Avalonia.*
 // - Border/StackPanel/Image/TextBlock → Avalonia.Controls 同名类型
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - BindingOperations.SetBinding(_stackPanel, WidthProperty, new Binding("Width"){Source=this})
 //   → Avalonia Bind(WidthProperty, new Binding("Width"){Source=this}) 扩展方法
 // - CornerRadius/Thickness（API 兼容）
@@ -10,6 +10,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
+using Theme = ForkPlus.UI.Theme;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -64,7 +66,7 @@ namespace ForkPlus.UI.Dialogs
 			_descriptionTextBlock.Foreground = Theme.LabelBrush;
 			_stackPanel.Children.Add(_descriptionTextBlock);
 			Child = _stackPanel;
-			// 阶段 4.5：WPF BindingOperations.SetBinding(_stackPanel, FrameworkElement.WidthProperty, binding)
+			// 阶段 4.5：WPF BindingOperations.SetBinding(_stackPanel, Layoutable.WidthProperty, binding)
 			// → Avalonia AvaloniaObject.Bind(WidthProperty, binding) 扩展方法。
 			Binding binding = new Binding("Width")
 			{

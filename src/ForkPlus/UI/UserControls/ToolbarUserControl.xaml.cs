@@ -1,21 +1,22 @@
 using Avalonia.Threading;
+using Avalonia.Layout;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Thickness/Point/Visibility）+ using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Border/TextBlock/Canvas/Image/ItemCollection）
 // - using System.Windows.Markup → 移除（IComponentConnector 不需要）
-// - using System.Windows.Media → using Avalonia.Media（IImage，替代 ImageSource）
+// - using System.Windows.Media → using Avalonia.Media（IImage，替代 IImage）
 // - 新增 using Avalonia.VisualTree（GetVisualRoot，替代 Window.GetWindow）
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
 //   → NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）
-// - control.ToolTip = value → ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）
-// - ImageSource → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
+// - ToolTip.SetTip(control, value → ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）
+// - IImage → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
 // - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）
-// - FrameworkElement → Control（Avalonia 无 FrameworkElement，参考 ExternalToolsUserControl）
+// - Layoutable → Control（Avalonia 无 Layoutable，参考 ExternalToolsUserControl）
 // - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）
 // - TranslatePoint 返回 Point? → ?? default(Point)（Avalonia TranslatePoint 返回可空）
 // - MenuItem.IsCheckable = true → MenuItem.ToggleType = MenuItemToggleType.CheckBox（Avalonia 用 ToggleType 枚举控制勾选行为）
 // - Dispatcher.Async → 保留（Avalonia Dispatcher 兼容扩展，参考 CommitCommand）
-using System;
+using System)
 using System.Collections;
 using System.ComponentModel;
 using Avalonia;
@@ -44,8 +45,8 @@ namespace ForkPlus.UI.UserControls
 		public ToolbarUserControl()
 		{
 			InitializeComponent();
-			// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）。
-			ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch"));
+			// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）。
+			ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch")))
 			ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull"));
 			ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push"));
 			// 阶段 4.5：WPF WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → 直接订阅 obj.Event（参考 FileControlHeaderUserControl）。
@@ -250,8 +251,8 @@ namespace ForkPlus.UI.UserControls
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
 			AiDevelopmentToolbarButton.Title = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
-			// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)。
-		ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language));
+			// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)。
+		ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language)))
 		ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language));
 		ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language));
 			RefreshWorkspacesButton();
@@ -274,7 +275,7 @@ namespace ForkPlus.UI.UserControls
 			PushBadge.Collapse();
 		}
 
-		// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 ExternalToolsUserControl）。
+		// 阶段 4.5：WPF Layoutable → Avalonia Control（参考 ExternalToolsUserControl）。
 	private void RefreshBadge(Border badge, TextBlock badgeText, Control button, int count)
 	{
 		if (count > 0)
@@ -289,7 +290,7 @@ namespace ForkPlus.UI.UserControls
 		}
 	}
 
-	// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+	// 阶段 4.5：WPF Layoutable → Avalonia Control。
 	private void RefreshBadgePosition(Control badge, Control button)
 	{
 		// 阶段 4.5：WPF TranslatePoint 返回 Point → Avalonia 返回 Point?，用 ?? default(Point) 兜底。
@@ -399,10 +400,10 @@ namespace ForkPlus.UI.UserControls
 		ReflogToolbarButton.IsEnabled = repo != null;
 		string undoLabel = Preferences.PreferencesLocalization.Current("Undo");
 		string redoLabel = Preferences.PreferencesLocalization.Current("Redo");
-		// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)。
+		// 阶段 4.5：WPF ToolTip.SetTip(control, value → Avalonia ToolTip.SetTip(control, value)。
 		ToolTip.SetTip(UndoToolbarButton, canUndo
 			? undoLabel + ": " + repo.UndoRedoStack.LastUndoOperationName
-			: undoLabel);
+			: undoLabel))
 		ToolTip.SetTip(RedoToolbarButton, canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
 			: redoLabel);
@@ -834,7 +835,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			// 阶段 4.5：WPF ImageSource → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
+			// 阶段 4.5：WPF IImage → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
 		IImage consoleIcon = Theme.ConsoleIcon;
 			if (!(ForkPlusSettings.Default.ShellTool is ShellTool.Default))
 			{

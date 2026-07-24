@@ -7,6 +7,7 @@ using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.Services;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.Git.Commands
 {

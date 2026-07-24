@@ -4,7 +4,7 @@
 // - AddVisualChild/RemoveVisualChild → Avalonia.Visual.AddVisualChild/RemoveVisualChild
 // - AddLogicalChild/RemoveLogicalChild → LogicalChildren.Add/Remove
 // - GetVisualChild/VisualChildrenCount → 同名 override（Avalonia.Visual）
-// WPF FrameworkElement → Avalonia.Control。
+// WPF Layoutable → Avalonia.Control。
 // WPF UIElement → Avalonia.Control。
 // VisualTreeAttachmentHelper.PrepareForNewParent 已迁移（接受 AvaloniaObject）。
 using Avalonia;
@@ -13,6 +13,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using ForkPlus.UI;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Dialogs
 {

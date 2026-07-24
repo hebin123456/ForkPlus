@@ -5,7 +5,7 @@
 // - using System.Windows.Media → using Avalonia.Media（TranslateTransform）
 // - using System.Windows.Media.Animation → using Avalonia.Animation（Transitions/DoubleTransition）+ using Avalonia.Animation.Easings（QuadraticEaseOut）
 // - 新增 using Avalonia.Layout（Visibility）、using Avalonia.Threading（Dispatcher.UIThread）
-// - DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty/WidthProperty, anim) → Transitions + DoubleTransition + 修改 Height/Width 触发过渡（参考 ModernTabControl）
+// - DoubleAnimation + BeginAnimation(Layoutable.HeightProperty/WidthProperty, anim) → Transitions + DoubleTransition + 修改 Height/Width 触发过渡（参考 ModernTabControl）
 // - DoubleAnimation + BeginAnimation(TranslateTransform.XProperty, anim) → TranslateTransform.Transitions + 修改 X 触发过渡（参考 ModernTabControl）
 // - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 StatusUserControl）
 // - BeginAnimation(prop, null)（停止动画）→ Transitions = null 后直接设置值（参考 ModernTabControl）

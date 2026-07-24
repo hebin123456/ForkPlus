@@ -15,6 +15,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
