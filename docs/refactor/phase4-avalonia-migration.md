@@ -47,6 +47,16 @@
         - [x] `RemoveStreamingResponseBubble`/`FinalizeStreamingResponseBubble` 参数类型 `WebView2` → `MarkdownScrollViewer`；`.CoreWebView2 != null` → `!= null`
         - [x] 顺手修复 WPF 残留：`PreviewKeyDown` → `KeyDown`（Avalonia 无隧道事件）；`System.Windows.Input.KeyEventArgs`/`Key`/`Keyboard.IsKeyDown` → `Avalonia.Input.KeyEventArgs`/`Key`/`e.KeyModifiers.HasFlag`；`Dispatcher.BeginInvoke(Delegate, DispatcherPriority.Background)` → `Dispatcher.Post(Action)`；`(Brush)FindResource(...)` → `Theme.FindBrush(...)`
     - [ ] 4.7-c-3：`AiTextResultWindow`（scroll-at-bottom JS 互操作 → Avalonia ScrollViewer 事件）
+      - **进度**：
+        - [x] XAML：`wv2:WebView2` → `md:MarkdownScrollViewer`，移除 `xmlns:wv2` 命名空间
+        - [x] 移除 `using Microsoft.Web.WebView2.Core`，添加 `using Markdown.Avalonia` + `using Avalonia.VisualTree` + `using ForkPlus.Services`
+        - [x] `InitializeWebView()` → `AttachScrollTracker()`：删除 `EnsureCoreWebView2Async`/`ContextMenuRequested`/`WebMessageReceived`/`NavigationCompleted` + `ExecuteScriptAsync("scrollTo")`；改为 `GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault()` 查找内部 ScrollViewer 并订阅 `ScrollChanged`
+        - [x] `CoreWebView2_WebMessageReceived` → `InnerScrollViewer_ScrollChanged`：JS postMessage('scroll-at-bottom:1/0') → `Offset.Y + Viewport.Height >= Extent.Height - 80` 原生判定
+        - [x] `RenderMarkdown`：`RenderMarkdownToHtmlDocumentWithScrollScript` + `NavigateToString(HTML)` → `Markdown = markdown` + `Dispatcher.Post(ScrollInnerViewerToEnd)`（延迟一轮布局再滚到底）
+        - [x] `ShowError`：`BuildErrorHtmlDocument` → Markdown 引用块 `"> ⚠️ ..."`
+        - [x] `StartStreaming`：`.CoreWebView2 != null` → `_innerScrollViewer != null`（Loaded 已执行的标志）
+        - [x] `TryRenderStreamingPreview`：`.CoreWebView2 == null` → `== null`
+        - [x] `CopyButton_Click`：`Clipboard.SetText` → `ServiceLocator.Clipboard.SetText`（跨平台剪贴板服务）
     - [ ] 4.7-c-4：`AiCodeReviewWindow`（scroll 追踪 + 建议卡按钮回调 preview/apply suggestion → 原生 Avalonia 事件/Command，最复杂）
     - [ ] 4.7-c-5：`WebView2EnvironmentHelper` 删除 + csproj 移除 `Microsoft.Web.WebView2` 包 + `CopyWebView2LoaderToRoot` MSBuild target 删除
 - [x] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d 完成）

@@ -3,22 +3,30 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Markdown.Avalonia;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.UI.UserControls.Preferences;
-using Microsoft.Web.WebView2.Core;
 
 namespace ForkPlus.UI.Dialogs
 {
 	/// <summary>通用 AI 文本结果流式显示窗口。功能1（AI 解释 commit）和功能3（AI 生成 PR 描述）共用。
-	/// 调用方通过 StartStreaming(title, requestAction) 传入一个"启动 AI 请求并把 chunk 回写到本窗口"的委托。
-	/// 流式渲染状态/协议/Markdown转换/CSS 由 AiTextResultWindowViewModel（继承 AiStreamingMarkdownViewModel）承载。
-	/// 本类仅负责 WebView2 实例操作 + Dispatcher 调度 + UI 状态切换 + ComboBox 填充。</summary>
+	/// 调用方通过 StartStreaming(title, requestAction) 传入一个"启动 AI 请求并把 chunk 回写回本窗口"的委托。
+	/// 流式渲染状态/节流协议由 AiTextResultWindowViewModel（继承 AiStreamingMarkdownViewModel）承载。
+	/// 本类仅负责 MarkdownScrollViewer 实例操作 + Dispatcher 调度 + UI 状态切换 + ComboBox 填充。
+	/// 阶段 4.7-c-3：WebView2 + scroll-at-bottom JS 互操作 → MarkdownScrollViewer + 原生 ScrollViewer.ScrollChanged 事件。</summary>
 	public partial class AiTextResultWindow : CustomWindow, ILocalizableControl
 	{
 		private readonly AiTextResultWindowViewModel _viewModel = new AiTextResultWindowViewModel();
+
+		// MarkdownScrollViewer 内部的 ScrollViewer（用于滚动位置跟踪 + 滚到底部）。
+		// 在 Loaded 后通过视觉树查找；MarkdownScrollViewer 内置一个 ScrollViewer。
+		private ScrollViewer _innerScrollViewer;
 
 		// 用户传入的"重试"委托：每次点 Retry 都重新执行一次 AI 请求
 		private Action<AiTextResultWindow, JobMonitor> _requestAction;
@@ -31,11 +39,11 @@ namespace ForkPlus.UI.Dialogs
 			Loaded += AiTextResultWindow_Loaded;
 		}
 
-		private async void AiTextResultWindow_Loaded(object sender, RoutedEventArgs e)
+		private void AiTextResultWindow_Loaded(object sender, RoutedEventArgs e)
 		{
 			InitializeModelComboBox();
 			ApplyLocalizationToButtons();
-			await InitializeWebView();
+			AttachScrollTracker();
 			// 首次加载触发一次请求（如果调用方已设置 _requestAction）
 			if (_requestAction != null)
 			{
@@ -129,36 +137,50 @@ namespace ForkPlus.UI.Dialogs
 			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
 		}
 
-		private async Task InitializeWebView()
+		/// <summary>查找 MarkdownScrollViewer 内部的 ScrollViewer 并订阅 ScrollChanged 事件，
+		/// 用于跟踪用户滚动位置（是否在底部）+ 滚到底部操作。
+		/// 原 WebView2 通过 JS postMessage 上报 scroll-at-bottom；MarkdownScrollViewer 是原生 Avalonia 控件，
+		/// 直接用 ScrollViewer.ScrollChanged 事件即可。MarkdownScrollViewer 内置一个 ScrollViewer，
+		/// 通过 GetVisualDescendants 查找（控件模板应用后才有视觉树，故在 Loaded 中调用）。</summary>
+		private void AttachScrollTracker()
 		{
 			try
 			{
-				await AiResponseWebView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
-				AiResponseWebView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
+				_innerScrollViewer = AiResponseWebView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+				if (_innerScrollViewer != null)
 				{
-					e.Handled = true;
-				};
-				AiResponseWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-				AiResponseWebView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
-				{
-					if (!e.IsSuccess || !_viewModel.ConsumeScrollToEndRequest())
-					{
-						return;
-					}
-					try
-					{
-						AiResponseWebView.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)");
-					}
-					catch (Exception ex)
-					{
-						Log.Warn("Streaming scroll-to-end failed: " + ex.Message);
-					}
-				};
+					_innerScrollViewer.ScrollChanged += InnerScrollViewer_ScrollChanged;
+				}
 			}
 			catch (Exception ex)
 			{
-				Log.Error("AiTextResultWindow WebView2 init failed", ex);
-				ShowError(ex.Message);
+				Log.Warn("AiTextResultWindow scroll tracker attach failed: " + ex.Message);
+			}
+		}
+
+		/// <summary>ScrollChanged 事件处理：计算用户是否在底部，更新 VM 状态。
+		/// 原 WebView2 通过 JS postMessage('scroll-at-bottom:1/0') 上报；这里直接用 Avalonia 原生事件。
+		/// 判定：Offset.Y + Viewport.Height >= Extent.Height - 80（容差，与原 JS 脚本一致）。</summary>
+		private void InnerScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+		{
+			if (_innerScrollViewer == null)
+			{
+				return;
+			}
+			double offset = _innerScrollViewer.Offset.Y;
+			double viewport = _innerScrollViewer.Viewport.Height;
+			double extent = _innerScrollViewer.Extent.Height;
+			bool atBottom = viewport <= 0 || (offset + viewport >= extent - 80);
+			_viewModel.SetUserAtBottom(atBottom);
+		}
+
+		/// <summary>滚动 MarkdownScrollViewer 内部 ScrollViewer 到底。
+		/// 原 WebView2 用 ExecuteScriptAsync("window.scrollTo(...)")；这里用原生 ScrollViewer.ScrollToEnd()。</summary>
+		private void ScrollInnerViewerToEnd()
+		{
+			if (_innerScrollViewer != null)
+			{
+				_innerScrollViewer.ScrollToEnd();
 			}
 		}
 
@@ -168,8 +190,8 @@ namespace ForkPlus.UI.Dialogs
 			TitleTextBlock.Text = title;
 			base.Title = title;
 			_requestAction = requestAction;
-			// 如果窗口已加载，立即启动；否则 Loaded 事件会触发 RunRequest
-			if (AiResponseWebView.CoreWebView2 != null)
+			// 如果窗口已加载（_innerScrollViewer 已挂载说明 Loaded 已执行），立即启动；否则 Loaded 事件会触发 RunRequest
+			if (_innerScrollViewer != null)
 			{
 				RunRequest();
 			}
@@ -250,15 +272,17 @@ namespace ForkPlus.UI.Dialogs
 			_viewModel.StopStreaming();
 			UpdateStreamingStoppedUi();
 			StatusTextBlock.Text = PreferencesLocalization.Current("Failed");
-			string html = AiStreamingMarkdownViewModel.BuildErrorHtmlDocument(message);
+			// 原 WebView2 用 BuildErrorHtmlDocument 生成红色 HTML；MarkdownScrollViewer 用 Markdown 引用块显示错误
+			string escaped = (message ?? "").Replace("\n", "\n> ");
+			string errorMarkdown = "> ⚠️ " + escaped;
 			try
 			{
-				AiResponseWebView.NavigateToString(html);
+				AiResponseWebView.Markdown = errorMarkdown;
 				AiResponseWebView.Show();
 			}
 			catch (Exception ex)
 			{
-				Log.Warn("AiTextResultWindow ShowError navigate failed: " + ex.Message);
+				Log.Warn("AiTextResultWindow ShowError render failed: " + ex.Message);
 			}
 		}
 
@@ -277,7 +301,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (AiResponseWebView?.CoreWebView2 == null)
+			if (AiResponseWebView == null)
 			{
 				return;
 			}
@@ -290,32 +314,30 @@ namespace ForkPlus.UI.Dialogs
 			RenderMarkdown(md, scrollToEnd: _viewModel.StreamingUserAtBottom);
 		}
 
+		/// <summary>把 Markdown 渲染到 MarkdownScrollViewer（直接设置 Markdown 属性）。
+		/// 原 WebView2 用 RenderMarkdownToHtmlDocumentWithScrollScript 生成 HTML（含 JS 滚动上报脚本）+ NavigateToString；
+		/// 这里直接 Markdown = markdown，滚动位置跟踪由 InnerScrollViewer_ScrollChanged 处理。
+		/// scrollToEnd=true 时，Markdown 渲染后延迟一轮布局再 ScrollToEnd（渲染是同步的，但内容高度需布局后才能测得）。</summary>
 		private void RenderMarkdown(string markdown, bool scrollToEnd)
 		{
-			string html = AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocumentWithScrollScript(markdown);
 			if (scrollToEnd)
 			{
 				_viewModel.RequestScrollToEndIfNeeded();
 			}
 			try
 			{
-				AiResponseWebView.NavigateToString(html);
+				AiResponseWebView.Markdown = markdown;
 				AiResponseWebView.Show();
 				BusyIndicator.Collapse();
+				if (scrollToEnd)
+				{
+					// Markdown 渲染后需要一轮布局才能测得正确高度，延迟滚动到底
+					Dispatcher.Post(ScrollInnerViewerToEnd);
+				}
 			}
 			catch (Exception ex)
 			{
-				Log.Warn("AiTextResultWindow navigate failed: " + ex.Message);
-			}
-		}
-
-		private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-		{
-			string message = e.TryGetWebMessageAsString();
-			bool? atBottom = AiStreamingMarkdownViewModel.TryParseScrollMessage(message);
-			if (atBottom.HasValue)
-			{
-				_viewModel.SetUserAtBottom(atBottom.Value);
+				Log.Warn("AiTextResultWindow markdown render failed: " + ex.Message);
 			}
 		}
 
@@ -338,7 +360,8 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				Clipboard.SetText(md);
+				// WPF Clipboard.SetText → ServiceLocator.Clipboard.SetText（跨平台剪贴板服务）
+				ServiceLocator.Clipboard.SetText(md);
 				StatusTextBlock.Text = PreferencesLocalization.Current("Copied to clipboard");
 			}
 			catch (Exception ex)
