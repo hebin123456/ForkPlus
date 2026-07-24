@@ -31,7 +31,6 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="Padding" Value="4,0" />
     <Setter Property="Margin" Value="1,1" />
     <Setter Property="Height" Value="22" />

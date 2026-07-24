@@ -38,11 +38,12 @@
       </Style>
       <DataTemplate x:Key="{DataTemplateKey {x:Type local:CommandProviderItem}}" DataType="local:CommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
-            <Image.Source>
-              <Binding Path="Icon" />
-            </Image.Source>
-          </Image>
+          <!-- 阶段 4.5：原 DataTrigger (IsSelected=True -> IconImage.Source=SelectedIcon) 用堆叠 Image 实现。
+               默认 Image 绑定 Icon，选中 Image 绑定 SelectedIcon，通过祖先 ListBoxItem.IsSelected 切换 IsVisible。 -->
+          <Grid DockPanel.Dock="Left" Width="14" Height="14" VerticalAlignment="Bottom" Margin="0,0,4,4">
+            <Image Width="14" Height="14" Source="{Binding Icon}" IsVisible="{Binding !IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
+            <Image Width="14" Height="14" Source="{Binding SelectedIcon}" IsVisible="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
+          </Grid>
           <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
               <Binding Path="Title" />
@@ -51,11 +52,7 @@
               <Binding Path="FuzzySearchString" />
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.Visibility>
-              <Binding Path="DescriptionVisibility" />
-            </TextBlock.Visibility>
-          </TextBlock>
+          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" IsVisible="{Binding DescriptionVisibility}" x:Name="DashTextBlock" />
           <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
               <Binding Path="SecondaryTitle" />
@@ -65,20 +62,6 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-<!-- TODO 4.5 (Avalonia): PathTextBlock/DashTextBlock foreground migration moved to top-level
-         Style Selector above (ListBoxItem:selected). Remaining IconImage.Source=SelectedIcon
-         on :selected state cannot be expressed via pure Selector (requires re-binding Source).
-         Reimplement via either:
-           (a) two stacked Images (default + selected) toggled via IsVisible binding to ancestor
-               ListBoxItem.IsSelected, or
-           (b) a converter that picks Icon vs SelectedIcon based on selection state, or
-           (c) exposing a computed CurrentIcon property on the view-model.
-         Original WPF trigger preserved for reference.
-    <DataTrigger Binding="...IsSelected" Value="True">
-      <Setter TargetName="IconImage" Property="Image.Source">
-        <Setter.Value><Binding Path="SelectedIcon" /></Setter.Value>
-      </Setter>
-    </DataTrigger> -->
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
@@ -91,11 +74,10 @@
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type local:RepositoryInfoItem}}" DataType="local:RepositoryInfoItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
-            <Image.Source>
-              <Binding Path="Icon" />
-            </Image.Source>
-          </Image>
+          <Grid DockPanel.Dock="Left" Width="14" Height="14" VerticalAlignment="Bottom" Margin="0,0,4,4">
+            <Image Width="14" Height="14" Source="{Binding Icon}" IsVisible="{Binding !IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
+            <Image Width="14" Height="14" Source="{Binding SelectedIcon}" IsVisible="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
+          </Grid>
           <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
               <Binding Path="Title" />
@@ -104,11 +86,7 @@
               <Binding Path="FuzzySearchString" />
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.Visibility>
-              <Binding Path="DescriptionVisibility" />
-            </TextBlock.Visibility>
-          </TextBlock>
+          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" IsVisible="{Binding DescriptionVisibility}" x:Name="DashTextBlock" />
           <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
               <Binding Path="SecondaryTitle" />
@@ -118,20 +96,6 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-<!-- TODO 4.5 (Avalonia): PathTextBlock/DashTextBlock foreground migration moved to top-level
-         Style Selector above (ListBoxItem:selected). Remaining IconImage.Source=SelectedIcon
-         on :selected state cannot be expressed via pure Selector (requires re-binding Source).
-         Reimplement via either:
-           (a) two stacked Images (default + selected) toggled via IsVisible binding to ancestor
-               ListBoxItem.IsSelected, or
-           (b) a converter that picks Icon vs SelectedIcon based on selection state, or
-           (c) exposing a computed CurrentIcon property on the view-model.
-         Original WPF trigger preserved for reference.
-    <DataTrigger Binding="...IsSelected" Value="True">
-      <Setter TargetName="IconImage" Property="Image.Source">
-        <Setter.Value><Binding Path="SelectedIcon" /></Setter.Value>
-      </Setter>
-    </DataTrigger> -->
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>

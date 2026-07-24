@@ -30,7 +30,6 @@
     <Setter Property="Width" Value="10" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="Stretch" Value="Uniform" />
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
     <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
          (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
@@ -70,7 +69,6 @@
     <Setter Property="Width" Value="10" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="Stretch" Value="Uniform" />
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
     <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
          (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only

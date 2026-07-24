@@ -154,19 +154,15 @@
           <GridViewColumn Width="8">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <Border Margin="0,0,-4,0" Width="4" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                  <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                      <Binding Path="IsSearchMatch" />
-                    </DataTrigger.Binding>
-                    <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Background" />
-                  </DataTrigger>
-                </DataTemplate.Triggers> -->
+                <Border Margin="0,0,-4,0" Width="4" x:Name="SearchMatchBorder">
+                  <Border.Background>
+                    <Binding Path="IsSearchMatch">
+                      <Binding.Converter>
+                        <controls:BoolToBrushConverter TrueBrush="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" FalseBrush="#00FFFFFF" />
+                      </Binding.Converter>
+                    </Binding>
+                  </Border.Background>
+                </Border>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

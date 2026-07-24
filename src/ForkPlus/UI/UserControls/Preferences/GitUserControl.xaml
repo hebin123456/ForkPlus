@@ -1,31 +1,8 @@
-<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。 -->
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。
+     阶段 4.5：原 Style.Triggers 中 DataTrigger 绑定 GitInstanceType=Separator 时把 ComboBoxItem 渲染为 Separator
+     (Height=1, IsEnabled=False, 自定义 ControlTemplate 含 Separator)。Avalonia 不支持 Style.Triggers/DataTrigger，
+     改为在 ItemTemplate 中堆叠 TextBlock + Separator，通过 IsVisible 绑定 GitInstanceType + EnumEqualsConverter 切换显示。 -->
 <UserControl xmlns:Preferences="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GitUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <UserControl.Resources>
-    <ResourceDictionary>
-      <Style x:Key="GitInstanceComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <Style.Triggers>
-          <DataTrigger>
-            <DataTrigger.Binding>
-              <Binding Path="GitInstanceType" />
-            </DataTrigger.Binding>
-            <Setter Property="Height" Value="1" />
-            <Setter Property="IsEnabled" Value="False" />
-            <Setter Property="Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                  <Separator HorizontalAlignment="Stretch" Margin="0" />
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </Style.Triggers> -->
-      </Style>
-    </ResourceDictionary>
-  </UserControl.Resources>
   <Grid Width="500">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto" />
@@ -43,27 +20,35 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
-    <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
+    <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
       <ComboBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock FontSize="13" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="FileName" />
-            </TextBlock.Text>
-          </TextBlock>
+          <Grid>
+            <!-- 普通项：GitInstanceType != Separator -->
+            <TextBlock FontSize="13" VerticalAlignment="Center" IsVisible="{Binding GitInstanceType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}">
+              <TextBlock.Text>
+                <Binding Path="FileName" />
+              </TextBlock.Text>
+            </TextBlock>
+            <!-- 分隔符项：GitInstanceType == Separator -->
+            <Separator HorizontalAlignment="Stretch" Margin="0" IsVisible="{Binding GitInstanceType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}" />
+          </Grid>
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
     <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" Checked="VerboseGitOutputCheckBox_Checked" Unchecked="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
     <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
-    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
+    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
       <ComboBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock FontSize="13" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="FileName" />
-            </TextBlock.Text>
-          </TextBlock>
+          <Grid>
+            <TextBlock FontSize="13" VerticalAlignment="Center" IsVisible="{Binding GitInstanceType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}">
+              <TextBlock.Text>
+                <Binding Path="FileName" />
+              </TextBlock.Text>
+            </TextBlock>
+            <Separator HorizontalAlignment="Stretch" Margin="0" IsVisible="{Binding GitInstanceType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}" />
+          </Grid>
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>

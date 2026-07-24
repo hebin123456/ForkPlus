@@ -226,7 +226,6 @@
     </Setter>
   </Style>
   <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="Padding" Value="4,1" />
     <Setter Property="HorizontalContentAlignment">
       <Setter.Value>

@@ -112,7 +112,6 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Width" Value="16" />
     <Setter Property="Margin" Value="0,0,2,0" />
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -180,7 +179,6 @@
     <Setter Property="BorderThickness" Value="0,0,0,0" />
     <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Background}" />
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-    <Setter Property="SnapsToDevicePixels" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabControl}">

@@ -3,10 +3,9 @@ using Avalonia.Controls;
 // - using System.Windows → using Avalonia
 // - using System.Windows.Media → using Avalonia.Media
 // - ImageSource → IImage（Avalonia.Media）
-// - Visibility → Avalonia.Visibility（命名空间迁移，枚举值兼容）
+// - Visibility → bool（Avalonia IsVisible 接受 bool，不再使用 Visibility 枚举）
 // 注：本类无 TryFindResource 调用，Icon/SelectedIcon 仅声明为虚属性，由派生类（PaletteCommandItem 等）通过 Theme.FindImage 提供。
 using System.ComponentModel;
-using Avalonia;
 using Avalonia.Media;
 
 namespace ForkPlus.UI.QuickLaunch
@@ -19,7 +18,7 @@ namespace ForkPlus.UI.QuickLaunch
 
 		public virtual IImage SelectedIcon { get; }
 
-		public Visibility DescriptionVisibility { get; }
+		public bool DescriptionVisibility { get; }
 
 		public string Title { get; }
 
@@ -50,7 +49,7 @@ namespace ForkPlus.UI.QuickLaunch
 			Argument = value;
 			Title = title;
 			SecondaryTitle = secondaryTitle;
-			DescriptionVisibility = (string.IsNullOrEmpty(SecondaryTitle) ? Visibility.Hidden : Visibility.Visible);
+			DescriptionVisibility = !string.IsNullOrEmpty(SecondaryTitle);
 		}
 	}
 }
