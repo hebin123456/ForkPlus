@@ -109,7 +109,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					Width = 20, Height = 20,
 					Margin = new Thickness(2),
-					BorderBrush = (Brush)Application.Current.Resources["BorderBrush"],
+					BorderBrush = (IBrush)Application.Current.Resources["BorderBrush"],
 					BorderThickness = new Thickness(1),
 					Cursor = Cursors.Hand,
 					Tag = hex,
@@ -677,7 +677,7 @@ namespace ForkPlus.UI.Dialogs
 				set { _isCustomized = value; OnPropertyChanged(); }
 			}
 
-			public Brush PreviewBrush
+			public IBrush PreviewBrush
 			{
 				get
 				{

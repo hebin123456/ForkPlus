@@ -70,7 +70,12 @@ namespace ForkPlus.UI.Controls
 			set => SetValue(IsDirtyProperty, value);
 		}
 
-		private EditableTextBlock TitleTextBlock => NameScope?.Find("PART_Title") as EditableTextBlock;
+		// 阶段 5：Avalonia 无 FrameworkElement.NameScope 实例属性；在 OnApplyTemplate
+	// 中通过 e.NameScope 缓存模板部件，供 TitleTextBlock 属性读取。
+	[Null]
+	private EditableTextBlock _titleTextBlock;
+
+	private EditableTextBlock TitleTextBlock => _titleTextBlock;
 
 		public ClosableTabItem()
 		{
@@ -96,16 +101,17 @@ namespace ForkPlus.UI.Controls
 
 		// 阶段 5：Avalonia OnApplyTemplate 签名为 protected override OnApplyTemplate(TemplateAppliedEventArgs e)。
 	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-		{
-			base.OnApplyTemplate(e);
-			if (NameScope?.Find("PART_Close") is Button button)
+	{
+		base.OnApplyTemplate(e);
+		_titleTextBlock = e.NameScope?.Find("PART_Title") as EditableTextBlock;
+		if (e.NameScope?.Find("PART_Close") is Button button)
 			{
 				button.Click += delegate
 				{
 					Close();
 				};
 			}
-			if (!(NameScope?.Find("PART_Header") is CenteredDockPanel centeredDockPanel))
+			if (!(e.NameScope?.Find("PART_Header") is CenteredDockPanel centeredDockPanel))
 			{
 				return;
 			}

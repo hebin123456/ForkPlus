@@ -93,7 +93,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static void UpdateControls(Revision revision, AvatarImage authorAvatarImage, TextBlock authorTextBlock, TextBlock authorDateTextBlock, TextBlock shaTextBlock, Border shaBackgroundBorder, TextBlock subjectTextBlock, TextBlock descriptionSymbolTextBlock, Border customTextBlockBorder, TextBlock customTextBlock, BugtrackerLinkDefinition[] bugtrackers, [Null] Brush brush = null, [Null] string customTextBlockText = null)
+		private static void UpdateControls(Revision revision, AvatarImage authorAvatarImage, TextBlock authorTextBlock, TextBlock authorDateTextBlock, TextBlock shaTextBlock, Border shaBackgroundBorder, TextBlock subjectTextBlock, TextBlock descriptionSymbolTextBlock, Border customTextBlockBorder, TextBlock customTextBlock, BugtrackerLinkDefinition[] bugtrackers, [Null] IBrush brush = null, [Null] string customTextBlockText = null)
 		{
 			if (customTextBlockText != null)
 			{

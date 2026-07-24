@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_templatePartSearchPanel = NameScope?.Find("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
+			_templatePartSearchPanel = e.NameScope?.Find("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
 			_templatePartSearchPanel?.Attach(base.TextArea);
 		}
 

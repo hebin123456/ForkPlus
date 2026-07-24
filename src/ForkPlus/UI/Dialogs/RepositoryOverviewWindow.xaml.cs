@@ -34,15 +34,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private static readonly Typeface _typeface;
 
-		private static readonly Brush _itemBackgroundBrush;
+		private static readonly IBrush _itemBackgroundBrush;
 
 		private static readonly Pen _hoverBorderPen;
 
 		private static readonly Bitmap FolderIcon;
 
-		private Brush _labelBrush;
+		private IBrush _labelBrush;
 
-		private Brush _secondaryLabelBrush;
+		private IBrush _secondaryLabelBrush;
 
 		private Pen _borderPen;
 

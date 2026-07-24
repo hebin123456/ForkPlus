@@ -42,7 +42,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_indicatorBorder = NameScope?.Find("PART_IndicatorBorder") as Border;
+			_indicatorBorder = e.NameScope?.Find("PART_IndicatorBorder") as Border;
 			if (_indicatorBorder != null)
 			{
 				// 阶段 4.5：为 Border.Width 配置过渡动画。

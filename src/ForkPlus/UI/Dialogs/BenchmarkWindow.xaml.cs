@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						_benchmarkLog = response.Result.BenchmarkLog;
 						ProgressBar.Hide();
-						Brush scoreBrush = GetScoreBrush(response.Result.Score, 20.0, 60.0);
+						IBrush scoreBrush = GetScoreBrush(response.Result.Score, 20.0, 60.0);
 						ScoreTextBlock.Foreground = scoreBrush;
 						ScoreTextBlock.Text = $"{response.Result.Score:0.0}";
 						ScoreProgressBar.Show();
@@ -124,7 +124,7 @@ namespace ForkPlus.UI.Dialogs
 			ScoreTextBlock.Foreground = ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
-		private static Brush GetElapsedBrush(double? value, double low, double high)
+		private static IBrush GetElapsedBrush(double? value, double low, double high)
 		{
 			if (value.HasValue)
 			{
@@ -142,7 +142,7 @@ namespace ForkPlus.UI.Dialogs
 			return ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
-		private static Brush GetScoreBrush(double? value, double low, double high)
+		private static IBrush GetScoreBrush(double? value, double low, double high)
 		{
 			if (value.HasValue)
 			{

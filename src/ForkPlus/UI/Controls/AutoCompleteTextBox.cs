@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Controls
 	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (NameScope?.Find("Popup") is Popup popup)
+			if (e.NameScope?.Find("Popup") is Popup popup)
 			{
 				_popup = popup;
 				_popup.PlacementTarget = this;

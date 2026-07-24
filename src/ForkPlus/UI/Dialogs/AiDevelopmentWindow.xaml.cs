@@ -1074,7 +1074,7 @@ namespace ForkPlus.UI.Dialogs
 			RenderMarkdownToViewer(viewer, response);
 		}
 
-		private void AddStatusMessage(string message, Brush foreground)
+		private void AddStatusMessage(string message, IBrush foreground)
 		{
 			TextBlock statusBlock = new TextBlock
 			{
