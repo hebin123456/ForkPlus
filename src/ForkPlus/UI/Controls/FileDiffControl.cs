@@ -1,10 +1,18 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF DependencyProperty → Avalonia StyledProperty。
+// WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
+// WPF Key/Keyboard → Avalonia.Input.Key/FocusManager（Keyboard.FocusedElement 暂保留 + TODO）。
+// WPF MouseWheelEventArgs → PointerWheelEventArgs。WPF PreviewMouseWheel → PointerWheelChanged。
+// WPF FrameworkElement/UIElement → Avalonia.Controls.Control。
+// WPF ContextMenu/Separator → Avalonia.Controls.ContextMenu/Separator。
+// WPF RaiseEvent(MouseWheelEvent) 事件转发在 Avalonia 无等价物，标记 TODO(4.5)。
 using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
@@ -52,13 +60,18 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		protected Job _activeRefreshJob;
 
-		public static readonly DependencyProperty RepositoryUserControlProperty = DependencyProperty.Register("RepositoryUserControl", typeof(RepositoryUserControl), typeof(FileDiffControl), new PropertyMetadata(null));
+		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
+		public static readonly StyledProperty<RepositoryUserControl> RepositoryUserControlProperty =
+			AvaloniaProperty.Register<FileDiffControl, RepositoryUserControl>(nameof(RepositoryUserControl));
 
-		public static readonly DependencyProperty TargetProperty = DependencyProperty.Register("Target", typeof(FileDiffControlTarget), typeof(FileDiffControl), new PropertyMetadata(FileDiffControlTarget.Revision));
+		public static readonly StyledProperty<FileDiffControlTarget> TargetProperty =
+			AvaloniaProperty.Register<FileDiffControl, FileDiffControlTarget>(nameof(Target), FileDiffControlTarget.Revision);
 
-		public static readonly DependencyProperty SubControlModeProperty = DependencyProperty.Register("SubControlMode", typeof(bool), typeof(FileDiffControl), new PropertyMetadata(false));
+		public static readonly StyledProperty<bool> SubControlModeProperty =
+			AvaloniaProperty.Register<FileDiffControl, bool>(nameof(SubControlMode), false);
 
-		public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(GitCommandResult<DiffContent>), typeof(FileDiffControl), new PropertyMetadata(null));
+		public static readonly StyledProperty<GitCommandResult<DiffContent>> ContentProperty =
+			AvaloniaProperty.Register<FileDiffControl, GitCommandResult<DiffContent>>(nameof(Content));
 
 		private static readonly Regex SubmoduleChangesMergeRegEx = new Regex("(\\b[0-9a-f]{40}),(\\b[0-9a-f]{40})", RegexOptions.Multiline | RegexOptions.Compiled);
 
@@ -122,8 +135,11 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		// 阶段 4.5：WPF OnPreviewKeyDown (tunneling) → Avalonia OnKeyDown (bubbling)。
+		// 通过 e.Handled = true 阻止后续处理，达到 Preview 的效果。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
+			// TODO(4.5): WPF Keyboard.FocusedElement → Avalonia FocusManager.GetFocusedElement()，需验证
 			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(Keyboard.FocusedElement is TextBox))
 			{
 				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
@@ -139,10 +155,12 @@ namespace ForkPlus.UI.Controls
 					}
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF DependencyPropertyChangedEventArgs → Avalonia AvaloniaPropertyChangedEventArgs。
+		// Avalonia 11 中 OnPropertyChanged 签名为 (AvaloniaPropertyChangedEventArgs change)，e.NewValue/e.Property 兼容。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == ContentProperty)
@@ -264,7 +282,7 @@ namespace ForkPlus.UI.Controls
 						if (SubControlMode)
 						{
 							textDiffControl3.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl3.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl3.PointerWheelChanged += DiffCodeEditor_PreviewMouseWheel;
 						}
 						textDiffControl3.PositionCache = _positionCache;
 						return textDiffControl3;
@@ -405,7 +423,7 @@ namespace ForkPlus.UI.Controls
 						if (SubControlMode)
 						{
 							textDiffControl2.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl2.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl2.PointerWheelChanged += DiffCodeEditor_PreviewMouseWheel;
 						}
 						textDiffControl2.PositionCache = _positionCache;
 						return textDiffControl2;
@@ -448,7 +466,7 @@ namespace ForkPlus.UI.Controls
 					if (SubControlMode)
 					{
 						textDiffControl.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-						textDiffControl.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+						textDiffControl.PointerWheelChanged += DiffCodeEditor_PreviewMouseWheel;
 					}
 					textDiffControl.PositionCache = _positionCache;
 					return textDiffControl;
@@ -882,27 +900,36 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected void DiffCodeEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		// 阶段 4.5：WPF MouseWheelEventArgs → Avalonia PointerWheelEventArgs。
+		// WPF 通过 new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent(MouseWheelEvent)
+		// 将滚轮事件转发给父级控件。Avalonia PointerWheelEventArgs 无法外部构造后 RaiseEvent 重新派发，
+		// 需运行时验证：改为调用父级 ((Control)sender).Parent 的程序化滚动 API（参考 FloatingButton.cs）。
+		protected void DiffCodeEditor_PreviewMouseWheel(object sender, PointerWheelEventArgs e)
 		{
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// TODO(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
+				// 在 Avalonia 无等价物，需运行时验证。原 WPF 代码（已注释）：
+				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
+				// mouseWheelEventArgs.Source = sender;
+				// (((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
 			}
 		}
 
-		protected void SubmoduleDiffUserControl_RevisionListView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		// 阶段 4.5：WPF MouseWheelEventArgs → Avalonia PointerWheelEventArgs（同上）。
+		protected void SubmoduleDiffUserControl_RevisionListView_PreviewMouseWheel(object sender, PointerWheelEventArgs e)
 		{
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// TODO(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
+				// 在 Avalonia 无等价物，需运行时验证。原 WPF 代码（已注释）：
+				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
+				// mouseWheelEventArgs.Source = sender;
+				// (((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
 			}
 		}
 
