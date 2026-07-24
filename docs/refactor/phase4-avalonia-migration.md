@@ -20,7 +20,7 @@
 - [x] `OxyPlot.Wpf` → `OxyPlot.Avalonia`（4.7-b 完成）
   - 涉及：`StatisticsUserControl`、`StatisticsUserControlViewModel`
   - 已完成：`OxyPlot.Wpf` → `OxyPlot.Avalonia`、`WeakEventManager` → 直接订阅、`ListCollectionView`/`CollectionViewSource` → 过滤 `ObservableCollection`、`Dispatcher.BeginInvoke` → `Dispatcher.Post`、`ToOxyColor()` 扩展方法（`OxyPlotExtensions.cs`）、XAML xmlns 替换、`{x:Type}` → Selector 语法
-- [ ] `Microsoft.Web.WebView2` → 调研替代方案（4.7-c 进行中，**最大工作量**）
+- [x] `Microsoft.Web.WebView2` → `OneWare.Markdown.Avalonia.Tight`（4.7-c 完成）
   - **评估结论：推荐方案 B（Markdig + Avalonia 原生 Markdown 渲染）**——采用现成包 `OneWare.Markdown.Avalonia.Tight` 11.3.17.1（Avalonia 11.3.17 + net10.0，MIT，fork 自 whistyun/Markdown.Avalonia），无需自建 `MarkdownAvaloniaRenderer`
   - 与 csproj 声明一致："阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除"
   - 涉及：`AiDevelopmentWindow` / `AiCodeReviewWindow` / `AiTextResultWindow` / `GitMmReferenceWindow` / `WebView2EnvironmentHelper` / `AiStreamingMarkdownViewModel`
@@ -57,8 +57,25 @@
         - [x] `StartStreaming`：`.CoreWebView2 != null` → `_innerScrollViewer != null`（Loaded 已执行的标志）
         - [x] `TryRenderStreamingPreview`：`.CoreWebView2 == null` → `== null`
         - [x] `CopyButton_Click`：`Clipboard.SetText` → `ServiceLocator.Clipboard.SetText`（跨平台剪贴板服务）
-    - [ ] 4.7-c-4：`AiCodeReviewWindow`（scroll 追踪 + 建议卡按钮回调 preview/apply suggestion → 原生 Avalonia 事件/Command，最复杂）
-    - [ ] 4.7-c-5：`WebView2EnvironmentHelper` 删除 + csproj 移除 `Microsoft.Web.WebView2` 包 + `CopyWebView2LoaderToRoot` MSBuild target 删除
+    - [x] 4.7-c-4：`AiCodeReviewWindow`（scroll 追踪 + 建议卡按钮回调 preview/apply suggestion → 原生 Avalonia 事件/Command，最复杂）
+      - **进度**：
+        - [x] XAML：`wv2:WebView2` → 外层 `ScrollViewer` + `md:MarkdownScrollViewer` + `StackPanel`（`SuggestionsPanel`，承载原生建议卡）
+        - [x] 移除 `Microsoft.Web.WebView2.Core`/`Wpf` using，添加 `using Markdown.Avalonia` + `using Avalonia.VisualTree` + `using Avalonia.Controls` + `using Avalonia.Media` + `using Avalonia.Layout`
+        - [x] 滚动跟踪：`CoreWebView2_WebMessageReceived`（JS `postMessage('scroll-at-bottom:1/0')`）→ `AiResponseScrollViewer.ScrollChanged` 事件（`Offset.Y + Viewport.Height >= Extent.Height - 80` 原生判定）
+        - [x] `InitializeWebView` → `AttachScrollTracker`：删除 `EnsureCoreWebView2Async`/`ContextMenuRequested`/`NavigationCompleted` + `ExecuteScriptAsync("scrollTo")`
+        - [x] `ScrollInnerViewerToEnd`：`ExecuteScriptAsync("window.scrollTo")` → `ScrollViewer.ScrollToEnd()`
+        - [x] 建议卡按钮回调：`CreateSuggestionsHtml`（HTML `<button onclick=...>` + JS `postMessage('preview/apply-suggestion:i')`）→ `BuildSuggestionCards`（动态创建原生 `Border` + `TextBlock` + 两个 `Button`，`Button.Click` 直接调用 `PreviewSuggestion`/`ApplySuggestion`）
+        - [x] Markdown 渲染：`RenderAiReviewOutput` 重构为 Markdown 拼接（`CreateStatusMarkdown`/`CreateReviewBodyMarkdown`/`CreateAllReviewResultsMarkdown`）+ 原生建议卡渲染；移除 `CreateHtmlDocument`/`NavigateToString`
+        - [x] 缓存改 Markdown：`_fileReviewHtmlCache` → `_fileReviewMarkdownCache`，`_aiReviewHtml` → `_aiReviewMarkdown`
+        - [x] 主题更新：移除 `ApplicationThemeChanged` 中 `PreferredColorScheme` 更新（MarkdownScrollViewer 由 Avalonia 主题系统自动应用）
+    - [x] 4.7-c-5：`WebView2EnvironmentHelper` 删除 + csproj 移除 `Microsoft.Web.WebView2` 包 + `CopyWebView2LoaderToRoot` MSBuild target 删除
+      - **进度**：
+        - [x] 删除 `src/ForkPlus/UI/Dialogs/WebView2EnvironmentHelper.cs`
+        - [x] `ForkPlus.csproj` 移除 `<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />`
+        - [x] `ForkPlus.csproj` 删除 `CopyWebView2LoaderToRoot` MSBuild target（含 `WebView2RuntimeRid` 属性 + Build/Publish 目录的 `Copy` + `RemoveDir` runtimes）
+        - [x] `Properties/AssemblyInfo.cs` 移除 `[assembly: AssemblyAssociatedContentFile("webview2loader.dll")]`
+        - [x] `ForkPlus.AutomationTests.csproj` 注释更新：移除"WebView2 最低要求"说明
+        - [x] csproj 暂保留包注释清理：移除 `Microsoft-WindowsAPICodePack-Shell`（4.7-d 已移除包）和 `Microsoft.Web.WebView2`（本阶段已移除包）条目
 - [x] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d 完成）
   - 涉及：`OpenDialog` 静态类（阶段 2 已迁移到 `IFileSystemDialogService`）、`WpfFileSystemDialogService`、`IFileSystemDialogService`
   - 已完成：`CommonOpenFileDialog` → `OpenFolderPickerAsync`/`OpenFilePickerAsync`、`CommonSaveFileDialog` → `SaveFilePickerAsync`、`GetAwaiter().GetResult()` 同步阻塞异步调用、`PreventRefreshAfterChildDialogClose` 保留、`FilePickerFileType.Patterns` glob 规范化（WPF `.txt` → Avalonia `*.txt`）

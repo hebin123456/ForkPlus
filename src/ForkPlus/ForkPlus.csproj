@@ -115,10 +115,7 @@
     <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Avalonia11" />
     <PackageReference Include="OneWare.Markdown.Avalonia.Tight" Version="11.3.17.1" />
     <!-- ===== 暂保留包（阶段 4 后续里程碑替换/移除）=====
-         - Microsoft.Web.WebView2：阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除
-         - Microsoft-WindowsAPICodePack-Shell：阶段 0 已迁移到 IFileSystemDialogService，本阶段移除
          - CommunityToolkit.WinUI.Notifications：阶段 5 由 IToastNotificationService 跨平台实现替代 -->
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
     <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
@@ -181,39 +178,5 @@
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
     <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
-  </Target>
-
-  <!-- WebView2Loader.dll 处理：
-       Microsoft.Web.WebView2 NuGet 包按 RID 把 native loader 放在
-         runtimes\win-x64\native\WebView2Loader.dll
-         runtimes\win-x86\native\WebView2Loader.dll
-         runtimes\win-arm64\native\WebView2Loader.dll
-       原 .NET Framework 4.7.2 设计是平铺在 bin 根目录（见 AssemblyInfo.cs 的
-       [AssemblyAssociatedContentFile("webview2loader.dll")]），WebView2 初始化时
-       从根目录加载。.NET 10 下 NuGet 不再平铺放，需手动把当前 PlatformTarget
-       对应的 WebView2Loader.dll 拷到根目录，再删 runtimes 子目录避免冗余。
-
-       $(PlatformTarget) = x64 时取 win-x64 那份；x86/arm64 同理。-->
-  <Target Name="CopyWebView2LoaderToRoot" AfterTargets="Build;Publish">
-    <PropertyGroup>
-      <!-- win-x64 / win-x86 / win-arm64 三种之一，匹配 PlatformTarget -->
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x64'">win-x64</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x86'">win-x86</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'arm64'">win-arm64</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(WebView2RuntimeRid)' == ''">win-x64</WebView2RuntimeRid>
-    </PropertyGroup>
-    <!-- Build 输出目录（$(TargetDir)）-->
-    <Copy SourceFiles="$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
-          DestinationFolder="$(TargetDir)"
-          SkipUnchangedFiles="true"
-          Condition="Exists('$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
-    <!-- Publish 输出目录（$(PublishDir)，仅在 publish 时有值）-->
-    <Copy SourceFiles="$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
-          DestinationFolder="$(PublishDir)"
-          SkipUnchangedFiles="true"
-          Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
-    <!-- 删 runtimes 子目录（loader 已拷到根目录，避免重复）-->
-    <RemoveDir Directories="$(TargetDir)runtimes" Condition="Exists('$(TargetDir)runtimes')" />
-    <RemoveDir Directories="$(PublishDir)runtimes" Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes')" />
   </Target>
 </Project>

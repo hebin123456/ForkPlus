@@ -11,7 +11,6 @@ using System.Windows.Resources;
 [assembly: InternalsVisibleTo("ForkPlus.Tests")]
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 [assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]
-[assembly: AssemblyAssociatedContentFile("webview2loader.dll")]
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]

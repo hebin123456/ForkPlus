@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- 系统测试：通过 FlaUI UIA3 自动化驱动 ForkPlus.exe 做 GUI 测试。
-         WPF + FlaUI 都需要 windows TFM；与主工程对齐 19041（WebView2 最低要求）。-->
+         WPF + FlaUI 都需要 windows TFM；与主工程对齐 19041。-->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>

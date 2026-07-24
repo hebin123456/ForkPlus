@@ -19,9 +19,9 @@
 
 ### NuGet 包清理
 
-- [ ] 移除 `Microsoft.Web.WebView2`（阶段 4 已替换）
+- [x] 移除 `Microsoft.Web.WebView2`（阶段 4.7-c-5 已移除）
 - [ ] 移除 `CommunityToolkit.WinUI.Notifications`（阶段 5 已替换）
-- [ ] 移除 `Microsoft-WindowsAPICodePack-Shell`（阶段 2 已迁移到 `IFileSystemDialogService`）
+- [x] 移除 `Microsoft-WindowsAPICodePack-Shell`（阶段 4.7-d 已移除包引用）
 - [ ] 确认 `AvalonEdit` → `Avalonia.AvaloniaEdit`（阶段 4 已替换）
 - [ ] 确认 `OxyPlot.Wpf` → `OxyPlot.Avalonia` 或 `ScottPlot.Avalonia`（阶段 4 已替换）
 
@@ -42,8 +42,7 @@
 - [ ] `CopyHelperExecutables` target
   - 子进程 exe（AskPass / RI）的跨平台拷贝逻辑
   - Linux/macOS 不需要 apphost，但需拷贝 .dll 和 .runtimeconfig.json
-- [ ] `CopyWebView2LoaderToRoot` target
-  - WebView2 移除后，此 target 删除
+- [x] `CopyWebView2LoaderToRoot` target（阶段 4.7-c-5 已删除）
 
 ### 全局验证
 
