@@ -26,7 +26,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.BeginInvoke(new System.Action(RefreshCommandPreview), System.Windows.Threading.DispatcherPriority.Loaded);
+				Dispatcher.Post(RefreshCommandPreview);
 			};
 		}
 
