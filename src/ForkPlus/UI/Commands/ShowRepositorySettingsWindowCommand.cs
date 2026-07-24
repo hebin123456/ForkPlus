@@ -1,4 +1,3 @@
-using System.Windows;
 using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Services;

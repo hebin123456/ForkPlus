@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Windows;
 using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
