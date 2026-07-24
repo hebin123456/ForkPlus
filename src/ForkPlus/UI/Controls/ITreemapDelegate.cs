@@ -1,9 +1,10 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF System.Windows.Rect/Media.DrawingContext → Avalonia.Rect/Media.DrawingContext。
 	public interface ITreemapDelegate
 	{
 		string GetItemTitle(object array, int index);

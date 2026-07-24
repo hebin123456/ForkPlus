@@ -1,10 +1,11 @@
 using System;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF System.Windows.Rect → Avalonia.Rect。
 	internal static class BtLayoutTreemapResultExtensions
 	{
 		public static GitCommandResult<(int, Rect)[]> Into(this ref BtLayoutTreemapResult btLayoutTreemapResult)
