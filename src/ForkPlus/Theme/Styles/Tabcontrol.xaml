@@ -1,19 +1,47 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+       xmlns:controls kept on root for custom control selectors.
+     - Style TargetType="{x:Type ...}" -> Selector="..."; x:Key values preserved.
+       Nested Style.Resources styles also converted (TargetType -> Selector).
+     - Property prefixes stripped (Panel.Background -> Background, Border.BorderBrush -> BorderBrush,
+       Border.BorderThickness -> BorderThickness, TextElement.Foreground -> Foreground, TextElement.FontSize -> FontSize,
+       TextElement.FontWeight -> FontWeight, Control.Padding -> Padding, Control.Template -> Template,
+       Control.HorizontalContentAlignment -> HorizontalContentAlignment, Control.VerticalContentAlignment -> VerticalContentAlignment,
+       FrameworkElement.FocusVisualStyle -> FocusVisualStyle, FrameworkElement.Margin -> Margin,
+       FrameworkElement.Width -> Width, FrameworkElement.Height -> Height, FrameworkElement.VerticalAlignment -> VerticalAlignment,
+       FrameworkElement.HorizontalAlignment -> HorizontalAlignment, UIElement.SnapsToDevicePixels -> SnapsToDevicePixels,
+       UIElement.AllowDrop -> AllowDrop, Border.CornerRadius -> CornerRadius, Shape.Fill -> Fill,
+       Panel.ZIndex -> ZIndex, UIElement.Effect -> Effect, UIElement.Visibility -> IsVisible).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush},
+       {TemplateBinding controls:ClosableTabItem.TagBrush} -> {TemplateBinding TagBrush},
+       {TemplateBinding HeaderedContentControl.Header} -> {TemplateBinding Header}).
+     - UIElement.Visibility (enum) -> IsVisible (bool): Visible -> True, Hidden/Collapsed -> False.
+     - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
+     - Pseudo-class mapping: UIElement.IsMouseOver=True -> :pointerover, ButtonBase.IsPressed=True -> :pressed,
+       UIElement.IsEnabled=False -> :disabled, TabItem.IsSelected=True -> :selected,
+       UIElement.IsKeyboardFocused=True -> :focus.
+     - MultiTrigger (IsSelected=false AND IsMouseOver=true) -> :pointerover:not(:selected).
+     - Style ordering ensures :selected overrides :pointerover for Bd background (matches WPF trigger precedence).
+     - TODO: MultiDataTrigger (TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false) cannot be expressed
+       as a selector; original logic preserved as comment.
+     - TODO: TabControl.TabStripPlacement enum triggers (Bottom/Left/Right) cannot be expressed as selectors;
+       original logic preserved as comments, needs code-behind or layout-specific templates. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Panel.Background" Value="{DynamicResource TabItem.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="FrameworkElement.Margin" Value="0" />
-    <Setter Property="Control.Padding" Value="0" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.Template">
+  <Style x:Key="{x:Type TabItem}" Selector="TabItem">
+    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabItem}">
           <Grid SnapsToDevicePixels="true" x:Name="templateRoot">
-            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" x:Name="contentPresenter">
+            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -26,23 +54,23 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type TabControl}" TargetType="{x:Type TabControl}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{x:Type TabControl}" Selector="TabControl">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" TargetType="{x:Type TabPanel}">
-          <Setter Property="Panel.Background" Value="{DynamicResource TabItem.Static.Background}" />
+        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+          <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}" />
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource {x:Type TabItem}}" />
       </ResourceDictionary>
     </Style.Resources>
-    <Setter Property="Control.Padding" Value="2" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Panel.Background" Value="{DynamicResource TabItem.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Control.Template">
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabControl}">
           <Grid ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
@@ -54,113 +82,106 @@
               <RowDefinition Height="Auto" x:Name="RowDefinition0" />
               <RowDefinition Height="*" x:Name="RowDefinition1" />
             </Grid.RowDefinitions>
-            <TabPanel Grid.Column="0" IsItemsHost="true" Margin="0" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
-            <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" x:Name="PART_SelectedContentHost" />
+            <TabPanel Grid.Column="0" IsItemsHost="true" Margin="0" Grid.Row="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="TabControl.TabStripPlacement" Value="Bottom">
-              <Setter TargetName="headerPanel" Property="Grid.Row" Value="1" />
-              <Setter TargetName="contentPanel" Property="Grid.Row" Value="0" />
-              <Setter TargetName="RowDefinition0" Property="RowDefinition.Height" Value="*" />
-              <Setter TargetName="RowDefinition1" Property="RowDefinition.Height" Value="Auto" />
-            </Trigger>
-            <Trigger Property="TabControl.TabStripPlacement" Value="Left">
-              <Setter TargetName="headerPanel" Property="Grid.Row" Value="0" />
-              <Setter TargetName="contentPanel" Property="Grid.Row" Value="0" />
-              <Setter TargetName="headerPanel" Property="Grid.Column" Value="0" />
-              <Setter TargetName="contentPanel" Property="Grid.Column" Value="1" />
-              <Setter TargetName="ColumnDefinition0" Property="ColumnDefinition.Width" Value="Auto" />
-              <Setter TargetName="ColumnDefinition1" Property="ColumnDefinition.Width" Value="*" />
-              <Setter TargetName="RowDefinition0" Property="RowDefinition.Height" Value="*" />
-              <Setter TargetName="RowDefinition1" Property="RowDefinition.Height" Value="0" />
-            </Trigger>
-            <Trigger Property="TabControl.TabStripPlacement" Value="Right">
-              <Setter TargetName="headerPanel" Property="Grid.Row" Value="0" />
-              <Setter TargetName="contentPanel" Property="Grid.Row" Value="0" />
-              <Setter TargetName="headerPanel" Property="Grid.Column" Value="1" />
-              <Setter TargetName="contentPanel" Property="Grid.Column" Value="0" />
-              <Setter TargetName="ColumnDefinition0" Property="ColumnDefinition.Width" Value="*" />
-              <Setter TargetName="ColumnDefinition1" Property="ColumnDefinition.Width" Value="Auto" />
-              <Setter TargetName="RowDefinition0" Property="RowDefinition.Height" Value="*" />
-              <Setter TargetName="RowDefinition1" Property="RowDefinition.Height" Value="0" />
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="templateRoot" Value="{DynamicResource Disabled.ForegroundColor}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:disabled /template/ Grid#templateRoot">
+        <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+      </Style>
+      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Bottom:
+           headerPanel Grid.Row=1, contentPanel Grid.Row=0, RowDefinition0 Height=*, RowDefinition1 Height=Auto.
+           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
+      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Left:
+           headerPanel Grid.Row=0/Grid.Column=0, contentPanel Grid.Row=0/Grid.Column=1,
+           ColumnDefinition0 Width=Auto, ColumnDefinition1 Width=*, RowDefinition0 Height=*, RowDefinition1 Height=0.
+           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
+      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Right:
+           headerPanel Grid.Row=0/Grid.Column=1, contentPanel Grid.Row=0/Grid.Column=0,
+           ColumnDefinition0 Width=*, ColumnDefinition1 Width=Auto, RowDefinition0 Height=*, RowDefinition1 Height=0.
+           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
+    </Style.Styles>
   </Style>
-  <Style x:Key="CloseButtonStyle" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource CloseButton.Static.Background}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="FrameworkElement.Width" Value="16" />
-    <Setter Property="FrameworkElement.Margin" Value="0,0,2,0" />
-    <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Center" />
-    <Setter Property="FrameworkElement.HorizontalAlignment" Value="Right" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Border.CornerRadius" Value="3" />
-    <Setter Property="Control.Template">
+  <Style x:Key="CloseButtonStyle" Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource CloseButton.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Margin" Value="0,0,2,0" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Button}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="border">
-            <Path Margin="3" Fill="{DynamicResource CloseButton.Static.Foreground}" Stretch="Uniform" Focusable="False" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41z" x:Name="cross" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="border">
+            <Path Margin="3" Fill="{DynamicResource CloseButton.Static.Foreground}" Stretch="Uniform" Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41z" x:Name="cross" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="True">
-              <Setter Value="{DynamicResource CloseButton.MouseOver.Background}" Property="Panel.Background" />
-              <Setter TargetName="cross" Value="{DynamicResource CloseButton.MouseOver.Foreground}" Property="Shape.Fill" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="True">
-              <Setter Value="{DynamicResource CloseButton.Pressed.Background}" Property="Panel.Background" />
-              <Setter TargetName="cross" Value="{DynamicResource CloseButton.Pressed.Foreground}" Property="Shape.Fill" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource CloseButton.MouseOver.Background}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Path#cross">
+        <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
+      </Style>
+      <Style Selector="^:pressed">
+        <Setter Property="Background" Value="{DynamicResource CloseButton.Pressed.Background}" />
+      </Style>
+      <Style Selector="^:pressed /template/ Path#cross">
+        <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="AddButtonStyle" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource AddButtonBackground}" />
-    <Setter Property="Border.BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="FrameworkElement.Margin" Value="2,1,1,1" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Border.CornerRadius" Value="3" />
-    <Setter Property="Control.Template">
+  <Style x:Key="AddButtonStyle" Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource AddButtonBackground}" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Margin" Value="2,1,1,1" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Button}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="true" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="border">
-            <Path Margin="3" Fill="{DynamicResource CloseButton.MouseOver.Foreground}" Stretch="Uniform" Focusable="False" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Data="M19,13L13,13 13,19 11,19 11,13 5,13 5,11 11,11 11,5 13,5 13,11 19,11 19,13z" x:Name="plus" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" CornerRadius="{TemplateBinding CornerRadius}" x:Name="border">
+            <Path Margin="3" Fill="{DynamicResource CloseButton.MouseOver.Foreground}" Stretch="Uniform" Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Data="M19,13L13,13 13,19 11,19 11,13 5,13 5,11 11,11 11,5 13,5 13,11 19,11 19,13z" x:Name="plus" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="True">
-              <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Background}" Property="Panel.Background" />
-              <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="plus" Value="{DynamicResource CloseButton.MouseOver.Foreground}" Property="Shape.Fill" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="True">
-              <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Background}" Property="Panel.Background" />
-              <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="plus" Value="{DynamicResource CloseButton.Pressed.Foreground}" Property="Shape.Fill" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Path#plus">
+        <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
+      </Style>
+      <Style Selector="^:pressed">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+      </Style>
+      <Style Selector="^:pressed /template/ Path#plus">
+        <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="{x:Type controls:ClosableTabControl}" TargetType="{x:Type controls:ClosableTabControl}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Border.BorderThickness" Value="0,0,0,0" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Background}" />
-    <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
-    <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
-    <Setter Property="Control.Template">
+  <Style x:Key="{x:Type controls:ClosableTabControl}" Selector="controls:ClosableTabControl">
+    <Setter Property="BorderThickness" Value="0,0,0,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Background}" />
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabControl}">
           <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
@@ -176,7 +197,7 @@
             <Border Grid.Column="1" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" />
             <Button Grid.Row="0" Grid.Column="1" Style="{DynamicResource AddButtonStyle}" x:Name="PART_Add" />
             <Border Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" />
-            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" BorderBrush="{TemplateBinding Border.BorderBrush}" x:Name="Border">
+            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
               <ContentPresenter ContentSource="SelectedContent" x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
@@ -184,8 +205,8 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="TabItemFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Control.Template">
+  <Style x:Key="TabItemFocusVisual">
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Rectangle StrokeThickness="0" Fill="#00FFFFFF" />
@@ -193,28 +214,28 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" ShadowDepth="4" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <Style x:Key="{x:Type controls:ClosableTabItem}" TargetType="{x:Type controls:ClosableTabItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{DynamicResource TabItemFocusVisual}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
-    <Setter Property="Control.Padding" Value="2,0,2,0" />
-    <Setter Property="FrameworkElement.Height" Value="24" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Border}" />
-    <Setter Property="Panel.Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="UIElement.AllowDrop" Value="True" />
-    <Setter Property="Control.Template">
+  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" ShadowDepth="4" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
+  <Style x:Key="{x:Type controls:ClosableTabItem}" Selector="controls:ClosableTabItem">
+    <Setter Property="FocusVisualStyle" Value="{DynamicResource TabItemFocusVisual}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
+    <Setter Property="Padding" Value="2,0,2,0" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Border}" />
+    <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="AllowDrop" Value="True" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type controls:ClosableTabItem}">
           <Grid>
             <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" x:Name="TopBorder" />
-            <Border SnapsToDevicePixels="True" BorderThickness="0,0,0,1" Margin="0,1,0,0" CornerRadius="4,4,0,0" Background="{TemplateBinding Panel.Background}" BorderBrush="{TemplateBinding Border.BorderBrush}" x:Name="Bd" />
+            <Border SnapsToDevicePixels="True" BorderThickness="0,0,0,1" Margin="0,1,0,0" CornerRadius="4,4,0,0" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Bd" />
             <Border Margin="0,4,0,4" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource ClosableTabItem.SeparatorBorder}" x:Name="TabSeparatorBorder" />
-            <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Control.Padding}" HorizontalAlignment="Stretch" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="Content">
+            <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Content">
               <ContentPresenter.Content>
                 <controls:CenteredDockPanel Background="#00FFFFFF" x:Name="PART_Header">
-                  <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding controls:ClosableTabItem.TagBrush}" StrokeThickness="2">
+                  <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding TagBrush}" StrokeThickness="2">
                     <Ellipse.IsVisible>
                       <MultiBinding>
                         <MultiBinding.Converter>
@@ -250,83 +271,75 @@
                       </MultiBinding>
                     </Ellipse.Fill>
                   </Ellipse>
-                  <Button DockPanel.Dock="Right" Style="{DynamicResource CloseButtonStyle}" Visibility="Collapsed" x:Name="PART_Close" />
+                  <Button DockPanel.Dock="Right" Style="{DynamicResource CloseButtonStyle}" IsVisible="False" x:Name="PART_Close" />
                   <AdornerDecorator>
-                    <controls:EditableTextBlock Height="22" Margin="0,1,0,1" Padding="0,2,0,2" HorizontalAlignment="Left" Value="{TemplateBinding HeaderedContentControl.Header}" x:Name="PART_Title" />
+                    <controls:EditableTextBlock Height="22" Margin="0,1,0,1" Padding="0,2,0,2" HorizontalAlignment="Left" Value="{TemplateBinding Header}" x:Name="PART_Title" />
                   </AdornerDecorator>
                 </controls:CenteredDockPanel>
               </ContentPresenter.Content>
             </ContentPresenter>
           </Grid>
-          <ControlTemplate.Triggers>
-            <MultiDataTrigger>
-              <MultiDataTrigger.Conditions>
-                <Condition Value="true">
-                  <Condition.Binding>
-                    <Binding Path="IsMouseOver">
-                      <Binding.RelativeSource>
-                        <RelativeSource Mode="TemplatedParent" />
-                      </Binding.RelativeSource>
-                    </Binding>
-                  </Condition.Binding>
-                </Condition>
-                <Condition Value="false">
-                  <Condition.Binding>
-                    <Binding ElementName="PART_Title" Path="IsInEditMode" />
-                  </Condition.Binding>
-                </Condition>
-              </MultiDataTrigger.Conditions>
-              <Setter TargetName="PART_Close" Property="UIElement.Visibility" Value="Visible" />
-            </MultiDataTrigger>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="Bd" Value="{DynamicResource TabItemHotBackground}" Property="Panel.Background" />
-              <Setter TargetName="TabSeparatorBorder" Property="UIElement.Visibility" Value="Hidden" />
-            </Trigger>
-            <Trigger Property="TabItem.IsSelected" Value="true">
-              <Setter Property="Panel.ZIndex" Value="1" />
-              <Setter TargetName="PART_Close" Property="UIElement.Visibility" Value="Visible" />
-              <Setter TargetName="TabSeparatorBorder" Property="UIElement.Visibility" Value="Hidden" />
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.Selected.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Property="Border.BorderThickness" Value="1,1,1,0" />
-              <Setter TargetName="Bd" Property="FrameworkElement.Margin" Value="-1,0,0,0" />
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.Selected.Border}" Property="Border.BorderBrush" />
-              <Setter Value="{DynamicResource TabItem.Selected.Foreground}" Property="TextElement.Foreground" />
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItemShadow}" Property="UIElement.Effect" />
-            </Trigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="TabItem.IsSelected" Value="false" />
-                <Condition Property="UIElement.IsMouseOver" Value="true" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Property="Border.BorderThickness" Value="1,1,1,1" />
-              <Setter TargetName="Bd" Property="FrameworkElement.Margin" Value="-1,0,0,0" />
-            </MultiTrigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.Disabled.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource ClosableTabItem.Disabled.Border}" Property="Border.BorderBrush" />
-              <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <!-- TODO: Original WPF MultiDataTrigger:
+           Conditions: TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false
+           Setter: PART_Close IsVisible=True.
+           Cannot be expressed as an Avalonia selector (second condition is a data binding on a template element).
+           The :selected style below also shows PART_Close; for non-selected hover, needs code-behind or a binding. -->
+      <Style Selector="^:pointerover /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource TabItemHotBackground}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Border#TabSeparatorBorder">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^:selected">
+        <Setter Property="ZIndex" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+      </Style>
+      <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+        <Setter Property="BorderThickness" Value="1,1,1,0" />
+        <Setter Property="Margin" Value="-1,0,0,0" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+        <Setter Property="Effect" Value="{DynamicResource ClosableTabItemShadow}" />
+      </Style>
+      <Style Selector="^:selected /template/ Button#PART_Close">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:selected /template/ Border#TabSeparatorBorder">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^:pointerover:not(:selected) /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+        <Setter Property="BorderThickness" Value="1,1,1,1" />
+        <Setter Property="Margin" Value="-1,0,0,0" />
+      </Style>
+      <Style Selector="^:disabled">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      </Style>
+      <Style Selector="^:disabled /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Disabled.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Disabled.Border}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="ModernTabControlTabItemStyle" TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="ModernTabControlTabItemStyle" Selector="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="FrameworkElement.Height" Value="30" />
-    <Setter Property="Control.Padding" Value="16,2" />
-    <Setter Property="TextElement.FontSize" Value="13" />
-    <Setter Property="Control.Template">
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Padding" Value="16,2" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabItem}">
           <Grid SnapsToDevicePixels="true" Background="#00FFFFFF" x:Name="templateRoot">
-            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" TextElement.FontWeight="Medium" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" x:Name="contentPresenter">
+            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" FontWeight="Medium" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -335,29 +348,29 @@
               </ContentPresenter.VerticalAlignment>
             </ContentPresenter>
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="TabItem.IsSelected" Value="true">
-              <Setter TargetName="contentPresenter" Value="{DynamicResource SystemAccentBrush}" Property="TextElement.Foreground" />
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="contentPresenter" Value="{DynamicResource TabItem.Disabled.Foreground}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="{x:Type controls:ModernTabControl}" TargetType="{x:Type controls:ModernTabControl}" BasedOn="{StaticResource {x:Type TabControl}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="{x:Type controls:ModernTabControl}" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type TabControl}}">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" TargetType="{x:Type TabPanel}">
-          <Setter Property="Panel.Background" Value="#00FFFFFF" />
+        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+          <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" BasedOn="{StaticResource ModernTabControlTabItemStyle}" />
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}" />
       </ResourceDictionary>
     </Style.Resources>
-    <Setter Property="Border.BorderThickness" Value="0,1,0,0" />
-    <Setter Property="Control.Template">
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TabControl}">
           <Grid ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
@@ -370,32 +383,32 @@
               <RowDefinition Height="*" x:Name="RowDefinition1" />
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" Grid.Row="0">
-              <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
+              <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
             </Grid>
             <Canvas Grid.Column="0" Grid.Row="0">
               <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
             </Canvas>
-            <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" x:Name="PART_SelectedContentHost" />
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="templateRoot" Value="{DynamicResource Disabled.ForegroundColor}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:disabled /template/ Grid#templateRoot">
+        <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="RepositoryManagerTabControl" TargetType="{x:Type controls:ModernTabControl}" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="RepositoryManagerTabControl" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" TargetType="{x:Type TabPanel}">
-          <Setter Property="Panel.Background" Value="#00FFFFFF" />
+        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+          <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
-          <Setter Property="TextElement.FontSize" Value="14" />
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
+          <Setter Property="FontSize" Value="14" />
         </Style>
       </ResourceDictionary>
     </Style.Resources>

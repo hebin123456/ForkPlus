@@ -1,14 +1,39 @@
+<!-- Migration notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
+     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
+     - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
+       IsSelected=True->:selected, IsKeyboardFocused->:focus, Thumb.IsDragging->:dragging.
+     - MultiTrigger (IsSelectionActive=True + IsSelected=True) -> :selected (active values). The inactive
+       case (IsSelectionActive=False + IsSelected=True) could not be converted (no Avalonia pseudoclass
+       for Selector.IsSelectionActive) -> preserved as TODO comment.
+     - DataTemplate.Triggers bind to view-model properties (IsActive, IsWorktree, HasDownstream, IsGood,
+       IsHead, IsReachable) and target named elements within the DataTemplate -> cannot be converted to
+       selectors. Preserved as TODO comments (original XML kept in comment form for reference).
+     - Style.Triggers on ListBox.SelectionMode (enum value, no pseudoclass) -> TODO comment.
+     - Style.Triggers DataTriggers on view-model properties -> TODO comment.
+     - Trigger on FrameworkElement.Height=Auto (no pseudoclass) -> TODO comment.
+     - Property prefixes stripped in Setters (Panel.Background->Background, Border.BorderBrush->BorderBrush,
+       FrameworkElement.* -> *, Control.* -> *, UIElement.* -> *, TextElement.* -> *, Shape.* -> *,
+       Image.* -> *, ContentControl.* -> *, ItemsControl.* -> *, ButtonBase.* -> *, Inline.* -> *).
+       Attached properties (ScrollViewer.*, KeyboardNavigation.*, Stylus.*, RenderOptions.*,
+       VirtualizingPanel.*) kept as-is.
+     - UIElement.Visibility in Setters and literal template attrs -> IsVisible (bool: Visible->True,
+       Collapsed/Hidden->False). TemplateBindings to ComputedHorizontalScrollBarVisibility/
+       ComputedVerticalScrollBarVisibility -> IsVisible (Avalonia returns bool).
+     - TemplateBinding paths stripped of class prefixes for direct properties; attached properties kept.
+     - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-  <Style x:Key="ListItemRoundedBorderStyle" TargetType="{x:Type Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Margin" Value="4,0,4,0" />
-    <Setter Property="Border.CornerRadius" Value="4" />
+  <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+  <Style x:Key="ListItemRoundedBorderStyle" Selector="Border">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="4" />
   </Style>
-  <Style x:Key="ListItemNotRoundedBorderStyle" TargetType="{x:Type Border}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.Margin" Value="4,0,4,0" />
-    <Setter Property="Border.CornerRadius" Value="0" />
+  <Style x:Key="ListItemNotRoundedBorderStyle" Selector="Border">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="0" />
   </Style>
-  <DataTemplate x:Key="ReferencesDataTemplates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DataTemplate x:Key="ReferencesDataTemplates">
     <DataTemplate.Resources>
       <ResourceDictionary>
         <DataTemplate DataType="{x:Type ui:TagViewModel}" x:Key="{DataTemplateKey {x:Type ui:TagViewModel}}">
@@ -37,8 +62,8 @@
               <Binding Path="BackgroundBrush" />
             </Border.Background>
             <StackPanel Orientation="Horizontal">
-              <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" Visibility="Collapsed" x:Name="ActiveBranchIcon" />
-              <Border BorderThickness="0" CornerRadius="4,0,0,4" Visibility="Collapsed" x:Name="IconBorder">
+              <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" IsVisible="False" x:Name="ActiveBranchIcon" />
+              <Border BorderThickness="0" CornerRadius="4,0,0,4" IsVisible="False" x:Name="IconBorder">
                 <Border.BorderBrush>
                   <Binding Path="BorderBrush" />
                 </Border.BorderBrush>
@@ -57,6 +82,10 @@
               </controls:HighlightableTextBlock>
             </StackPanel>
           </Border>
+          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
+               view-model properties IsActive/IsWorktree, not control pseudoclasses). Original triggers
+               preserved below for reference; reimplement using bindings with converters, code-behind, or
+               wrapping in a UserControl with pseudoclass-driven styles.
           <DataTemplate.Triggers>
             <DataTrigger Value="true">
               <DataTrigger.Binding>
@@ -83,6 +112,7 @@
               <Setter TargetName="IconBorder" Value="{DynamicResource ListBox.Static.Background}" Property="Panel.Background" />
             </MultiDataTrigger>
           </DataTemplate.Triggers>
+          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:RemoteBranchViewModel}" x:Key="{DataTemplateKey {x:Type ui:RemoteBranchViewModel}}">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2" x:Name="Container">
@@ -113,6 +143,9 @@
               </controls:HighlightableTextBlock>
             </Border>
           </StackPanel>
+          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
+               view-model property HasDownstream, not control pseudoclasses). Original triggers preserved
+               below for reference; reimplement using bindings with converters or code-behind.
           <DataTemplate.Triggers>
             <DataTrigger Value="true">
               <DataTrigger.Binding>
@@ -130,6 +163,7 @@
               <Setter TargetName="Border" Property="Border.CornerRadius" Value="4,0,0,4" />
             </DataTrigger>
           </DataTemplate.Triggers>
+          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:BisectMarkViewModel}" x:Key="{DataTemplateKey {x:Type ui:BisectMarkViewModel}}">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
@@ -144,6 +178,9 @@
               </TextBlock>
             </Border>
           </StackPanel>
+          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
+               view-model property IsGood, not control pseudoclasses). Original triggers preserved below
+               for reference; reimplement using bindings with converters or code-behind.
           <DataTemplate.Triggers>
             <DataTrigger Value="true">
               <DataTrigger.Binding>
@@ -155,6 +192,7 @@
               <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBackground}" Property="Panel.Background" />
             </DataTrigger>
           </DataTemplate.Triggers>
+          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:StashReferenceViewModel}" x:Key="{DataTemplateKey {x:Type ui:StashReferenceViewModel}}">
           <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="3,2,3,2" BorderBrush="{DynamicResource RevisionList.StashBorder}" Background="{DynamicResource ListBox.Static.Background}">
@@ -178,8 +216,8 @@
       </ContentPresenter.Content>
     </ContentPresenter>
   </DataTemplate>
-  <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Control.Template">
+  <Style x:Key="FocusVisual" Selector="Control">
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1 2" />
@@ -187,103 +225,106 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ListViewItemStyle" TargetType="{x:Type ListViewItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
-    <Setter Property="Control.Padding" Value="4,1" />
-    <Setter Property="Control.HorizontalContentAlignment">
+  <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Padding" Value="4,1" />
+    <Setter Property="HorizontalContentAlignment">
       <Setter.Value>
         <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="Control.VerticalContentAlignment">
+    <Setter Property="VerticalContentAlignment">
       <Setter.Value>
         <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="Panel.Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListViewItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="UIElement.IsMouseOver" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.MouseOver.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.MouseOver.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            </MultiTrigger>
-            <Trigger Property="UIElement.IsEnabled" Value="False">
-              <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=True -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+               inactive-selection styling preserved below for reference; reimplement using a custom
+               pseudoclass toggled from code-behind (e.g. :selection-inactive).
+               Original logic:
+                 Bd.Background = Item.SelectedInactive.Background
+                 Bd.BorderBrush = Item.SelectedInactive.Border -->
+          <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
+          <Style Selector="^:disabled /template/ Border#Bd">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ListView}" TargetType="{x:Type ListView}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="Control.Padding" Value="0,4,0,0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+  <Style x:Key="{x:Type ListView}" Selector="ListView">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
     <Setter Property="ScrollViewer.PanningMode" Value="Both" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListView}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="true" x:Name="Bd">
-            <ScrollViewer Focusable="false" Padding="{TemplateBinding Control.Padding}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="Bd">
+            <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
+              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
             </ScrollViewer>
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <!-- TODO: Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+         pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
+         reimplement using a custom pseudoclass toggled from code-behind, or by setting
+         ItemContainerStyle via a binding/converter.
+    <Style.Triggers>
+      <Trigger Property="ListBox.SelectionMode" Value="Extended">
+        <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
+      </Trigger>
+    </Style.Triggers>
+    -->
   </Style>
-  <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="UIElement.Visibility" Value="Collapsed" />
+  <Style x:Key="GridViewColumnHeaderStyle" Selector="GridViewColumnHeader">
+    <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style x:Key="ListViewWithGridViewScrollViewerStyle" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Type ScrollViewer}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="Control.Template">
+  <Style x:Key="ListViewWithGridViewScrollViewerStyle" Selector="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ScrollViewer}">
-          <Grid Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True">
+        <ControlTemplate>
+          <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
@@ -292,9 +333,9 @@
               <RowDefinition Height="*" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <DockPanel Margin="{TemplateBinding Control.Padding}">
+            <DockPanel Margin="{TemplateBinding Padding}">
               <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                <GridViewHeaderRowPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
+                <GridViewHeaderRowPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
                   <GridViewHeaderRowPresenter.AllowsColumnReorder>
                     <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                   </GridViewHeaderRowPresenter.AllowsColumnReorder>
@@ -312,91 +353,87 @@
                   </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
                 </GridViewHeaderRowPresenter>
               </controls:TouchpadAwareScrollViewer>
-              <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{x:Null}" KeyboardNavigation.DirectionalNavigation="Local" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" x:Name="PART_ScrollContentPresenter" />
+              <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" KeyboardNavigation.DirectionalNavigation="Local" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="PART_ScrollContentPresenter" />
             </DockPanel>
-            <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
+            <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" IsVisible="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
-            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Minimum="0" Orientation="Vertical" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
+            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Minimum="0" Orientation="Vertical" IsVisible="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
             <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
-              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" />
-              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" IsVisible="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" IsVisible="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" />
             </DockPanel>
           </Grid>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ListViewItemGridViewStyle" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextElement.FontWeight" Value="Normal" />
-    <Setter Property="Control.Template">
+  <Style x:Key="ListViewItemGridViewStyle" Selector="ListViewItem" BasedOn="{StaticResource ListViewItemStyle}">
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListViewItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-              <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            </MultiTrigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+               inactive-selection styling preserved below for reference; reimplement using a custom
+               pseudoclass toggled from code-behind.
+               Original logic:
+                 Bd.Background = Item.SelectedInactive.Background
+                 Bd.BorderBrush = Item.SelectedInactive.Border -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ListViewWithGridViewStyle" TargetType="{x:Type ListView}" BasedOn="{StaticResource {x:Type ListView}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="ListViewWithGridViewStyle" Selector="ListView" BasedOn="{StaticResource {x:Type ListView}}">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type ListViewItem}" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}" />
+        <Style x:Key="{x:Type ListViewItem}" Selector="ListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" />
       </ResourceDictionary>
     </Style.Resources>
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListView}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Control.Padding}" Style="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
+              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="NoSelectionRevisionListViewItemStyle" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="NoSelectionRevisionListViewItemStyle" Selector="ListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.Padding" Value="0" />
-    <Setter Property="FrameworkElement.Margin" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <!-- TODO: Style.Triggers DataTriggers bind to view-model properties (IsHead, IsReachable) and cannot
+         be converted to Avalonia selectors. Original triggers preserved below for reference; reimplement
+         using bindings with converters or code-behind.
     <Style.Triggers>
       <DataTrigger>
         <DataTrigger.Binding>
@@ -411,201 +448,189 @@
         <Setter Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
       </DataTrigger>
     </Style.Triggers>
+    -->
   </Style>
-  <Style x:Key="ListBoxItemStyle" TargetType="{x:Type ListBoxItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="ListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Item.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            </MultiTrigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+               inactive-selection styling preserved below for reference; reimplement using a custom
+               pseudoclass toggled from code-behind.
+               Original logic:
+                 Bd.Background = Item.SelectedInactive.Background
+                 Bd.BorderBrush = Item.SelectedInactive.Border -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="MultiselectListBoxItemStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Control.Template">
+  <Style x:Key="MultiselectListBoxItemStyle" Selector="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            </MultiTrigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+               inactive-selection styling preserved below for reference; reimplement using a custom
+               pseudoclass toggled from code-behind.
+               Original logic:
+                 Bd.Background = Item.SelectedInactive.Background
+                 Bd.BorderBrush = Item.SelectedInactive.Border -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="NoSelectionListBoxItemStyle" TargetType="{x:Type ListBoxItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="UIElement.Focusable" Value="False" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="NoSelectionListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Item.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="NoVisibleSelectionListBoxItemStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NoSelectionListBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="UIElement.Focusable" Value="True" />
+  <Style x:Key="NoVisibleSelectionListBoxItemStyle" Selector="ListBoxItem" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
+    <Setter Property="Focusable" Value="True" />
   </Style>
-  <Style x:Key="ListBoxItemWithBorderStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Item.Static.Background}" />
+  <Style x:Key="ListBoxItemWithBorderStyle" Selector="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemNotRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemNotRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource ListItemRoundedBorderStyle}" Property="FrameworkElement.Style" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="ListBoxItem.IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter TargetName="Bd" Value="{DynamicResource ListItemRoundedBorderStyle}" Property="FrameworkElement.Style" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-              <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            </MultiTrigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+               inactive-selection styling also set Bd.Style = ListItemRoundedBorderStyle (cannot set Style
+               from a selector Setter). Original logic preserved below for reference; reimplement using a
+               custom pseudoclass toggled from code-behind.
+               Original logic:
+                 Bd.Style = ListItemRoundedBorderStyle
+                 Bd.Background = Item.SelectedInactive.Background
+                 Bd.BorderBrush = Item.SelectedInactive.Border -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ListBox}" TargetType="{x:Type ListBox}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="Control.Padding" Value="0,4,0,0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+  <Style x:Key="{x:Type ListBox}" Selector="ListBox">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
     <Setter Property="ScrollViewer.PanningMode" Value="Both" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBox}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Control.Padding}" Background="{TemplateBinding Panel.Background}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+        <ControlTemplate>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <!-- TODO: Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+         pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
+         reimplement using a custom pseudoclass toggled from code-behind, or by setting
+         ItemContainerStyle via a binding/converter.
     <Style.Triggers>
       <Trigger Property="ListBox.SelectionMode" Value="Extended">
         <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
       </Trigger>
     </Style.Triggers>
+    -->
   </Style>
-  <Style x:Key="NoSelectionListBoxStyle" TargetType="{x:Type ListBox}" BasedOn="{StaticResource {x:Type ListBox}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="NoSelectionListBoxStyle" Selector="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
     <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource NoSelectionListBoxItemStyle}" />
   </Style>
-  <Style x:Key="AutoCompleteListBoxStyle" TargetType="{x:Type ListBox}" BasedOn="{StaticResource {x:Type ListBox}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.VerticalAlignment" Value="Top" />
-    <Setter Property="FrameworkElement.HorizontalAlignment" Value="Left" />
-    <Setter Property="FrameworkElement.MinWidth" Value="196" />
-    <Setter Property="FrameworkElement.Height" Value="78" />
-    <Setter Property="Control.Padding" Value="0,2,0,0" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+  <Style x:Key="AutoCompleteListBoxStyle" Selector="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="MinWidth" Value="196" />
+    <Setter Property="Height" Value="78" />
+    <Setter Property="Padding" Value="0,2,0,0" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
     <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource AutocompleteListBoxItemStyle}" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
     <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBox}">
+        <ControlTemplate>
           <Grid>
             <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
               <Border.Effect>
                 <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" ShadowDepth="1" />
               </Border.Effect>
             </Border>
-            <Border Margin="7" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" CornerRadius="6" x:Name="Bd">
-              <ScrollViewer Focusable="false" Padding="{TemplateBinding Control.Padding}" Background="#00FFFFFF">
-                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" CornerRadius="6" x:Name="Bd">
+              <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
+                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
               </ScrollViewer>
             </Border>
           </Grid>
@@ -613,23 +638,23 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="AutocompleteListBoxItemStyle" TargetType="{x:Type ListBoxItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="AutocompleteListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="OverridesDefaultStyle" Value="True" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-    <Setter Property="Panel.Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <Setter Property="Border.BorderThickness" Value="0" />
-    <Setter Property="Control.Padding" Value="4,2,4,2" />
-    <Setter Property="FrameworkElement.Height" Value="21" />
-    <Setter Property="Control.Template">
+    <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="4,2,4,2" />
+    <Setter Property="Height" Value="21" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+        <ControlTemplate>
           <ControlTemplate.Resources>
             <ResourceDictionary>
               <DataTemplate DataType="{x:Type controls:AutoCompleteSuggestion}" x:Key="{DataTemplateKey {x:Type controls:AutoCompleteSuggestion}}">
@@ -674,77 +699,76 @@
               </DataTemplate>
             </ResourceDictionary>
           </ControlTemplate.Resources>
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="ListBoxItem.IsSelected" Value="True">
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Panel.Background" />
-              <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedInactive.Border}" Property="Border.BorderBrush" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
+          <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
+          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="DiffListListBoxItemStyle" TargetType="{x:Type ListBoxItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="DiffListListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
-    <Setter Property="Control.Template">
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+        <ControlTemplate>
+          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="GridViewColumnHeaderGripper" Selector="Thumb">
     <Setter Property="Canvas.Right" Value="-9" />
-    <Setter Property="FrameworkElement.Width" Value="18" />
-    <Setter Property="FrameworkElement.Height">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height">
       <Setter.Value>
         <Binding Path="ActualHeight"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="Control.Padding" Value="0" />
-    <Setter Property="Panel.Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
-    <Setter Property="Control.Template">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Thumb}">
-          <Border Background="#00FFFFFF" Padding="{TemplateBinding Control.Padding}">
-            <Rectangle Fill="{TemplateBinding Panel.Background}" HorizontalAlignment="Center" Width="1" />
+        <ControlTemplate>
+          <Border Background="#00FFFFFF" Padding="{TemplateBinding Padding}">
+            <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Control.HorizontalContentAlignment" Value="Left" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Control.Padding" Value="4,0,4,0" />
-    <Setter Property="Panel.Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
-    <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Control.Template">
+  <Style x:Key="{x:Type GridViewColumnHeader}" Selector="GridViewColumnHeader">
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Padding" Value="4,0,4,0" />
+    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+        <ControlTemplate>
           <Grid SnapsToDevicePixels="true">
-            <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" x:Name="HeaderBorder">
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition MaxHeight="7" />
                   <RowDefinition />
                 </Grid.RowDefinitions>
-                <Border Padding="{TemplateBinding Control.Padding}" Grid.RowSpan="2">
-                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Margin="0,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="HeaderContent" />
+                <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
                 </Border>
               </Grid>
             </Border>
@@ -752,23 +776,25 @@
               <Thumb Style="{DynamicResource GridViewColumnHeaderGripper}" x:Name="PART_HeaderGripper" />
             </Canvas>
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="true">
-              <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="ButtonBase.IsPressed" Value="true">
-              <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderPressBackground}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="FrameworkElement.Height" Value="Auto">
-              <Setter Property="FrameworkElement.MinHeight" Value="20" />
-            </Trigger>
-          </ControlTemplate.Triggers>
+          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
+          <Style Selector="^:pointerover /template/ Border#HeaderBorder">
+            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#HeaderBorder">
+            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
+          </Style>
+          <!-- TODO: ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
+               (no Avalonia pseudoclass for Height=Auto). Original logic preserved below for reference;
+               reimplement using a custom pseudoclass or a binding/converter.
+          Original logic:
+            MinHeight = 20 (when Height=Auto) -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ReferencePanelStyle" TargetType="{x:Type controls:ReferencePanel}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+  <Style x:Key="ReferencePanelStyle" Selector="controls:ReferencePanel">
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
@@ -846,7 +872,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="MultilineReferencePanelStyle" TargetType="{x:Type controls:ReferencePanel}" BasedOn="{StaticResource ReferencePanelStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="MultilineReferencePanelStyle" Selector="controls:ReferencePanel" BasedOn="{StaticResource ReferencePanelStyle}">
     <Setter Property="ItemsControl.ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>

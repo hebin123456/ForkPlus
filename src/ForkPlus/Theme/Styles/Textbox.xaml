@@ -1,91 +1,99 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+     - Style TargetType="{x:Type ...}" -> Selector="..."; x:Key values preserved.
+     - Property prefixes stripped (Panel.Background -> Background, Border.BorderBrush -> BorderBrush,
+       TextElement.Foreground -> Foreground, TextBoxBase.CaretBrush -> CaretBrush,
+       Border.BorderThickness -> BorderThickness, Control.HorizontalContentAlignment -> HorizontalContentAlignment,
+       FrameworkElement.FocusVisualStyle -> FocusVisualStyle, UIElement.AllowDrop -> AllowDrop,
+       Border.CornerRadius -> CornerRadius, Control.Template -> Template, UIElement.Opacity -> Opacity,
+       PasswordBox.PasswordChar -> PasswordChar, PasswordBox.CaretBrush -> CaretBrush,
+       TextBoxBase.SelectionBrush -> SelectionBrush).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush}).
+     - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
+     - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, UIElement.IsKeyboardFocused=True -> :focus.
+     - TODO: Style.Triggers MultiTrigger (IsInactiveSelectionHighlightEnabled=true AND IsSelectionActive=false)
+       cannot be expressed as a single Avalonia selector (both conditions are non-pseudo-class properties);
+       original logic preserved as comment, needs code-behind or a data-trigger approach. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource TextBox.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="TextBoxBase.CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
+  <Style x:Key="{x:Type TextBox}" Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Left" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="UIElement.AllowDrop" Value="true" />
+    <Setter Property="AllowDrop" Value="true" />
     <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-    <Setter Property="Border.CornerRadius" Value="3" />
-    <Setter Property="Control.Template">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TextBox}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="Border" Property="UIElement.Opacity" Value="0.56" />
-            </Trigger>
-            <Trigger Property="UIElement.IsKeyboardFocused" Value="true">
-              <Setter TargetName="Border" Value="{DynamicResource SystemAccentBrush}" Property="Border.BorderBrush" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Triggers>
-      <MultiTrigger>
-        <MultiTrigger.Conditions>
-          <Condition Property="TextBoxBase.IsInactiveSelectionHighlightEnabled" Value="true" />
-          <Condition Property="TextBoxBase.IsSelectionActive" Value="false" />
-        </MultiTrigger.Conditions>
-        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
-      </MultiTrigger>
-    </Style.Triggers>
+    <Style.Styles>
+      <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="0.56" />
+      </Style>
+      <Style Selector="^:focus /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+      </Style>
+      <!-- TODO: Original WPF MultiTrigger in Style.Triggers:
+           Conditions: TextBoxBase.IsInactiveSelectionHighlightEnabled=true AND TextBoxBase.IsSelectionActive=false
+           Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+           Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
+           Needs code-behind or a binding-based approach. -->
+    </Style.Styles>
   </Style>
-  <Style x:Key="{x:Type PasswordBox}" TargetType="{x:Type PasswordBox}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="PasswordBox.PasswordChar" Value="●" />
-    <Setter Property="Panel.Background" Value="{DynamicResource TextBox.Static.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="PasswordBox.CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
+  <Style x:Key="{x:Type PasswordBox}" Selector="PasswordBox">
+    <Setter Property="PasswordChar" Value="●" />
+    <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Left" />
-    <Setter Property="FrameworkElement.FocusVisualStyle">
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="UIElement.AllowDrop" Value="true" />
+    <Setter Property="AllowDrop" Value="true" />
     <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-    <Setter Property="Border.CornerRadius" Value="3" />
-    <Setter Property="Control.Template">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type PasswordBox}">
-          <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding Border.CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <ScrollViewer Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsEnabled" Value="false">
-              <Setter TargetName="Border" Property="UIElement.Opacity" Value="0.56" />
-            </Trigger>
-            <Trigger Property="UIElement.IsKeyboardFocused" Value="true">
-              <Setter TargetName="Border" Value="{DynamicResource SystemAccentBrush}" Property="Border.BorderBrush" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Triggers>
-      <MultiTrigger>
-        <MultiTrigger.Conditions>
-          <Condition Property="PasswordBox.IsInactiveSelectionHighlightEnabled" Value="true" />
-          <Condition Property="PasswordBox.IsSelectionActive" Value="false" />
-        </MultiTrigger.Conditions>
-        <Setter Property="PasswordBox.SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
-      </MultiTrigger>
-    </Style.Triggers>
+    <Style.Styles>
+      <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="0.56" />
+      </Style>
+      <Style Selector="^:focus /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+      </Style>
+      <!-- TODO: Original WPF MultiTrigger in Style.Triggers:
+           Conditions: PasswordBox.IsInactiveSelectionHighlightEnabled=true AND PasswordBox.IsSelectionActive=false
+           Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+           Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
+           Needs code-behind or a binding-based approach. -->
+    </Style.Styles>
   </Style>
 </ResourceDictionary>

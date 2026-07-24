@@ -1,12 +1,30 @@
+<!-- Migration Notes (WPF -> Avalonia):
+     - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
+     - Style TargetType="{x:Type ...}" -> Selector="..."; x:Key values preserved.
+     - Property prefixes stripped (Panel.Background -> Background, TextElement.Foreground -> Foreground,
+       Border.BorderBrush -> BorderBrush, Border.BorderThickness -> BorderThickness, Control.Template -> Template,
+       Control.HorizontalContentAlignment -> HorizontalContentAlignment, Control.VerticalContentAlignment -> VerticalContentAlignment,
+       FrameworkElement.MinWidth -> MinWidth, FrameworkElement.MinHeight -> MinHeight, FrameworkElement.Margin -> Margin,
+       TextElement.FontSize -> FontSize, Calendar.CalendarDayButtonStyle -> CalendarDayButtonStyle,
+       Calendar.CalendarButtonStyle -> CalendarButtonStyle, UIElement.Visibility -> IsVisible).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Panel.Background} -> {TemplateBinding Background}).
+     - UIElement.Visibility (enum) -> IsVisible (bool): Visible -> True, Hidden/Collapsed -> False.
+     - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
+     - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, CalendarButton.IsInactive=True -> :inactive,
+       CalendarDayButton.IsSelected=True -> :selected, CalendarDayButton.IsInactive=True -> :inactive.
+     - VisualStateManager.VisualStateGroups preserved as-is (template structure kept); added :selected style to
+       replicate the VSM "Selected" storyboard (SelectedBackground Opacity=0.75).
+     - TODO: DataTrigger on ancestor Calendar.DisplayMode (Year/Decade) cannot be expressed as a selector;
+       original logic preserved as comments, needs code-behind or ViewModel handling. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="CalendarButtonStyle" TargetType="{x:Type CalendarButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
-    <Setter Property="FrameworkElement.MinWidth" Value="40" />
-    <Setter Property="FrameworkElement.MinHeight" Value="42" />
-    <Setter Property="TextElement.FontSize" Value="12" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Control.Template">
+  <Style x:Key="CalendarButtonStyle" Selector="CalendarButton">
+    <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
+    <Setter Property="MinWidth" Value="40" />
+    <Setter Property="MinHeight" Value="42" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CalendarButton}">
           <Grid>
@@ -23,45 +41,49 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Rectangle Fill="{TemplateBinding Panel.Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="SelectedBackground" />
-            <Rectangle Fill="{TemplateBinding Panel.Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="Background" />
-            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding TextElement.FontSize}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="Presenter" />
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="SelectedBackground" />
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="Background" />
+            <ContentPresenter Margin="5,1,5,1" Foreground="{DynamicResource Calendar.ButtonNormalForeground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="CalendarButton.IsInactive" Value="True">
-              <Setter TargetName="Presenter" Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <!-- Replicates VSM "Selected" state: SelectedBackground Opacity -> 0.75 -->
+      <Style Selector="^:selected /template/ Rectangle#SelectedBackground">
+        <Setter Property="Opacity" Value="0.75" />
+      </Style>
+      <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+        <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <Style x:Key="CalendarDayButtonStyle" TargetType="{x:Type CalendarDayButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="#00FFFFFF" />
-    <Setter Property="FrameworkElement.MinWidth" Value="5" />
-    <Setter Property="FrameworkElement.MinHeight" Value="5" />
-    <Setter Property="TextElement.FontSize" Value="11" />
-    <Setter Property="Control.HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Control.VerticalContentAlignment" Value="Center" />
-    <Setter Property="Control.Template">
+  <Style x:Key="CalendarDayButtonStyle" Selector="CalendarDayButton">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="MinWidth" Value="5" />
+    <Setter Property="MinHeight" Value="5" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CalendarDayButton}">
-          <Border Background="{TemplateBinding Panel.Background}" x:Name="Border">
-            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding TextElement.FontSize}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="Presenter" />
+          <Border Background="{TemplateBinding Background}" x:Name="Border">
+            <ContentPresenter Margin="5,1,5,1" Foreground="{DynamicResource Calendar.ButtonNormalForeground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
           </Border>
-          <ControlTemplate.Triggers>
-            <Trigger Property="CalendarDayButton.IsSelected" Value="True">
-              <Setter TargetName="Border" Value="{DynamicResource Calendar.ButtonSelectedBackground}" Property="Panel.Background" />
-            </Trigger>
-            <Trigger Property="CalendarDayButton.IsInactive" Value="True">
-              <Setter TargetName="Presenter" Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="TextElement.Foreground" />
-            </Trigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:selected /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
+      </Style>
+      <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+        <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+      </Style>
+    </Style.Styles>
   </Style>
-  <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
       <VisualStateManager.VisualStateGroups>
         <VisualStateGroup x:Name="CommonStates">
@@ -75,7 +97,7 @@
       </Grid>
     </Grid>
   </ControlTemplate>
-  <ControlTemplate x:Key="NextButtonTemplate" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTemplate x:Key="NextButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
       <VisualStateManager.VisualStateGroups>
         <VisualStateGroup x:Name="CommonStates">
@@ -89,7 +111,7 @@
       </Grid>
     </Grid>
   </ControlTemplate>
-  <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
       <VisualStateManager.VisualStateGroups>
         <VisualStateGroup x:Name="CommonStates">
@@ -97,13 +119,13 @@
           <VisualState x:Name="Disabled" />
         </VisualStateGroup>
       </VisualStateManager.VisualStateGroups>
-      <ContentPresenter Margin="1,2,1,4" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" Content="{TemplateBinding ContentControl.Content}" TextElement.Foreground="{TemplateBinding TextElement.Foreground}" TextElement.FontSize="{TemplateBinding TextElement.FontSize}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" x:Name="buttonContent" />
+      <ContentPresenter Margin="1,2,1,4" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="buttonContent" />
     </Grid>
   </ControlTemplate>
-  <Style x:Key="CalendarItemStyle" TargetType="{x:Type CalendarItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
-    <Setter Property="FrameworkElement.Margin" Value="0,3,0,3" />
-    <Setter Property="Control.Template">
+  <Style x:Key="CalendarItemStyle" Selector="CalendarItem">
+    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="Margin" Value="0,3,0,3" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CalendarItem}">
           <ControlTemplate.Resources>
@@ -128,8 +150,8 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" CornerRadius="1">
-              <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" CornerRadius="1">
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="1">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="1">
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -143,7 +165,7 @@
                   <Button Grid.Column="0" Focusable="False" HorizontalAlignment="Left" Height="20" Grid.Row="0" Template="{DynamicResource PreviousButtonTemplate}" Width="28" x:Name="PART_PreviousButton" />
                   <Button Grid.Column="1" FontWeight="Medium" Focusable="False" FontSize="12" HorizontalAlignment="Center" Grid.Row="0" Template="{DynamicResource HeaderButtonTemplate}" VerticalAlignment="Center" x:Name="PART_HeaderButton" />
                   <Button Grid.Column="2" Focusable="False" HorizontalAlignment="Right" Height="20" Grid.Row="0" Template="{DynamicResource NextButtonTemplate}" Width="28" x:Name="PART_NextButton" />
-                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-1,6,6" Grid.Row="1" Visibility="Visible" x:Name="PART_MonthView">
+                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-1,6,6" Grid.Row="1" IsVisible="True" x:Name="PART_MonthView">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
@@ -163,7 +185,7 @@
                       <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                   </Grid>
-                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-3,7,6" Grid.Row="1" Visibility="Hidden" x:Name="PART_YearView">
+                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-3,7,6" Grid.Row="1" IsVisible="False" x:Name="PART_YearView">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
@@ -179,43 +201,39 @@
                 </Grid>
               </Border>
             </Border>
-            <Rectangle Fill="{DynamicResource Calendar.DisabledBrush}" Opacity="0" RadiusY="2" RadiusX="2" Stretch="Fill" Stroke="{DynamicResource Calendar.DisabledBrush}" StrokeThickness="1" Visibility="Collapsed" x:Name="PART_DisabledVisual" />
+            <Rectangle Fill="{DynamicResource Calendar.DisabledBrush}" Opacity="0" RadiusY="2" RadiusX="2" Stretch="Fill" Stroke="{DynamicResource Calendar.DisabledBrush}" StrokeThickness="1" IsVisible="False" x:Name="PART_DisabledVisual" />
           </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsEnabled" Value="False">
-              <Setter TargetName="PART_DisabledVisual" Property="UIElement.Visibility" Value="Visible" />
-            </Trigger>
-            <DataTrigger Value="Year">
-              <DataTrigger.Binding>
-                <Binding Path="DisplayMode"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type Calendar}" /></Binding.RelativeSource></Binding>
-              </DataTrigger.Binding>
-              <Setter TargetName="PART_MonthView" Property="UIElement.Visibility" Value="Hidden" />
-              <Setter TargetName="PART_YearView" Property="UIElement.Visibility" Value="Visible" />
-            </DataTrigger>
-            <DataTrigger Value="Decade">
-              <DataTrigger.Binding>
-                <Binding Path="DisplayMode"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type Calendar}" /></Binding.RelativeSource></Binding>
-              </DataTrigger.Binding>
-              <Setter TargetName="PART_MonthView" Property="UIElement.Visibility" Value="Hidden" />
-              <Setter TargetName="PART_YearView" Property="UIElement.Visibility" Value="Visible" />
-            </DataTrigger>
-          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Styles>
+      <Style Selector="^:disabled /template/ Rectangle#PART_DisabledVisual">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <!-- TODO: Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Year":
+           <Setter TargetName="PART_MonthView" IsVisible="False" />
+           <Setter TargetName="PART_YearView" IsVisible="True" />
+           Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
+           Needs code-behind or a ViewModel-driven approach. -->
+      <!-- TODO: Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Decade":
+           <Setter TargetName="PART_MonthView" IsVisible="False" />
+           <Setter TargetName="PART_YearView" IsVisible="True" />
+           Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
+           Needs code-behind or a ViewModel-driven approach. -->
+    </Style.Styles>
   </Style>
-  <Style x:Key="{x:Type Calendar}" TargetType="{x:Type Calendar}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Setter Property="Panel.Background" Value="{DynamicResource Calendar.Background}" />
-    <Setter Property="Border.BorderBrush" Value="{DynamicResource Calendar.Border}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
-    <Setter Property="Border.BorderThickness" Value="1" />
-    <Setter Property="Calendar.CalendarDayButtonStyle" Value="{DynamicResource CalendarDayButtonStyle}" />
-    <Setter Property="Calendar.CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />
-    <Setter Property="Control.Template">
+  <Style x:Key="{x:Type Calendar}" Selector="Calendar">
+    <Setter Property="Background" Value="{DynamicResource Calendar.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CalendarDayButtonStyle" Value="{DynamicResource CalendarDayButtonStyle}" />
+    <Setter Property="CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />
+    <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Calendar}">
           <StackPanel HorizontalAlignment="Center" x:Name="PART_Root">
-            <CalendarItem BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Style="{DynamicResource CalendarItemStyle}" x:Name="PART_CalendarItem" />
+            <CalendarItem BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Style="{DynamicResource CalendarItemStyle}" x:Name="PART_CalendarItem" />
           </StackPanel>
         </ControlTemplate>
       </Setter.Value>
