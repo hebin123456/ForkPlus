@@ -1,3 +1,4 @@
+// 阶段 4.5：移除未使用的 using System.Windows.Input;（ICommand/KeyGesture 已由 using Avalonia.Input 提供）。
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -6,7 +7,6 @@ using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Interactivity;
-using System.Windows.Input;
 
 namespace ForkPlus.UI
 {
