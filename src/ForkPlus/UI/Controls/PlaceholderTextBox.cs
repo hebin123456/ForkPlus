@@ -1,37 +1,29 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
 	public class PlaceholderTextBox : TextBox
 	{
-		public static readonly DependencyProperty PlaceholderProperty = DependencyProperty.Register("Placeholder", typeof(string), typeof(PlaceholderTextBox));
+		public static readonly StyledProperty<string> PlaceholderProperty =
+			AvaloniaProperty.Register<PlaceholderTextBox, string>(nameof(Placeholder));
 
-		public static readonly DependencyProperty IconProperty = DependencyProperty.Register("Icon", typeof(ImageSource), typeof(PlaceholderTextBox));
+		// 阶段 4.5：WPF ImageSource → Avalonia IImage。
+		public static readonly StyledProperty<IImage> IconProperty =
+			AvaloniaProperty.Register<PlaceholderTextBox, IImage>(nameof(Icon));
 
 		public string Placeholder
 		{
-			get
-			{
-				return (string)GetValue(PlaceholderProperty);
-			}
-			set
-			{
-				SetValue(PlaceholderProperty, value);
-			}
+			get => GetValue(PlaceholderProperty);
+			set => SetValue(PlaceholderProperty, value);
 		}
 
-		public ImageSource Icon
+		public IImage Icon
 		{
-			get
-			{
-				return (ImageSource)GetValue(IconProperty);
-			}
-			set
-			{
-				SetValue(IconProperty, value);
-			}
+			get => GetValue(IconProperty);
+			set => SetValue(IconProperty, value);
 		}
 
 		public PlaceholderTextBox()

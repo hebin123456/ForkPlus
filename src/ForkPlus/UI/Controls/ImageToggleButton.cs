@@ -1,5 +1,5 @@
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
@@ -22,9 +22,10 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public ImageSource Image { get; set; }
+		// 阶段 4.5：WPF ImageSource → Avalonia IImage。
+		public IImage Image { get; set; }
 
-		public ImageSource AlternativeImage { get; set; }
+		public IImage AlternativeImage { get; set; }
 
 		public ImageToggleButton()
 		{

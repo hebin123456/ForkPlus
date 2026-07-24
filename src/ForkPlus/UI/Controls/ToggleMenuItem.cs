@@ -1,5 +1,7 @@
 using System;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -33,7 +35,8 @@ namespace ForkPlus.UI.Controls
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
 				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = icon.SnapsToDevicePixels
+				// 阶段 4.5：WPF SnapsToDevicePixels → Avalonia UseLayoutRounding（最接近的像素对齐语义）。
+				UseLayoutRounding = icon.UseLayoutRounding
 			};
 		}
 	}
