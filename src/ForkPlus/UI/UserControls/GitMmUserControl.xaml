@@ -1,4 +1,4 @@
-<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; PreviewMouseWheel renamed to PointerWheelChanged (matching code-behind SubreposTabControl_PointerWheelChanged); SnapsToDevicePixels attributes removed; ControlTemplate.Triggers kept as-is for later Selector migration. -->
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; PreviewMouseWheel renamed to PointerWheelChanged (matching code-behind SubreposTabControl_PointerWheelChanged); SnapsToDevicePixels attributes removed; ControlTemplate.Triggers (IsMouseOver/IsSelected/IsEnabled) -> nested Selectors (:pointerover/:selected/:disabled); TextElement.FontWeight/Foreground prefixes stripped. -->
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.GitMmUserControl">
   <UserControl.Resources>
     <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" ShadowDepth="2" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
@@ -11,24 +11,28 @@
           <ControlTemplate TargetType="{x:Type TabItem}">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
             </Grid>
-            <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="true">
-                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
-              </Trigger>
-              <Trigger Property="IsSelected" Value="true">
-                <Setter Property="ZIndex" Value="1" />
-                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
-                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
-                <Setter TargetName="Bd" Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
-                <Setter TargetName="contentPresenter" Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
-              </Trigger>
-              <Trigger Property="IsEnabled" Value="false">
-                <Setter TargetName="contentPresenter" Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
-              </Trigger>
-            </ControlTemplate.Triggers>
+            <!-- 阶段 4.5：ControlTemplate.Triggers (IsMouseOver/IsSelected/IsEnabled)
+                 → Avalonia 嵌套 Selector (:pointerover/:selected/:disabled)。 -->
+            <Style Selector="^:pointerover /template/ Border#Bd">
+              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+            </Style>
+            <Style Selector="^:selected">
+              <Setter Property="ZIndex" Value="1" />
+            </Style>
+            <Style Selector="^:selected /template/ Border#Bd">
+              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+              <Setter Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
+            </Style>
+            <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
+              <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+            </Style>
+            <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+              <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+            </Style>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
