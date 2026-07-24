@@ -1,5 +1,5 @@
 <dialogs:ForkPlusDialogWindow MinHeight="225" Width="560" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.MergeBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 WPF DataTrigger+ControlTemplate for IsSeparator==true） -->
+  <!-- 阶段 4.5：Separator 项已迁移——MergeTypeComboBox.ItemTemplate 用堆叠 Grid + IsSeparator 直接绑定切换可见性（替代原 WPF DataTrigger+ControlTemplate for IsSeparator==true）。 -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -27,27 +27,29 @@
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
-      <!-- TODO: ItemContainerStyle 已移除（原 MergeComboBoxItemStyle 用于 Separator 项），需用 DataTemplate Selector 替代 -->
       <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
-            <DockPanel HorizontalAlignment="Stretch">
-              <TextBlock DockPanel.Dock="Left" Width="110" Margin="4,0,0,0" FontSize="13">
-                <TextBlock.Text>
-                  <Binding Path="Title" />
-                </TextBlock.Text>
-              </TextBlock>
-              <TextBlock DockPanel.Dock="Left" Width="200" Margin="4,0,0,0" HorizontalAlignment="Stretch" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
-                <TextBlock.Text>
-                  <Binding Path="Description" />
-                </TextBlock.Text>
-              </TextBlock>
-              <TextBlock DockPanel.Dock="Right" Width="75" Margin="4,0,4,0" TextAlignment="Right" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
-                <TextBlock.Text>
-                  <Binding Path="Command" />
-                </TextBlock.Text>
-              </TextBlock>
-            </DockPanel>
+            <Grid>
+              <Separator IsVisible="{Binding IsSeparator}" Height="1" />
+              <DockPanel HorizontalAlignment="Stretch" IsVisible="{Binding !IsSeparator}">
+                <TextBlock DockPanel.Dock="Left" Width="110" Margin="4,0,0,0" FontSize="13">
+                  <TextBlock.Text>
+                    <Binding Path="Title" />
+                  </TextBlock.Text>
+                </TextBlock>
+                <TextBlock DockPanel.Dock="Left" Width="200" Margin="4,0,0,0" HorizontalAlignment="Stretch" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
+                  <TextBlock.Text>
+                    <Binding Path="Description" />
+                  </TextBlock.Text>
+                </TextBlock>
+                <TextBlock DockPanel.Dock="Right" Width="75" Margin="4,0,4,0" TextAlignment="Right" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
+                  <TextBlock.Text>
+                    <Binding Path="Command" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DockPanel>
+            </Grid>
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>

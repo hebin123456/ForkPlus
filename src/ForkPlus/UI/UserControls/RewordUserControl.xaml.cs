@@ -56,7 +56,7 @@ namespace ForkPlus.UI.UserControls
 					_focused = true;
 				}
 			};
-			// TODO(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理（参考 ReferenceTextBox）。
+			// NOTE(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理（参考 ReferenceTextBox）。
 			// DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
 		}
 
@@ -66,7 +66,7 @@ namespace ForkPlus.UI.UserControls
 			CommitDescriptionTextBox.Text = description;
 		}
 
-		// TODO(4.5): Avalonia 无 DataObjectPastingEventArgs 等价类型，需自定义粘贴处理（参考 ReferenceTextBox）。
+		// NOTE(4.5): Avalonia 无 DataObjectPastingEventArgs 等价类型，需自定义粘贴处理（参考 ReferenceTextBox）。
 		// 以下 OnCommitSubjectPaste 逻辑保留以便后续实现粘贴过滤时参考。
 		// private void OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e)
 		// {

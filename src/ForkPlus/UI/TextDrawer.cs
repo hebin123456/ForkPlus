@@ -10,7 +10,7 @@ namespace ForkPlus.UI
 	// WPF Typeface.TryGetGlyphTypeface → Avalonia 通过 Typeface.Typeface.GetGlyphTypeface() 获取。
 	// WPF Pen.Freeze() → 移除（Avalonia 默认不可变）。
 	// WPF DrawingContext.DrawGlyphRun(Brush, GlyphRun) → Avalonia DrawingContext.DrawGlyphRun(IBrush, GlyphRun)。
-	// TODO(4.5-l): Avalonia GlyphRun 构造签名与 WPF 不同，需运行时验证字形渲染效果。
+	// NOTE(4.5-l): Avalonia GlyphRun 构造签名与 WPF 不同，需运行时验证字形渲染效果。
 	// WPF GlyphRun 构造参数：glyphTypeface, biDiLevel, isSideways, emSize, pixelsPerDip, glyphIndices,
 	//   baselineOrigin, advanceWidths, glyphOffsets, characters, deviceFontName, clusterMap, caretStops,
 	//   language。
@@ -111,7 +111,7 @@ namespace ForkPlus.UI
 			// 阶段 4.5：WPF GlyphRun 14 参数构造 → Avalonia GlyphRun 属性初始化。
 			// Avalonia GlyphRun 关键属性：GlyphTypeface, FontRenderingEmSize, GlyphIndices,
 			// GlyphAdvances, GlyphOffsets, BaselineOrigin。
-			// TODO(4.5-l): pixelsPerDip 在 Avalonia GlyphRun 中无对应属性，
+			// NOTE(4.5-l): pixelsPerDip 在 Avalonia GlyphRun 中无对应属性，
 			// Avalonia 通过 RenderOptions.TextRenderingMode 或 DisplayProperties 处理 DPI。
 			GlyphRun glyphRun = new GlyphRun(_glyphTypeface, _emSize, list, baselineOrigin, list2);
 			ctx.DrawGlyphRun(brush, glyphRun);

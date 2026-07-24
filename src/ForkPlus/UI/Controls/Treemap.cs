@@ -133,7 +133,7 @@ namespace ForkPlus.UI.Controls
 
 		private bool _needRecalculateLayout = true;
 
-		// TODO(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia 无直接等价物。
+		// NOTE(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia 无直接等价物。
 		// 用 ArrangeOverride 检测尺寸变化，触发布局重算（替代 OnRenderSizeChanged）。
 		private Size _lastArrangeSize;
 
@@ -226,7 +226,7 @@ namespace ForkPlus.UI.Controls
 			_showTooltipAction = new DelayedAction<IndexPath>(ShowTooltip, 0.5);
 		}
 
-		// TODO(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia ArrangeOverride 检测尺寸变化。
+		// NOTE(4.5): WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia ArrangeOverride 检测尺寸变化。
 		protected override Size ArrangeOverride(Size finalSize)
 		{
 			Size result = base.ArrangeOverride(finalSize);
@@ -289,7 +289,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
-			// TODO(4.5): Avalonia PointerPressedEventArgs.ClickCount 标记为 Obsolete，
+			// NOTE(4.5): Avalonia PointerPressedEventArgs.ClickCount 标记为 Obsolete，
 			// 官方建议改用 DoubleTapped 事件区分双击；当前保留 ClickCount 以维持原有业务逻辑，
 			// 后续阶段改用 DoubleTapped 区分单击/双击。
 			if (e.ClickCount == 1)
@@ -324,10 +324,10 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_tooltipView != null)
 			{
-				// TODO(4.5): WPF Visual.PointFromScreen → Avalonia 无 Canvas.PointFromScreen 等价物，需运行时验证。
+				// NOTE(4.5): WPF Visual.PointFromScreen → Avalonia 无 Canvas.PointFromScreen 等价物，需运行时验证。
 				// MouseHelper 仍为 WPF 实现，待其迁移后一并处理（PointToClient / 屏幕坐标转换）。
 				Point point = Canvas.PointFromScreen(MouseHelper.GetMousePosition());
-				// TODO(4.5): WPF Point.Offset(double,double) → Avalonia Point + Vector（Point 为只读结构体）。
+				// NOTE(4.5): WPF Point.Offset(double,double) → Avalonia Point + Vector（Point 为只读结构体）。
 				point = point + new Vector(10.0, 10.0);
 				Canvas.SetLeft(_tooltipView, point.X);
 				Canvas.SetTop(_tooltipView, point.Y);

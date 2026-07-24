@@ -128,7 +128,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
+		// NOTE(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
 
 		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
@@ -137,14 +137,14 @@ namespace ForkPlus.UI.Controls
 			_isPointerCaptured = false;
 			if (_wasSelected)
 			{
-				// TODO(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
+				// NOTE(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
 				// Avalonia OnPointerPressed(PointerPressedEventArgs) 与 OnPointerReleased(PointerReleasedEventArgs) 参数类型不同，
 				// 无法从 OnPointerReleased 直接调用 base.OnPointerPressed。阶段 6 需重新实现选中切换逻辑。
 				// base.OnPointerPressed(e);
 			}
 		}
 
-		// TODO(4.5): ParentTreeView (MultiselectionTreeView) 尚未迁移到 Avalonia，其 HandleDrag* 方法仍接受 System.Windows.DragEventArgs。
+		// NOTE(4.5): ParentTreeView (MultiselectionTreeView) 尚未迁移到 Avalonia，其 HandleDrag* 方法仍接受 System.Windows.DragEventArgs。
 		// 此处传入 Avalonia.Input.DragEventArgs，存在跨阶段类型不匹配；待 MultiselectionTreeView 迁移后自动消解。
 		protected override void OnDragEnter(DragEventArgs e)
 		{

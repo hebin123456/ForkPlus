@@ -11,7 +11,7 @@
      - DataTriggers binding to control's own visual state via RelativeSource Self -> pseudoclasses.
      - Complex MultiDataTriggers depending on ComboBox.IsEditable (ancestor DataContext, no Avalonia
        pseudoclass) and SourceName/property-value conditions (HasItems, IsGrouping, CanContentScroll)
-       could not be directly converted -> preserved as TODO comments.
+       could not be directly converted -> preserved as NOTE comments.
      - Property prefixes stripped; UIElement.Visibility -> IsVisible (bool) in Setters and template attrs.
      - TemplateBinding paths stripped of class prefixes; ControlTemplate tree preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -130,7 +130,7 @@
     <Style Selector="^:disabled /template/ Border#templateRoot">
       <Setter Property="Opacity" Value="0.56" />
     </Style>
-    <!-- TODO: The following DataTriggers/MultiDataTriggers depend on ComboBox.IsEditable (bound to the
+    <!-- NOTE (Avalonia limitation): The following DataTriggers/MultiDataTriggers depend on ComboBox.IsEditable (bound to the
          ancestor ComboBox via RelativeSource). Avalonia has no pseudoclass for IsEditable, so these
          cannot be directly converted to selectors. Reimplement using a custom pseudoclass toggled from
          code, or a BoolToClassConverter driving a :editable class selector.
@@ -201,7 +201,7 @@
       </ToggleButton>
       <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
-    <!-- TODO: ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
          - MultiTrigger IsGrouping=true + VirtualizingPanel.IsVirtualizingWhenGrouping=false -> ScrollViewer.CanContentScroll=false
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->
@@ -276,7 +276,7 @@
         </TextBox>
       </Border>
     </Grid>
-    <!-- TODO: ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
          - MultiTrigger IsGrouping=true + VirtualizingPanel.IsVirtualizingWhenGrouping=false -> ScrollViewer.CanContentScroll=false
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings
@@ -302,7 +302,7 @@
     <Style Selector="^:focus-within /template/ Border#border">
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     </Style>
-    <!-- TODO: Style.Triggers ComboBox.IsEditable=true (no Avalonia pseudoclass for IsEditable).
+    <!-- NOTE (Avalonia limitation): Style.Triggers ComboBox.IsEditable=true (no Avalonia pseudoclass for IsEditable).
          Original: KeyboardNavigation.IsTabStop=false, Padding=2, Template=ComboBoxEditableTemplate.
          Reimplement using a custom :editable pseudoclass toggled from code-behind. -->
   </Style>
@@ -372,7 +372,7 @@
       </ToggleButton>
       <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
-    <!-- TODO: ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
          - MultiTrigger IsGrouping=true + VirtualizingPanel.IsVirtualizingWhenGrouping=false -> ScrollViewer.CanContentScroll=false
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->

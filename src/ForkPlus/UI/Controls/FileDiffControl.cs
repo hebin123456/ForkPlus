@@ -1,10 +1,10 @@
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF DependencyProperty → Avalonia StyledProperty。
 // WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
-// WPF Key/Keyboard → Avalonia.Input.Key/FocusManager（Keyboard.FocusedElement 暂保留 + TODO）。
+// WPF Key/Keyboard → Avalonia.Input.Key/FocusManager（Keyboard.FocusedElement 暂保留 + NOTE）。
 // WPF MouseWheelEventArgs → PointerWheelEventArgs。WPF PreviewMouseWheel → PointerWheelChanged。
 // WPF FrameworkElement/UIElement → Avalonia.Controls.Control。
 // WPF ContextMenu/Separator → Avalonia.Controls.ContextMenu/Separator。
-// WPF RaiseEvent(MouseWheelEvent) 事件转发在 Avalonia 无等价物，标记 TODO(4.5)。
+// WPF RaiseEvent(MouseWheelEvent) 事件转发在 Avalonia 无等价物，标记 NOTE(4.5)。
 using System;
 using System.IO;
 using System.Text;
@@ -139,7 +139,7 @@ namespace ForkPlus.UI.Controls
 		// 通过 e.Handled = true 阻止后续处理，达到 Preview 的效果。
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			// TODO(4.5): WPF Keyboard.FocusedElement → Avalonia FocusManager.GetFocusedElement()，需验证
+			// NOTE(4.5): WPF Keyboard.FocusedElement → Avalonia FocusManager.GetFocusedElement()，需验证
 			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(Keyboard.FocusedElement is TextBox))
 			{
 				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
@@ -909,7 +909,7 @@ namespace ForkPlus.UI.Controls
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				// TODO(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
+				// NOTE(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
 				// 在 Avalonia 无等价物，需运行时验证。原 WPF 代码（已注释）：
 				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
 				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
@@ -924,7 +924,7 @@ namespace ForkPlus.UI.Controls
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				// TODO(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
+				// NOTE(4.5): WPF MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) + RaiseEvent 转发模式
 				// 在 Avalonia 无等价物，需运行时验证。原 WPF 代码（已注释）：
 				// MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
 				// mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;

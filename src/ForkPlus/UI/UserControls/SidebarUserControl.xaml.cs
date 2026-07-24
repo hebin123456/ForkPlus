@@ -24,7 +24,7 @@
 // - Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl/RevisionChangesUserControl）
 // - RequestNavigateEventArgs → RoutedEventArgs（Avalonia 无 RequestNavigate）；FrameworkContentElement → Control
 // - ToolTipEventArgs → PointerEventArgs（Avalonia 无 ToolTipOpening 事件，XAML 需改绑 PointerEnter，参考 AutoTooltipTextBlock）
-// - ContextMenu.LayoutTransform 无 Avalonia 等价，注释（TODO 阶段 6）
+// - ContextMenu.LayoutTransform 无 Avalonia 等价，注释（NOTE 阶段 6）
 using System;
 using System.Collections;
 using System.Collections.Generic;

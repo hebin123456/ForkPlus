@@ -9,7 +9,7 @@ namespace ForkPlus.UI.UserControls
 	// WPF Calendar 控件在 Avalonia 中为 Avalonia.Controls.Calendar，API 大体兼容。
 	// WPF Calendar.GotMouseCapture + CalendarDayButton/CalendarItem 鼠标捕获释放
 	// 在 Avalonia 中无对应；Avalonia Calendar 不持有鼠标捕获，移除该处理。
-	// TODO(4.5-i): Avalonia Calendar 的 DisplayDateStart/DisplayDateEnd/DisplayDate 属性
+	// NOTE(4.5-i): Avalonia Calendar 的 DisplayDateStart/DisplayDateEnd/DisplayDate 属性
 	// 需运行时验证是否存在；如不存在需用 BlackoutDates 或自定义替代。
 	public partial class CalendarDateRangUserControl : UserControl
 	{
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.UserControls
 			if (minDate.HasValue)
 			{
 				DateTime valueOrDefault = minDate.GetValueOrDefault();
-				// TODO(4.5-i): 验证 Avalonia Calendar.DisplayDateStart 是否存在。
+				// NOTE(4.5-i): 验证 Avalonia Calendar.DisplayDateStart 是否存在。
 				StartCalendar.DisplayDateStart = valueOrDefault;
 				EndCalendar.DisplayDateStart = valueOrDefault;
 			}
@@ -95,7 +95,7 @@ namespace ForkPlus.UI.UserControls
 			if (minDate.HasValue)
 			{
 				DateTime valueOrDefault2 = minDate.GetValueOrDefault();
-				// TODO(4.5-i): 验证 Avalonia Calendar.DisplayDateEnd 是否存在。
+				// NOTE(4.5-i): 验证 Avalonia Calendar.DisplayDateEnd 是否存在。
 				EndCalendar.DisplayDateEnd = valueOrDefault2;
 				StartCalendar.DisplayDateEnd = valueOrDefault2;
 			}

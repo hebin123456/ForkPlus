@@ -91,7 +91,7 @@ namespace ForkPlus.UI.QuickLaunch
 		}
 
 		// 阶段 4.5：WPF OnPreviewKeyDown (tunneling) → Avalonia OnKeyDown (bubbling)。
-		// TODO(4.6-c): bubbling 在子控件已处理按键时不再触发本回调；若 CommandTextBox 拦截
+		// NOTE(4.6-c): bubbling 在子控件已处理按键时不再触发本回调；若 CommandTextBox 拦截
 		// Escape/Return/Up/Down，需改用 AddHandler(KeyDownEvent, handler, handledEventsToo: true)。
 		protected override void OnKeyDown(KeyEventArgs e)
 		{

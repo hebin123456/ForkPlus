@@ -2,7 +2,7 @@
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
      - DataTemplate DataType="{x:Type local:Foo}" → DataType="local:Foo"
-     - TODO：DataTemplate.Triggers/DataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     - DataTemplate.Triggers/DataTrigger 已迁移为顶层 Style Selector（:selected 伪类）
      -->
 <TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <TabItem.Styles>

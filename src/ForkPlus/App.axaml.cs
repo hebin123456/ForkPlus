@@ -362,7 +362,7 @@ namespace ForkPlus
 
 		private void RegisterGlobalExceptionLogging()
 		{
-			// TODO 阶段 4 后续：Avalonia 无 DispatcherUnhandledException 等价，改用 Avalonia.Logging 或 AppDomain 异常捕获
+			// NOTE (阶段 4 后续): Avalonia 无 DispatcherUnhandledException 等价，改用 Avalonia.Logging 或 AppDomain 异常捕获
 			// DispatcherUnhandledException += App_DispatcherUnhandledException;
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 			AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;

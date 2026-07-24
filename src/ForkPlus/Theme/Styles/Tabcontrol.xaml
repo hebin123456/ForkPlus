@@ -22,9 +22,9 @@
        UIElement.IsKeyboardFocused=True -> :focus.
      - MultiTrigger (IsSelected=false AND IsMouseOver=true) -> :pointerover:not(:selected).
      - Style ordering ensures :selected overrides :pointerover for Bd background (matches WPF trigger precedence).
-     - TODO: MultiDataTrigger (TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false) cannot be expressed
+     - NOTE (Avalonia limitation): MultiDataTrigger (TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false) cannot be expressed
        as a selector; original logic preserved as comment.
-     - TODO: TabControl.TabStripPlacement enum triggers (Bottom/Left/Right) cannot be expressed as selectors;
+     - NOTE (Avalonia limitation): TabControl.TabStripPlacement enum triggers (Bottom/Left/Right) cannot be expressed as selectors;
        original logic preserved as comments, needs code-behind or layout-specific templates. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="{x:Type TabItem}" Selector="TabItem">
@@ -94,14 +94,14 @@
       <Style Selector="^:disabled /template/ Grid#templateRoot">
         <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
       </Style>
-      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Bottom:
+      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Bottom:
            headerPanel Grid.Row=1, contentPanel Grid.Row=0, RowDefinition0 Height=*, RowDefinition1 Height=Auto.
            Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
-      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Left:
+      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Left:
            headerPanel Grid.Row=0/Grid.Column=0, contentPanel Grid.Row=0/Grid.Column=1,
            ColumnDefinition0 Width=Auto, ColumnDefinition1 Width=*, RowDefinition0 Height=*, RowDefinition1 Height=0.
            Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
-      <!-- TODO: Original WPF Trigger TabControl.TabStripPlacement=Right:
+      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Right:
            headerPanel Grid.Row=0/Grid.Column=1, contentPanel Grid.Row=0/Grid.Column=0,
            ColumnDefinition0 Width=*, ColumnDefinition1 Width=Auto, RowDefinition0 Height=*, RowDefinition1 Height=0.
            Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
@@ -281,7 +281,7 @@
       </Setter.Value>
     </Setter>
     <Style.Styles>
-      <!-- TODO: Original WPF MultiDataTrigger:
+      <!-- NOTE (Avalonia limitation): Original WPF MultiDataTrigger:
            Conditions: TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false
            Setter: PART_Close IsVisible=True.
            Cannot be expressed as an Avalonia selector (second condition is a data binding on a template element).

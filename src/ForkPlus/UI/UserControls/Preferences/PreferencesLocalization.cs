@@ -1,14 +1,14 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.LogicalTree（ILogical/LogicalChildren）
 // - using System.Windows.Controls → using Avalonia.Controls
-// - using System.Windows.Data → 移除（BindingOperations.GetBindingExpressionBase 无 Avalonia 公开等价；HasBinding 暂返回 false，见 TODO）
+// - using System.Windows.Data → 移除（BindingOperations.GetBindingExpressionBase 无 Avalonia 公开等价；HasBinding 暂返回 false，见 NOTE）
 // - using System.Windows.Media → 移除（未使用）
 // - DependencyObject → AvaloniaObject（参数/HashSet/调用方均传 Control/Window，派生自 AvaloniaObject）
 // - DependencyProperty.RegisterAttached → AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TOwner,TType>
 // - LogicalTreeHelper.GetChildren(element) → ILogical.LogicalChildren（直接逻辑子级，等价 WPF 语义；构造期即可用）
 // - FrameworkElement → Control（Avalonia 无 FrameworkElement）；element is FrameworkElement { ContextMenu: ... } → element is Control { ContextMenu: ... }
 // - FrameworkElement.ToolTip 属性 → ToolTip.GetTip/SetTip 附加属性；FrameworkElement.ToolTipProperty → ToolTip.TipProperty
-// - BindingOperations.GetBindingExpressionBase → 无公开等价；HasBinding 暂返回 false（TODO(4.5)，Apply 主要面向对话框静态文案）
+// - BindingOperations.GetBindingExpressionBase → 无公开等价；HasBinding 暂返回 false（NOTE(4.5)，Apply 主要面向对话框静态文案）
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -374,7 +374,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		// 阶段 4.5：WPF BindingOperations.GetBindingExpressionBase 检查属性是否绑定。
 		// Avalonia 11.3 无公开 API 查询单个 AvaloniaProperty 的绑定表达式（绑定通过 Bind 返回 IDisposable，不挂载可查询状态）。
 		// 暂返回 false（视为无绑定）。Apply 主要面向对话框/窗口静态文案，数据绑定文案少见；
-		// 阶段 6 如需精确检测可走 ValueStore/反射或改用绑定守卫标记。TODO(4.5)。
+		// 阶段 6 如需精确检测可走 ValueStore/反射或改用绑定守卫标记。NOTE(4.5)。
 		private static bool HasBinding(AvaloniaObject element, AvaloniaProperty property)
 		{
 			return false;

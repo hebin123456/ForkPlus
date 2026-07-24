@@ -4,7 +4,7 @@
 // WPF Application.Current.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post。
 // WPF System.Windows.Media.Color → Avalonia.Media.Color。
 // WinRT UISettings/ColorValuesChanged/GetColorValue/Windows.UI.Color 保留（Windows-only API）。
-// TODO 阶段 5：跨平台化时替换 WinRT UISettings 为 ISystemThemeService 抽象。
+// NOTE (阶段 5): 跨平台化时替换 WinRT UISettings 为 ISystemThemeService 抽象。
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Avalonia;

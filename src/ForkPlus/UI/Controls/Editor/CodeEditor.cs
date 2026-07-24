@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls.Editor
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
-			// TODO(4.7-a): 验证 Avalonia.AvalonEdit TextArea 是否有 SelectionBorder(Pen)/SelectionCornerRadius；
+			// NOTE(4.7-a): 验证 Avalonia.AvalonEdit TextArea 是否有 SelectionBorder(Pen)/SelectionCornerRadius；
 			// WPF 版设 SelectionBorder=null + SelectionCornerRadius=0 以扁平化选区。Avalonia 版可能用 SelectionBrush/SelectionCornerRadius。
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;

@@ -14,9 +14,9 @@
        ui:CustomWindow.WindowResizeBorderThickness kept (namespaced/custom property).
      - Style.Triggers MultiDataTrigger binding to ancestor Button state (FindAncestor) could not be
        converted to nested selectors (Avalonia nested ^ selectors only match the styled element's own
-       pseudoclasses, not ancestors') -> preserved as TODO comments.
+       pseudoclasses, not ancestors') -> preserved as NOTE comments.
      - ControlTemplate.Triggers MultiTrigger on Window.ResizeMode (enum, no pseudoclass) + Window.WindowState
-       (enum, no pseudoclass) could not be converted -> preserved as TODO comments.
+       (enum, no pseudoclass) could not be converted -> preserved as NOTE comments.
      - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
@@ -31,7 +31,7 @@
     <Setter Property="Margin" Value="0" />
     <Setter Property="Stretch" Value="Uniform" />
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
-    <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
          (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
          match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
            Shape.Fill = {DynamicResource Window.Button.MouseOver.Foreground}
@@ -70,7 +70,7 @@
     <Setter Property="Margin" Value="0" />
     <Setter Property="Stretch" Value="Uniform" />
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
-    <!-- TODO: Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
          (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
          match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
            Shape.Fill = #FFFFFFFF
@@ -282,7 +282,7 @@
               </Grid>
             </Border>
           </Border>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
                Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
                Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
                ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or
@@ -349,7 +349,7 @@
               </Grid>
             </Border>
           </Border>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
                Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
                Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
                ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or

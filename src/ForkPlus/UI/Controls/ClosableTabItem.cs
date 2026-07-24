@@ -78,7 +78,7 @@ namespace ForkPlus.UI.Controls
 			base.PointerMoved += TabItem_PointerMoved;
 			base.Drop += TabItem_Drop;
 			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
-			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			// NOTE(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
 			NotificationCenter.Current.RepositoryUserControlTitleChanged += RepositoryUserControlTitleChanged;
 			NotificationCenter.Current.RepositoryUserControlColorChanged += RepositoryUserControlColorChanged;
 			NotificationCenter.Current.RepositoryUserControlIsDirtyChanged += RepositoryUserControlIsDirtyChanged;
@@ -417,7 +417,7 @@ namespace ForkPlus.UI.Controls
 				Header = new RepositoryColorsUserControl(repository),
 				// 阶段 4.5：WPF Style 属性 → Avalonia Styles 集合（单 Style 用 Styles.Add）。
 				// 此处简化为直接设置 Header；原 Theme.CustomContentMenuItemStyle 需在 XAML 模板中应用。
-				// TODO(4.6-b): 恢复 CustomContentMenuItemStyle 样式应用。
+				// NOTE(4.6-b): 恢复 CustomContentMenuItemStyle 样式应用。
 			};
 		}
 

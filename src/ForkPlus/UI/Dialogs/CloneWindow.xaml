@@ -1,5 +1,5 @@
 <dialogs:ForkPlusDialogWindow MinHeight="245" Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CloneWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 WPF DataTrigger+ControlTemplate for ItemType=="Separator"） -->
+  <!-- 阶段 4.5：Separator 项已迁移——AccountsComboBox.ItemTemplate 用堆叠 Grid + EnumEqualsConverter 切换 ItemType==Separator 的可见性（替代原 WPF DataTrigger+ControlTemplate for ItemType=="Separator"）。 -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -57,28 +57,30 @@
       <controls:PlaceholderTextBox TextChanged="RepositoryNameTextBox_TextChanged" Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Repository name" x:Name="RepositoryNameTextBox" />
       <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,4" x:Name="AccountsSeparator" />
       <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Account:" FontSize="13" x:Name="AccountsTextBlock" />
-      <!-- TODO: TextSearch.TextPath="Title" 已移除（Avalonia 不支持），需在 code-behind 或自定义 SelectionBoxItem 处理 -->
-      <!-- TODO: ItemContainerStyle 已移除（原 AccountComboBoxItemStyle 用于 Separator 项），需用 DataTemplate Selector 替代 -->
+      <!-- NOTE (Avalonia limitation): TextSearch.TextPath="Title" 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
       <ComboBox Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
-            <DockPanel>
-              <Image DockPanel.Dock="Left" Height="16" Width="16" Margin="0,0,2,0">
-                <Image.Source>
-                  <Binding Path="Icon" />
-                </Image.Source>
-              </Image>
-              <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="2,0,4,0">
-                <TextBlock.Text>
-                  <Binding Path="Title" />
-                </TextBlock.Text>
-              </TextBlock>
-              <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
-                <TextBlock.Text>
-                  <Binding Path="Description" />
-                </TextBlock.Text>
-              </TextBlock>
-            </DockPanel>
+            <Grid>
+              <Separator IsVisible="{Binding ItemType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:CloneWindow+AccountItemType.Separator}}" Height="1" />
+              <DockPanel IsVisible="{Binding ItemType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static dialogs:CloneWindow+AccountItemType.Separator}}">
+                <Image DockPanel.Dock="Left" Height="16" Width="16" Margin="0,0,2,0">
+                  <Image.Source>
+                    <Binding Path="Icon" />
+                  </Image.Source>
+                </Image>
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="2,0,4,0">
+                  <TextBlock.Text>
+                    <Binding Path="Title" />
+                  </TextBlock.Text>
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
+                  <TextBlock.Text>
+                    <Binding Path="Description" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DockPanel>
+            </Grid>
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>

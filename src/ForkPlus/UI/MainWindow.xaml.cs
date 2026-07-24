@@ -128,7 +128,7 @@ namespace ForkPlus.UI
 		}
 		TabManager?.ActiveRepositoryManager?.ApplyLocalization();
 		TabManager?.ActiveGitMmUserControl?.ApplyLocalization();
-		// TODO: Avalonia 迁移 - Application.Current.Windows 改用 desktop lifetime 的 Windows 列表
+		// NOTE (Avalonia 迁移): Application.Current.Windows 改用 desktop lifetime 的 Windows 列表
 		var windows = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows;
 		if (windows != null)
 		{
@@ -154,7 +154,7 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			// TODO: Avalonia 迁移 - MainWindow.xaml 已移除 ControlTemplate，PART_MainMenu /
+			// NOTE (Avalonia 迁移): MainWindow.xaml 已移除 ControlTemplate，PART_MainMenu /
 			// Part_NotificationManagerToggleButton / NotificationManagerUserControl 不再存在于模板中
 			// （标题栏按钮由 CustomWindow 基类处理）。菜单与通知弹出 UI 需重新设计。
 			// 下面用 NameScope.Find 安全查找（找不到返回 null），保留原有逻辑结构。
@@ -172,7 +172,7 @@ namespace ForkPlus.UI
 					_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
 				};
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-				// TODO: NotificationManagerPopup 已移至基类或需重新设计
+				// NOTE: NotificationManagerPopup 已移至基类或需重新设计
 				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 			}
 			// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
@@ -198,7 +198,7 @@ namespace ForkPlus.UI
 
 		public void ShowNotificationManager()
 		{
-			// TODO: NotificationManagerPopup 已移至基类或需重新设计
+			// NOTE: NotificationManagerPopup 已移至基类或需重新设计
 			if (_templatePartNotificationManagerToggleButton != null)
 			{
 				_templatePartNotificationManagerToggleButton.IsChecked = true;
@@ -253,7 +253,7 @@ namespace ForkPlus.UI
 	}
 
 		// Avalonia: 尺寸/位置变化由 Resized/PositionChanged 事件回调本方法保存状态。
-		// TODO: Avalonia 迁移 - GetWindowLocationState 依赖 WindowLocationStateExtensions（Win32 WindowInteropHelper），需迁移到 Avalonia 平台句柄。
+		// NOTE (Avalonia 迁移): GetWindowLocationState 依赖 WindowLocationStateExtensions（Win32 WindowInteropHelper），需迁移到 Avalonia 平台句柄。
 		private void SaveMainWindowLocationState()
 		{
 			if (_viewModel.StartUpFinished)
@@ -273,7 +273,7 @@ namespace ForkPlus.UI
 		protected override void OnDrop(DragEventArgs e)
 		{
 			base.OnDrop(e);
-			// TODO: Avalonia 迁移 - 文件拖放：e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
+			// NOTE (Avalonia 迁移): 文件拖放：e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
 			string[] array = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
 			if (array != null && array.Length != 0)
 			{
@@ -293,7 +293,7 @@ namespace ForkPlus.UI
 			}
 			// 原 WPF OnSourceInitialized 逻辑：恢复窗口位置/尺寸/状态。
 			// Avalonia 无 OnSourceInitialized（Win32 专属），移到 Loaded。
-			// TODO: Avalonia 迁移 - Win32 SetWindowPlacement 依赖 WindowLocationStateExtensions 的 WindowInteropHelper.Handle，
+			// NOTE (Avalonia 迁移): Win32 SetWindowPlacement 依赖 WindowLocationStateExtensions 的 WindowInteropHelper.Handle，
 			//       需迁移到 Avalonia 平台句柄；Loaded 时机较晚，窗口可能短暂以默认尺寸闪现。
 			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
 			if (windowLocationState.WindowState == WindowState.Minimized)
@@ -331,7 +331,7 @@ namespace ForkPlus.UI
 
 		private void InitializeKeyBindings()
 		{
-			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
 			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
 			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
 			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
@@ -571,7 +571,7 @@ namespace ForkPlus.UI
 
 		private bool ChildDialogsAreNotAlreadyClosed()
 		{
-			// TODO: Avalonia 迁移 - Window.OwnedWindows 在 Avalonia 中不存在，
+			// NOTE (Avalonia 迁移): Window.OwnedWindows 在 Avalonia 中不存在，
 			// 改用 desktop lifetime 的 Windows 列表，按 Owner==this 过滤Owned 窗口。
 			var windows = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows;
 			if (windows != null)

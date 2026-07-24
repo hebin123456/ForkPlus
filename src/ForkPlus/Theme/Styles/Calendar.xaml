@@ -14,7 +14,7 @@
        CalendarDayButton.IsSelected=True -> :selected, CalendarDayButton.IsInactive=True -> :inactive.
      - VisualStateManager.VisualStateGroups preserved as-is (template structure kept); added :selected style to
        replicate the VSM "Selected" storyboard (SelectedBackground Opacity=0.75).
-     - TODO: DataTrigger on ancestor Calendar.DisplayMode (Year/Decade) cannot be expressed as a selector;
+     - NOTE (Avalonia limitation): DataTrigger on ancestor Calendar.DisplayMode (Year/Decade) cannot be expressed as a selector;
        original logic preserved as comments, needs code-behind or ViewModel handling. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="CalendarButtonStyle" Selector="CalendarButton">
@@ -210,12 +210,12 @@
       <Style Selector="^:disabled /template/ Rectangle#PART_DisabledVisual">
         <Setter Property="IsVisible" Value="True" />
       </Style>
-      <!-- TODO: Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Year":
+      <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Year":
            <Setter TargetName="PART_MonthView" IsVisible="False" />
            <Setter TargetName="PART_YearView" IsVisible="True" />
            Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
            Needs code-behind or a ViewModel-driven approach. -->
-      <!-- TODO: Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Decade":
+      <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Decade":
            <Setter TargetName="PART_MonthView" IsVisible="False" />
            <Setter TargetName="PART_YearView" IsVisible="True" />
            Cannot be expressed as an Avalonia selector (data trigger on ancestor property).

@@ -17,7 +17,7 @@ namespace ForkPlus.UI.Commands
 	// - CreateShortcutCommand/CreateShortcutCommandBinding 改为返回 Avalonia KeyBinding，
 	//   调用方通过 Control.KeyBindings.Add 注册。
 	// - 原 RoutedCommand 自动触发的语义改为调用方显式绑定 KeyGesture 到 ICommand。
-	// TODO(4.5-m): SidebarUserControl.xaml.cs 中 CommandBindings.Add 调用需相应改为 KeyBindings.Add。
+	// NOTE(4.5-m): SidebarUserControl.xaml.cs 中 CommandBindings.Add 调用需相应改为 KeyBindings.Add。
 	internal static class IUICommandExtension
 	{
 		public static string InputGestureText(this IUICommand command)

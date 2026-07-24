@@ -1288,7 +1288,7 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"Working directory has uncommitted changes. {0} will discard them. Stash changes first?",
 				opLabel);
-			// TODO: Avalonia 迁移 - MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
+			// NOTE (Avalonia 迁移): MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
 			System.Windows.MessageBoxResult r = System.Windows.MessageBox.Show(message, opLabel, System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
 			if (r != System.Windows.MessageBoxResult.Yes)
 			{
@@ -1360,7 +1360,7 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"{0} will undo commit(s) that have been pushed to remote. Force push to remote too?",
 				opLabel);
-			// TODO: Avalonia 迁移 - MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
+			// NOTE (Avalonia 迁移): MessageBox 为 WPF API，需改用 Avalonia 异步对话框（注意 Undo/Redo 当前为同步签名）
 			System.Windows.MessageBoxResult r = System.Windows.MessageBox.Show(message, opLabel, System.Windows.MessageBoxButton.YesNoCancel, System.Windows.MessageBoxImage.Warning);
 			if (r == System.Windows.MessageBoxResult.Cancel)
 			{

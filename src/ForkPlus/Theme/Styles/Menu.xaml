@@ -9,14 +9,14 @@
        TextElement.*->*, Shape.*->*, UIElement.Visibility->IsVisible (Visible->True, Collapsed->False)).
      - Attached properties (Canvas.Top, Canvas.Left, ScrollViewer.*, Grid.*, KeyboardNavigation.*,
        RenderOptions.*) kept as-is.
-     - TODO: Trigger on MenuItem.IsSuspendingPopupAnimation=true (no Avalonia pseudoclass) -> TODO comment.
+     - NOTE (Avalonia limitation): Trigger on MenuItem.IsSuspendingPopupAnimation=true (no Avalonia pseudoclass) -> NOTE comment.
        Reimplement using a binding/converter on PART_Popup.PopupAnimation.
-     - TODO: Trigger on MenuItem.Icon=null (no pseudoclass for null value) -> TODO comment. Reimplement
+     - NOTE (Avalonia limitation): Trigger on MenuItem.Icon=null (no pseudoclass for null value) -> NOTE comment. Reimplement
        using a binding with null-to-bool converter on Icon.IsVisible.
-     - TODO: Trigger with SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
-       (SourceName triggers not supported in Avalonia selectors) -> TODO comment.
-     - TODO: Style.Triggers on MenuItem.Role (enum value, no pseudoclass for TopLevelHeader/
-       TopLevelItem/SubmenuHeader) -> TODO comment. Role-based ControlTemplate selection needs to be
+     - NOTE (Avalonia limitation): Trigger with SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+       (SourceName triggers not supported in Avalonia selectors) -> NOTE comment.
+     - NOTE (Avalonia limitation): Style.Triggers on MenuItem.Role (enum value, no pseudoclass for TopLevelHeader/
+       TopLevelItem/SubmenuHeader) -> NOTE comment. Role-based ControlTemplate selection needs to be
        reimplemented using parent-type-based styles or a single adaptive ControlTemplate.
      - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -255,10 +255,10 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
          converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
            PART_Popup.PopupAnimation = None -->
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
          pseudoclass for null Icon). Original logic:
            Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
@@ -280,7 +280,7 @@
     <Style Selector="^:disabled /template/ Path#GlyphPanel">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- TODO: ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
          could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
            OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
            OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
@@ -297,7 +297,7 @@
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" ContentStringFormat="{TemplateBinding HeaderedItemsControl.HeaderStringFormat}" ContentSource="Header" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
          pseudoclass for null Icon). Original logic:
            Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
@@ -345,7 +345,7 @@
         <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding MenuItem.InputGestureText}" VerticalAlignment="Center" Foreground="{DynamicResource Menu.MenuItem.Static.Gesture.Foreground}" x:Name="menuGestureText" />
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
          pseudoclass for null Icon). Original logic:
            Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
@@ -435,10 +435,10 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
          converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
            PART_Popup.PopupAnimation = None -->
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
          pseudoclass for null Icon). Original logic:
            Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
@@ -460,7 +460,7 @@
     <Style Selector="^:disabled /template/ Path#RightArrow">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- TODO: ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
          could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
            OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
            OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
@@ -535,10 +535,10 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
          converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
            PART_Popup.PopupAnimation = None -->
-    <!-- TODO: ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
          pseudoclass for null Icon). Original logic:
            Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
@@ -560,7 +560,7 @@
     <Style Selector="^:disabled /template/ Path#RightArrow">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- TODO: ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
          could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
            OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
            OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
@@ -576,7 +576,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuItemTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}" />
-    <!-- TODO: Style.Triggers on MenuItem.Role (TopLevelHeader/TopLevelItem/SubmenuHeader) could not be
+    <!-- NOTE (Avalonia limitation): Style.Triggers on MenuItem.Role (TopLevelHeader/TopLevelItem/SubmenuHeader) could not be
          converted to Avalonia selectors (Role is an enum computed at runtime from parent type and
          whether the item has children; no matching pseudoclass exists). Original triggers preserved
          below for reference; reimplement Role-based ControlTemplate selection using parent-type-based

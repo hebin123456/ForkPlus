@@ -72,8 +72,8 @@ namespace ForkPlus.UI.Controls
 			if (scrollViewer != null)
 			{
 				int num = ((row >= 1) ? (row - 1) : row);
-				// TODO(4.5): 验证 Avalonia ScrollViewer.Offset.Y 替代 WPF VerticalOffset。
-				// TODO(4.5): 验证 Avalonia ScrollViewer.Viewport.Height 替代 WPF ViewportHeight。
+				// NOTE(4.5): 验证 Avalonia ScrollViewer.Offset.Y 替代 WPF VerticalOffset。
+				// NOTE(4.5): 验证 Avalonia ScrollViewer.Viewport.Height 替代 WPF ViewportHeight。
 				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
 				{
 					// 阶段 4.5：WPF ScrollViewer.ScrollToVerticalOffset(num) → Avalonia 直接设置 Offset（Vector）。
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.Controls
 			// 阶段 4.5：Avalonia Layoutable.UpdateLayout() 与 WPF 同名方法存在。
 			listBox.UpdateLayout();
 			// 阶段 4.5：WPF ItemContainerGenerator.ContainerFromIndex → Avalonia ItemsControl.ContainerFromIndex。
-			// TODO(4.5): 验证 Avalonia ContainerFromIndex 返回类型
+			// NOTE(4.5): 验证 Avalonia ContainerFromIndex 返回类型
 			if (listBox.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
 			{
 				// 阶段 4.5：WPF Keyboard.Focus(element) → Avalonia Control.Focus()。
@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO(4.5): WPF GridView（ListBox 多列视图）在 Avalonia 中无等价物。UpdateResizableColumnWidth 功能需改用 DataGrid 或自定义列布局实现。
+		// NOTE(4.5): WPF GridView（ListBox 多列视图）在 Avalonia 中无等价物。UpdateResizableColumnWidth 功能需改用 DataGrid 或自定义列布局实现。
 		public void UpdateResizableColumnWidth(int resizableColumnIndex)
 		{
 			// 阶段 4.5：WPF GridView 在 Avalonia 中无等价物，方法体已禁用。

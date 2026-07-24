@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Helpers
 		{
 			TextView textView = textEditor.TextArea.TextView;
 			IScrollInfo scrollInfo = textView as IScrollInfo;
-			// TODO(4.7-a): 验证 Avalonia.AvalonEdit TextView 是否实现 Avalonia IScrollInfo；若否需改用 TextView 自身滚动范围属性。
+			// NOTE(4.7-a): 验证 Avalonia.AvalonEdit TextView 是否实现 Avalonia IScrollInfo；若否需改用 TextView 自身滚动范围属性。
 			if (scrollInfo == null)
 			{
 				return true;
@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Helpers
 		{
 			TextView textView = textEditor.TextArea.TextView;
 			IScrollInfo scrollInfo = textView as IScrollInfo;
-			// TODO(4.7-a): 同上，验证 TextView 的 IScrollInfo 实现。
+			// NOTE(4.7-a): 同上，验证 TextView 的 IScrollInfo 实现。
 			if (scrollInfo == null)
 			{
 				return true;

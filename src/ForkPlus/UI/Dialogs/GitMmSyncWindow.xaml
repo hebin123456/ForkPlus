@@ -11,15 +11,19 @@
                     <ControlTemplate TargetType="ToggleButton">
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
-                          <!-- TODO: Avalonia 迁移 - 原WPF用 ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText 文本 ">" / "v"，需用 Selector 重写 -->
-                          <TextBlock Text=">" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
+                          <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText ">" / "v"，
+                               用两个堆叠 TextBlock + IsVisible 绑定 IsChecked 替代。 -->
+                          <Grid Width="12">
+                            <TextBlock Text=">" VerticalAlignment="Center" IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <TextBlock Text="v" VerticalAlignment="Center" IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
+                          </Grid>
                           <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" />
                         </DockPanel>
                       </Border>
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <!-- TODO: Avalonia 迁移 - 原WPF用 ControlTemplate.Triggers 根据 IsExpanded 切换 Visibility，已改用 IsVisible Binding 替代 -->
+                <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsExpanded 切换 Visibility，已改用 IsVisible Binding 替代 -->
                 <ContentPresenter DockPanel.Dock="Bottom" IsVisible="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ContentSource="Content" x:Name="ExpandSite" />
               </DockPanel>
             </ControlTemplate>

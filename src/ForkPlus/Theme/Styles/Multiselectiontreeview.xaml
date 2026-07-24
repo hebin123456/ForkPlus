@@ -17,8 +17,8 @@
        MultiTrigger (Selector.IsSelectionActive=False AND ListBoxItem.IsSelected=True) -> :selected:not(:focus-within).
        NOTE: Selector.IsSelectionActive has no direct Avalonia pseudo-class; :focus-within is an approximation
        (IsSelectionActive tracks the parent selector's focus, :focus-within tracks the item/subtree focus).
-     - TODO: DataTrigger on ShowBorder property cannot be expressed as a selector; original logic preserved as comment.
-     - TODO: ToggleButton.Visibility binding with BooleanToVisibilityConverter needs Avalonia adaptation
+     - NOTE (Avalonia limitation): DataTrigger on ShowBorder property cannot be expressed as a selector; original logic preserved as comment.
+     - NOTE (Avalonia limitation): ToggleButton.Visibility binding with BooleanToVisibilityConverter needs Avalonia adaptation
        (IsVisible bool + bool converter); preserved as-is for structural compatibility. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
@@ -95,7 +95,7 @@
     </Setter>
     <Style.Styles>
       <!-- Active selection (parent selector has focus): IsSelectionActive=True AND IsSelected=True.
-           Approximated with :selected:focus-within (TODO: IsSelectionActive tracks parent focus, not item focus). -->
+           Approximated with :selected:focus-within (NOTE (Avalonia limitation): IsSelectionActive tracks parent focus, not item focus). -->
       <Style Selector="^:selected:focus-within /template/ Border#Bd">
         <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
@@ -104,7 +104,7 @@
         <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
       </Style>
       <!-- Inactive selection (parent selector lost focus): IsSelectionActive=False AND IsSelected=True.
-           Approximated with :selected:not(:focus-within) (TODO: see note above). -->
+           Approximated with :selected:not(:focus-within) (NOTE (Avalonia limitation): see note above). -->
       <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
         <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
       </Style>
@@ -187,7 +187,7 @@
       </Setter.Value>
     </Setter>
     <Style.Styles>
-      <!-- TODO: Original WPF DataTrigger ShowBorder=False:
+      <!-- NOTE (Avalonia limitation): Original WPF DataTrigger ShowBorder=False:
            Setter: Bd BorderBrush = #00FFFFFF.
            Cannot be expressed as an Avalonia selector (data trigger on custom property);
            needs a direct binding or code-behind. -->

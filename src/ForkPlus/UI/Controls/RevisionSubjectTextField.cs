@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			// TODO(4.5-g): Avalonia Run 不支持 FontWeight/FontFamily/FontSize/Background/Foreground 属性。
+			// NOTE(4.5-g): Avalonia Run 不支持 FontWeight/FontFamily/FontSize/Background/Foreground 属性。
 			// 前缀粗体、代码块着色、搜索匹配高亮待后续自定义 TextBlock 渲染恢复。
 			new Range(0, stringValue.Length).Merge(new List<Range>[3] { prefixHighlighting, codeHighlighting, searchMatchRanges }, delegate(Range range, int? prefixIndex, int? codeIndex, int? searchIndex)
 			{

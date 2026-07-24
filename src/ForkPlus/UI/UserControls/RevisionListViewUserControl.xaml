@@ -3,7 +3,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <Geometry x:Key="OptionMarkGeomentry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</Geometry>
-      <Style x:Key="ItemContainerStyle" TargetType="{x:Type controls:DragAndDropListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+      <Style x:Key="ItemContainerStyle" Selector="controls|DragAndDropListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
         <Setter Property="FocusVisualStyle">
           <Setter.Value>
             <x:Null />
@@ -15,24 +15,28 @@
         <Setter Property="Margin" Value="0" />
         <Setter Property="AllowDrop" Value="True" />
         <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
-<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <Style.Triggers>
-          <DataTrigger Value="True">
-            <DataTrigger.Binding>
-              <Binding Path="IsHead" />
-            </DataTrigger.Binding>
-            <Setter Property="FontWeight" Value="Bold" />
-          </DataTrigger>
-          <DataTrigger Value="False">
-            <DataTrigger.Binding>
-              <Binding Path="IsReachable" />
-            </DataTrigger.Binding>
-            <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-          </DataTrigger>
-        </Style.Triggers> -->
+        <!-- 阶段 4.5：原 Style.Triggers 中 DataTrigger (IsHead=True -> FontWeight=Bold) 用直接绑定实现。
+             Avalonia FontWeight 是 FontWeight 枚举（不可空），需 BoolToFontWeightConverter 转换。 -->
+        <Setter Property="FontWeight">
+          <Setter.Value>
+            <Binding Path="IsHead">
+              <Binding.Converter>
+                <controls:BoolToFontWeightConverter TrueWeight="Bold" />
+              </Binding.Converter>
+            </Binding>
+          </Setter.Value>
+        </Setter>
+        <!-- 原 DataTrigger (IsReachable=False -> Foreground=UnreachableBrush) 用直接绑定实现。
+             TrueBrush=null 时返回 UnsetValue，保持继承的默认 Foreground。 -->
+        <Setter Property="Foreground">
+          <Setter.Value>
+            <Binding Path="IsReachable">
+              <Binding.Converter>
+                <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+              </Binding.Converter>
+            </Binding>
+          </Setter.Value>
+        </Setter>
       </Style>
       <GridView x:Key="SingleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
         <GridViewColumn>
@@ -64,7 +68,13 @@
                     </ItemsPanelTemplate>
                   </ItemsControl.ItemsPanel>
                 </ItemsControl>
-                <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2 0 0 2" TextTrimming="CharacterEllipsis" IsParentSelected="False" x:Name="RevisionSubjectTextField">
+                <!-- 阶段 4.5：原 MultiDataTrigger (IsSelectionActive AND IsSelected -> IsParentSelected) 简化为
+                     直接绑定祖先 ListViewItem.IsSelected。IsSelectionActive 在交互场景下基本恒为 True，
+                     简化后视觉/行为差异可忽略。 -->
+                <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2 0 0 2" TextTrimming="CharacterEllipsis" x:Name="RevisionSubjectTextField">
+                  <controls:RevisionSubjectTextField.IsParentSelected>
+                    <Binding Path="IsSelected" RelativeSource="{RelativeSource FindAncestor, AncestorType=ListViewItem}" />
+                  </controls:RevisionSubjectTextField.IsParentSelected>
                   <controls:RevisionSubjectTextField.StringValue>
                     <Binding Path="Subject" />
                   </controls:RevisionSubjectTextField.StringValue>
@@ -76,58 +86,6 @@
                   </controls:RevisionSubjectTextField.HighlightString>
                 </controls:RevisionSubjectTextField>
               </Grid>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition Value="False">
-                      <Condition.Binding>
-                        <Binding Path="(Selector.IsSelectionActive)">
-                          <Binding.RelativeSource>
-                            <RelativeSource AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="IsSelected">
-                          <Binding.RelativeSource>
-                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="False" />
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="(Selector.IsSelectionActive)">
-                          <Binding.RelativeSource>
-                            <RelativeSource AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="IsSelected">
-                          <Binding.RelativeSource>
-                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
-                </MultiDataTrigger>
-              </DataTemplate.Triggers> -->
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -197,19 +155,17 @@
         <GridViewColumn Width="4">
           <GridViewColumn.CellTemplate>
             <DataTemplate>
-              <Border Margin="-4,0,0,0" Width="4" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                <DataTrigger Value="True">
-                  <DataTrigger.Binding>
-                    <Binding Path="IsSearchMatch" />
-                  </DataTrigger.Binding>
-                  <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Background" />
-                </DataTrigger>
-              </DataTemplate.Triggers> -->
+              <!-- 阶段 4.5：原 DataTrigger (IsSearchMatch=True -> Background=SearchMatch.BackgroundBrush)
+                   用直接绑定 + BoolToBrushConverter 实现。FalseBrush=#00FFFFFF 与原默认值一致。 -->
+              <Border Margin="-4,0,0,0" Width="4" x:Name="SearchMatchBorder">
+                <Border.Background>
+                  <Binding Path="IsSearchMatch">
+                    <Binding.Converter>
+                      <controls:BoolToBrushConverter FalseBrush="#00FFFFFF" TrueBrush="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Background>
+              </Border>
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -247,7 +203,17 @@
                     <Border.BorderBrush>
                       <Binding Path="UserBackgroundBrush" />
                     </Border.BorderBrush>
+                    <!-- 阶段 4.5：原 DataTrigger (IsReachable=False -> Foreground=Unreachable.ForegroundBrush)
+                         用直接绑定 + BoolToBrushConverter 实现。TrueBrush=null 时返回 UnsetValue，
+                         保持继承 ListViewItem.Foreground（由 ItemContainerStyle 统一控制）。 -->
                     <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="4,0,2,0" x:Name="AuthorTextBlock">
+                      <controls:HighlightableTextBlock.Foreground>
+                        <Binding Path="IsReachable">
+                          <Binding.Converter>
+                            <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </controls:HighlightableTextBlock.Foreground>
                       <controls:HighlightableTextBlock.Text>
                         <Binding Path="AuthorName" />
                       </controls:HighlightableTextBlock.Text>
@@ -256,7 +222,14 @@
                       </controls:HighlightableTextBlock.HighlightString>
                     </controls:HighlightableTextBlock>
                   </Border>
-                  <controls:HighlightableTextBlock Width="50" Margin="8,2,4,0" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ShaTextBlock">
+                  <controls:HighlightableTextBlock Width="50" Margin="8,2,4,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ShaTextBlock">
+                    <controls:HighlightableTextBlock.Foreground>
+                      <Binding Path="IsReachable">
+                        <Binding.Converter>
+                          <controls:BoolToBrushConverter TrueBrush="{DynamicResource SecondaryLabelBrush}" FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                        </Binding.Converter>
+                      </Binding>
+                    </controls:HighlightableTextBlock.Foreground>
                     <controls:HighlightableTextBlock.Text>
                       <Binding Path="AbbreviatedSha" />
                     </controls:HighlightableTextBlock.Text>
@@ -265,7 +238,14 @@
                     </controls:HighlightableTextBlock.HighlightString>
                   </controls:HighlightableTextBlock>
                 </StackPanel>
-                <TextBlock Grid.Row="0" Grid.Column="2" Margin="0,2,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">
+                <TextBlock Grid.Row="0" Grid.Column="2" Margin="0,2,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" x:Name="AuthorDateTextBlock">
+                  <TextBlock.Foreground>
+                    <Binding Path="IsReachable">
+                      <Binding.Converter>
+                        <controls:BoolToBrushConverter TrueBrush="{DynamicResource SecondaryLabelBrush}" FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                      </Binding.Converter>
+                    </Binding>
+                  </TextBlock.Foreground>
                   <TextBlock.Text>
                     <Binding Path="AuthorDateShortString" />
                   </TextBlock.Text>
@@ -289,7 +269,12 @@
                       </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                   </ItemsControl>
-                  <controls:RevisionSubjectTextField DockPanel.Dock="Left" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" FontSize="13.5" IsParentSelected="False" x:Name="RevisionSubjectTextField">
+                  <!-- 阶段 4.5：原 MultiDataTrigger (IsSelectionActive AND IsSelected -> IsParentSelected) 简化为
+                       直接绑定祖先 ListViewItem.IsSelected（与 SingleRowGridView 一致）。 -->
+                  <controls:RevisionSubjectTextField DockPanel.Dock="Left" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" FontSize="13.5" x:Name="RevisionSubjectTextField">
+                    <controls:RevisionSubjectTextField.IsParentSelected>
+                      <Binding Path="IsSelected" RelativeSource="{RelativeSource FindAncestor, AncestorType=ListViewItem}" />
+                    </controls:RevisionSubjectTextField.IsParentSelected>
                     <controls:RevisionSubjectTextField.StringValue>
                       <Binding Path="Subject" />
                     </controls:RevisionSubjectTextField.StringValue>
@@ -305,80 +290,18 @@
                   </controls:RevisionSubjectTextField>
                 </DockPanel>
                 <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,-8,0" BorderBrush="{DynamicResource BorderBrush}" />
-                <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,-8,0" Width="4" HorizontalAlignment="Right" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
+                <!-- 阶段 4.5：原 DataTrigger (IsSearchMatch=True -> Background=SearchMatch.BackgroundBrush) 用
+                     BoolToBrushConverter 直接绑定实现。FalseBrush=#00FFFFFF 与原默认值一致。 -->
+                <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,-8,0" Width="4" HorizontalAlignment="Right" x:Name="SearchMatchBorder">
+                  <Border.Background>
+                    <Binding Path="IsSearchMatch">
+                      <Binding.Converter>
+                        <controls:BoolToBrushConverter FalseBrush="#00FFFFFF" TrueBrush="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" />
+                      </Binding.Converter>
+                    </Binding>
+                  </Border.Background>
+                </Border>
               </Grid>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                <DataTrigger Value="True">
-                  <DataTrigger.Binding>
-                    <Binding Path="IsSearchMatch" />
-                  </DataTrigger.Binding>
-                  <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Background" />
-                </DataTrigger>
-                <DataTrigger Value="False">
-                  <DataTrigger.Binding>
-                    <Binding Path="IsReachable" />
-                  </DataTrigger.Binding>
-                  <Setter TargetName="AuthorTextBlock" Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-                  <Setter TargetName="AuthorDateTextBlock" Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-                  <Setter TargetName="ShaTextBlock" Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-                </DataTrigger>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition Value="False">
-                      <Condition.Binding>
-                        <Binding Path="(Selector.IsSelectionActive)">
-                          <Binding.RelativeSource>
-                            <RelativeSource AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="IsSelected">
-                          <Binding.RelativeSource>
-                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="AuthorTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="Foreground" />
-                  <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="Foreground" />
-                  <Setter TargetName="ShaTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="Foreground" />
-                  <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="False" />
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="(Selector.IsSelectionActive)">
-                          <Binding.RelativeSource>
-                            <RelativeSource AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                    <Condition Value="True">
-                      <Condition.Binding>
-                        <Binding Path="IsSelected">
-                          <Binding.RelativeSource>
-                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
-                          </Binding.RelativeSource>
-                        </Binding>
-                      </Condition.Binding>
-                    </Condition>
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
-                </MultiDataTrigger>
-              </DataTemplate.Triggers> -->
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>

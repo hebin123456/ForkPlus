@@ -238,7 +238,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			PrepareCommitMsgHook = "prepare-commit-msg";
 			Commands = new CommitUserControlCommands();
-			// TODO: Avalonia 迁移 - WPF KeyboardNavigation.TabNavigationProperty.OverrideMetadata +
+			// NOTE (Avalonia 迁移): WPF KeyboardNavigation.TabNavigationProperty.OverrideMetadata +
 			// FrameworkPropertyMetadata(KeyboardNavigationMode.Local) 在 Avalonia 中无对应 API。
 			// Avalonia 的 KeyboardNavigation 通过 attached property TabNavigation="Local" 在 XAML 中设置，
 			// 或在控件模板中显式声明。需要时改在 CommitUserControl.xaml 上设置 KeyboardNavigation.TabNavigation="Local"。
@@ -289,7 +289,7 @@ namespace ForkPlus.UI.UserControls
 			stageFileUserControl2.StagedFilesItemSourceChanged += StageFileUserControl_StagedFilesItemSourceChanged;
 			StageFileUserControl stageFileUserControl3 = StageFileUserControl;
 			stageFileUserControl3.SelectionChanged += StageFileUserControl_SelectionChanged;
-			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
 			// 需改用 Avalonia.Input.KeyBinding + ICommand 包装，并迁移
 			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
 			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
@@ -434,7 +434,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				UpdateCommitButtonTitle();
 			};
-			// TODO: Avalonia 迁移 - WPF DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+			// NOTE (Avalonia 迁移): WPF DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
 			// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为，可在 CommitSubjectTextBox 上
 			// 监听 AvaloniaEdit 的 TextInput 或自己实现 Paste 命令覆盖。原 OnCommitSubjectPaste 暂用 #if false 关闭。
 #if false
@@ -483,7 +483,7 @@ namespace ForkPlus.UI.UserControls
 			CommitSubjectTextBox.Focus();
 		}
 
-		// TODO: Avalonia 迁移 - WPF DataObjectPastingEventArgs / DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
+		// NOTE (Avalonia 迁移): WPF DataObjectPastingEventArgs / DataObject.AddPastingHandler 在 Avalonia 中无对应 API。
 		// Avalonia TextBox 没有等价的粘贴预拦截事件；如需自定义粘贴行为（subject/description 分流），需在
 		// CommitSubjectTextBox 上监听 TextInput 或覆盖 Paste 命令。原方法体暂用 #if false 关闭编译。
 #if false
@@ -1349,7 +1349,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
-			// TODO: Avalonia 迁移 - WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
+			// NOTE (Avalonia 迁移): WPF CommandBindings/RoutedCommand 体系在 Avalonia 中不存在。
 			// 需改用 Window.KeyBindings（Avalonia.Input.KeyBinding）+ ICommand 包装，并迁移
 			// IUICommandExtension.CreateShortcutCommandBinding（依赖 WPF RoutedCommand/InputGestures）。
 			// 以下原始逻辑保留待迁移（暂用 #if false 关闭编译，避免依赖未迁移的 WPF 命令类型）。
@@ -1876,7 +1876,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			else
 			{
-				// TODO: Avalonia 迁移 - WPF ClearValue(TextBlock.ForegroundProperty) 用于清除本地值恢复默认。
+				// NOTE (Avalonia 迁移): WPF ClearValue(TextBlock.ForegroundProperty) 用于清除本地值恢复默认。
 				// Avalonia 中 StyledProperty 可用 ClearValue(TextBlock.ForegroundProperty)（API 同名），
 				// 但若未设置过本地值会抛异常。这里直接置 null 让样式系统接管。
 				WarningTextBlock.ClearValue(TextBlock.ForegroundProperty);

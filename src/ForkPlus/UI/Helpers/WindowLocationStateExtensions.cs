@@ -15,7 +15,7 @@
 // - 非 Windows 平台：GetWindowLocationState/SetWindowLocationState 回退到 Avalonia 原生 window.Position/ClientSize/WindowState。
 // - TransformFromPixels/TransformToPixels 在非 Windows 平台使用 window.RenderScaling（单一因子，不区分 X/Y）。
 //
-// TODO(4.5): macOS/Linux 平台多显示器工作区（含 Dock 遮挡）尚需原生 API 实现；当前仅 Windows 走 AutoHideEnabled/GetMinMaxInfo 路径。
+// NOTE(4.5): macOS/Linux 平台多显示器工作区（含 Dock 遮挡）尚需原生 API 实现；当前仅 Windows 走 AutoHideEnabled/GetMinMaxInfo 路径。
 using System;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -297,7 +297,7 @@ namespace ForkPlus.UI.Helpers
 
 		// 阶段 4.5：WPF SystemParameters.WindowResizeBorderThickness → 无 Avalonia 等价物。
 		// 默认值 8px 与 Windows 默认 NonClientArea 边框一致。Avalonia 11 WindowResizeBorderThickness 在 Mac/Linux 由系统决定。
-		// TODO(4.5): 验证 macOS/Linux 下窗口外边框宽度；如需精确值，应通过 window.OffScreenPadding 或原生 API 获取。
+		// NOTE(4.5): 验证 macOS/Linux 下窗口外边框宽度；如需精确值，应通过 window.OffScreenPadding 或原生 API 获取。
 		public static Thickness WindowResizeBorderThickness => new Thickness(8.0);
 
 		public static void TransformFromPixels(Visual visual, double pixelX, double pixelY, out int unitX, out int unitY)

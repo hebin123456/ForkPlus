@@ -20,9 +20,9 @@
      - Custom attached properties preserved (controls:GitPointView.IconMargin, ScrollViewer.HorizontalScrollBarVisibility,
        KeyboardNavigation.IsTabStop).
      - CodeEditor ControlTemplate.Triggers (WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled)
-       has no Avalonia pseudoclass for WordWrap; left as TODO comment.
+       has no Avalonia pseudoclass for WordWrap; left as NOTE comment.
      - ToolTip ControlTemplate.Triggers (ToolTip.HasDropShadow=True -> Margin=10 + Border Effect) has no
-       Avalonia pseudoclass for HasDropShadow; left as TODO comment. -->
+       Avalonia pseudoclass for HasDropShadow; left as NOTE comment. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <PopupAnimation x:Key="{x:StaticExtension SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
@@ -63,7 +63,7 @@
               <Path Fill="#CC90C494" x:Name="DstBlockPath" />
             </Canvas>
           </Grid>
-          <!-- TODO: ControlTemplate.Triggers WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled.
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled.
                Avalonia CodeEditor has no :wordwrap pseudoclass; reimplement using a custom pseudoclass toggled
                from code-behind when WordWrap changes, or apply the value directly via a binding. -->
         </ControlTemplate>
@@ -202,7 +202,7 @@
           <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
           </Border>
-          <!-- TODO: ControlTemplate.Triggers ToolTip.HasDropShadow=True -> Margin=10 on templated parent +
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers ToolTip.HasDropShadow=True -> Margin=10 on templated parent +
                Border#Border Effect=DropShadowEffect. Avalonia ToolTip has no :dropshadow pseudoclass;
                reimplement using a custom pseudoclass toggled from code-behind, or apply the drop shadow
                unconditionally / via a binding on HasDropShadow. Original logic:

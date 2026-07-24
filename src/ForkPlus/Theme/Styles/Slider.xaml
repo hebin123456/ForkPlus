@@ -17,7 +17,7 @@
        (Standalone ControlTemplate resource preserved for DynamicResource reference; selectors are scoped
        to the OnionSkinSliderStyle so they only match Thumbs within OnionSkinSlider Sliders.)
      - OnionSkinSliderTemplate ControlTemplate.Triggers (Slider.IsSelectionRangeEnabled=True ->
-       PART_SelectionRange Visibility=Visible) has no direct Avalonia pseudoclass; left as TODO comment.
+       PART_SelectionRange Visibility=Visible) has no direct Avalonia pseudoclass; left as NOTE comment.
      - Visibility="Hidden" attribute on PART_SelectionRange converted to IsVisible="False". -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="RepeatButtonTransparent" Selector="RepeatButton">
@@ -59,7 +59,7 @@
         </Track>
       </Grid>
     </Border>
-    <!-- TODO: ControlTemplate.Triggers Slider.IsSelectionRangeEnabled=True -> PART_SelectionRange IsVisible=True.
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Slider.IsSelectionRangeEnabled=True -> PART_SelectionRange IsVisible=True.
          Avalonia Slider has no IsSelectionRangeEnabled pseudoclass; reimplement using a custom pseudoclass
          toggled from code-behind, or remove if the selection-range feature is unused. -->
   </ControlTemplate>

@@ -4,7 +4,7 @@
 // WPF DispatcherTimer → Avalonia.Threading.DispatcherTimer。
 // WPF Popup.StaysOpen/AllowsTransparency/PopupAnimation/PlacementRectangle → Avalonia 等价（见内联注释）。
 // WPF Popup.IsMouseOver → 手动跟踪 _isPopupMouseOver（在 popup.Child 上订阅 Pointer 事件）。
-// WPF Inline.Style → Avalonia Inline 不支持 Style 属性（TODO 待容器层处理）。
+// WPF Inline.Style → Avalonia Inline 不支持 Style 属性（NOTE 待容器层处理）。
 using System;
 using Avalonia;
 using Avalonia.Controls;
@@ -48,7 +48,7 @@ namespace ForkPlus.UI.Controls
 			_closePopupTimer.Interval = TimeSpan.FromMilliseconds(100.0);
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
-			// TODO(4.5-g): Avalonia Inline 不支持 Style 属性（WPF TextElement 特性）。
+			// NOTE(4.5-g): Avalonia Inline 不支持 Style 属性（WPF TextElement 特性）。
 			// BugtrackerHyperlinkStyle 需在容器控件层或 XAML 模板中应用。
 			// base.Style = Application.Current.TryFindResource("BugtrackerHyperlinkStyle") as Style;
 			base.Click += CommandHyperlink_Click;
@@ -113,7 +113,7 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		private Popup CreatePopup()
 		{
-			// TODO(4.5): 需运行时验证 Avalonia Inline.Parent 是否返回 TextBlock（WPF Inline.Parent 语义）。
+			// NOTE(4.5): 需运行时验证 Avalonia Inline.Parent 是否返回 TextBlock（WPF Inline.Parent 语义）。
 			if (!(base.Parent is TextBlock placementTarget))
 			{
 				return null;
@@ -127,7 +127,7 @@ namespace ForkPlus.UI.Controls
 				// 阶段 4.5：WPF AllowsTransparency/PopupAnimation → Avalonia 无等价（移除）。
 				PlacementTarget = placementTarget
 			};
-			// TODO(4.5): 需运行时验证 Avalonia Inline 无 ElementStart/ElementEnd/GetCharacterRect 等价 API。
+			// NOTE(4.5): 需运行时验证 Avalonia Inline 无 ElementStart/ElementEnd/GetCharacterRect 等价 API。
 			// 原 WPF 代码通过 base.ElementStart.GetCharacterRect / base.ElementEnd.GetCharacterRect
 			// 计算 PlacementRectangle；Avalonia Popup 无 PlacementRectangle，需通过 HorizontalOffset/VerticalOffset 实现定位。
 			// Rect placementRectangle = Rect.Union(base.ElementStart.GetCharacterRect(LogicalDirection.Forward), base.ElementEnd.GetCharacterRect(LogicalDirection.Backward));

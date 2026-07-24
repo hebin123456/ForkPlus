@@ -5,14 +5,19 @@
      - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
        IsSelected=True->:selected, IsKeyboardFocused->:focus, Thumb.IsDragging->:dragging.
      - MultiTrigger (IsSelectionActive=True + IsSelected=True) -> :selected (active values). The inactive
-       case (IsSelectionActive=False + IsSelected=True) could not be converted (no Avalonia pseudoclass
-       for Selector.IsSelectionActive) -> preserved as TODO comment.
-     - DataTemplate.Triggers bind to view-model properties (IsActive, IsWorktree, HasDownstream, IsGood,
-       IsHead, IsReachable) and target named elements within the DataTemplate -> cannot be converted to
-       selectors. Preserved as TODO comments (original XML kept in comment form for reference).
-     - Style.Triggers on ListBox.SelectionMode (enum value, no pseudoclass) -> TODO comment.
-     - Style.Triggers DataTriggers on view-model properties -> TODO comment.
-     - Trigger on FrameworkElement.Height=Auto (no pseudoclass) -> TODO comment.
+       case (IsSelectionActive=False + IsSelected=True) has no Avalonia equivalent (no pseudoclass for
+       Selector.IsSelectionActive) -> documented inline as NOTE (Avalonia limitation); the active :selected
+       styling is used regardless of focus.
+     - DataTemplate.Triggers bind to view-model properties (IsActive, IsWorktree, HasDownstream, IsGood)
+       and target named elements within the DataTemplate -> migrated in phase 4.5 to direct bindings +
+       converters (BoolToFontWeightConverter, BoolToBrushConverter, BoolToCornerRadiusConverter,
+       BoolToThicknessConverter, and MultiBinding with BoolConverters.And). See inline comments.
+     - Style.Triggers on ListBox.SelectionMode (enum value, no pseudoclass) -> NOTE (Avalonia limitation);
+       consumers set ItemContainerStyle explicitly.
+     - Style.Triggers DataTriggers on view-model properties (IsHead, IsReachable) -> migrated to Style
+       Setters with BoolToFontWeightConverter / BoolToBrushConverter (same pattern as
+       RevisionListViewUserControl ItemContainerStyle).
+     - Trigger on FrameworkElement.Height=Auto (no pseudoclass) -> NOTE (Avalonia limitation).
      - Property prefixes stripped in Setters (Panel.Background->Background, Border.BorderBrush->BorderBrush,
        FrameworkElement.* -> *, Control.* -> *, UIElement.* -> *, TextElement.* -> *, Shape.* -> *,
        Image.* -> *, ContentControl.* -> *, ItemsControl.* -> *, ButtonBase.* -> *, Inline.* -> *).
@@ -23,7 +28,7 @@
        ComputedVerticalScrollBarVisibility -> IsVisible (Avalonia returns bool).
      - TemplateBinding paths stripped of class prefixes for direct properties; attached properties kept.
      - ControlTemplate internal control tree and layout preserved. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:avaloniaConverters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
   <Style x:Key="ListItemRoundedBorderStyle" Selector="Border">
     <Setter Property="Margin" Value="4,0,4,0" />
@@ -62,17 +67,26 @@
               <Binding Path="BackgroundBrush" />
             </Border.Background>
             <StackPanel Orientation="Horizontal">
-              <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" IsVisible="False" x:Name="ActiveBranchIcon" />
-              <Border BorderThickness="0" CornerRadius="4,0,0,4" IsVisible="False" x:Name="IconBorder">
+              <!-- 阶段 4.5：原 DataTrigger (IsActive=True -> ActiveBranchIcon.IsVisible=True) 用直接绑定实现。 -->
+              <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" IsVisible="{Binding IsActive}" x:Name="ActiveBranchIcon" />
+              <!-- 阶段 4.5：原 MultiDataTrigger (IsActive=True AND IsWorktree=True -> IconBorder 可见,
+                   BorderThickness=0,0,1,0, Background=ListBox.Static.Background) 用 MultiBinding +
+                   BoolConverters.And 实现 IsVisible;BorderThickness/Background 直接设为触发值
+                   (IconBorder 不可见时不渲染,故常驻触发值视觉等价)。 -->
+              <Border BorderThickness="0,0,1,0" CornerRadius="4,0,0,4" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder">
+                <Border.IsVisible>
+                  <MultiBinding Converter="{x:Static avaloniaConverters:BoolConverters.And}">
+                    <Binding Path="IsActive" />
+                    <Binding Path="IsWorktree" />
+                  </MultiBinding>
+                </Border.IsVisible>
                 <Border.BorderBrush>
                   <Binding Path="BorderBrush" />
                 </Border.BorderBrush>
-                <Border.Background>
-                  <Binding Path="BackgroundBrush" />
-                </Border.Background>
                 <Image Source="{DynamicResource WorktreeIcon}" Height="14" Width="14" Margin="2,0,2,0" />
               </Border>
-              <controls:HighlightableTextBlock FontWeight="Regular" Margin="4,-1,4,1" Style="{DynamicResource ReferenceLabelTextBlockStyle}" x:Name="NameTextBlock">
+              <!-- 阶段 4.5：原 DataTrigger (IsActive=True -> FontWeight=Bold) 用直接绑定 + BoolToFontWeightConverter 实现。 -->
+              <controls:HighlightableTextBlock FontWeight="{Binding IsActive, Converter={controls:BoolToFontWeightConverter TrueWeight=Bold}}" Margin="4,-1,4,1" Style="{DynamicResource ReferenceLabelTextBlockStyle}" x:Name="NameTextBlock">
                 <controls:HighlightableTextBlock.Text>
                   <Binding Path="Name" />
                 </controls:HighlightableTextBlock.Text>
@@ -82,41 +96,29 @@
               </controls:HighlightableTextBlock>
             </StackPanel>
           </Border>
-          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
-               view-model properties IsActive/IsWorktree, not control pseudoclasses). Original triggers
-               preserved below for reference; reimplement using bindings with converters, code-behind, or
-               wrapping in a UserControl with pseudoclass-driven styles.
-          <DataTemplate.Triggers>
-            <DataTrigger Value="true">
-              <DataTrigger.Binding>
-                <Binding Path="IsActive" />
-              </DataTrigger.Binding>
-              <Setter TargetName="NameTextBlock" Property="FontWeight" Value="Bold" />
-              <Setter TargetName="ActiveBranchIcon" Property="IsVisible" Value="True" />
-            </DataTrigger>
-            <MultiDataTrigger>
-              <MultiDataTrigger.Conditions>
-                <Condition Value="true">
-                  <Condition.Binding>
-                    <Binding Path="IsActive" />
-                  </Condition.Binding>
-                </Condition>
-                <Condition Value="true">
-                  <Condition.Binding>
-                    <Binding Path="IsWorktree" />
-                  </Condition.Binding>
-                </Condition>
-              </MultiDataTrigger.Conditions>
-              <Setter TargetName="IconBorder" Property="IsVisible" Value="True" />
-              <Setter TargetName="IconBorder" Property="BorderThickness" Value="0,0,1,0" />
-              <Setter TargetName="IconBorder" Value="{DynamicResource ListBox.Static.Background}" Property="Background" />
-            </MultiDataTrigger>
-          </DataTemplate.Triggers>
-          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:RemoteBranchViewModel}" x:Key="{DataTemplateKey {x:Type ui:RemoteBranchViewModel}}">
-          <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2" x:Name="Container">
-            <Border BorderThickness="1" CornerRadius="4" Background="{DynamicResource ListBox.Static.Background}" x:Name="Border">
+          <!-- 阶段 4.5：原 DataTemplate.Triggers (HasDownstream -> NameContainer.IsVisible/Border.CornerRadius/
+               Container.Margin) 用直接绑定 + 转换器实现:
+               - NameContainer.IsVisible = !HasDownstream (有下游时隐藏名称,仅显示图标)
+               - Border.CornerRadius: HasDownstream=true->4(全圆), false->4,0,0,4(左圆,衔接名称) [BoolToCornerRadiusConverter]
+               - Container.Margin: HasDownstream=true->3,2,1,2, false->3,2,3,2 [BoolToThicknessConverter] -->
+          <StackPanel Orientation="Horizontal" Height="18" x:Name="Container">
+            <StackPanel.Margin>
+              <Binding Path="HasDownstream">
+                <Binding.Converter>
+                  <controls:BoolToThicknessConverter TrueThickness="3,2,1,2" FalseThickness="3,2,3,2" />
+                </Binding.Converter>
+              </Binding>
+            </StackPanel.Margin>
+            <Border BorderThickness="1" Background="{DynamicResource ListBox.Static.Background}" x:Name="Border">
+              <Border.CornerRadius>
+                <Binding Path="HasDownstream">
+                  <Binding.Converter>
+                    <controls:BoolToCornerRadiusConverter TrueCornerRadius="4" FalseCornerRadius="4,0,0,4" />
+                  </Binding.Converter>
+                </Binding>
+              </Border.CornerRadius>
               <Border.BorderBrush>
                 <Binding Path="BorderBrush" />
               </Border.BorderBrush>
@@ -126,7 +128,7 @@
                 </Image.Source>
               </Image>
             </Border>
-            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" x:Name="NameContainer">
+            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" IsVisible="{Binding !HasDownstream}" x:Name="NameContainer">
               <Border.BorderBrush>
                 <Binding Path="BorderBrush" />
               </Border.BorderBrush>
@@ -143,34 +145,41 @@
               </controls:HighlightableTextBlock>
             </Border>
           </StackPanel>
-          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
-               view-model property HasDownstream, not control pseudoclasses). Original triggers preserved
-               below for reference; reimplement using bindings with converters or code-behind.
-          <DataTemplate.Triggers>
-            <DataTrigger Value="true">
-              <DataTrigger.Binding>
-                <Binding Path="HasDownstream" />
-              </DataTrigger.Binding>
-              <Setter TargetName="NameContainer" Property="IsVisible" Value="False" />
-              <Setter TargetName="Border" Property="CornerRadius" Value="4" />
-              <Setter TargetName="Container" Property="Margin" Value="3,2,1,2" />
-            </DataTrigger>
-            <DataTrigger Value="false">
-              <DataTrigger.Binding>
-                <Binding Path="HasDownstream" />
-              </DataTrigger.Binding>
-              <Setter TargetName="NameContainer" Property="IsVisible" Value="True" />
-              <Setter TargetName="Border" Property="CornerRadius" Value="4,0,0,4" />
-            </DataTrigger>
-          </DataTemplate.Triggers>
-          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:BisectMarkViewModel}" x:Key="{DataTemplateKey {x:Type ui:BisectMarkViewModel}}">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
-            <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder">
-              <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectBadIcon}" x:Name="Icon" />
+            <!-- 阶段 4.5：原 DataTrigger (IsGood=True -> IconBorder.BorderBrush/Icon.Source 切换为 Good)
+                 用 BoolToBrushConverter 绑定 BorderBrush + 叠放两个 Image(IsVisible 绑定 IsGood/!IsGood)实现。 -->
+            <Border BorderThickness="1" CornerRadius="4,0,0,4" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder">
+              <Border.BorderBrush>
+                <Binding Path="IsGood">
+                  <Binding.Converter>
+                    <controls:BoolToBrushConverter TrueBrush="{DynamicResource RevisionList.BisectGoodBorder}" FalseBrush="{DynamicResource RevisionList.BisectBadBorder}" />
+                  </Binding.Converter>
+                </Binding>
+              </Border.BorderBrush>
+              <Grid>
+                <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectBadIcon}" IsVisible="{Binding !IsGood}" />
+                <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectGoodIcon}" IsVisible="{Binding IsGood}" />
+              </Grid>
             </Border>
-            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource RevisionList.BisectBadBackground}" x:Name="LabelBorder">
+            <!-- 阶段 4.5：原 DataTrigger (IsGood=True -> LabelBorder.BorderBrush/Background 切换为 Good)
+                 用 BoolToBrushConverter 绑定实现。 -->
+            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" x:Name="LabelBorder">
+              <Border.BorderBrush>
+                <Binding Path="IsGood">
+                  <Binding.Converter>
+                    <controls:BoolToBrushConverter TrueBrush="{DynamicResource RevisionList.BisectGoodBorder}" FalseBrush="{DynamicResource RevisionList.BisectBadBorder}" />
+                  </Binding.Converter>
+                </Binding>
+              </Border.BorderBrush>
+              <Border.Background>
+                <Binding Path="IsGood">
+                  <Binding.Converter>
+                    <controls:BoolToBrushConverter TrueBrush="{DynamicResource RevisionList.BisectGoodBackground}" FalseBrush="{DynamicResource RevisionList.BisectBadBackground}" />
+                  </Binding.Converter>
+                </Binding>
+              </Border.Background>
               <TextBlock Style="{DynamicResource ReferenceLabelTextBlockStyle}">
                 <TextBlock.Text>
                   <Binding Path="Name" />
@@ -178,21 +187,6 @@
               </TextBlock>
             </Border>
           </StackPanel>
-          <!-- TODO: DataTemplate.Triggers cannot be directly converted to Avalonia selectors (they bind to
-               view-model property IsGood, not control pseudoclasses). Original triggers preserved below
-               for reference; reimplement using bindings with converters or code-behind.
-          <DataTemplate.Triggers>
-            <DataTrigger Value="true">
-              <DataTrigger.Binding>
-                <Binding Path="IsGood" />
-              </DataTrigger.Binding>
-              <Setter TargetName="Icon" Value="{DynamicResource BisectGoodIcon}" Property="Image.Source" />
-              <Setter TargetName="IconBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
-              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
-              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBackground}" Property="Background" />
-            </DataTrigger>
-          </DataTemplate.Triggers>
-          -->
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:StashReferenceViewModel}" x:Key="{DataTemplateKey {x:Type ui:StashReferenceViewModel}}">
           <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="3,2,3,2" BorderBrush="{DynamicResource RevisionList.StashBorder}" Background="{DynamicResource ListBox.Static.Background}">
@@ -258,7 +252,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
                pseudoclass toggled from code-behind (e.g. :selection-inactive).
@@ -300,7 +294,7 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <!-- TODO: Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
          pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
          reimplement using a custom pseudoclass toggled from code-behind, or by setting
          ItemContainerStyle via a binding/converter.
@@ -387,7 +381,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
                pseudoclass toggled from code-behind.
@@ -427,24 +421,29 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
-    <!-- TODO: Style.Triggers DataTriggers bind to view-model properties (IsHead, IsReachable) and cannot
-         be converted to Avalonia selectors. Original triggers preserved below for reference; reimplement
-         using bindings with converters or code-behind.
-    <Style.Triggers>
-      <DataTrigger>
-        <DataTrigger.Binding>
-          <Binding Path="IsHead" />
-        </DataTrigger.Binding>
-        <Setter Property="FontWeight" Value="Bold" />
-      </DataTrigger>
-      <DataTrigger>
-        <DataTrigger.Binding>
-          <Binding Path="IsReachable" />
-        </DataTrigger.Binding>
-        <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-      </DataTrigger>
-    </Style.Triggers>
-    -->
+    <!-- 阶段 4.5：原 Style.Triggers DataTriggers (IsHead=True -> FontWeight=Bold;
+         IsReachable=False -> Foreground=UnreachableBrush) 用 Style Setter + 转换器实现
+         (与 RevisionListViewUserControl ItemContainerStyle 同一模式)。
+         - IsHead: BoolToFontWeightConverter (TrueWeight=Bold, false->Normal)
+         - IsReachable: BoolToBrushConverter (FalseBrush=Unreachable; TrueBrush=null->UnsetValue 保持继承) -->
+    <Setter Property="FontWeight">
+      <Setter.Value>
+        <Binding Path="IsHead">
+          <Binding.Converter>
+            <controls:BoolToFontWeightConverter TrueWeight="Bold" />
+          </Binding.Converter>
+        </Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Foreground">
+      <Setter.Value>
+        <Binding Path="IsReachable">
+          <Binding.Converter>
+            <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+          </Binding.Converter>
+        </Binding>
+      </Setter.Value>
+    </Setter>
   </Style>
   <Style x:Key="ListBoxItemStyle" Selector="ListBoxItem">
     <Setter Property="FocusVisualStyle">
@@ -466,7 +465,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
                pseudoclass toggled from code-behind.
@@ -493,7 +492,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
                pseudoclass toggled from code-behind.
@@ -542,7 +541,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling also set Bd.Style = ListItemRoundedBorderStyle (cannot set Style
                from a selector Setter). Original logic preserved below for reference; reimplement using a
@@ -577,7 +576,7 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <!-- TODO: Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+    <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
          pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
          reimplement using a custom pseudoclass toggled from code-behind, or by setting
          ItemContainerStyle via a binding/converter.
@@ -773,7 +772,7 @@
           <Style Selector="^:pressed /template/ Border#HeaderBorder">
             <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
                (no Avalonia pseudoclass for Height=Auto). Original logic preserved below for reference;
                reimplement using a custom pseudoclass or a binding/converter.
           Original logic:

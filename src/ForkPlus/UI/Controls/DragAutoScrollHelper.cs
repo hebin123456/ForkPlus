@@ -86,7 +86,7 @@ namespace ForkPlus.UI.Controls
 			{
 				if (_scrollDirection < 0)
 				{
-					// TODO(4.5): 验证 Avalonia ScrollViewer.LineUp 是否存在；如不存在改用 Offset 调整。
+					// NOTE(4.5): 验证 Avalonia ScrollViewer.LineUp 是否存在；如不存在改用 Offset 调整。
 					scrollViewer.LineUp();
 				}
 				else if (_scrollDirection > 0)

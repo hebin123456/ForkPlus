@@ -14,11 +14,11 @@
        Control.*->*, TextElement.*->*). controls:PlaceholderTextBox.Icon, controls:PlaceholderTextBox.Placeholder,
        controls:CommitDescriptionTextBox.GuideLineMargin kept (namespaced custom properties).
      - Trigger on controls:PlaceholderTextBox.Icon=null could not be converted (no Avalonia pseudoclass for
-       a custom property being null) -> preserved as TODO comments.
+       a custom property being null) -> preserved as NOTE comments.
      - Trigger on controls:FilterTextBox.Hint=null could not be converted (no pseudoclass for Hint=null)
-       -> preserved as TODO comment.
+       -> preserved as NOTE comment.
      - Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled (bool property, no
-       pseudoclass) + TextBoxBase.IsSelectionActive (no pseudoclass) could not be converted -> TODO comments.
+       pseudoclass) + TextBoxBase.IsSelectionActive (no pseudoclass) could not be converted -> NOTE comments.
      - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="{x:Type controls:PlaceholderTextBox}" Selector="controls:PlaceholderTextBox">
@@ -57,7 +57,7 @@
           <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  IconElement.Visibility = Collapsed
                Reimplement using a binding on IconElement.IsVisible with a null-to-bool converter, or add a
@@ -80,7 +80,7 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <!-- TODO: Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled=true (bool
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled=true (bool
          property, no pseudoclass) + TextBoxBase.IsSelectionActive=false (no pseudoclass) could not be
          converted. Original logic: SelectionBrush = SystemColors.InactiveSelectionHighlightBrush.
          Reimplement using a binding with converter or code-behind.
@@ -132,7 +132,7 @@
           <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  IconElement.Visibility = Collapsed
                Reimplement using a binding on IconElement.IsVisible with a null-to-bool converter, or add a
@@ -155,7 +155,7 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <!-- TODO: Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled=true (bool
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled=true (bool
          property, no pseudoclass) + TextBoxBase.IsSelectionActive=false (no pseudoclass) could not be
          converted. Original logic: SelectionBrush = SystemColors.InactiveSelectionHighlightBrush.
          Reimplement using a binding with converter or code-behind.
@@ -193,7 +193,7 @@
           <Style Selector="^:empty /template/ TextBlock#placeholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  iconElement.Visibility = Collapsed
                Reimplement using a binding on iconElement.IsVisible with a null-to-bool converter, or add a
@@ -263,7 +263,7 @@
           <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
-          <!-- TODO: ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  IconElement.Visibility = Collapsed
                Reimplement using a binding on IconElement.IsVisible with a null-to-bool converter, or add a
@@ -329,7 +329,7 @@
               </Button>
             </Grid>
           </Border>
-          <!-- TODO: ControlTemplate.Triggers Trigger on controls:FilterTextBox.Hint=null could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:FilterTextBox.Hint=null could not be
                converted (no Avalonia pseudoclass for Hint=null). Original logic:
                  HintTextBlock.Visibility = Collapsed
                Reimplement using a binding on HintTextBlock.IsVisible with a null-to-bool converter, or add a

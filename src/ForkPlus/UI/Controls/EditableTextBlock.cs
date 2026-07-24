@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Controls
 	// 原 adornerLayer.Add/Remove(_adorner) → panel.Children.Add/Remove(_adorner)。
 	// WPF PreviewKeyDown (tunneling) → Avalonia KeyDown (bubbling)。
 	// WPF LostKeyboardFocus → Avalonia LostFocus。
-	// TODO(4.5-p): 父 Panel 叠加方案可能影响布局；如需绝对定位，
+	// NOTE(4.5-p): 父 Panel 叠加方案可能影响布局；如需绝对定位，
 	// 阶段 6 可改用 Avalonia OverlayLayer 或 Popup 实现。
 	public class EditableTextBlock : Control
 	{

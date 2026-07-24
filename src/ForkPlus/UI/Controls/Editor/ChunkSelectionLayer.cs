@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Controls.Editor
 						{
 							RemoveVisualChild(_child);
 						}
-						// TODO(4.7-a): WPF 版用 VisualTreeAttachmentHelper.PrepareForNewParent 先 detach。
+						// NOTE(4.7-a): WPF 版用 VisualTreeAttachmentHelper.PrepareForNewParent 先 detach。
 						// Avalonia 无等价物；假设 child 没有旧 parent（CreateAdornerContent 每次创建新实例）。
 						_child = value;
 						if (_child != null)

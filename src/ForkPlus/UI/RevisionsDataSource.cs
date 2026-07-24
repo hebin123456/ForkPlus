@@ -703,7 +703,7 @@ namespace ForkPlus.UI
 					}
 					else
 					{
-						// TODO(4.5): Remote.Icon（定义于 Remote.partial.cs，尚未迁移）仍返回 WPF System.Windows.Media.ImageSource；
+						// NOTE(4.5): Remote.Icon（定义于 Remote.partial.cs，尚未迁移）仍返回 WPF System.Windows.Media.ImageSource；
 						// RemoteBranchViewModel 构造函数亦尚未迁移为 IImage。待两者迁移后此赋值方可编译通过。
 						IImage remoteIcon = IReadOnlyListExtensions.FirstItem(remotes.Items, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
 						list.Add(new RemoteBranchViewModel(graphColumn, remoteBranch, remoteIcon));

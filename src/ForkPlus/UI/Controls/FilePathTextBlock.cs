@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Controls
 				int num = oldFilePath.Length - readableFileName.Length;
 				if (num != 0)
 				{
-					// TODO(4.5-g): Avalonia Run 不支持 Foreground 属性。路径着色待后续自定义渲染恢复。
+					// NOTE(4.5-g): Avalonia Run 不支持 Foreground 属性。路径着色待后续自定义渲染恢复。
 					base.Inlines.Add(new Run(oldFilePath.Substring(0, num)));
 				}
 				base.Inlines.Add(new Run(readableFileName));

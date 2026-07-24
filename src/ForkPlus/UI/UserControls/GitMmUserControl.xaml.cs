@@ -165,7 +165,7 @@ namespace ForkPlus.UI.UserControls
 			_workspace = new GitMmWorkspaceItem(workspacePath);
 			_workspace.PropertyChanged += Workspace_PropertyChanged;
 			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler(obj, "Event", h) → 直接事件订阅（参考 ClosableTabItem）。
-			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			// NOTE(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
 			NotificationCenter.Current.RepositoryNameChanged += RepositoryNameChanged;
 			NotificationCenter.Current.RepositoryColorChanged += RepositoryColorChanged;
 			SubreposTabControl.SelectionChanged += SubreposTabControl_SelectionChanged;

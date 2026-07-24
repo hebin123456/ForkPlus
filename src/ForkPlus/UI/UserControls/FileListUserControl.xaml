@@ -4,7 +4,7 @@
      - DataTemplate.Triggers 中 DataTrigger (ChangeTypeIcon=null -> Image.IsVisible=False)
        → Image.IsVisible 直接绑定 ChangeTypeIcon 并使用 NullToVisibilityConverter (返回 bool,
        value != null)。Avalonia DataTemplate 不支持 Triggers。
-     - TODO：GridView/GridViewColumn/GridViewColumnHeader 是 WPF ListView 视图模式，Avalonia 无直接对应，此处保留原样待后续迁移
+     - NOTE (Avalonia limitation)：GridView/GridViewColumn/GridViewColumnHeader 是 WPF ListView 视图模式，Avalonia 无直接对应，此处保留原样待后续迁移
      -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileListUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>

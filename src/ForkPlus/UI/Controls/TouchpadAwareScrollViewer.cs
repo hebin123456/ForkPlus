@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Controls
 	// → Avalonia ScrollViewer.LineLeft/LineRight/LineUp/LineDown/PageUp/PageDown。
 	// WPF Keyboard.Modifiers → Avalonia KeyModifiers（通过 PointerWheelEventArgs.KeyModifiers）。
 	// WPF ComputedHorizontalScrollBarVisibility → Avalonia ScrollViewer.HorizontalScrollBarVisibility（属性类型不同）。
-	// TODO(4.5-o): Avalonia ScrollViewer 无 ScrollInfo 公开属性；
+	// NOTE(4.5-o): Avalonia ScrollViewer 无 ScrollInfo 公开属性；
 	// 直接调用 ScrollViewer 自身的 LineLeft/LineRight/LineUp/LineDown 方法。
 	public class TouchpadAwareScrollViewer : ScrollViewer
 	{

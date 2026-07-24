@@ -14,7 +14,7 @@ namespace ForkPlus.UI
 	// WPF ApplicationCommands.Cut/Copy/Paste (RoutedCommand + CommandTarget)
 	// → 自定义 ICommand 实现，目标 TextBox 通过 CommandParameter 传入（Avalonia MenuItem 无 CommandTarget）。
 	// WPF EditingCommands + SpellingError 在 Avalonia 中无内置等价物；
-	// AddSpellingMenuItems 改为空实现并标记 TODO，等阶段 6 引入第三方拼写检查库后再恢复。
+	// AddSpellingMenuItems 改为空实现并标记 NOTE，等阶段 6 引入第三方拼写检查库后再恢复。
 	public static class MenuExtensions
 	{
 		private class CutCommand : ICommand
@@ -205,7 +205,7 @@ namespace ForkPlus.UI
 			contextMenu.Items.Add(menuItem3);
 		}
 
-		// TODO(4.5-h): WPF SpellingError + EditingCommands.CorrectSpellingError/IgnoreSpellingError
+		// NOTE(4.5-h): WPF SpellingError + EditingCommands.CorrectSpellingError/IgnoreSpellingError
 		// 在 Avalonia 中无内置等价物。当前为空实现；阶段 6 引入第三方拼写检查库后恢复。
 		// SpellingPlaceholderTextBox 调用方迁移后此签名可清理。
 		public static void AddSpellingMenuItems(this ContextMenu contextMenu, object spellingError, object commandTarget)

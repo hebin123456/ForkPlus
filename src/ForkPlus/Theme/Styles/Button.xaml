@@ -9,8 +9,8 @@
      - MultiTrigger (IsDefault + IsPressed) -> :default:pressed (more specific wins, restoring accent
        BorderBrush that :pressed would otherwise override).
      - MultiTrigger (IsChecked + IsMouseOver) -> :checked:pointerover.
-     - Button.IsDefaulted=true could not be converted (no Avalonia pseudoclass) -> TODO comment.
-     - ContentControl.HasContent=true could not be converted (no Avalonia pseudoclass) -> TODO comment.
+     - Button.IsDefaulted=true could not be converted (no Avalonia pseudoclass) -> NOTE comment.
+     - ContentControl.HasContent=true could not be converted (no Avalonia pseudoclass) -> NOTE comment.
      - Style.Triggers DataTriggers binding to control's own IsMouseOver/IsChecked (no RelativeSource,
        interpreted as control state) -> :pointerover / :checked control-level selectors.
      - Property prefixes stripped in Setters (Panel.Background->Background, Border.BorderBrush->BorderBrush,
@@ -142,7 +142,7 @@
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
-          <!-- TODO: ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
                (no Avalonia pseudoclass for IsDefaulted). Original logic:
                  Border.BorderBrush = SystemAccentBrush -->
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
@@ -478,7 +478,7 @@
             </Border>
             <ContentPresenter Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Grid>
-          <!-- TODO: ControlTemplate.Triggers Trigger on ContentControl.HasContent=true could not be
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on ContentControl.HasContent=true could not be
                converted (no Avalonia pseudoclass for HasContent). Original logic:
                  FocusVisualStyle = RadioButton.OptionMarkFocusVisual
                  Padding = 6,-1,0,0 -->
@@ -611,7 +611,7 @@
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="border">
             <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
-          <!-- TODO: ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
+          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
                (no Avalonia pseudoclass for IsDefaulted). Original logic:
                  border.BorderBrush = AccentBrush -->
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->

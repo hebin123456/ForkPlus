@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Controls
 	{
 		public ReferenceTextBox()
 		{
-			// TODO(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理。
+			// NOTE(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理。
 			// DataObject.AddPastingHandler(this, OnPaste);
 		}
 
@@ -34,7 +34,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理。
+		// NOTE(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理。
 		// 以下 OnPaste 逻辑保留以便后续实现粘贴过滤时参考（DataObjectPastingEventArgs 为 WPF 类型，Avalonia 无等价）。
 		// private void OnPaste(object sender, DataObjectPastingEventArgs e)
 		// {

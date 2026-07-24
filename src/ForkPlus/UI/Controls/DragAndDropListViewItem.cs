@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Controls
 			_isPointerCaptured = false;
 			if (_wasSelected)
 			{
-				// TODO(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
+				// NOTE(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
 				// Avalonia OnPointerPressed(PointerPressedEventArgs) 与 OnPointerReleased(PointerReleasedEventArgs) 参数类型不同，
 				// 无法从 OnPointerReleased 直接调用 base.OnPointerPressed。阶段 6 需重新实现选中切换逻辑。
 				// base.OnPointerPressed(e);
@@ -88,7 +88,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			// TODO(4.5): 验证 Avalonia ContainerFromItem。
+			// NOTE(4.5): 验证 Avalonia ContainerFromItem。
 			ListBoxItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ContainerFromItem(x) as ListBoxItem);
 			ParentListView?.ItemDrag?.Invoke(this, EventArgs.Empty);
 			if (AllowDrag)
@@ -97,7 +97,7 @@ namespace ForkPlus.UI.Controls
 				_adorner = new DragAndDropListViewAdorner(this, listBoxItems, e.GetPosition(this));
 				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
 				_adorner.AttachTo(ParentListView);
-				// TODO(4.5): WPF DragDrop.DoDragDrop(this, array, ...) — array 非 IDataObject。
+				// NOTE(4.5): WPF DragDrop.DoDragDrop(this, array, ...) — array 非 IDataObject。
 				// Avalonia DataObject 无 (object) 构造函数；参考 ClosableTabItem 直接传 object（框架内部包装）。
 				_ = DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
 				_adorner.DetachFrom(ParentListView);
@@ -105,7 +105,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
+		// NOTE(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
 
 		private static bool ExceedDragDistance(Vector diff)
 		{
@@ -128,7 +128,7 @@ namespace ForkPlus.UI.Controls
 			{
 				item = decoratedRevision2;
 			}
-			// TODO(4.5): 验证 Avalonia ContainerFromItem。
+			// NOTE(4.5): 验证 Avalonia ContainerFromItem。
 			if (ParentListView.ContainerFromItem(item) is ListBoxItem targetListViewItem)
 			{
 				ClearDropAdorner();

@@ -132,7 +132,7 @@
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>
-        <!-- TODO: Avalonia 迁移 - 已移除原 ListBox.ItemContainerStyle（含 ListBoxItem 自定义 ControlTemplate：无边框、无焦点样式 Focusable=False、FocusVisualStyle=null、透明背景 Item.Static.Background）。需用 ItemContainerTheme/Styles 重写 -->
+        <!-- NOTE (Avalonia limitation): Avalonia 迁移 - 已移除原 ListBox.ItemContainerStyle（含 ListBoxItem 自定义 ControlTemplate：无边框、无焦点样式 Focusable=False、FocusVisualStyle=null、透明背景 Item.Static.Background）。需在后续迁移中用 ItemContainerTheme/Styles 重写该自定义 ListBoxItem ControlTemplate。 -->
         <ListBox.ItemTemplate>
           <DataTemplate>
             <ContentControl>

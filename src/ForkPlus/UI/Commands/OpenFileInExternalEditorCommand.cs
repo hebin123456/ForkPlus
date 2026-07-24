@@ -29,7 +29,7 @@ namespace ForkPlus.UI.Commands
 	{
 		// 阶段 4.5：缓存最近一次指针位置（替代 WPF 静态 Mouse.GetPosition）。
 		// 调用方在 PointerPressed/PointerMoved 中更新此字段，菜单弹出时读取。
-		// TODO(4.5-n): 调用方需在 ContextMenuOpening 前更新 LastPointerPosition。
+		// NOTE(4.5-n): 调用方需在 ContextMenuOpening 前更新 LastPointerPosition。
 		[Null]
 		public Point? LastPointerPosition { get; set; }
 

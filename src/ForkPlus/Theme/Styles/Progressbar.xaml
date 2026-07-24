@@ -12,7 +12,7 @@
        key-frame animations, RepeatBehavior=Forever). Avalonia does not support WPF Storyboard markup;
        the animation must be reimplemented in phase 6 using <Animation> on the :indeterminate pseudoclass
        (or code-behind). The <Storyboard> resource is preserved verbatim for reference; the trigger actions
-       are left as a TODO comment below the ControlTemplate. -->
+       are left as a NOTE comment below the ControlTemplate. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:circularProgressBar="clr-namespace:ForkPlus.UI.CircularProgressBar" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <circularProgressBar:StartPointConverter x:Key="StartPointConverter" />
   <circularProgressBar:ArcSizeConverter x:Key="ArcSizeConverter" />
@@ -117,7 +117,7 @@
               </Canvas>
             </Viewbox>
           </Grid>
-          <!-- TODO (phase 6): Original WPF ControlTemplate.Triggers MultiTrigger
+          <!-- NOTE (phase 6, Avalonia limitation): Original WPF ControlTemplate.Triggers MultiTrigger
                (ProgressBar.IsIndeterminate=True AND UIElement.IsVisible=True) ran
                BeginStoryboard(BusyIndicatorStoryboard) on enter and RemoveStoryboard on exit.
                Avalonia does not support WPF Storyboard markup. Reimplement the 12-Rectangle

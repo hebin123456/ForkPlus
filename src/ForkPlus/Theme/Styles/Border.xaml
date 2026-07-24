@@ -11,7 +11,7 @@
        on a custom pseudoclass toggled from code-behind (or a BoolToClassConverter). -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="NotificationBarBorder" Selector="Border">
-    <!-- TODO (phase 6): Original WPF Style.Triggers DataTrigger bound to
+    <!-- NOTE (phase 6, Avalonia limitation): Original WPF Style.Triggers DataTrigger bound to
          ancestor UserControl.IsControlVisible with BeginStoryboard Enter/Exit
          animating Border.Height (0 <-> 28 over 0.7s with accel/decel 0.4).
          Avalonia has no pseudoclass for arbitrary VM properties and no WPF

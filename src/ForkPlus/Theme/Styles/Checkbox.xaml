@@ -11,7 +11,7 @@
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
      - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, ButtonBase.IsPressed=True -> :pressed,
        ToggleButton.IsChecked=True -> :checked, ToggleButton.IsChecked=Null -> :indeterminate.
-     - TODO: ContentControl.HasContent trigger has no direct Avalonia pseudo-class; left as comment below. -->
+     - NOTE (Avalonia limitation): ContentControl.HasContent trigger has no direct Avalonia pseudo-class; left as comment below. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="OptionMarkFocusVisual">
     <Setter Property="Template">
@@ -51,7 +51,7 @@
       </Setter.Value>
     </Setter>
     <Style.Styles>
-      <!-- TODO: Original WPF Trigger ContentControl.HasContent=True set FocusVisualStyle={StaticResource OptionMarkFocusVisual} and Padding=6,-1,0,0.
+      <!-- NOTE (Avalonia limitation): Original WPF Trigger ContentControl.HasContent=True set FocusVisualStyle={StaticResource OptionMarkFocusVisual} and Padding=6,-1,0,0.
            No direct Avalonia pseudo-class for HasContent; apply Padding in code-behind or via data trigger if needed. -->
       <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
         <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />

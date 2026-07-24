@@ -181,7 +181,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			{
 				// 阶段 4 里程碑 4.7-a：WPF Clipboard.SetData(DataFormats.Serializable/Text) →
 				// ServiceLocator.Clipboard.SetText（Avalonia 剪贴板仅支持文本；二进制数据以 hex 文本形式提供）。
-				// TODO(4.7-a): 如需保留二进制剪贴板格式，需扩展 IClipboardService 支持二进制数据。
+				// NOTE(4.7-a): 如需保留二进制剪贴板格式，需扩展 IClipboardService 支持二进制数据。
 				ServiceLocator.Clipboard.SetText(BitConverter.ToString(bytes).Replace("-", " "));
 			}
 			catch { }

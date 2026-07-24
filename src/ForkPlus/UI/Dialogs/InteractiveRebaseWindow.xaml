@@ -27,6 +27,12 @@
           </Grid>
         </Canvas>
       </DataTemplate>
+      <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中 ActionsComboBox 的 MultiDataTrigger
+           (IsMouseOver AND IsSelected -> Foreground=ForegroundBrush)。简化为祖先 ListBoxItem
+           选中+悬停时触发（:selected:pointerover 等价 WPF IsSelected AND IsMouseOver）。 -->
+      <Style Selector="ListBoxItem:selected:pointerover ComboBox#ActionsComboBox">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+      </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
   <Grid>
@@ -128,82 +134,32 @@
                         </DataTemplate>
                       </ComboBox.ItemTemplate>
                     </ComboBox>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                      <MultiDataTrigger>
-                        <MultiDataTrigger.Conditions>
-                          <Condition Value="True">
-                            <Condition.Binding>
-                              <Binding Path="IsMouseOver" />
-                            </Condition.Binding>
-                          </Condition>
-                          <Condition Value="True">
-                            <Condition.Binding>
-                              <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
-                            </Condition.Binding>
-                          </Condition>
-                        </MultiDataTrigger.Conditions>
-                        <Setter TargetName="ActionsComboBox" Value="{DynamicResource ForegroundBrush}" Property="Foreground" />
-                      </MultiDataTrigger>
-                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="40">
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <ContentControl Margin="4 0 0 0" Width="22">
-                      <ContentControl.Content>
-                        <Binding />
-                      </ContentControl.Content>
-                      <ContentControl.DataContext>
-                        <Binding />
-                      </ContentControl.DataContext>
-                      <ContentControl.Style>
-                        <Style TargetType="{x:Type ContentControl}">
-                          <Setter Property="ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
-<!-- TODO 4.5 (Avalonia): Style.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <Style.Triggers>
-                            <DataTrigger Value="None">
-                              <DataTrigger.Binding>
-                                <Binding Path="GraphType" />
-                              </DataTrigger.Binding>
-                              <Setter Property="ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
-                            </DataTrigger>
-                            <DataTrigger Value="Start">
-                              <DataTrigger.Binding>
-                                <Binding Path="GraphType" />
-                              </DataTrigger.Binding>
-                              <Setter Property="ContentTemplate" Value="{StaticResource StartDataTemplate}" />
-                            </DataTrigger>
-                            <DataTrigger Value="Middle">
-                              <DataTrigger.Binding>
-                                <Binding Path="GraphType" />
-                              </DataTrigger.Binding>
-                              <Setter Property="ContentTemplate" Value="{StaticResource MiddleDataTemplate}" />
-                            </DataTrigger>
-                            <DataTrigger Value="Through">
-                              <DataTrigger.Binding>
-                                <Binding Path="GraphType" />
-                              </DataTrigger.Binding>
-                              <Setter Property="ContentTemplate" Value="{StaticResource ThroughDataTemplate}" />
-                            </DataTrigger>
-                            <DataTrigger Value="Target">
-                              <DataTrigger.Binding>
-                                <Binding Path="GraphType" />
-                              </DataTrigger.Binding>
-                              <Setter Property="ContentTemplate" Value="{StaticResource TargetDataTemplate}" />
-                            </DataTrigger>
-                          </Style.Triggers> -->
-                        </Style>
-                      </ContentControl.Style>
-                    </ContentControl>
+                    <!-- 阶段 4.5：原 ContentControl.Style 的 Style.Triggers (GraphType 枚举 -> ContentTemplate)
+                         用 5 个堆叠 ContentControl + EnumEqualsConverter 切换 IsVisible 实现。
+                         每个 ContentControl 绑定对应的 DataTemplate，仅当 GraphType 匹配时可见。 -->
+                    <Grid Margin="4 0 0 0" Width="22">
+                      <ContentControl ContentTemplate="{StaticResource NoneDataTemplate}" IsVisible="{Binding GraphType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:GraphItemType.None}}">
+                        <ContentControl.Content><Binding /></ContentControl.Content>
+                      </ContentControl>
+                      <ContentControl ContentTemplate="{StaticResource StartDataTemplate}" IsVisible="{Binding GraphType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:GraphItemType.Start}}">
+                        <ContentControl.Content><Binding /></ContentControl.Content>
+                      </ContentControl>
+                      <ContentControl ContentTemplate="{StaticResource MiddleDataTemplate}" IsVisible="{Binding GraphType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:GraphItemType.Middle}}">
+                        <ContentControl.Content><Binding /></ContentControl.Content>
+                      </ContentControl>
+                      <ContentControl ContentTemplate="{StaticResource ThroughDataTemplate}" IsVisible="{Binding GraphType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:GraphItemType.Through}}">
+                        <ContentControl.Content><Binding /></ContentControl.Content>
+                      </ContentControl>
+                      <ContentControl ContentTemplate="{StaticResource TargetDataTemplate}" IsVisible="{Binding GraphType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:GraphItemType.Target}}">
+                        <ContentControl.Content><Binding /></ContentControl.Content>
+                      </ContentControl>
+                    </Grid>
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -226,26 +182,13 @@
                         <TextBlock.Foreground>
                           <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                         </TextBlock.Foreground>
+                        <!-- 阶段 4.5：原 DataTrigger (Action=Drop -> TextDecorations=Strikethrough) 用 EnumToTextDecorationsConverter
+                             绑定实现。IsSelected -> Foreground=ForegroundBrush.Light 简化忽略（Foreground 已绑定 Action）。 -->
+                        <TextBlock.TextDecorations>
+                          <Binding Path="Action"><Binding.Converter><controls:EnumToTextDecorationsConverter ConverterParameter="Drop" /></Binding.Converter></Binding>
+                        </TextBlock.TextDecorations>
                       </TextBlock>
                     </DockPanel>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                      <DataTrigger Value="True">
-                        <DataTrigger.Binding>
-                          <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
-                        </DataTrigger.Binding>
-                        <Setter TargetName="SubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                      </DataTrigger>
-                      <DataTrigger Value="Drop">
-                        <DataTrigger.Binding>
-                          <Binding Path="Action" />
-                        </DataTrigger.Binding>
-                        <Setter TargetName="SubjectTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
-                      </DataTrigger>
-                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -270,25 +213,10 @@
                       <TextBlock.Foreground>
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
+                      <TextBlock.TextDecorations>
+                        <Binding Path="Action"><Binding.Converter><controls:EnumToTextDecorationsConverter ConverterParameter="Drop" /></Binding.Converter></Binding>
+                      </TextBlock.TextDecorations>
                     </TextBlock>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                      <DataTrigger Value="True">
-                        <DataTrigger.Binding>
-                          <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                      </DataTrigger>
-                      <DataTrigger Value="Drop">
-                        <DataTrigger.Binding>
-                          <Binding Path="Action" />
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AuthorTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
-                      </DataTrigger>
-                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -302,25 +230,10 @@
                       <TextBlock.Foreground>
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
+                      <TextBlock.TextDecorations>
+                        <Binding Path="Action"><Binding.Converter><controls:EnumToTextDecorationsConverter ConverterParameter="Drop" /></Binding.Converter></Binding>
+                      </TextBlock.TextDecorations>
                     </TextBlock>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                      <DataTrigger Value="True">
-                        <DataTrigger.Binding>
-                          <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AbbreviatedShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                      </DataTrigger>
-                      <DataTrigger Value="Drop">
-                        <DataTrigger.Binding>
-                          <Binding Path="Action" />
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AbbreviatedShaTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
-                      </DataTrigger>
-                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
@@ -334,25 +247,10 @@
                       <TextBlock.Foreground>
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
                       </TextBlock.Foreground>
+                      <TextBlock.TextDecorations>
+                        <Binding Path="Action"><Binding.Converter><controls:EnumToTextDecorationsConverter ConverterParameter="Drop" /></Binding.Converter></Binding>
+                      </TextBlock.TextDecorations>
                     </TextBlock>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-                      <DataTrigger Value="True">
-                        <DataTrigger.Binding>
-                          <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                      </DataTrigger>
-                      <DataTrigger Value="Drop">
-                        <DataTrigger.Binding>
-                          <Binding Path="Action" />
-                        </DataTrigger.Binding>
-                        <Setter TargetName="AuthorDateTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
-                      </DataTrigger>
-                    </DataTemplate.Triggers> -->
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>

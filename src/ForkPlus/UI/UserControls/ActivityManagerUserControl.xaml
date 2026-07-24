@@ -2,7 +2,7 @@
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
      - 移除 WPF 特有 RenderOptions.ClearTypeHint
-     - TODO：DataTemplate.Triggers/DataTrigger/MultiDataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     - DataTemplate.Triggers/DataTrigger/MultiDataTrigger 已迁移为顶层 Style Selector + 堆叠控件 IsVisible 绑定
      -->
 <UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ActivityManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor">
   <UserControl.Styles>
@@ -72,7 +72,15 @@
                       <Binding Path="GitMmBadgeVisibility" />
                     </Border.Visibility>
                     <StackPanel Orientation="Horizontal">
-                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource ConsoleIcon}" x:Name="GitMmCategoryImage" />
+                      <!-- 阶段 4.5：原 5 个 DataTrigger (IsGitMmScanJob/StatusJob/SyncJob/UploadJob/StartJob=True
+                           -> GitMmCategoryImage.Source=对应图标) 用堆叠 Image + IsVisible 绑定实现。
+                           每张图绑定对应的 IsGitMmXxxJob 标志，互斥显示。原 x:Name=GitMmCategoryImage 保留在
+                           第一张以兼容 :selected 顶层 Style（虽然该 Style 仅设置 Foreground，对 Image 无影响）。 -->
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource SearchIcon}" IsVisible="{Binding IsGitMmScanJob}" x:Name="GitMmCategoryImage" />
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource RefreshIcon}" IsVisible="{Binding IsGitMmStatusJob}" />
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource PullIcon}" IsVisible="{Binding IsGitMmSyncJob}" />
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource PushIcon}" IsVisible="{Binding IsGitMmUploadJob}" />
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource BranchIcon}" IsVisible="{Binding IsGitMmStartJob}" />
                       <TextBlock FontSize="9" Foreground="White" Text="{Binding GitMmCategoryText}" />
                     </StackPanel>
                   </Border>
@@ -125,30 +133,6 @@
                 </ProgressBar>
               </Grid>
             </Border>
-<!-- TODO 4.5 (Avalonia): VM-bound DataTriggers below preserved verbatim - Avalonia does not support
-         DataTemplate.Triggers. IsSelected trigger above migrated to top-level Style Selector with
-         :selected pseudoclass. Remaining 5 DataTriggers bind to IsGitMmScanJob/IsGitMmStatusJob/
-         IsGitMmSyncJob/IsGitMmUploadJob/IsGitMmStartJob bool flags and set GitMmCategoryImage.Source
-         to the corresponding icon. Reimplement via either:
-           (a) a multi-value converter that returns an ImageSource based on the job-type flags, or
-           (b) replacing the single Image with 5 stacked Images each bound IsVisible to its flag, or
-           (c) adding a computed CategoryIcon property to the job view-model.
-         Original WPF trigger block preserved for reference.
-    <DataTrigger Binding="{Binding IsGitMmScanJob}" Value="True">
-      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource SearchIcon}" />
-    </DataTrigger>
-    <DataTrigger Binding="{Binding IsGitMmStatusJob}" Value="True">
-      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource RefreshIcon}" />
-    </DataTrigger>
-    <DataTrigger Binding="{Binding IsGitMmSyncJob}" Value="True">
-      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PullIcon}" />
-    </DataTrigger>
-    <DataTrigger Binding="{Binding IsGitMmUploadJob}" Value="True">
-      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PushIcon}" />
-    </DataTrigger>
-    <DataTrigger Binding="{Binding IsGitMmStartJob}" Value="True">
-      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource BranchIcon}" />
-    </DataTrigger> -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>

@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Controls
 			{
 				string text2 = text.Substring(range);
 				Run run = new Run(text2);
-				// TODO(4.5-g): Avalonia Run 不支持 Background 属性。搜索匹配高亮着色待后续自定义渲染恢复。
+				// NOTE(4.5-g): Avalonia Run 不支持 Background 属性。搜索匹配高亮着色待后续自定义渲染恢复。
 				if (issueIndex.HasValue)
 				{
 					if (range.Start == 0)
@@ -43,7 +43,7 @@ namespace ForkPlus.UI.Controls
 					Hyperlink hyperlink = new Hyperlink();
 					hyperlink.Inlines.Add(run);
 					hyperlink.NavigateUri = uri;
-					// TODO(4.5-g): Avalonia Inline 不支持 Style/ContextMenu/ToolTip 属性（WPF TextElement 特性）。
+					// NOTE(4.5-g): Avalonia Inline 不支持 Style/ContextMenu/ToolTip 属性（WPF TextElement 特性）。
 					// Bugtracker 链接的样式、右键菜单、提示需后续在容器控件层处理。
 					// 阶段 4.5：WPF RequestNavigate 事件 → Avalonia Click 事件。
 					hyperlink.Click += Hyperlink_Click;
@@ -107,7 +107,7 @@ namespace ForkPlus.UI.Controls
 				{
 					num3++;
 				}
-				// TODO(4.5-g): Avalonia Run 不支持 FontWeight 属性。模糊匹配粗体高亮待后续自定义渲染恢复。
+				// NOTE(4.5-g): Avalonia Run 不支持 FontWeight 属性。模糊匹配粗体高亮待后续自定义渲染恢复。
 				textBlock.Inlines.Add(new Run(text.Substring(num2, num3)));
 				num = num2 + num3;
 			}
@@ -131,7 +131,7 @@ namespace ForkPlus.UI.Controls
 			}
 			int length = highlightString.Length;
 			int num2 = 0;
-			// TODO(4.5-g): Avalonia Run 不支持 Background/Foreground 属性。搜索匹配着色待后续自定义渲染恢复。
+			// NOTE(4.5-g): Avalonia Run 不支持 Background/Foreground 属性。搜索匹配着色待后续自定义渲染恢复。
 			textBlock.Inlines!.Clear();
 			while (num != -1)
 			{

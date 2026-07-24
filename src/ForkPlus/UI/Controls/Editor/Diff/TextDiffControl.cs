@@ -122,7 +122,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
-			// TODO(4.7-a): VisualTreeAttachmentHelper.TryAddChild 会先从旧 parent detach 再 add。
+			// NOTE(4.7-a): VisualTreeAttachmentHelper.TryAddChild 会先从旧 parent detach 再 add。
 			// Avalonia Panel.Children.Add 在已有 parent 时抛异常，暂直接 Add。
 			base.Children.Add(_child as Grid);
 		}

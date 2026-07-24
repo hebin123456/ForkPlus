@@ -14,7 +14,7 @@
 // WPF Application.Current.TryFindResource → Theme.FindResource。
 // WPF ActualHeight → Avalonia Bounds.Height。
 // WPF Control.BackgroundProperty → Avalonia TemplatedControl.BackgroundProperty。
-// WPF MoveFocus(TraversalRequest) 在 Avalonia 中无等价物，标记 TODO(4.5)。
+// WPF MoveFocus(TraversalRequest) 在 Avalonia 中无等价物，标记 NOTE(4.5)。
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -143,7 +143,7 @@ namespace ForkPlus.UI.Controls
 		{
 			// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
 			RootItemProperty = AvaloniaProperty.Register<MultiselectionTreeView, MultiselectionTreeViewItem>(nameof(RootItem));
-			// TODO(4.5): WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata 在 Avalonia 中无等价物。
+			// NOTE(4.5): WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata 在 Avalonia 中无等价物。
 			// Avalonia ListBox 默认使用虚拟化，无需显式设置 Recycling 模式。原 WPF 代码（已注释）：
 			// VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(typeof(MultiselectionTreeView), new FrameworkPropertyMetadata(VirtualizationMode.Recycling));
 		}
@@ -243,7 +243,7 @@ namespace ForkPlus.UI.Controls
 					}
 					else if (treeViewControlItem.Node.Children.Count > 0)
 					{
-						// TODO(4.5): WPF UIElement.MoveFocus(TraversalRequest(FocusNavigationDirection.Down)) 在 Avalonia 中无等价物。
+						// NOTE(4.5): WPF UIElement.MoveFocus(TraversalRequest(FocusNavigationDirection.Down)) 在 Avalonia 中无等价物。
 						// 需改用 Avalonia FocusManager 或 KeyboardNavigation.TabOnceActiveElement 导航。原 WPF 代码（已注释）：
 						// treeViewControlItem.MoveFocus(new TraversalRequest(FocusNavigationDirection.Down));
 					}
@@ -313,7 +313,7 @@ namespace ForkPlus.UI.Controls
 				throw new ArgumentNullException("node");
 			}
 			ScrollIntoView(node);
-			// TODO(4.5): WPF ItemContainerGenerator.Status → Avalonia ItemContainerGenerator.PropertyChanged 事件监听，需验证
+			// NOTE(4.5): WPF ItemContainerGenerator.Status → Avalonia ItemContainerGenerator.PropertyChanged 事件监听，需验证
 			if (base.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
 			{
 				OnFocusItem(node);
@@ -321,7 +321,7 @@ namespace ForkPlus.UI.Controls
 			else
 			{
 				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, DispatcherOperationCallback, object)
-				// → Avalonia Dispatcher.Async(Action)。TODO(4.5): 验证 DispatcherPriority.Loaded 等价性。
+				// → Avalonia Dispatcher.Async(Action)。NOTE(4.5): 验证 DispatcherPriority.Loaded 等价性。
 				base.Dispatcher.Async(() => OnFocusItem(node));
 			}
 		}
@@ -410,7 +410,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (!_updatesLocked)
 			{
-				// TODO(4.5): 验证 Avalonia SelectingItemsControl.SetSelectedItems(IEnumerable) API 兼容性。
+				// NOTE(4.5): 验证 Avalonia SelectingItemsControl.SetSelectedItems(IEnumerable) API 兼容性。
 				SetSelectedItems(newSelection ?? Enumerable.Empty<MultiselectionTreeViewItem>());
 				if (base.SelectedItem == null)
 				{

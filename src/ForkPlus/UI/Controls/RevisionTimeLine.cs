@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Controls
 		{
 			RefreshBrushes();
 			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
-			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			// NOTE(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
 			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
@@ -229,7 +229,7 @@ namespace ForkPlus.UI.Controls
 			InvalidateVisual();
 		}
 
-		// TODO(4.5): WPF FormattedText → Avalonia FormattedText/TextLayout 需验证。
+		// NOTE(4.5): WPF FormattedText → Avalonia FormattedText/TextLayout 需验证。
 		private FormattedText CreateFormattedText(string text, TextAlignment alignment = TextAlignment.Center)
 		{
 			// 阶段 4.5：WPF FormattedText(..., pixelsPerDip) → Avalonia FormattedText（无 pixelsPerDip）。

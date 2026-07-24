@@ -1,5 +1,5 @@
 <dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.CheckoutAndSyncWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO: Separator 项需要用 DataTemplate Selector 实现（原 WPF DataTrigger+ControlTemplate for IsSeparator==true） -->
+  <!-- 阶段 4.5：Separator 项已迁移——CheckoutActionTypeComboBox.ItemTemplate 用堆叠 Grid + IsSeparator 直接绑定切换可见性（替代原 WPF DataTrigger+ControlTemplate for IsSeparator==true）。 -->
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -23,27 +23,29 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Action:" Margin="0,1,0,4" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <!-- TODO: ItemContainerStyle 已移除（原 CheckoutActionTypeComboBoxItemStyle 用于 Separator 项），需用 DataTemplate Selector 替代 -->
       <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,2,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" SelectionChanged="CheckoutActionTypeComboBox_SelectionChanged" x:Name="CheckoutActionTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
-            <DockPanel Width="420">
-              <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Margin="0,1,4,0" VerticalAlignment="Center">
-                <Ellipse.Fill>
-                  <Binding Path="ActionType"><Binding.Converter><dialogs:CheckoutActionTypeToColorConverter /></Binding.Converter></Binding>
-                </Ellipse.Fill>
-              </Ellipse>
-              <TextBlock DockPanel.Dock="Left" Width="70" Margin="0,1,0,0" VerticalAlignment="Center">
-                <TextBlock.Text>
-                  <Binding Path="Title" />
-                </TextBlock.Text>
-              </TextBlock>
-              <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
-                <TextBlock.Text>
-                  <Binding Path="Description" />
-                </TextBlock.Text>
-              </TextBlock>
-            </DockPanel>
+            <Grid>
+              <Separator IsVisible="{Binding IsSeparator}" Height="1" />
+              <DockPanel Width="420" IsVisible="{Binding !IsSeparator}">
+                <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Margin="0,1,4,0" VerticalAlignment="Center">
+                  <Ellipse.Fill>
+                    <Binding Path="ActionType"><Binding.Converter><dialogs:CheckoutActionTypeToColorConverter /></Binding.Converter></Binding>
+                  </Ellipse.Fill>
+                </Ellipse>
+                <TextBlock DockPanel.Dock="Left" Width="70" Margin="0,1,0,0" VerticalAlignment="Center">
+                  <TextBlock.Text>
+                    <Binding Path="Title" />
+                  </TextBlock.Text>
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
+                  <TextBlock.Text>
+                    <Binding Path="Description" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DockPanel>
+            </Grid>
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>

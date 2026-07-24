@@ -3,26 +3,24 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
 	/// <summary>
-	/// 阶段 4.5：替代 WPF DataTrigger (bool -> Brush) 的转换器。
-	/// TrueBrush/FalseBrush 分别指定 true/false 时返回的画刷；
-	/// 若 TrueBrush 为 null（默认场景，如 IsReachable=True 时保持继承 Foreground），返回 UnsetValue。
+	/// 阶段 4.5：替代 WPF DataTrigger (bool -> Thickness) 的转换器。
+	/// TrueThickness/FalseThickness 分别指定 true/false 时返回的 Thickness。
+	/// 用于 RemoteBranchViewModel DataTemplate 中 HasDownstream -> Container.Margin 的迁移。
 	/// </summary>
-	public class BoolToBrushConverter : MarkupExtension, IValueConverter
+	public class BoolToThicknessConverter : MarkupExtension, IValueConverter
 	{
-		public IBrush TrueBrush { get; set; }
+		public Thickness TrueThickness { get; set; }
 
-		public IBrush FalseBrush { get; set; }
+		public Thickness FalseThickness { get; set; }
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			bool flag = value is bool b && b;
-			IBrush result = flag ? TrueBrush : FalseBrush;
-			return result ?? AvaloniaProperty.UnsetValue;
+			return flag ? TrueThickness : FalseThickness;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
