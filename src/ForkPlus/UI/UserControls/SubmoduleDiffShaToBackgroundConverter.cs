@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
@@ -9,9 +10,10 @@ namespace ForkPlus.UI.UserControls
 {
 	public class SubmoduleDiffShaToBackgroundConverter : MarkupExtension, IMultiValueConverter
 	{
-		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		// 阶段 5：IMultiValueConverter.Convert 签名为 IList<object?>，不再使用 object[]。
+		public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
 		{
-			if (values.Length < 3)
+			if (values.Count < 3)
 			{
 				return Brushes.Transparent;
 			}

@@ -37,6 +37,15 @@ namespace ForkPlus.UI.Controls
 
 		public MultiselectionTreeView ParentTreeView { get; internal set; }
 
+		// 阶段 5：Avalonia 无 OnDrag* 虚方法，改用 DragDrop.AddHandler 订阅。
+		public TreeViewControlItem()
+		{
+			AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
+			AddHandler(DragDrop.DragOverEvent, OnDragOver);
+			AddHandler(DragDrop.DropEvent, OnDrop);
+			AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+		}
+
 		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
 		// WPF FrameworkElement.DataContextProperty → Avalonia Control.DataContextProperty。
 		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -144,23 +153,23 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// 阶段 4.5：ParentTreeView.HandleDrag* 已迁移为接受 Avalonia.Input.DragEventArgs，与此处 override 类型一致。
-		protected override void OnDragEnter(DragEventArgs e)
+		// 阶段 5：Avalonia 无 OnDrag* 虚方法，改用 DragDrop.AddHandler 订阅。ParentTreeView.HandleDrag* 接受 Avalonia.Input.DragEventArgs。
+		private void OnDragEnter(object sender, DragEventArgs e)
 		{
 			ParentTreeView.HandleDragEnter(this, e);
 		}
 
-		protected override void OnDragOver(DragEventArgs e)
+		private void OnDragOver(object sender, DragEventArgs e)
 		{
 			ParentTreeView.HandleDragOver(this, e);
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			ParentTreeView.HandleDrop(this, e);
 		}
 
-		protected override void OnDragLeave(DragEventArgs e)
+		private void OnDragLeave(object sender, DragEventArgs e)
 		{
 			ParentTreeView.HandleDragLeave(this, e);
 		}

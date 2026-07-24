@@ -9,7 +9,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
-using System.ComponentModel;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -29,15 +29,16 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowFooter = false;
 			base.ShowHeader = false;
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Closing 事件替代 OnClosing 虚方法
+			this.Closing += Window_Closing;
 			MeasurementsContainer.Hide();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
-		protected override void OnClosing(CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
 			_activeJob?.Monitor.Cancel();
 			_activeJob = null;
-			base.OnClosing(e);
 		}
 
 		private void CopyResultButton_Click(object sender, RoutedEventArgs e)

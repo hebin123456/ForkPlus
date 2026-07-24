@@ -2,6 +2,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using System.Windows.Input; // 阶段 5：Avalonia 使用标准 BCL 的 System.Windows.Input.ICommand（非 Avalonia.Input.ICommand），KeyBinding.Command 即此类型。
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Interactivity;
 

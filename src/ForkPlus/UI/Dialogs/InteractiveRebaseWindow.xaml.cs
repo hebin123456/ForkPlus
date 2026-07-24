@@ -21,7 +21,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Newtonsoft.Json;
 using ForkPlus.UI.Helpers;
-using System.ComponentModel;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -110,6 +110,10 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Closing/KeyDown 事件替代 OnClosing/OnPreviewKeyDown 虚方法
+			this.Closing += Window_Closing;
+			// 用 Tunnel 路由保留 Preview 语义：在子控件（ListBox）处理前拦截 Ctrl+方向键
+			AddHandler(InputElement.KeyDownEvent, Window_KeyDown, RoutingStrategies.Tunnel);
 			UpdateRefsCheckBox.IsChecked = ForkPlusSettings.Default.InteractiveRebase_UpdateRefs;
 			_backupCurrentStateCheckBox = new CheckBox
 			{
@@ -174,11 +178,10 @@ namespace ForkPlus.UI.Dialogs
 			_riIpcServer.Dispose();
 		}
 
-		protected override void OnClosing(CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
 			if (!_rebaseProcessRunning)
 			{
-				base.OnClosing(e);
 				return;
 			}
 			e.Cancel = true;
@@ -287,9 +290,8 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		private void Window_KeyDown(object sender, KeyEventArgs e)
 		{
-			base.OnPreviewKeyDown(e);
 			RevisionEntry[] array = null;
 			if (e.OriginalSource is ListBoxItem || e.OriginalSource is ListBox)
 			{

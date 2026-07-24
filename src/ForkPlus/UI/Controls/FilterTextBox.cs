@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -110,9 +111,9 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			if (base.Placeholder == "Filter")
 			{
 				base.Placeholder = PreferencesLocalization.Translate("Filter", ForkPlusSettings.Default.UiLanguage);

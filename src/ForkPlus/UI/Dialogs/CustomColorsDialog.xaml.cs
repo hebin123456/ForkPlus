@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives; // 阶段 5：RangeBaseValueChangedEventArgs（Slider.ValueChanged）
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -304,7 +305,7 @@ namespace ForkPlus.UI.Dialogs
 			v = Math.Max(0, Math.Min(1, 1 - y / 160));
 		}
 
-		private void RgbSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		private void RgbSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs<double> e) // 阶段 5：WPF RoutedPropertyChangedEventArgs<double> → Avalonia RangeBaseValueChangedEventArgs<double>（Slider.ValueChanged）
 		{
 			if (!IsLoaded || _suppressUpdates) return;
 			byte r = (byte)Math.Round(RSlider.Value);

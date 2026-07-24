@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -93,6 +94,9 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			FileReviewFileListUserControl.SelectionChanged += FileReviewFileListUserControl_SelectionChanged;
 			FileReviewGrid.SizeChanged += FileReviewGrid_SizeChanged;
+			// 阶段 5：Avalonia 无 OnSourceInitialized/OnLocationChanged 虚方法，改订阅 Opened/PositionChanged 事件。
+			this.Opened += Window_Opened;
+			this.PositionChanged += Window_PositionChanged;
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				base.Title = PreferencesLocalization.Current("AI Code Review");
@@ -241,9 +245,8 @@ namespace ForkPlus.UI.Dialogs
 			AiResponseScrollViewer.ScrollToEnd();
 		}
 
-		protected override void OnSourceInitialized(EventArgs e)
+		private void Window_Opened(object sender, EventArgs e)
 		{
-			base.OnSourceInitialized(e);
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
@@ -255,9 +258,8 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnLocationChanged(EventArgs e)
+		private void Window_PositionChanged(object sender, PixelPointEventArgs e)
 		{
-			base.OnLocationChanged(e);
 			if (_startUpFinished)
 			{
 				ForkPlusSettings.Default.AiResultWindowLocationState = this.GetWindowLocationState();

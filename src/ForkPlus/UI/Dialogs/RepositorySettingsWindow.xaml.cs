@@ -3,7 +3,6 @@ using System;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls.RepositorySettings;
-using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -19,6 +18,8 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryData = repositoryData;
 			base.ShowLogo = false;
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Closing 事件替代 OnClosing 虚方法
+			this.Closing += Window_Closing;
 			base.ShowCancelButton = false;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
 			base.SizeToContent = SizeToContent.WidthAndHeight;
@@ -42,9 +43,8 @@ namespace ForkPlus.UI.Dialogs
 			CustomCommandsUserControl.Save();
 		}
 
-		protected override void OnClosing(CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
-			base.OnClosing(e);
 			GeneralUserControl.Save();
 			IssueTrackerUserControl.Save();
 			CommitTemplateUserControl.Save();

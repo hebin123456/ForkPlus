@@ -1,5 +1,6 @@
 // 阶段 4.5：WPF Binding.DoNothing → Avalonia AvaloniaProperty.UnsetValue（信号绑定不更新目标，使用 fallback value）。
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Data;
@@ -9,7 +10,8 @@ namespace ForkPlus.UI.CircularProgressBar
 {
 	public class ArcEndPointConverter : IMultiValueConverter
 	{
-		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		// 阶段 5：Avalonia IMultiValueConverter.Convert 签名为 IList<object?>（非 object[]）。
+		public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
 		{
 			double num = values[0].ExtractDouble();
 			double num2 = values[1].ExtractDouble();
@@ -19,7 +21,7 @@ namespace ForkPlus.UI.CircularProgressBar
 			{
 				return AvaloniaProperty.UnsetValue;
 			}
-			if (values.Length == 5)
+			if (values.Count == 5) // 阶段 5：IList<object?> 用 Count（非 array.Length）。
 			{
 				double num5 = values[4].ExtractDouble();
 				if (!double.IsNaN(num5) && num5 > 0.0)

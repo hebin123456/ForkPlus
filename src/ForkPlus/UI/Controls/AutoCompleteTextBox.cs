@@ -38,6 +38,8 @@ namespace ForkPlus.UI.Controls
 			{
 				ClosePopup();
 			};
+			// 阶段 5：Avalonia TextBox 无 OnTextChanged 虚方法，改为订阅 TextChanged 事件。
+			this.TextChanged += OnTextChanged;
 		}
 
 		public void SetAutocompleteProvider(IAutoCompleteProvider autoCompleteProvider)
@@ -45,9 +47,10 @@ namespace ForkPlus.UI.Controls
 			_autoCompleteProvider = autoCompleteProvider;
 		}
 
-		public override void OnApplyTemplate()
+		// 阶段 5：Avalonia OnApplyTemplate 签名为 protected override OnApplyTemplate(TemplateAppliedEventArgs e)。
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			if (GetTemplateChild("Popup") is Popup popup)
 			{
 				_popup = popup;
@@ -55,9 +58,9 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnTextChanged(TextChangedEventArgs e)
+	// 阶段 5：Avalonia TextBox 无 OnTextChanged 虚方法，改为 TextChanged 事件处理器。
+	private void OnTextChanged(object sender, TextChangedEventArgs e)
 		{
-			base.OnTextChanged(e);
 			if (!DisableUpdates)
 			{
 				_refreshSuggestions.InvokeWithDelay(parameter: true);

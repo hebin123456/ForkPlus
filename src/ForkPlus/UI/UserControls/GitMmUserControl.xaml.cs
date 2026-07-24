@@ -47,7 +47,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Shapes;
+using Avalonia.Controls.Shapes; // 阶段 5：Avalonia 11.x Shape 类型位于 Avalonia.Controls.Shapes（非 Avalonia.Shapes）
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git;

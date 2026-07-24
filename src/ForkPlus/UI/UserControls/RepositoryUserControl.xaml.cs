@@ -151,6 +151,8 @@ namespace ForkPlus.UI.UserControls
 			// 订阅 VM 事件：ViewMode 变更 → 驱动子控件 UI 刷新；UndoRedo 状态变更 → 转发本类事件供工具栏订阅。
 			_viewModel.ViewModeChanged += OnViewModeChanged;
 			_viewModel.UndoRedoStateChanged += (s, e) => UndoRedoStateChanged?.Invoke(this, e);
+			// 阶段 5：Avalonia 无 OnDrop 虚方法，改用 DragDrop.AddHandler 订阅（参考 DragAutoScrollHelper）。
+			AddHandler(DragDrop.DropEvent, OnDrop);
 		}
 
 		/// <summary>ViewModeChanged 事件处理器：执行原 ViewMode setter 的 UI 副作用。</summary>
@@ -161,9 +163,10 @@ namespace ForkPlus.UI.UserControls
 			NotificationBar.Refresh();
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		// 阶段 5：Avalonia 无 OnDrop 虚方法，改用 DragDrop.AddHandler 订阅。
+		private void OnDrop(object sender, DragEventArgs e)
 		{
-			base.OnDrop(e);
+			// base.OnDrop(e) removed — Avalonia Control 无 OnDrop 虚方法。
 			// Avalonia 迁移：文件拖放 e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
 			string[] source = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
 			if (source != null)

@@ -26,20 +26,29 @@ namespace ForkPlus.UI.UserControls
 
 		public EventHandler<DropEventArgs> ItemsDrop;
 
-		protected override void OnDragOver(DragEventArgs e)
+		public FileListTreeView()
+		{
+			// 阶段 5：基类 MultiselectionTreeView 已将 OnDrag*/OnDrop 改为 AddHandler 私有处理器，
+			// 此处不能 override，需在子类自行 AddHandler 订阅路由事件。
+			AddHandler(DragDrop.DragOverEvent, OnDragOver);
+			AddHandler(DragDrop.DropEvent, OnDrop);
+		}
+
+		private void OnDragOver(object sender, DragEventArgs e)
 		{
 			// 阶段 4.5：WPF e.Effects → Avalonia e.DragEffects。
 			e.DragEffects = DragDropEffects.None;
 			// 阶段 4.5：WPF e.Data.GetData → Avalonia e.Data.Get。
 			if (e.Data.Get(DragItemsFormat) is MultiselectionTreeViewItem[])
 			{
-				base.OnDragOver(e);
+				// 阶段 5：base.OnDragOver(e) 已不可用（基类改为私有处理器）。
+				// 失去基类的 drop target 视觉反馈，阶段 6 需自行调用 HandleDragOver 或迁移 Adorner 逻辑。
 				e.Handled = true;
 				e.DragEffects = DragDropEffects.Move;
 			}
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			e.DragEffects = DragDropEffects.None;
 			if (e.Data.Get(DragItemsFormat) is MultiselectionTreeViewItem[] source)

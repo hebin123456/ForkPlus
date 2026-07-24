@@ -34,13 +34,14 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Save commit as patch");
 			base.SubmitButtonTitle = Translate("Save");
 			RevisionsTextBlock.Text = Translate(dst.HasValue ? "Revisions:" : "Revision:");
+			// 阶段 5：Avalonia 用 Initialized 事件替代 OnInitialized 虚方法
+			this.Initialized += Window_Initialized;
 		}
 
-		protected override async void OnInitialized(EventArgs e)
+		private async void Window_Initialized(object sender, EventArgs e)
 		{
 			try
 			{
-				base.OnInitialized(e);
 				SetStatus(ForkPlusDialogStatus.InProgress, "Loading...");
 				GitCommandResult<GetRevisionsInRangeGitCommand.Result> gitCommandResult = await Task.Run(() => new GetRevisionsInRangeGitCommand().Execute(_gitModule, _src, _dst));
 				if (!gitCommandResult.Succeeded)

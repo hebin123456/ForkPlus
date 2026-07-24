@@ -95,9 +95,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_textEditor = textEditor;
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		// 阶段 5: Avalonia 11.3 中 Control 的渲染方法为 public override void Render(DrawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			TextArea textArea = _textEditor.TextArea;
 			if (textArea.TextView.ActualWidth == 0.0)
 			{

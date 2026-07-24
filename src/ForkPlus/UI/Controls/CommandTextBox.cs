@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using ForkPlus.Settings;
@@ -61,9 +62,10 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public override void OnApplyTemplate()
+		// 阶段 5：Avalonia OnApplyTemplate 签名为 protected override OnApplyTemplate(TemplateAppliedEventArgs e)。
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			_labelsStackPanel = GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
 			_textBox = GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
 			Placeholder = Translate("Command");

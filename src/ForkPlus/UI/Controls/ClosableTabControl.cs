@@ -22,7 +22,13 @@ namespace ForkPlus.UI.Controls
 
 		public bool StopSelectionChangedEventWhileDropInProgress { get; set; }
 
-		public void AddTab(ClosableTabItem tab)
+	// 阶段 5：Avalonia SelectingItemsControl.OnSelectionChanged 非虚方法，改为订阅 SelectionChanged 事件。
+	public ClosableTabControl()
+	{
+		this.SelectionChanged += OnSelectionChanged;
+	}
+
+	public void AddTab(ClosableTabItem tab)
 		{
 			base.Items.Add(tab);
 		}
@@ -79,9 +85,10 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public override void OnApplyTemplate()
+		// 阶段 5：Avalonia OnApplyTemplate 签名为 protected override OnApplyTemplate(TemplateAppliedEventArgs e)。
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			if (GetTemplateChild("PART_Add") is Button button)
 			{
 				button.Click += AddButton_Clicked;
@@ -123,9 +130,9 @@ namespace ForkPlus.UI.Controls
 			return base.Items.IndexOf(item);
 		}
 
-		protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+		// 阶段 5：Avalonia SelectingItemsControl.OnSelectionChanged 非虚方法，改为 SelectionChanged 事件处理器。
+	private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			base.OnSelectionChanged(e);
 			if (!StopSelectionChangedEventWhileDropInProgress)
 			{
 				SelectedTabItemChanged?.Invoke(this, new EventArgs<ClosableTabItem>(base.SelectedItem as ClosableTabItem));

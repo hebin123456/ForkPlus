@@ -103,9 +103,9 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			TextArea textArea = _textEditor.TextArea;
 			if (_textEditor.ViewMode == MergeConflictPart.Local || _textEditor.ViewMode == MergeConflictPart.Remote)
 			{

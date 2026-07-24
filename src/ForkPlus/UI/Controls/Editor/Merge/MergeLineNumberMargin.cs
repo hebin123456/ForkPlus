@@ -112,9 +112,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			return streamGeometry;
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		// 阶段 5: 基类 ClearTypeLineNumberMargin 已改为 Render，此处同步
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
 				IBrush brush = _textBrush;
@@ -142,11 +143,11 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		}
 
 		// 阶段 4 里程碑 4.7-a：WPF Mouse* 事件 → Avalonia Pointer* 事件。
-		// OnMouseLeave → OnPointerLeave, OnMouseMove → OnPointerMoved,
+		// OnMouseLeave → OnPointerExited, OnMouseMove → OnPointerMoved,
 		// OnMouseLeftButtonDown → OnPointerPressed。e.GetPosition API 一致。
-		protected override void OnPointerLeave(PointerEventArgs e)
+		protected override void OnPointerExited(PointerEventArgs e)
 		{
-			base.OnPointerLeave(e);
+			base.OnPointerExited(e);
 			_mouseOverLine = -1;
 			InvalidateVisual();
 		}

@@ -114,6 +114,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_account = account;
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Activated 事件替代 OnActivated 虚方法
+			this.Activated += Window_Activated;
 			base.DialogTitle = Translate("Clone");
 			base.DialogDescription = Translate("Clone a remote repository into a local folder");
 			base.SubmitButtonTitle = Translate("Clone");
@@ -137,9 +139,8 @@ namespace ForkPlus.UI.Dialogs
 			};
 		}
 
-		protected override void OnActivated(EventArgs e)
+		private void Window_Activated(object sender, EventArgs e)
 		{
-			base.OnActivated(e);
 			if (_account == null)
 			{
 				TryParseUrlFromClipboard();

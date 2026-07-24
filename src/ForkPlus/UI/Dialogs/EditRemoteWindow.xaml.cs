@@ -123,12 +123,13 @@ namespace ForkPlus.UI.Dialogs
 			_remotes = gitCommandResult.Result?.Items ?? new Remote[0];
 			_viewModel = new EditRemoteWindowViewModel(_remotes, _remoteToEdit);
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Activated 事件替代 OnActivated 虚方法
+			this.Activated += Window_Activated;
 			InitializeRemoteWindow();
 		}
 
-		protected override void OnActivated(EventArgs e)
+		private void Window_Activated(object sender, EventArgs e)
 		{
-			base.OnActivated(e);
 			HideStatusControls();
 		}
 

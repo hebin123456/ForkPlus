@@ -66,7 +66,9 @@ namespace ForkPlus.UI.Controls
 	/// </summary>
 	public class EnumToTextDecorationsConverter : MarkupExtension, IValueConverter
 	{
-		public TextDecorations MatchDecorations { get; set; } = TextDecorations.Strikethrough;
+		// 阶段 5：Avalonia 11 中 TextDecorations 是静态类，不能作为属性类型。
+		// 改用实例类型 TextDecorationCollection（Avalonia.Media）。
+		public TextDecorationCollection MatchDecorations { get; set; } = TextDecorations.Strikethrough;
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

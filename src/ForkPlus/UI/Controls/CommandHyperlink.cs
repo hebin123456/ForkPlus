@@ -18,7 +18,11 @@ using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Controls
 {
-	public class CommandHyperlink : Hyperlink
+	// 阶段 5：Avalonia 11 无 WPF Hyperlink 类型，且 Inline 不继承 InputElement（无 Click/Pointer 事件，
+	// 见 Avalonia issue #10186，计划 13.0 解决）。改为继承 InlineUIContainer（仍是 Inline，保证调用方
+	// List<Inline>.Add(new CommandHyperlink(...)) 兼容、无需改动），内部托管 HyperlinkButton 承载
+	// 文本与 Click/PointerEntered/PointerExited 事件（Avalonia 官方推荐的内联可点击文本模式）。
+	public class CommandHyperlink : InlineUIContainer
 	{
 		private readonly RepositoryUserControl _repositoryUserControl;
 
@@ -36,6 +40,9 @@ namespace ForkPlus.UI.Controls
 
 		private readonly Action _action;
 
+		// 阶段 5：内联托管的 HyperlinkButton，承载文本与 Click/Pointer 事件。
+		private readonly HyperlinkButton _linkButton;
+
 		public CommandHyperlink(RepositoryUserControl repositoryUserControl, Sha sha, string text, Action action)
 			: base()
 		{
@@ -43,7 +50,9 @@ namespace ForkPlus.UI.Controls
 			_repositoryUserControl = repositoryUserControl;
 			_sha = sha;
 			// 阶段 4.5：WPF base(new Run(text)) → Avalonia base() + Inlines.Add(new Run(text))。
-			Inlines.Add(new Run(text));
+			// 阶段 5：InlineUIContainer 无 Inlines 集合，改为内嵌 HyperlinkButton 承载文本。
+			_linkButton = new HyperlinkButton { Content = text };
+			Child = _linkButton;
 			_showPopupTimer.Interval = TimeSpan.FromMilliseconds(500.0);
 			_closePopupTimer.Interval = TimeSpan.FromMilliseconds(100.0);
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
@@ -51,16 +60,16 @@ namespace ForkPlus.UI.Controls
 			// NOTE(4.5-g): Avalonia Inline 不支持 Style 属性（WPF TextElement 特性）。
 			// BugtrackerHyperlinkStyle 需在容器控件层或 XAML 模板中应用。
 			// base.Style = Application.Current.TryFindResource("BugtrackerHyperlinkStyle") as Style;
-			base.Click += CommandHyperlink_Click;
+			_linkButton.Click += CommandHyperlink_Click;
 			// 阶段 4.5：WPF MouseEnter → Avalonia PointerEntered。
-			base.PointerEntered += delegate(object s, PointerEventArgs e)
+			_linkButton.PointerEntered += delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
 				_closePopupTimer.Stop();
 				_showPopupTimer.Start();
 			};
 			// 阶段 4.5：WPF MouseLeave → Avalonia PointerExited。
-			base.PointerExited += delegate(object s, PointerEventArgs e)
+			_linkButton.PointerExited += delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
 				_showPopupTimer.Stop();
@@ -114,6 +123,7 @@ namespace ForkPlus.UI.Controls
 		private Popup CreatePopup()
 		{
 			// NOTE(4.5): 需运行时验证 Avalonia Inline.Parent 是否返回 TextBlock（WPF Inline.Parent 语义）。
+			// 阶段 5：InlineUIContainer.Parent 仍返回宿主 TextBlock（作为 Inline 被加入其 Inlines）。
 			if (!(base.Parent is TextBlock placementTarget))
 			{
 				return null;

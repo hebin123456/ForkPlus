@@ -104,6 +104,9 @@ namespace ForkPlus.UI.Dialogs
 			RemoteMergeEditor.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 			base.SizeChanged += Window_SizeChanged;
 			base.Activated += Window_Activated;
+			// 阶段 5：Avalonia 用 Opened/PositionChanged 事件替代 OnSourceInitialized/OnLocationChanged 虚方法
+			this.Opened += Window_Opened;
+			this.PositionChanged += Window_PositionChanged;
 			RemoteMergeEditor.MergeLineAdded += MergeEditor_MergeLineAdded;
 			RemoteMergeEditor.MergeLineRemoved += MergeEditor_MergeLineRemoved;
 			RemoteMergeEditor.MergeChunkAdded += MergeEditor_MergeChunkAdded;
@@ -190,15 +193,13 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnSourceInitialized(EventArgs e)
+		private void Window_Opened(object sender, EventArgs e)
 		{
-			base.OnSourceInitialized(e);
 			this.SetWindowLocationState(ForkPlusSettings.Default.SideBySideMergeWindowLocationState);
 		}
 
-		protected override void OnLocationChanged(EventArgs e)
+		private void Window_PositionChanged(object sender, PixelPointEventArgs e)
 		{
-			base.OnLocationChanged(e);
 			if (_startUpFinished)
 			{
 				ForkPlusSettings.Default.SideBySideMergeWindowLocationState = this.GetWindowLocationState();

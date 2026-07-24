@@ -97,9 +97,12 @@ namespace ForkPlus.UI
 			Toolbar.Initialize(this);
 			RefreshTitle();
 			// Avalonia: Window 没有 SizeChanged 事件，改用 Resized（尺寸）+ PositionChanged（位置）。
-			// 纯状态切换（最大化↔正常）由 OnWindowStateChanged 兜底保存。
-			base.Resized += (_, _) => SaveMainWindowLocationState();
-			base.PositionChanged += (_, _) => SaveMainWindowLocationState();
+		// 纯状态切换（最大化↔正常）由 Window_WindowStateChanged 兜底保存。
+		base.Resized += (_, _) => SaveMainWindowLocationState();
+		base.PositionChanged += (_, _) => SaveMainWindowLocationState();
+		// 阶段 5：Avalonia Window 无 OnWindowStateChanged/OnDrop 虚方法，改订阅事件。
+		this.WindowStateChanged += Window_WindowStateChanged;
+		AddHandler(DragDrop.DropEvent, OnDropHandler);
 			if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				desktop.MainWindow = this;
@@ -147,7 +150,7 @@ namespace ForkPlus.UI
 			_viewModel.PreventRefreshAfterChildDialogCloseWithReason(reason);
 		}
 
-		public override void OnApplyTemplate(TemplateAppliedEventArgs e)
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
 			if (IsDesignMode)
@@ -262,17 +265,15 @@ namespace ForkPlus.UI
 			}
 		}
 
-		protected override void OnWindowStateChanged(EventArgs e)
+		private void Window_WindowStateChanged(object sender, EventArgs e)
 		{
-			base.OnWindowStateChanged(e);
 			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 Resized/PositionChanged，
 			// 此处补充保存，避免状态变更丢失。
 			SaveMainWindowLocationState();
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDropHandler(object sender, DragEventArgs e)
 		{
-			base.OnDrop(e);
 			// NOTE (Avalonia 迁移): 文件拖放：e.Data.GetData(DataFormats.FileDrop) → e.Data.GetFiles()
 			string[] array = e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray();
 			if (array != null && array.Length != 0)

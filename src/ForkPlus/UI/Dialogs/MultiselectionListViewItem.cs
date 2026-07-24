@@ -14,6 +14,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
@@ -34,6 +35,15 @@ namespace ForkPlus.UI.Dialogs
 		public MultiselectionListView ParentListView { get; internal set; }
 
 		public DropPosition DropPosition { get; internal set; }
+
+		// 阶段 5：Avalonia 无 OnDrag*/OnDoubleTapped 虚方法，改用 DragDrop.AddHandler / DoubleTapped += 事件订阅。
+		public MultiselectionListViewItem()
+		{
+			DoubleTapped += OnDoubleTapped;
+			AddHandler(DragDrop.DragOverEvent, OnDragOver);
+			AddHandler(DragDrop.DropEvent, OnDrop);
+			AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+		}
 
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
@@ -65,10 +75,10 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnDoubleTapped(TappedEventArgs e)
+		// 阶段 5：Avalonia 无 OnDoubleTapped 虚方法，改用 DoubleTapped 事件订阅。
+		private void OnDoubleTapped(object sender, RoutedEventArgs e)
 		{
 			e.Handled = true;
-			base.OnDoubleTapped(e);
 		}
 
 		protected override void OnPointerMoved(PointerEventArgs e)
@@ -116,19 +126,20 @@ namespace ForkPlus.UI.Dialogs
 			return true;
 		}
 
-		protected override void OnDragOver(DragEventArgs e)
+		// 阶段 5：Avalonia 无 OnDrag* 虚方法，改用 DragDrop.AddHandler 订阅。
+		private void OnDragOver(object sender, DragEventArgs e)
 		{
 			ClearDropAdorner();
 			DropPosition = GetDropPositoion(e);
 			ShowDropAdorner(DropPosition);
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}
 
-		protected override void OnDragLeave(DragEventArgs e)
+		private void OnDragLeave(object sender, DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}

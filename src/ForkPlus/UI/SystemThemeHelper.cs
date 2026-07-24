@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Threading;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using Windows.Foundation;
 using Windows.UI;
@@ -32,7 +33,7 @@ namespace ForkPlus.UI
 		}
 
 		[Null]
-		public static IBrush GetSystemBrush(Theme.SystemColorType colorType)
+		public static IBrush GetSystemBrush(SystemColorType colorType)
 		{
 			SolidColorBrush solidColorBrush = new SolidColorBrush(GetColor(((UISettings)_uiSettings).GetColorValue(ToUIColorType(colorType))));
 			return solidColorBrush;
@@ -47,19 +48,19 @@ namespace ForkPlus.UI
 			});
 		}
 
-		private static UIColorType ToUIColorType(Theme.SystemColorType colorType)
+		private static UIColorType ToUIColorType(SystemColorType colorType)
 		{
 			switch (colorType)
 			{
-			case Theme.SystemColorType.Accent:
+			case SystemColorType.Accent:
 				return (UIColorType)5;
-			case Theme.SystemColorType.Accent1:
+			case SystemColorType.Accent1:
 			if (ForkPlusSettings.Default.Theme.IsDarkBase())
 			{
 				return (UIColorType)6;
 			}
 			return (UIColorType)4;
-		case Theme.SystemColorType.Accent2:
+		case SystemColorType.Accent2:
 			if (IsWindows11)
 			{
 				if (ForkPlusSettings.Default.Theme.IsDarkBase())

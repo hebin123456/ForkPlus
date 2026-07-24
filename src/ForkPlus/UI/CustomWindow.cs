@@ -101,6 +101,8 @@ namespace ForkPlus.UI
 				ExtendClientAreaTitleBarHeightHint = -1;
 			}
 			base.Loaded += Window_Loaded;
+			// 阶段 5：Avalonia Window 无 OnWindowStateChanged 虚方法，改订阅 WindowStateChanged 事件。
+			this.WindowStateChanged += Window_WindowStateChanged;
 		}
 
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -133,9 +135,8 @@ namespace ForkPlus.UI
 			AdjustButtonsVisibilityToWindowState();
 		}
 
-		protected override void OnWindowStateChanged(EventArgs e)
+		private void Window_WindowStateChanged(object sender, EventArgs e)
 		{
-			base.OnWindowStateChanged(e);
 			if (IsDesignMode)
 			{
 				return;

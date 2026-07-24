@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using ForkPlus.Git;
@@ -91,9 +92,10 @@ namespace ForkPlus.UI.Controls
 			(base.Parent as ClosableTabControl)?.RemoveTab(this);
 		}
 
-		public override void OnApplyTemplate()
+		// 阶段 5：Avalonia OnApplyTemplate 签名为 protected override OnApplyTemplate(TemplateAppliedEventArgs e)。
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			if (GetTemplateChild("PART_Close") is Button button)
 			{
 				button.Click += delegate

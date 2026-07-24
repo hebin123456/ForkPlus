@@ -110,7 +110,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs<double> e)
 		{
 			RefreshOverlayImageOpacity();
 		}

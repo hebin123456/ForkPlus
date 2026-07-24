@@ -46,7 +46,7 @@ namespace ForkPlus.UI
 			return dependencyObject as ItemContainer;
 		}
 
-		public static void FocusSelectedItem(this Selector control)
+		public static void FocusSelectedItem(this SelectingItemsControl control)
 		{
 			// 阶段 4.5：WPF ItemContainerGenerator.ContainerFromIndex → Avalonia ItemsControl.ContainerFromIndex。
 			if (control.SelectedIndex >= 0 && control.ContainerFromIndex(control.SelectedIndex) is IInputElement element)

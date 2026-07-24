@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Input;
 using System;
 using ForkPlus.Git;
@@ -20,6 +21,9 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowInTaskbar = true;
 			base.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Opened/PositionChanged 事件替代 OnSourceInitialized/OnLocationChanged 虚方法
+			this.Opened += Window_Opened;
+			this.PositionChanged += Window_PositionChanged;
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				base.Title = PreferencesLocalization.Current("Revision Details");
@@ -48,9 +52,8 @@ namespace ForkPlus.UI.Dialogs
 			base.Activated += Window_Activated;
 		}
 
-		protected override void OnSourceInitialized(EventArgs e)
+		private void Window_Opened(object sender, EventArgs e)
 		{
-			base.OnSourceInitialized(e);
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;
@@ -58,9 +61,8 @@ namespace ForkPlus.UI.Dialogs
 			this.SetWindowLocationState(ForkPlusSettings.Default.RevisionWindowLocationState);
 		}
 
-		protected override void OnLocationChanged(EventArgs e)
+		private void Window_PositionChanged(object sender, PixelPointEventArgs e)
 		{
-			base.OnLocationChanged(e);
 			if (_startUpFinished)
 			{
 				ForkPlusSettings.Default.RevisionWindowLocationState = this.GetWindowLocationState();

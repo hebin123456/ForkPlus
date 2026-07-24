@@ -16,6 +16,7 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Input.Platform; // 阶段 5：IClipboard 接口位于 Avalonia.Input.Platform（Avalonia.Base），非 Avalonia.Input。
 
 namespace ForkPlus.Services.Wpf
 {

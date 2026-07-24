@@ -18,7 +18,9 @@ namespace ForkPlus.UI
 	//   GlyphAdvances, GlyphOffsets, BaselineOrigin。
 	public class TextDrawer
 	{
-		private readonly GlyphTypeface _glyphTypeface;
+		// 阶段 5：Avalonia 11.3 仅有 IGlyphTypeface 接口，具体 GlyphTypeface 类在 12.0 才引入。
+		// Typeface.GlyphTypeface 返回 IGlyphTypeface；GlyphRun 构造函数接受 IGlyphTypeface。
+		private readonly IGlyphTypeface _glyphTypeface;
 
 		private readonly double _emSize;
 

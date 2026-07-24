@@ -12,7 +12,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Shapes;
+using Avalonia.Controls.Shapes; // 阶段 5：Avalonia 11.x Shape 类型位于 Avalonia.Controls.Shapes（非 Avalonia.Shapes）
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;

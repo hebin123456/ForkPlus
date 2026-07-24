@@ -39,6 +39,15 @@ namespace ForkPlus.UI.Controls
 
 		public bool AllowDrag { get; set; }
 
+		public DragAndDropListViewItem()
+		{
+			// 阶段 5：Avalonia 11 无 OnDragEnter/OnDragOver/OnDrop/OnDragLeave 虚方法，
+			// 改为在构造函数中通过 DragDrop.AddHandler 订阅路由事件。
+			DragDrop.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
+			DragDrop.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+			DragDrop.AddHandler(DragDrop.DropEvent, OnDrop);
+		}
+
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			_wasSelected = base.IsSelected;
@@ -117,7 +126,9 @@ namespace ForkPlus.UI.Controls
 			return true;
 		}
 
-		protected override void OnDragEnter(DragEventArgs e)
+		// 阶段 5：Avalonia 11 移除 OnDragEnter/OnDrop/OnDragLeave 虚方法，
+		// 改为 private 方法并通过 DragDrop.AddHandler 在构造函数中订阅（见构造函数）。
+		private void OnDragEnter(object sender, DragEventArgs e)
 		{
 			DecoratedRevision item = null;
 			if ((e.Source as ContentPresenter)?.Content is DecoratedRevision decoratedRevision)
@@ -137,12 +148,12 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}
 
-		protected override void OnDragLeave(DragEventArgs e)
+		private void OnDragLeave(object sender, DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}

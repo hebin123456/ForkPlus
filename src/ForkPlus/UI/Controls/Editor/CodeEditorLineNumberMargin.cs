@@ -64,9 +64,10 @@ namespace ForkPlus.UI.Controls.Editor
 			return new Size(CreateFormattedText(new string('9', _lineNumberLength)).Width + HorizontalMargin * 3.0, 0.0);
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		// 阶段 5: 基类 ClearTypeLineNumberMargin 已改为 Render，此处同步
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
 				drawingContext.DrawText(CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString()), new Point(base.RenderSize.Width - HorizontalMargin * 2.0, visualLine.VisualTop - base.TextView.VerticalOffset));

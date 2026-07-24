@@ -146,9 +146,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return new Size(CreateFormattedText(new string('9', _lineNumberLength)).Width + HorizontalMargin * 2.0 + DiffMarksColumnWidth, 0.0);
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		// 阶段 5: 基类 ClearTypeLineNumberMargin 已改为 Render，此处同步
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			if (_diffViewMode == DiffViewMode.Split)
 			{
 				foreach (AvaloniaEdit.Rendering.VisualLine visualLine in base.TextView.VisualLines)

@@ -1438,13 +1438,13 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>递归在视觉树里按名字查找指定类型的后代。</summary>
 		[Null]
-		private static T FindVisualDescendantByName<T>(IVisual root, string name) where T : StyledElement
+		private static T FindVisualDescendantByName<T>(Visual root, string name) where T : StyledElement // 阶段 5：IVisual 在 Avalonia 11 已移除，改用 Visual（Avalonia.VisualTree 扩展方法 GetVisualChildren 现以 Visual 为目标）
 		{
 			if (root == null)
 			{
 				return null;
 			}
-			foreach (IVisual child in root.GetVisualChildren())
+			foreach (Visual child in root.GetVisualChildren())
 			{
 				if (child is T typed && typed.Name == name)
 				{

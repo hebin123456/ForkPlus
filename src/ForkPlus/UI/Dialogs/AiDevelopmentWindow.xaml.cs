@@ -79,6 +79,8 @@ namespace ForkPlus.UI.Dialogs
 			InputTextBox.TextChanged += InputTextBox_TextChanged;
 			InputTextBox.KeyDown += InputTextBox_KeyDown;
 			Loaded += AiDevelopmentWindow_Loaded;
+			// 阶段 5：Avalonia 无 OnSourceInitialized 虚方法，改订阅 Opened 事件。
+			this.Opened += Window_Opened;
 			_statusTimer = new DispatcherTimer
 			{
 				Interval = TimeSpan.FromMilliseconds(500)
@@ -179,9 +181,8 @@ namespace ForkPlus.UI.Dialogs
 				Brushes.Gray);
 		}
 
-		protected override void OnSourceInitialized(EventArgs e)
+		private void Window_Opened(object sender, EventArgs e)
 		{
-			base.OnSourceInitialized(e);
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				return;

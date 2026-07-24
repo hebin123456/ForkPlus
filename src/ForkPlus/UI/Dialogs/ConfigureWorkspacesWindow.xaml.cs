@@ -9,7 +9,6 @@ using System.Linq;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.UserControls.Preferences;
-using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -22,6 +21,8 @@ namespace ForkPlus.UI.Dialogs
 			Workspace[] all = ForkPlusSettings.Default.Workspaces.All;
 			_workspaceViewModels = new ObservableCollection<WorkspaceViewModel>(all.Map((Workspace x) => new WorkspaceViewModel(x)));
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Closing 事件替代 OnClosing 虚方法
+			this.Closing += Window_Closing;
 			base.DialogTitle = PreferencesLocalization.Current("Workspaces");
 			base.DialogDescription = PreferencesLocalization.Current("Use '/' as path separator to create folders");
 			base.ShowSubmitButton = false;
@@ -32,7 +33,7 @@ namespace ForkPlus.UI.Dialogs
 			ShowWorkspaceInTitleCheckBox.IsChecked = ForkPlusSettings.Default.Workspaces.ShowInTitle;
 		}
 
-		protected override void OnClosing(CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
 			if (_workspaceViewModels.Count > 1)
 			{
@@ -45,7 +46,6 @@ namespace ForkPlus.UI.Dialogs
 				MainWindow.Instance.Toolbar.RefreshWorkspacesButton();
 				MainWindow.Instance.RefreshTitle();
 			}
-			base.OnClosing(e);
 		}
 
 		private void WorkspacesListBox_ContextMenuOpening(object sender, ContextRequestedEventArgs e)

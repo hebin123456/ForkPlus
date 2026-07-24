@@ -1,6 +1,7 @@
 // 阶段 4.5：移除未使用的 using System.Windows.Input;（ICommand/KeyGesture 已由 using Avalonia.Input 提供）。
 using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

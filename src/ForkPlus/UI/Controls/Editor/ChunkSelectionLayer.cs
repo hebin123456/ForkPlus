@@ -58,9 +58,13 @@ namespace ForkPlus.UI.Controls.Editor
 				}
 			}
 
-			protected override int VisualChildrenCount => (_child != null) ? 1 : 0;
+			// 阶段 5：Avalonia 11 的 Visual 不再提供 VisualChildrenCount/GetVisualChild 虚方法。
+			// 改为普通属性/方法以便编译通过；child 仍通过 AddVisualChild 注册到可视树，
+			// 但不会自动被布局/渲染管线调用 —— 调用方需自行将 Child 加入到 OverlayLayer 才能显示。
+			public int VisualChildrenCount => (_child != null) ? 1 : 0;
 
-			protected override IVisual GetVisualChild(int index)
+			// 阶段 5：非 override 版本，仅作为只读访问器（Avalonia 11 无对应虚方法可覆盖）。
+			public Visual GetVisualChild(int index)
 			{
 				if (index != 0 || _child == null)
 					throw new ArgumentOutOfRangeException(nameof(index));

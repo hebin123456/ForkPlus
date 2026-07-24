@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -82,7 +83,11 @@ namespace ForkPlus.UI.Dialogs
 			}
 			FileDiffControl.Target = ((mode is ShowFileHistoryWindowCommand.Mode.Hunk) ? FileDiffControlTarget.HunkHistory : FileDiffControlTarget.History);
 			base.SizeChanged += FileHistoryWindow_SizeChanged;
-			base.Activated += FileHistoryWindow_Activated;
+		base.Activated += FileHistoryWindow_Activated;
+		// 阶段 5：Avalonia 用 Opened/PositionChanged/Initialized 事件替代 OnSourceInitialized/OnLocationChanged/OnInitialized 虚方法
+		this.Opened += Window_Opened;
+		this.PositionChanged += Window_PositionChanged;
+		this.Initialized += Window_Initialized;
 			NotificationCenter.Current.DiffContextSizeChanged += delegate
 		{
 			_delayedAction.ReinvokeNow();
@@ -143,15 +148,13 @@ namespace ForkPlus.UI.Dialogs
 			}));
 		}
 
-		protected override void OnSourceInitialized(EventArgs e)
+		private void Window_Opened(object sender, EventArgs e)
 		{
-			base.OnSourceInitialized(e);
 			this.SetWindowLocationState(ForkPlusSettings.Default.HistoryWindowLocationState);
 		}
 
-		protected override void OnLocationChanged(EventArgs e)
+		private void Window_PositionChanged(object sender, PixelPointEventArgs e)
 		{
-			base.OnLocationChanged(e);
 			if (_startUpFinished)
 			{
 				ForkPlusSettings.Default.HistoryWindowLocationState = this.GetWindowLocationState();
@@ -174,11 +177,10 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override async void OnInitialized(EventArgs e)
+		private async void Window_Initialized(object sender, EventArgs e)
 		{
 			try
 			{
-				base.OnInitialized(e);
 				RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
 				if (repositoryData == null)
 				{

@@ -24,6 +24,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using ForkPlus.UI.Controls.Flattener;
@@ -139,6 +140,16 @@ namespace ForkPlus.UI.Controls
 
 		public MultiselectionTreeViewItem LastClickedItem { get; private set; }
 
+		// 阶段 5：Avalonia 无 OnDrag*/OnSelectionChanged/OnDoubleTapped 虚方法，改用事件订阅。
+		public MultiselectionTreeView()
+		{
+			SelectionChanged += OnSelectionChanged;
+			DoubleTapped += OnDoubleTapped;
+			AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
+			AddHandler(DragDrop.DragOverEvent, OnDragOver);
+			AddHandler(DragDrop.DropEvent, OnDrop);
+		}
+
 		static MultiselectionTreeView()
 		{
 			// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
@@ -183,25 +194,25 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		// 阶段 5：Avalonia 11.3 CreateContainerForItemOverride 为 3 参数签名 (object? item, int index, object? recycleKey)。
 		// 阶段 4.5：WPF GetContainerForItemOverride() 返回 DependencyObject → Avalonia CreateContainerForItemOverride() 返回 Control。
-		protected override Control CreateContainerForItemOverride()
+		protected override Control CreateContainerForItemOverride(object item, int index, object recycleKey)
 		{
 			return new TreeViewControlItem();
 		}
 
-		protected override bool IsItemItsOwnContainerOverride(object item)
-		{
-			return item is TreeViewControlItem;
-		}
+		// 阶段 5：Avalonia 11.3 无 IsItemItsOwnContainerOverride 虚方法，已移除（原 WPF 判断 item is TreeViewControlItem）。
 
+		// 阶段 5：Avalonia 11.3 PrepareContainerForItemOverride 为 3 参数签名 (Control, object?, int)。
 		// 阶段 4.5：WPF PrepareContainerForItemOverride(DependencyObject, object) → Avalonia PrepareContainerForItemOverride(Control, object)。
-		protected override void PrepareContainerForItemOverride(Control element, object item)
+		protected override void PrepareContainerForItemOverride(Control element, object item, int index)
 		{
-			base.PrepareContainerForItemOverride(element, item);
+			base.PrepareContainerForItemOverride(element, item, index);
 			(element as TreeViewControlItem).ParentTreeView = this;
 		}
 
-		protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+		// 阶段 5：Avalonia 无 OnSelectionChanged 虚方法，改用 SelectionChanged 事件订阅。
+		private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			foreach (MultiselectionTreeViewItem removedItem in e.RemovedItems)
 			{
@@ -211,7 +222,6 @@ namespace ForkPlus.UI.Controls
 			{
 				addedItem.IsSelected = true;
 			}
-			base.OnSelectionChanged(e);
 		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
@@ -270,13 +280,15 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// 阶段 4.5：WPF OnMouseDoubleClick(PointerPressedEventArgs) → Avalonia OnDoubleTapped(TappedEventArgs)。
-		// WPF PointerPressedEventArgs → Avalonia.Input.TappedEventArgs。
-		protected override void OnDoubleTapped(TappedEventArgs e)
+		// 阶段 5：Avalonia 无 OnDoubleTapped 虚方法，改用 DoubleTapped 事件订阅。运行时 e 为 TappedEventArgs。
+		// 阶段 4.5：WPF OnMouseDoubleClick(PointerPressedEventArgs) → Avalonia DoubleTapped(RoutedEventArgs)。
+		private void OnDoubleTapped(object sender, RoutedEventArgs e)
 		{
-			Point position = e.GetPosition(this);
-			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
-			base.OnDoubleTapped(e);
+			if (e is TappedEventArgs te)
+			{
+				Point position = te.GetPosition(this);
+				LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
+			}
 			LastClickedItem = null;
 		}
 
@@ -426,13 +438,14 @@ namespace ForkPlus.UI.Controls
 			return enumerable.Where((MultiselectionTreeViewItem item) => item.Ancestors().All((MultiselectionTreeViewItem a) => !selectionHash.Contains(a)));
 		}
 
+		// 阶段 5：Avalonia 无 OnDrag* 虚方法，改用 DragDrop.AddHandler 订阅。
 		// 阶段 4.5：WPF DragEventArgs → Avalonia.Input.DragEventArgs。WPF e.Effects → Avalonia e.DragEffects。
-		protected override void OnDragEnter(DragEventArgs e)
+		private void OnDragEnter(object sender, DragEventArgs e)
 		{
-			OnDragOver(e);
+			OnDragOver(sender, e);
 		}
 
-		protected override void OnDragOver(DragEventArgs e)
+		private void OnDragOver(object sender, DragEventArgs e)
 		{
 			e.DragEffects = DragDropEffects.None;
 			if (RootItem != null)
@@ -442,7 +455,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			e.DragEffects = DragDropEffects.None;
 			if (RootItem != null)

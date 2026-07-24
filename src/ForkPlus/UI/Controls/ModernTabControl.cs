@@ -31,9 +31,15 @@ namespace ForkPlus.UI.Controls
 		// 阶段 4.5：Avalonia 过渡时长与 WPF 一致（200ms），缓动函数用 QuadraticEaseOut。
 		private static readonly TimeSpan AnimationDuration = TimeSpan.FromMilliseconds(200.0);
 
-		public override void OnApplyTemplate()
+		public ModernTabControl()
 		{
-			base.OnApplyTemplate();
+			// 阶段 4.5：Avalonia 无 OnSelectionChanged 虚方法，改用事件订阅（参考 MultiselectionTreeView）。
+			SelectionChanged += OnSelectionChanged;
+		}
+
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+		{
+			base.OnApplyTemplate(e);
 			_indicatorBorder = GetTemplateChild("PART_IndicatorBorder") as Border;
 			if (_indicatorBorder != null)
 			{
@@ -62,9 +68,8 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+		private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			base.OnSelectionChanged(e);
 			e.Handled = true;
 			if (_isTabIndicatorInitialized && e.AddedItems.Count > 0 && e.AddedItems[0] is TabItem nextTabItem)
 			{

@@ -104,7 +104,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		public event RoutedEventHandler Button1Click;
+		public event EventHandler<RoutedEventArgs> Button1Click;
 
 		public FallbackUserControl()
 		{

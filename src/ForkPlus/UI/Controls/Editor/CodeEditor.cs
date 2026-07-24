@@ -1,3 +1,4 @@
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
@@ -30,9 +31,11 @@ namespace ForkPlus.UI.Controls.Editor
 			// 阶段 4 里程碑 4.7-a：移除 RenderOptions.SetClearTypeHint（WPF-only，Avalonia 无等价物，文本渲染由平台决定）。
 		}
 
-		public override void OnApplyTemplate()
+		// 阶段 5：Avalonia 11.3 TemplatedControl.OnApplyTemplate 签名为 (TemplateAppliedEventArgs e)，
+		// 非无参。TemplateAppliedEventArgs 位于 Avalonia.Controls.Primitives 命名空间。
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
+			base.OnApplyTemplate(e);
 			_templatePartSearchPanel = GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
 			_templatePartSearchPanel?.Attach(base.TextArea);
 		}

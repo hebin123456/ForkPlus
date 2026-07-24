@@ -104,6 +104,8 @@ namespace ForkPlus.UI.UserControls
 			};
 			// 阶段 4.5：WPF MouseDoubleClick → Avalonia DoubleTapped（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）。
 			RepositoriesTreeView.DoubleTapped += RepositoriesListBox_MouseDoubleClick;
+			// 阶段 5：Avalonia 无 OnDrop 虚方法，改用 DragDrop.AddHandler 订阅（参考 DragAutoScrollHelper）。
+			AddHandler(DragDrop.DropEvent, OnDrop);
 			// 阶段 4.5：WPF CommandBindings.Add(CreateShortcutCommandBinding) → Avalonia KeyBindings.Add(CreateShortcutKeyBinding)（参考 RevisionFileTreeUserControl/IUICommandExtension）。
 			RepositoriesTreeView.KeyBindings.Add(Commands.OpenRepository.CreateShortcutKeyBinding(delegate
 			{
@@ -295,10 +297,11 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		// 阶段 5：Avalonia 无 OnDrop 虚方法，改用 DragDrop.AddHandler 订阅。
+		private void OnDrop(object sender, DragEventArgs e)
 		{
 			e.Handled = true;
-			base.OnDrop(e);
+			// base.OnDrop(e) removed — Avalonia Control 无 OnDrop 虚方法。
 			// 阶段 4.5：WPF e.Data.GetData(DataFormats.FileDrop) is string[]
 			// → Avalonia e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray()（参考 RepositoryUserControl.OnDrop/RepositoryManagerSourceDirectoryItem）。
 			string[] source = e.Data.GetFiles()?.Select((IStorageItem f) => f.Path.LocalPath).ToArray();

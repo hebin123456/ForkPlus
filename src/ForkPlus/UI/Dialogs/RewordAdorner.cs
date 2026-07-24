@@ -50,7 +50,10 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override int VisualChildrenCount => (Child != null) ? 1 : 0;
+		// 阶段 5：Avalonia 11 的 Visual 不再提供 VisualChildrenCount/GetVisualChild 虚方法。
+		// 改为普通属性/方法以便编译通过；child 仍通过 AddVisualChild 注册到可视树，
+		// 但不会自动被布局/渲染管线调用 —— 调用方需自行将 Child 加入到 OverlayLayer 才能显示。
+		public int VisualChildrenCount => (Child != null) ? 1 : 0;
 
 		// 阶段 4.5：原 WPF Adorner 构造接收被装饰元素；Avalonia 无 Adorner 基类，
 		// 保留参数以兼容调用方，但不再持有引用（布局由调用方挂载位置决定）。
@@ -58,7 +61,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 		}
 
-		protected override Visual GetVisualChild(int index)
+		// 阶段 5：非 override 版本，仅作为只读访问器（Avalonia 11 无对应虚方法可覆盖）。
+		public Visual GetVisualChild(int index)
 		{
 			return Child;
 		}

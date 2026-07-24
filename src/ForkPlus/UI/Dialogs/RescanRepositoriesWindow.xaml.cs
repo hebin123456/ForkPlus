@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls.Preferences;
-using System.ComponentModel;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -14,6 +14,8 @@ namespace ForkPlus.UI.Dialogs
 		public RescanRepositoriesWindow()
 		{
 			InitializeComponent();
+			// 阶段 5：Avalonia 用 Closing 事件替代 OnClosing 虚方法
+			this.Closing += Window_Closing;
 			base.DialogTitle = PreferencesLocalization.Current("Rescan repositories in source folder");
 			string text = RepositoryManager.Instance.SourceDirs.Map((string x) => "'" + x + "'").Joined(", ");
 			base.DialogDescription = PreferencesLocalization.FormatCurrent("Do you want to rescan repositories in '{0}'?", text);
@@ -48,15 +50,11 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override void OnClosing(CancelEventArgs e)
+		private void Window_Closing(object sender, WindowClosingEventArgs e)
 		{
 			if (!_isCloseAllowed)
 			{
 				e.Cancel = true;
-			}
-			else
-			{
-				base.OnClosing(e);
 			}
 		}
 
