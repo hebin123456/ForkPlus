@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.CircularProgressBar
 {
@@ -13,7 +14,8 @@ namespace ForkPlus.UI.CircularProgressBar
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return Binding.DoNothing;
+			// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingNotifications.DoNothing (skip target update).
+			return BindingNotifications.DoNothing;
 		}
 	}
 }

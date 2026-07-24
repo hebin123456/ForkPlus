@@ -1,7 +1,8 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
+using Avalonia;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.CircularProgressBar
 {
@@ -15,7 +16,8 @@ namespace ForkPlus.UI.CircularProgressBar
 			double num4 = values[3].ExtractDouble();
 			if (new double[4] { num, num2, num3, num4 }.AnyNan())
 			{
-				return Binding.DoNothing;
+				// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingNotifications.DoNothing (skip target update).
+				return BindingNotifications.DoNothing;
 			}
 			if (values.Length == 5)
 			{
