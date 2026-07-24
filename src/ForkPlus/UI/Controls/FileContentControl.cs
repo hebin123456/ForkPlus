@@ -1,6 +1,10 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF Grid → Avalonia.Controls.Grid。
+// WPF FrameworkElement → Avalonia.Controls.Control（字段类型 + 泛型约束）。
+// WPF DependencyProperty.Register + PropertyMetadata → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
+// WPF DependencyPropertyChangedEventArgs → Avalonia.AvaloniaPropertyChangedEventArgs（e.Property/e.NewValue API 兼容）。
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls.Editor;
@@ -17,13 +21,15 @@ namespace ForkPlus.UI.Controls
 			void ControlWillBeRemovedFromFileContentControl();
 		}
 
-		private FrameworkElement _subView;
+		private Control _subView;
 
 		private readonly CodeEditorScrollPositionCache _positionCache = new CodeEditorScrollPositionCache();
 
 		public static readonly TextContentControlCommands Commands = new TextContentControlCommands();
 
-		public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(GitCommandResult<Content>), typeof(FileContentControl), new PropertyMetadata(null));
+		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty（AvaloniaProperty.Register<TOwner, TType>）。
+		public static readonly StyledProperty<GitCommandResult<Content>> ContentProperty =
+			AvaloniaProperty.Register<FileContentControl, GitCommandResult<Content>>(nameof(Content));
 
 		private int MaxContentSize => 1048576;
 
@@ -57,7 +63,7 @@ namespace ForkPlus.UI.Controls
 			base.Children.Add(Header);
 		}
 
-		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : FrameworkElement
+		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : Control
 		{
 			if (_subView == null)
 			{
@@ -85,7 +91,7 @@ namespace ForkPlus.UI.Controls
 			initialize?.Invoke(_subView as TChild, Header);
 		}
 
-		private bool AttachSubView(FrameworkElement subView)
+		private bool AttachSubView(Control subView)
 		{
 			if (subView == null)
 			{
@@ -95,7 +101,8 @@ namespace ForkPlus.UI.Controls
 			return VisualTreeAttachmentHelper.TryAddChild(this, subView, GetType().Name + ".SubView");
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == ContentProperty)

@@ -1,26 +1,37 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Controls
+// - using System.Windows.Media → using Avalonia.Media
+// - FrameworkElement → Avalonia.Controls.Control
+// - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
+// - base.RenderSize → Bounds.Size
+// - Brush（字段类型）→ IBrush；Pen 保持（Avalonia.Media.Pen，接收 IBrush）
+// - WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）
+// - FormattedText 去掉 pixelsPerDip 参数（Avalonia FormattedText 无此参数）
+// - DrawRectangle/DrawLine/DrawGeometry/DrawText 签名兼容，保持不变
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 
 namespace ForkPlus.UI.Controls
 {
-	public class RevisionTimeLine : FrameworkElement
+	public class RevisionTimeLine : Control
 	{
 		private readonly Typeface _typeface = new Typeface(FontConstants.ProportionalFontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
-		private Brush _labelBrush;
+		private IBrush _labelBrush;
 
-		private Brush _alternationBrush;
+		private IBrush _alternationBrush;
 
 		private Pen _tickPen;
 
 		private Pen _revisionPen;
 
-		private Brush _activeRevisionBrush;
+		private IBrush _activeRevisionBrush;
 
 		private Pen _activeRevisionPen;
 
@@ -81,13 +92,15 @@ namespace ForkPlus.UI.Controls
 		public RevisionTimeLine()
 		{
 			RefreshBrushes();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
-			Size renderSize = base.RenderSize;
+			base.Render(drawingContext);
+			Size renderSize = Bounds.Size;
 			drawingContext.DrawRectangle(Theme.RevisionTimeLine.BackgroundBrush, null, new Rect(new Point(0.0, 0.0), new Size(renderSize.Width, renderSize.Height - 30.0)));
 			RevisionWithFiles[] revisions = Revisions;
 			if (revisions == null || revisions.Length < 2)
@@ -216,9 +229,11 @@ namespace ForkPlus.UI.Controls
 			InvalidateVisual();
 		}
 
+		// TODO(4.5): WPF FormattedText → Avalonia FormattedText/TextLayout 需验证。
 		private FormattedText CreateFormattedText(string text, TextAlignment alignment = TextAlignment.Center)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+			// 阶段 4.5：WPF FormattedText(..., pixelsPerDip) → Avalonia FormattedText（无 pixelsPerDip）。
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush)
 			{
 				TextAlignment = alignment
 			};

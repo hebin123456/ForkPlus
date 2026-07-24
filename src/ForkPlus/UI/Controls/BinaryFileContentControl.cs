@@ -1,6 +1,8 @@
+// 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls。WPF Grid → Avalonia.Controls.Grid。
+// base.Children / base.Dispatcher.Async 在 Avalonia 下 API 兼容（Dispatcher 为 Avalonia.Threading.Dispatcher）。
 using System;
 using System.IO;
-using System.Windows.Controls;
+using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;

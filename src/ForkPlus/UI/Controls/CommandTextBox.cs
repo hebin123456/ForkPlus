@@ -1,8 +1,12 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF TextBox → Avalonia.Controls.TextBox。
+// WPF FrameworkElement（TemplatePart 类型）→ Avalonia.Controls.Control。WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
+// WPF Key/KeyEventArgs → Avalonia.Input.Key/KeyEventArgs。WPF VerticalAlignment → Avalonia.Layout.VerticalAlignment。
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.QuickLaunch;
@@ -10,8 +14,8 @@ using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.Controls
 {
-	[TemplatePart(Name = "PART_LabelsStackPanel", Type = typeof(FrameworkElement))]
-	[TemplatePart(Name = "PART_PlaceholderTextBox", Type = typeof(FrameworkElement))]
+	[TemplatePart(Name = "PART_LabelsStackPanel", Type = typeof(Control))]
+	[TemplatePart(Name = "PART_PlaceholderTextBox", Type = typeof(Control))]
 	public class CommandTextBox : TextBox
 	{
 		public EventHandler<object[]> CommandArgumentsCompleted;
@@ -62,7 +66,8 @@ namespace ForkPlus.UI.Controls
 			_labelsStackPanel = GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
 			_textBox = GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
 			Placeholder = Translate("Command");
-			_textBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
+			_textBox.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Back && _textBox.CaretIndex == 0)
 				{
