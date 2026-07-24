@@ -1,28 +1,36 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF DockPanel.InternalChildren (UIElementCollection) → Avalonia DockPanel.Children (IList<Control>)。
+	// WPF DockPanel.GetDock(UIElement) → Avalonia DockPanel.GetDock(Control)（API 兼容）。
+	// WPF UIElement.Measure/Arrange/DesiredSize → Avalonia Control.Measure/Arrange/DesiredSize。
+	// WPF Layoutable.MeasureOverride/ArrangeOverride(Size) → Avalonia 同名签名（一致）。
+	// 注意：Avalonia DockPanel 的 LastChildFill 属性存在；Children 返回 IList<IVisual>，
+	// 但实际元素是 Control，通过类型转换访问 DesiredSize/Arrange 等。
 	public class CenteredDockPanel : DockPanel
 	{
 		private Size[] _sizes;
 
 		protected override Size MeasureOverride(Size constraint)
 		{
-			UIElementCollection internalChildren = base.InternalChildren;
+			var internalChildren = base.Children;
 			double val = 0.0;
 			double val2 = 0.0;
 			double num = 0.0;
 			double num2 = 0.0;
-			if (_sizes == null || _sizes.Length != internalChildren.Count)
+			int count = internalChildren.Count;
+			if (_sizes == null || _sizes.Length != count)
 			{
-				_sizes = new Size[internalChildren.Count];
+				_sizes = new Size[count];
 			}
 			int i = 0;
-			for (int count = internalChildren.Count; i < count; i++)
+			for (; i < count; i++)
 			{
-				UIElement uIElement = internalChildren[i];
+				Control uIElement = internalChildren[i] as Control;
 				if (uIElement != null)
 				{
 					Size availableSize = new Size(Math.Max(0.0, constraint.Width - num), Math.Max(0.0, constraint.Height - num2));
@@ -52,7 +60,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override Size ArrangeOverride(Size arrangeSize)
 		{
-			UIElementCollection internalChildren = base.InternalChildren;
+			var internalChildren = base.Children;
 			int count = internalChildren.Count;
 			int num = count - (base.LastChildFill ? 1 : 0);
 			double num2 = 0.0;
@@ -61,7 +69,7 @@ namespace ForkPlus.UI.Controls
 			double num5 = 0.0;
 			for (int i = 0; i < count; i++)
 			{
-				UIElement uIElement = internalChildren[i];
+				Control uIElement = internalChildren[i] as Control;
 				if (uIElement == null)
 				{
 					continue;
@@ -74,21 +82,19 @@ namespace ForkPlus.UI.Controls
 					{
 					case Dock.Left:
 						num2 += desiredSize.Width;
-						finalRect.Width = desiredSize.Width;
+						finalRect = finalRect.WithWidth(desiredSize.Width);
 						break;
 					case Dock.Right:
 						num4 += desiredSize.Width;
-						finalRect.X = Math.Max(0.0, arrangeSize.Width - num4);
-						finalRect.Width = desiredSize.Width;
+						finalRect = finalRect.WithX(Math.Max(0.0, arrangeSize.Width - num4)).WithWidth(desiredSize.Width);
 						break;
 					case Dock.Top:
 						num3 += desiredSize.Height;
-						finalRect.Height = desiredSize.Height;
+						finalRect = finalRect.WithHeight(desiredSize.Height);
 						break;
 					case Dock.Bottom:
 						num5 += desiredSize.Height;
-						finalRect.Y = Math.Max(0.0, arrangeSize.Height - num5);
-						finalRect.Height = desiredSize.Height;
+						finalRect = finalRect.WithY(Math.Max(0.0, arrangeSize.Height - num5)).WithHeight(desiredSize.Height);
 						break;
 					}
 				}
@@ -106,8 +112,7 @@ namespace ForkPlus.UI.Controls
 					{
 						num6 = num2;
 					}
-					finalRect.X = num6;
-					finalRect.Width = num6 + desiredSize.Width;
+					finalRect = finalRect.WithX(num6).WithWidth(desiredSize.Width);
 				}
 				uIElement.Arrange(finalRect);
 			}

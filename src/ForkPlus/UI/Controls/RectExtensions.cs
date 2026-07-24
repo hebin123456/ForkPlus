@@ -1,8 +1,10 @@
 using System;
-using System.Windows;
+using Avalonia;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF System.Windows.Rect → Avalonia.Rect（API 兼容，命名空间不同）。
+	// Rect.Bottom/Right 属性在 Avalonia 中同样存在。
 	internal static class RectExtensions
 	{
 		public static Rect Inset(this Rect rect, double dx, double dy)
