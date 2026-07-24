@@ -30,7 +30,7 @@
               <TextBlock DockPanel.Dock="Right" Margin="8,1,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteAuthorDateTextBlock" />
               <TextBlock Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" x:Name="RemoteSubjectTextBlock" />
             </DockPanel>
-            <TextBlock Grid.Row="1" Margin="6,0,0,0" FontSize="13" Text="Applied changes" Foreground="{DynamicResource SecondaryLabelBrush}" Visibility="Hidden" x:Name="StashTextBlock" />
+            <TextBlock Grid.Row="1" Margin="6,0,0,0" FontSize="13" Text="Applied changes" Foreground="{DynamicResource SecondaryLabelBrush}" IsVisible="False" x:Name="StashTextBlock" />
           </Grid>
         </CheckBox>
       </DockPanel>

@@ -112,7 +112,7 @@
       <Button DockPanel.Dock="Right" Style="{DynamicResource IconButtonStyle}" ToolTip="Go Back" Click="UndoButton_Click" x:Name="UndoButton">
         <Image Source="{DynamicResource PrevIcon}" Width="16" Height="16" VerticalAlignment="Center" />
       </Button>
-      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" Style="{DynamicResource CircularProgressBar}" Visibility="Visible" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" Style="{DynamicResource CircularProgressBar}" IsVisible="True" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
       <TextBlock Text="Blame" DockPanel.Dock="Left" Margin="4,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display" x:Name="BlameTitleTextBlock" />
       <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" x:Name="FileIcon" />
       <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display" x:Name="FileNameTextBlock" />
@@ -144,7 +144,7 @@
         </ListBox.ItemTemplate>
       </ListBox>
       <Border Grid.Column="2" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}">
-        <diff:SplitTextDiffControl Visibility="Collapsed" x:Name="TextDiffControl" />
+        <diff:SplitTextDiffControl IsVisible="False" x:Name="TextDiffControl" />
       </Border>
       <GridSplitter Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" />
       <userControls:FallbackUserControl BorderThickness="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="CodeEditorFallbackUserControl" />

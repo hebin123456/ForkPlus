@@ -33,7 +33,7 @@
           <controls:AutoTooltipTextBlock Margin="8,0,0,0" FontSize="14" VerticalAlignment="Center" x:Name="RepositoryNameTextBlock" />
         </DockPanel>
         <controls:GitPointView Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" IconMargin="2,0,2,0" x:Name="TargetReferenceGitPointView" />
-        <controls:DateRangeButton Grid.Row="1" Grid.Column="0" Margin="0,0,0,4" HorizontalAlignment="Left" Visibility="Hidden" x:Name="DateRangeButton" />
+        <controls:DateRangeButton Grid.Row="1" Grid.Column="0" Margin="0,0,0,4" HorizontalAlignment="Left" IsVisible="False" x:Name="DateRangeButton" />
         <Grid Grid.Row="2" Grid.Column="0">
           <Border BorderThickness="0" Background="{DynamicResource BackgroundBrush}" x:Name="TreemapBackgroundBorder" />
           <controls:Treemap x:Name="Treemap" />

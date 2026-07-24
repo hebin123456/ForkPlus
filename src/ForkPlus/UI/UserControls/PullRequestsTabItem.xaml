@@ -101,7 +101,7 @@
           <Button IsTabStop="False" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="RefreshButton_Click" x:Name="RefreshButton">
             <Image Source="{DynamicResource RefreshIcon}" />
           </Button>
-          <ProgressBar Margin="2,0,2,0" Style="{DynamicResource CircularProgressBar}" Visibility="Visible" Width="12" Height="12" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+          <ProgressBar Margin="2,0,2,0" Style="{DynamicResource CircularProgressBar}" IsVisible="True" Width="12" Height="12" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
         </Grid>
       </DockPanel>
       <controls:FilterTextBox Margin="4,0,4,4" UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />

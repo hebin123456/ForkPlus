@@ -83,7 +83,7 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <uc:FallbackUserControl Grid.Row="0" Visibility="Collapsed" VerticalAlignment="Stretch" FallbackMessage="No SSH keys" HideFallbackImage="True" x:Name="FallbackUserControl" />
+        <uc:FallbackUserControl Grid.Row="0" IsVisible="False" VerticalAlignment="Stretch" FallbackMessage="No SSH keys" HideFallbackImage="True" x:Name="FallbackUserControl" />
         <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
         <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1">
           <StackPanel Orientation="Horizontal">
@@ -124,7 +124,7 @@
             </Hyperlink>
           </TextBlock>
         </Grid>
-        <uc:FallbackUserControl Grid.Row="0" Visibility="Collapsed" x:Name="DetailsFallbackUserControl" />
+        <uc:FallbackUserControl Grid.Row="0" IsVisible="False" x:Name="DetailsFallbackUserControl" />
       </Grid>
     </Grid>
   </Grid>

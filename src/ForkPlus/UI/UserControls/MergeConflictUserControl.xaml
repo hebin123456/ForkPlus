@@ -312,8 +312,8 @@
               </StackPanel>
               <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
             </DockPanel>
-            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" Visibility="Collapsed" x:Name="SrcSeparator" />
-            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ItemContainerStyle="{DynamicResource MergeListBoxItemContainerStyle}" x:Name="SrcRevisionsListBox">
+            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" IsVisible="False" x:Name="SrcSeparator" />
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" IsVisible="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ItemContainerStyle="{DynamicResource MergeListBoxItemContainerStyle}" x:Name="SrcRevisionsListBox">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>
@@ -347,8 +347,8 @@
               </StackPanel>
               <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />
             </DockPanel>
-            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" Visibility="Collapsed" x:Name="DstSeparator" />
-            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ItemContainerStyle="{DynamicResource MergeListBoxItemContainerStyle}" x:Name="DstRevisionsListBox">
+            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" IsVisible="False" x:Name="DstSeparator" />
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" IsVisible="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ItemContainerStyle="{DynamicResource MergeListBoxItemContainerStyle}" x:Name="DstRevisionsListBox">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>

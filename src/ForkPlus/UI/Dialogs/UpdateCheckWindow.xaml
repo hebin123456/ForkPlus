@@ -16,7 +16,7 @@
         <TextBlock x:Name="StatusTextBlock" Text="Checking for updates..." FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap" />
       </DockPanel>
       <!-- 结果区：版本信息 + Release Notes + 跳过勾选（默认隐藏，检测完成后再显示） -->
-      <StackPanel x:Name="ResultPanel" Visibility="Collapsed">
+      <StackPanel x:Name="ResultPanel" IsVisible="False">
         <TextBlock x:Name="VersionInfoTextBlock" FontSize="13" FontWeight="Medium" Margin="0,0,0,6" TextWrapping="Wrap" />
         <TextBlock x:Name="ReleaseNotesLabel" Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,4,0,4" />
         <TextBox x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />

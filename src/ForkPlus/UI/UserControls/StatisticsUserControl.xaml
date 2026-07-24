@@ -128,7 +128,7 @@
           <Button Grid.Column="2" Content="Recount with excludes" Padding="10,2" Margin="6,0,0,0" VerticalAlignment="Bottom" x:Name="CodeLinesRecountButton" Click="CodeLinesRecountButton_Click" />
         </Grid>
         <TextBlock Margin="10,8,0,0" x:Name="CodeLinesSummary" TextWrapping="Wrap" />
-        <TextBlock Margin="10,8,0,0" x:Name="CodeLinesError" TextWrapping="Wrap" Foreground="#FFCC0000" Visibility="Collapsed" />
+        <TextBlock Margin="10,8,0,0" x:Name="CodeLinesError" TextWrapping="Wrap" Foreground="#FFCC0000" IsVisible="False" />
         <Grid Margin="10,10,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />

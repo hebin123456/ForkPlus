@@ -29,7 +29,7 @@
     <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Status:" FontSize="13" />
     <DockPanel Grid.Row="3" Grid.Column="1">
       <Grid DockPanel.Dock="Left">
-        <ProgressBar Margin="1,0,6,-1" Width="14" Height="14" Visibility="Hidden" x:Name="StatusBusyIndicator">
+        <ProgressBar Margin="1,0,6,-1" Width="14" Height="14" IsVisible="False" x:Name="StatusBusyIndicator">
           <ProgressBar.Style>
             <DynamicResource ResourceKey="CircularProgressBar" />
           </ProgressBar.Style>

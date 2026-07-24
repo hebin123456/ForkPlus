@@ -283,8 +283,8 @@
         </controls:ModernTabControl>
       </Grid>
     </ScrollViewer>
-    <usercontrols:FallbackUserControl Button1Click="FallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository Not Found" FallbackMessage="Repository was deleted or moved. Do you want to remove the reference from Fork?" Button1Title="Remove" Visibility="Collapsed" x:Name="FallbackUserControl" />
-    <usercontrols:FallbackUserControl Button1Click="UnsafeRepositoryFallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository is located at the place owned by someone else" FallbackMessage="Repository is unsafe and owned by someone else. Is it safe?" Button1Title="Mark it as safe" Visibility="Collapsed" x:Name="UnsafeRepositoryFallbackUserControl" />
-    <usercontrols:FallbackUserControl Grid.RowSpan="3" Visibility="Collapsed" x:Name="DirectoryFallbackUserControl" />
+    <usercontrols:FallbackUserControl Button1Click="FallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository Not Found" FallbackMessage="Repository was deleted or moved. Do you want to remove the reference from Fork?" Button1Title="Remove" IsVisible="False" x:Name="FallbackUserControl" />
+    <usercontrols:FallbackUserControl Button1Click="UnsafeRepositoryFallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository is located at the place owned by someone else" FallbackMessage="Repository is unsafe and owned by someone else. Is it safe?" Button1Title="Mark it as safe" IsVisible="False" x:Name="UnsafeRepositoryFallbackUserControl" />
+    <usercontrols:FallbackUserControl Grid.RowSpan="3" IsVisible="False" x:Name="DirectoryFallbackUserControl" />
   </Grid>
 </UserControl>

@@ -12,7 +12,7 @@
     <StackPanel Grid.Row="0" Grid.Column="1">
       <TextBlock Text="Performance Benchmark" FontWeight="Medium" FontSize="14" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" />
       <DockPanel>
-        <Button DockPanel.Dock="Right" Margin="4,0,0,0" IsTabStop="False" Visibility="Hidden" VerticalAlignment="Bottom" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderButtonStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="RefreshButton_Click" x:Name="RefreshButton">
+        <Button DockPanel.Dock="Right" Margin="4,0,0,0" IsTabStop="False" IsVisible="False" VerticalAlignment="Bottom" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderButtonStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="RefreshButton_Click" x:Name="RefreshButton">
           <Image Source="{DynamicResource RefreshIcon}" />
         </Button>
         <TextBlock Text="Measure repository performance" FontSize="13" Margin="0,2,0,0" />

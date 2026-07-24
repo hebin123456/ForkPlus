@@ -211,7 +211,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="3" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource MainMenu.Static.Foreground}" x:Name="Icon" />
-        <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="3" Visibility="Collapsed" VerticalAlignment="Center" x:Name="GlyphPanel" />
+        <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="3" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel" />
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" ContentStringFormat="{TemplateBinding HeaderedItemsControl.HeaderStringFormat}" ContentSource="Header" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
         <Popup AllowsTransparency="True" Focusable="False" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" Placement="Bottom" x:Name="PART_Popup">
           <Popup.IsOpen>
@@ -293,7 +293,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="3" VerticalAlignment="Center" x:Name="Icon" />
-        <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{DynamicResource Menu.MenuItem.Static.Foreground}" FlowDirection="LeftToRight" Margin="3" Visibility="Collapsed" VerticalAlignment="Center" x:Name="GlyphPanel" />
+        <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{DynamicResource Menu.MenuItem.Static.Foreground}" FlowDirection="LeftToRight" Margin="3" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel" />
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" ContentStringFormat="{TemplateBinding HeaderedItemsControl.HeaderStringFormat}" ContentSource="Header" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
       </Grid>
     </Border>
@@ -336,7 +336,7 @@
           <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" Margin="6,0,0,0">
-          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" Visibility="Collapsed" VerticalAlignment="Center" x:Name="GlyphPanel">
+          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel">
             <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{DynamicResource Menu.MenuItem.Static.Foreground}" FlowDirection="LeftToRight" Height="11" Width="10" x:Name="Glyph" />
           </Border>
           <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />
@@ -385,7 +385,7 @@
           <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" Margin="6,0,0,0">
-          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" Visibility="Collapsed" VerticalAlignment="Center" x:Name="GlyphPanel">
+          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel">
             <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{DynamicResource Menu.MenuItem.Static.Foreground}" FlowDirection="LeftToRight" Height="11" Width="10" x:Name="Glyph" />
           </Border>
           <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />
@@ -477,7 +477,7 @@
           <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" Margin="6,0,0,0">
-          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" Visibility="Collapsed" VerticalAlignment="Center" x:Name="GlyphPanel">
+          <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Width="16" Margin="0,0,2,0" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel">
             <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{DynamicResource Menu.MenuItem.Static.Foreground}" FlowDirection="LeftToRight" Height="11" Width="10" x:Name="Glyph" />
           </Border>
           <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />

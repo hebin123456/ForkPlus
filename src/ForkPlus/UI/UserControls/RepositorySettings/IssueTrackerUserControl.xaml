@@ -91,7 +91,7 @@
           <controls:PlaceholderTextBox TextChanged="SampleMessageTextBox_TextChanged" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,2" Padding="4,2,4,2" HorizontalAlignment="Stretch" FontSize="13" Placeholder="Test commit message" x:Name="SampleMessageTextBox" />
           <TextBlock Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13" Margin="4,0,0,4" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="SamplePreviewTextBlock" />
         </Grid>
-        <uc:FallbackUserControl Grid.Column="1" Visibility="Collapsed" x:Name="ItemFallbackUserControl" />
+        <uc:FallbackUserControl Grid.Column="1" IsVisible="False" x:Name="ItemFallbackUserControl" />
       </Grid>
     </controls:ContentContainer>
   </Grid>

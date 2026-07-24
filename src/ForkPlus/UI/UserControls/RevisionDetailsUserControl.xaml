@@ -33,8 +33,8 @@
       <Border Grid.Row="2" Padding="0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" UseLayoutRounding="True">
         <Grid>
           <userControls:RevisionSummaryUserControl x:Name="SummaryUserControl" />
-          <userControls:RevisionChangesUserControl Visibility="Collapsed" x:Name="ChangesUserControl" />
-          <userControls:RevisionFileTreeUserControl Visibility="Collapsed" x:Name="FileTreeUserControl" />
+          <userControls:RevisionChangesUserControl IsVisible="False" x:Name="ChangesUserControl" />
+          <userControls:RevisionFileTreeUserControl IsVisible="False" x:Name="FileTreeUserControl" />
         </Grid>
       </Border>
     </Grid>

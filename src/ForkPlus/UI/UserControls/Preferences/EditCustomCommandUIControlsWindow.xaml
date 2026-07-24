@@ -233,7 +233,7 @@
           </Border>
         </Grid>
       </Border>
-      <uc:FallbackUserControl Margin="10,0,2,0" Grid.Column="1" Visibility="Collapsed" x:Name="FallbackUserControl" />
+      <uc:FallbackUserControl Margin="10,0,2,0" Grid.Column="1" IsVisible="False" x:Name="FallbackUserControl" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

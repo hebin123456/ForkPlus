@@ -63,7 +63,7 @@
               <Binding ElementName="SearchTabItem" Path="IsSelected" Mode="TwoWay" />
             </RadioButton.IsChecked>
           </RadioButton>
-          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" Visibility="Collapsed" ToolTip="Pull Requests" Content="{DynamicResource GenericRemoteGeometry}" x:Name="ServiceRadioButton">
+          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" IsVisible="False" ToolTip="Pull Requests" Content="{DynamicResource GenericRemoteGeometry}" x:Name="ServiceRadioButton">
             <RadioButton.IsChecked>
               <Binding ElementName="ServiceTabItem" Path="IsSelected" Mode="TwoWay" />
             </RadioButton.IsChecked>
@@ -79,7 +79,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
-          <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" Visibility="Collapsed" />
+          <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" IsVisible="False" />
           <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
           <Grid Grid.Row="2">
             <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Style="{DynamicResource SideBarMultiselectionTreeViewStyle}" TextSearch.TextPath="Title" x:Name="SidebarTreeView">

@@ -5,7 +5,7 @@
      -->
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryContentUserControl">
   <Grid>
-    <Grid Visibility="Collapsed" x:Name="CommitView">
+    <Grid IsVisible="False" x:Name="CommitView">
       <local:CommitUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="CommitUserControl" />
     </Grid>
     <Grid x:Name="RevisionView">
@@ -19,7 +19,7 @@
         <ColumnDefinition />
         <ColumnDefinition Width="40" />
       </Grid.ColumnDefinitions>
-      <local:RevisionListStatusBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Visibility="Collapsed" x:Name="RevisionListStatusBarUserControl" />
+      <local:RevisionListStatusBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" IsVisible="False" x:Name="RevisionListStatusBarUserControl" />
       <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" FocusVisualStyle="{x:Null}" x:Name="RevisionListViewUserControl" />
       <local:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" x:Name="RevisionDetails" />
       <GridSplitter Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" x:Name="FirstColumnHorizontalGridSplitter">

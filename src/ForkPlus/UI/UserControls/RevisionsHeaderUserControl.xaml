@@ -75,7 +75,7 @@
         </TextBlock>
       </DockPanel>
     </Grid>
-    <Button Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Hidden" BorderThickness="0" x:Name="SwapRevisionsButton">
+    <Button Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" BorderThickness="0" x:Name="SwapRevisionsButton">
       <Button.Background>
         <SolidColorBrush>#00FFFFFF</SolidColorBrush>
       </Button.Background>

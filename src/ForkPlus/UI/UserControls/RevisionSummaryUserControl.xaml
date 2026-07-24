@@ -33,7 +33,7 @@
           <controls:SelectableTextBlock DockPanel.Dock="Left" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" x:Name="AuthorTextBlock" />
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorEmailTextBlock" />
-            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" Visibility="Hidden" Checked="AuthorColorsToggleButton_Changed" x:Name="AuthorColorsToggleButton">
+            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False" Checked="AuthorColorsToggleButton_Changed" x:Name="AuthorColorsToggleButton">
               <ToggleButton.FocusVisualStyle>
                 <x:Null />
               </ToggleButton.FocusVisualStyle>
@@ -59,7 +59,7 @@
           <controls:SelectableTextBlock DockPanel.Dock="Left" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" x:Name="CommitterTextBlock" />
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommitterEmailTextBlock" />
-            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" Visibility="Hidden" Checked="CommitterColorsToggleButton_Changed" x:Name="CommitterColorsToggleButton">
+            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False" Checked="CommitterColorsToggleButton_Changed" x:Name="CommitterColorsToggleButton">
               <ToggleButton.FocusVisualStyle>
                 <x:Null />
               </ToggleButton.FocusVisualStyle>
@@ -145,7 +145,7 @@
           </ItemsControl>
           <Button Margin="8,0,20,0" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{DynamicResource TransparentButtonStyle}" Click="ExpandAllButton_Click" x:Name="ExpandAllButton" />
         </Grid>
-        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" Visibility="Collapsed" x:Name="DiffListLimitTextBlock" />
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" IsVisible="False" x:Name="DiffListLimitTextBlock" />
       </Grid>
       </Grid>
     </ScrollViewer>

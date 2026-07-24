@@ -37,12 +37,12 @@
           <Path Data="F1M0,0L2.667,2.66665 5.3334,0 5.3334,-1.78168 2.6667,0.88501 0,-1.78168 0,0z" Fill="{DynamicResource AccentBrush}" HorizontalAlignment="Center" Margin="2,2,2,2" VerticalAlignment="Center" x:Name="arrow" />
         </StackPanel>
       </controls:DropDownButton>
-      <ProgressBar Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Style="{DynamicResource CircularProgressBar}" Visibility="Hidden" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
-      <Image Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+      <ProgressBar Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Style="{DynamicResource CircularProgressBar}" IsVisible="False" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <Image Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
       <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-        <TextBlock Visibility="Collapsed" Margin="8,3,0,3" FontSize="13" x:Name="StatusTextBlock" />
-        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Visibility="Collapsed" Click="TestButton_Click" x:Name="TestButton" />
-        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Visibility="Collapsed" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
+        <TextBlock IsVisible="False" Margin="8,3,0,3" FontSize="13" x:Name="StatusTextBlock" />
+        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="TestButton_Click" x:Name="TestButton" />
+        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
       </StackPanel>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="Parent Folder:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <Grid Grid.Column="1" Grid.Row="2">

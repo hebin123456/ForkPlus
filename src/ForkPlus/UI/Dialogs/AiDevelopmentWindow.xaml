@@ -36,8 +36,8 @@
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <ProgressBar Grid.Column="0" x:Name="ProgressBar" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" />
-        <Button Grid.Column="1" x:Name="StopButton" Content="Stop" FontSize="11" Padding="8,1" Margin="6,0,0,0" Visibility="Collapsed" Click="StopButton_Click" MinHeight="22" ToolTip="Stop the current AI task and abort its request" />
+        <ProgressBar Grid.Column="0" x:Name="ProgressBar" Height="3" IsIndeterminate="True" IsVisible="False" Foreground="{DynamicResource AccentColorBrush}" />
+        <Button Grid.Column="1" x:Name="StopButton" Content="Stop" FontSize="11" Padding="8,1" Margin="6,0,0,0" IsVisible="False" Click="StopButton_Click" MinHeight="22" ToolTip="Stop the current AI task and abort its request" />
       </Grid>
       <!-- Input area -->
       <Grid Grid.Row="1">

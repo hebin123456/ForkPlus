@@ -65,12 +65,12 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Style="{DynamicResource CircularProgressBar}" Visibility="Hidden" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
-      <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+      <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Style="{DynamicResource CircularProgressBar}" IsVisible="False" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
       <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
-        <TextBlock Visibility="Collapsed" Margin="8,3,0,0" FontSize="13" x:Name="StatusTextBlock" />
-        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Visibility="Collapsed" Click="TestButton_Click" x:Name="TestButton" />
-        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Visibility="Collapsed" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
+        <TextBlock IsVisible="False" Margin="8,3,0,0" FontSize="13" x:Name="StatusTextBlock" />
+        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="TestButton_Click" x:Name="TestButton" />
+        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
       </StackPanel>
     </Grid>
   </Grid>

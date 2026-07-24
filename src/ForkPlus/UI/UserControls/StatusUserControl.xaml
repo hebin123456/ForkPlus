@@ -112,7 +112,7 @@
           </TextBlock>
         </Grid>
       </controls:CenteredDockPanel>
-      <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Margin="0" Visibility="Visible" x:Name="StatusProgressBar">
+      <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Margin="0" IsVisible="True" x:Name="StatusProgressBar">
         <ProgressBar.Foreground>
           <DynamicResource ResourceKey="SystemAccentBrush" />
         </ProgressBar.Foreground>

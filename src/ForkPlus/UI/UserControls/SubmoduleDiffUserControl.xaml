@@ -174,7 +174,7 @@
       </controls:NoUIAutomationListView.View>
     </controls:NoUIAutomationListView>
     <StackPanel Grid.Row="3" Margin="0,10,0,10" Orientation="Horizontal" HorizontalAlignment="Center">
-      <Button Content="Update Submodule" Visibility="Collapsed" x:Name="UpdateSubmoduleButton" />
+      <Button Content="Update Submodule" IsVisible="False" x:Name="UpdateSubmoduleButton" />
       <Button Content="Open Submodule" x:Name="OpenSubmoduleButton" />
     </StackPanel>
   </Grid>

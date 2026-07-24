@@ -47,7 +47,7 @@
                 <TextBlock Text="open url in browser" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}" />
               </DockPanel>
             </ComboBoxItem>
-            <ComboBoxItem Visibility="Collapsed" x:Name="CancelComboBoxItem">
+            <ComboBoxItem IsVisible="False" x:Name="CancelComboBoxItem">
               <DockPanel Width="370">
                 <TextBlock DockPanel.Dock="Left" Text="Cancel" Width="110" FontSize="13" />
                 <TextBlock Text="close dialog" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}" />

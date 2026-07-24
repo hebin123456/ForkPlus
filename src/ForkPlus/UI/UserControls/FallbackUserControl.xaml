@@ -20,7 +20,7 @@
         </TextBlock.Foreground>
         <TextBlock.Visibility>Collapsed</TextBlock.Visibility>
       </TextBlock>
-      <Button DockPanel.Dock="Bottom" Margin="0,15,0,30" Visibility="Collapsed" HorizontalAlignment="Center" Click="Button1_Click" x:Name="Button1" />
+      <Button DockPanel.Dock="Bottom" Margin="0,15,0,30" IsVisible="False" HorizontalAlignment="Center" Click="Button1_Click" x:Name="Button1" />
       <TextBlock Margin="0,10,0,0" TextAlignment="Center" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" x:Name="FallbackMessageTextBlock">
         <TextBlock.Foreground>
           <DynamicResource ResourceKey="ForegroundBrush.Gray" />

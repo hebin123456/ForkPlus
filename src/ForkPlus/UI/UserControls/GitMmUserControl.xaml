@@ -117,15 +117,15 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ProgressBar Grid.Row="0" Height="4" IsIndeterminate="True" Visibility="Collapsed" x:Name="BusyProgressBar" />
+      <ProgressBar Grid.Row="0" Height="4" IsIndeterminate="True" IsVisible="False" x:Name="BusyProgressBar" />
       <DockPanel Grid.Row="1" Margin="0,6,0,4">
         <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Collapse" Click="ToggleCommandOutputButton_Click" x:Name="ToggleCommandOutputButton" />
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Cancel" Visibility="Collapsed" Click="CancelCommandButton_Click" x:Name="CancelCommandButton" />
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Uploads" Visibility="Collapsed" Click="ShowUploadLinksButton_Click" x:Name="ShowUploadLinksButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Cancel" IsVisible="False" Click="CancelCommandButton_Click" x:Name="CancelCommandButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Uploads" IsVisible="False" Click="ShowUploadLinksButton_Click" x:Name="ShowUploadLinksButton" />
         <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="History" Click="CommandHistoryButton_Click" x:Name="CommandHistoryButton" />
         <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" />
       </DockPanel>
-      <Border Grid.Row="2" Margin="0,0,0,4" Padding="8,5" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" Visibility="Collapsed" x:Name="UploadLinksContainer">
+      <Border Grid.Row="2" Margin="0,0,0,4" Padding="8,5" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" IsVisible="False" x:Name="UploadLinksContainer">
         <DockPanel LastChildFill="True">
           <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
           <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
@@ -139,6 +139,6 @@
       </Border>
       <TextBlock Grid.Row="4" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" x:Name="StatusTextBlock" />
     </Grid>
-    <Button Grid.Row="1" Margin="0,0,0,0" Padding="8,1" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Expand Command Output" Visibility="Collapsed" Click="ToggleCommandOutputButton_Click" x:Name="ExpandCommandOutputButton" />
+    <Button Grid.Row="1" Margin="0,0,0,0" Padding="8,1" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Expand Command Output" IsVisible="False" Click="ToggleCommandOutputButton_Click" x:Name="ExpandCommandOutputButton" />
   </Grid>
 </UserControl>

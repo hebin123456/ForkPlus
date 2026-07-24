@@ -112,7 +112,7 @@
       <TextBlock Margin="10,2,0,2" FontSize="15" FontWeight="Medium" Text="Search Commits" Foreground="{DynamicResource ForegroundBrush}" />
       <Grid Grid.Row="1" Margin="4,4,4,0">
         <controls:FilterTextBox UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />
-        <ProgressBar Margin="0,0,20,1" Style="{DynamicResource CircularProgressBar}" Visibility="Collapsed" Width="12" Height="12" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+        <ProgressBar Margin="0,0,20,1" Style="{DynamicResource CircularProgressBar}" IsVisible="False" Width="12" Height="12" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
       </Grid>
       <DockPanel Grid.Row="2" Margin="6,3,6,3">
         <controls:DropDownButton DockPanel.Dock="Left" Height="20" Padding="4,0,4,0" VerticalAlignment="Center" Style="{DynamicResource ArrowDropDownButtonStyle}" BorderBrush="#00FFFFFF" Background="#00FFFFFF" x:Name="SearchDropdownButton">

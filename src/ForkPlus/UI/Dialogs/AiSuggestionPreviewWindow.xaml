@@ -11,7 +11,7 @@
     </Grid.RowDefinitions>
     <Grid Grid.Row="1" Grid.Column="1">
       <controls:FileDiffControl Target="Popup" x:Name="PreviewDiffControl" />
-      <TextBox FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Visibility="Collapsed" x:Name="FallbackTextBox" />
+      <TextBox FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsVisible="False" x:Name="FallbackTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
