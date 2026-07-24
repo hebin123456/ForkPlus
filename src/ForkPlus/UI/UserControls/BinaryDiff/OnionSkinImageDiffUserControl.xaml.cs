@@ -110,7 +110,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs<double> e)
+		private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e) // 阶段 5：Avalonia RangeBaseValueChangedEventArgs 非泛型
 		{
 			RefreshOverlayImageOpacity();
 		}

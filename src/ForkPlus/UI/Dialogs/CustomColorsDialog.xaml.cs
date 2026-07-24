@@ -305,7 +305,7 @@ namespace ForkPlus.UI.Dialogs
 			v = Math.Max(0, Math.Min(1, 1 - y / 160));
 		}
 
-		private void RgbSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs<double> e) // 阶段 5：WPF RoutedPropertyChangedEventArgs<double> → Avalonia RangeBaseValueChangedEventArgs<double>（Slider.ValueChanged）
+		private void RgbSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e) // 阶段 5：WPF RoutedPropertyChangedEventArgs<double> → Avalonia RangeBaseValueChangedEventArgs（非泛型，Slider.ValueChanged）
 		{
 			if (!IsLoaded || _suppressUpdates) return;
 			byte r = (byte)Math.Round(RSlider.Value);

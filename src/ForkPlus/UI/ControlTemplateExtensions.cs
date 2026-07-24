@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
+// 阶段 5：Avalonia 的 ControlTemplate 具体类在 Avalonia.Markup.Xaml.Templates
+// （Avalonia.Controls.Templates 仅含 IControlTemplate/IDataTemplate 等接口）。
+using Avalonia.Markup.Xaml.Templates;
 
 namespace ForkPlus.UI
 {

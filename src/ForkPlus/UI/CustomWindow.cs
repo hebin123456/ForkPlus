@@ -17,7 +17,9 @@ namespace ForkPlus.UI
 	/// WPF WindowChrome/HwndSource/Win32 消息钩子 → Avalonia ExtendClientAreaToDecorationsHint。
 	/// DependencyProperty → StyledProperty&lt;T&gt;。OnSourceInitialized → 移除（Win32 专属）。
 	/// </summary>
-	[ContentProperty("Content")]
+	// 阶段 5：WPF [ContentProperty("Content")] → Avalonia [Content("Content")]
+	// （Avalonia.Metadata.ContentAttribute，Avalonia 无 ContentPropertyAttribute）。
+	[Content("Content")]
 	[TemplatePart(Name = "PART_MinimizeButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_MaximizeButton", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_RestoreButton", Type = typeof(Button))]
