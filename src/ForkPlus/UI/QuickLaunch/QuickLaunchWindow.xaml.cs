@@ -46,7 +46,7 @@ namespace ForkPlus.UI.QuickLaunch
 				base.Title = PreferencesLocalization.Current("Quick Launch");
 				return;
 			}
-			base.Owner = MainWindow.Instance;
+			// base.Owner = MainWindow.Instance;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			_showCheckout = showCheckout;
 			_refreshCommandListAction = new DelayedAction<bool>(RefreshCommandList, 0.1);
 			base.Loaded += delegate

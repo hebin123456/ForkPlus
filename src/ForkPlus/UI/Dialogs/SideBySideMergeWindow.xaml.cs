@@ -26,6 +26,7 @@ using ForkPlus.Utils.Http;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Primitives;
 
 namespace ForkPlus.UI.Dialogs
 {

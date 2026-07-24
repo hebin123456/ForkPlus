@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - 移除 using System.Windows;（实际未引用任何 System.Windows 类型，均为未使用 import）
 // - 注：RepositoryColor 是项目自定义枚举（ForkPlus.Git 命名空间），非 System.Windows.Media.Color。

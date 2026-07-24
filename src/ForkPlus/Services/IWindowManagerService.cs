@@ -1,5 +1,6 @@
 using System;
 using ForkPlus.Git;
+using Avalonia;
 
 namespace ForkPlus.Services
 {

@@ -3,7 +3,7 @@
 // - using System.Windows.Media → using Avalonia.Media
 // - FrameworkElement → Avalonia.Controls.Control
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
-// - base.RenderSize → Bounds.Size
+// - Bounds.Size → Bounds.Size
 // - Brush（字段类型）→ IBrush；Pen 保持（Avalonia.Media.Pen，接收 IBrush）
 // - WeakEventManager<T,S>.AddHandler → 直接事件订阅（阶段 6 改用 Avalonia WeakEvent）
 // - FormattedText 去掉 pixelsPerDip 参数（Avalonia FormattedText 无此参数）

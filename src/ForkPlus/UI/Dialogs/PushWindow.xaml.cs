@@ -320,7 +320,7 @@ protected override string GetCommandPreview()
 		if (remoteItem.ItemType == RemoteItemType.AddExistingRemote)
 		{
 			EditRemoteWindow editRemoteWindow = new EditRemoteWindow(_repositoryUserControl, gitModule);
-			editRemoteWindow.Owner = this;
+			// editRemoteWindow.Owner = this;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (editRemoteWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (!editRemoteWindow.GitResult.Succeeded)
@@ -376,7 +376,7 @@ protected override string GetCommandPreview()
 		{
 			string localBranchName = gitModule.Settings.PushLastCustomRefspec ?? localBranch.Name;
 			AddCustomRefspecWindow addCustomRefspecWindow = new AddCustomRefspecWindow(selectedRemote.Name, localBranchName);
-			addCustomRefspecWindow.Owner = this;
+			// addCustomRefspecWindow.Owner = this;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (addCustomRefspecWindow.ShowDialog().GetValueOrDefault())
 			{
 				_customRefspec = addCustomRefspecWindow.OutRefspec;

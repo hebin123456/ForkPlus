@@ -61,7 +61,7 @@ namespace ForkPlus.UI.Dialogs
 		private void GenerateNewSSHKeyMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			GenerateNewSshKeyWindow generateNewSshKeyWindow = new GenerateNewSshKeyWindow();
-			generateNewSshKeyWindow.Owner = this;
+			// generateNewSshKeyWindow.Owner = this;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (!generateNewSshKeyWindow.ShowDialog().GetValueOrDefault())
 			{
 				return;

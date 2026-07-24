@@ -1,3 +1,4 @@
+using Avalonia.Controls.Primitives;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.* → using Avalonia.*
 // - Grid/ColumnDefinition/RowDefinition/ScrollViewer/StackPanel/TextBlock/WrapPanel/Border → Avalonia.Controls 同名类型

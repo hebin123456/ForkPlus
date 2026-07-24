@@ -195,7 +195,7 @@ namespace ForkPlus.UI.Controls
 			if (_isLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
 				// 阶段 4.5：Avalonia DragDrop.DoDragDrop 签名与 WPF 兼容（返回 Task，丢弃即可）。
-				_ = DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
+				_ = DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
 			}
 		}
 

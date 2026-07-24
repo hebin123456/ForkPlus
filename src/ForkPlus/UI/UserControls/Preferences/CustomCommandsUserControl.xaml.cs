@@ -244,7 +244,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			CustomCommandViewModel customCommandViewModel = CustomCommandsListBox.SelectedItem as CustomCommandViewModel;
 			EditCustomCommandUIControlsWindow editCustomCommandUIControlsWindow = new EditCustomCommandUIControlsWindow(customCommandViewModel.UIViewModel.Controls);
-			editCustomCommandUIControlsWindow.Owner = _parentWindow;
+			// editCustomCommandUIControlsWindow.Owner = _parentWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (editCustomCommandUIControlsWindow.ShowDialog().GetValueOrDefault())
 			{
 				customCommandViewModel.UIViewModel.Controls = editCustomCommandUIControlsWindow.OutControls;
@@ -288,7 +288,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private CustomCommandAction EditAction(CustomCommand customCommand, CustomCommandAction action, bool showCancel)
 		{
 			EditCustomActionWindow editCustomActionWindow = new EditCustomActionWindow(customCommand, action, showCancel);
-			editCustomActionWindow.Owner = _parentWindow;
+			// editCustomActionWindow.Owner = _parentWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (editCustomActionWindow.ShowDialog().GetValueOrDefault())
 			{
 				return editCustomActionWindow.OutAction;

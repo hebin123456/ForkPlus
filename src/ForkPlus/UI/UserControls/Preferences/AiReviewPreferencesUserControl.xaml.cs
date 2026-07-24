@@ -1,4 +1,5 @@
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia
 // - using System.Windows.Controls → using Avalonia.Controls + using Avalonia.Controls.Primitives（ScrollBarVisibility）

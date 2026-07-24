@@ -7,6 +7,7 @@ using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using AvaloniaEdit.Document;
+using Avalonia.Controls.Primitives;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -114,12 +115,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			streamGeometry.FillRule = FillRule.Nonzero;
+			streamGeometry.FillRule = FillRule.NonZero;
 			// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
 			// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			StreamGeometry streamGeometry2 = new StreamGeometry();
-			streamGeometry2.FillRule = FillRule.Nonzero;
+			streamGeometry2.FillRule = FillRule.NonZero;
 			using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);

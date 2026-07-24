@@ -4,6 +4,7 @@ using System.IO;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
 using ForkPlus.UI.UserControls;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {

@@ -152,7 +152,7 @@ namespace ForkPlus.UI.Controls.Editor
 			_textEditor = textEditor;
 			IsHitTestVisible = false;
 			_textEditor.PointerEntered += TextEditor_MouseEnter;
-			_textEditor.PointerLeave += TextEditor_MouseLeave;
+			_textEditor.PointerExited += TextEditor_MouseLeave;
 			_textEditor.PointerMoved += TextEditor_MouseMove;
 			_textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
 			_textEditor.TextChanged += TextEditor_TextChanged;

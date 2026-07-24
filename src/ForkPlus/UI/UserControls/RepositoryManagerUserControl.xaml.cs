@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextRequestedEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType/Separator）
@@ -357,7 +358,7 @@ namespace ForkPlus.UI.UserControls
 			if (array.ContainsItem((RepositoryManagerTreeViewItem x) => x is RepositoryManagerSectionItem repositoryManagerSectionItem && repositoryManagerSectionItem == _recent))
 			{
 				e.Handled = true;
-				RepositoriesTreeView.ContextMenu.IsOpen = false;
+				RepositoriesTreeView.ContextMenu.Close()
 			}
 			else
 			{

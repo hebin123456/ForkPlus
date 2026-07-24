@@ -189,7 +189,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (change.NewValue is bool enableMulti && enableMulti)
 				{
-					TreeView.SelectionMode = SelectionMode.Extended;
+					TreeView.SelectionMode = SelectionMode.Multiple;
 				}
 				else
 				{

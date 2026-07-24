@@ -24,6 +24,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using NLog;
 using NLog.Targets;
 using Avalonia.Controls.Metadata;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {

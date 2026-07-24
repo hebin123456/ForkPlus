@@ -72,7 +72,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (control is ContextMenu contextMenu)
 				{
-					contextMenu.IsOpen = false;
+					contextMenu.Close()
 					break;
 				}
 			}

@@ -4,6 +4,7 @@ using System.Threading;
 using ForkPlus.Git.Commands;
 using OxyPlot;
 using OxyPlot.Series;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls
 {

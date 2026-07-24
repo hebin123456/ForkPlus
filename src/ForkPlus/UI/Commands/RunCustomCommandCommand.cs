@@ -49,7 +49,7 @@ namespace ForkPlus.UI.Commands
 				return true;
 			}
 			RunSharedCustomCommandConfirmationWindow runSharedCustomCommandConfirmationWindow = new RunSharedCustomCommandConfirmationWindow(gitModule.RepositoryName);
-			runSharedCustomCommandConfirmationWindow.Owner = MainWindow.Instance;
+			// runSharedCustomCommandConfirmationWindow.Owner = MainWindow.Instance;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (runSharedCustomCommandConfirmationWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (runSharedCustomCommandConfirmationWindow.TrustThisRepository)

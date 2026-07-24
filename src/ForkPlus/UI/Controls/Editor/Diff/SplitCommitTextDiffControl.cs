@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives; // 阶段 5：ScrollBarVisibility
 using Avalonia.Input; // 阶段 5：ContextRequestedEventArgs（ITextDiffControl.EditorContextMenuOpening）
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

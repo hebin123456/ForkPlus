@@ -2,7 +2,7 @@
 // - using System.Windows → using Avalonia + using Avalonia.Controls + using Avalonia.Input + using Avalonia.Media
 // - FrameworkElement → Avalonia.Controls.Control
 // - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 渲染方法名）
-// - base.RenderSize → Bounds.Size
+// - Bounds.Size → Bounds.Size
 // - OnRenderSizeChanged(SizeChangedInfo) → ArrangeOverride 检测尺寸变化（Avalonia 无 OnRenderSizeChanged）
 // - Mouse* 事件 → Pointer* 事件（OnMouseLeave → OnPointerExited）；PointerPressedEventArgs → PointerPressedEventArgs；PointerEventArgs → PointerEventArgs
 // - Point.Offset(double,double) → Point + Vector（Avalonia Point 为只读结构体）

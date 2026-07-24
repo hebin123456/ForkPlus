@@ -8,6 +8,7 @@ using ForkPlus.Git;
 using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {

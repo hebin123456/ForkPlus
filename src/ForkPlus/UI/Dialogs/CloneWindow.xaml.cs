@@ -18,6 +18,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
 using Avalonia.Media;
 using System.ComponentModel;
+using Avalonia;
 
 namespace ForkPlus.UI.Dialogs
 {

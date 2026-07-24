@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Input
 // - e.Data.GetData → e.Data.Get（Avalonia IDataObject 方法名为 Get，非 GetData）

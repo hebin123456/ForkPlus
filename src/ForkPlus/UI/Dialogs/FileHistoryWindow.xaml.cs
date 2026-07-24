@@ -72,7 +72,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			else if (mode is ShowFileHistoryWindowCommand.Mode.File)
 			{
-				TreeView.SelectionMode = SelectionMode.Extended;
+				TreeView.SelectionMode = SelectionMode.Multiple;
 			}
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(mode.Path));
 			FileNameTextBlock.FilePath = mode.Path;

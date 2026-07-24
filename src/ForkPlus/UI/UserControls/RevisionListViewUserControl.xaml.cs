@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Application/AvaloniaObject/IVisual）+ using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ScrollViewer/Border/ListBoxItem/ContentPresenter/StackPanel/Separator/MenuItem/ContextMenu/SizeChangedEventArgs/SelectionChangedEventArgs/ContextRequestedEventArgs）
@@ -480,7 +481,7 @@ namespace ForkPlus.UI.UserControls
 									return;
 								}
 								e.Handled = true;
-								RevisionListView.ContextMenu.IsOpen = false;
+								RevisionListView.ContextMenu.Close()
 								return;
 							}
 						}
@@ -488,7 +489,7 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			e.Handled = true;
-			RevisionListView.ContextMenu.IsOpen = false;
+			RevisionListView.ContextMenu.Close()
 		}
 
 		[Null]
@@ -1400,7 +1401,7 @@ namespace ForkPlus.UI.UserControls
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = Application.Current?.MainWindow;
+			// window.Owner = Application.Current?.MainWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1472,7 +1473,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = Application.Current?.MainWindow;
+			// window.Owner = Application.Current?.MainWindow;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1983,7 +1984,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (frameworkElement is ContextMenu contextMenu)
 				{
-					contextMenu.IsOpen = false;
+					contextMenu.Close()
 					break;
 				}
 			}

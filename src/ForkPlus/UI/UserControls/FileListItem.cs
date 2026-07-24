@@ -93,7 +93,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			try
 			{
-				_ = DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+				_ = DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
 			}
 			catch
 			{

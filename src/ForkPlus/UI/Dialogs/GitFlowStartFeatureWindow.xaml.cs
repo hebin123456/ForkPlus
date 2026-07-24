@@ -7,6 +7,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia;
 
 namespace ForkPlus.UI.Dialogs
 {

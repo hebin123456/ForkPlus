@@ -4,6 +4,7 @@ using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
+using Avalonia;
 
 namespace ForkPlus.UI.Commands
 {

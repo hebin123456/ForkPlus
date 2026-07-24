@@ -7,6 +7,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Services;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {

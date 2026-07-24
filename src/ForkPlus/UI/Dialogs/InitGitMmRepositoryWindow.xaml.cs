@@ -10,6 +10,7 @@ using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia;
 
 namespace ForkPlus.UI.Dialogs
 {

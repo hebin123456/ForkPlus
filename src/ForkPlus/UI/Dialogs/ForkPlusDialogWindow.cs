@@ -219,7 +219,7 @@ namespace ForkPlus.UI.Dialogs
 				MainWindow instance = MainWindow.Instance;
 				if (instance != null)
 				{
-					base.Owner = instance;
+					// base.Owner = instance;  // 阶段5：Avalonia Window.Owner 只读，已注释
 					if (preventMainWindowRefresh)
 					{
 						instance.PreventRefreshAfterChildDialogClose(GetType().Name);

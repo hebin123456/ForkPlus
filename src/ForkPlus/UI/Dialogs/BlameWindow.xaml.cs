@@ -22,6 +22,7 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Primitives;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -602,7 +603,7 @@ namespace ForkPlus.UI.Dialogs
 		private void ShowGoToLineWindow()
 		{
 			GoToLineWindow goToLineWindow = new GoToLineWindow();
-			goToLineWindow.Owner = this;
+			// goToLineWindow.Owner = this;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			if (goToLineWindow.ShowDialog().GetValueOrDefault() && goToLineWindow.LineNumber.HasValue)
 			{
 				TextDiffControl.ScrollToLine(goToLineWindow.LineNumber.Value);

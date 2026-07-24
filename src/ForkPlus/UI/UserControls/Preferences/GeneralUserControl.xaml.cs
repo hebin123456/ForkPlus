@@ -1,3 +1,4 @@
+using Avalonia.Controls.Primitives;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls
@@ -147,7 +148,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			else
 			{
 				e.Handled = true;
-				SrcDirsListBox.ContextMenu.IsOpen = false;
+				SrcDirsListBox.ContextMenu.Close()
 			}
 		}
 

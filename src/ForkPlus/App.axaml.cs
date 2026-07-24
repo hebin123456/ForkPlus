@@ -402,9 +402,7 @@ namespace ForkPlus
 			Window activeWindowObj = GetDesktopWindows().FirstOrDefault((Window x) => x.IsActive);
 			string activeWindow = activeWindowObj?.GetType().FullName ?? "<none>";
 			// 阶段 5：Avalonia 无 FocusManager.Instance 单例；从活动窗口的 FocusManager 取焦点元素。
-			IInputElement focusedInputElement = activeWindowObj != null
-				? FocusManager.GetFocusManager(activeWindowObj)?.GetFocusedElement()
-				: null;
+			IInputElement focusedInputElement = activeWindowObj?.FocusManager?.GetFocusedElement();
 			AvaloniaObject focusedAvaloniaObject = focusedInputElement as AvaloniaObject;
 			string focusedElement = DescribeInputElement(focusedInputElement);
 			string focusedElementAncestors = DescribeAncestors(focusedAvaloniaObject);

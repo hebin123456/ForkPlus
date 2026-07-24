@@ -431,7 +431,7 @@ namespace ForkPlus.UI.UserControls
 
 			AiTextResultWindow window = new AiTextResultWindow();
 			// 阶段 4.5：WPF Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 AiReviewPreferencesUserControl）。
-			window.Owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance;
+			// window.Owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance;  // 阶段5：Avalonia Window.Owner 只读，已注释
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

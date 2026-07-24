@@ -97,7 +97,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			double num = base.RenderSize.Width - 3.0;
+			double num = Bounds.Size.Width - 3.0;
 			double num2 = 16.0;
 			// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / LineTo(p, isStroked, isSmoothJoin) →
 			// Avalonia BeginFigure(p, isFilled) / LineTo(p, isStroked) + EndFigure(isClosed)。原 isClosed:false，
@@ -136,10 +136,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.RenderSize.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.VerticalOffset + 1.0));
+					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(Bounds.Size.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.VerticalOffset + 1.0));
 				}
 			}
-			drawingContext.DrawLine(_separatorPen, new Point(base.RenderSize.Width - 2.0, 0.0), new Point(base.RenderSize.Width - 2.0, base.RenderSize.Height));
+			drawingContext.DrawLine(_separatorPen, new Point(Bounds.Size.Width - 2.0, 0.0), new Point(Bounds.Size.Width - 2.0, Bounds.Size.Height));
 		}
 
 		// 阶段 4 里程碑 4.7-a：WPF Mouse* 事件 → Avalonia Pointer* 事件。

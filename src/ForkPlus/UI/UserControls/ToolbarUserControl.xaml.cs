@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Thickness/Point/Visibility）+ using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Border/TextBlock/Canvas/Image/ItemCollection）
@@ -182,7 +183,7 @@ namespace ForkPlus.UI.UserControls
 				if (KeyboardHelper.IsCtrlDown)
 				{
 					MainWindow.Commands.SwitchApplicationTheme.Execute();
-					AppearanceToolbarDropdownButton.ContextMenu.IsOpen = false;
+					AppearanceToolbarDropdownButton.ContextMenu.Close()
 				}
 				else
 				{
@@ -194,7 +195,7 @@ namespace ForkPlus.UI.UserControls
 			if (KeyboardHelper.IsCtrlDown)
 			{
 				MainWindow.Commands.SwitchWorkspace.Execute();
-				WorkspacesToolbarDropdownButton.ContextMenu.IsOpen = false;
+				WorkspacesToolbarDropdownButton.ContextMenu.Close()
 			}
 			else
 			{
@@ -473,8 +474,7 @@ namespace ForkPlus.UI.UserControls
 			return;
 		}
 		ForkPlus.UI.Dialogs.ReflogWindow window = new ForkPlus.UI.Dialogs.ReflogWindow(repo);
-		window.Owner = _mainWindow;
-		window.Show();
+		window.Show(_mainWindow);
 	}
 
 	private void RedoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)

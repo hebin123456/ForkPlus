@@ -5,6 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.CustomCommands
 {

@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Thickness 与 VisualTreeHelper 在 Avalonia 中均位于 Avalonia 命名空间）
 // - using System.Windows.Controls → using Avalonia.Controls

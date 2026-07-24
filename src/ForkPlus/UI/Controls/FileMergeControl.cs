@@ -4,6 +4,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls
 {

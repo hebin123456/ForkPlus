@@ -6,6 +6,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {

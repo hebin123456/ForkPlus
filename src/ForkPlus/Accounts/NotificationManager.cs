@@ -5,6 +5,7 @@ using CommunityToolkit.WinUI.Notifications;
 using ForkPlus.Jobs;
 using ForkPlus.Services;
 using ForkPlus.Utils.Http;
+using Avalonia.Threading;
 
 namespace ForkPlus.Accounts
 {

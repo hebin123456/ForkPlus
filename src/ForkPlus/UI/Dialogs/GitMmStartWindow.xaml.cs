@@ -161,7 +161,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			SubreposDropDownButton.ContextMenu = contextMenu;
 			contextMenu.PlacementTarget = SubreposDropDownButton;
-			contextMenu.IsOpen = true;
+			contextMenu.Open()
 		}
 
 		private void AllSubreposCheckBox_Changed(object sender, RoutedEventArgs e)

@@ -79,7 +79,7 @@ namespace ForkPlus.UI.UserControls
 				_hovered = true;
 			};
 			// 阶段 4.5：WPF MouseLeave → Avalonia PointerLeave（参考 ChunkSelectionLayer）。
-			base.PointerLeave += delegate
+			base.PointerExited += delegate
 			{
 				_hovered = false;
 			};

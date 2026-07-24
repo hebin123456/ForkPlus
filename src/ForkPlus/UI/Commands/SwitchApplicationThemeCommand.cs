@@ -1,5 +1,6 @@
 using Avalonia.Input;
 using ForkPlus.Settings;
+using Avalonia;
 
 namespace ForkPlus.UI.Commands
 {

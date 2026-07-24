@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Controls
 			base.ContextMenu.PlacementTarget = this;
 			base.ContextMenu.Placement = PlacementMode.Bottom;
 			base.ContextMenu.Closed += ContextMenu_Closed;
-			base.ContextMenu.IsOpen = true;
+			base.ContextMenu.Open()
 			base.IsChecked = true;
 		}
 
@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Controls
 		{
 			base.OnUnchecked(e);
 			base.ContextMenu.Closed -= ContextMenu_Closed;
-			base.ContextMenu.IsOpen = false;
+			base.ContextMenu.Close()
 		}
 
 		private void ContextMenu_Closed(object sender, RoutedEventArgs e)

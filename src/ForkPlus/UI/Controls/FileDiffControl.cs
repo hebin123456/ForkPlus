@@ -1,3 +1,5 @@
+using Avalonia.Threading;
+using Avalonia.Interactivity;
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF DependencyProperty → Avalonia StyledProperty。
 // WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
 // WPF Key/Keyboard → Avalonia.Input.Key/FocusManager（Keyboard.FocusedElement 暂保留 + NOTE）。

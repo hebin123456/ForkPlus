@@ -159,7 +159,7 @@ namespace ForkPlus.UI.UserControls
 			else
 			{
 				e.Handled = true;
-				ToolsListBox.ContextMenu.IsOpen = false;
+				ToolsListBox.ContextMenu.Close()
 			}
 		}
 

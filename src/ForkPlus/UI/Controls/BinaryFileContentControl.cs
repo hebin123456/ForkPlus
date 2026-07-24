@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 // 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls。WPF Grid → Avalonia.Controls.Grid。
 // base.Children / Dispatcher.UIThread.Async 在 Avalonia 下 API 兼容（Dispatcher 为 Avalonia.Threading.Dispatcher）。
 using System;
