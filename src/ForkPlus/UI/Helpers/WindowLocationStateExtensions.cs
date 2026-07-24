@@ -1,8 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+//
+// 主要变更：
+// - using System.Windows.* → using Avalonia.*
+// - System.Windows.Window → Avalonia.Controls.Window（API 兼容）
+// - System.Windows.WindowState → Avalonia.Controls.WindowState（已由 WindowLocationState.cs 迁移，枚举值兼容）
+// - System.Windows.Interop.WindowInteropHelper(window).Handle → Avalonia Window.TryGetPlatformHandle(out var handle)
+// - System.Windows.PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice → Avalonia Visual.RenderScaling（单一 DPI 因子，无 M11/M22 分别）
+// - System.Windows.SystemParameters.WindowResizeBorderThickness → 无 Avalonia 等价物，回退到默认值 8px
+// - System.Windows.Media.Visual → Avalonia.Visual
+//
+// 跨平台策略：
+// - 所有 Win32 P/Invoke（MonitorFromWindow/GetWindowPlacement/SetWindowPlacement/SHAppBarMessage/GetSystemMetrics/GetDeviceCaps/GetDC/ReleaseDC）
+//   均为 Windows-only，已用 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 守卫。
+// - 非 Windows 平台：GetWindowLocationState/SetWindowLocationState 回退到 Avalonia 原生 window.Position/ClientSize/WindowState。
+// - TransformFromPixels/TransformToPixels 在非 Windows 平台使用 window.RenderScaling（单一因子，不区分 X/Y）。
+//
+// TODO(4.5): macOS/Linux 平台多显示器工作区（含 Dock 遮挡）尚需原生 API 实现；当前仅 Windows 走 AutoHideEnabled/GetMinMaxInfo 路径。
 using System;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Platform;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Helpers
@@ -159,19 +178,49 @@ namespace ForkPlus.UI.Helpers
 		[DllImport("user32.dll")]
 		private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
+		private static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+		// 阶段 4.5：Avalonia Window.TryGetPlatformHandle 返回 IPlatformHandle（Handle 为 IntPtr HWND）。
+		// 替代 WPF WindowInteropHelper(window).Handle。非 Windows 平台返回 false。
+		private static bool TryGetWindowHandle(Window window, out IntPtr handle)
+		{
+			handle = IntPtr.Zero;
+			if (window == null || !IsWindows)
+			{
+				return false;
+			}
+			if (window.TryGetPlatformHandle(out IPlatformHandle platformHandle))
+			{
+				handle = platformHandle.Handle;
+				return handle != IntPtr.Zero;
+			}
+			return false;
+		}
+
 		public static void SetWindowLocationState(this Window window, WindowLocationState state)
 		{
 			if (DesignTimeHelper.IsInDesignMode() || window == null || state == null)
 			{
 				return;
 			}
-			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window);
+			// 阶段 4.5：非 Windows 平台回退到 Avalonia 原生 API（Position/ClientSize/WindowState）。
+			if (!IsWindows || !TryGetWindowHandle(window, out IntPtr handle))
+			{
+				window.Position = new PixelPoint((int)state.Left, (int)state.Top);
+				window.Width = state.Width;
+				window.Height = state.Height;
+				if (window.WindowState != state.WindowState)
+				{
+					window.WindowState = state.WindowState;
+				}
+				return;
+			}
 			WindowPlacement windowPlacement = ToWindowPlacement(state, window);
 			windowPlacement.Length = Marshal.SizeOf(typeof(WindowPlacement));
 			windowPlacement.Flags = 0;
 			if (window.WindowState != WindowState.Minimized)
 			{
-				SetWindowPlacement(windowInteropHelper.Handle, ref windowPlacement);
+				SetWindowPlacement(handle, ref windowPlacement);
 			}
 		}
 
@@ -181,10 +230,15 @@ namespace ForkPlus.UI.Helpers
 			{
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			}
+			// 阶段 4.5：非 Windows 平台回退到 Avalonia 原生 API。
+			if (!IsWindows || !TryGetWindowHandle(window, out IntPtr handle))
+			{
+				return new WindowLocationState(window.Position.X, window.Position.Y, window.ClientSize.Width, window.ClientSize.Height, window.WindowState);
+			}
 			// 始终用 Win32 placement.normalPosition（还原矩形），即使最小化也如此。
 			// 之前最小化时走特殊分支用 WPF 的 window.Left/Top/Width/Height，而这些值在最小化时是
 			// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
-			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
+			WindowPlacement placement = GetPlacement(handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
 			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
@@ -196,7 +250,11 @@ namespace ForkPlus.UI.Helpers
 			{
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			}
-			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
+			if (!IsWindows || !TryGetWindowHandle(window, out IntPtr handle))
+			{
+				return new WindowLocationState(window.Position.X, window.Position.Y, window.ClientSize.Width, window.ClientSize.Height, window.WindowState);
+			}
+			WindowPlacement placement = GetPlacement(handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
 			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
@@ -204,7 +262,7 @@ namespace ForkPlus.UI.Helpers
 
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
 		{
-			if (DesignTimeHelper.IsInDesignMode())
+			if (DesignTimeHelper.IsInDesignMode() || !IsWindows)
 			{
 				return;
 			}
@@ -227,7 +285,7 @@ namespace ForkPlus.UI.Helpers
 
 		public static bool AutoHideEnabled()
 		{
-			if (DesignTimeHelper.IsInDesignMode())
+			if (DesignTimeHelper.IsInDesignMode() || !IsWindows)
 			{
 				return false;
 			}
@@ -237,7 +295,10 @@ namespace ForkPlus.UI.Helpers
 			return 1 == SHAppBarMessage(4u, ref abd);
 		}
 
-		public static Thickness WindowResizeBorderThickness => new Thickness(SystemParameters.WindowResizeBorderThickness.Left, SystemParameters.WindowResizeBorderThickness.Top, SystemParameters.WindowResizeBorderThickness.Left, SystemParameters.WindowResizeBorderThickness.Top);
+		// 阶段 4.5：WPF SystemParameters.WindowResizeBorderThickness → 无 Avalonia 等价物。
+		// 默认值 8px 与 Windows 默认 NonClientArea 边框一致。Avalonia 11 WindowResizeBorderThickness 在 Mac/Linux 由系统决定。
+		// TODO(4.5): 验证 macOS/Linux 下窗口外边框宽度；如需精确值，应通过 window.OffScreenPadding 或原生 API 获取。
+		public static Thickness WindowResizeBorderThickness => new Thickness(8.0);
 
 		public static void TransformFromPixels(Visual visual, double pixelX, double pixelY, out int unitX, out int unitY)
 		{
@@ -247,18 +308,12 @@ namespace ForkPlus.UI.Helpers
 				unitY = (int)pixelY;
 				return;
 			}
-			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			if (presentationSource?.CompositionTarget != null)
-			{
-				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
-				unitX = (int)(pixelX / transformToDevice.M11);
-				unitY = (int)(pixelY / transformToDevice.M22);
-			}
-			else
-			{
-				unitX = (int)pixelX;
-				unitY = (int)pixelY;
-			}
+			// 阶段 4.5：WPF PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice（Matrix M11/M22）
+			// → Avalonia Visual.RenderScaling（单一 DPI 因子，Avalonia 假设 X/Y DPI 一致）。
+			// 对绝大多数显示器成立；混合 DPI 多显示器场景由 Avalonia 自动按显示器缩放。
+			double scaling = visual.RenderScaling;
+			unitX = (int)(pixelX / scaling);
+			unitY = (int)(pixelY / scaling);
 		}
 
 		public static void TransformToPixels(Visual visual, double unitX, double unitY, out int pixelX, out int pixelY)
@@ -269,18 +324,9 @@ namespace ForkPlus.UI.Helpers
 				pixelY = (int)unitY;
 				return;
 			}
-			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			if (presentationSource?.CompositionTarget != null)
-			{
-				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
-				pixelX = (int)(unitX * transformToDevice.M11);
-				pixelY = (int)(unitY * transformToDevice.M22);
-			}
-			else
-			{
-				pixelX = (int)unitX;
-				pixelY = (int)unitY;
-			}
+			double scaling = visual.RenderScaling;
+			pixelX = (int)(unitX * scaling);
+			pixelY = (int)(unitY * scaling);
 		}
 
 		private static WindowPlacement ToWindowPlacement(WindowLocationState state, Window window)
@@ -295,7 +341,7 @@ namespace ForkPlus.UI.Helpers
 			return result;
 		}
 
-		// 改为 internal 以便冒烟测试直接覆盖。Win32 ShowCmd 与 WPF WindowState 的枚举值
+		// 改为 internal 以便冒烟测试直接覆盖。Win32 ShowCmd 与 Avalonia WindowState 的枚举值
 		// 不能直接强转（见 FromShowCmd 注释），这是历史上窗口最大化状态丢失的根因，必须有测试守卫。
 		internal static int ToShowCmd(WindowState windowState)
 		{
@@ -307,7 +353,7 @@ namespace ForkPlus.UI.Helpers
 			};
 		}
 
-		// Win32 ShowCmd 与 WPF WindowState 的枚举值不同，不能直接强转：
+		// Win32 ShowCmd 与 Avalonia WindowState 的枚举值不同，不能直接强转：
 		//   SW_NORMAL=1, SW_SHOWMINIMIZED=2, SW_SHOWMAXIMIZED=3
 		//   WindowState.Normal=0, Minimized=1, Maximized=2
 		// 之前用 (WindowState)placement.ShowCmd 导致最大化被存成值 3（无效），
