@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Settings;
@@ -83,7 +83,8 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		public MergeCodeEditor()
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// 阶段 4 里程碑 4.7-a：WPF SetResourceReference(StyleProperty, typeof(CodeEditor)) →
+			// 移除。Avalonia 通过 App.Styles 的类型选择器自动应用 ControlTheme。
 			Theme = ForkPlusSettings.Default.Theme;
 			_mergeChunkSelectionLayer = new MergeChunkSelectionLayer(this);
 			base.TextArea.TextView.InsertLayer(_mergeChunkSelectionLayer, KnownLayer.Selection, LayerInsertionPosition.Above);
@@ -136,9 +137,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			this.MergeChunkRemoved?.Invoke(this, new EventArgs<MergeConflictView.Chunk>(chunk));
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		// 阶段 4 里程碑 4.7-a：WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia Layoutable.OnSizeChanged。
+		protected override void OnSizeChanged(SizeChangedEventArgs e)
 		{
-			base.OnRenderSizeChanged(sizeInfo);
+			base.OnSizeChanged(e);
 			if (_refreshUI && _showScrollbarMap)
 			{
 				RefreshScrollbarMap();
@@ -151,10 +153,12 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			{
 				StreamGeometry streamGeometry = new StreamGeometry();
 				streamGeometry.FillRule = FillRule.Nonzero;
-				StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+				// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
+				// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
+				using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 				StreamGeometry streamGeometry2 = new StreamGeometry();
 				streamGeometry2.FillRule = FillRule.Nonzero;
-				StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+				using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
@@ -166,18 +170,17 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 					double num5 = num3 + num4 * block.Start;
 					double num6 = Math.Max(2.0, num4 * block.Length);
 					StreamGeometryContext obj = ((block.Kind == Block.BlockKind.Resolved) ? streamGeometryContext2 : streamGeometryContext);
-					obj.BeginFigure(new Point(num2, num5), isFilled: true, isClosed: true);
+					// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / PolyLineTo(pts, isStroked, isSmoothJoin) →
+					// Avalonia BeginFigure(p, isFilled) / PolyLineTo(pts, isStroked) + EndFigure(isClosed)。
+					obj.BeginFigure(new Point(num2, num5), isFilled: true);
 					obj.PolyLineTo(new Point[3]
 					{
 						new Point(num2 + num, num5),
 						new Point(num2 + num, num5 + num6),
 						new Point(num2, num5 + num6)
-					}, isStroked: false, isSmoothJoin: false);
+					}, isStroked: false);
+					obj.EndFigure(isClosed: true);
 				}
-				streamGeometryContext.Close();
-				streamGeometry.Freeze();
-				streamGeometryContext2.Close();
-				streamGeometry2.Freeze();
 				match.Data = streamGeometry;
 				match2.Data = streamGeometry2;
 			}

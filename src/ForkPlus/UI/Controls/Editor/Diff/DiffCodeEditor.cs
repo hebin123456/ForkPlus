@@ -115,10 +115,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
 			streamGeometry.FillRule = FillRule.Nonzero;
-			StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+			// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
+			// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
+			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			StreamGeometry streamGeometry2 = new StreamGeometry();
 			streamGeometry2.FillRule = FillRule.Nonzero;
-			StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+			using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
 			int x2 = ((DiffViewMode == DiffViewMode.Split) ? 1 : 4);
@@ -150,10 +152,6 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					}
 				}
 			}
-			streamGeometryContext.Close();
-			streamGeometry.Freeze();
-			streamGeometryContext2.Close();
-			streamGeometry2.Freeze();
 			match.Data = streamGeometry;
 			match2.Data = streamGeometry2;
 		}
@@ -169,13 +167,16 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			double num2 = base.TextArea.ActualHeight - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
-			ctx.BeginFigure(new Point(x, num3), isFilled: true, isClosed: true);
+			// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / PolyLineTo(pts, isStroked, isSmoothJoin) →
+			// Avalonia BeginFigure(p, isFilled) / PolyLineTo(pts, isStroked) + EndFigure(isClosed)。
+			ctx.BeginFigure(new Point(x, num3), isFilled: true);
 			ctx.PolyLineTo(new Point[3]
 			{
 				new Point(x + width, num3),
 				new Point(x + width, num3 + num4),
 				new Point(x, num3 + num4)
-			}, isStroked: false, isSmoothJoin: false);
+			}, isStroked: false);
+			ctx.EndFigure(isClosed: true);
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
