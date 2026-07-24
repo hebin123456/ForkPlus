@@ -680,7 +680,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			CommandHistoryButton.ContextMenu = contextMenu;
 			contextMenu.PlacementTarget = CommandHistoryButton;
-			contextMenu.Open()
+			contextMenu.Open();
 		}
 
 		private static string[] ParseCommandHistory(string command)

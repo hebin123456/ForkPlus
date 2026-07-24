@@ -483,7 +483,7 @@ namespace ForkPlus.UI.UserControls
 									return;
 								}
 								e.Handled = true;
-								RevisionListView.ContextMenu.Close()
+								RevisionListView.ContextMenu.Close();
 								return;
 							}
 						}
@@ -491,7 +491,7 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			e.Handled = true;
-			RevisionListView.ContextMenu.Close()
+			RevisionListView.ContextMenu.Close();
 		}
 
 		[Null]
@@ -1986,7 +1986,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (frameworkElement is ContextMenu contextMenu)
 				{
-					contextMenu.Close()
+					contextMenu.Close();
 					break;
 				}
 			}

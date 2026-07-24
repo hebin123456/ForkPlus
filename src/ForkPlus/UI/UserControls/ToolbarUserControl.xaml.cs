@@ -184,7 +184,7 @@ namespace ForkPlus.UI.UserControls
 				if (KeyboardHelper.IsCtrlDown)
 				{
 					MainWindow.Commands.SwitchApplicationTheme.Execute();
-					AppearanceToolbarDropdownButton.ContextMenu.Close()
+					AppearanceToolbarDropdownButton.ContextMenu.Close();
 				}
 				else
 				{
@@ -196,7 +196,7 @@ namespace ForkPlus.UI.UserControls
 			if (KeyboardHelper.IsCtrlDown)
 			{
 				MainWindow.Commands.SwitchWorkspace.Execute();
-				WorkspacesToolbarDropdownButton.ContextMenu.Close()
+				WorkspacesToolbarDropdownButton.ContextMenu.Close();
 			}
 			else
 			{

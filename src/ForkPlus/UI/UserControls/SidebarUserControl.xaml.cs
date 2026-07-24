@@ -536,13 +536,13 @@ namespace ForkPlus.UI.UserControls
 				{
 					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
-					SidebarTreeView.ContextMenu.Open()
+					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
 					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
-					SidebarTreeView.ContextMenu.Open()
+					SidebarTreeView.ContextMenu.Open();
 				}
 			}
 		}
@@ -690,7 +690,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					Log.Warn("Unknown reference type in menu item");
 					e.Handled = true;
-					SidebarTreeView.ContextMenu.Close()
+					SidebarTreeView.ContextMenu.Close();
 				}
 			}
 			else if (sidebarItem is StashSidebarItem)
@@ -739,12 +739,12 @@ namespace ForkPlus.UI.UserControls
 				}
 				Log.Warn("Unknown sidebar group type in menu item");
 				e.Handled = true;
-				SidebarTreeView.ContextMenu.Close()
+				SidebarTreeView.ContextMenu.Close();
 			}
 			else
 			{
 				e.Handled = true;
-				SidebarTreeView.ContextMenu.Close()
+				SidebarTreeView.ContextMenu.Close();
 			}
 		}
 
@@ -2659,7 +2659,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			yield return RepositoryUserControl.Commands.ShowMergeBranchWindow.CreateMenuItem("Merge '" + sourceBranch.Name + "' into " + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.Close()
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowMergeBranchWindow.Execute(repositoryUserControl, sourceBranch, destinationBranch);
 			});
 			LocalBranch sourceLocalBranch = sourceBranch as LocalBranch;
@@ -2667,12 +2667,12 @@ namespace ForkPlus.UI.UserControls
 			{
 				yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Rebase '" + sourceLocalBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 				{
-					SidebarTreeView.ContextMenu.Close()
+					SidebarTreeView.ContextMenu.Close();
 					RepositoryUserControl.Commands.ShowRebaseBranchWindow.Execute(repositoryUserControl, sourceLocalBranch, destinationBranch);
 				});
 				yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Interactively Rebase '" + sourceLocalBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 				{
-					SidebarTreeView.ContextMenu.Close()
+					SidebarTreeView.ContextMenu.Close();
 					RepositoryUserControl.Commands.ShowInteractiveRebaseWindow.Execute(repositoryUserControl, gitModule, sourceLocalBranch, destinationBranch);
 				});
 			}
@@ -2682,12 +2682,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Rebase '" + sourceBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.Close()
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowRebaseBranchWindow.Execute(repositoryUserControl, sourceBranch, destinationBranch);
 			});
 			yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Interactively Rebase '" + sourceBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.Close()
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowInteractiveRebaseWindow.Execute(repositoryUserControl, gitModule, sourceBranch, destinationBranch);
 			});
 		}

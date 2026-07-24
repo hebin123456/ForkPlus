@@ -148,7 +148,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			else
 			{
 				e.Handled = true;
-				SrcDirsListBox.ContextMenu.Close()
+				SrcDirsListBox.ContextMenu.Close();
 			}
 		}
 

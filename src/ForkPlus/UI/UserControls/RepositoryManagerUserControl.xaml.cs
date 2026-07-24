@@ -360,7 +360,7 @@ namespace ForkPlus.UI.UserControls
 			if (array.ContainsItem((RepositoryManagerTreeViewItem x) => x is RepositoryManagerSectionItem repositoryManagerSectionItem && repositoryManagerSectionItem == _recent))
 			{
 				e.Handled = true;
-				RepositoriesTreeView.ContextMenu.Close()
+				RepositoriesTreeView.ContextMenu.Close();
 			}
 			else
 			{

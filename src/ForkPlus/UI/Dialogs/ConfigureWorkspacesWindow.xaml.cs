@@ -58,7 +58,7 @@ namespace ForkPlus.UI.Dialogs
 			else
 			{
 				e.Handled = true;
-				WorkspacesListBox.ContextMenu.Close()
+				WorkspacesListBox.ContextMenu.Close();
 			}
 		}
 
