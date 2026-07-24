@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Avalonia.Input;
+using Avalonia.Media;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
@@ -74,7 +77,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			base.Options.EnableEmailHyperlinks = false;
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;
-			base.FontFamily = new System.Windows.Media.FontFamily("Consolas, Courier New, monospace");
+			base.FontFamily = new FontFamily("Consolas, Courier New, monospace");
 			base.FontSize = 13.0;
 			_colorizer = new HexColorizer(this);
 			base.TextArea.TextView.LineTransformers.Add(_colorizer);
@@ -157,23 +160,26 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			return result;
 		}
 
-		protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF OnPreviewKeyDown(KeyEventArgs) → Avalonia OnKeyDown(KeyEventArgs)。
+		// WPF Keyboard.Modifiers → e.KeyModifiers.HasFlag(KeyModifiers.Control)。
+		// WPF Clipboard.SetText → ServiceLocator.Clipboard.SetText（已封装的跨平台剪贴板服务）。
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			// Ctrl+C：默认复制 hex 字符串（去除多余空白）
-			if (e.Key == System.Windows.Input.Key.C && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+			if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
 			{
 				string selectedText = base.SelectedText;
 				if (!string.IsNullOrEmpty(selectedText))
 				{
 					try
 					{
-						System.Windows.Clipboard.SetText(selectedText);
+						ServiceLocator.Clipboard.SetText(selectedText);
 						e.Handled = true;
 					}
 					catch { }
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 	}
 }
