@@ -104,6 +104,8 @@ namespace ForkPlus.UI
 				desktop.MainWindow = this;
 			}
 			TabManager = new TabManager(TabControl);
+			// 阶段 4.5：初始化键盘修饰键状态跟踪（替代 WPF Keyboard.IsKeyDown 静态查询）。
+			KeyboardHelper.Initialize(this);
 		}
 
 		public void ApplyLocalization()
