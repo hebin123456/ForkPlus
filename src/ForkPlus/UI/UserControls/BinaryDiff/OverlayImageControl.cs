@@ -1,8 +1,22 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Media → using Avalonia.Media
+// - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap（别名替代 BitmapSource）
+// - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
+// - OnRender(DrawingContext) → Render(DrawingContext)（Avalonia 自定义控件绘制重写方法名）
+// - base.Background = Brushes.Red → 移除（Avalonia Control 无 Background 属性；该方法仅绘制图像，不依赖背景色，参考 DrawingContext 渲染流程）
+// - base.ActualWidth/base.ActualHeight → base.Bounds.Width/base.Bounds.Height
+// - image.PixelWidth/image.PixelHeight → image.PixelSize.Width/image.PixelSize.Height（Avalonia Bitmap 用 PixelSize 描述像素尺寸）
+// - InvalidateMeasure/InvalidateVisual → API 兼容（Avalonia.Layoutable/Avalonia.Visual）
+// - MeasureOverride(Size) → API 兼容（Avalonia.Layoutable.MeasureOverride）
+// - drawingContext.DrawImage(image, imageRect) → API 兼容（Bitmap 实现 IImage）
+// - drawingContext.PushClip(RectangleGeometry)/PushOpacity(double)/Pop() → API 兼容
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
@@ -14,12 +28,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			New
 		}
 
-		private BitmapSource _oldImageSource;
+		private Bitmap _oldImageSource;
 
-		private BitmapSource _newImageSource;
+		private Bitmap _newImageSource;
 
 		[Null]
-		private BitmapSource _diffImageSource;
+		private Bitmap _diffImageSource;
 
 		private Size _parentBounds;
 
@@ -85,9 +99,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		public void SetContent(BitmapSource oldImageSource, BitmapSource newImageSource, [Null] BitmapSource diffImageSource)
+		public void SetContent(Bitmap oldImageSource, Bitmap newImageSource, [Null] Bitmap diffImageSource)
 		{
-			base.Background = Brushes.Red;
 			_oldImageSource = oldImageSource;
 			_newImageSource = newImageSource;
 			_diffImageSource = diffImageSource;
@@ -108,12 +121,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			return new Size(width, height);
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			if (_oldImageSource != null && _newImageSource != null)
 			{
-				Rect targetRect = new Rect(0.0, 0.0, base.ActualWidth, base.ActualHeight);
+				Rect targetRect = new Rect(0.0, 0.0, base.Bounds.Width, base.Bounds.Height);
 				Rect imageRect = GetImageRect(_oldImageSize, targetRect);
 				Draw(drawingContext, _oldImageSource, imageRect, HorizontalClip.Old, ClipX);
 				Rect imageRect2 = GetImageRect(_newImageSize, targetRect);
@@ -125,7 +138,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private void Draw(DrawingContext drawingContext, BitmapSource image, Rect imageRect, HorizontalClip clipKind, double? clipX, double? opacity = null)
+		private void Draw(DrawingContext drawingContext, Bitmap image, Rect imageRect, HorizontalClip clipKind, double? clipX, double? opacity = null)
 		{
 			RectangleGeometry rectangleGeometry = null;
 			if (clipX.HasValue)
@@ -175,19 +188,21 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			return new Rect(x, y, imageSize.Width, imageSize.Height);
 		}
 
-		private static Size ResizeImageMaintaningAspectRatio(BitmapSource image, Size targetSize)
+		private static Size ResizeImageMaintaningAspectRatio(Bitmap image, Size targetSize)
 		{
-			if ((double)image.PixelWidth < targetSize.Width && (double)image.PixelHeight < targetSize.Height)
+			double pixelWidth = image.PixelSize.Width;
+			double pixelHeight = image.PixelSize.Height;
+			if (pixelWidth < targetSize.Width && pixelHeight < targetSize.Height)
 			{
-				return new Size(image.PixelWidth, image.PixelHeight);
+				return new Size(pixelWidth, pixelHeight);
 			}
-			double num = targetSize.Width / (double)image.PixelWidth;
-			double num2 = targetSize.Height / (double)image.PixelHeight;
+			double num = targetSize.Width / pixelWidth;
+			double num2 = targetSize.Height / pixelHeight;
 			if (!(num < num2))
 			{
-				return new Size(Math.Floor((double)image.PixelWidth * num2), Math.Floor((double)image.PixelHeight * num2));
+				return new Size(Math.Floor(pixelWidth * num2), Math.Floor(pixelHeight * num2));
 			}
-			return new Size(Math.Floor((double)image.PixelWidth * num), Math.Floor((double)image.PixelHeight * num));
+			return new Size(Math.Floor(pixelWidth * num), Math.Floor(pixelHeight * num));
 		}
 	}
 }

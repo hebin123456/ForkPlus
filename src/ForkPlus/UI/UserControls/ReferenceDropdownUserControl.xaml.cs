@@ -1,10 +1,17 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（IImage）
+// - System.Windows.Media.ImageSource → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
+// - Theme.BranchIcon/TagIcon/RemoteIcon 已返回 Avalonia IImage（参考 Theme.cs）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.CustomCommands;
 
@@ -16,13 +23,14 @@ namespace ForkPlus.UI.UserControls
 		{
 			public ForkPlus.Git.Reference Reference { get; private set; }
 
-			public ImageSource Icon { get; private set; }
+			// 阶段 4.5：WPF ImageSource → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
+			public IImage Icon { get; private set; }
 
 			public string Title { get; private set; }
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			public DropdownItem(ForkPlus.Git.Reference reference, ImageSource icon)
+			public DropdownItem(ForkPlus.Git.Reference reference, IImage icon)
 			{
 				Reference = reference;
 				Icon = icon;
@@ -61,7 +69,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					continue;
 				}
-				ImageSource icon = null;
+				IImage icon = null;
 				string fullReference = reference.FullReference;
 				if (fullReference.StartsWith("refs/heads/"))
 				{
@@ -86,7 +94,7 @@ namespace ForkPlus.UI.UserControls
 			return list.ToArray();
 		}
 
-		private ImageSource GetRemoteIcon(string remoteName)
+		private IImage GetRemoteIcon(string remoteName)
 		{
 			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? Theme.RemoteIcon;
 		}

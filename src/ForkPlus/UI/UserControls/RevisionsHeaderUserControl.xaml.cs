@@ -1,9 +1,17 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness）+ using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/TextBlock/Border）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush）
+// - 新增 using Avalonia.Layout（Visibility）
+// - Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 
@@ -115,6 +123,7 @@ namespace ForkPlus.UI.UserControls
 				subjectTextBlock.Text = subject;
 				subjectTextBlock.ApplySearchAndButrackerHighlighting(null, bugtrackers);
 				subjectTextBlock.ToolTip = revision.Message.TrimEnd();
+				// 阶段 4.5：WPF Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）。
 				descriptionSymbolTextBlock.Visibility = ((!(description != "")) ? Visibility.Collapsed : Visibility.Visible);
 			}
 		}

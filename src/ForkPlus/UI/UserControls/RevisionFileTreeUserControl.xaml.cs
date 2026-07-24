@@ -1,12 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBoxItem/Separator/MenuItem/ContextMenu/ContextMenuEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType）
+// - using System.Windows.Input → using Avalonia.Input（Key/TappedEventArgs）
+// - using System.Windows.Markup → 移除
+// - CommandBindings.Add(command.CreateShortcutCommandBinding(h)) → KeyBindings.Add(command.CreateShortcutKeyBinding(h))（参考 IUICommandExtension/RevisionListViewUserControl）
+// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）
+//   构造函数中显式订阅 FilesTreeView.DoubleTapped += FilesTreeView_MouseDoubleClick（XAML 的 MouseDoubleClick 事件在 Avalonia 不存在，由 XAML 迁移阶段移除）
+// - e.OriginalSource → e.Source（参考 MultiselectionTreeView）
+// - (e.Source as DependencyObject)?.GetParent<ListBoxItem>() → (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>()（参考 DependencyObjectExtensions）
+// - ItemContainerGenerator.ItemFromContainer → 保留（Avalonia API 兼容，参考 ItemsControlExtensions）
+// - GridSplitter.DragCompleted 保留（已在 RepositoryContentUserControl/CommitUserControl 等迁移文件中验证可用）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -30,7 +42,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveFilesTreeViewColumnWidth();
 			};
-			base.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF MouseDoubleClick → Avalonia DoubleTapped（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）。
+			FilesTreeView.DoubleTapped += FilesTreeView_MouseDoubleClick;
+			// 阶段 4.5：WPF CommandBindings.Add(CreateShortcutCommandBinding) → Avalonia KeyBindings.Add(CreateShortcutKeyBinding)（参考 RevisionListViewUserControl）。
+			base.KeyBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutKeyBinding(delegate
 			{
 				RevisionFileTreeViewItem revisionFileTreeViewItem3 = FilesTreeView.SelectedItems.FirstItem<RevisionFileTreeViewItem>();
 				if (revisionFileTreeViewItem3 != null)
@@ -39,7 +54,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(RevisionDetailsUserControl.GitModule, _sha.ToString(), changedFile);
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				RevisionFileTreeViewItem revisionFileTreeViewItem2 = FilesTreeView.SelectedItems.FirstItem<RevisionFileTreeViewItem>();
 				if (revisionFileTreeViewItem2 != null)
@@ -47,7 +62,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyFilePaths.Execute(new string[1] { revisionFileTreeViewItem2.FileTreeItem.FilePath });
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				RevisionFileTreeViewItem revisionFileTreeViewItem = FilesTreeView.SelectedItems.FirstItem<RevisionFileTreeViewItem>();
 				if (revisionFileTreeViewItem != null)
@@ -72,9 +87,11 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void FilesTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseDoubleClick(MouseButtonEventArgs) → Avalonia DoubleTapped(RoutedEventArgs)（参考 FileListUserControl）。
+		// e.OriginalSource → e.Source（参考 MultiselectionTreeView）；DependencyObject → AvaloniaObject（参考 DependencyObjectExtensions）。
+		private void FilesTreeView_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
-			ListBoxItem listBoxItem = (e.OriginalSource as DependencyObject)?.GetParent<ListBoxItem>();
+			ListBoxItem listBoxItem = (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>();
 			if (listBoxItem != null && FilesTreeView.ItemContainerGenerator.ItemFromContainer(listBoxItem) is RevisionFileTreeViewItem revisionFileTreeViewItem)
 			{
 				revisionFileTreeViewItem.IsExpanded = !revisionFileTreeViewItem.IsExpanded;

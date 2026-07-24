@@ -1,13 +1,32 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness）
+// - using System.Windows.Controls → using Avalonia.Controls（Button/TextBlock/TextTrimming）
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Run/Hyperlink/InlineCollection）
+// - using System.Windows.Media → using Avalonia.Media（IBrush/Brushes）
+// - using System.Windows.Navigation → 移除（Avalonia 无 RequestNavigateEventArgs）
+// - using System.Windows.Threading → using Avalonia.Threading（DispatcherTimer/DispatcherPriority）
+// - 新增 using Avalonia.Interactivity（RoutedEventArgs）、using Avalonia.VisualTree（GetVisualAncestors）
+// - RichTextBox.Document.Blocks（FlowDocument 模型）→ StackPanel.Children（每行一个 TextBlock + Inlines）
+//   Paragraph → TextBlock（Inlines 等价；Margin 兼容）。XAML 需同步迁移：RichTextBox → ScrollViewer+StackPanel。
+// - Dispatcher.BeginInvoke(action, DispatcherPriority) → Dispatcher.Post(action, priority)（参考 AiDevelopmentWindow）
+// - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl）
+// - new Hyperlink(new Run(url)) → new Hyperlink + Inlines.Add(new Run(url))（Avalonia Span 无 Inline 构造函数）
+// - Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）
+// - Brush → IBrush（Avalonia.Media.IBrush，Brushes.XXX 返回 ISolidColorBrush）
+// - button.ToolTip = link → ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）
+// - OutputTextBox.ScrollToEnd() → 查找父 ScrollViewer.ScrollToEnd()（Avalonia ScrollViewer.ScrollToEnd 存在）
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Navigation;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using ForkPlus.UI.Controls;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -40,10 +59,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			public string Text { get; }
 
+			// 阶段 4.5：WPF Brush → Avalonia IBrush（Brushes.XXX 返回 ISolidColorBrush 实现 IBrush）。
 			[Null]
-			public Brush Foreground { get; }
+			public IBrush Foreground { get; }
 
-			public OutputSegment(string text, [Null] Brush foreground)
+			public OutputSegment(string text, [Null] IBrush foreground)
 			{
 				Text = text;
 				Foreground = foreground;
@@ -61,7 +81,8 @@ namespace ForkPlus.UI.UserControls
 				}
 				_outputFlushScheduled = true;
 			}
-			Dispatcher.BeginInvoke(new Action(FlushOutput), DispatcherPriority.Background);
+			// 阶段 4.5：WPF Dispatcher.BeginInvoke(action, DispatcherPriority) → Avalonia Dispatcher.Post(action, priority)（参考 AiDevelopmentWindow）。
+			Dispatcher.Post(FlushOutput, DispatcherPriority.Background);
 		}
 
 		private void AppendOutputText(string text)
@@ -94,13 +115,14 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (Dispatcher.CheckAccess())
 			{
-				OutputTextBox.Document.Blocks.Clear();
+				// 阶段 4.5：WPF OutputTextBox.Document.Blocks.Clear() → Avalonia OutputTextBox.Children.Clear()（StackPanel 模型）。
+				OutputTextBox.Children.Clear();
 				_outputLineCount = 0;
 				return;
 			}
 			Dispatcher.Invoke(delegate
 			{
-				OutputTextBox.Document.Blocks.Clear();
+				OutputTextBox.Children.Clear();
 				_outputLineCount = 0;
 			});
 		}
@@ -122,34 +144,45 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (lines.Count > 0)
 			{
-				OutputTextBox.ScrollToEnd();
+				ScrollOutputToEnd();
 			}
+		}
+
+		// 阶段 4.5：WPF RichTextBox.ScrollToEnd() → Avalonia 查找父 ScrollViewer.ScrollToEnd()。
+		// OutputTextBox 为 StackPanel，外层 ScrollViewer 负责滚动（XAML 需同步迁移为 ScrollViewer > StackPanel）。
+		private void ScrollOutputToEnd()
+		{
+			ScrollViewer scrollViewer = OutputTextBox.GetVisualAncestors().OfType<ScrollViewer>().FirstOrDefault();
+			scrollViewer?.ScrollToEnd();
 		}
 
 		private void AppendOutputLine(string text)
 		{
-			Paragraph paragraph = new Paragraph
+			// 阶段 4.5：WPF Paragraph（FlowDocument 块）→ Avalonia TextBlock（Inlines 集合等价）。
+			TextBlock lineBlock = new TextBlock
 			{
 				Margin = new Thickness(0.0)
 			};
 			if (_outputLineCount < RichOutputLineLimit)
 			{
-				AppendOutputInlines(paragraph.Inlines, text);
+				AppendOutputInlines(lineBlock.Inlines, text);
 			}
 			else
 			{
-				AddRun(paragraph.Inlines, StripAnsiEscapes(text ?? ""), null);
+				AddRun(lineBlock.Inlines, StripAnsiEscapes(text ?? ""), null);
 			}
-			OutputTextBox.Document.Blocks.Add(paragraph);
+			// 阶段 4.5：WPF OutputTextBox.Document.Blocks.Add(paragraph) → Avalonia OutputTextBox.Children.Add(textBlock)。
+			OutputTextBox.Children.Add(lineBlock);
 			_outputLineCount++;
 			TrimOutputLines();
 		}
 
 		private void TrimOutputLines()
 		{
-			while (_outputLineCount > MaxOutputLineCount && OutputTextBox.Document.Blocks.FirstBlock != null)
+			// 阶段 4.5：WPF Document.Blocks.FirstBlock/Remove → Avalonia Children[0]/RemoveAt(0)。
+			while (_outputLineCount > MaxOutputLineCount && OutputTextBox.Children.Count > 0)
 			{
-				OutputTextBox.Document.Blocks.Remove(OutputTextBox.Document.Blocks.FirstBlock);
+				OutputTextBox.Children.RemoveAt(0);
 				_outputLineCount--;
 			}
 		}
@@ -162,7 +195,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void AppendOutputInlines(InlineCollection inlines, string text, [Null] Brush foreground)
+		private void AppendOutputInlines(InlineCollection inlines, string text, [Null] IBrush foreground)
 		{
 			int lastIndex = 0;
 			foreach (Match match in UrlRegex.Matches(text))
@@ -175,15 +208,18 @@ namespace ForkPlus.UI.UserControls
 				string url = TrimUrl(match.Value, out trailingText);
 				if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
 				{
-					Hyperlink hyperlink = new Hyperlink(new Run(url))
+					// 阶段 4.5：WPF new Hyperlink(new Run(url)) → Avalonia new Hyperlink + Inlines.Add(new Run(url))（Span 无 Inline 构造函数）。
+					Hyperlink hyperlink = new Hyperlink
 					{
 						NavigateUri = uri
 					};
+					hyperlink.Inlines.Add(new Run(url));
 					if (foreground != null)
 					{
 						hyperlink.Foreground = foreground;
 					}
-					hyperlink.RequestNavigate += OutputHyperlink_RequestNavigate;
+					// 阶段 4.5：WPF Hyperlink.RequestNavigate → Avalonia Hyperlink.Click（参考 AccountDetailsUserControl）。
+					hyperlink.Click += OutputHyperlink_Click;
 					inlines.Add(hyperlink);
 				}
 				else
@@ -202,7 +238,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static void AddRun(InlineCollection inlines, string text, [Null] Brush foreground)
+		private static void AddRun(InlineCollection inlines, string text, [Null] IBrush foreground)
 		{
 			Run run = new Run(text);
 			if (foreground != null)
@@ -215,7 +251,7 @@ namespace ForkPlus.UI.UserControls
 		private static IEnumerable<OutputSegment> ParseAnsiSegments(string text)
 		{
 			int index = 0;
-			Brush foreground = null;
+			IBrush foreground = null;
 			foreach (Match match in AnsiSgrRegex.Matches(text))
 			{
 				if (match.Index > index)
@@ -239,13 +275,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static Brush ApplyAnsiSgr(string sgr, [Null] Brush currentForeground)
+		// 阶段 4.5：WPF Brush → Avalonia IBrush（Brushes.XXX 返回 ISolidColorBrush 实现 IBrush）。
+		private static IBrush ApplyAnsiSgr(string sgr, [Null] IBrush currentForeground)
 		{
 			if (string.IsNullOrWhiteSpace(sgr))
 			{
 				return null;
 			}
-			Brush foreground = currentForeground;
+			IBrush foreground = currentForeground;
 			foreach (string part in sgr.Split(';'))
 			{
 				if (!int.TryParse(part, out int code))
@@ -350,9 +387,13 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void OutputHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+		// 阶段 4.5：WPF RequestNavigateEventArgs.Uri → Avalonia Hyperlink.NavigateUri（参考 HighlightingTextBlockExtensions）。
+		private void OutputHyperlink_Click(object sender, RoutedEventArgs e)
 		{
-			OpenUrl(e.Uri?.AbsoluteUri);
+			if (sender is Hyperlink hyperlink)
+			{
+				OpenUrl(hyperlink.NavigateUri?.AbsoluteUri);
+			}
 			e.Handled = true;
 		}
 
@@ -405,12 +446,14 @@ namespace ForkPlus.UI.UserControls
 						MaxWidth = 260.0
 					},
 					Style = Theme.TransparentButtonStyle,
-					Foreground = Application.Current.TryFindResource("AccentBrush") as System.Windows.Media.Brush,
-					ToolTip = link,
+					// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）。
+					Foreground = Theme.FindBrush("AccentBrush"),
 					FontSize = 12.0,
 					Padding = new Thickness(6.0, 1.0, 6.0, 1.0),
 					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)
 				};
+				// 阶段 4.5：WPF button.ToolTip = link → Avalonia ToolTip.SetTip(button, link)（参考 FileControlHeaderUserControl）。
+				ToolTip.SetTip(button, link);
 				button.Click += delegate
 				{
 					OpenUrl(link);

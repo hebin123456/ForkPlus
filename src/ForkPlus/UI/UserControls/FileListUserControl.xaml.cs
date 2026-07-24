@@ -1,3 +1,19 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（SelectionMode/SizeChangedEventArgs/SelectionChangedEventArgs）
+// - using System.Windows.Input → using Avalonia.Input（DoubleTapped/TappedEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（IImage）
+// - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging（Bitmap）+ using Avalonia.Platform（AssetLoader）
+// - 新增 using Avalonia.Controls.Templates（IDataTemplate，替代 DataTemplate）
+// - BitmapImage(pack:// URI) → AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）
+// - ImageSource → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
+// - DependencyProperty.RegisterAttached + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override（EnableMultiSelection 仅作普通属性用于 XAML）
+// - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
+// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
+// - Delegate.Combine(field, handler) → field += handler
+// - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）；GridViewColumn.ActualWidth 保留（GridView 兼容层属性）
+// - (DataTemplate)base.Resources[key] → (IDataTemplate)base.Resources[key]（Avalonia ItemsControl.ItemTemplate 为 IDataTemplate）
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,12 +21,14 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
@@ -52,18 +70,19 @@ namespace ForkPlus.UI.UserControls
 		// 避免 UI 冻结。注意：不再据此把 Tree 降级为 List——变更多时也应保持树状显示。
 		private const int LargeFileListBackgroundBuildThreshold = 5000;
 
-		private static readonly BitmapImage FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
+		// 阶段 4.5：WPF BitmapImage(pack://application URI) → Avalonia AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）。
+		private static readonly Bitmap FolderIcon = LoadFolderIcon();
 
+		// 阶段 4.5：WPF ImageSource → Avalonia IImage（IconTools.GetImageSourceForExtension 已返回 IImage）。
 		private static readonly ChangedFileEqualityComparer _changedFileEqualityComparer = new ChangedFileEqualityComparer();
 
-		private readonly Dictionary<string, ImageSource> _fileIconCache = new Dictionary<string, ImageSource>(StringComparer.OrdinalIgnoreCase);
+		private readonly Dictionary<string, IImage> _fileIconCache = new Dictionary<string, IImage>(StringComparer.OrdinalIgnoreCase);
 
 		private ChangedFile[] _rawChangedFiles;
 
-		public static readonly DependencyProperty EnableMultiSelectionProperty = DependencyProperty.RegisterAttached("EnableMultiSelection", typeof(bool), typeof(FileListUserControl), new PropertyMetadata(false, delegate(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-		{
-			((FileListUserControl)sender).EnableMultiSelectionPropertyChanged(e);
-		}));
+		// 阶段 4.5：WPF DependencyProperty.RegisterAttached + PropertyMetadata 回调 → Avalonia StyledProperty<bool> + OnPropertyChanged override。
+		// EnableMultiSelection 在 XAML 中作为普通属性使用（参考 StageFileUserControl.xaml），无需 AttachedProperty。
+		public static readonly StyledProperty<bool> EnableMultiSelectionProperty = AvaloniaProperty.Register<FileListUserControl, bool>(nameof(EnableMultiSelection));
 
 		private FileListMode _mode;
 
@@ -75,7 +94,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			get
 			{
-				return (bool)GetValue(EnableMultiSelectionProperty);
+				return GetValue(EnableMultiSelectionProperty);
 			}
 			set
 			{
@@ -139,15 +158,13 @@ namespace ForkPlus.UI.UserControls
 
 		public event EventHandler ColumnHeaderSizeChanged;
 
-		private void EnableMultiSelectionPropertyChanged(DependencyPropertyChangedEventArgs e)
+		[Null]
+		private static Bitmap LoadFolderIcon()
 		{
-			if (e.NewValue is bool && (bool)e.NewValue)
+			// 阶段 4.5：WPF pack://application URI + BitmapImage → Avalonia avares:// URI + AssetLoader.Open + Bitmap（参考 AvatarManager）。
+			using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")))
 			{
-				TreeView.SelectionMode = SelectionMode.Extended;
-			}
-			else
-			{
-				TreeView.SelectionMode = SelectionMode.Single;
+				return new Bitmap(stream);
 			}
 		}
 
@@ -155,11 +172,30 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			TreeView.SelectionChanged += TreeViewSelectionChanged;
-			TreeView.MouseDoubleClick += TreeView_MouseDoubleClick;
-			FileListTreeView treeView = TreeView;
-			treeView.ItemsDrop = (EventHandler<FileListTreeView.DropEventArgs>)Delegate.Combine(treeView.ItemsDrop, new EventHandler<FileListTreeView.DropEventArgs>(TreeView_ItemsDrop));
+			// 阶段 4.5：WPF MouseDoubleClick → Avalonia DoubleTapped（参考 MultiselectionTreeView.OnDoubleTapped）。
+			TreeView.DoubleTapped += TreeView_MouseDoubleClick;
+			// 阶段 4.5：WPF Delegate.Combine(field, handler) → Avalonia field += handler。
+			TreeView.ItemsDrop += TreeView_ItemsDrop;
 			TreeView.RootItem = new FileListItem(new ChangedFile("", staged: true), "", null);
 			RefreshTreeViewItemTemplate();
+		}
+
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
+		// 替代原 RegisterAttached 的 PropertyMetadata 回调（EnableMultiSelectionPropertyChanged）。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == EnableMultiSelectionProperty)
+			{
+				if (change.NewValue is bool enableMulti && enableMulti)
+				{
+					TreeView.SelectionMode = SelectionMode.Extended;
+				}
+				else
+				{
+					TreeView.SelectionMode = SelectionMode.Single;
+				}
+			}
 		}
 
 		private void RefreshTreeViewItemTemplate()
@@ -167,15 +203,16 @@ namespace ForkPlus.UI.UserControls
 			switch (Mode)
 			{
 			case FileListMode.List:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
+				// 阶段 4.5：WPF (DataTemplate)base.Resources[key] → Avalonia (IDataTemplate)base.Resources[key]（ItemTemplate 为 IDataTemplate）。
+				TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
 				TreeView.Style = Theme.FileListMultiselectionTreeView.DefaultStyle;
 				break;
 			case FileListMode.Tree:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["TreeViewTemplate"];
+				TreeView.ItemTemplate = (IDataTemplate)base.Resources["TreeViewTemplate"];
 				TreeView.Style = Theme.FileListMultiselectionTreeView.DefaultStyle;
 				break;
 			case FileListMode.CombinedList:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
+				TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
 				TreeView.Style = Theme.FileListMultiselectionTreeView.GridViewStyle;
 				break;
 			}
@@ -233,7 +270,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void TreeView_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
 			if (TreeView.LastClickedItem is FileListItem fileListItem)
 			{
@@ -306,8 +343,8 @@ namespace ForkPlus.UI.UserControls
 			if (isLargeRebuild)
 			{
 				// 大列表仍走后台线程构建以避免 UI 冻结，但不再把 Tree 降级为 List——
-				// 变更多时也应保持树状显示（用户明确要求“改回树状”）。
-				Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
+				// 变更多时也应保持树状显示（用户明确要求"改回树状"）。
+				Dictionary<string, IImage> fileIcons = CreateFileIconCache(source);
 				rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons));
 			}
 			else
@@ -343,14 +380,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static FileListItem BuildRootItem(ChangedFile[] source, FileListMode mode, Dictionary<string, ImageSource> fileIcons, ImageSource folderIcon = null)
+		private static FileListItem BuildRootItem(ChangedFile[] source, FileListMode mode, Dictionary<string, IImage> fileIcons, IImage folderIcon = null)
 		{
 			FileListItem rootItem = new FileListItem(new ChangedFile("", staged: true), "", null);
 			ApplyAddedEntries(rootItem, mode, source, fileIcons, folderIcon);
 			return rootItem;
 		}
 
-		private Dictionary<string, ImageSource> CreateFileIconCache(ChangedFile[] source)
+		private Dictionary<string, IImage> CreateFileIconCache(ChangedFile[] source)
 		{
 			foreach (ChangedFile changedFile in source)
 			{
@@ -627,7 +664,7 @@ namespace ForkPlus.UI.UserControls
 			ApplyAddedEntries(TreeView.RootItem as FileListItem, mode, addedEntries, null, FolderIcon);
 		}
 
-		private static void ApplyAddedEntries(FileListItem fileListItem, FileListMode mode, ChangedFile[] addedEntries, Dictionary<string, ImageSource> fileIcons, ImageSource folderIcon = null)
+		private static void ApplyAddedEntries(FileListItem fileListItem, FileListMode mode, ChangedFile[] addedEntries, Dictionary<string, IImage> fileIcons, IImage folderIcon = null)
 		{
 			foreach (ChangedFile changedFile in addedEntries)
 			{
@@ -656,16 +693,16 @@ namespace ForkPlus.UI.UserControls
 				default:
 					throw new InvalidOperationException();
 				}
-				ImageSource imageSourceForExtension = GetFileIcon(changedFile.Path, fileIcons);
+				IImage imageSourceForExtension = GetFileIcon(changedFile.Path, fileIcons);
 				FileListItem newItem = new FileListItem(changedFile, name, imageSourceForExtension);
 				AddChild(parent, newItem);
 			}
 		}
 
-		private static ImageSource GetFileIcon(string path, Dictionary<string, ImageSource> fileIcons)
+		private static IImage GetFileIcon(string path, Dictionary<string, IImage> fileIcons)
 		{
 			string extension = Path.GetExtension(path) ?? "";
-			if (fileIcons != null && fileIcons.TryGetValue(extension, out ImageSource imageSource))
+			if (fileIcons != null && fileIcons.TryGetValue(extension, out IImage imageSource))
 			{
 				return imageSource;
 			}
@@ -734,7 +771,7 @@ namespace ForkPlus.UI.UserControls
 			parent.Children.Insert(index, newItem);
 		}
 
-		private static FileListItem FindOrCreateFolder(FileListItem parent, string name, bool staged, ImageSource folderIcon)
+		private static FileListItem FindOrCreateFolder(FileListItem parent, string name, bool staged, IImage folderIcon)
 		{
 			if (parent.Children.FirstOrDefault((MultiselectionTreeViewItem x) => x.Title == name && (x as FileListItem).IsDirectory) is FileListItem result)
 			{
@@ -801,7 +838,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				int num = 55;
 				GridView gridView = TreeView.View as GridView;
-				double actualWidth = TreeView.ActualWidth;
+				// 阶段 4.5：WPF TreeView.ActualWidth → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
+				double actualWidth = TreeView.Bounds.Width;
 				double actualWidth2 = gridView.Columns[0].ActualWidth;
 				double num2 = actualWidth - actualWidth2;
 				if (num2 < (double)num)
@@ -820,7 +858,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			_restoringColumnWidth = true;
 			GridView obj = TreeView.View as GridView;
-			double actualWidth = TreeView.ActualWidth;
+			// 阶段 4.5：WPF TreeView.ActualWidth → Avalonia TreeView.Bounds.Width（参考 ModernTabControl）。
+			double actualWidth = TreeView.Bounds.Width;
 			double num = ForkPlusSettings.Default.CommitViewCombinedListLocationColumnWidth;
 			double num2 = actualWidth - num;
 			if (num2 < 120.0)

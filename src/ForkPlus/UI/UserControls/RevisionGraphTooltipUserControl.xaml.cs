@@ -1,10 +1,25 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/SizeChangedEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media.Animation → using Avalonia.Animation（Transitions/DoubleTransition）+ using Avalonia.Animation.Easings（QuadraticEaseOut）
+// - 新增 using Avalonia.Layout（Layoutable.HeightProperty）、using Avalonia.Threading（Dispatcher.UIThread）
+// - WeakEventManager<NotificationCenter,EventArgs<ThemeType>>.AddHandler(...,"ApplicationThemeChanged",h)
+//   → NotificationCenter.Current.ApplicationThemeChanged += h（参考 StatisticsUserControl）
+// - base.Dispatcher.Async → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
+// - DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty, anim) → Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）
+// - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 RevisionDetailsUserControl）
+// - base.ActualHeight → Bounds.Height（参考 RevisionDetailsUserControl）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media.Animation;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -29,7 +44,8 @@ namespace ForkPlus.UI.UserControls
 			_sha = sha;
 			InitializeComponent();
 			RevisionListView.ItemsSource = _revisionsDataSource;
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4.5：WeakEventManager → 直接事件订阅（参考 StatisticsUserControl）。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 			Refresh();
 		}
 
@@ -44,7 +60,8 @@ namespace ForkPlus.UI.UserControls
 			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Get Revision Storage"), delegate
 			{
 				GitCommandResult<RevisionStorage> revisionStorageResponse = new GetRevisionStorageGitCommand().Execute(gitModule, sha);
-				base.Dispatcher.Async(delegate
+				// 阶段 4.5：WPF base.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				Dispatcher.UIThread.Post(delegate
 				{
 					if (!revisionStorageResponse.Succeeded)
 					{
@@ -75,12 +92,19 @@ namespace ForkPlus.UI.UserControls
 		{
 			int num = Math.Min(10, _revisionsDataSource.Count) * 23 + 22 + 16;
 			this.HeightChanged?.Invoke(this, new EventArgs<double>(num));
-			DoubleAnimation doubleAnimation = new DoubleAnimation(base.ActualHeight, num, TimeSpan.FromSeconds(0.05));
-			doubleAnimation.EasingFunction = new QuadraticEase
+			// 阶段 4.5：WPF DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty, anim) → Avalonia Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）。
+			Transitions = new Transitions
 			{
-				EasingMode = EasingMode.EaseOut
+				new DoubleTransition
+				{
+					Property = Layoutable.HeightProperty,
+					Duration = TimeSpan.FromSeconds(0.05),
+					Easing = new QuadraticEaseOut()
+				}
 			};
-			BeginAnimation(FrameworkElement.HeightProperty, doubleAnimation);
+			// 阶段 4.5：WPF base.ActualHeight → Avalonia Bounds.Height（参考 RevisionDetailsUserControl）。
+			// 设置目标 Height 触发过渡（从当前 Bounds.Height 动画到 num）。
+			Height = num;
 		}
 
 		private void RevisionListView_SizeChanged(object sender, SizeChangedEventArgs e)

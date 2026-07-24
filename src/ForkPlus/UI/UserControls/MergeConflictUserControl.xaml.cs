@@ -1,15 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBox/Separator/Image/TextBlock/Button/ContextMenu/MenuItem）
+// - using System.Windows.Markup → 移除
+// - base.Dispatcher.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
+// - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
+// - MessageBoxButton/MessageBoxImage/MessageBoxResult 由 ForkPlus.Services 提供
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using System.Threading.Tasks;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
@@ -90,7 +99,8 @@ namespace ForkPlus.UI.UserControls
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("GetConflictDetails"), delegate
 			{
 				GetConflictFileModificationsGitCommand.ConflictModifications fileModificationsResponse = new GetConflictFileModificationsGitCommand().Execute(gitModule, repositoryState, srcSha, dstSha, changedFile.Path);
-				base.Dispatcher.Invoke(delegate
+				// 阶段 4.5：WPF base.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				Dispatcher.UIThread.Post(delegate
 				{
 					UpdateRevisionsListBox(DstRevisionsListBox, DstSeparator, fileModificationsResponse.DstRevisions);
 					UpdateRevisionsListBox(SrcRevisionsListBox, SrcSeparator, fileModificationsResponse.SrcRevisions);
@@ -156,25 +166,25 @@ namespace ForkPlus.UI.UserControls
 				case AiResolveStatus.Canceled:
 					break;
 				case AiResolveStatus.NotConfigured:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 					break;
 				case AiResolveStatus.ReadFailed:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 					break;
 				case AiResolveStatus.NoConflictMarkers:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Information);
 					break;
 				case AiResolveStatus.RequestFailed:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 					break;
 				case AiResolveStatus.EmptyContent:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 					break;
 				case AiResolveStatus.ConflictMarkersRemain:
-					MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 					break;
 				case AiResolveStatus.Success:
-					MessageBoxResult confirm = MessageBox.Show(result.Message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+					MessageBoxResult confirm = ServiceLocator.MessageBox.Show(result.Message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
 					if (confirm == MessageBoxResult.Yes)
 					{
 						AiResolveResult applyResult = _viewModel.ApplyResolvedContent(_repositoryUserControl.GitModule, _changedFile, result.ResolvedContent);
@@ -187,7 +197,7 @@ namespace ForkPlus.UI.UserControls
 								new ErrorWindow(_repositoryUserControl, applyResult.GitError).ShowDialog();
 								break;
 							case AiResolveStatus.WriteFailed:
-								MessageBox.Show(applyResult.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+								ServiceLocator.MessageBox.Show(applyResult.Message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 								break;
 						}
 					}

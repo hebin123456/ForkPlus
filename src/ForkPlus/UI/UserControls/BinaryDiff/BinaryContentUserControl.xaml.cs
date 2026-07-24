@@ -1,11 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush/IBrush）
+// - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap（别名替代 BitmapSource）
+// - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
+// - WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(..., "ImageDiffHighlightPixelsChanged", ...)
+//   → NotificationCenter.Current.ImageDiffHighlightPixelsChanged += ...（直接事件订阅，参考 RevisionListViewUserControl）
+// - PixelHeight/PixelWidth → PixelSize.Height/PixelSize.Width（Avalonia Bitmap 用 PixelSize 描述像素尺寸，参考 OverlayImageControl）
+// - Visibility != Visibility.Collapsed → IsVisible（Avalonia 以 bool IsVisible 替代 Visibility 枚举，参考 UIElementExtensions）
+// - Visibility != 0（0 = Visibility.Visible）→ !IsVisible
+// - SetContent 参数 Brush → IBrush（Avalonia 接口类型；TitleTextBlock.Foreground 兼容）
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -27,7 +40,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		private string _statusLabel;
 
 		[Null]
-		public BitmapSource DiffImageSource { get; set; }
+		public Bitmap DiffImageSource { get; set; }
 
 		public bool HighlightImageDiff
 		{
@@ -46,14 +59,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
+			NotificationCenter.Current.ImageDiffHighlightPixelsChanged += delegate
 			{
 				UpdateHighlightImageDiff();
-			});
+			};
 			UpdateHighlightImageDiff();
 		}
 
-		public void SetContent(BinaryContent content, [Null] string statusLabel = null, [Null] Brush statusBrush = null, [Null] BitmapSource diffImageSource = null)
+		public void SetContent(BinaryContent content, [Null] string statusLabel = null, [Null] IBrush statusBrush = null, [Null] Bitmap diffImageSource = null)
 		{
 			_statusLabel = statusLabel;
 			DiffImageSource = diffImageSource;
@@ -136,15 +149,15 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			if (progress.HasValue)
 			{
 				double valueOrDefault = progress.GetValueOrDefault();
-				if (ShowLfsImageButton.Visibility != Visibility.Collapsed)
+				if (ShowLfsImageButton.IsVisible)
 				{
 					ShowLfsImageButton.Collapse();
 				}
-				if (CancelLfsButton.Visibility != 0)
+				if (!CancelLfsButton.IsVisible)
 				{
 					CancelLfsButton.Show();
 				}
-				if (LfsProgressBar.Visibility != 0)
+				if (!LfsProgressBar.IsVisible)
 				{
 					LfsProgressBar.Show();
 				}
@@ -158,7 +171,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		public void SetLfsImageData(MemoryStream memoryStream, [Null] BitmapSource diffImageSource = null)
+		public void SetLfsImageData(MemoryStream memoryStream, [Null] Bitmap diffImageSource = null)
 		{
 			DiffImageSource = diffImageSource;
 			RefreshImage(memoryStream);
@@ -170,10 +183,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshImage(MemoryStream memoryStream)
 		{
-			BitmapSource bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
+			Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
 			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
-			double num = ((double?)bitmapSource?.PixelHeight) ?? 0.0;
+			double num = ((double?)bitmapSource?.PixelSize.Height) ?? 0.0;
 			Image.Source = bitmapSource;
 			Image.Height = num;
 			DiffImage.Height = num;
@@ -229,14 +242,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private static string GetImageDescription([Null] BitmapSource imageSource, long fileSize)
+		private static string GetImageDescription([Null] Bitmap imageSource, long fileSize)
 		{
 			if (imageSource == null)
 			{
 				return "";
 			}
 			string arg = FileSizeFormatter.Format(fileSize);
-			return $"W: {imageSource.PixelWidth}px | H: {imageSource.PixelHeight}px ({arg})";
+			return $"W: {imageSource.PixelSize.Width}px | H: {imageSource.PixelSize.Height}px ({arg})";
 		}
 
 	}

@@ -1,12 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）+ using Avalonia.Controls.ApplicationLifetimes（IClassicDesktopStyleApplicationLifetime）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextMenuEventArgs/MenuItem/Separator/GridLength/GridUnitType/SelectionChangedEventArgs）
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs）
+// - using System.Windows.Markup → 移除
+// - 新增 using ForkPlus.UI.Helpers（KeyboardHelper）
+// - WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → obj.Event += h（直接订阅，参考 StageFileUserControl/CommitUserControl）
+// - base.CommandBindings.Add(command.CreateShortcutCommandBinding(h)) → base.KeyBindings.Add(command.CreateShortcutKeyBinding(h))（参考 RevisionListViewUserControl/IUICommandExtension）
+// - Keyboard.IsKeyDown(Key.LeftCtrl/LeftShift) → KeyboardHelper.IsCtrlDown/IsShiftDown（参考 KeyboardHelper）
+// - FileListUserControl.PreviewKeyDown → FileListUserControl.KeyDown（Avalonia 无 Preview 变体，参考 StageFileUserControl）
+// - Application.Current.MainWindow → (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）
+// - diffPopupWindow.SelectPrevious/SelectNext = Delegate.Combine(field, handler) → field += handler（参考 CommitUserControl）
+// - fileListUserControl.SelectionChanged = Delegate.Combine(...) 保留（参考 StageFileUserControl，SelectionChanged 为 public 字段）
+// - GridSplitter.DragCompleted 保留（已在 RepositoryContentUserControl/CommitUserControl 等迁移文件中验证可用）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -15,6 +30,7 @@ using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -97,7 +113,8 @@ namespace ForkPlus.UI.UserControls
 			};
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
+				// 阶段 4.5：WPF Keyboard.IsKeyDown → Avalonia KeyboardHelper.IsCtrlDown/IsShiftDown（参考 KeyboardHelper）。
+				if (e.Key == Key.F && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsShiftDown)
 				{
 					FilterTextBox.ShowWithAnimation();
 					e.Handled = true;
@@ -108,9 +125,11 @@ namespace ForkPlus.UI.UserControls
 					e.Handled = true;
 				}
 			};
-			FileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体，参考 StageFileUserControl）。
+			FileListUserControl.KeyDown += delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
+				// 阶段 4.5：WPF Keyboard.IsKeyDown → Avalonia KeyboardHelper.IsCtrlDown。
+				if (e.Key == Key.Space && !KeyboardHelper.IsCtrlDown)
 				{
 					ShowDiffPopup();
 					e.Handled = true;
@@ -127,23 +146,25 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveFileListColumnWidth();
 			};
-			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current, "FileListModeChanged", delegate
+			// 阶段 4.5：WPF WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → 直接订阅 obj.Event（参考 StageFileUserControl/CommitUserControl）。
+			NotificationCenter.Current.FileListModeChanged += delegate
 			{
 				RefreshFileListMode();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "DiffContextSizeChanged", delegate
+			};
+			NotificationCenter.Current.DiffContextSizeChanged += delegate
 			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
+			};
+			NotificationCenter.Current.DiffIgnoreWhitespacesChanged += delegate
 			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
+			};
+			NotificationCenter.Current.DiffShowEntireFileChanged += delegate
 			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
-			});
-			base.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			};
+			// 阶段 4.5：WPF CommandBindings.Add(CreateShortcutCommandBinding) → Avalonia KeyBindings.Add(CreateShortcutKeyBinding)（参考 RevisionListViewUserControl）。
+			base.KeyBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutKeyBinding(delegate
 			{
 				ChangedFile changedFile2 = FileListUserControl.SelectedItems.FirstItem();
 				if (changedFile2 != null)
@@ -151,17 +172,17 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(RevisionDetailsUserControl.GitModule, _target.Sha.ToString(), changedFile2);
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				string[] filePaths2 = FileListUserControl.SelectedItems.CompactMap((ChangedFile x) => x.Path);
 				RepositoryUserControl.Commands.CopyFilePaths.Execute(filePaths2);
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutKeyBinding(delegate
 			{
 				string[] filePaths = FileListUserControl.SelectedItems.CompactMap((ChangedFile x) => x.Path);
 				RepositoryUserControl.Commands.CopyAbsoluteFilePaths.Execute(RevisionDetailsUserControl.GitModule, filePaths);
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			base.KeyBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutKeyBinding(delegate
 			{
 				ChangedFile[] selectedItems = FileListUserControl.SelectedItems;
 				ChangedFile changedFile = FileListUserControl.SelectedItems.FirstItem();
@@ -539,7 +560,8 @@ namespace ForkPlus.UI.UserControls
 			if (_diffPopupWindow == null)
 			{
 				_diffPopupWindow = CreateNewDiffPopupWindow();
-				_diffPopupWindow.ShowAtCenter(Application.Current.MainWindow);
+				// 阶段 4.5：WPF Application.Current.MainWindow → Avalonia (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow（参考 CommitUserControl）。
+				_diffPopupWindow.ShowAtCenter((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
 				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
 			}
 			else
@@ -556,14 +578,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				_diffPopupWindow = null;
 			};
-			diffPopupWindow.SelectPrevious = (EventHandler)Delegate.Combine(diffPopupWindow.SelectPrevious, (EventHandler)delegate
+			// 阶段 4.5：WPF Delegate.Combine(field, handler) → Avalonia field += handler（参考 CommitUserControl）。
+			diffPopupWindow.SelectPrevious += delegate
 			{
 				FileListUserControl.SelectPreviousFile();
-			});
-			diffPopupWindow.SelectNext = (EventHandler)Delegate.Combine(diffPopupWindow.SelectNext, (EventHandler)delegate
+			};
+			diffPopupWindow.SelectNext += delegate
 			{
 				FileListUserControl.SelectNextFile();
-			});
+			};
 			return diffPopupWindow;
 		}
 

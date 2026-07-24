@@ -1,13 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/TextChangedEventArgs）
+// - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush）
+// - 新增 using ForkPlus.UI.Helpers（KeyboardHelper）
+// - Keyboard.IsKeyDown(Key.LeftCtrl) → KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）
+// - Application.Current.TryFindResource("X") as Brush → Theme.FindBrush("X")（参考 CommitUserControl）
+// - DataObject.AddPastingHandler + DataObjectPastingEventArgs 无 Avalonia 等价，移除并注释（参考 ReferenceTextBox）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -45,7 +56,8 @@ namespace ForkPlus.UI.UserControls
 					_focused = true;
 				}
 			};
-			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
+			// TODO(4.5): Avalonia 无 DataObject.AddPastingHandler 等价 API，需自定义粘贴处理（参考 ReferenceTextBox）。
+			// DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
 		}
 
 		public void Refresh(string subject, string description)
@@ -54,23 +66,26 @@ namespace ForkPlus.UI.UserControls
 			CommitDescriptionTextBox.Text = description;
 		}
 
-		private void OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e)
-		{
-			if (e.DataObject.GetDataPresent(DataFormats.UnicodeText) && e.DataObject.GetData(DataFormats.UnicodeText) is string text)
-			{
-				string[] array = text.Split(new string[1] { Environment.NewLine }, 2, StringSplitOptions.RemoveEmptyEntries);
-				if (array.Length == 2)
-				{
-					e.CancelCommand();
-					CommitSubjectTextBox.Text = array[0];
-					CommitDescriptionTextBox.Text = array[1];
-				}
-			}
-		}
+		// TODO(4.5): Avalonia 无 DataObjectPastingEventArgs 等价类型，需自定义粘贴处理（参考 ReferenceTextBox）。
+		// 以下 OnCommitSubjectPaste 逻辑保留以便后续实现粘贴过滤时参考。
+		// private void OnCommitSubjectPaste(object sender, DataObjectPastingEventArgs e)
+		// {
+		// 	if (e.DataObject.GetDataPresent(DataFormats.UnicodeText) && e.DataObject.GetData(DataFormats.UnicodeText) is string text)
+		// 	{
+		// 		string[] array = text.Split(new string[1] { Environment.NewLine }, 2, StringSplitOptions.RemoveEmptyEntries);
+		// 		if (array.Length == 2)
+		// 		{
+		// 			e.CancelCommand();
+		// 			CommitSubjectTextBox.Text = array[0];
+		// 			CommitDescriptionTextBox.Text = array[1];
+		// 		}
+		// 	}
+		// }
 
 		private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Return && Keyboard.IsKeyDown(Key.LeftCtrl))
+			// 阶段 4.5：WPF Keyboard.IsKeyDown(Key.LeftCtrl) → Avalonia KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）。
+			if (e.Key == Key.Return && KeyboardHelper.IsCtrlDown)
 			{
 				RaiseMessageChanged();
 				e.Handled = true;
@@ -84,7 +99,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void CommitSubjectTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Return && !Keyboard.IsKeyDown(Key.LeftCtrl))
+			// 阶段 4.5：WPF Keyboard.IsKeyDown(Key.LeftCtrl) → Avalonia KeyboardHelper.IsCtrlDown（参考 KeyboardHelper）。
+			if (e.Key == Key.Return && !KeyboardHelper.IsCtrlDown)
 			{
 				CommitDescriptionTextBox.Focus();
 				CommitDescriptionTextBox.CaretIndex = CommitDescriptionTextBox.Text.Length;
@@ -126,17 +142,18 @@ namespace ForkPlus.UI.UserControls
 				SubjectLengthLimitTextBlock.Hide();
 				return;
 			}
+			// 阶段 4.5：WPF Application.Current.TryFindResource("X") as Brush → Theme.FindBrush("X")（参考 CommitUserControl）。
 			if (length > ForkPlusSettings.Default.CommitSubjectHighLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.Error.ForegroundBrush") as Brush;
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Error.ForegroundBrush");
 			}
 			else if (length > commitSubjectLowLimit)
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.Warning.ForegroundBrush") as Brush;
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.Warning.ForegroundBrush");
 			}
 			else
 			{
-				SubjectLengthLimitTextBlock.Foreground = Application.Current.TryFindResource("CommitSublectLength.OK.ForegroundBrush") as Brush;
+				SubjectLengthLimitTextBlock.Foreground = Theme.FindBrush("CommitSublectLength.OK.ForegroundBrush");
 			}
 			int num = commitSubjectLowLimit - length;
 			SubjectLengthLimitTextBlock.Show();

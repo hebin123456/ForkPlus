@@ -1,10 +1,20 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ToggleButton）
+// - using System.Windows.Markup → 移除（IComponentConnector 不需要）
+// - DependencyProperty.Register → AvaloniaProperty.Register<,>（StyledProperty<T>，参考 BindableGitPointView）
+// - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs（OnPropertyChanged override）
+// - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "EventName", handler)
+//   → NotificationCenter.Current.EventName += handler（参考 ForkPlusDialogWindow.ApplicationThemeChanged）
+// - control.ToolTip = value → ToolTip.SetTip(control, value)（参考 PreferencesLocalization）
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor.Diff;
@@ -16,9 +26,11 @@ namespace ForkPlus.UI.UserControls
 	{
 		private bool _highlightPixelsToggleButtonEnabled;
 
-		public static readonly DependencyProperty FilePathProperty = DependencyProperty.Register("FilePath", typeof(string), typeof(FileControlHeaderUserControl));
+		// 阶段 4.5：WPF DependencyProperty.Register(name, typeof(T), typeof(Owner))
+		// → Avalonia StyledProperty<T> + AvaloniaProperty.Register<Owner, T>(nameof(...))（参考 BindableGitPointView）。
+		public static readonly StyledProperty<string> FilePathProperty = AvaloniaProperty.Register<FileControlHeaderUserControl, string>(nameof(FilePath));
 
-		public static readonly DependencyProperty OldFilePathProperty = DependencyProperty.Register("OldFilePath", typeof(string), typeof(FileControlHeaderUserControl));
+		public static readonly StyledProperty<string> OldFilePathProperty = AvaloniaProperty.Register<FileControlHeaderUserControl, string>(nameof(OldFilePath));
 
 		public FileDiffControlTarget Target { get; set; }
 
@@ -122,7 +134,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			get
 			{
-				return (string)GetValue(FilePathProperty);
+				return GetValue(FilePathProperty);
 			}
 			set
 			{
@@ -134,7 +146,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			get
 			{
-				return (string)GetValue(OldFilePathProperty);
+				return GetValue(OldFilePathProperty);
 			}
 			set
 			{
@@ -146,32 +158,34 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			ApplyLocalization();
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
+			// 阶段 4.5：WPF WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "EventName", handler)
+			// → Avalonia NotificationCenter.Current.EventName += handler（参考 ForkPlusDialogWindow.ApplicationThemeChanged）。
+			NotificationCenter.Current.DiffIgnoreWhitespacesChanged += delegate
 			{
 				UpdateIgnoreWhiteSpacesToggleButtonState();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowHiddenSymbolsChanged", delegate
+			};
+			NotificationCenter.Current.DiffShowHiddenSymbolsChanged += delegate
 			{
 				UpdateShowHiddenSymbolsToggleButtonState();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffWordWrapChanged", delegate
+			};
+			NotificationCenter.Current.DiffWordWrapChanged += delegate
 			{
 				UpdateDiffLayoutModeToggleButtonState();
 				UpdateWordWrapToggleButtonState();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
+			};
+			NotificationCenter.Current.DiffShowEntireFileChanged += delegate
 			{
 				UpdateShowEntireFileState();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current, "DiffLayoutModeChanged", delegate
+			};
+			NotificationCenter.Current.DiffLayoutModeChanged += delegate
 			{
 				UpdateDiffLayoutModeToggleButtonState();
 				UpdateWordWrapToggleButtonState();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
+			};
+			NotificationCenter.Current.ImageDiffHighlightPixelsChanged += delegate
 			{
 				UpdateHighlightPixelsToggleButtonState();
-			});
+			};
 			base.Loaded += delegate
 			{
 				UpdateIgnoreWhiteSpacesToggleButtonState();
@@ -196,14 +210,15 @@ namespace ForkPlus.UI.UserControls
 			this.Show();
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs e) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 		{
-			base.OnPropertyChanged(e);
-			if (e.Property == OldFilePathProperty)
+			base.OnPropertyChanged(change);
+			if (change.Property == OldFilePathProperty)
 			{
 				FilePathTextBlock.OldFilePath = OldFilePath;
 			}
-			else if (e.Property == FilePathProperty)
+			else if (change.Property == FilePathProperty)
 			{
 				FilePathTextBlock.FilePath = FilePath;
 				if (string.IsNullOrEmpty(FilePath))
@@ -212,6 +227,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				else
 				{
+					// 阶段 4.5：IconTools.GetImageSourceForExtension 已返回 Avalonia IImage（参考 IconTools.cs），可直接赋给 Image.Source。
 					FileTypeImage.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
 				}
 			}
@@ -345,12 +361,13 @@ namespace ForkPlus.UI.UserControls
 			if (DiffLayoutMode == DiffLayoutMode.SideBySide)
 			{
 				DiffLayoutModeToggleButton.IsChecked = true;
-				DiffLayoutModeToggleButton.ToolTip = Translate("Split diff");
+				// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)（参考 PreferencesLocalization）。
+				ToolTip.SetTip(DiffLayoutModeToggleButton, Translate("Split diff"));
 			}
 			else
 			{
 				DiffLayoutModeToggleButton.IsChecked = false;
-				DiffLayoutModeToggleButton.ToolTip = Translate("Side by side diff");
+				ToolTip.SetTip(DiffLayoutModeToggleButton, Translate("Side by side diff"));
 			}
 		}
 

@@ -1,9 +1,17 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/RadioButton/ContextMenu）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（SolidColorBrush/Brushes/Color）
+// - (Color)ColorConverter.ConvertFromString("#RRGGBB") → Color.Parse("#RRGGBB")（参考 UserColorBrushes）
+// - SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变，参考 BranchViewModel）
+// - FrameworkElement → Control（Avalonia 无 FrameworkElement；Control.Parent 等价，参考 ExternalToolsUserControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.UserControls
@@ -13,12 +21,12 @@ namespace ForkPlus.UI.UserControls
 		private static readonly SolidColorBrush[] _repositoryBrushes = new SolidColorBrush[7]
 		{
 			Brushes.Transparent,
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3B30")),
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9502")),
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFCC00")),
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64DA38")),
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1CADF8")),
-			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CB73E1"))
+			new SolidColorBrush(Color.Parse("#FF3B30")),
+			new SolidColorBrush(Color.Parse("#FF9502")),
+			new SolidColorBrush(Color.Parse("#FFCC00")),
+			new SolidColorBrush(Color.Parse("#64DA38")),
+			new SolidColorBrush(Color.Parse("#1CADF8")),
+			new SolidColorBrush(Color.Parse("#CB73E1"))
 		};
 
 		private bool _initialized;
@@ -29,11 +37,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			_repository = repository;
-			SolidColorBrush[] repositoryBrushes = _repositoryBrushes;
-			for (int i = 0; i < repositoryBrushes.Length; i++)
-			{
-				repositoryBrushes[i].Freeze();
-			}
+			// 阶段 4.5：Avalonia SolidColorBrush 默认不可变，无需 WPF Freeze()（参考 BranchViewModel）。
 			InitializeColorButtons(repository.Color);
 			_initialized = true;
 		}
@@ -63,9 +67,10 @@ namespace ForkPlus.UI.UserControls
 
 		private static void HideParentContextMenu(object ctrl)
 		{
-			for (FrameworkElement frameworkElement = ctrl as FrameworkElement; frameworkElement != null; frameworkElement = frameworkElement.Parent as FrameworkElement)
+			// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 ExternalToolsUserControl）。
+			for (Control control = ctrl as Control; control != null; control = control.Parent as Control)
 			{
-				if (frameworkElement is ContextMenu contextMenu)
+				if (control is ContextMenu contextMenu)
 				{
 					contextMenu.IsOpen = false;
 					break;

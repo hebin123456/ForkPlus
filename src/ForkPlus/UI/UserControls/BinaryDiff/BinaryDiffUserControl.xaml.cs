@@ -1,12 +1,29 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush/IBrush）
+// - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap（别名替代 BitmapSource）
+// - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
+// - CreateBitmapSource：WPF BitmapImage+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
+//   → new Bitmap(stream)（Avalonia 不可变 Bitmap，构造时自动解码并处理格式，无需 Freeze，参考 AvatarManager）
+// - GetDiffImage：WPF BitmapSource.CopyPixels + FormatConvertedBitmap(Bgra32) + BitmapSource.Create
+//   → System.Drawing.Bitmap(LockBits/Format32bppArgb) 读取像素 + System.Drawing.Bitmap 写回 + PNG 编码 + new Bitmap(ms)
+//   （Avalonia 不可变 Bitmap 不暴露 CopyPixels/Create；System.Drawing 已在项目内使用，参考 IconTools）
+// - PixelWidth/PixelHeight → 通过 System.Drawing.Bitmap.Width/Height（像素比较）或 Bitmap.PixelSize.Width/Height
+// - base.Dispatcher.Async → 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post，参考 MultiselectionTreeView）
+// - DiffImageSource 属性类型 BitmapSource → Bitmap
+// - Grid.SetColumn/SetColumnSpan/Thickness → API 兼容（Avalonia.Controls.Grid/Avalonia.Thickness）
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -15,6 +32,8 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
+using SD = System.Drawing;
+using SDI = System.Drawing.Imaging;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
@@ -46,7 +65,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		private Job _activeDstSmudgeJob;
 
 		[Null]
-		private BitmapSource _diffImageSource;
+		private Bitmap _diffImageSource;
 
 		// v3.4.1：Hex 视图 — 存储原始字节和 ChangedFile 用于创建 HexDiffContent
 		[Null]
@@ -59,7 +78,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		private HexDiffUserControl _hexDiffView;
 
 		[Null]
-		public BitmapSource DiffImageSource
+		public Bitmap DiffImageSource
 		{
 			get
 			{
@@ -626,30 +645,23 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 
 		[Null]
-		public static BitmapSource CreateBitmapSource(MemoryStream stream)
+		public static Bitmap CreateBitmapSource(MemoryStream stream)
 		{
+			// 阶段 4.5：WPF BitmapImage+BeginInit/EndInit+StreamSource+FormatConvertedBitmap(Pbgra32)
+			// → Avalonia new Bitmap(stream)。Avalonia Bitmap 构造时自动解码并归一化格式，不可变无需 Freeze。
+			// 参考 AvatarManager.cs（new Bitmap(memoryStream)）与 IconTools.cs（new Bitmap(ms)）。
 			try
 			{
-				BitmapImage bitmapImage = new BitmapImage();
-				stream.Position = 0L;
-				bitmapImage.BeginInit();
-				bitmapImage.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-				bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-				bitmapImage.UriSource = null;
-				bitmapImage.StreamSource = stream;
-				bitmapImage.EndInit();
-				bitmapImage.Freeze();
-				if (bitmapImage.Format != PixelFormats.Pbgra32)
+				if (stream == null)
 				{
-					FormatConvertedBitmap formatConvertedBitmap = new FormatConvertedBitmap(bitmapImage, PixelFormats.Pbgra32, null, 0.0);
-					formatConvertedBitmap.Freeze();
-					return formatConvertedBitmap;
+					return null;
 				}
-				return bitmapImage;
+				stream.Position = 0L;
+				return new Bitmap(stream);
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to create BitmapSource", ex);
+				Log.Error("Failed to create Bitmap", ex);
 				return null;
 			}
 		}
@@ -673,58 +685,99 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 
 		[Null]
-		private BitmapSource GetDiffImage([Null] ImageData lhsImageData, [Null] ImageData rhsImageData)
+		private Bitmap GetDiffImage([Null] ImageData lhsImageData, [Null] ImageData rhsImageData)
 		{
-			BitmapSource bitmapSource = lhsImageData?.ImageSource;
-			if (bitmapSource != null)
+			// 阶段 4.5：WPF BitmapSource.CopyPixels + FormatConvertedBitmap(Bgra32) + BitmapSource.Create
+			// → System.Drawing.Bitmap.LockBits(Format32bppArgb) 读取像素 + System.Drawing.Bitmap 写回 + PNG 编码 + new Bitmap(ms)。
+			// Avalonia 不可变 Bitmap 不暴露 CopyPixels/Create；System.Drawing 已在项目内使用（参考 IconTools）。
+			// Format32bppArgb 在 little-endian 内存布局为 BGRA，与 WPF Bgra32 字节序一致，像素比较逻辑无需调整。
+			byte[] lhsRaw = lhsImageData?.RawBytes;
+			byte[] rhsRaw = rhsImageData?.RawBytes;
+			if (lhsRaw == null || rhsRaw == null)
 			{
-				BitmapSource bitmapSource2 = rhsImageData?.ImageSource;
-				if (bitmapSource2 != null && bitmapSource.PixelWidth == bitmapSource2.PixelWidth && bitmapSource.PixelHeight == bitmapSource2.PixelHeight)
+				return null;
+			}
+			try
+			{
+				using (SD.Bitmap lhsBmp = new SD.Bitmap(new MemoryStream(lhsRaw)))
+				using (SD.Bitmap rhsBmp = new SD.Bitmap(new MemoryStream(rhsRaw)))
 				{
-					if (bitmapSource.Format != PixelFormats.Bgra32)
+					if (lhsBmp.Width != rhsBmp.Width || lhsBmp.Height != rhsBmp.Height)
 					{
-						bitmapSource = new FormatConvertedBitmap(bitmapSource, PixelFormats.Bgra32, bitmapSource.Palette, 0.0);
+						return null;
 					}
-					if (bitmapSource2.Format != PixelFormats.Bgra32)
-					{
-						bitmapSource2 = new FormatConvertedBitmap(bitmapSource2, PixelFormats.Bgra32, bitmapSource2.Palette, 0.0);
-					}
-					int num = bitmapSource.Format.BitsPerPixel / 8;
-					int num2 = bitmapSource.PixelWidth * num;
-					byte[] array = new byte[bitmapSource.PixelHeight * num2];
-					bitmapSource.CopyPixels(array, num2, 0);
-					byte[] array2 = new byte[bitmapSource2.PixelHeight * num2];
-					bitmapSource2.CopyPixels(array2, num2, 0);
-					byte[] array3 = new byte[bitmapSource2.PixelHeight * num2];
-					int pixelWidth = bitmapSource.PixelWidth;
-					int pixelHeight = bitmapSource.PixelHeight;
+					int pixelWidth = lhsBmp.Width;
+					int pixelHeight = lhsBmp.Height;
+					byte[] lhsPixels = ExtractBgraPixels(lhsBmp);
+					byte[] rhsPixels = ExtractBgraPixels(rhsBmp);
+					int num = 4; // 32bpp = 4 bytes per pixel
+					int num2 = pixelWidth * num;
+					byte[] array3 = new byte[pixelHeight * num2];
 					for (int i = 0; i < pixelHeight; i++)
 					{
 						for (int j = 0; j < pixelWidth; j++)
 						{
-							int num3 = i * pixelWidth * num + j * num;
-							int num4 = i * pixelWidth * num + j * num;
-							byte lhs = array[num3];
-							byte lhs2 = array[num3 + 1];
-							byte lhs3 = array[num3 + 2];
-							byte lhs4 = array[num3 + 3];
-							byte rhs = array2[num4];
-							byte rhs2 = array2[num4 + 1];
-							byte rhs3 = array2[num4 + 2];
-							byte rhs4 = array2[num4 + 3];
-							if (!SamePixel(lhs3, rhs3) || !SamePixel(lhs2, rhs2) || !SamePixel(lhs, rhs) || !SamePixel(lhs4, rhs4))
+							int offset = i * num2 + j * num;
+							byte lhsB = lhsPixels[offset];
+							byte lhsG = lhsPixels[offset + 1];
+							byte lhsR = lhsPixels[offset + 2];
+							byte lhsA = lhsPixels[offset + 3];
+							byte rhsB = rhsPixels[offset];
+							byte rhsG = rhsPixels[offset + 1];
+							byte rhsR = rhsPixels[offset + 2];
+							byte rhsA = rhsPixels[offset + 3];
+							if (!SamePixel(lhsR, rhsR) || !SamePixel(lhsG, rhsG) || !SamePixel(lhsB, rhsB) || !SamePixel(lhsA, rhsA))
 							{
-								array3[num4] = byte.MaxValue;
-								array3[num4 + 1] = 0;
-								array3[num4 + 2] = byte.MaxValue;
-								array3[num4 + 3] = byte.MaxValue;
+								array3[offset] = byte.MaxValue;       // B = 255
+								array3[offset + 1] = 0;               // G = 0
+								array3[offset + 2] = byte.MaxValue;   // R = 255
+								array3[offset + 3] = byte.MaxValue;   // A = 255
 							}
 						}
 					}
-					return BitmapSource.Create(pixelWidth, pixelHeight, bitmapSource2.DpiX, bitmapSource2.DpiY, PixelFormats.Bgra32, bitmapSource2.Palette, array3, num2);
+					using (SD.Bitmap diffBmp = new SD.Bitmap(pixelWidth, pixelHeight, SDI.PixelFormat.Format32bppArgb))
+					{
+						SD.Rectangle rect = new SD.Rectangle(0, 0, pixelWidth, pixelHeight);
+						SDI.BitmapData data = diffBmp.LockBits(rect, SDI.ImageLockMode.WriteOnly, SDI.PixelFormat.Format32bppArgb);
+						try
+						{
+							Marshal.Copy(array3, 0, data.Scan0, array3.Length);
+						}
+						finally
+						{
+							diffBmp.UnlockBits(data);
+						}
+						using (MemoryStream ms = new MemoryStream())
+						{
+							diffBmp.Save(ms, SDI.ImageFormat.Png);
+							ms.Position = 0;
+							return new Bitmap(ms);
+						}
+					}
 				}
 			}
-			return null;
+			catch (Exception ex)
+			{
+				Log.Error("Failed to create diff image", ex);
+				return null;
+			}
+		}
+
+		/// <summary>从 System.Drawing.Bitmap 提取 BGRA 像素数据（Format32bppArgb，little-endian 内存布局与 WPF Bgra32 一致）。</summary>
+		private static byte[] ExtractBgraPixels(SD.Bitmap bmp)
+		{
+			SD.Rectangle rect = new SD.Rectangle(0, 0, bmp.Width, bmp.Height);
+			SDI.BitmapData data = bmp.LockBits(rect, SDI.ImageLockMode.ReadOnly, SDI.PixelFormat.Format32bppArgb);
+			try
+			{
+				byte[] pixels = new byte[data.Stride * bmp.Height];
+				Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
+				return pixels;
+			}
+			finally
+			{
+				bmp.UnlockBits(data);
+			}
 		}
 
 		private bool SamePixel(byte lhs, byte rhs)

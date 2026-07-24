@@ -1,13 +1,30 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextMenuEventArgs/SelectionChangedEventArgs/GridLength/GridUnitType/Separator）
+// - using System.Windows.Input → using Avalonia.Input（DragEventArgs/DragDropEffects）
+// - using System.Windows.Markup → 移除（IComponentConnector 不需要）
+// - 新增 using Avalonia.Platform.Storage（IStorageItem/e.Data.GetFiles）；新增 using System.Linq（Select）
+// - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
+//   → NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）
+// - e.Data.GetData(DataFormats.FileDrop) is string[] → e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray()
+//   （Avalonia 文件拖放 API，参考 RepositoryUserControl.OnDrop/RepositoryManagerSourceDirectoryItem）
+// - RepositoriesTreeView.CommandBindings.Add(cmd.CreateShortcutCommandBinding(h))
+//   → RepositoriesTreeView.KeyBindings.Add(cmd.CreateShortcutKeyBinding(h))（参考 RevisionFileTreeUserControl/IUICommandExtension）
+// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 FileListUserControl/MultiselectionTreeView.OnDoubleTapped）
+//   构造函数显式订阅 RepositoriesTreeView.DoubleTapped += RepositoriesListBox_MouseDoubleClick
+//   （XAML 的 MouseDoubleClick 在 Avalonia 不存在，由 XAML 迁移阶段移除）
+// - GridSplitter.DragCompleted 保留（已在 RepositoryContentUserControl/CommitUserControl 等迁移文件中验证可用）
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
@@ -85,18 +102,21 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveTreeViewColumnWidth();
 			};
-			RepositoriesTreeView.CommandBindings.Add(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
+			// 阶段 4.5：WPF MouseDoubleClick → Avalonia DoubleTapped（参考 FileListUserControl.TreeView.DoubleTapped += TreeView_MouseDoubleClick）。
+			RepositoriesTreeView.DoubleTapped += RepositoriesListBox_MouseDoubleClick;
+			// 阶段 4.5：WPF CommandBindings.Add(CreateShortcutCommandBinding) → Avalonia KeyBindings.Add(CreateShortcutKeyBinding)（参考 RevisionFileTreeUserControl/IUICommandExtension）。
+			RepositoriesTreeView.KeyBindings.Add(Commands.OpenRepository.CreateShortcutKeyBinding(delegate
 			{
 				Commands.OpenRepository.Execute(SelectedRepository?.Repository);
 			}));
-			RepositoriesTreeView.CommandBindings.Add(Commands.RenameRepository.CreateShortcutCommandBinding(delegate
+			RepositoriesTreeView.KeyBindings.Add(Commands.RenameRepository.CreateShortcutKeyBinding(delegate
 			{
 				if (SelectedItems.Length == 1 && SelectedItems[0] is RepositoryManagerRepositoryItem itemToRename)
 				{
 					Commands.RenameRepository.Execute(itemToRename);
 				}
 			}));
-			RepositoriesTreeView.CommandBindings.Add(Commands.RemoveRepository.CreateShortcutCommandBinding(delegate
+			RepositoriesTreeView.KeyBindings.Add(Commands.RemoveRepository.CreateShortcutKeyBinding(delegate
 			{
 				if (SelectedItems.Length != 0 && SameType(SelectedItems) && SameParent(SelectedItems))
 				{
@@ -104,9 +124,11 @@ namespace ForkPlus.UI.UserControls
 				}
 			}));
 			RepositoriesTreeView.ContextMenuOpening += RepositoriesListBox_ContextMenuOpening;
-			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
-			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "RepositoryManagerRepositoriesUpdated", RepositoriesChanged);
+			// 阶段 4.5：WPF WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
+			// → Avalonia NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）。
+			NotificationCenter.Current.RepositoryNameChanged += RepositoryNameChanged;
+			NotificationCenter.Current.RepositoryColorChanged += RepositoryColorChanged;
+			NotificationCenter.Current.RepositoryManagerRepositoriesUpdated += RepositoriesChanged;
 			Task.Run(delegate
 			{
 				new RescanUserRepositoriesCommand().Execute(this);
@@ -248,7 +270,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					if (repositoryManagerTreeViewItem.Children[num] is RepositoryManagerRepositoryItem repositoryManagerRepositoryItem)
 					{
-						Log.Warn("Failed to add item '" + repository.Path + "' because item with same name '" + repositoryManagerRepositoryItem.Repository.Path + "' already exists in '" + repositoryManagerTreeViewItem.Title + "'\"");
+						Log.Warn("Failed to add item '" + repository.Path + "' because item with same name '" + repositoryManagerRepositoryItem.Repository.Path + "' already exists in '" + repositoryManagerTreeViewItem.Title + "'");
 					}
 					continue;
 				}
@@ -277,7 +299,10 @@ namespace ForkPlus.UI.UserControls
 		{
 			e.Handled = true;
 			base.OnDrop(e);
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] source)
+			// 阶段 4.5：WPF e.Data.GetData(DataFormats.FileDrop) is string[]
+			// → Avalonia e.Data.GetFiles()?.Select(f => f.Path.LocalPath).ToArray()（参考 RepositoryUserControl.OnDrop/RepositoryManagerSourceDirectoryItem）。
+			string[] source = e.Data.GetFiles()?.Select((IStorageItem f) => f.Path.LocalPath).ToArray();
+			if (source != null)
 			{
 				string[] paths = source.CompactMap((string path) => (GitMmUserControl.IsGitMmWorkspace(path) || new ValidateRepositoryPathGitCommand().Execute(path) == RepositoryValidState.ValidRepository) ? path : null);
 				RepositoryManager.Instance.AddRepositories(paths);
@@ -337,7 +362,8 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void RepositoriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		// 阶段 4.5：WPF MouseDoubleClick + MouseButtonEventArgs → Avalonia DoubleTapped + RoutedEventArgs（参考 FileListUserControl/MultiselectionTreeView.OnDoubleTapped）。
+		private void RepositoriesListBox_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
 			MultiselectionTreeViewItem lastClickedItem = RepositoriesTreeView.LastClickedItem;
 			if (lastClickedItem is RepositoryManagerRepositoryItem repositoryManagerRepositoryItem)

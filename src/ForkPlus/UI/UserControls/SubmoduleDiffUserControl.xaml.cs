@@ -1,9 +1,21 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/SizeChangedEventArgs）
+// - using System.Windows.Input → using Avalonia.Input（PointerWheelEventArgs）
+// - using System.Windows.Markup → 移除
+// - 新增 using Avalonia.Threading（Dispatcher.UIThread）
+// - MouseWheelEventHandler → EventHandler<PointerWheelEventArgs>（参考 FileDiffControl）
+// - RevisionListView.PreviewMouseWheel → RevisionListView.PointerWheelChanged（参考 FileDiffControl）
+// - WeakEventManager<NotificationCenter,EventArgs<ThemeType>>.AddHandler(...,"ApplicationThemeChanged",h)
+//   → NotificationCenter.Current.ApplicationThemeChanged += h（参考 StatisticsUserControl）
+// - repositoryUserControl.Dispatcher.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -27,15 +39,17 @@ namespace ForkPlus.UI.UserControls
 
 		public Sha? DstSha => _content?.DstSha;
 
-		public event MouseWheelEventHandler RevisionListViewPreviewMouseWheel
+		// 阶段 4.5：WPF MouseWheelEventHandler → Avalonia EventHandler<PointerWheelEventArgs>（参考 FileDiffControl）。
+		public event EventHandler<PointerWheelEventArgs> RevisionListViewPreviewMouseWheel
 		{
 			add
 			{
-				RevisionListView.PreviewMouseWheel += value;
+				// 阶段 4.5：WPF PreviewMouseWheel → Avalonia PointerWheelChanged（参考 FileDiffControl）。
+				RevisionListView.PointerWheelChanged += value;
 			}
 			remove
 			{
-				RevisionListView.PreviewMouseWheel -= value;
+				RevisionListView.PointerWheelChanged -= value;
 			}
 		}
 
@@ -46,7 +60,8 @@ namespace ForkPlus.UI.UserControls
 			UpdateSubmoduleButton.Collapse();
 			OpenSubmoduleButton.Click += OpenSubmoduleButton_Click;
 			UpdateSubmoduleButton.Click += UpdateSubmoduleButton_Click;
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 阶段 4.5：WeakEventManager → 直接事件订阅（参考 StatisticsUserControl）。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
 		public void ControlWillBeRemovedFromFileDiffControl()
@@ -107,7 +122,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				monitor.Update(0.0, _content.Submodule.FriendlyName);
 				GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(_content.ParentGitModule, new Submodule[1] { _content.Submodule }, monitor);
-				repositoryUserControl.Dispatcher.Invoke(delegate
+				// 阶段 4.5：WPF repositoryUserControl.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				Dispatcher.UIThread.Post(delegate
 				{
 					if (!updateSubmodulesResult.Succeeded)
 					{

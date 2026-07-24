@@ -1,11 +1,17 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl）
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ToggleButton）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（SolidColorBrush）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.UserControls

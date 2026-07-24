@@ -1,12 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Visibility）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush/IBrush）
+// - using System.Windows.Threading → using Avalonia.Threading（DispatcherTimer）
+// - Visibility → Avalonia.Visibility（命名空间迁移，枚举值兼容，参考 CommandProviderItem）
+// - WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(..., "ApplicationThemeChanged", ...)
+//   → NotificationCenter.Current.ApplicationThemeChanged += ...（直接事件订阅，参考 RevisionListViewUserControl）
+// - Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush → Theme.FindBrush("CodeEditorLinkForeground")（参考 HighlightingTypeExtensions）
+// - DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容：Interval/Tick/Start/Stop）
+// - SelectionChangedEventArgs → Avalonia.Controls 同名类型
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Threading;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
@@ -274,7 +286,7 @@ namespace ForkPlus.UI.UserControls
 			_refreshTimer.Tick += _refreshTimer_Tick;
 			JobListBox.ItemsSource = _jobs;
 			RefreshTheme();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 			ViewModeTabControl.Items.Add(new TabItem
 			{
 				Header = Translate("All"),
@@ -342,7 +354,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void CancelButton_Click(object sender, RoutedEventArgs e)
 		{
-			if ((sender as FrameworkElement)?.Parent<FrameworkElement>()?.Parent<FrameworkElement>()?.DataContext is JobViewModel jobViewModel)
+			if ((sender as Control)?.Parent<Control>()?.Parent<Control>()?.DataContext is JobViewModel jobViewModel)
 			{
 				jobViewModel.Job.Monitor.Cancel();
 			}
@@ -367,7 +379,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshTheme()
 		{
-			JobDetailsOutputEditor.TextArea.TextView.LinkTextForegroundBrush = Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush;
+			// 阶段 4.5：WPF Application.Current.TryFindResource(key) as Brush → Theme.FindBrush(key)（参考 HighlightingTypeExtensions）。
+			JobDetailsOutputEditor.TextArea.TextView.LinkTextForegroundBrush = Theme.FindBrush("CodeEditorLinkForeground");
 		}
 
 		private void Sync()
@@ -386,11 +399,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				Job[] jobHistory = jobQueue.GetJobHistory((ActivityManagerViewMode)((TabItem)ViewModeTabControl.SelectedItem).Tag switch
 				{
-					ActivityManagerViewMode.Debug => (Job x) => true, 
-					ActivityManagerViewMode.All => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0, 
-					ActivityManagerViewMode.User => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0 && (x.Flags & JobFlags.Background) == 0, 
-					ActivityManagerViewMode.Background => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0 && (x.Flags & JobFlags.Background) != 0, 
-					_ => throw new Exception("Cannot reach here"), 
+					ActivityManagerViewMode.Debug => (Job x) => true,
+					ActivityManagerViewMode.All => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0,
+					ActivityManagerViewMode.User => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0 && (x.Flags & JobFlags.Background) == 0,
+					ActivityManagerViewMode.Background => (Job x) => (x.Flags & JobFlags.SaveToLog) != 0 && (x.Flags & JobFlags.Background) != 0,
+					_ => throw new Exception("Cannot reach here"),
 				});
 				int num = 0;
 				int i = 0;
@@ -453,15 +466,15 @@ namespace ForkPlus.UI.UserControls
 			string text = "";
 			text = status switch
 			{
-				JobStatus.Running => (state != JobMonitorState.Canceled) ? Translate("running") : Translate("canceling..."), 
+				JobStatus.Running => (state != JobMonitorState.Canceled) ? Translate("running") : Translate("canceling..."),
 				JobStatus.Finished => state switch
 				{
-					JobMonitorState.Canceled => Translate("canceled"), 
-					JobMonitorState.Failed => Translate("failed"), 
-					JobMonitorState.Succeeded => Translate("succeeded"), 
-					_ => Translate("succeeded"), 
-				}, 
-				_ => Translate("succeeded"), 
+					JobMonitorState.Canceled => Translate("canceled"),
+					JobMonitorState.Failed => Translate("failed"),
+					JobMonitorState.Succeeded => Translate("succeeded"),
+					_ => Translate("succeeded"),
+				},
+				_ => Translate("succeeded"),
 			} + jobViewModel.FinishTime?.ToString(" d MMM yyyy HH:mm:ss");
 			JobDetailsFinishTimeTextBlock.Text = text;
 			int outputLength = jobViewModel.Job.Monitor.OutputLength;

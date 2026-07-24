@@ -1,13 +1,26 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/TabItem/TabItem/SelectionChangedEventArgs）
+// - using System.Windows.Documents → using Avalonia.Controls.Documents（Hyperlink）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（IImage）
+// - using System.Windows.Navigation → 移除（Avalonia 无 RequestNavigateEventArgs）
+// - 新增 using Avalonia.Layout（Visibility）
+// - System.Windows.Media.ImageSource → Avalonia.Media.IImage（参考 ReferencePanel/ImageToggleButton）
+// - Visibility.Hidden/Visible → Avalonia.Layout.Visibility（参考 RevisionSummaryUserControl）
+// - Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri → Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl/GitUserControl）
+// - SelectionChangedEventArgs → Avalonia.Controls 同名类型
+// - INotifyPropertyChanged/PropertyChangedEventHandler → System.ComponentModel（不变）
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Navigation;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
@@ -22,7 +35,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			private readonly Remote _remote;
 
-			public ImageSource RemoteIcon => _remote.Icon;
+			// 阶段 4.5：WPF ImageSource → Avalonia IImage（参考 ReferencePanel/ImageToggleButton）。
+			public IImage RemoteIcon => _remote.Icon;
 
 			public string Name => _remote.Name;
 
@@ -34,6 +48,7 @@ namespace ForkPlus.UI.UserControls
 
 			public string PullRequestsUrl { get; }
 
+			// 阶段 4.5：WPF System.Windows.Visibility → Avalonia.Layout.Visibility（参考 RevisionSummaryUserControl）。
 			public Visibility IsWebsiteVisible { get; }
 
 			public Visibility IsIssuesVisible { get; }
@@ -328,9 +343,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+		// 阶段 4.5：WPF Hyperlink.RequestNavigate + RequestNavigateEventArgs.Uri
+		// → Avalonia Hyperlink.Click + Hyperlink.NavigateUri（参考 AccountDetailsUserControl/GitUserControl）。
+		private void Hyperlink_Click(object sender, RoutedEventArgs e)
 		{
-			e.Uri.OpenInBrowser();
+			if (sender is Hyperlink hyperlink && hyperlink.NavigateUri != null)
+			{
+				hyperlink.NavigateUri.OpenInBrowser();
+			}
 			e.Handled = true;
 		}
 

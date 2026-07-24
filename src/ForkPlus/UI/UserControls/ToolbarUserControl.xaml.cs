@@ -1,10 +1,27 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（Thickness/Point/Visibility）+ using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Border/TextBlock/Canvas/Image/ItemCollection）
+// - using System.Windows.Markup → 移除（IComponentConnector 不需要）
+// - using System.Windows.Media → using Avalonia.Media（IImage，替代 ImageSource）
+// - 新增 using Avalonia.VisualTree（GetVisualRoot，替代 Window.GetWindow）
+// - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
+//   → NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）
+// - control.ToolTip = value → ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）
+// - ImageSource → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
+// - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）
+// - FrameworkElement → Control（Avalonia 无 FrameworkElement，参考 ExternalToolsUserControl）
+// - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）
+// - TranslatePoint 返回 Point? → ?? default(Point)（Avalonia TranslatePoint 返回可空）
+// - MenuItem.IsCheckable = true → MenuItem.ToggleType = MenuItemToggleType.CheckBox（Avalonia 用 ToggleType 枚举控制勾选行为）
+// - Dispatcher.Async → 保留（Avalonia Dispatcher 兼容扩展，参考 CommitCommand）
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands.LeanBranching;
@@ -26,13 +43,15 @@ namespace ForkPlus.UI.UserControls
 		public ToolbarUserControl()
 		{
 			InitializeComponent();
-			FetchToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch");
-			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull");
-			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push");
-			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
-		WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ShellChanged", ShellChanged);
+			// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）。
+			ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch"));
+			ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull"));
+			ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push"));
+			// 阶段 4.5：WPF WeakEventManager<TSender,TArgs>.AddHandler(obj,"Event",h) → 直接订阅 obj.Event（参考 FileControlHeaderUserControl）。
+			NotificationCenter.Current.ActiveTabChanged += ActiveTabChanged;
+		NotificationCenter.Current.ShellChanged += ShellChanged;
 		// 主题切换或自定义颜色变化时重建外观菜单，同步各 MenuItem 的 IsChecked 状态。
-		WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+		NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 	}
 
 	private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> args)
@@ -230,9 +249,10 @@ namespace ForkPlus.UI.UserControls
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
 			AiDevelopmentToolbarButton.Title = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
-			FetchToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language);
-			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language);
-			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language);
+			// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)。
+		ToolTip.SetTip(FetchToolbarButton, Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language));
+		ToolTip.SetTip(PullToolbarButton, Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language));
+		ToolTip.SetTip(PushToolbarButton, Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language));
 			RefreshWorkspacesButton();
 			StatusUserControl.ApplyLocalization();
 		}
@@ -253,26 +273,30 @@ namespace ForkPlus.UI.UserControls
 			PushBadge.Collapse();
 		}
 
-		private void RefreshBadge(Border badge, TextBlock badgeText, FrameworkElement button, int count)
+		// 阶段 4.5：WPF FrameworkElement → Avalonia Control（参考 ExternalToolsUserControl）。
+	private void RefreshBadge(Border badge, TextBlock badgeText, Control button, int count)
+	{
+		if (count > 0)
 		{
-			if (count > 0)
-			{
-				badgeText.Text = count.ToString();
-				badge.Show();
-				RefreshBadgePosition(badge, button);
-			}
-			else
-			{
-				badge.Collapse();
-			}
+			badgeText.Text = count.ToString();
+			badge.Show();
+			RefreshBadgePosition(badge, button);
 		}
+		else
+		{
+			badge.Collapse();
+		}
+	}
 
-		private void RefreshBadgePosition(FrameworkElement badge, FrameworkElement button)
-		{
-			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas);
-			Canvas.SetLeft(badge, point.X + button.ActualWidth - 10.0);
-			Canvas.SetTop(badge, point.Y - 2.0);
-		}
+	// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+	private void RefreshBadgePosition(Control badge, Control button)
+	{
+		// 阶段 4.5：WPF TranslatePoint 返回 Point → Avalonia 返回 Point?，用 ?? default(Point) 兜底。
+		Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas) ?? default(Point);
+		// 阶段 4.5：WPF ActualWidth → Avalonia Bounds.Width（参考 ModernTabControl）。
+		Canvas.SetLeft(badge, point.X + button.Bounds.Width - 10.0);
+		Canvas.SetTop(badge, point.Y - 2.0);
+	}
 
 		private void ActiveTabChanged(object sender, EventArgs<ClosableTabItem> args)
 		{
@@ -374,13 +398,14 @@ namespace ForkPlus.UI.UserControls
 		ReflogToolbarButton.IsEnabled = repo != null;
 		string undoLabel = Preferences.PreferencesLocalization.Current("Undo");
 		string redoLabel = Preferences.PreferencesLocalization.Current("Redo");
-		UndoToolbarButton.ToolTip = canUndo
+		// 阶段 4.5：WPF control.ToolTip = value → Avalonia ToolTip.SetTip(control, value)。
+		ToolTip.SetTip(UndoToolbarButton, canUndo
 			? undoLabel + ": " + repo.UndoRedoStack.LastUndoOperationName
-			: undoLabel;
-		RedoToolbarButton.ToolTip = canRedo
+			: undoLabel);
+		ToolTip.SetTip(RedoToolbarButton, canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
-			: redoLabel;
-		ReflogToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("View Reflog...");
+			: redoLabel);
+		ToolTip.SetTip(ReflogToolbarButton, Preferences.PreferencesLocalization.Current("View Reflog..."));
 	}
 
 	/// <summary>v3.0.4：供设置变更后调用，刷新 Undo/Redo 按钮可见性。</summary>
@@ -546,7 +571,8 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
 			});
 			themeMenuItem.IsChecked = !useCustom && currentTheme == theme;
-			themeMenuItem.IsCheckable = true;
+			// 阶段 4.5：WPF MenuItem.IsCheckable = true → Avalonia MenuItem.ToggleType = MenuItemToggleType.CheckBox。
+			themeMenuItem.ToggleType = MenuItemToggleType.CheckBox;
 			contextMenu.Items.Add(themeMenuItem);
 		}
 		// v3.1.1："纯色"二级菜单：父项作为子菜单容器（不设 IsCheckable，否则 WPF 会把 Click 当作
@@ -566,7 +592,8 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.SwitchApplicationTheme.Execute(solidCopy);
 			});
 			subItem.IsChecked = !useCustom && currentTheme == solidTheme;
-			subItem.IsCheckable = true;
+			// 阶段 4.5：WPF MenuItem.IsCheckable = true → Avalonia MenuItem.ToggleType = MenuItemToggleType.CheckBox。
+			subItem.ToggleType = MenuItemToggleType.CheckBox;
 			solidColorsParent.Items.Add(subItem);
 		}
 		contextMenu.Items.Add(solidColorsParent);
@@ -574,16 +601,18 @@ namespace ForkPlus.UI.UserControls
 		// 只要用户在对话框里改动过任意颜色并确认，UseCustomColors 即被置 true，此项自动勾选；
 		// 与上方主题项互斥——启用自定义颜色时所有主题项不勾选。再次点击只是重新打开编辑对话框。
 		MenuItem customColorsItem = new MenuItem
-		{
-			Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language),
-			IsCheckable = true,
+	{
+		Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language),
+			// 阶段 4.5：WPF MenuItem.IsCheckable = true → Avalonia MenuItem.ToggleType = MenuItemToggleType.CheckBox。
+			ToggleType = MenuItemToggleType.CheckBox,
 			IsChecked = useCustom
 		};
 		customColorsItem.Click += delegate
 		{
+			// 阶段 4.5：WPF Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）。
 			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
 			{
-				Owner = Window.GetWindow(this)
+				Owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance
 			};
 			dialog.ShowDialog();
 			// 对话框关闭后刷新主题菜单（IsChecked 状态可能因 OK/Cancel 变化）
@@ -805,7 +834,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			ImageSource consoleIcon = Theme.ConsoleIcon;
+			// 阶段 4.5：WPF ImageSource → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
+		IImage consoleIcon = Theme.ConsoleIcon;
 			if (!(ForkPlusSettings.Default.ShellTool is ShellTool.Default))
 			{
 				contextMenu.Items.Add(MainWindow.Commands.OpenRepositoryInDefaultShellTool.CreateMenuItem(new Image

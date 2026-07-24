@@ -1,19 +1,39 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/Button/Image/Popup/Separator/MenuItem/ListBoxItem/Expander/ContextMenu）
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ToggleButton/Popup）
+// - using System.Windows.Data → using Avalonia.Data（Binding）
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media → using Avalonia.Media（Brush）
+// - 新增 using Avalonia.Layout（Visibility）、using Avalonia.VisualTree（GetVisualRoot）
+// - Application.Current?.TryFindResource("TextButtonStyle") as Style → Theme.FindStyle("TextButtonStyle")（参考 AutoCompleteTextBox）
+// - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
+// - MessageBoxButton/MessageBoxImage 由 ForkPlus.Services 提供
+// - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 AiReviewPreferencesUserControl）
+// - Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）
+// - UIElement → Control（参考 DiffEntryRowUserControl）
+// - popup.StaysOpen=false → popup.IsLightDismissEnabled=true；移除 AllowsTransparency/PopupAnimation（参考 DateRangeButton）
+// - BindingOperations.SetBinding(popup, IsOpenProperty, binding) → popup.Bind(IsOpenProperty, binding) 扩展方法（参考 TooltipView）
+// - BindingOperations.ClearBinding → 在 Closed 中 Dispose 绑定返回的 IDisposable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Utils.Http;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
@@ -24,7 +44,8 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class RevisionSummaryUserControl : UserControl
 	{
-		private static Style ParentButtonStyle => Application.Current?.TryFindResource("TextButtonStyle") as Style;
+		// 阶段 4.5：WPF Application.Current.TryFindResource("TextButtonStyle") as Style → Theme.FindStyle（参考 AutoCompleteTextBox）。
+		private static Style ParentButtonStyle => Theme.FindStyle("TextButtonStyle");
 
 		[Null]
 		private RevisionSearchQuery _searchQuery;
@@ -111,6 +132,7 @@ namespace ForkPlus.UI.UserControls
 			revisionDetails.MessageParts(out var subject, out var description);
 			SubjectTextBlock.Text = subject;
 			DescriptionTextBlock.Text = description;
+			// 阶段 4.5：WPF Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）。
 			DescriptionTextBlock.Visibility = (string.IsNullOrEmpty(description) ? Visibility.Collapsed : Visibility.Visible);
 			ApplySearch();
 			int num = 100;
@@ -251,20 +273,25 @@ namespace ForkPlus.UI.UserControls
 			{
 				Popup popup = new Popup();
 				popup.HorizontalOffset = -270.0;
-				popup.StaysOpen = false;
-				popup.AllowsTransparency = true;
-				popup.PopupAnimation = PopupAnimation.None;
+				// 阶段 4.5：WPF StaysOpen=false → Avalonia IsLightDismissEnabled=true（点击外部关闭）（参考 DateRangeButton）。
+				popup.IsLightDismissEnabled = true;
+				// 阶段 4.5：WPF AllowsTransparency / PopupAnimation.None 在 Avalonia 中无对应；Popup 默认透明。
 				popup.PlacementTarget = parentButton;
 				popup.Opened += delegate
 				{
 					parentButton.Disable();
 				};
+				// 阶段 4.5：WPF BindingOperations.ClearBinding → 在 Closed 中 Dispose 绑定返回的 IDisposable。
+				IDisposable isOpenBinding = null;
 				popup.Closed += delegate
 				{
-					BindingOperations.ClearBinding(popup, Popup.IsOpenProperty);
+					isOpenBinding?.Dispose();
+					parentButton.IsChecked = false;
 					parentButton.Enable();
 				};
-				BindingOperations.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
+				// 阶段 4.5：WPF BindingOperations.SetBinding(popup, IsOpenProperty, binding)
+				// → Avalonia AvaloniaObject.Bind(IsOpenProperty, binding) 扩展方法（参考 TooltipView）。
+				isOpenBinding = popup.Bind(Popup.IsOpenProperty, new Binding("IsChecked")
 				{
 					Source = parentButton
 				});
@@ -278,7 +305,8 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private UIElement CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
+		// 阶段 4.5：WPF UIElement → Avalonia Control（参考 DiffEntryRowUserControl）。
+		private Control CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
 		{
 			return new AdvancedTooltipButton(repositoryUserControl, parent, action)
 			{
@@ -371,7 +399,8 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
+				// 阶段 4.5：WPF MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）。
+				ServiceLocator.MessageBox.Show(
 					Preferences.PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
 					Preferences.PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
 					MessageBoxButton.OK,
@@ -400,7 +429,8 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = Window.GetWindow(this);
+			// 阶段 4.5：WPF Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 AiReviewPreferencesUserControl）。
+			window.Owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance;
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

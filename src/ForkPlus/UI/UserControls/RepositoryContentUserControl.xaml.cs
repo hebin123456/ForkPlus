@@ -1,9 +1,16 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia（GridLength/GridUnitType/Grid 静态方法）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl）
+// - using System.Windows.Markup → 移除
+// - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "EventName", handler)
+//   → NotificationCenter.Current.EventName += handler（参考 SubmoduleDiffUserControl/StatisticsUserControl）
+// - Grid.SetRow/SetColumn/SetRowSpan/SetColumnSpan API 兼容（Avalonia.Controls.Grid）
+// - GridLength/GridUnitType.Pixel API 兼容（Avalonia 命名空间）
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
@@ -46,8 +53,9 @@ namespace ForkPlus.UI.UserControls
 			RevisionListViewUserControl.SelectionChanged += RevisionListViewUserControl_SelectionChanged;
 			RevisionListViewUserControl.RevisionDoubleClick += RevisionListViewUserControl_RevisionDoubleClick;
 			RevisionListViewUserControl.BranchDoubleClick += RevisionListViewUserControl_BranchDoubleClick;
-			WeakEventManager<NotificationCenter, EventArgs<RevisionListOrientation>>.AddHandler(NotificationCenter.Current, "RevisionListOrientatioChanged", RevisionListOrientationChanged);
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "CompactBranchLabelsChanged", CompactBranchLabelsChanged);
+			// 阶段 4.5：WeakEventManager → 直接事件订阅（参考 SubmoduleDiffUserControl/StatisticsUserControl）。
+			NotificationCenter.Current.RevisionListOrientatioChanged += RevisionListOrientationChanged;
+			NotificationCenter.Current.CompactBranchLabelsChanged += CompactBranchLabelsChanged;
 			VerticalGridSplitter.DragCompleted += delegate
 			{
 				SaveRevisionListViewColumnWidth();

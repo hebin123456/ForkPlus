@@ -1,10 +1,24 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBox）
+// - using System.Windows.Controls.Primitives → using Avalonia.Controls.Primitives（ToggleButton/Popup）
+// - using System.Windows.Markup → 移除
+// - 新增 using Avalonia.VisualTree（OnAttachedToVisualTree/VisualTreeAttachmentEventArgs）
+// - OnVisualParentChanged(DependencyObject oldParent) → OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+//   （Avalonia 无 OnVisualParentChanged；控件加入视觉树时回调 OnAttachedToVisualTree，参考 Avalonia Control）
+// - DependencyObject → AvaloniaObject（VisualTreeAttachmentHelper）
+// - this.Parent<Popup>() → 不变（GetParent<T> 扩展方法已迁移为 AvaloniaObject，参考 DependencyObjectExtensions）
+// - base.IsVisible → Visual.IsVisible（Avalonia 同名属性）
+// - SelectionChangedEventArgs → Avalonia.Controls 同名类型
+// - Popup.Opened/Closed、ToggleButton.IsChecked、Popup.PlacementTarget API 兼容
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using ForkPlus.Accounts;
 using ForkPlus.Settings;
 using ForkPlus.UI;
@@ -46,15 +60,20 @@ namespace ForkPlus.UI.UserControls
 			HeaderLabel.Text = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 		}
 
-		protected override void OnVisualParentChanged(DependencyObject oldParent)
+		// 阶段 4.5：WPF OnVisualParentChanged(DependencyObject oldParent)
+		// → Avalonia OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)。
+		// WPF 在视觉父级变化时回调（含挂载/卸载），Avalonia 在控件加入视觉树时回调 OnAttachedToVisualTree。
+		// 语义等价：控件被放入 Popup 后，沿视觉树向上查找父级 Popup 并订阅其 Opened/Closed。
+		protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
 		{
-			Log.Info("NotificationManagerUserControl.OnVisualParentChanged()");
+			Log.Info("NotificationManagerUserControl.OnAttachedToVisualTree()");
+			base.OnAttachedToVisualTree(e);
 			if (_parentPopup != null)
 			{
 				_parentPopup.Opened -= ParentPopup_Opened;
 				_parentPopup.Closed -= ParentPopup_Closed;
 			}
-			base.OnVisualParentChanged(oldParent);
+			// 阶段 4.5：this.Parent<Popup>() 使用 GetParent<T> 扩展方法（参考 DependencyObjectExtensions）。
 			_parentPopup = this.Parent<Popup>();
 			_parentButton = _parentPopup?.PlacementTarget as ToggleButton;
 			if (_parentPopup == null || _parentButton == null)
@@ -109,6 +128,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void NotificationManager_IsUpdatingChanged(object sender, EventArgs e)
 		{
+			// 阶段 4.5：WPF base.IsVisible → Avalonia Visual.IsVisible（同名属性）。
 			if (base.IsVisible)
 			{
 				RefreshBusyIndicator();

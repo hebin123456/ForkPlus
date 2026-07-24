@@ -1,9 +1,19 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs/SizeChangedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Markup → 移除
+// - using System.Windows.Media.Imaging → using Bitmap = Avalonia.Media.Imaging.Bitmap（别名替代 BitmapSource）
+// - BitmapSource → Bitmap（Avalonia.Media.Imaging.Bitmap，参考 IconTools）
+// - WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(..., "ImageDiffHighlightPixelsChanged", ...)
+//   → NotificationCenter.Current.ImageDiffHighlightPixelsChanged += ...（直接事件订阅）
+// - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width
+// - ClipXPlaceholderGrid.ActualWidth → ClipXPlaceholderGrid.Bounds.Width
 using System;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -20,25 +30,25 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			{
 				RefreshOverlayImageSize();
 			};
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
+			NotificationCenter.Current.ImageDiffHighlightPixelsChanged += delegate
 			{
 				RefreshHighlightImageDiff();
-			});
+			};
 			RefreshHighlightImageDiff();
 		}
 
-		public void Refresh(ImageData oldImageData, ImageData newImageData, BitmapSource diffImageSource, bool showTitle)
+		public void Refresh(ImageData oldImageData, ImageData newImageData, Bitmap diffImageSource, bool showTitle)
 		{
 			if (oldImageData == null || newImageData == null)
 			{
 				return;
 			}
-			BitmapSource imageSource = oldImageData.ImageSource;
+			Bitmap imageSource = oldImageData.ImageSource;
 			if (imageSource == null)
 			{
 				return;
 			}
-			BitmapSource imageSource2 = newImageData.ImageSource;
+			Bitmap imageSource2 = newImageData.ImageSource;
 			if (imageSource2 != null)
 			{
 				OverlayImage.SetContent(imageSource, imageSource2, diffImageSource);
@@ -60,8 +70,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshOverlayImageSize()
 		{
-			double num = base.ActualHeight - 35.0 - 9.0 - 9.0 - 40.0;
-			double num2 = base.ActualWidth - 10.0 - 10.0 - 9.0 - 9.0;
+			double num = base.Bounds.Height - 35.0 - 9.0 - 9.0 - 40.0;
+			double num2 = base.Bounds.Width - 10.0 - 10.0 - 9.0 - 9.0;
 			if (num > 0.0 && num2 > 0.0)
 			{
 				OverlayImage.ParentBounds = new Size(num2, num);
@@ -76,7 +86,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshClipX()
 		{
-			OverlayImage.ClipX = ClipXPlaceholderGrid.ActualWidth;
+			OverlayImage.ClipX = ClipXPlaceholderGrid.Bounds.Width;
 		}
 
 		private void RefreshLfsLabel(Label lfsLabel, Label notLfsLabel, ImageData imageData)
