@@ -1,22 +1,26 @@
-using ForkPlus.UI.Helpers;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Helpers
 {
+	// 阶段 4.5：WPF System.Windows.* → Avalonia.*。
+	// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs。
+	// WPF args.OriginalSource → Avalonia args.Source。
+	// WPF VisualTreeHelper.GetParent → Avalonia GetVisualParent()。
+	// WPF DependencyObject → Avalonia Visual（视觉树节点）。
+	// WPF Run.Parent 特殊处理移除（Avalonia Inline 不在视觉树中，Source 通常是 TextBlock）。
 	public static class ListViewScrollbarDoubleClickHelper
 	{
-		public static bool IsClickedOnScrollbar(this MouseButtonEventArgs args)
+		public static bool IsClickedOnScrollbar(this PointerPressedEventArgs args)
 		{
-			DependencyObject dependencyObject = args.OriginalSource as DependencyObject;
-			while (dependencyObject != null && !(dependencyObject is ListViewItem))
+			Visual visual = args.Source as Visual;
+			while (visual != null && !(visual is ListViewItem))
 			{
-				dependencyObject = ((!(dependencyObject is Run)) ? VisualTreeHelper.GetParent(dependencyObject) : (dependencyObject as Run).Parent);
+				visual = visual.GetVisualParent();
 			}
-			if (dependencyObject == null)
+			if (visual == null)
 			{
 				return true;
 			}
