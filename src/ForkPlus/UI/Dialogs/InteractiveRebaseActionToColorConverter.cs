@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Dialogs
