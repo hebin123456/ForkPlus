@@ -1,7 +1,7 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CodeEditorSearchPanelUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CodeEditorSearchPanelUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <Border Padding="6,4,4,4">
     <Border.Background>
-      <DynamicResource ResourceKey="ToolbarBackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <DynamicResource ResourceKey="ToolbarBackgroundBrush" />
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
@@ -12,13 +12,13 @@
         <DockPanel.Children>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">
             <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              <DynamicResource ResourceKey="IconButtonStyle" />
             </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
               <Image.Source>
-                <DynamicResource ResourceKey="CancelSearchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                <DynamicResource ResourceKey="CancelSearchIcon" />
               </Image.Source>
               <Image.Width>16</Image.Width>
               <Image.Height>16</Image.Height>
@@ -27,13 +27,13 @@
           </Button>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="JumpToNextSearchResultButton_Click">
             <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              <DynamicResource ResourceKey="IconButtonStyle" />
             </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
               <Image.Source>
-                <DynamicResource ResourceKey="NextIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                <DynamicResource ResourceKey="NextIcon" />
               </Image.Source>
               <Image.Width>16</Image.Width>
               <Image.Height>16</Image.Height>
@@ -42,13 +42,13 @@
           </Button>
           <Button DockPanel.Dock="Right" Margin="2,0,2,0" Click="JumpToPreviousSearchResultButton_Click">
             <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              <DynamicResource ResourceKey="IconButtonStyle" />
             </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
               <Image.Source>
-                <DynamicResource ResourceKey="PrevIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                <DynamicResource ResourceKey="PrevIcon" />
               </Image.Source>
               <Image.Width>16</Image.Width>
               <Image.Height>16</Image.Height>
@@ -57,10 +57,10 @@
           </Button>
           <PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" xmlns="clr-namespace:ForkPlus.UI.Controls" x:Name="SearchTextBox">
             <PlaceholderTextBox.Style>
-              <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" />
             </PlaceholderTextBox.Style>
             <PlaceholderTextBox.Icon>
-              <DynamicResource ResourceKey="SearchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+              <DynamicResource ResourceKey="SearchIcon" />
             </PlaceholderTextBox.Icon>
           </PlaceholderTextBox>
         </DockPanel.Children>

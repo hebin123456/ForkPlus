@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.UI.Controls;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
@@ -29,6 +28,9 @@ namespace ForkPlus.UI.UserControls
 				CurrentResults = new TextSegmentCollection<SearchResult>();
 			}
 
+			// 阶段 4 里程碑 4.7-a：WPF DrawingContext → Avalonia.Media.DrawingContext（同名不同类型）。
+			// WPF Brush → Avalonia IBrush。Application.Current.TryFindResource → Theme.FindBrush
+			// （阶段 4.3-b 迁移后的资源查找门面，内部用 Application.Current.Resources.TryGetResource）。
 			public void Draw([Null] TextView textView, [Null] DrawingContext drawingContext)
 			{
 				if (textView != null && drawingContext != null)
@@ -36,7 +38,7 @@ namespace ForkPlus.UI.UserControls
 					Geometry geometry = CreateSearchResultsGeometry(textView, CurrentResults);
 					if (geometry != null)
 					{
-						Brush brush = Application.Current.TryFindResource("RevisionList.SearchMatch.ForegroundBrush") as Brush;
+						IBrush brush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 						drawingContext.DrawGeometry(brush, null, geometry);
 					}
 				}
@@ -94,13 +96,16 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isSearchBarVisible;
 
-		public static readonly DependencyProperty SearchPanelPlaceholderProperty = DependencyProperty.Register("SearchPanelPlaceholder", typeof(Grid), typeof(CodeEditorSearchPanelUserControl), new PropertyMetadata((object)null));
+		// 阶段 4 里程碑 4.7-a：WPF DependencyProperty.Register + PropertyMetadata →
+		// Avalonia StyledProperty<T> + AvaloniaProperty.Register。Grid 类型来自 Avalonia.Controls。
+		public static readonly StyledProperty<Grid> SearchPanelPlaceholderProperty =
+			AvaloniaProperty.Register<CodeEditorSearchPanelUserControl, Grid>(nameof(SearchPanelPlaceholder));
 
 		public Grid SearchPanelPlaceholder
 		{
 			get
 			{
-				return (Grid)GetValue(SearchPanelPlaceholderProperty);
+				return GetValue(SearchPanelPlaceholderProperty);
 			}
 			set
 			{
@@ -133,12 +138,14 @@ namespace ForkPlus.UI.UserControls
 				TranslateTransform.Y = 0.0 - ControlHeight;
 				SearchPanelPlaceholder.Height = 0.0;
 			};
-			SearchTextBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			// 阶段 4 里程碑 4.7-a：WPF PreviewKeyDown → Avalonia KeyDown（Avalonia 无 Preview 前缀）。
+			// WPF KeyboardHelper.IsShiftDown → e.KeyModifiers.HasFlag(KeyModifiers.Shift)。
+			SearchTextBox.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return || e.Key == Key.F3)
 				{
 					e.Handled = true;
-					if (KeyboardHelper.IsShiftDown)
+					if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
 					{
 						FindPrevious();
 					}
