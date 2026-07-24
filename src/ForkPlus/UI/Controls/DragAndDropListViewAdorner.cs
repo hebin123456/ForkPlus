@@ -1,31 +1,37 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
-	public class DragAndDropListViewAdorner : Adorner
+	// 阶段 4.5：WPF Adorner → Avalonia Control + OverlayLayer。
+	// 渲染多个 ListBoxItem 的 VisualBrush 副本（拖拽多项时的幽灵图像堆叠）。
+	// WPF VisualBrush(UIElement) → Avalonia.Media.VisualBrush(Visual)。
+	// WPF ActualHeight → Avalonia Bounds.Height。
+	// WPF Point.Offset → Avalonia Point + Vector。
+	public class DragAndDropListViewAdorner : Control
 	{
 		private readonly double _visualBrushYOffset;
 
-		private readonly Brush[] _visualBrushes;
+		private readonly VisualBrush[] _visualBrushes;
 
 		private readonly Point _initialPosition;
 
+		private readonly Size _adornedSize;
+
 		private Point NewPosition { get; set; }
 
-		public DragAndDropListViewAdorner(UIElement adornedElement, ListBoxItem[] listBoxItems, Point position)
-			: base(adornedElement)
+		public DragAndDropListViewAdorner(Control adornedElement, ListBoxItem[] listBoxItems, Point position)
 		{
 			_initialPosition = position;
-			Brush[] visualBrushes = listBoxItems.Map((ListBoxItem x) => new VisualBrush(x)
-			{
-				Opacity = 0.4
-			});
-			_visualBrushes = visualBrushes;
-			_visualBrushYOffset = listBoxItems.FirstItem()?.ActualHeight ?? 0.0;
-			base.IsHitTestVisible = false;
+			_adornedSize = adornedElement.Bounds.Size;
+			_visualBrushes = listBoxItems.Map((ListBoxItem x) => new VisualBrush(x));
+			_visualBrushYOffset = listBoxItems.FirstItem()?.Bounds.Height ?? 0.0;
+			IsHitTestVisible = false;
+			HorizontalAlignment = HorizontalAlignment.Stretch;
+			VerticalAlignment = VerticalAlignment.Stretch;
 		}
 
 		public void UpdatePosition(Point position)
@@ -34,19 +40,34 @@ namespace ForkPlus.UI.Controls
 			InvalidateVisual();
 		}
 
-		protected override void OnRender(DrawingContext context)
+		public override void Render(DrawingContext context)
 		{
-			Point newPosition = NewPosition;
-			newPosition.Offset(0.0 - _initialPosition.X, 0.0 - _initialPosition.Y);
+			Point newPosition = NewPosition + new Vector(0.0 - _initialPosition.X, 0.0 - _initialPosition.Y);
 			for (int i = 0; i < _visualBrushes.Length; i++)
 			{
-				Brush brush = _visualBrushes[i];
+				VisualBrush brush = _visualBrushes[i];
 				if (i > 0)
 				{
-					newPosition.Offset(0.0, _visualBrushYOffset);
+					newPosition = newPosition + new Vector(0.0, _visualBrushYOffset);
 				}
-				context.DrawRectangle(brush, null, new Rect(newPosition, base.RenderSize));
+				using (context.PushOpacity(0.4))
+				{
+					context.DrawRectangle(brush, null, new Rect(newPosition, _adornedSize));
+				}
 			}
+		}
+
+		// 阶段 4.5：封装 OverlayLayer 挂载/卸载。
+		public void AttachTo(Control parent)
+		{
+			OverlayLayer overlay = OverlayLayer.GetOverlayLayer(parent);
+			overlay?.Children.Add(this);
+		}
+
+		public void DetachFrom(Control parent)
+		{
+			OverlayLayer overlay = OverlayLayer.GetOverlayLayer(parent);
+			overlay?.Children.Remove(this);
 		}
 	}
 }
