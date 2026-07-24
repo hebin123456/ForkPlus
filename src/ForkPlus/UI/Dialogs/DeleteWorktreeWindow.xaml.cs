@@ -50,7 +50,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Delete worktree '{0}'", worktree.FriendlyName), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new RemoveWorktreeGitCommand().Execute(gitModule, worktree.Path, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (result.Succeeded)
 					{

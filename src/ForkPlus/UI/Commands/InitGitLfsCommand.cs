@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(Translate("Initialize Git LFS"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult initializeGitLfsResult = new GitLfsInstallGitCommand().Execute(gitModule, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!initializeGitLfsResult.Succeeded)
 					{

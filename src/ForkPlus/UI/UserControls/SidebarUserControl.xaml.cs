@@ -222,29 +222,29 @@ namespace ForkPlus.UI.UserControls
 				if (text2 != null)
 				{
 					RepositoryParentNameTextBlock.Text = parentRepositoryName + ": ";
-					RepositoryParentNameTextBlock.ToolTip = parentRepositoryName + "\n" + text2;
-					RepositoryNameTextBlock.ToolTip = parentRepositoryName + ": " + repositoryName + "\n" + text;
+					ToolTip.SetTip(RepositoryParentNameTextBlock, parentRepositoryName + "\n" + text2);
+					ToolTip.SetTip(RepositoryNameTextBlock, parentRepositoryName + ": " + repositoryName + "\n" + text);
 					return;
 				}
 			}
 			RepositoryParentNameTextBlock.Text = "";
-			RepositoryParentNameTextBlock.ToolTip = "";
-			RepositoryNameTextBlock.ToolTip = repositoryName + "\n" + text;
+			ToolTip.SetTip(RepositoryParentNameTextBlock, "");
+			ToolTip.SetTip(RepositoryNameTextBlock, repositoryName + "\n" + text);
 		}
 
 		public void ApplyLocalization()
 		{
 			string language = ForkPlusSettings.Default.UiLanguage;
-			RepositorySettingsDropdownButton.ToolTip = Preferences.PreferencesLocalization.Translate("Repository Settings", language);
+			ToolTip.SetTip(RepositorySettingsDropdownButton, Preferences.PreferencesLocalization.Translate("Repository Settings", language));
 			FilterTextBox.Placeholder = Preferences.PreferencesLocalization.Translate("Filter", language);
 			AllCommitsTextBlock.Text = Preferences.PreferencesLocalization.Translate("All Commits", language);
 			if (RepositoryUserControl?.RepositoryStatus == null)
 			{
 				ChangesTextBlock.Text = Preferences.PreferencesLocalization.Translate("Changes", language);
 			}
-			BranchesRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Branches", language);
-			SearchRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Search Commits", language);
-			ServiceRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Pull Requests", language);
+			ToolTip.SetTip(BranchesRadioButton, Preferences.PreferencesLocalization.Translate("Branches", language));
+			ToolTip.SetTip(SearchRadioButton, Preferences.PreferencesLocalization.Translate("Search Commits", language));
+			ToolTip.SetTip(ServiceRadioButton, Preferences.PreferencesLocalization.Translate("Pull Requests", language));
 			SearchTabItem.ApplyLocalization();
 			_pinned.RefreshTitle();
 			_branches.RefreshTitle();
@@ -373,7 +373,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (sender is TextBlock { DataContext: TagSidebarItem { Reference: Tag reference } } textBlock)
 			{
-				textBlock.ToolTip = $"Tag '{reference.Name}'\n{reference.CommitterDate}";
+				ToolTip.SetTip(textBlock, $"Tag '{reference.Name}'\n{reference.CommitterDate}");
 			}
 		}
 
@@ -1344,7 +1344,7 @@ namespace ForkPlus.UI.UserControls
 			// 因此用 Dispatcher.BeginInvoke 延迟到下一轮渲染后再查找部件。
 			groupItem.SubmenuOpened += delegate
 			{
-				groupItem.Dispatcher.Post(new Action(delegate
+				Dispatcher.UIThread.Post(new Action(delegate
 			{
 				PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
 					if (searchBox == null)
@@ -1388,17 +1388,17 @@ namespace ForkPlus.UI.UserControls
 				string header = branchItem.Header as string;
 				if (string.IsNullOrEmpty(filter) || (header != null && header.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0))
 				{
-					branchItem.Visibility = Visibility.Visible;
+					branchItem.IsVisible = true;
 				}
 				else
 				{
-					branchItem.Visibility = Visibility.Collapsed;
+					branchItem.IsVisible = false;
 				}
 			}
 			// 过滤改变子项可见性后，菜单的焦点管理可能把键盘焦点抢到第一个可见 MenuItem，
 			// 导致搜索框失焦、无法继续输入。过滤完成后立即把焦点夺回搜索框。
 			// 配合 Dispatcher.Post 确保在菜单焦点逻辑之后执行。
-			groupItem.Dispatcher.Post(new Action(delegate
+			Dispatcher.UIThread.Post(new Action(delegate
 			{
 				if (searchBox.IsVisible && !searchBox.IsFocused)
 				{

@@ -6,7 +6,7 @@
 // - 新增 using Avalonia.Layout（Layoutable.HeightProperty）、using Avalonia.Threading（Dispatcher.UIThread）
 // - WeakEventManager<NotificationCenter,EventArgs<ThemeType>>.AddHandler(...,"ApplicationThemeChanged",h)
 //   → NotificationCenter.Current.ApplicationThemeChanged += h（参考 StatisticsUserControl）
-// - base.Dispatcher.Async → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
+// - Dispatcher.UIThread.Async → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
 // - DoubleAnimation + BeginAnimation(FrameworkElement.HeightProperty, anim) → Transitions + DoubleTransition + 修改 Height（参考 RevisionDetailsUserControl）
 // - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 RevisionDetailsUserControl）
 // - base.ActualHeight → Bounds.Height（参考 RevisionDetailsUserControl）
@@ -60,7 +60,7 @@ namespace ForkPlus.UI.UserControls
 			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Get Revision Storage"), delegate
 			{
 				GitCommandResult<RevisionStorage> revisionStorageResponse = new GetRevisionStorageGitCommand().Execute(gitModule, sha);
-				// 阶段 4.5：WPF base.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				// 阶段 4.5：WPF Dispatcher.UIThread.Async → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
 				Dispatcher.UIThread.Post(delegate
 				{
 					if (!revisionStorageResponse.Succeeded)

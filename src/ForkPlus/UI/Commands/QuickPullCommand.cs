@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Commands
 							repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Pull '{0}'", remoteBranch.Name), delegate(JobMonitor monitor)
 							{
 								GitCommandResult requestResult = PerformPull(gitModule, remoteBranch.Remote, rebase, allTags, stashAndReapply, workingDirectoryIsDirty, submodulesToUpdate, monitor);
-								repositoryUserControl.Dispatcher.Invoke(delegate
+								Dispatcher.UIThread.Invoke(delegate
 								{
 									if (!requestResult.Succeeded)
 									{

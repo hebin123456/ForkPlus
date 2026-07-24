@@ -71,7 +71,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(string.Format(Translate("Push {0} tags to '{1}'"), tags.Length, remote.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pushResult = new PushMultipleTagsGitCommand().Execute(gitModule, remote.Name, tags, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{

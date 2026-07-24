@@ -214,7 +214,7 @@ namespace ForkPlus.UI.UserControls
 				JobQueue.Add(PreferencesLocalization.Current("Validating repository path..."), delegate
 				{
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						repositoryItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
 					});
@@ -281,7 +281,7 @@ namespace ForkPlus.UI.UserControls
 				JobQueue.Add(PreferencesLocalization.Current("Validating repository path..."), delegate
 				{
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						newItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
 					});

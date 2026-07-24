@@ -280,7 +280,7 @@ namespace ForkPlus.UI.UserControls
 				ServiceResult<PullRequest[]> pullRequestsResponse = _pagedItems.LoadNext();
 				if (!pullRequestsResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -296,7 +296,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					PullRequest[] result = pullRequestsResponse.Result;
 					PullRequestItem[] pullRequestItems = result.Map((PullRequest x) => new PullRequestItem(x));
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

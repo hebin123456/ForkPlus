@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult<Sha> mergeBaseResponse = new GetMergeBaseGitCommand().Execute(repositoryUserControl.GitModule, source.Sha, destinationSha);
 				if (!mergeBaseResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						rebaseBranchWindow.Close(GitCommandResult.Failure(new GitCommandError.GenericError("Cannot get merge base: '" + source.Sha.ToString() + "..." + destinationSha.ToString() + "':\n" + mergeBaseResponse.Error.FriendlyDescription)));
 					});
@@ -70,7 +70,7 @@ namespace ForkPlus.UI.Dialogs
 				_rebaseContainsLocalBranches = localBranchesInRange.Count > 0;
 				if (_rebaseContainsLocalBranches)
 				{
-					UpdateRefsCheckBox.Visibility = Visibility.Visible;
+					UpdateRefsCheckBox.IsVisible = true;
 					List<string> list = new List<string>(localBranchesInRange.Count);
 					for (int i = 0; i < localBranchesInRange.Count; i++)
 					{
@@ -80,13 +80,13 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else
 				{
-					UpdateRefsCheckBox.Visibility = Visibility.Collapsed;
+					UpdateRefsCheckBox.IsVisible = false;
 				}
 				RefreshBranchesListVisibility();
 			}
 			else
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					rebaseBranchWindow.Close(GitCommandResult.Failure(new GitCommandError.GenericError("Cannot get destination sha for rebase")));
 				});
@@ -148,7 +148,7 @@ namespace ForkPlus.UI.Dialogs
 				if (!stashResult.Succeeded)
 				{
 					GitCommandResult stashFail = GitCommandResult.Failure(stashResult.Error);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(stashFail);
 					});
@@ -157,21 +157,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!source.IsActive)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
 				});
 				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, source, monitor);
 				if (!checkoutResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(checkoutResult);
 					});
 					return checkoutResult;
 				}
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Rebasing...");
 			});
@@ -180,13 +180,13 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (submodulesToUpdate.Length > 0)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 					});
 					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(rebaseBranchResult);
 				});
@@ -201,13 +201,13 @@ namespace ForkPlus.UI.Dialogs
 			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
 				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (!applyStashResult.Succeeded)
 				{
@@ -297,11 +297,11 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (_rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault())
 			{
-				LocalBranchesListBox.Visibility = Visibility.Visible;
+				LocalBranchesListBox.IsVisible = true;
 			}
 			else
 			{
-				LocalBranchesListBox.Visibility = Visibility.Collapsed;
+				LocalBranchesListBox.IsVisible = false;
 			}
 		}
 

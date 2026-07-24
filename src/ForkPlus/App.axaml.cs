@@ -779,8 +779,8 @@ namespace ForkPlus
 			ForkPlusSettings @default = ForkPlusSettings.Default;
 			if (!IsGitInstanceAvailable())
 			{
-				// 阶段 5：Avalonia Window.ShowDialog() 必须传入 owner 窗口（WPF 可 0 参）。
-				if (!new ConfigureGitInstanceWindow().ShowDialog(GetDesktopMainWindow()).GetValueOrDefault())
+				// 阶段 5：使用 WindowDialogExtensions.ShowDialog() 同步扩展（自动选取 owner + DispatcherFrame 嵌套泵）。
+				if (!new ConfigureGitInstanceWindow().ShowDialog().GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;
@@ -789,7 +789,7 @@ namespace ForkPlus
 			WarnIfGitVersionUnsupported(GitPath);
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
-				if (!new WelcomeWindow().ShowDialog(GetDesktopMainWindow()).GetValueOrDefault())
+				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;

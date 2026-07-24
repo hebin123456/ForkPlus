@@ -218,7 +218,7 @@ namespace ForkPlus.UI.Dialogs
 				string cmd = _viewModel.CommandPreview;
 				CommandPreviewTextBlock.Text = cmd;
 				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-				CommandPreviewTextBlock.ToolTip = cmd;
+				ToolTip.SetTip(CommandPreviewTextBlock, cmd);
 			}
 		}
 

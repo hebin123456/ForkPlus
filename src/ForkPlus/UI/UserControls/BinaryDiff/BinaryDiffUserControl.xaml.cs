@@ -11,7 +11,7 @@
 //   → System.Drawing.Bitmap(LockBits/Format32bppArgb) 读取像素 + System.Drawing.Bitmap 写回 + PNG 编码 + new Bitmap(ms)
 //   （Avalonia 不可变 Bitmap 不暴露 CopyPixels/Create；System.Drawing 已在项目内使用，参考 IconTools）
 // - PixelWidth/PixelHeight → 通过 System.Drawing.Bitmap.Width/Height（像素比较）或 Bitmap.PixelSize.Width/Height
-// - base.Dispatcher.Async → 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post，参考 MultiselectionTreeView）
+// - Dispatcher.UIThread.Async → 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post，参考 MultiselectionTreeView）
 // - DiffImageSource 属性类型 BitmapSource → Bitmap
 // - Grid.SetColumn/SetColumnSpan/Thickness → API 兼容（Avalonia.Controls.Grid/Avalonia.Thickness）
 using System;
@@ -626,14 +626,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				{
 					monitor.SetProgressAction(delegate
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							progressCallback(monitor);
 						});
 					});
 					GitCommandResult<MemoryStream> imageDataResponse = new SmudgeLfsFileCommand().Execute(gitModule, lfsPointer, monitor);
 					monitor.SetProgressAction(null);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

@@ -179,7 +179,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{branchName}' {DateTime.Now}", stageNewFiles: false, monitor);
 					if (!stashResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(GitCommandResult.Failure(stashResult.Error));
 						});
@@ -193,7 +193,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result);
 					});
@@ -240,7 +240,7 @@ namespace ForkPlus.UI.Dialogs
 			monitor.SetState(JobMonitorState.InProgress);
 			if (stashAndReapply == StashAndReapply.Required)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Stashing...");
 				});
@@ -258,7 +258,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Creating branch..."));
 			});
@@ -273,14 +273,14 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return PerformCreateBranch(checkout, gitModule, mainBranch, branchName, StashAndReapply.Required, discardLocalChanges, sourceString, submodulesToUpdate, monitor);
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SaveUnfinishedBranchName();
 				});
 				UpdateSubmodulesIfNeeded(gitModule, submodulesToUpdate, monitor);
 				return gitCommandResult2;
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				ClearUnfinishedBranchName();
 				SaveRecentNewBranchPrefix(gitModule, branchName);
@@ -316,7 +316,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 			});

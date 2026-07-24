@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Dialogs
 				mergeConflictView.Insert(e.Offset, e.InsertedText.Text);
 				containsNewLines = e.InsertedText.Text.Contains("\n") || e.RemovedText.Text.Contains("\n");
 			}
-			base.Dispatcher.Post((Action)delegate
+			Dispatcher.UIThread.Post((Action)delegate
 			{
 				int offset = MergedMergeEditor.TextArea.Caret.Offset;
 				RefreshMergeEditorViews(containsNewLines);
@@ -300,7 +300,7 @@ namespace ForkPlus.UI.Dialogs
 			_aiResolving = true;
 			AiResolveButton.IsEnabled = false;
 			string originalToolTip = AiResolveButton.ToolTip?.ToString();
-			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
+			ToolTip.SetTip(AiResolveButton, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
 			string fileName = Path.GetFileName(_changedFile.Path);
 			string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
@@ -346,7 +346,7 @@ namespace ForkPlus.UI.Dialogs
 			}).ConfigureAwait(true);
 
 			AiResolveButton.IsEnabled = true;
-			AiResolveButton.ToolTip = originalToolTip ?? "Use AI to resolve all conflicts";
+			ToolTip.SetTip(AiResolveButton, originalToolTip ?? "Use AI to resolve all conflicts");
 			_aiResolving = false;
 
 			if (canceled)
@@ -738,7 +738,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				RevisionDetails localRevision = GetRevisionDetails(_gitModule, GetSha(localGitPoint), new JobMonitor());
 				RevisionDetails remoteRevision = GetRevisionDetails(_gitModule, (_repositoryState as RepositoryState.RebaseInProgress)?.ActiveSha, new JobMonitor());
-				base.Dispatcher.Invoke(delegate
+				Dispatcher.UIThread.Invoke(delegate
 				{
 					UpdateTopCheckBoxButtonControls(localRevision, LocalSubjectTextBlock, LocalAuthorAvatarImage, LocalAuthorDateTextBlock, StashTextBlock);
 					UpdateTopCheckBoxButtonControls(remoteRevision, RemoteSubjectTextBlock, RemoteAuthorAvatarImage, RemoteAuthorDateTextBlock, StashTextBlock);
@@ -776,10 +776,10 @@ namespace ForkPlus.UI.Dialogs
 			if (revision != null)
 			{
 				avatarImage.UserIdentity = revision.Author;
-				avatarImage.ToolTip = revision.Author.Name;
+				ToolTip.SetTip(avatarImage, revision.Author.Name);
 				revision.MessageParts(out var subject, out var _);
 				subjectTextBlock.Text = subject;
-				subjectTextBlock.ToolTip = revision.Message;
+				ToolTip.SetTip(subjectTextBlock, revision.Message);
 				authorDateTextBlock.Text = revision.AuthorDate.ToString(Consts.NormalDateTimeFormat);
 				avatarImage.Show();
 				subjectTextBlock.Show();
@@ -818,13 +818,13 @@ namespace ForkPlus.UI.Dialogs
 			if (total == resolved)
 			{
 				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushGreen;
-				MergeStatusBorder.ToolTip = PreferencesLocalization.Current("All conflicts resolved");
+				ToolTip.SetTip(MergeStatusBorder, PreferencesLocalization.Current("All conflicts resolved"));
 			}
 			else
 			{
 				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushRed;
 				_ = 1;
-				MergeStatusBorder.ToolTip = PreferencesLocalization.FormatCurrent("Resolved {0} conflicts of {1}", resolved, total);
+				ToolTip.SetTip(MergeStatusBorder, PreferencesLocalization.FormatCurrent("Resolved {0} conflicts of {1}", resolved, total));
 			}
 		}
 

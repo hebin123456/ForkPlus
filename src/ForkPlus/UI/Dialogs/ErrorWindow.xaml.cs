@@ -249,7 +249,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor, noVerify: true);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					monitor.Update(0.0, Translate("Done"));
 					if (gitResult.Succeeded)
@@ -284,7 +284,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(Translate("Force Fetch"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult fetchResult = new FetchGitCommand().Execute(gitModule, remote, fetchAllRemotes: false, monitor, noPrompt: false, tags, force);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!fetchResult.Succeeded && !(fetchResult.Error is GitCommandError.Cancelled))
 					{
@@ -313,7 +313,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(Translate("Force LFS Unlock"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult unlockResult = new GitLfsUnlockGitCommand().Execute(gitModule, paths, monitor, force);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					EnableEditableControls();
 					SetStatus(ForkPlusDialogStatus.None, "");
@@ -347,7 +347,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(string.Format(Translate("Merge unrelated '{0}'"), source.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult mergeUnrelatedHistoryResult = new MergeGitCommand().Execute(gitModule, source, mergeType, repositoryData.References, monitor, mergeUnrelatedHistory);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!mergeUnrelatedHistoryResult.Succeeded)
 					{

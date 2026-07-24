@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Dialogs
 			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			base.Footer.SubmitButton.IsDefault = false;
 			base.Footer.CancelButton.IsDefault = true;
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				base.Footer.CancelButton.Focus();
 			});

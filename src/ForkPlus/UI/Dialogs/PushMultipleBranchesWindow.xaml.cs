@@ -69,7 +69,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(string.Format(Translate("Push {0} branches to '{1}'"), localBranches.Length, remote.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pushResult = new PushMultipleBranchesGitCommand().Execute(gitModule, remote.Name, localBranches, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{

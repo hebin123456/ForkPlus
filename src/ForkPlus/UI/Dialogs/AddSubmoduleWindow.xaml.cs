@@ -75,7 +75,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult addSubmoduleResult = new AddSubmoduleGitCommand().Execute(_gitModule, url, path, monitor);
 				if (!addSubmoduleResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(addSubmoduleResult);
 					});
@@ -84,21 +84,21 @@ namespace ForkPlus.UI.Dialogs
 				{
 					if (fetchNestedSubmodules && submodulesToUpdate.Length > 0)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							SetStatus(ForkPlusDialogStatus.InProgress, Translate("Fetching nested submodules..."));
 						});
 						GitCommandResult updateSubmoduleResult = new UpdateSubmodulesGitCommand().Execute(_gitModule, submodulesToUpdate, monitor);
 						if (!updateSubmoduleResult.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								Close(updateSubmoduleResult);
 							});
 							return;
 						}
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(addSubmoduleResult);
 					});

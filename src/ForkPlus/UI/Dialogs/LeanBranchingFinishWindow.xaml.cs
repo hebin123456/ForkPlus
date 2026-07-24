@@ -117,7 +117,7 @@ namespace ForkPlus.UI.Dialogs
 			SetStatus(ForkPlusDialogStatus.InProgress, string.Format(Translate("Finishing {0}..."), activeBranch.Name));
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Finish '{0}'"), activeBranch.Name), delegate(JobMonitor monitor)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, string.Format(Translate("Fast-forward '{0}' to '{1}'"), localMain.Name, remoteMain.Name));
 				});
@@ -126,21 +126,21 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult mainFastForwardResult = new FastForwardGitCommand().Execute(gitModule, localMain, monitor);
 					if (!mainFastForwardResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(mainFastForwardResult);
 						});
 						return;
 					}
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
 				});
 				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, localMain, monitor);
 				if (!checkoutResult.Succeeded && !(checkoutResult.Error is GitCommandError.Cancelled))
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(checkoutResult);
 					});
@@ -157,14 +157,14 @@ namespace ForkPlus.UI.Dialogs
 					{
 						mergeType = MergeType.NoFastForward;
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, string.Format(Translate("Merging into '{0}'..."), localMain.Name));
 					});
 					GitCommandResult mergeResult = new MergeGitCommand().Execute(gitModule, activeBranch, mergeType, repositoryData.References, monitor);
 					if (!mergeResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(mergeResult);
 						});
@@ -173,21 +173,21 @@ namespace ForkPlus.UI.Dialogs
 					{
 						if (submodulesToUpdate.Length > 0)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 							});
 							GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 							if (!updateSubmodulesResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(updateSubmodulesResult);
 								});
 								return;
 							}
 						}
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(mergeResult);
 						});

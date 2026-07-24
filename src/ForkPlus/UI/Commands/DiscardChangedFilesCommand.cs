@@ -107,7 +107,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult discardResult = new DiscardFileChangesGitCommand().Execute(gitModule, changedFiles.ToArray(), monitor);
 				if (!discardResult.Succeeded)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -135,7 +135,7 @@ namespace ForkPlus.UI.Commands
 					else
 					{
 						GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, array, showIgnoredFiles, monitor);
-						commitUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (!monitor.IsCanceled)
 							{

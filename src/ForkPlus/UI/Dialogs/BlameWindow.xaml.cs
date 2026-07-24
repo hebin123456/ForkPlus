@@ -109,8 +109,8 @@ namespace ForkPlus.UI.Dialogs
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			BlameTitleTextBlock.Text = Translate("Blame");
-			UndoButton.ToolTip = Translate("Go Back");
-			RedoButton.ToolTip = Translate("Go Forward");
+			ToolTip.SetTip(UndoButton, Translate("Go Back"));
+			ToolTip.SetTip(RedoButton, Translate("Go Forward"));
 			TextDiffControl.FontSize = 14.0;
 			TextDiffControl.ScrollOffsetChanged += SplitTextDiffControl_ScrollOffsetChanged;
 			TextDiffControl.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
@@ -122,7 +122,7 @@ namespace ForkPlus.UI.Dialogs
 			TextDiffControl.Hide();
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(filePath));
 			FileNameTextBlock.FilePath = filePath;
-			FileNameTextBlock.ToolTip = filePath;
+			ToolTip.SetTip(FileNameTextBlock, filePath);
 			RefreshUndoControls();
 			Initialize(filePath, shaToSelect, targetReference);
 			base.SizeChanged += BlameWindow_SizeChanged;
@@ -179,7 +179,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult<Sha> shaResult = new GetFirstRevisionGitCommand().Execute(gitModule, filePath, sha);
 				if (!shaResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						ShowErrorFallback(shaResult.Error);
 					});
@@ -189,7 +189,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<RevisionWithFiles[]> fileHistoryResult = new GetFileHistoryGitCommand().Execute(gitModule, repositoryData.Submodules.Items, filePath, targetReference?.Sha);
 					if (!fileHistoryResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							ShowErrorFallback(fileHistoryResult.Error);
 						});
@@ -197,7 +197,7 @@ namespace ForkPlus.UI.Dialogs
 					else
 					{
 						RevisionViewModel[] revisions = fileHistoryResult.Result.Map((RevisionWithFiles x) => new RevisionViewModel(x));
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							_revisions = revisions;
 							RevisionsComboBox.ItemsSource = _revisions;
@@ -229,7 +229,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			BusyIndicator.Show();
 			FileNameTextBlock.FilePath = args.Filepath;
-			FileNameTextBlock.ToolTip = args.Filepath;
+			ToolTip.SetTip(FileNameTextBlock, args.Filepath);
 			int tabWidth = gitModule.Settings.TabWidth;
 			new Task(delegate
 			{
@@ -237,14 +237,14 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult<DiffContent> fileDiffResult = new GetRevisionFileChangesGitCommand().Execute(gitModule, new RevisionDiffTarget.Revision(args.Sha), changedFile, 1, tabWidth, ignoreWhitespaces: false, showEntireFile: true);
 				if (!fileDiffResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						ShowErrorFallback(fileDiffResult.Error);
 					});
 				}
 				else if (!(fileDiffResult.Result is ParsedDiffContent parsedDiffContent) || parsedDiffContent.Diff.Chunks.Length == 0)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						ShowErrorFallback(Translate("Blame can only be used for text files"));
 					});
@@ -252,7 +252,7 @@ namespace ForkPlus.UI.Dialogs
 				else
 				{
 					Diff diff = parsedDiffContent.Diff;
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						CodeEditorFallbackUserControl.Hide();
 						TextDiffControl.Show();
@@ -261,14 +261,14 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<GetBlameGitCommand.BlameChunk[]> blameResult = new GetBlameGitCommand().Execute(gitModule, args.Filepath, $"{args.Sha}~");
 					if (!blameResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							ShowErrorFallback(blameResult.Error);
 						});
 					}
 					else
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
 							{

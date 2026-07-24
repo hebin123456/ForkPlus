@@ -177,7 +177,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = PerformCheckout(gitModule, branch, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!monitor.IsCanceled && !result.Succeeded)
 					{

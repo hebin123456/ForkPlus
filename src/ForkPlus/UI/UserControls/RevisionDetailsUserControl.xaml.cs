@@ -9,7 +9,7 @@
 // - DoubleAnimation + BeginAnimation(TranslateTransform.XProperty, anim) → TranslateTransform.Transitions + 修改 X 触发过渡（参考 ModernTabControl）
 // - WPF QuadraticEase { EasingMode = EaseOut } → Avalonia QuadraticEaseOut（参考 StatusUserControl）
 // - BeginAnimation(prop, null)（停止动画）→ Transitions = null 后直接设置值（参考 ModernTabControl）
-// - base.Dispatcher.Async → Dispatcher.UIThread.Post（参考 StatusUserControl）
+// - Dispatcher.UIThread.Async → Dispatcher.UIThread.Post（参考 StatusUserControl）
 // - ActualHeight/ActualWidth → Bounds.Height/Bounds.Width（参考 ModernTabControl）
 // - Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 StatusUserControl）
 using System;
@@ -105,7 +105,7 @@ namespace ForkPlus.UI.UserControls
 			CommitRadioButton.Content = PreferencesLocalization.Translate("Commit", ForkPlusSettings.Default.UiLanguage);
 			ChangesRadioButton.Content = PreferencesLocalization.Translate("Changes", ForkPlusSettings.Default.UiLanguage);
 			FileTreeRadioButton.Content = PreferencesLocalization.Translate("File Tree", ForkPlusSettings.Default.UiLanguage);
-			ShowRevisionInSeparateWindowButton.ToolTip = PreferencesLocalization.Translate("Open in separate window", ForkPlusSettings.Default.UiLanguage);
+			ToolTip.SetTip(ShowRevisionInSeparateWindowButton, PreferencesLocalization.Translate("Open in separate window", ForkPlusSettings.Default.UiLanguage));
 			SummaryUserControl.ApplyLocalization();
 			ChangesUserControl.ApplyLocalization();
 		}
@@ -233,7 +233,7 @@ namespace ForkPlus.UI.UserControls
 					GitCommandResult<FullRevisionDetails> fullRevisionDetailsResponse = GetFullRevisionDetails(gitModule, submodules, target, monitor);
 					if (!monitor.IsCanceled)
 					{
-						// 阶段 4.5：WPF base.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post（参考 StatusUserControl）。
+						// 阶段 4.5：WPF Dispatcher.UIThread.Async → Avalonia Dispatcher.UIThread.Post（参考 StatusUserControl）。
 					Dispatcher.UIThread.Post(delegate
 						{
 							if (!monitor.IsCanceled)

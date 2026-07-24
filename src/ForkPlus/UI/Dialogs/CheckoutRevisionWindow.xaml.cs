@@ -140,7 +140,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Autostash. Switch from '{sourceString}' to '{gitPoint.FriendlyName}' (detached HEAD) {DateTime.Now}", stageNewFiles: false, monitor);
 					if (!stashResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(GitCommandResult.Failure(stashResult.Error));
 						});
@@ -154,7 +154,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result);
 					});
@@ -195,7 +195,7 @@ namespace ForkPlus.UI.Dialogs
 			monitor.SetState(JobMonitorState.InProgress);
 			if (stashAndReapply == StashAndReapply.Required)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Stashing...");
 				});
@@ -213,7 +213,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Checkout..."));
 			});
@@ -263,7 +263,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 			});

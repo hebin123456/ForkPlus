@@ -105,7 +105,7 @@ namespace ForkPlus.UI.Dialogs
 			DisableEditableControls();
 			_repositoryUserControl.AddUndoable(PreferencesLocalization.FormatCurrent("Reset '{0}' ({1})", branchName, resetTypeName), delegate(JobMonitor monitor)
 		{
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Resetting '" + branchName + "'...");
 			});
@@ -113,13 +113,13 @@ namespace ForkPlus.UI.Dialogs
 			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0 && resetType == BranchResetType.Hard)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
 				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (!resetBranchResult.Succeeded)
 				{

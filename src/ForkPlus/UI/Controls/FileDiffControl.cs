@@ -214,7 +214,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading submodule content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<SubmoduleDiffContent> submoduleDiffContentResult2 = LoadSubmoduleDiffContent(diff2, parsedDiffContent.GitModule, submoduleChangedFile2, monitor);
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -311,7 +311,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading image content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<BinaryDiffContent> binaryDiffContentResult = LoadBinaryDiffContent(diff2, repositoryUserControl.GitModule, changedFile, monitor);
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -347,7 +347,7 @@ namespace ForkPlus.UI.Controls
 					{
 						hexDiffContentResult = LoadHexDiffContent(diff2, parsedDiffContent.GitModule, changedFile, monitor);
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -391,7 +391,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading submodule content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<SubmoduleDiffContent> submoduleDiffContentResult = LoadSubmoduleDiffContent(diff2, parsedDiffContent.GitModule, submoduleChangedFile, monitor);
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								if (!monitor.IsCanceled)
 								{

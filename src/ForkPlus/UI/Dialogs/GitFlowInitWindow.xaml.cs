@@ -70,7 +70,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("Initialize Git Flow"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new InitGitFlowGitCommand().Execute(_gitModule, gitFlowSettings, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

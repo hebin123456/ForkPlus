@@ -60,7 +60,7 @@ namespace ForkPlus.UI
 				return;
 			}
 			RepositoryUserControl[] repositoryUserControls = Application.Current.TabManager().RepositoryUserControls;
-			Dispatcher dispatcher = activeRepositoryUserControl.Dispatcher;
+			Dispatcher dispatcher = Dispatcher.UIThread;
 			List<GitModule> gitModulesToUpdate = new List<GitModule>(repositoryUserControls.Length);
 			HashSet<string> seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			RepositoryUserControl[] array = repositoryUserControls;

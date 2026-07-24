@@ -53,7 +53,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Fast forward '{0}'", localBranch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult fastForwardResult = PerformFastForward(gitModule, localBranch, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (localBranch.IsActive)
 					{

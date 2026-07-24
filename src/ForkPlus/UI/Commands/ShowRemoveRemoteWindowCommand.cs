@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Delete remote '{0}'", remote.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult removeRemoteResult = new RemoveRemoteGitCommand().Execute(gitModule, remote, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!removeRemoteResult.Succeeded && !monitor.IsCanceled)
 					{

@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult discardResult = new ApplyWorkingTreeGitCommand().Execute(gitModule, patchData, monitor);
 				if (!discardResult.Succeeded)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -75,7 +75,7 @@ namespace ForkPlus.UI.Commands
 				{
 					if (editorIsNewOrUntracked)
 					{
-						commitUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.Commands
 						});
 					}
 					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, paths, showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

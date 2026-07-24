@@ -149,7 +149,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, new JobMonitor());
 					if (!updateSubmodulesResult.Succeeded)
 					{
-						interactiveRebaseWindow.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							interactiveRebaseWindow._rebaseProcessRunning = false;
 							interactiveRebaseWindow.Close(updateSubmodulesResult);
@@ -157,7 +157,7 @@ namespace ForkPlus.UI.Dialogs
 						return;
 					}
 				}
-				interactiveRebaseWindow.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					interactiveRebaseWindow._rebaseProcessRunning = false;
 					interactiveRebaseWindow.Close(rebaseResult);
@@ -790,7 +790,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			_todoListPath = todoListPath;
 			GitCommandResult<InteractiveRebaseTodoListItem[]> todoListResult = new GetRebaseTodoListCommand().Execute(_gitModule, _todoListPath, _references);
-			base.Dispatcher.Invoke(delegate
+			Dispatcher.UIThread.Invoke(delegate
 			{
 				if (!todoListResult.Succeeded)
 				{
@@ -813,7 +813,7 @@ namespace ForkPlus.UI.Dialogs
 					RevisionListView.SelectedIndex = 0;
 					RevisionListView.FocusRow(0);
 				}
-				base.Dispatcher.InvokeAsync(delegate
+				Dispatcher.UIThread.InvokeAsync(delegate
 				{
 					PerformAction(_initialAction);
 					_initialTodoList = _todoList.Map((RevisionEntry e) => (Action: e.Action, Sha: e.Sha)).ToArray();

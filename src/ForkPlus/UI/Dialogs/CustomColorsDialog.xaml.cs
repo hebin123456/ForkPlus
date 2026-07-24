@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using Microsoft.Win32;
+using ForkPlus.UI;
 using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
@@ -404,25 +404,20 @@ namespace ForkPlus.UI.Dialogs
 			return;
 		}
 
-		SaveFileDialog dlg = new SaveFileDialog
-		{
-			Title = PreferencesLocalization.Translate("Export Colors", lang),
-			Filter = "JSON (*.json)|*.json|All files (*.*)|*.*",
-			FileName = "ForkPlus-Colors-" + ForkPlusSettings.Default.Theme.SkinName() + ".json",
-			DefaultExt = ".json",
-			AddExtension = true,
-		};
-		if (dlg.ShowDialog(this) != true) return;
+		// 阶段 5：WPF Microsoft.Win32.SaveFileDialog → Avalonia StorageProvider（经 OpenDialog shim 同步封装）。
+		// shim 内部翻译 title；filter 由 defaultFileName 扩展名推导（.json → *.json）。
+		string defaultFileName = "ForkPlus-Colors-" + ForkPlusSettings.Default.Theme.SkinName() + ".json";
+		if (!OpenDialog.SelectFileSaveLocation(this, "Export Colors", "", defaultFileName, out string exportPath)) return;
 
 		try
 		{
 			// VM 构造导出 JSON 字符串（schema + theme + exportedAt + customColors），View 负责写文件
 			string json = CustomColorsDialogViewModel.BuildExportJson(_workingCopy, ForkPlusSettings.Default.Theme.ToString());
-			File.WriteAllText(dlg.FileName, json);
+			File.WriteAllText(exportPath, json);
 
 			ServiceLocator.MessageBox.Show(
 				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
-					_workingCopy.Count, dlg.FileName),
+					_workingCopy.Count, exportPath),
 				PreferencesLocalization.Translate("Export Colors", lang),
 				MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -445,20 +440,14 @@ namespace ForkPlus.UI.Dialogs
 		// 关闭 Popup 避免遮挡 OpenFileDialog
 		ColorPickerPopup.IsOpen = false;
 
-		OpenFileDialog dlg = new OpenFileDialog
-		{
-			Title = PreferencesLocalization.Translate("Import Colors", lang),
-			Filter = "JSON (*.json)|*.json|All files (*.*)|*.*",
-			DefaultExt = ".json",
-			CheckFileExists = true,
-			Multiselect = false,
-		};
-		if (dlg.ShowDialog(this) != true) return;
+		// 阶段 5：WPF Microsoft.Win32.OpenFileDialog → Avalonia StorageProvider（经 OpenDialog shim 同步封装）。
+		// shim 内部翻译 title；filter 固定为 *.json（原双过滤器 JSON/All files 简化为单 JSON 过滤）。
+		if (!OpenDialog.SelectFile(this, "Import Colors", "", "JSON", "*.json", out string importPath)) return;
 
 		string jsonText;
 		try
 		{
-			jsonText = File.ReadAllText(dlg.FileName);
+			jsonText = File.ReadAllText(importPath);
 		}
 		catch (Exception ex)
 		{

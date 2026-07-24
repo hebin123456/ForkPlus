@@ -145,7 +145,7 @@ namespace ForkPlus.UI.Dialogs
 			DisableEditableControls();
 			_repositoryUserControl.AddUndoable(Translate("Cherry-pick"), delegate(JobMonitor monitor)
 		{
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Cherry-picking..."));
 			});
@@ -153,13 +153,13 @@ namespace ForkPlus.UI.Dialogs
 			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
 				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (!cherryPickResult.Succeeded)
 				{

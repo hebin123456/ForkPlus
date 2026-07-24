@@ -2,7 +2,7 @@
 // - using System.Windows.Threading → using Avalonia.Threading
 // - DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容：Interval/Tick/Start）
 // - Dispatcher 解析为 Avalonia.Threading.Dispatcher
-// - dispatcher.Async / repositoryUserControl.Dispatcher.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
+// - dispatcher.Async / Dispatcher.UIThread.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 using System;
 using System.Threading;
 using Avalonia.Threading;
@@ -48,7 +48,7 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			Dispatcher dispatcher = instance.Dispatcher;
+			Dispatcher dispatcher = Dispatcher.UIThread;
 			if (dispatcher == null)
 			{
 				return;
@@ -87,7 +87,7 @@ namespace ForkPlus.UI
 										{
 											if (new FetchGitCommand().Execute(gitModule, remote, fetchAllRemotes, mon1, noPrompt, fetchAllTags).Succeeded)
 											{
-												repositoryUserControl.Dispatcher.Async(delegate
+												Dispatcher.UIThread.Async(delegate
 												{
 													RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
 													if (activeRepositoryUserControl != null)

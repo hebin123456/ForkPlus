@@ -96,14 +96,14 @@ namespace ForkPlus.UI.Dialogs
 			: PreferencesLocalization.FormatCurrent("Delete '{0}'", tags[0].Name));
 			_repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Deleting...");
 				});
 				GitCommandResult removeTagResult = new RemoveTagGitCommand().Execute(gitModule, tags, remotes, monitor);
 				if (!removeTagResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(removeTagResult);
 					});
@@ -113,7 +113,7 @@ namespace ForkPlus.UI.Dialogs
 					gitModule.Settings.PinnedReferences = _references.PinnedReferences.Filter((string p) => !tags.ContainsItem((Tag t) => t.FullReference == p)).ToArray();
 					gitModule.Settings.FilterReferences = _references.FilterReferences.Filter((string p) => !tags.ContainsItem((Tag t) => t.FullReference == p)).ToArray();
 					gitModule.Settings.Save();
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(GitCommandResult.Success());
 					});

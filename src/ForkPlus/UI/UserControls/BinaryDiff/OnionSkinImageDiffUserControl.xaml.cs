@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			if (imageData.IsTracked && imageData.FileSize > 500000)
 			{
 				notLfsLabel.Show();
-				notLfsLabel.ToolTip = string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(imageData.FileSize));
+				ToolTip.SetTip(notLfsLabel, string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(imageData.FileSize)));
 			}
 			else
 			{

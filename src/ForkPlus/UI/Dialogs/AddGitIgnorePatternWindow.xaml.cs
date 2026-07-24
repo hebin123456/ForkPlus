@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("Add files to .gitignore"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new IgnoreFilesGitCommand().Execute(_gitModule, pattern, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

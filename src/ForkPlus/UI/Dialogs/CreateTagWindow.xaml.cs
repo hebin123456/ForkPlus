@@ -84,7 +84,7 @@ namespace ForkPlus.UI.Dialogs
 			activeRepositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
 		{
 			GitCommandResult result = PerformCreateTag(tagName, tagMessage, push, monitor);
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				Close(result);
 			});
@@ -111,7 +111,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private GitCommandResult PerformCreateTag(string tagName, string tagMessage, bool push, JobMonitor monitor)
 		{
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Creating '" + tagName + "'...");
 			});
@@ -128,7 +128,7 @@ namespace ForkPlus.UI.Dialogs
 			Remote[] remotes = _remotes;
 			foreach (Remote remote in remotes)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Pushing '" + tagName + "' to '" + remote.Name + "'...");
 				});

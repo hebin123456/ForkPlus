@@ -247,15 +247,15 @@ namespace ForkPlus.UI.Dialogs
 			string localizedMessage = PreferencesLocalization.Translate(message, ForkPlusSettings.Default.UiLanguage);
 			Footer.StatusMessageTextBlock.Text = localizedMessage;
 			ToolTip.SetTip(Footer.StatusMessageTextBlock, localizedMessage);
-			Footer.StatusMessageTextBlock.Visibility = Visibility.Visible;
+			Footer.StatusMessageTextBlock.IsVisible = true;
 			if (status == ForkPlusDialogStatus.InProgress)
 			{
-				Footer.StatusImage.Visibility = Visibility.Collapsed;
-				Footer.BusyIndicator.Visibility = Visibility.Visible;
+				Footer.StatusImage.IsVisible = false;
+				Footer.BusyIndicator.IsVisible = true;
 				return;
 			}
-			Footer.BusyIndicator.Visibility = Visibility.Collapsed;
-			Footer.StatusImage.Visibility = Visibility.Visible;
+			Footer.BusyIndicator.IsVisible = false;
+			Footer.StatusImage.IsVisible = true;
 			switch (status)
 			{
 			case ForkPlusDialogStatus.Success:
@@ -272,9 +272,9 @@ namespace ForkPlus.UI.Dialogs
 
 		public void ClearStatus()
 		{
-			Footer.StatusImage.Visibility = Visibility.Collapsed;
-			Footer.StatusMessageTextBlock.Visibility = Visibility.Collapsed;
-			Footer.BusyIndicator.Visibility = Visibility.Collapsed;
+			Footer.StatusImage.IsVisible = false;
+			Footer.StatusMessageTextBlock.IsVisible = false;
+			Footer.BusyIndicator.IsVisible = false;
 		}
 
 		public void DisableEditableControls()
@@ -406,34 +406,34 @@ namespace ForkPlus.UI.Dialogs
 		string text = GetCommandPreview();
 		if (string.IsNullOrWhiteSpace(text))
 		{
-			_commandPreviewLabel.Visibility = Visibility.Collapsed;
-			_commandPreviewTextBlock.Visibility = Visibility.Collapsed;
+			_commandPreviewLabel.IsVisible = false;
+			_commandPreviewTextBlock.IsVisible = false;
 			_commandPreviewTextBlock.Text = "";
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
 			ToolTip.SetTip(_commandPreviewTextBlock, null);
 			if (_commandPreviewScrollViewer != null)
 			{
-				_commandPreviewScrollViewer.Visibility = Visibility.Collapsed;
+				_commandPreviewScrollViewer.IsVisible = false;
 			}
 			if (_commandPreviewCopyButton != null)
 			{
-				_commandPreviewCopyButton.Visibility = Visibility.Collapsed;
+				_commandPreviewCopyButton.IsVisible = false;
 			}
 		}
 		else
 		{
-			_commandPreviewLabel.Visibility = Visibility.Visible;
-			_commandPreviewTextBlock.Visibility = Visibility.Visible;
+			_commandPreviewLabel.IsVisible = true;
+			_commandPreviewTextBlock.IsVisible = true;
 			_commandPreviewTextBlock.Text = text;
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
 			ToolTip.SetTip(_commandPreviewTextBlock, text);
 			if (_commandPreviewScrollViewer != null)
 			{
-				_commandPreviewScrollViewer.Visibility = Visibility.Visible;
+				_commandPreviewScrollViewer.IsVisible = true;
 			}
 			if (_commandPreviewCopyButton != null)
 			{
-				_commandPreviewCopyButton.Visibility = Visibility.Visible;
+				_commandPreviewCopyButton.IsVisible = true;
 			}
 		}
 	}

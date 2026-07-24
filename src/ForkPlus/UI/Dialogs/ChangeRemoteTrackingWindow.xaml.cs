@@ -120,7 +120,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateTrackingResult = new UpdateTrackingReferenceGitCommand().Execute(_gitModule, _localBranch, trackingReference, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(updateTrackingResult);
 				});

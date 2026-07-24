@@ -273,7 +273,7 @@ namespace ForkPlus.UI.UserControls
 				ServiceResult<Issue[]> issuesResponse = _pagedItems.LoadNext();
 				if (!issuesResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -290,7 +290,7 @@ namespace ForkPlus.UI.UserControls
 					Issue[] result = issuesResponse.Result;
 					Log.Debug($"Loaded {result.Length} issues");
 					IssueItem[] issueItems = result.Map((Issue x) => new IssueItem(x));
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

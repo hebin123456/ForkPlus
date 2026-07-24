@@ -219,7 +219,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			SshKeyViewModel sshKeyViewModel = SshKeyListBox.SelectedItem as SshKeyViewModel;
 			SshKeyPathTextBlock.Text = sshKeyViewModel?.KeyPath ?? "";
-			SshKeyPathTextBlock.ToolTip = sshKeyViewModel?.KeyPath ?? "";
+			ToolTip.SetTip(SshKeyPathTextBlock, sshKeyViewModel?.KeyPath ?? "");
 			SshKeySha256TextBox.Text = sshKeyViewModel?.Sha256 ?? "";
 			SshKeyPublicKeyTextBox.Text = sshKeyViewModel?.PublicKey ?? "";
 		}

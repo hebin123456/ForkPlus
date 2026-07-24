@@ -76,7 +76,7 @@ namespace ForkPlus.UI.UserControls
 		if (OpenAiService.IsAiReviewConfigured())
 		{
 			AiExplainCommitButton.Show();
-			AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
+			ToolTip.SetTip(AiExplainCommitButton, Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage));
 			AiExplainCommitButtonText.Text = Preferences.PreferencesLocalization.Translate("AI Explain", ForkPlusSettings.Default.UiLanguage);
 		}
 		else
@@ -258,7 +258,7 @@ namespace ForkPlus.UI.UserControls
 			button.IsTabStop = false;
 			button.BorderThickness = new Thickness(0.0);
 			button.Style = Theme.TransparentButtonStyle;
-			button.ToolTip = Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName());
+			ToolTip.SetTip(button, Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName()));
 			button.Content = content;
 			button.Click += delegate
 			{

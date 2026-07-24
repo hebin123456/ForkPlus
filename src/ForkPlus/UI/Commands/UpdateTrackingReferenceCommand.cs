@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateTrackingReferenceResult = new UpdateTrackingReferenceGitCommand().Execute(gitModule, localBranch, trackingReference, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!updateTrackingReferenceResult.Succeeded && !monitor.IsCanceled)
 					{

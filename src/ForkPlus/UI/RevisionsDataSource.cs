@@ -1,5 +1,5 @@
 // 阶段 4.5：WPF → Avalonia 迁移。
-// WPF System.Windows.Application.Current.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post。
+// WPF System.Windows.Application.Dispatcher.UIThread.Async → Avalonia Dispatcher.UIThread.Post。
 // WPF System.Windows.Media.ImageSource → Avalonia.Media.IImage。
 using System;
 using System.Collections;
@@ -534,7 +534,7 @@ namespace ForkPlus.UI
 				else
 				{
 					RevisionHeader[] revisionHeaders = gitCommandResult.Result;
-					// 阶段 4.5：WPF Application.Current.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post。
+					// 阶段 4.5：WPF Application.Dispatcher.UIThread.Async → Avalonia Dispatcher.UIThread.Post。
 					Dispatcher.UIThread.Post(delegate
 					{
 						if (revisionVisualGraph != _visualGraph)

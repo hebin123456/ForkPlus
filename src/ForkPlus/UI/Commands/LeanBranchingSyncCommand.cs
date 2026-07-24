@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult startSyncResult = LeanBranching.StartSync(gitModule, localMain.FullReference, mainBranch.FullReference, activeBranch.FullReference, activeBranch.Sha.ToString(), upstreamFullReference, submodulesToUpdate, repositoryStatus.WorkingDirectoryIsDirty(), monitor);
 				if (!startSyncResult.Succeeded)
 				{
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						new ErrorWindow(repositoryUserControl, startSyncResult.Error).ShowDialog();
 						repositoryUserControl.InvalidateAndRefresh(SubDomain.All);
@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Commands
 						GitCommandResult syncStepResult = LeanBranching.NextSyncStep(gitModule, commitGraphCache, submodulesToUpdate, monitor);
 						if (!syncStepResult.Succeeded)
 						{
-							repositoryUserControl.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								new ErrorWindow(repositoryUserControl, syncStepResult.Error).ShowDialog();
 								repositoryUserControl.InvalidateAndRefresh(SubDomain.All);
@@ -103,7 +103,7 @@ namespace ForkPlus.UI.Commands
 							return;
 						}
 					}
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						repositoryUserControl.InvalidateAndRefresh(SubDomain.All);
 					});
@@ -131,7 +131,7 @@ namespace ForkPlus.UI.Commands
 					GitCommandResult syncStepResult = LeanBranching.NextSyncStep(gitModule, commitGraphCache, submodulesToUpdate, monitor);
 					if (!syncStepResult.Succeeded)
 					{
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							new ErrorWindow(repositoryUserControl, syncStepResult.Error).ShowDialog();
 							repositoryUserControl.InvalidateAndRefresh(SubDomain.All);
@@ -139,7 +139,7 @@ namespace ForkPlus.UI.Commands
 						return;
 					}
 				}
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					repositoryUserControl.InvalidateAndRefresh(SubDomain.All);
 				});

@@ -484,7 +484,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						if (!response.Succeeded)
 						{
-							base.Dispatcher.Post(delegate
+							Dispatcher.UIThread.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -501,7 +501,7 @@ namespace ForkPlus.UI.UserControls
 							{
 								if (!newContextSearchResponse.Succeeded)
 								{
-									base.Dispatcher.Post(delegate
+									Dispatcher.UIThread.Post(delegate
 									{
 										if (!monitor.IsCanceled)
 										{
@@ -513,7 +513,7 @@ namespace ForkPlus.UI.UserControls
 								else
 								{
 									RevisionContextSearch? newContextSearch = newContextSearchResponse.Result;
-									base.Dispatcher.Post(delegate
+									Dispatcher.UIThread.Post(delegate
 									{
 										if (!monitor.IsCanceled)
 										{
@@ -577,7 +577,7 @@ namespace ForkPlus.UI.UserControls
 					{
 						if (!response.Succeeded)
 						{
-							base.Dispatcher.Post(delegate
+							Dispatcher.UIThread.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -596,7 +596,7 @@ namespace ForkPlus.UI.UserControls
 								{
 									if (!newContextSearchResponse.Succeeded)
 									{
-										base.Dispatcher.Post(delegate
+										Dispatcher.UIThread.Post(delegate
 										{
 											if (!monitor.IsCanceled)
 											{
@@ -608,7 +608,7 @@ namespace ForkPlus.UI.UserControls
 									else
 									{
 										RevisionContextSearch? newContextSearch = newContextSearchResponse.Result;
-										base.Dispatcher.Post(delegate
+										Dispatcher.UIThread.Post(delegate
 										{
 											if (!monitor.IsCanceled)
 											{
@@ -677,7 +677,7 @@ namespace ForkPlus.UI.UserControls
 					}
 					if (!response.Succeeded)
 					{
-						base.Dispatcher.Post(delegate
+						Dispatcher.UIThread.Post(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -691,7 +691,7 @@ namespace ForkPlus.UI.UserControls
 					GitCommandResult<RevisionContextSearch?> newContextSearchResponse = ExpandContextSearch(gitModule, contextSearch, revisionStorage, result, repositoryData.References, monitor);
 					if (!newContextSearchResponse.Succeeded)
 					{
-						base.Dispatcher.Post(delegate
+						Dispatcher.UIThread.Post(delegate
 						{
 							if (!monitor.IsCanceled)
 							{
@@ -707,7 +707,7 @@ namespace ForkPlus.UI.UserControls
 				while (result.HasMore && newContextSearch?.MatchCount == contextSearch.Value.MatchCount);
 				if (!monitor.IsCanceled)
 				{
-					base.Dispatcher.Post(delegate
+					Dispatcher.UIThread.Post(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -1204,7 +1204,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					// P3.2：本地恢复成功后，按用户选择执行 force push
 					GitCommandResult pushResult = ForcePushCurrentBranch(monitor);
-					base.Dispatcher.Post(delegate
+					Dispatcher.UIThread.Post(delegate
 					{
 						InvalidateAndRefresh(SubDomain.All);
 						RaiseUndoRedoStateChanged();
@@ -1215,7 +1215,7 @@ namespace ForkPlus.UI.UserControls
 					});
 					return;
 				}
-				base.Dispatcher.Post(delegate
+				Dispatcher.UIThread.Post(delegate
 				{
 					InvalidateAndRefresh(SubDomain.All);
 					RaiseUndoRedoStateChanged();
@@ -1265,7 +1265,7 @@ namespace ForkPlus.UI.UserControls
 					return;
 				}
 				GitCommandResult result = new RestoreSnapshotGitCommand().Execute(GitModule, target, monitor);
-				base.Dispatcher.Post(delegate
+				Dispatcher.UIThread.Post(delegate
 				{
 					InvalidateAndRefresh(SubDomain.All);
 					RaiseUndoRedoStateChanged();
@@ -1399,7 +1399,7 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>Job 内失败时在 UI 线程弹错误窗并刷新 Undo/Redo 状态。</summary>
 		private void ShowRestoreFailureAsync(GitCommandError error)
 		{
-			base.Dispatcher.Post(delegate
+			Dispatcher.UIThread.Post(delegate
 			{
 				new ErrorWindow(this, error).ShowDialog();
 				RaiseUndoRedoStateChanged();

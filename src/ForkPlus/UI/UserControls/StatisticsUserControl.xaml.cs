@@ -370,7 +370,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			new Task(delegate
 			{
 				GitCommandResult<RepositoryStats> statsResponse = new GetRepositoryStatsGitCommand().Execute(gitModule, dateRange);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (_gitModule == gitModule)
 					{
@@ -554,7 +554,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				RefreshFilteredCodeLineRefs();
 			}
 			// 阶段 4 里程碑 4.7-b：WPF Dispatcher.BeginInvoke → Avalonia Dispatcher.Post。
-			CodeLinesRefSearchBox.Dispatcher.Post(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				CodeLinesRefSearchBox.Focus();
 				CodeLinesRefSearchBox.SelectAll();
@@ -643,7 +643,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			}
 			_currentCodeLinesRef = refSpec;
 			// 立刻显示"加载中"，避免用户以为按钮没响应
-			CodeLinesError.Visibility = Visibility.Collapsed;
+			CodeLinesError.IsVisible = false;
 			CodeLinesSummary.Text = Translate("Counting code lines...") + (string.IsNullOrEmpty(refSpec) ? "" : " (" + refSpec + ")");
 			CodeLinesRefreshButton.IsEnabled = false;
 			CodeLinesRefButton.IsEnabled = false;
@@ -680,7 +680,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		/// <summary>把 CodeLineStats 渲染到饼图 + 列表 + 摘要。</summary>
 		private void UpdateCodeLinesPlot(CodeLineStats stats)
 		{
-			CodeLinesError.Visibility = Visibility.Collapsed;
+			CodeLinesError.IsVisible = false;
 			// 饼图
 			var pieSeries = _codeLinesPieModel.Series[0] as PieSeries;
 			pieSeries.Slices.Clear();
@@ -737,7 +737,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		private void ShowCodeLinesError(string message)
 		{
 			CodeLinesError.Text = message;
-			CodeLinesError.Visibility = Visibility.Visible;
+			CodeLinesError.IsVisible = true;
 			CodeLinesSummary.Text = "";
 			// 清空饼图和列表
 			(_codeLinesPieModel.Series[0] as PieSeries).Slices.Clear();

@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Start '{0}'", _gitFlowSettings.HotfixPrefix + hotfixName), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new StartGitFlowHotfixGitCommand().Execute(_gitModule, hotfixName, startPoint, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

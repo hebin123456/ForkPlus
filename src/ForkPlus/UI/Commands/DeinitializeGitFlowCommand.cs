@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Deinitialize Git Flow"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult deinitializeGitFlowResult = new DeinitializeGitFlowGitCommand().Execute(gitModule, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!deinitializeGitFlowResult.Succeeded)
 					{

@@ -178,7 +178,7 @@ namespace ForkPlus.UI.Dialogs
 				if (!stashResult.Succeeded)
 				{
 					GitCommandResult stashFail = GitCommandResult.Failure(stashResult.Error);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(stashFail);
 					});
@@ -191,7 +191,7 @@ namespace ForkPlus.UI.Dialogs
 				Close(GitCommandResult.Success());
 				return GitCommandResult.Success();
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				Close(result);
 			});
@@ -259,7 +259,7 @@ namespace ForkPlus.UI.Dialogs
 			monitor.SetState(JobMonitorState.InProgress);
 			if (stashAndReapply == StashAndReapply.Required)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Stashing...");
 				});
@@ -277,7 +277,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Creating branch...");
 			});
@@ -293,7 +293,7 @@ namespace ForkPlus.UI.Dialogs
 					monitor.AppendOutputLine("fork: failed to checkout without overwriting local changes. Trying again with stash and reapply...\n");
 					return PerformCreateBranch(checkout, gitModule, gitPoint, branchName, StashAndReapply.Required, discardLocalChanges, sourceString, submodulesToUpdate, monitor);
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SaveUnfinishedBranchName();
 				});
@@ -303,7 +303,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				return gitCommandResult2;
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				ClearUnfinishedBranchName();
 				SaveRecentNewBranchPrefix(gitModule, branchName);
@@ -342,7 +342,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 			});

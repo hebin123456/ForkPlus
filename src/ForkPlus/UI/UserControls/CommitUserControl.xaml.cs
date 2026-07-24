@@ -63,21 +63,21 @@ namespace ForkPlus.UI.UserControls
 		{
 			get
 			{
-				if (CheckBoxAmend.Dispatcher.CheckAccess())
+				if (Dispatcher.UIThread.CheckAccess())
 				{
 					return CheckBoxAmend.IsChecked.GetValueOrDefault();
 				}
-				return CheckBoxAmend.Dispatcher.Invoke(new Func<bool>(() => CheckBoxAmend.IsChecked.GetValueOrDefault()));
+				return Dispatcher.UIThread.Invoke(new Func<bool>(() => CheckBoxAmend.IsChecked.GetValueOrDefault()));
 			}
 			set
 			{
-				if (CheckBoxAmend.Dispatcher.CheckAccess())
+				if (Dispatcher.UIThread.CheckAccess())
 				{
 					CheckBoxAmend.IsChecked = value;
 				}
 				else
 				{
-					CheckBoxAmend.Dispatcher.Invoke(new Action(() => CheckBoxAmend.IsChecked = value));
+					Dispatcher.UIThread.Invoke(new Action(() => CheckBoxAmend.IsChecked = value));
 				}
 			}
 		}
@@ -1807,14 +1807,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				string truncated = message.Substring(0, maxWarningLength) + "...";
 				WarningTextBlock.Text = truncated;
-				WarningTextBlock.ToolTip = message;
-				WarningMessageContainer.ToolTip = message;
+				ToolTip.SetTip(WarningTextBlock, message);
+				ToolTip.SetTip(WarningMessageContainer, message);
 			}
 			else
 			{
 				WarningTextBlock.Text = message;
-				WarningTextBlock.ToolTip = null;
-				WarningMessageContainer.ToolTip = null;
+				ToolTip.SetTip(WarningTextBlock, null);
+				ToolTip.SetTip(WarningMessageContainer, null);
 			}
 			if (isError)
 			{
@@ -1910,7 +1910,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshSubjectLengthLimitToolTip()
 		{
-			SubjectLengthLimitTextBlock.ToolTip = PreferencesLocalization.FormatCurrent("The recommended subject line should be {0} characters or less", ForkPlusSettings.Default.CommitSubjectLowLimit);
+			ToolTip.SetTip(SubjectLengthLimitTextBlock, PreferencesLocalization.FormatCurrent("The recommended subject line should be {0} characters or less", ForkPlusSettings.Default.CommitSubjectLowLimit));
 		}
 
 		public void LoadCommitMessage()
@@ -1986,7 +1986,7 @@ namespace ForkPlus.UI.UserControls
 			RepositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Get Commit template"), delegate
 			{
 				GitCommandResult<CommitTemplate> commitTemplateResult = new GetCommitTemplateGitCommand().Execute(gitModule);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					callback(commitTemplateResult.Succeeded, commitTemplateResult.Result?.StringValue);
 				});
@@ -2011,7 +2011,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Generate commit message"), delegate(JobMonitor monitor)
 					{
 						GitCommandResult<string> response2 = new GenerateCommitMessageShellCommand().Execute(aiAgent, GitModule.Path, amend, monitor);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						// Claude/AiAgent 的输出是缓冲到进程结束才一次性返回，期间用户可能已点取消。
 						// 此处必须复查 IsCanceled，否则取消后已返回内容仍会被写入 commit 信息（与 OpenAI 路径一致）。
@@ -2048,7 +2048,7 @@ namespace ForkPlus.UI.UserControls
 						GitCommandResult<string> patchResult = new GetWorkingDirectoryFileChangesGitCommand().GetStagedPatch(GitModule, amend);
 						if (!patchResult.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								new ErrorWindow(RepositoryUserControl, patchResult.Error).ShowDialog();
 							});
@@ -2062,12 +2062,12 @@ namespace ForkPlus.UI.UserControls
 					{
 						liveCommitMsg.Append(chunk);
 						string snapshot = liveCommitMsg.ToString();
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							FullCommitMessage = snapshot;
 						});
 					});
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (monitor.IsCanceled)
 						{
@@ -2102,7 +2102,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Run prepare-commit-msg hook"), delegate(JobMonitor monitor)
 					{
 						GitCommandResult<string> messageResult = new RunHookShellCommand().Execute(GitModule, PrepareCommitMsgHook, monitor);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (monitor.IsCanceled)
 						{

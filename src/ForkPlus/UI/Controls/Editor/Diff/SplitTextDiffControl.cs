@@ -114,7 +114,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			PositionCache?.SaveScrollPosition(_editor);
 			_editor.Options.IndentationSize = tabWidth;
 			_editor.VisualPatch = VisualPatch.CreateVisualPatch(Diff, EntireFile, Location);
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				PositionCache?.RestoreScrollPosition(_editor);
 			});

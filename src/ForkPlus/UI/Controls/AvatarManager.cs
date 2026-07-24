@@ -149,7 +149,7 @@ namespace ForkPlus.UI.Controls
 			client.DownloadDataCompleted += delegate(object sender, DownloadDataCompletedEventArgs args)
 			{
 				client.Dispose();
-				// 阶段 4.5：WPF Application.Current.Dispatcher → Avalonia Dispatcher.UIThread。
+				// 阶段 4.5：WPF Application.Dispatcher.UIThread → Avalonia Dispatcher.UIThread。
 				if (args.Error != null)
 				{
 					HttpWebResponse obj = (args.Error as WebException)?.Response as HttpWebResponse;

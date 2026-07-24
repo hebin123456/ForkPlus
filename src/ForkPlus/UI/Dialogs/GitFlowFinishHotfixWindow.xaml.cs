@@ -62,7 +62,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Finish '{0}'", localBranch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new FinishGitFlowHotfixGitCommand().Execute(_gitModule, hotfix, deleteBranches, tagMessage, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

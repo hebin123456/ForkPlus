@@ -47,7 +47,7 @@ namespace ForkPlus.Services.Wpf
 
 		public void DispatchToUiThread(Action action)
 		{
-			// 阶段 4.5：WPF Application.Current.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post。
+			// 阶段 4.5：WPF Application.Dispatcher.UIThread.Async → Avalonia Dispatcher.UIThread.Post。
 			Dispatcher.UIThread.Post(action);
 		}
 

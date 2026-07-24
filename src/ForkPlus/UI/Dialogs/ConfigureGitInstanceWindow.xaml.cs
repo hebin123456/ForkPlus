@@ -8,7 +8,7 @@ using System.Linq;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using Microsoft.Win32;
+using ForkPlus.UI;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -86,18 +86,11 @@ namespace ForkPlus.UI.Dialogs
 			try
 			{
 				string initialDirectory = Directory.Exists(Path.GetDirectoryName(GitPathTextBox.Text)) ? Path.GetDirectoryName(GitPathTextBox.Text) : Environment.ExpandEnvironmentVariables("%programfiles%");
-				OpenFileDialog dialog = new OpenFileDialog
+				// 阶段 5：WPF Microsoft.Win32.OpenFileDialog → Avalonia StorageProvider（经 OpenDialog shim 同步封装）。
+				// shim 内部翻译 title；filter 固定为 *.exe。
+				if (OpenDialog.SelectExecutableFile(this, "Select git instance", initialDirectory, out string filePath))
 				{
-					Title = Translate("Select git instance"),
-					InitialDirectory = initialDirectory,
-					Filter = Translate("Applications") + " (*.exe)|*.exe",
-					CheckFileExists = true,
-					Multiselect = false
-				};
-				bool? result = dialog.ShowDialog(this);
-				if (result.GetValueOrDefault())
-				{
-					GitPathTextBox.Text = dialog.FileName;
+					GitPathTextBox.Text = filePath;
 					GitPathTextBox.Focus();
 				}
 			}

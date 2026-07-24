@@ -33,7 +33,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(text, delegate(JobMonitor monitor)
 			{
 				GitCommandResult resetResult = new ResetFilesAtRevisionGitCommand().Execute(gitModule, changedFiles, shaString, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					repositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
 					if (!resetResult.Succeeded)

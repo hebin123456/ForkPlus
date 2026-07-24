@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Commands
 				repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Continue Cherry-Pick"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult result2 = UpdateSubmodulesIfNeeded(new ContinueCherryPickGitCommand().Execute(gitModule), gitModule, submodulesToUpdate, monitor);
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						commitUserControl.CommittingInProgress = false;
 						commitUserControl.UpdateCommitSection();
@@ -57,7 +57,7 @@ namespace ForkPlus.UI.Commands
 				repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Continue Am"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult result = UpdateSubmodulesIfNeeded(new ContinueAmGitCommand().Execute(gitModule), gitModule, submodulesToUpdate, monitor);
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						commitUserControl.CommittingInProgress = false;
 						commitUserControl.UpdateCommitSection();
@@ -83,7 +83,7 @@ namespace ForkPlus.UI.Commands
 						{
 							new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 						}
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							commitUserControl.CommittingInProgress = false;
 							commitUserControl.UpdateCommitSection();
@@ -94,7 +94,7 @@ namespace ForkPlus.UI.Commands
 					else if (LeanBranching.IsSyncInProgress(gitModule))
 					{
 						GitCommandResult leanBranchingSyncResult = RepositoryUserControl.Commands.LeanBranchingSync.Continue(gitModule, submodulesToUpdate, commitGraphCache, monitor);
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							commitUserControl.CommittingInProgress = false;
 							commitUserControl.UpdateCommitSection();
@@ -112,7 +112,7 @@ namespace ForkPlus.UI.Commands
 						{
 							updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 						}
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							commitUserControl.EraseSavedCommitMessage();
 							commitUserControl.DontRefreshOnAmend = true;
@@ -148,7 +148,7 @@ namespace ForkPlus.UI.Commands
 		  : ServiceLocator.Localization.FormatCurrent("{0} files...", stagedCount);
 		 monitor.Update(0.0, monitorMsg);
 			GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
-			repositoryUserControl.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				commitUserControl.CommittingInProgress = false;
 				if (!gitResult.Succeeded)

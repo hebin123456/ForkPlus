@@ -92,7 +92,7 @@ namespace ForkPlus.UI
 				e.Handled = true;
 				e.DragEffects = DragDropEffects.Move;
 				string newName = FullName + "/" + localBranchSidebarItem.LocalBranch.LastNameComponent();
-				SidebarUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.Execute(repositoryUserControl, gitModule, repositoryData.References, localBranchSidebarItem.LocalBranch, newName);
 				});

@@ -136,21 +136,21 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (stashAndReapply && workingDirectoryIsDirty)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, "Stashing...");
 					});
 					GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Checkout autostash {DateTime.Now}", stageNewFiles: false, monitor);
 					if (!stashResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(GitCommandResult.Failure(stashResult.Error));
 						});
 						return;
 					}
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
 				});
@@ -159,13 +159,13 @@ namespace ForkPlus.UI.Dialogs
 				{
 					if (submodulesToUpdate.Length > 0)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 						});
 						new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(checkoutResult);
 					});
@@ -177,13 +177,13 @@ namespace ForkPlus.UI.Dialogs
 					{
 						if (submodulesToUpdate.Length > 0)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 							});
 							new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 						}
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(actionResult);
 						});
@@ -193,7 +193,7 @@ namespace ForkPlus.UI.Dialogs
 						GitCommandResult applyStashResult = GitCommandResult.Success();
 						if (stashAndReapply && workingDirectoryIsDirty)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								SetStatus(ForkPlusDialogStatus.InProgress, "Applying stash...");
 							});
@@ -202,21 +202,21 @@ namespace ForkPlus.UI.Dialogs
 						GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
 						if (submodulesToUpdate.Length > 0)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 							});
 							updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 							if (!updateSubmodulesResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(updateSubmodulesResult);
 								});
 								return;
 							}
 						}
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (!applyStashResult.Succeeded)
 							{

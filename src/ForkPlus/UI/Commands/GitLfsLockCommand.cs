@@ -36,7 +36,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(Translate("LFS Lock"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult lockResult = new GitLfsLockGitCommand().Execute(repositoryUserControl.GitModule, filePaths, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!lockResult.Succeeded && !monitor.IsCanceled)
 					{

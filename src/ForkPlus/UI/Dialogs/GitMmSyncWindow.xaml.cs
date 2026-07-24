@@ -19,8 +19,8 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Sync git mm workspace");
 			base.SubmitButtonTitle = Translate("Sync");
 			WorkspacePathTextBlock.Text = workspacePath ?? "";
-			WorkspacePathTextBlock.ToolTip = WorkspacePathTextBlock.Text;
-			ForceSyncWarningImage.ToolTip = Translate("Discard local sync state and force git mm to resync projects.");
+			ToolTip.SetTip(WorkspacePathTextBlock, WorkspacePathTextBlock.Text);
+			ToolTip.SetTip(ForceSyncWarningImage, Translate("Discard local sync state and force git mm to resync projects."));
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			SelectCheckoutJobs(ForkPlusSettings.Default.GitMm.SyncJobs);
 			SelectJobs(FetchJobsComboBox, ForkPlusSettings.Default.GitMm.GetDialogOption("sync.fetchJobs"), defaultValue: 8);
@@ -218,7 +218,7 @@ namespace ForkPlus.UI.Dialogs
 				string cmd = GitMmCommandPreviewHelper.Format(CreateArgs());
 				CommandPreviewTextBlock.Text = cmd;
 				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-				CommandPreviewTextBlock.ToolTip = cmd;
+				ToolTip.SetTip(CommandPreviewTextBlock, cmd);
 			}
 		}
 

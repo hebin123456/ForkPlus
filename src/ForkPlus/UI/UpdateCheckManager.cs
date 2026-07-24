@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.Threading → using Avalonia.Threading
 // - DispatcherTimer → Avalonia.Threading.DispatcherTimer（API 兼容：Interval/Tick/Start）
-// - instance.Dispatcher.Invoke(Action) 保持（Avalonia.Threading.Dispatcher.Invoke 兼容，参考 QuickPullCommand/SaveFileCommand）
+// - Dispatcher.UIThread.Invoke(Action) 保持（Avalonia.Threading.Dispatcher.Invoke 兼容，参考 QuickPullCommand/SaveFileCommand）
 using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -62,7 +62,7 @@ namespace ForkPlus.UI
 			}
 			try
 			{
-				instance.Dispatcher.Invoke(delegate
+				Dispatcher.UIThread.Invoke(delegate
 				{
 					new UpdateCheckWindow().ShowDialog();
 				});
@@ -105,7 +105,7 @@ namespace ForkPlus.UI
 			}
 			try
 			{
-				instance.Dispatcher.Invoke(delegate
+				Dispatcher.UIThread.Invoke(delegate
 				{
 					new UpdateAvailableWindow(info).ShowDialog();
 				});

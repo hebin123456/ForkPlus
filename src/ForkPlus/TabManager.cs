@@ -302,7 +302,7 @@ namespace ForkPlus
 					NotificationCenter.Current.RaiseActiveTabChanged(this, value);
 					SaveSession();
 					ForkPlusSettings.Default.Save();
-					// 阶段 4.5：WPF Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, action)
+					// 阶段 4.5：WPF Application.Dispatcher.UIThread.BeginInvoke(DispatcherPriority.Background, action)
 					// → Avalonia Dispatcher.UIThread.Post(action, DispatcherPriority.Background)（参考 MainWindow / GitMmUserControl.Output）。
 					Dispatcher.UIThread.Post(new Action(delegate
 					{

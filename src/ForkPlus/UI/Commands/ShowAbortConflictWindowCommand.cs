@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Updating submodules..."), delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					repositoryUserControl.InvalidateAndRefresh(subdomainToRefresh);
 					if (!updateSubmodulesResult.Succeeded)

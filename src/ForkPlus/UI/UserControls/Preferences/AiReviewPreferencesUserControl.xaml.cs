@@ -11,7 +11,7 @@ using Avalonia.Interactivity;
 // - TextBox.LineCount（WPF 专属）→ 按 Text 中 '\n' 计数 +1
 // - TextBox.Clear()（WPF 专属）→ Text = ""
 // - BusyIndicator.Visibility = busy ? Visibility.Visible : Visibility.Collapsed → BusyIndicator.IsVisible = busy
-// - Dispatcher.Async（this.Dispatcher.Async 扩展，参考 DispatcherExtension）保持不变
+// - Dispatcher.Async（Dispatcher.UIThread.Async 扩展，参考 DispatcherExtension）保持不变
 using System;
 using System.Collections.Generic;
 using System.Linq;

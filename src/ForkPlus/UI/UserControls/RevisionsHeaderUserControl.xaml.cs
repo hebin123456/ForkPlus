@@ -122,7 +122,7 @@ namespace ForkPlus.UI.UserControls
 				revision.MessageParts(out var subject, out var description);
 				subjectTextBlock.Text = subject;
 				subjectTextBlock.ApplySearchAndButrackerHighlighting(null, bugtrackers);
-				subjectTextBlock.ToolTip = revision.Message.TrimEnd();
+				ToolTip.SetTip(subjectTextBlock, revision.Message.TrimEnd());
 				// 阶段 4.5：WPF Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）。
 				descriptionSymbolTextBlock.Visibility = ((!(description != "")) ? Visibility.Collapsed : Visibility.Visible);
 			}

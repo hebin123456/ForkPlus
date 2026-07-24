@@ -6,7 +6,7 @@ namespace ForkPlus
 {
 	/// <summary>
 	/// 带有延迟执行功能的泛型动作，使用 System.Timers.Timer 实现线程池计时。
-	/// 默认在 ThreadPool 线程上执行回调 —— 若需要回到 UI 线程，请在 action 内部使用 ServiceLocator.Dispatcher。
+	/// 默认在 ThreadPool 线程上执行回调 —— 若需要回到 UI 线程，请在 action 内部使用 Dispatcher.UIThread。
 	/// </summary>
 	public class DelayedAction<T>
 	{
@@ -67,7 +67,7 @@ namespace ForkPlus
 		{
 		 lock (_lock)
 		 {
-		  ServiceLocator.Dispatcher?.Post(() => RunAction());
+		  Dispatcher.UIThread?.Post(() => RunAction());
 		 }
 		}
 

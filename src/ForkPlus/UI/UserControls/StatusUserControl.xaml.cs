@@ -175,14 +175,14 @@ namespace ForkPlus.UI.UserControls
 			if (repositoryData.References.FilterReferences.Length != 0)
 			{
 				FilterButton.Show();
-				FilterButton.ToolTip = Translate("Clear Branch Filter");
+				ToolTip.SetTip(FilterButton, Translate("Clear Branch Filter"));
 				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
 				FilterButtonImage.Source = Theme.FindImage(BranchFilterOnIconName);
 			}
 			else if (_hovered && repositoryData.References.ActiveBranch != null)
 			{
 				FilterButton.Show();
-				FilterButton.ToolTip = Translate("Filter by Active Branch");
+				ToolTip.SetTip(FilterButton, Translate("Filter by Active Branch"));
 				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
 				FilterButtonImage.Source = Theme.FindImage(BranchFilterOffIconName);
 			}
@@ -205,7 +205,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void ApplyLocalization()
 		{
-			ShowActivityManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage);
+			ToolTip.SetTip(ShowActivityManagerToggleButton, PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage));
 			ActivityManagerUserControl.ApplyLocalization();
 		}
 

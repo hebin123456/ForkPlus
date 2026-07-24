@@ -119,7 +119,7 @@ namespace ForkPlus.UI
 		TabManager?.RefreshTabTitles();
 		if (_templatePartNotificationManagerToggleButton != null)
 		{
-			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+			ToolTip.SetTip(_templatePartNotificationManagerToggleButton, PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage));
 		}
 		// 通知按钮弹出面板的 HeaderLabel 也需要随语言切换刷新；本控件实例在 ControlTemplate
 		// 内一次性构造，构造函数里的翻译只生效一次，之前必须重启客户端才更新（Bug v2.1.2）。
@@ -176,7 +176,7 @@ namespace ForkPlus.UI
 				};
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
 				// NOTE: NotificationManagerPopup 已移至基类或需重新设计
-				_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+				ToolTip.SetTip(_templatePartNotificationManagerToggleButton, PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage));
 			}
 			// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
 			// ApplyLocalization 时调用其 ApplyLocalization() 刷新 HeaderLabel.Text（Bug v2.1.2）。
@@ -321,7 +321,7 @@ namespace ForkPlus.UI
 			_updateCheckManager.Start();
 			App.CliArguments.RunCommand();
 			// Avalonia: Dispatcher.BeginInvoke → Dispatcher.Post
-			base.Dispatcher.Post(StartupTimeReporter.UIReady);
+			Dispatcher.UIThread.Post(StartupTimeReporter.UIReady);
 		}
 
 		/// <summary>手动触发更新检测（由帮助菜单"Check for Updates..."调用）。</summary>

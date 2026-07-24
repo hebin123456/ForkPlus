@@ -120,7 +120,7 @@ namespace ForkPlus.UI.Commands
 					GitCommandResult<ForkSyncStatus> result = new CheckForkSyncStatusGitCommand().Execute(
 						gitModule, capturedUpstream, capturedBranch, capturedBranchName, monitor);
 
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (monitor.IsCanceled)
 						{

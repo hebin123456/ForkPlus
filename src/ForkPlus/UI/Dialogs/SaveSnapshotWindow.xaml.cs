@@ -69,7 +69,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(Translate("Stash snapshot"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new SaveWorkingDirectoryAsStashGitCommand().Execute(gitModule, stashMessage, stageNewFiles, sourceString, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

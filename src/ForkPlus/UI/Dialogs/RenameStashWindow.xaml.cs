@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				GitCommandResult<Sha> renameResult = new RenameStashGitCommand().Execute(gitModule, stash.ReflogName, newMessage, monitor);
 				OutResultSha = renameResult.Result;
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(renameResult.ToGitCommandResult());
 				});

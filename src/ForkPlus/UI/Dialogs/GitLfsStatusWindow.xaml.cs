@@ -58,7 +58,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(Translate("LFS files"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<string[]> lfsFilesResponse = new GetLfsFilesGitCommand().Execute(gitModule, monitor);
-				gitLfsStatusWindow.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!lfsFilesResponse.Succeeded && !monitor.IsCanceled)
 					{
@@ -126,7 +126,7 @@ namespace ForkPlus.UI.Dialogs
 			_activeRefresLocksJob = _repositoryUserControl.JobQueue.Add(Translate("LFS Locks"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<Dictionary<string, string>> locksResponse = new GetLfsLocksGitCommand().Execute(gitModule, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!monitor.IsCanceled)
 					{
@@ -219,7 +219,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(Translate("LFS Unlock"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult unlockResult = new GitLfsUnlockGitCommand().Execute(gitModule, filepaths, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!unlockResult.Succeeded && !monitor.IsCanceled)
 					{
@@ -244,7 +244,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(Translate("LFS Lock"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult lockResult = new GitLfsLockGitCommand().Execute(gitModule, filepaths, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!lockResult.Succeeded && !monitor.IsCanceled)
 					{

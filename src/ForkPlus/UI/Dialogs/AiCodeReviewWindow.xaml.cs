@@ -169,9 +169,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RetryButton.Content = PreferencesLocalization.Current("Retry");
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry AI Review");
+			ToolTip.SetTip(RetryButton, PreferencesLocalization.Current("Retry AI Review"));
 			StopButton.Content = PreferencesLocalization.Current("Stop");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task and abort its request");
+			ToolTip.SetTip(StopButton, PreferencesLocalization.Current("Stop the current AI task and abort its request"));
 			ApplyTargetTitleLocalization();
 			RevisionDetails.ApplyLocalization();
 			if (FileReviewDiffControl is ILocalizableControl localizableDiffControl)
@@ -390,8 +390,8 @@ namespace ForkPlus.UI.Dialogs
 			BusyIndicator.Show();
 			RetryButton.IsEnabled = false;
 			AiResponseFallback.Collapse();
-			StopButton.Visibility = Visibility.Visible;
-			StatusProgressBar.Visibility = Visibility.Visible;
+			StopButton.IsVisible = true;
+			StatusProgressBar.IsVisible = true;
 			if (replaceAll)
 			{
 				AiResponseScrollViewer.Collapse();
@@ -407,8 +407,8 @@ namespace ForkPlus.UI.Dialogs
 			// 重置流式状态（VM 承载）：清空缓冲 + 重置节流计时 + 激活流式；初始状态提示“排队中”
 			_viewModel.ResetForNewRequest();
 			StatusTextBlock.Text = PreferencesLocalization.Current("Queued...");
-			StatusProgressBar.Visibility = Visibility.Visible;
-			StopButton.Visibility = Visibility.Visible;
+			StatusProgressBar.IsVisible = true;
+			StopButton.IsVisible = true;
 		}
 
 		private void ReviewWithOpenAi(GitModule gitModule, AiCodeReviewTarget target, bool replaceAll)
@@ -449,7 +449,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (!patchResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
 						{
@@ -457,8 +457,8 @@ namespace ForkPlus.UI.Dialogs
 						}
 						StopStreamingRender();
 						BusyIndicator.Collapse();
-						StatusProgressBar.Visibility = Visibility.Collapsed;
-						StopButton.Visibility = Visibility.Collapsed;
+						StatusProgressBar.IsVisible = false;
+						StopButton.IsVisible = false;
 						StatusTextBlock.Text = "";
 						RetryButton.IsEnabled = true;
 						AiResponseScrollViewer.Collapse();
@@ -478,7 +478,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					if (!codeReviewResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (_isClosed || monitor.IsCanceled)
 							{
@@ -494,7 +494,7 @@ namespace ForkPlus.UI.Dialogs
 						string aiReviewDisplayMarkdown = RemoveSuggestionBlocks(aiReviewMarkdown);
 						// 原 WebView2 需 ConvertMarkdownToHtml 转为 HTML 再 NavigateToString；
 						// MarkdownScrollViewer 直接渲染 Markdown，无需 HTML 转换。
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (_isClosed || monitor.IsCanceled)
 							{
@@ -525,7 +525,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (!contextResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
 						{
@@ -544,7 +544,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (!codeReviewResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
 						{
@@ -559,7 +559,7 @@ namespace ForkPlus.UI.Dialogs
 				string aiReviewDisplayMarkdown = RemoveSuggestionBlocks(aiReviewMarkdown);
 				// 原 WebView2 需 ConvertMarkdownToHtml 转为 HTML 再 NavigateToString；
 				// MarkdownScrollViewer 直接渲染 Markdown，无需 HTML 转换。
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (_isClosed || monitor.IsCanceled)
 					{
@@ -687,7 +687,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (_isClosed || monitor.IsCanceled)
 					{
@@ -1001,7 +1001,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (!codeReviewResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
 						{
@@ -1025,7 +1025,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						Bt.bt_release_md_to_html(ref x);
 					});
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
 						{
@@ -1050,8 +1050,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			StopStreamingRender();
 			BusyIndicator.Collapse();
-			StatusProgressBar.Visibility = Visibility.Collapsed;
-			StopButton.Visibility = Visibility.Collapsed;
+			StatusProgressBar.IsVisible = false;
+			StopButton.IsVisible = false;
 			StatusTextBlock.Text = "";
 			RetryButton.IsEnabled = true;
 			AiResponseScrollViewer.Collapse();
@@ -1063,16 +1063,16 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>更新状态栏文字 + 显示进度条（用于排队/请求中/收集 diff/生成中等阶段提示）。</summary>
 		private void UpdateStatus(string message)
 		{
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (_isClosed)
 				{
 					return;
 				}
 				StatusTextBlock.Text = message ?? "";
-				StatusProgressBar.Visibility = Visibility.Visible;
+				StatusProgressBar.IsVisible = true;
 				BusyIndicator.Show();
-				StopButton.Visibility = Visibility.Visible;
+				StopButton.IsVisible = true;
 			});
 		}
 
@@ -1080,16 +1080,16 @@ namespace ForkPlus.UI.Dialogs
 		private void ClearStatus()
 		{
 			StopStreamingRender();
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (_isClosed)
 				{
 					return;
 				}
 				StatusTextBlock.Text = "";
-				StatusProgressBar.Visibility = Visibility.Collapsed;
+				StatusProgressBar.IsVisible = false;
 				BusyIndicator.Collapse();
-				StopButton.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible = false;
 			});
 		}
 
@@ -1113,7 +1113,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				TryRenderStreamingPreview(lengthSoFar);
 			});
@@ -1137,7 +1137,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			// 在状态栏展示已接收字数，让用户感知进度（替代一直转圈圈）
 			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
-			StatusProgressBar.Visibility = Visibility.Visible;
+			StatusProgressBar.IsVisible = true;
 			string md = _viewModel.GetMarkdownSnapshot();
 			if (string.IsNullOrEmpty(md))
 			{
@@ -1196,7 +1196,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					try
 					{

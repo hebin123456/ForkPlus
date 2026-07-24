@@ -98,7 +98,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult createWorktreeResult = new AddWorktreeGitCommand().Execute(_gitModule, worktreePath, branchName, selectedBranch.Sha, monitor);
 				if (!createWorktreeResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(createWorktreeResult);
 					});
@@ -108,7 +108,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<GitModule> openWorktreeResult = new OpenGitRepositoryGitCommand().Execute(worktreePath);
 					if (!openWorktreeResult.Succeeded)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(openWorktreeResult.ToGitCommandResult());
 						});
@@ -118,21 +118,21 @@ namespace ForkPlus.UI.Dialogs
 						GitModule result = openWorktreeResult.Result;
 						if (submodulesToUpdate.Length > 0)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								SetStatus(ForkPlusDialogStatus.InProgress, Translate("Updating submodules..."));
 							});
 							GitCommandResult updateSubmodulesResult = UpdateSubmodules(result, submodulesToUpdate, _gitModule.CommonGitDir, monitor);
 							if (!updateSubmodulesResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(updateSubmodulesResult);
 								});
 								return;
 							}
 						}
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							MainWindow.Instance.TabManager.OpenRepository(worktreePath);
 							Close(createWorktreeResult);

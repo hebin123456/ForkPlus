@@ -99,7 +99,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult renameResult = new RenameLocalBranchGitCommand().Execute(gitModule, localBranch.Name, newName, monitor);
 				if (!renameResult.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(renameResult);
 					});
@@ -120,20 +120,20 @@ namespace ForkPlus.UI.Dialogs
 					}
 					if (renameUpstream && remoteBranch != null)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							SetStatus(ForkPlusDialogStatus.InProgress, Translate("Renaming remote branch..."));
 						});
 						GitCommandResult renameRemoteBranchResult = new RenameRemoteBranchGitCommand().Execute(gitModule, remoteBranch, newName, monitor);
 						if (!renameRemoteBranchResult.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								Close(renameRemoteBranchResult);
 							});
 							return;
 						}
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							SetStatus(ForkPlusDialogStatus.InProgress, Translate("Updating tracking reference..."));
 						});
@@ -143,7 +143,7 @@ namespace ForkPlus.UI.Dialogs
 						GitCommandResult updateTrackingResult = new UpdateTrackingReferenceGitCommand().Execute(gitModule, localBranch2, remoteBranch2, monitor);
 						if (!updateTrackingResult.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								Close(updateTrackingResult);
 							});
@@ -163,7 +163,7 @@ namespace ForkPlus.UI.Dialogs
 					gitModule.Settings.PinnedReferences = pinned;
 					gitModule.Settings.FilterReferences = filtered;
 					gitModule.Settings.Save();
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(renameResult);
 					});

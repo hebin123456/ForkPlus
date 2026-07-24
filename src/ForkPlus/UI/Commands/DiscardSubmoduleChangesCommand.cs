@@ -46,14 +46,14 @@ namespace ForkPlus.UI.Commands
 					discardResult = new DiscardAllSubmoduleChangesGitCommand().Execute(gitModule, submodule);
 					if (!discardResult.Succeeded)
 					{
-						commitUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
 						});
 						break;
 					}
 				}
-				commitUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!monitor.IsCanceled)
 					{

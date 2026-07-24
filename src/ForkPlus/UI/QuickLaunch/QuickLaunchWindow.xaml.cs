@@ -4,9 +4,9 @@
 // - using System.Windows.Input → using Avalonia.Input（KeyEventArgs / Key / PointerReleasedEventArgs）
 // - using System.Windows.Markup → 移除（无对应使用）
 // - 新增 using Avalonia.Threading（Dispatcher.UIThread）
-// - Application.Current.Dispatcher.BeginInvoke(action) → Dispatcher.UIThread.Post(action)
-//   （Application.Current.Dispatcher 在 Avalonia 不存在，改用 Dispatcher.UIThread，参考 SystemThemeHelper / RevisionsDataSource）
-// - base.Dispatcher.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
+// - Application.Dispatcher.UIThread.BeginInvoke(action) → Dispatcher.UIThread.Post(action)
+//   （Application.Dispatcher.UIThread 在 Avalonia 不存在，改用 Dispatcher.UIThread，参考 SystemThemeHelper / RevisionsDataSource）
+// - Dispatcher.UIThread.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 // - OnPreviewKeyDown (tunneling) → OnKeyDown (bubbling)（Avalonia 无 Preview 前缀，参考 AutoCompleteTextBox / ReferenceTextBox）
 // - PointerPressedEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移 MouseUp→PointerReleased）
 // - Keyboard.IsKeyDown(Key.LeftCtrl) 为无副作用死语句（结果未使用），迁移时移除
@@ -55,7 +55,7 @@ namespace ForkPlus.UI.QuickLaunch
 			};
 			base.Deactivated += delegate
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					CloseWindow();
 				});
@@ -64,8 +64,8 @@ namespace ForkPlus.UI.QuickLaunch
 			commandTextBox.CommandArgumentsCompleted = (EventHandler<object[]>)Delegate.Combine(commandTextBox.CommandArgumentsCompleted, (EventHandler<object[]>)delegate(object s, object[] e)
 			{
 				CloseWindow();
-				// 阶段 4.5：WPF Application.Current.Dispatcher.BeginInvoke → Avalonia Dispatcher.UIThread.Post。
-				// 关窗后再执行命令转换；用全局 UI 线程调度而非 base.Dispatcher，避免窗口关闭后 Dispatcher 失效。
+				// 阶段 4.5：WPF Application.Dispatcher.UIThread.BeginInvoke → Avalonia Dispatcher.UIThread.Post。
+				// 关窗后再执行命令转换；用全局 UI 线程调度而非 Dispatcher.UIThread，避免窗口关闭后 Dispatcher 失效。
 				Dispatcher.UIThread.Post((Action)delegate
 				{
 					CommandTextBox.CommandDescriptor.Converter(e, RepositoryUserControl);
@@ -83,7 +83,7 @@ namespace ForkPlus.UI.QuickLaunch
 			Task.Run(delegate
 			{
 				new RescanUserRepositoriesCommand().Execute(reset: false);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					_refreshCommandListAction.InvokeNow(parameter: false);
 				});

@@ -33,7 +33,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("LFS Prune"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pruneResult = new GitLfsPruneGitCommand().Execute(gitModule, monitor);
-				repositoryUserControl.Dispatcher.Invoke(delegate
+				Dispatcher.UIThread.Invoke(delegate
 				{
 					if (!pruneResult.Succeeded && !monitor.IsCanceled)
 					{

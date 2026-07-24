@@ -69,13 +69,13 @@ namespace ForkPlus.UI.Dialogs
 				}
 				RevisionParentComboBox.ItemsSource = result;
 				RevisionParentComboBox.SelectedIndex = 0;
-				RevisionParentTextBlock.Visibility = Visibility.Visible;
-				RevisionParentComboBox.Visibility = Visibility.Visible;
+				RevisionParentTextBlock.IsVisible = true;
+				RevisionParentComboBox.IsVisible = true;
 			}
 			else
 			{
-				RevisionParentTextBlock.Visibility = Visibility.Collapsed;
-				RevisionParentComboBox.Visibility = Visibility.Collapsed;
+				RevisionParentTextBlock.IsVisible = false;
+				RevisionParentComboBox.IsVisible = false;
 			}
 			UpdateSubmitButton();
 			// Revert 冲突预检：构造函数里同步调用 git merge-tree 做无副作用预演，
@@ -116,7 +116,7 @@ namespace ForkPlus.UI.Dialogs
 			DisableEditableControls();
 			_repositoryUserControl.AddUndoable(string.Format(Translate("Revert '{0}'"), shaToRevert.ToAbbreviatedString()), delegate(JobMonitor monitor)
 		{
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, Translate("Reverting..."));
 			});
@@ -124,13 +124,13 @@ namespace ForkPlus.UI.Dialogs
 			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
 				});
 				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				if (!revertResult.Succeeded)
 				{

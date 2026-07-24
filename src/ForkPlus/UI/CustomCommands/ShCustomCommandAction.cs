@@ -58,7 +58,7 @@ namespace ForkPlus.UI.CustomCommands
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult<string> customCommandResult = new RunShCustomCommandActionShellCommand().Execute(this, env, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!customCommandResult.Succeeded)
 					{

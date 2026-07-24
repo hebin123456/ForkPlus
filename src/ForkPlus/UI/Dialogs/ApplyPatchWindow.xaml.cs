@@ -90,7 +90,7 @@ namespace ForkPlus.UI.Dialogs
 				_repositoryUserControl.JobQueue.Add(Translate("Apply patch"), delegate(JobMonitor monitor)
 				{
 					GitCommandResult result2 = (createCommits ? new AmGitCommand().Execute(gitModule, patchData, monitor) : new ApplyPatchGitCommand().Execute(gitModule, patchData, monitor));
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result2);
 					});
@@ -101,7 +101,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(Translate("Apply patch"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = (createCommits ? new AmGitCommand().Execute(gitModule, filePath, monitor) : new ApplyPatchGitCommand().Execute(gitModule, filePath, monitor));
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

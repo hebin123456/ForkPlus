@@ -75,7 +75,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, changedFiles, monitor);
 				if (!stageResult.Succeeded)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -88,7 +88,7 @@ namespace ForkPlus.UI.Commands
 				}
 				else if (TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: true, out var optimisticRepositoryStatus))
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -102,7 +102,7 @@ namespace ForkPlus.UI.Commands
 				}
 				else if (ExceedLength(changedFiles) || changedFiles.ContainsItem((ChangedFile x) => x.ChangeType == ChangeType.Added || x.ChangeType == ChangeType.Deleted || x.ChangeType == ChangeType.Unmerged))
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -118,7 +118,7 @@ namespace ForkPlus.UI.Commands
 				{
 					string[] pathsToRefresh = changedFiles.Map((ChangedFile x) => x.Path);
 					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, pathsToRefresh, showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -174,7 +174,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult unstageResult = (amendMode ? new UnstageForAmendGitCommand().Execute(gitModule, changedFiles, monitor) : new UnstageGitCommand().Execute(gitModule, changedFiles, monitor));
 				if (!unstageResult.Succeeded)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -187,7 +187,7 @@ namespace ForkPlus.UI.Commands
 				}
 				else if (!amendMode && TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: false, out var optimisticRepositoryStatus))
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -201,7 +201,7 @@ namespace ForkPlus.UI.Commands
 				}
 				else if (ExceedLength(changedFiles))
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -226,7 +226,7 @@ namespace ForkPlus.UI.Commands
 						list.Add(changedFile.Path);
 					}
 					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, list.ToArray(), showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

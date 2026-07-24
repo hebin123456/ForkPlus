@@ -64,7 +64,7 @@ namespace ForkPlus.UI.Commands
 				if (!monitor.IsCanceled)
 				{
 					GitCommandResult<MemoryStream> lfsFileDataResponse = new SmudgeLfsFileCommand().Execute(repositoryUserControl.GitModule, filePointer, monitor);
-					repositoryUserControl.Dispatcher.Invoke(delegate
+					Dispatcher.UIThread.Invoke(delegate
 					{
 						if (!lfsFileDataResponse.Succeeded)
 						{

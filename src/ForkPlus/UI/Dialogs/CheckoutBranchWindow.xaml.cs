@@ -156,7 +156,7 @@ namespace ForkPlus.UI.Dialogs
 				if (!stashResult.Succeeded)
 				{
 					GitCommandResult failResult = GitCommandResult.Failure(stashResult.Error);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(failResult);
 					});
@@ -169,7 +169,7 @@ namespace ForkPlus.UI.Dialogs
 				Close(GitCommandResult.Success());
 				return GitCommandResult.Success();
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				Close(result);
 			});
@@ -210,7 +210,7 @@ namespace ForkPlus.UI.Dialogs
 			monitor.SetState(JobMonitorState.InProgress);
 			if (stashAndReapply == StashAndReapply.Required)
 			{
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Stashing..."));
 				});
@@ -228,7 +228,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Checkout..."));
 			});
@@ -296,7 +296,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());
 			}
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Updating submodules..."));
 			});

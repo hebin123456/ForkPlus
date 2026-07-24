@@ -235,14 +235,14 @@ namespace ForkPlus.UI.UserControls
 			if (UnstagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
-				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage);
+				ToolTip.SetTip(StageAllButton, Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage));
 				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
 				StageAllButtonIcon.Source = Theme.FindImage(StageAllIconName);
 			}
 			else if (StagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
-				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage);
+				ToolTip.SetTip(StageAllButton, Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage));
 				// 阶段 4.5：WPF SetResourceReference(Image.SourceProperty, key) → Source = Theme.FindImage(key)。
 				StageAllButtonIcon.Source = Theme.FindImage(UnstageAllIconName);
 			}

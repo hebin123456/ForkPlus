@@ -2,7 +2,7 @@
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ListBox/Separator/Image/TextBlock/Button/ContextMenu/MenuItem）
 // - using System.Windows.Markup → 移除
-// - base.Dispatcher.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
+// - Dispatcher.UIThread.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
 // - MessageBox.Show → ServiceLocator.MessageBox.Show（参考 CheckForkSyncCommand）
 // - MessageBoxButton/MessageBoxImage/MessageBoxResult 由 ForkPlus.Services 提供
 using System;
@@ -56,7 +56,7 @@ namespace ForkPlus.UI.UserControls
 			_changedFile = changedFile;
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(changedFile.Path));
 			FileNameTextBlock.FilePath = changedFile.Path;
-			FileNameTextBlock.ToolTip = changedFile.Path;
+			ToolTip.SetTip(FileNameTextBlock, changedFile.Path);
 			FileDiffControl.RepositoryUserControl = repositoryUserControl;
 			// AI Resolve 按钮：仅在 AI 配置完毕且未解决时显示
 			if (!resolved && OpenAiService.IsAiReviewConfigured() && MergeConflictUserControlViewModel.IsMergeAllowed(changedFile))
@@ -99,7 +99,7 @@ namespace ForkPlus.UI.UserControls
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("GetConflictDetails"), delegate
 			{
 				GetConflictFileModificationsGitCommand.ConflictModifications fileModificationsResponse = new GetConflictFileModificationsGitCommand().Execute(gitModule, repositoryState, srcSha, dstSha, changedFile.Path);
-				// 阶段 4.5：WPF base.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				// 阶段 4.5：WPF Dispatcher.UIThread.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
 				Dispatcher.UIThread.Post(delegate
 				{
 					UpdateRevisionsListBox(DstRevisionsListBox, DstSeparator, fileModificationsResponse.DstRevisions);
@@ -127,10 +127,10 @@ namespace ForkPlus.UI.UserControls
 		private static void UpdateMergeConflictDetails(StatusType statusType, Image statusImage, TextBlock changeTypeTextBlock, GitPointView gitPointView, IGitPoint gitPoint)
 		{
 			statusImage.Source = statusType.GetConflictImageSource();
-			statusImage.ToolTip = statusType.ToFriendlyName();
+			ToolTip.SetTip(statusImage, statusType.ToFriendlyName());
 			changeTypeTextBlock.Text = statusType.ToFriendlyName();
 			gitPointView.Value = gitPoint;
-			gitPointView.ToolTip = gitPoint?.FriendlyName;
+			ToolTip.SetTip(gitPointView, gitPoint?.FriendlyName);
 		}
 
 		private void StageButton_Click(object sender, RoutedEventArgs e)
@@ -150,12 +150,12 @@ namespace ForkPlus.UI.UserControls
 
 			AiResolveButton.IsEnabled = false;
 			string originalToolTip = AiResolveButton.ToolTip?.ToString();
-			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
+			ToolTip.SetTip(AiResolveButton, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
 			AiResolveResult result = await _viewModel.TryResolveWithAiAsync(gitModule, _changedFile).ConfigureAwait(true);
 
 			AiResolveButton.IsEnabled = true;
-			AiResolveButton.ToolTip = originalToolTip ?? PreferencesLocalization.Current("Use AI to resolve all conflicts in this file");
+			ToolTip.SetTip(AiResolveButton, originalToolTip ?? PreferencesLocalization.Current("Use AI to resolve all conflicts in this file"));
 
 			string title = PreferencesLocalization.Current("AI Resolve");
 			switch (result.Status)

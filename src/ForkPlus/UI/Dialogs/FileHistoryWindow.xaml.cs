@@ -76,7 +76,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(mode.Path));
 			FileNameTextBlock.FilePath = mode.Path;
-			FileNameTextBlock.ToolTip = mode.Path;
+			ToolTip.SetTip(FileNameTextBlock, mode.Path);
 			if (targetReference != null)
 			{
 				TargetReferenceGitPointView.Value = targetReference;
@@ -605,7 +605,7 @@ namespace ForkPlus.UI.Dialogs
 					GitCommandResult<DiffContent> diffPresentationResult = new GetRevisionFileChangesGitCommand().Execute(GitModule, target, historyEntry.ChangedFile, ForkPlusSettings.Default.DiffContextSize, tabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, ForkPlusSettings.Default.DiffShowEntireFile);
 					if (!monitor.IsCanceled)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (!monitor.IsCanceled)
 							{

@@ -41,7 +41,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult moveSubmoduleResult = new MoveSubmoduleGitCommand().Execute(gitModule, submodule.Path, newSubmodulePath, monitor);
 				if (!moveSubmoduleResult.Succeeded)
 				{
-					repositoryUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						new ErrorWindow(repositoryUserControl, moveSubmoduleResult.Error).ShowDialog();
 						repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Commands
 					GitCommandResult renameGitmodulesSectionResult = new RenameGitmodulesSectionGitCommand().Execute(gitModule, submodule.Path, newSubmodulePath, monitor);
 					if (!renameGitmodulesSectionResult.Succeeded)
 					{
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							new ErrorWindow(repositoryUserControl, renameGitmodulesSectionResult.Error).ShowDialog();
 							repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
@@ -60,7 +60,7 @@ namespace ForkPlus.UI.Commands
 					}
 					else
 					{
-						repositoryUserControl.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
 						});

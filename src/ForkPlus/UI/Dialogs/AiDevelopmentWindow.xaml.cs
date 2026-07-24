@@ -123,7 +123,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 
 				// 回到 UI 线程更新下拉框
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					try
 					{
@@ -367,8 +367,8 @@ namespace ForkPlus.UI.Dialogs
 			_isProcessing = true;
 			// 任务2：不再禁用输入框和发送按钮——用户可以在 AI 处理期间继续输入并排队新需求，
 			// 无需等待当前请求回复完成。SendButton 的启用状态仅由输入框文本决定（见 UpdateSendButton）。
-			ProgressBar.Visibility = Visibility.Visible;
-			StopButton.Visibility = Visibility.Visible;
+			ProgressBar.IsVisible = true;
+			StopButton.IsVisible = true;
 			UpdateQueueIndicator();
 			AddStatusMessage(PreferencesLocalization.Current("排队中..."), Brushes.Gray);
 
@@ -380,7 +380,7 @@ namespace ForkPlus.UI.Dialogs
 
 			// Create streaming response bubble (will be populated chunk by chunk)
 			MarkdownScrollViewer streamingWebView = null;
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				streamingWebView = CreateStreamingResponseBubble();
 			});
@@ -397,7 +397,7 @@ namespace ForkPlus.UI.Dialogs
 					CompressHistoryIfNeeded(monitor);
 					// 多轮对话：携带历史上下文 + 当前需求
 					List<JObject> historySnapshot = new List<JObject>(_conversationHistory);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
 					});
@@ -423,7 +423,7 @@ namespace ForkPlus.UI.Dialogs
 								return;
 							}
 							_viewModel.OnChunk(delta);
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								TryRenderStreamingPreview();
 							});
@@ -461,13 +461,13 @@ namespace ForkPlus.UI.Dialogs
 					{
 						// 取消可能由 Stop 按钮触发，此时位于后台线程；
 						// FinishRequest 会操作 UI 元素，需切回 UI 线程执行。
-						base.Dispatcher.Async(delegate { FinishRequest(); });
+						Dispatcher.UIThread.Async(delegate { FinishRequest(); });
 						return;
 					}
 
 						if (!result.Succeeded)
 						{
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求失败: {0}", result.Error.FriendlyMessage), Brushes.Red);
 								FinishRequest();
@@ -497,7 +497,7 @@ namespace ForkPlus.UI.Dialogs
 					// Parse AI response for file changes
 					ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
 
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							try
 							{
@@ -537,7 +537,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					catch (Exception ex)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求出错: {0}", ex.Message), Brushes.Red);
 							FinishRequest();
@@ -550,7 +550,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void FinishRequest()
 		{
-			ProgressBar.Visibility = Visibility.Collapsed;
+			ProgressBar.IsVisible = false;
 			_statusTimer.Stop();
 			_activeJob = null;
 
@@ -570,7 +570,7 @@ namespace ForkPlus.UI.Dialogs
 			else
 			{
 				_isProcessing = false;
-				StopButton.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible = false;
 				UpdateQueueIndicator();
 				UpdateSendButton();
 				InputTextBox.Focus();
@@ -603,8 +603,8 @@ namespace ForkPlus.UI.Dialogs
 					PreferencesLocalization.FormatCurrent("⏹ 已清除 {0} 个排队请求", cleared),
 					Brushes.OrangeRed);
 				_isProcessing = false;
-				StopButton.Visibility = Visibility.Collapsed;
-				ProgressBar.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible = false;
+				ProgressBar.IsVisible = false;
 				_statusTimer.Stop();
 				_activeJob = null;
 				UpdateQueueIndicator();
@@ -977,7 +977,7 @@ namespace ForkPlus.UI.Dialogs
 					+ "Preserve: key file paths mentioned, code changes made (new/modified/deleted files), the user's main requirements, and any important decisions or constraints. "
 					+ "Be concise and factual. Do not include code snippets.\n\nConversation:\n" + convoText.ToString();
 
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					AddStatusMessage(
 						PreferencesLocalization.FormatCurrent("📦 上下文较长 ({0} tokens)，正在自动压缩早期对话...", estimatedTokens),
@@ -1000,7 +1000,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						_conversationHistory.Add(msg);
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						AddStatusMessage(
 							PreferencesLocalization.FormatCurrent("✅ 上下文已压缩（{0} 条早期对话 → 摘要 + 最近 {1} 条）", toSummarize.Count, toKeep.Count),
@@ -1014,7 +1014,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						_conversationHistory.Add(msg);
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						AddStatusMessage(
 							PreferencesLocalization.Current("⚠️ 上下文过长，已截断早期对话（摘要生成失败）"),
@@ -1091,7 +1091,7 @@ namespace ForkPlus.UI.Dialogs
 		// 默认 Background 优先级）。原 WPF DispatcherPriority.Background 等价于 Avalonia Dispatcher 的默认后台优先级。
 		private void ScrollToEnd()
 		{
-			base.Dispatcher.Post(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				MainScrollViewer.ScrollToEnd();
 			});
@@ -1204,7 +1204,7 @@ namespace ForkPlus.UI.Dialogs
 			return $"[tool error] invalid path '{request.Path}': {ex.Message}";
 		}
 
-		base.Dispatcher.Async(delegate
+		Dispatcher.UIThread.Async(delegate
 		{
 			AddStatusMessage(PreferencesLocalization.FormatCurrent(
 				request.Kind == FileToolKind.ReadFile ? "读取文件: {0}" : "列出目录: {0}",
@@ -1681,7 +1681,7 @@ Additionally, the user has defined the following coding standards / skills that 
 				// 安全检查：拒绝越界路径
 				if (!IsPathInAllowedDirectories(resolvedPath, allowedDirectories))
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						AddStatusMessage(
 							PreferencesLocalization.FormatCurrent("Security limit: refused to modify file outside directory: {0}", fileChange.FilePath),

@@ -109,7 +109,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Pull '{0}'"), remoteBranch2.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult requestResult = PerformPull(gitModule, remote.Name, remoteBranch, rebase, allTags, stashAndReapply, workingDirectoryIsDirty, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!requestResult.Succeeded && !monitor.IsCanceled)
 					{
@@ -208,7 +208,7 @@ namespace ForkPlus.UI.Dialogs
 						{
 							ReferenceStorage referenceStorage = gitCommandResult2.Result;
 							LocalBranch activeBranch = referenceStorage.CreateLocalBranches().FirstItem((LocalBranch x) => x.IsActive);
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								if (initialActiveBranch?.FullReference != activeBranch?.FullReference)
 								{

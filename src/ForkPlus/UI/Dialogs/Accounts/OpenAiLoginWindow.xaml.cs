@@ -53,7 +53,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			_jobQueue.Add(PreferencesLocalization.Current("Signing in..."), delegate
 			{
 				ServiceResult<OpenAiResponse> result = service.Test();
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!result.Succeeded)
 					{

@@ -77,14 +77,14 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult result = new RemoveStashGitCommand().Execute(gitModule, stashes, monitor);
 				if (!result.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result);
 					});
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(GitCommandResult.Success());
 					});

@@ -54,7 +54,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			else
 			{
-				AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
+				ToolTip.SetTip(AiGenerateStashNameButton, Translate("Use AI to generate a stash message"));
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace ForkPlus.UI.Dialogs
 			_aiGenerating = true;
 			AiGenerateStashNameButton.IsEnabled = false;
 			string originalToolTip = AiGenerateStashNameButton.ToolTip?.ToString();
-			AiGenerateStashNameButton.ToolTip = Translate("AI is generating...");
+			ToolTip.SetTip(AiGenerateStashNameButton, Translate("AI is generating..."));
 			StashMessageTextBox.Text = "";
 			StringBuilder liveMsg = new StringBuilder();
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("AI Generate Stash Name"), delegate(JobMonitor monitor)
@@ -89,7 +89,7 @@ namespace ForkPlus.UI.Dialogs
 					GitRequestResult gitRequestResult = new GitRequest(_gitModule).Command(gitCommand).Execute();
 					if (gitRequestResult.ExitCode >= 2)
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							new ErrorWindow(gitRequestResult.ToGitCommandError().FriendlyDescription).ShowDialog();
 						});
@@ -98,7 +98,7 @@ namespace ForkPlus.UI.Dialogs
 					string patch = gitRequestResult.Stdout;
 					if (string.IsNullOrWhiteSpace(patch))
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							ServiceLocator.MessageBox.Show(
 								Translate("No working directory changes detected. Nothing to generate a stash message for."),
@@ -117,12 +117,12 @@ namespace ForkPlus.UI.Dialogs
 						}
 						liveMsg.Append(chunk);
 						string snapshot = liveMsg.ToString();
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							StashMessageTextBox.Text = snapshot;
 						});
 					});
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (monitor.IsCanceled)
 						{
@@ -148,11 +148,11 @@ namespace ForkPlus.UI.Dialogs
 				finally
 				{
 					// 任务结束（无论成功失败/取消）恢复按钮状态
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						_aiGenerating = false;
 						AiGenerateStashNameButton.IsEnabled = true;
-						AiGenerateStashNameButton.ToolTip = originalToolTip ?? Translate("Use AI to generate a stash message");
+						ToolTip.SetTip(AiGenerateStashNameButton, originalToolTip ?? Translate("Use AI to generate a stash message"));
 					});
 				}
 			}, JobFlags.SaveToLog);
@@ -170,7 +170,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			GitCommandResult<bool> result = new SaveStashGitCommand().Execute(_gitModule, stashMessage, stageNewFiles, monitor);
 			GitCommandResult finalResult = result.Succeeded ? GitCommandResult.Success() : GitCommandResult.Failure(result.Error);
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				Close(finalResult);
 			});

@@ -40,7 +40,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(string.Format(Translate("Bisect: {0}"), Translate(GetBisectCommandName(bisectCommand))), delegate(JobMonitor monitor)
 			{
 				GitCommandResult bisectResult = PerformBisect(gitModule, bisectCommand, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!bisectResult.Succeeded)
 					{

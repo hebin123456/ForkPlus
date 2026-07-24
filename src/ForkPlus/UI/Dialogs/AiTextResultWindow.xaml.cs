@@ -131,10 +131,10 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>v3.0.1：应用按钮 ToolTip / Content 的本地化文案。</summary>
 		private void ApplyLocalizationToButtons()
 		{
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task");
-			CopyButton.ToolTip = PreferencesLocalization.Current("Copy result to clipboard");
-			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
+			ToolTip.SetTip(RetryButton, PreferencesLocalization.Current("Retry"));
+			ToolTip.SetTip(StopButton, PreferencesLocalization.Current("Stop the current AI task"));
+			ToolTip.SetTip(CopyButton, PreferencesLocalization.Current("Copy result to clipboard"));
+			ToolTip.SetTip(ModelComboBox, PreferencesLocalization.Current("Select AI model"));
 		}
 
 		/// <summary>查找 MarkdownScrollViewer 内部的 ScrollViewer 并订阅 ScrollChanged 事件，
@@ -207,11 +207,11 @@ namespace ForkPlus.UI.Dialogs
 			_viewModel.ResetForNewRequest();
 
 			StatusTextBlock.Text = PreferencesLocalization.Current("Queued...");
-			StatusProgressBar.Visibility = Visibility.Visible;
+			StatusProgressBar.IsVisible = true;
 			BusyIndicator.Show();
 			AiResponseWebView.Show();
 			AiResponseFallback.Collapse();
-			StopButton.Visibility = Visibility.Visible;
+			StopButton.IsVisible = true;
 			RetryButton.IsEnabled = false;
 
 			_currentMonitor = new JobMonitor();
@@ -289,9 +289,9 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>流式停止后统一切换 UI 控件（完成/取消/出错共用）。</summary>
 		private void UpdateStreamingStoppedUi()
 		{
-			StopButton.Visibility = Visibility.Collapsed;
+			StopButton.IsVisible = false;
 			RetryButton.IsEnabled = true;
-			StatusProgressBar.Visibility = Visibility.Collapsed;
+			StatusProgressBar.IsVisible = false;
 			BusyIndicator.Collapse();
 		}
 

@@ -71,7 +71,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 				ServiceResult<User> userResponse = tempService.GetUser();
 				if (!userResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						EnableEditableControls();
 						SetStatus(ForkPlusDialogStatus.Error, userResponse.Error.FriendlyMessage);
@@ -79,7 +79,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Account account = Account;
 						if (account != null)

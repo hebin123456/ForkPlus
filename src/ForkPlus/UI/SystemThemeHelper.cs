@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF → Avalonia 迁移。
 // WPF System.Windows.Media.Brush → Avalonia.Media.IBrush。
 // WPF SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变）。
-// WPF Application.Current.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post。
+// WPF Application.Dispatcher.UIThread.Invoke → Avalonia Dispatcher.UIThread.Post。
 // WPF System.Windows.Media.Color → Avalonia.Media.Color。
 // WinRT UISettings/ColorValuesChanged/GetColorValue/Windows.UI.Color 保留（Windows-only API）。
 // NOTE (阶段 5): 跨平台化时替换 WinRT UISettings 为 ISystemThemeService 抽象。

@@ -202,7 +202,7 @@ namespace ForkPlus.UI.Dialogs
 				await Task.Run(delegate
 				{
 					GitCommandResult result = new TestRemoteRepositoryConnectionGitCommand().Execute(newUrl, new JobMonitor());
-					base.Dispatcher.Invoke(delegate
+					Dispatcher.UIThread.Invoke(delegate
 					{
 						EnableEditableControls();
 						BusyIndicator.Hide();
@@ -300,7 +300,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				monitor.SetProgressAction(delegate
 				{
-					base.Dispatcher.Invoke(delegate
+					Dispatcher.UIThread.Invoke(delegate
 					{
 						CloneWindow cloneWindow = this;
 						object obj = monitor.ProgressMessage ?? "";
@@ -314,7 +314,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			GitCommandResult result = new CloneGitCommand().Execute(url, recurseSubmodules, destinationDirectory, monitor);
 			monitor.SetProgressAction(null);
-			base.Dispatcher.Invoke(delegate
+			Dispatcher.UIThread.Invoke(delegate
 			{
 				if (foreground)
 				{

@@ -150,7 +150,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (edit)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, "Editing remote...");
 					});
@@ -162,7 +162,7 @@ namespace ForkPlus.UI.Dialogs
 							GitCommandResult<GitModule> openParentGitModuleResult = new OpenGitRepositoryGitCommand().Execute(gitModule.ParentRepoPath);
 							if (!openParentGitModuleResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(openParentGitModuleResult.ToGitCommandResult());
 								});
@@ -172,7 +172,7 @@ namespace ForkPlus.UI.Dialogs
 							GitCommandResult<Submodule[]> getSubmodulesResult = new GetSubmodulesGitCommand().Execute(result3);
 							if (!getSubmodulesResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(getSubmodulesResult.ToGitCommandResult());
 								});
@@ -189,7 +189,7 @@ namespace ForkPlus.UI.Dialogs
 							GitCommandResult updateSubmoduleUrlResult = new UpdateSubmoduleUrlGitCommand().Execute(result3, submodule, newUrl, monitor);
 							if (!updateSubmoduleUrlResult.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(updateSubmoduleUrlResult);
 								});
@@ -200,7 +200,7 @@ namespace ForkPlus.UI.Dialogs
 							result2 = new EditRemoteUrlGitCommand().Execute(gitModule, remoteToEdit.Name, newUrl, monitor);
 							if (!result2.Succeeded)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(result2);
 								});
@@ -212,19 +212,19 @@ namespace ForkPlus.UI.Dialogs
 					{
 						result2 = new RenameRemoteGitCommand().Execute(gitModule, remoteToEdit.Name, newName, monitor);
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result2);
 					});
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, "Adding remote...");
 					});
 					GitCommandResult result = new AddRemoteGitCommand().Execute(gitModule, newName, newUrl, monitor);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(result);
 					});
@@ -278,7 +278,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Test connection"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new TestRemoteRepositoryConnectionGitCommand().Execute(newUrl, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					EnableEditableControls();
 					BusyIndicator.Hide();

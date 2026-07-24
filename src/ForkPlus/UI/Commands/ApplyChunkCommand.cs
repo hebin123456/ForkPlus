@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Commands
 			{
 				if (!new ApplyGitCommand().Execute(gitModule, staged, patchData).Succeeded)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Commands
 				}
 				else if (editorIsNewOrUntracked)
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -77,7 +77,7 @@ namespace ForkPlus.UI.Commands
 				else
 				{
 					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, paths, showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

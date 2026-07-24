@@ -65,24 +65,24 @@ namespace ForkPlus.UI.UserControls
 				ServiceResult<User> userResponse = account.Service.GetUser();
 				if (!userResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
 						StatusEllipse.Fill = Theme.ApplicationColors.RedBrush;
 						StatusTextBlock.Text = userResponse.Error.FriendlyMessage;
-						StatusTextBlock.ToolTip = userResponse.Error.FriendlyMessage;
+						ToolTip.SetTip(StatusTextBlock, userResponse.Error.FriendlyMessage);
 					});
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
 						StatusEllipse.Fill = Theme.ApplicationColors.GreenBrush;
 						StatusTextBlock.Text = Translate("Online");
-						StatusTextBlock.ToolTip = null;
+						ToolTip.SetTip(StatusTextBlock, null);
 					});
 				}
 			});

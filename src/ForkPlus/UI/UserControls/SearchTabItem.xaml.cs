@@ -86,7 +86,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					this.SearchQueryChanged?.Invoke(this, EventArgs.Empty);
 					RepositoryUserControl.SidebarActivateRepositoryTab();
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						RepositoryUserControl.FocusSelectedRevision();
 					});
@@ -113,7 +113,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (!FilterTextBox.IsFocused)
 			{
-				base.Dispatcher.Post((Action)delegate
+				Dispatcher.UIThread.Post((Action)delegate
 				{
 					UpdateLayout();
 					FilterTextBox.FocusAndSelectAllText();

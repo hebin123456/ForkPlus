@@ -77,9 +77,9 @@ namespace ForkPlus.UI.Dialogs
 			MessageHeaderLabel.Text = PreferencesLocalization.Current("Commit Message");
 			SubjectTextBox.Placeholder = PreferencesLocalization.Current("Subject");
 			BodyTextBox.Placeholder = PreferencesLocalization.Current("Body (optional)");
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task");
-			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
+			ToolTip.SetTip(RetryButton, PreferencesLocalization.Current("Retry"));
+			ToolTip.SetTip(StopButton, PreferencesLocalization.Current("Stop the current AI task"));
+			ToolTip.SetTip(ModelComboBox, PreferencesLocalization.Current("Select AI model"));
 			ApplyAllButton.Content = PreferencesLocalization.Current("Apply All");
 			CancelButton.Content = PreferencesLocalization.Current("Cancel");
 		}
@@ -222,8 +222,8 @@ namespace ForkPlus.UI.Dialogs
 			_aiRunning = true;
 			RetryButton.IsEnabled = false;
 			ApplyAllButton.IsEnabled = false;
-			StopButton.Visibility = Visibility.Visible;
-			StatusProgressBar.Visibility = Visibility.Visible;
+			StopButton.IsVisible = true;
+			StatusProgressBar.IsVisible = true;
 			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Composing with {0}...", ForkPlusSettings.Default.AiReviewSelectedModel ?? "AI");
 			GroupsListBox.Items.Clear();
 			FilesListBox.Items.Clear();
@@ -238,8 +238,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_aiRunning = false;
 				RetryButton.IsEnabled = true;
-				StopButton.Visibility = Visibility.Collapsed;
-				StatusProgressBar.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible = false;
+				StatusProgressBar.IsVisible = false;
 				StatusTextBlock.Text = PreferencesLocalization.Current("No active repository.");
 				return;
 			}
@@ -330,8 +330,8 @@ namespace ForkPlus.UI.Dialogs
 						_aiRunning = false;
 						_currentMonitor = null;
 						RetryButton.IsEnabled = true;
-						StopButton.Visibility = Visibility.Collapsed;
-						StatusProgressBar.Visibility = Visibility.Collapsed;
+						StopButton.IsVisible = false;
+						StatusProgressBar.IsVisible = false;
 					});
 				}
 			}, JobFlags.SaveToLog);
@@ -493,8 +493,8 @@ namespace ForkPlus.UI.Dialogs
 			_applying = true;
 			ApplyAllButton.IsEnabled = false;
 			RetryButton.IsEnabled = false;
-			StopButton.Visibility = Visibility.Visible;
-			StatusProgressBar.Visibility = Visibility.Visible;
+			StopButton.IsVisible = true;
+			StatusProgressBar.IsVisible = true;
 			StatusTextBlock.Text = PreferencesLocalization.Current("Applying...");
 
 			RepositoryUserControl activeRepo = MainWindow.ActiveRepositoryUserControl;
@@ -503,8 +503,8 @@ namespace ForkPlus.UI.Dialogs
 				_applying = false;
 				ApplyAllButton.IsEnabled = true;
 				RetryButton.IsEnabled = true;
-				StopButton.Visibility = Visibility.Collapsed;
-				StatusProgressBar.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible = false;
+				StatusProgressBar.IsVisible = false;
 				StatusTextBlock.Text = PreferencesLocalization.Current("No active repository.");
 				return;
 			}
@@ -516,8 +516,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					_applying = false;
 					_currentMonitor = null;
-					StopButton.Visibility = Visibility.Collapsed;
-					StatusProgressBar.Visibility = Visibility.Collapsed;
+					StopButton.IsVisible = false;
+					StatusProgressBar.IsVisible = false;
 					if (result.Succeeded)
 					{
 						StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Composed {0} commits", result.Result.Length);

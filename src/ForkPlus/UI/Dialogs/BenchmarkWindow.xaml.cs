@@ -72,7 +72,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Action<BenchmarkResult> callback = delegate(BenchmarkResult benchmark)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						RefreshControls(monitor, benchmark);
 					});
@@ -80,7 +80,7 @@ namespace ForkPlus.UI.Dialogs
 				GitCommandResult<BenchmarkResult> response = new BenchmarkGitCommand().Execute(gitModule, monitor, callback);
 				if (response.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						_benchmarkLog = response.Result.BenchmarkLog;
 						ProgressBar.Hide();
@@ -96,7 +96,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else if (!monitor.IsCanceled)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						new ErrorWindow(repositoryUserControl, response.Error).ShowDialog();
 					});

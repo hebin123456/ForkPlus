@@ -198,7 +198,7 @@ protected override string GetCommandPreview()
 			base.DialogDescription = Translate("Push your local changes to remote repository");
 			base.SubmitButtonTitle = Translate("Push");
 			AllTagsCheckBox.IsChecked = ForkPlusSettings.Default.Push_PushAllTags;
-			ForcePushWarningImage.ToolTip = Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions.");
+			ToolTip.SetTip(ForcePushWarningImage, Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions."));
 			Refresh();
 			CheckSubmodules();
 			UpdateSubmitButton();
@@ -236,7 +236,7 @@ protected override string GetCommandPreview()
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Push '{0}' to '{1}'"), localBranch.Name, remote.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pushResult = new PushGitCommand().Execute(gitModule, remote.Name, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{
@@ -521,7 +521,7 @@ protected override string GetCommandPreview()
 			_repositoryUserControl.JobQueue.Add(Translate("Unpushed submodules check"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<string[]> unpushedSubmodulesResponse = new GetUnpushedSubmodulesGitCommand().Execute(gitModule, localBranch.Sha, submodulePaths, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!unpushedSubmodulesResponse.Succeeded)
 					{

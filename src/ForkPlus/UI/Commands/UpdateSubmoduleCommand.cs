@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Commands
 			{
 				monitor.Update(0.0, progressMessage);
 				GitCommandResult updateSubmoduleResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodules, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (callback != null)
 					{

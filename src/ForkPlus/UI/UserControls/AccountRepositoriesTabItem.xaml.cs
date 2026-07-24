@@ -55,7 +55,7 @@ namespace ForkPlus.UI.UserControls
 				ServiceResult<GitServiceRepository[]> repositoriesResponse = account.Service.GetRepositories().LoadAll();
 				if (!repositoriesResponse.Succeeded)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						RepositoriesListBox.ItemsSource = null;
 						FallbackUserControl.FallbackTitle = Translate("Unable to load repositories");
@@ -65,7 +65,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				else
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						FallbackUserControl.Collapse();
 						_repositories = repositoriesResponse.Result;

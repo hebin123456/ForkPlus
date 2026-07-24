@@ -8,7 +8,7 @@
 // - RevisionListView.PreviewMouseWheel → RevisionListView.PointerWheelChanged（参考 FileDiffControl）
 // - WeakEventManager<NotificationCenter,EventArgs<ThemeType>>.AddHandler(...,"ApplicationThemeChanged",h)
 //   → NotificationCenter.Current.ApplicationThemeChanged += h（参考 StatisticsUserControl）
-// - repositoryUserControl.Dispatcher.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
+// - Dispatcher.UIThread.Invoke → Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）
 using System;
 using System.ComponentModel;
 using Avalonia;
@@ -122,7 +122,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				monitor.Update(0.0, _content.Submodule.FriendlyName);
 				GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(_content.ParentGitModule, new Submodule[1] { _content.Submodule }, monitor);
-				// 阶段 4.5：WPF repositoryUserControl.Dispatcher.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
+				// 阶段 4.5：WPF Dispatcher.UIThread.Invoke → Avalonia Dispatcher.UIThread.Post（参考 RevisionDetailsUserControl）。
 				Dispatcher.UIThread.Post(delegate
 				{
 					if (!updateSubmodulesResult.Succeeded)
@@ -145,7 +145,7 @@ namespace ForkPlus.UI.UserControls
 		  string text2 = string.Join("\n", changedFilePaths);
 		  UncommittedFilesTextBlock.Show();
 		  UncommittedFilesTextBlock.Text = text;
-		  UncommittedFilesTextBlock.ToolTip = text + ":\n" + text2;
+		  ToolTip.SetTip(UncommittedFilesTextBlock, text + ":\n" + text2);
 		 }
 			else
 			{

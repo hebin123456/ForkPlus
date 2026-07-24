@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(string.Format(Translate("Delete submodule '{0}'"), _submodule.FriendlyName), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new DeleteSubmoduleGitCommand().Execute(_gitModule, _submodule.Path, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

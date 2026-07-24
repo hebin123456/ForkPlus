@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Dialogs
 			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Apply stash '{0}'"), stash.ReflogName), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new ApplyStashGitCommand().Execute(gitModule, stash.ReflogName, deleteAfterApply, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

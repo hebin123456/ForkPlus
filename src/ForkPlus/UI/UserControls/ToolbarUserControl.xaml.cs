@@ -365,7 +365,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		// v3.4.1：AddUndoable 在 JobQueue 后台线程触发此事件，刷新 UI 必须切回 UI 线程，
 		// 否则对 IsEnabled/Visibility 的跨线程访问会被吞掉，导致 commit 后撤销按钮不激活
-		base.Dispatcher.Async(delegate
+		Dispatcher.UIThread.Async(delegate
 		{
 			RefreshUndoRedoButtons();
 		});

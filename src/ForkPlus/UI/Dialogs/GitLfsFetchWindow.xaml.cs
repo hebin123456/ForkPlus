@@ -77,7 +77,7 @@ namespace ForkPlus.UI.Dialogs
 			repositoryUserControl.JobQueue.Add(string.Format(Translate("LFS Fetch {0}"), remote.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult fetchResult = new GitLfsFetchGitCommand().Execute(_gitModule, remote, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!fetchResult.Succeeded && !(fetchResult.Error is GitCommandError.Cancelled))
 					{

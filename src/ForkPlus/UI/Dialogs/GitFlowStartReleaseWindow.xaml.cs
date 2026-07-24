@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Start '{0}'", _gitFlowSettings.ReleasePrefix + releaseName), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = new StartGitFlowReleaseGitCommand().Execute(_gitModule, releaseName, startPoint, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(result);
 				});

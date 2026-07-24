@@ -75,12 +75,12 @@ namespace ForkPlus.UI.UserControls
 			if (content == null)
 			{
 				VisualTreeAttachmentHelper.TrySetChild(DiffContentHost, null, GetType().Name + ".DiffContentHost");
-				DiffContentHost.Visibility = Visibility.Collapsed;
+				DiffContentHost.IsVisible = false;
 				return;
 			}
 			if (VisualTreeAttachmentHelper.TrySetChild(DiffContentHost, content, GetType().Name + ".DiffContentHost"))
 			{
-				DiffContentHost.Visibility = Visibility.Visible;
+				DiffContentHost.IsVisible = true;
 			}
 		}
 

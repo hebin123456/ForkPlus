@@ -1765,12 +1765,12 @@ namespace ForkPlus.UI.UserControls
 						{
 							if (!monitor.IsCanceled)
 							{
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									RevisionSearchPanelUserControl.IsBusyIndicatorVisible = true;
 								});
 								GitCommandResult<Sha[]> searchResult = new RevisionContextSearchGitCommand().Execute(gitModule, searchString, shas.ToArray(), refMatches, monitor);
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									if (!monitor.IsCanceled)
 									{
@@ -1862,18 +1862,18 @@ namespace ForkPlus.UI.UserControls
 			{
 				Action<RevisionWithFiles> matchCallback = delegate(RevisionWithFiles revisionMatch)
 				{
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						RevisionsDataSource.AddSidebarSearchMatch(query.SearchString, revisionMatch.Sha);
 						SidebarSearchTabItem.AddMatch(revisionMatch);
 					});
 				};
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SidebarSearchTabItem.IsSearchInProgress = true;
 				});
 				new RevisionSearchGitCommand().Execute(gitModule, repositoryData.Submodules.Items, query, matchCallback, monitor);
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SidebarSearchTabItem.IsSearchInProgress = false;
 				});

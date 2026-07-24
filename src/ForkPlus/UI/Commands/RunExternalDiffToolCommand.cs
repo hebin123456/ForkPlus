@@ -183,7 +183,7 @@ namespace ForkPlus.UI.Commands
 				if (!dumpResult.Succeeded)
 				{
 					Log.Error(dumpResult.Error.FriendlyDescription);
-					repositoryUserControl.Dispatcher.Invoke(delegate
+					Dispatcher.UIThread.Invoke(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

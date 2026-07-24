@@ -176,7 +176,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					monitor.SetProgressAction(delegate
 					{
-						repositoryOverviewWindow.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							if (repositoryOverviewWindow.Fallback.IsVisible)
 							{
@@ -188,7 +188,7 @@ namespace ForkPlus.UI.Dialogs
 					monitor.SetProgressAction(null);
 					if (!overviewResponse.Succeeded)
 					{
-						repositoryOverviewWindow.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							repositoryOverviewWindow.Fallback.FallbackTitle = Translate("Error");
 							repositoryOverviewWindow.Fallback.FallbackMessage = overviewResponse.Error.FriendlyDescription;
@@ -196,7 +196,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					else
 					{
-						repositoryOverviewWindow.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							repositoryOverviewWindow._repositoryOverviewData = overviewResponse.Result;
 							DateTime dateTime = overviewResponse.Result.AuthorDates.LastOrDefault();

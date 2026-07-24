@@ -73,16 +73,16 @@ namespace ForkPlus.UI.Dialogs
 		private void OnCheckCompleted(UpdateInfo info)
 		{
 			_result = info;
-			CheckingPanel.Visibility = Visibility.Collapsed;
-			ResultPanel.Visibility = Visibility.Visible;
+			CheckingPanel.IsVisible = false;
+			ResultPanel.IsVisible = true;
 			if (info == null || (!string.IsNullOrEmpty(info.ErrorMessage) && info.ErrorMessage != "Cancelled"))
 			{
 				// 检测失败
 				string err = info?.ErrorMessage ?? "Unknown error";
 				VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent("Update check failed: {0}", err);
-				ReleaseNotesLabel.Visibility = Visibility.Collapsed;
-				ReleaseNotesTextBox.Visibility = Visibility.Collapsed;
-				SkipVersionCheckBox.Visibility = Visibility.Collapsed;
+				ReleaseNotesLabel.IsVisible = false;
+				ReleaseNotesTextBox.IsVisible = false;
+				SkipVersionCheckBox.IsVisible = false;
 				ShowSubmitButton = false;
 				StatusTextBlock.Text = "";
 				return;
@@ -103,9 +103,9 @@ namespace ForkPlus.UI.Dialogs
 				// 已是最新（附当前版本号）
 			VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent(
 				"You are using the latest version (v{0}).", info.CurrentVersion);
-				ReleaseNotesLabel.Visibility = Visibility.Collapsed;
-				ReleaseNotesTextBox.Visibility = Visibility.Collapsed;
-				SkipVersionCheckBox.Visibility = Visibility.Collapsed;
+				ReleaseNotesLabel.IsVisible = false;
+				ReleaseNotesTextBox.IsVisible = false;
+				SkipVersionCheckBox.IsVisible = false;
 				ShowSubmitButton = false;
 			}
 		}

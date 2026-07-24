@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.FormatCurrent("Push '{0}' to '{1}'", localBranch.Name, remote), delegate(JobMonitor monitor)
 			{
 				GitCommandResult pushResult = new PushGitCommand().Execute(repositoryUserControl.GitModule, remote, localBranch, null, null, pushAllTags, force, track, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{

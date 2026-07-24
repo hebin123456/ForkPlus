@@ -141,7 +141,7 @@ namespace ForkPlus.Accounts
 				GitServiceNotification[] result = list.ToArray();
 				if (!monitor.IsCanceled)
 				{
-					Services.ServiceLocator.Dispatcher.Post(delegate
+					Services.Dispatcher.UIThread.Post(delegate
 					{
 						AccountManager.Current.Save();
 						IsUpdating = false;
@@ -183,13 +183,13 @@ namespace ForkPlus.Accounts
 			if (toastNotificaton != null)
 			{
 				new Uri(toastNotificaton.Url).OpenInBrowser();
-				Services.ServiceLocator.Dispatcher.Post(delegate
+				Services.Dispatcher.UIThread.Post(delegate
 				{
 					UnsetUnread(toastNotificaton.ThreadId);
 				});
 				return;
 			}
-			Services.ServiceLocator.Dispatcher.Post(delegate
+			Services.Dispatcher.UIThread.Post(delegate
 			{
 				var windowManager = Services.ServiceLocator.WindowManager;
 				if (windowManager != null)

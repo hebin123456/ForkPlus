@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Dialogs
 				for (int i = 0; i < _remoteBranches.Length; i++)
 				{
 					RemoteBranch remoteBranch = _remoteBranches[i];
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, "Deleting '" + remoteBranch.Name + "'...");
 					});
@@ -90,7 +90,7 @@ namespace ForkPlus.UI.Dialogs
 					if (!removeRemoteBranchResult.Succeeded)
 					{
 						finalResult = removeRemoteBranchResult;
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(removeRemoteBranchResult);
 						});
@@ -103,7 +103,7 @@ namespace ForkPlus.UI.Dialogs
 						if (!removeTrackingReferenceResult.Succeeded)
 						{
 							finalResult = removeTrackingReferenceResult;
-							base.Dispatcher.Async(delegate
+							Dispatcher.UIThread.Async(delegate
 							{
 								Close(removeTrackingReferenceResult);
 							});
@@ -114,7 +114,7 @@ namespace ForkPlus.UI.Dialogs
 				gitModule.Settings.PinnedReferences = _references.PinnedReferences.Filter((string p) => !_remoteBranches.ContainsItem((RemoteBranch b) => b.FullReference == p)).ToArray();
 				gitModule.Settings.FilterReferences = _references.FilterReferences.Filter((string p) => !_remoteBranches.ContainsItem((RemoteBranch b) => b.FullReference == p)).ToArray();
 				gitModule.Settings.Save();
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					Close(GitCommandResult.Success());
 				});

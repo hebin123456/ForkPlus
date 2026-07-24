@@ -210,7 +210,7 @@ namespace ForkPlus.UI.Dialogs
 				if (removeWorktree && worktreeToRemove.HasValue)
 				{
 					Worktree valueOrDefault = worktreeToRemove.GetValueOrDefault();
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						SetStatus(ForkPlusDialogStatus.InProgress, Translate("Deleting worktree..."));
 					});
@@ -218,18 +218,18 @@ namespace ForkPlus.UI.Dialogs
 					if (!removeWorktreeResult.Succeeded)
 					{
 						finalResult = removeWorktreeResult;
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							Close(removeWorktreeResult);
 						});
 						return finalResult;
 					}
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						MainWindow.Instance.TabManager.CloseTab(worktreeToRemove.Value.Path);
 					});
 				}
-				base.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					SetStatus(ForkPlusDialogStatus.InProgress, Translate("Deleting..."));
 				});
@@ -237,7 +237,7 @@ namespace ForkPlus.UI.Dialogs
 				if (!removeLocalBranchResult.Succeeded)
 				{
 					finalResult = removeLocalBranchResult;
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(removeLocalBranchResult);
 					});
@@ -264,7 +264,7 @@ namespace ForkPlus.UI.Dialogs
 								if (remote != null)
 								{
 									string title = ((group.Value.Length > 1) ? string.Format(Translate("Deleting {0} remote branches..."), group.Value.Length) : string.Format(Translate("Deleting '{0}'..."), group.Value[0].Name));
-									base.Dispatcher.Async(delegate
+									Dispatcher.UIThread.Async(delegate
 									{
 										SetStatus(ForkPlusDialogStatus.InProgress, title);
 									});
@@ -287,7 +287,7 @@ namespace ForkPlus.UI.Dialogs
 							if (!removeRemoteBranchesResult.Succeeded)
 							{
 								finalResult = removeRemoteBranchesResult;
-								base.Dispatcher.Async(delegate
+								Dispatcher.UIThread.Async(delegate
 								{
 									Close(removeRemoteBranchesResult);
 								});
@@ -298,7 +298,7 @@ namespace ForkPlus.UI.Dialogs
 					gitModule.Settings.PinnedReferences = pinned.ToArray();
 					gitModule.Settings.FilterReferences = filtered.ToArray();
 					gitModule.Settings.Save();
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						Close(GitCommandResult.Success());
 					});

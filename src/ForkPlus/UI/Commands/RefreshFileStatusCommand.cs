@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(ServiceLocator.Localization.Current("Refresh working directory"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<RepositoryStatus> response = Execute(gitModule, repositoryData, oldRepositoryStatus, pathsToRefresh, commitUserControl.ShowIgnoredFiles, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!response.Succeeded)
 					{

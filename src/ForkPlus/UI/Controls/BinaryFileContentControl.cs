@@ -1,5 +1,5 @@
 // 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls。WPF Grid → Avalonia.Controls.Grid。
-// base.Children / base.Dispatcher.Async 在 Avalonia 下 API 兼容（Dispatcher 为 Avalonia.Threading.Dispatcher）。
+// base.Children / Dispatcher.UIThread.Async 在 Avalonia 下 API 兼容（Dispatcher 为 Avalonia.Threading.Dispatcher）。
 using System;
 using System.IO;
 using Avalonia.Controls;
@@ -165,14 +165,14 @@ namespace ForkPlus.UI.Controls
 				{
 					monitor.SetProgressAction(delegate
 					{
-						base.Dispatcher.Async(delegate
+						Dispatcher.UIThread.Async(delegate
 						{
 							progressCallback(monitor);
 						});
 					});
 					GitCommandResult<MemoryStream> imageDataResponse = new SmudgeLfsFileCommand().Execute(gitModule, lfsPointer, monitor);
 					monitor.SetProgressAction(null);
-					base.Dispatcher.Async(delegate
+					Dispatcher.UIThread.Async(delegate
 					{
 						if (!monitor.IsCanceled)
 						{

@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(Translate("Deinitialize Git LFS"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult deinitializeGitLfsResult = new GitLfsUninstallGitCommand().Execute(gitModule, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!deinitializeGitLfsResult.Succeeded)
 					{

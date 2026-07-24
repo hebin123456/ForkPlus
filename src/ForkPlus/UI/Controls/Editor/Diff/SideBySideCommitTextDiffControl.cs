@@ -187,7 +187,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_leftDiffCodeEditor.VisualPatch = old;
 			_rightDiffCodeEditor.Options.IndentationSize = tabWidth;
 			_rightDiffCodeEditor.VisualPatch = @new;
-			base.Dispatcher.Async(delegate
+			Dispatcher.UIThread.Async(delegate
 			{
 				PositionCache?.RestoreScrollPosition(_leftDiffCodeEditor, _rightDiffCodeEditor);
 			});

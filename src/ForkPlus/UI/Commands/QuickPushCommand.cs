@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Commands
 				bool push_PushAllTags = ForkPlusSettings.Default.Push_PushAllTags;
 				bool force = false;
 				GitCommandResult pushResult = new PushGitCommand().Execute(gitModule, remote.Name, localBranch, null, null, push_PushAllTags, force, track, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				Dispatcher.UIThread.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{

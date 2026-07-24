@@ -334,7 +334,7 @@ namespace ForkPlus.UI.Controls
 			{
 				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, DispatcherOperationCallback, object)
 				// → Avalonia Dispatcher.Async(Action)。NOTE(4.5): 验证 DispatcherPriority.Loaded 等价性。
-				base.Dispatcher.Async(() => OnFocusItem(node));
+				Dispatcher.UIThread.Async(() => OnFocusItem(node));
 			}
 		}
 
@@ -358,7 +358,7 @@ namespace ForkPlus.UI.Controls
 			{
 				ScrollIntoView((object)multiselectionTreeViewItem);
 				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, Action) → Avalonia Dispatcher.Async(Action)。
-				base.Dispatcher.Async(() => ScrollIntoView((object)node));
+				Dispatcher.UIThread.Async(() => ScrollIntoView((object)node));
 			}
 		}
 
