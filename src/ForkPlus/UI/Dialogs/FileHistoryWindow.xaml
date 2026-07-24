@@ -1,4 +1,25 @@
 <ui:CustomWindow xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls">
+  <ui:CustomWindow.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 DataTrigger。
+         当祖先 TreeViewControlItem.IsSelected=True 时设置 PathTextBlock/RevisionSubjectTextBlock/
+         AuthorDateTextBlock/ShaTextBlock.Foreground=ForegroundBrush.Light。
+         TreeViewControlItem 继承自 ListBoxItem，:selected 伪类等价于 WPF IsSelected=True。
+         RevisionSubjectTextBlock/PathTextBlock 是 AutoTooltipTextBlock (继承自 TextBlock)，用 TextBlock# 命中。
+         跨 DataTemplate 的同名元素（如 AuthorDateTextBlock 同时存在于 HistoryEntry 与 FolderHistory 模板）
+         在选中态时统一应用前景色，符合 WPF 行为。 -->
+    <Style Selector="TreeViewControlItem:selected TextBlock#PathTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="TreeViewControlItem:selected TextBlock#RevisionSubjectTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="TreeViewControlItem:selected TextBlock#ShaTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </ui:CustomWindow.Styles>
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
       <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:HistoryEntryViewModel}}" DataType="{x:Type dialogs:HistoryEntryViewModel}">
@@ -69,25 +90,6 @@
             </controls:AutoTooltipTextBlock.Text>
           </controls:AutoTooltipTextBlock>
         </Grid>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-          <DataTrigger Value="True">
-            <DataTrigger.Binding>
-              <Binding Path="IsSelected">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" />
-                </Binding.RelativeSource>
-              </Binding>
-            </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="RevisionSubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-          </DataTrigger>
-        </DataTemplate.Triggers> -->
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:FolderHistoryEntryViewModel}}" DataType="{x:Type dialogs:FolderHistoryEntryViewModel}">
         <Grid Height="18">
@@ -167,22 +169,6 @@
             </controls:AutoTooltipTextBlock.Text>
           </controls:AutoTooltipTextBlock>
         </Grid>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-          <DataTrigger Value="True">
-            <DataTrigger.Binding>
-              <Binding Path="IsSelected">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" />
-                </Binding.RelativeSource>
-              </Binding>
-            </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-          </DataTrigger>
-        </DataTemplate.Triggers> -->
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
