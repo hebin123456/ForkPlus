@@ -128,6 +128,15 @@
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- 阶段 5：Avalonia 11 的 XAML 编译器默认仅自动包含 *.axaml 文件。
+       本项目从 WPF 迁移而来，242 个视图/资源字典仍沿用 *.xaml 扩展名（仅 App.axaml 已改名）。
+       若不显式声明为 AvaloniaXaml，这些文件的代码生成（InitializeComponent、x:Name 字段）不会产出，
+       导致 ~5000 个 CS0103 “InitializeComponent/命名控件不存在” 编译错误。
+       *.xaml glob 不会匹配 *.axaml，App.axaml 不会被重复计入。 -->
+  <ItemGroup>
+    <AvaloniaXaml Include="**\*.xaml" />
+  </ItemGroup>
+
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
        Biturbo 仓库最新 release 拉取。Biturbo v1.1.0 起发布多平台 asset：
          Windows → biturbo.dll

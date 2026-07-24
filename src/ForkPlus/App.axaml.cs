@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -396,12 +397,18 @@ namespace ForkPlus
 				return;
 			}
 			_loggedVisualParentingFirstChanceException = true;
-			string activeWindow = Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive)?.GetType().FullName ?? "<none>";
-			IInputElement focusedInputElement = FocusManager.Instance?.Current;
+			// 阶段 5：Avalonia Application 无 Windows/MainWindow 属性，需经
+			// IClassicDesktopStyleApplicationLifetime 获取窗口列表。
+			Window activeWindowObj = GetDesktopWindows().FirstOrDefault((Window x) => x.IsActive);
+			string activeWindow = activeWindowObj?.GetType().FullName ?? "<none>";
+			// 阶段 5：Avalonia 无 FocusManager.Instance 单例；从活动窗口的 FocusManager 取焦点元素。
+			IInputElement focusedInputElement = activeWindowObj != null
+				? FocusManager.GetFocusManager(activeWindowObj)?.GetFocusedElement()
+				: null;
 			AvaloniaObject focusedAvaloniaObject = focusedInputElement as AvaloniaObject;
 			string focusedElement = DescribeInputElement(focusedInputElement);
 			string focusedElementAncestors = DescribeAncestors(focusedAvaloniaObject);
-			string scrollContentPresenterDiagnostics = DescribeScrollContentPresenters(Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive));
+			string scrollContentPresenterDiagnostics = DescribeScrollContentPresenters(activeWindowObj);
 			string stackTrace = new StackTrace(1, fNeedFileInfo: true).ToString();
 			Log.Warn("First-chance visual parenting exception" + Environment.NewLine + "ActiveWindow: " + activeWindow + Environment.NewLine + "FocusedElement: " + focusedElement + Environment.NewLine + "FocusedElementAncestors: " + focusedElementAncestors + Environment.NewLine + "ScrollContentPresenters:" + Environment.NewLine + scrollContentPresenterDiagnostics + Environment.NewLine + "CurrentStack:" + Environment.NewLine + stackTrace, e.Exception);
 		}
@@ -483,14 +490,36 @@ namespace ForkPlus
 			{
 				return null;
 			}
-			AvaloniaObject parent = (child as ILogical)?.LogicalParent;
-			if (parent != null)
+			// 阶段 5：ILogical.LogicalParent 返回 ILogical（非 AvaloniaObject），需转换。
+			ILogical logical = child as ILogical;
+			if (logical?.LogicalParent is AvaloniaObject logicalParentObj)
 			{
-				return parent;
+				return logicalParentObj;
 			}
-			if (child is IVisual)
+			// 阶段 5：Avalonia 11 移除 IVisual 接口，改用 Visual + VisualExtensions.GetVisualParent。
+			if (child is Visual visual)
 			{
-				return (child as IVisual)?.GetVisualParent();
+				return visual.GetVisualParent();
+			}
+			return null;
+		}
+
+		// 阶段 5：Avalonia Application 不再直接暴露 Windows/MainWindow，需经
+		// IClassicDesktopStyleApplicationLifetime 访问桌面窗口集合。
+		private static IEnumerable<Window> GetDesktopWindows()
+		{
+			if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				return desktop.Windows;
+			}
+			return Enumerable.Empty<Window>();
+		}
+
+		private static Window GetDesktopMainWindow()
+		{
+			if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				return desktop.MainWindow;
 			}
 			return null;
 		}
@@ -530,10 +559,16 @@ namespace ForkPlus
 				{
 					parts.Add("Scroll-like ContentPresenter " + VisualTreeAttachmentHelper.Describe(contentPresenter) + ", Content=" + DescribeObject(contentPresenter.Content) + ", ContentTemplate=" + DescribeObject(contentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(contentPresenter, 8));
 				}
-				int childrenCount = item.GetVisualChildren().Count();
-				for (int i = 0; i < childrenCount; i++)
+				// 阶段 5：GetVisualChildren() 是 Visual 的扩展方法（Avalonia.VisualTree），
+				// AvaloniaObject 无此方法，需先转 Visual。
+				if (!(item is Visual visualItem))
 				{
-					CollectScrollContentPresenterDiagnostics(item.GetVisualChildren().ElementAt(i), parts, depth + 1);
+					return;
+				}
+				List<Visual> children = visualItem.GetVisualChildren().ToList();
+				for (int i = 0; i < children.Count; i++)
+				{
+					CollectScrollContentPresenterDiagnostics(children[i], parts, depth + 1);
 				}
 			}
 			catch (Exception ex)
@@ -572,7 +607,7 @@ namespace ForkPlus
 		private void OnStartupLegacy()
 		{
 			ServiceLocator.Initialize(
-				dispatcher: new WpfDispatcher(Dispatcher.CurrentDispatcher),
+				dispatcher: new WpfDispatcher(Dispatcher.UIThread),
 				designMode: new WpfDesignModeService(),
 				appContext: new WpfAppContext(),
 				clipboard: new WpfClipboardService(),
@@ -712,17 +747,11 @@ namespace ForkPlus
 
 		private void SubscribeToUserPreferences()
 		{
+			// 阶段 5：Microsoft.Win32.SystemEvents 在 UseWPF=false 的 net10.0-windows 下不再隐式可用，
+			// 且该事件用于监听系统主题/配色变化。Avalonia 跨平台方案改由 NotificationCenter.ApplicationThemeChanged
+			// 统一处理主题切换；此 Windows 专属订阅暂置空，避免引入 SystemEvents 包依赖。
 			try
 			{
-				SystemEvents.UserPreferenceChanged += delegate(object s, UserPreferenceChangedEventArgs e)
-				{
-					Log.Info($"System event: UserPreferenceChanged ({e.Category})");
-					if (e.Category == UserPreferenceCategory.General)
-					{
-						RefreshWindowBorderBrush();
-						RefreshTheme();
-					}
-				};
 			}
 			catch (Exception ex)
 			{
@@ -732,7 +761,7 @@ namespace ForkPlus
 
 		private void RefreshTheme()
 		{
-			if (Application.Current.MainWindow != null)
+			if (GetDesktopMainWindow() != null)
 			{
 				SystemTheme systemTheme = GetSystemTheme();
 				if (systemTheme != _systemTheme)
@@ -750,7 +779,8 @@ namespace ForkPlus
 			ForkPlusSettings @default = ForkPlusSettings.Default;
 			if (!IsGitInstanceAvailable())
 			{
-				if (!new ConfigureGitInstanceWindow().ShowDialog().GetValueOrDefault())
+				// 阶段 5：Avalonia Window.ShowDialog() 必须传入 owner 窗口（WPF 可 0 参）。
+				if (!new ConfigureGitInstanceWindow().ShowDialog(GetDesktopMainWindow()).GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;
@@ -759,7 +789,7 @@ namespace ForkPlus
 			WarnIfGitVersionUnsupported(GitPath);
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
-				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
+				if (!new WelcomeWindow().ShowDialog(GetDesktopMainWindow()).GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;
@@ -956,7 +986,8 @@ namespace ForkPlus
 			else
 			{
 				string askPassResult = string.Empty;
-				Application.Current.Dispatcher.Sync(delegate
+				// 阶段 5：Avalonia Application 无 Dispatcher 属性，用 Dispatcher.UIThread。
+				Dispatcher.UIThread.Sync(delegate
 				{
 					ForkPlus.UI.MainWindow.Commands.ShowAskPassWindow.Execute(request, noPrompt, repositoryPath, out askPassResult);
 				});
@@ -986,17 +1017,18 @@ namespace ForkPlus
 					return;
 				}
 				string[] args = text2.Split(new string[1] { DefaultIpcPipe_StringSeparator }, StringSplitOptions.None);
-				base.Dispatcher.Sync(delegate
-				{
-					CliCommand.CreateCliCommand(args)?.Run(workingDirectory);
-				});
-				if (WriteStringToPipe(pipeServer, DefaultIpcPipe_Handled) != -1)
-				{
-					Log.Error("Cannot read cliRequest from pipe");
-				}
-				base.Dispatcher.Async(delegate
-				{
-					Window mainWindow = Application.Current.MainWindow;
+			// 阶段 5：Avalonia Application 无 Dispatcher 属性，用 Dispatcher.UIThread。
+			Dispatcher.UIThread.Sync(delegate
+			{
+				CliCommand.CreateCliCommand(args)?.Run(workingDirectory);
+			});
+			if (WriteStringToPipe(pipeServer, DefaultIpcPipe_Handled) != -1)
+			{
+				Log.Error("Cannot read cliRequest from pipe");
+			}
+			Dispatcher.UIThread.Async(delegate
+			{
+				Window mainWindow = GetDesktopMainWindow();
 					if (mainWindow != null)
 					{
 						mainWindow.Activate();

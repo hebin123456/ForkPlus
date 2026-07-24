@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -118,8 +119,8 @@ namespace ForkPlus.UI
 
 		private static AvaloniaObject GetParent(AvaloniaObject child)
 		{
-			// 阶段 4.5：WPF LogicalTreeHelper.GetParent + VisualTreeHelper.GetParent
-			// → Avalonia ILogical.GetLogicalParent + IVisual.GetVisualParent。
+			// 阶段 5：Avalonia 11 移除了 IVisual 接口，改用 Visual 类 +
+			// VisualExtensions.GetVisualParent() 扩展方法（命名空间 Avalonia.VisualTree）。
 			if (child is ILogical logical)
 			{
 				ILogical logicalParent = logical.GetLogicalParent();
@@ -128,12 +129,12 @@ namespace ForkPlus.UI
 					return logicalParentObj;
 				}
 			}
-			if (child is IVisual visual)
+			if (child is Visual visual)
 			{
-				IVisual visualParent = visual.GetVisualParent();
-				if (visualParent is AvaloniaObject visualParentObj)
+				Visual visualParent = visual.GetVisualParent();
+				if (visualParent != null)
 				{
-					return visualParentObj;
+					return visualParent;
 				}
 			}
 			return null;
