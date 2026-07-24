@@ -1,5 +1,7 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - SolidColorBrush 通过 using Avalonia.Media 自动解析
 using System.ComponentModel;
-using System.Windows.Media;
 using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls

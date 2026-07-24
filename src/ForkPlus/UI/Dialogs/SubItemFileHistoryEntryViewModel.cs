@@ -1,3 +1,6 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage
 using System.IO;
 using Avalonia.Media;
 using ForkPlus.Git;

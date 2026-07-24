@@ -1,3 +1,8 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.Media → using Avalonia.Media
+// - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging
+// - BitmapImage → Avalonia.Media.Imaging.Bitmap
+// - ImageSource → IImage
 using System;
 using System.IO;
 using Avalonia.Media;
@@ -26,7 +31,7 @@ namespace ForkPlus.UI.UserControls
 
 		public FileTreeItem FileTreeItem { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public override bool ShowExpander
 		{
@@ -72,4 +77,3 @@ namespace ForkPlus.UI.UserControls
 		}
 	}
 }
-
