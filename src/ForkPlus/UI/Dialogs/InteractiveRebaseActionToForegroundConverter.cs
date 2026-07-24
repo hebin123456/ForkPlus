@@ -1,13 +1,15 @@
 using System;
 using System.Globalization;
-using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Dialogs
 {
+	/// <summary>
+	/// 阶段 4.5：从 WPF <c>Application.Current.TryFindResource</c> 迁移到
+	/// <see cref="Theme.FindBrush"/> 门面（Avalonia 无 TryFindResource，使用 Resources.TryGetResource）。
+	/// </summary>
 	public class InteractiveRebaseActionToForegroundConverter : MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -15,14 +17,9 @@ namespace ForkPlus.UI.Dialogs
 			InteractiveRebaseAction interactiveRebaseAction = (InteractiveRebaseAction)value;
 			if (interactiveRebaseAction == InteractiveRebaseAction.Squash || interactiveRebaseAction == InteractiveRebaseAction.Fixup || interactiveRebaseAction == InteractiveRebaseAction.Drop)
 			{
-				// TODO(4.5-e): Avalonia's TryFindResource uses an out-parameter signature
-				// (bool TryFindResource(object key, out object value)) unlike WPF's object-returning overload.
-				Application.Current.TryFindResource("ForegroundBrush.Gray", out object grayBrush);
-				return grayBrush as Brush;
+				return Theme.FindBrush("ForegroundBrush.Gray");
 			}
-			// TODO(4.5-e): See above regarding Avalonia TryFindResource signature change.
-			Application.Current.TryFindResource("ForegroundBrush", out object foregroundBrush);
-			return foregroundBrush as Brush;
+			return Theme.FindBrush("ForegroundBrush");
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

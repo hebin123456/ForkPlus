@@ -16,8 +16,8 @@ namespace ForkPlus.UI.CircularProgressBar
 			double num4 = values[3].ExtractDouble();
 			if (new double[4] { num, num2, num3, num4 }.AnyNan())
 			{
-				// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingNotifications.DoNothing (skip target update).
-				return BindingNotifications.DoNothing;
+				// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingOperations.DoNothing (skip target update).
+				return BindingOperations.DoNothing;
 			}
 			if (values.Length == 5)
 			{

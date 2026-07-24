@@ -19,8 +19,8 @@ namespace ForkPlus.UI.CircularProgressBar
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingNotifications.DoNothing (skip target update).
-			return BindingNotifications.DoNothing;
+			// TODO(4.5-e): WPF Binding.DoNothing -> Avalonia BindingOperations.DoNothing (skip target update).
+			return BindingOperations.DoNothing;
 		}
 	}
 }
