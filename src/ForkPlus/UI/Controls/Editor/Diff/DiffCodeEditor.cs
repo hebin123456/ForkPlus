@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using ICSharpCode.AvalonEdit.Document;
@@ -71,7 +71,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffCodeEditor(DiffViewMode diffViewMode)
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// 阶段 4 里程碑 4.7-a：WPF SetResourceReference(StyleProperty, typeof(CodeEditor)) →
+			// 移除。Avalonia 通过 App.Styles 的类型选择器（Selector="controls:CodeEditor"）自动应用，
+			// 无需运行时资源引用。CodeEditor 的样式由 ControlTheme 在 Generic.axaml 中定义。
 			DiffViewMode = diffViewMode;
 			_backgroundColorizer = new DiffBackgroundColorizer();
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);
@@ -81,13 +83,16 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			base.TextArea.TextView.LineTransformers.Add(_syntaxHighlighting);
 			_diffLineNumberMargin = new DiffLineNumberMargin(diffViewMode);
 			base.TextArea.LeftMargins.Add(_diffLineNumberMargin);
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DisableSyntaxHighlightingChanged", DisableSyntaxHighlightingChanged);
+			// 阶段 4 里程碑 4.7-a：WeakEventManager → 直接事件订阅。阶段 6 改用 WeakEvent。
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
+			NotificationCenter.Current.DisableSyntaxHighlightingChanged += DisableSyntaxHighlightingChanged;
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		// 阶段 4 里程碑 4.7-a：WPF OnRenderSizeChanged(SizeChangedInfo) → Avalonia Layoutable.OnSizeChanged。
+		// Avalonia 无 OnRenderSizeChanged 虚方法；Layoutable.OnSizeChanged 在 Bounds 改变时触发。
+		protected override void OnSizeChanged(SizeChangedEventArgs e)
 		{
-			base.OnRenderSizeChanged(sizeInfo);
+			base.OnSizeChanged(e);
 			RefreshScrollbarMap();
 		}
 
