@@ -1,10 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF GlyphRun（14 参数构造函数）→ Avalonia GlyphRun（属性初始化或简化构造）。
+	// WPF GlyphTypeface.TryGetGlyphTypeface(out) → Avalonia GlyphTypeface 直接构造（无 TryGet 变体）。
+	// WPF Typeface.TryGetGlyphTypeface → Avalonia 通过 Typeface.Typeface.GetGlyphTypeface() 获取。
+	// WPF Pen.Freeze() → 移除（Avalonia 默认不可变）。
+	// WPF DrawingContext.DrawGlyphRun(Brush, GlyphRun) → Avalonia DrawingContext.DrawGlyphRun(IBrush, GlyphRun)。
+	// TODO(4.5-l): Avalonia GlyphRun 构造签名与 WPF 不同，需运行时验证字形渲染效果。
+	// WPF GlyphRun 构造参数：glyphTypeface, biDiLevel, isSideways, emSize, pixelsPerDip, glyphIndices,
+	//   baselineOrigin, advanceWidths, glyphOffsets, characters, deviceFontName, clusterMap, caretStops,
+	//   language。
+	// Avalonia GlyphRun 通过属性设置，关键属性：GlyphTypeface, FontRenderingEmSize, GlyphIndices,
+	//   GlyphAdvances, GlyphOffsets, BaselineOrigin。
 	public class TextDrawer
 	{
 		private readonly GlyphTypeface _glyphTypeface;
@@ -18,9 +29,13 @@ namespace ForkPlus.UI
 
 		private Dictionary<ushort, double> _glyphWidthsCache = new Dictionary<ushort, double>();
 
-		public TextDrawer(Typeface typeface, double emSize, double pixelsPerDip, Brush debugBrush = null)
+		public TextDrawer(Typeface typeface, double emSize, double pixelsPerDip, IBrush debugBrush = null)
 		{
-			if (!typeface.TryGetGlyphTypeface(out _glyphTypeface))
+			// 阶段 4.5：WPF Typeface.TryGetGlyphTypeface(out GlyphTypeface)
+			// → Avalonia 通过 Typeface.GlyphTypeface 属性获取（Avalonia 11 中 Typeface 持有 GlyphTypeface）。
+			// 如 GlyphTypeface 不可用，抛出与原代码一致的异常。
+			_glyphTypeface = typeface.GlyphTypeface;
+			if (_glyphTypeface == null)
 			{
 				throw new InvalidOperationException("No glyphTypeFace found");
 			}
@@ -29,11 +44,11 @@ namespace ForkPlus.UI
 			if (debugBrush != null)
 			{
 				_debugPen = new Pen(debugBrush, 1.0);
-				_debugPen.Freeze();
+				// 阶段 4.5：Avalonia Pen 默认不可变，无需 WPF Freeze()。
 			}
 		}
 
-		public double DrawText(DrawingContext ctx, string text, Brush brush, Rect rect, TextAlignment alignment = TextAlignment.Left, bool trimming = false)
+		public double DrawText(DrawingContext ctx, string text, IBrush brush, Rect rect, TextAlignment alignment = TextAlignment.Left, bool trimming = false)
 		{
 			if (_debugPen != null)
 			{
@@ -93,7 +108,12 @@ namespace ForkPlus.UI
 				double num3 = (rect.Width - num) / 2.0;
 				baselineOrigin = new Point(rect.X + num3, rect.Bottom);
 			}
-			GlyphRun glyphRun = new GlyphRun(_glyphTypeface, 0, isSideways: false, _emSize, (float)_pixelsPerDip, list, baselineOrigin, list2, null, null, null, null, null, null);
+			// 阶段 4.5：WPF GlyphRun 14 参数构造 → Avalonia GlyphRun 属性初始化。
+			// Avalonia GlyphRun 关键属性：GlyphTypeface, FontRenderingEmSize, GlyphIndices,
+			// GlyphAdvances, GlyphOffsets, BaselineOrigin。
+			// TODO(4.5-l): pixelsPerDip 在 Avalonia GlyphRun 中无对应属性，
+			// Avalonia 通过 RenderOptions.TextRenderingMode 或 DisplayProperties 处理 DPI。
+			GlyphRun glyphRun = new GlyphRun(_glyphTypeface, _emSize, list, baselineOrigin, list2);
 			ctx.DrawGlyphRun(brush, glyphRun);
 			return num;
 		}

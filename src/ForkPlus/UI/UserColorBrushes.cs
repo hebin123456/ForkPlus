@@ -1,8 +1,11 @@
 using System.Collections.Generic;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF System.Windows.Media.Color/SolidColorBrush → Avalonia.Media.Color/SolidColorBrush。
+	// WPF Colors.White/Colors.Black → Avalonia Colors.White/Colors.Black（同名同值）。
+	// WPF SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变，无需冻结）。
 	internal class UserColorBrushes
 	{
 		private static readonly SolidColorBrush[] _userBorderBrushesLight;
@@ -60,7 +63,7 @@ namespace ForkPlus.UI
 				for (int j = 0; j < userBorderColors.Length; j++)
 				{
 					SolidColorBrush solidColorBrush = CreateBrush(userBorderColors[j], blendColor, opacity);
-					solidColorBrush.Freeze();
+					// 阶段 4.5：Avalonia 画刷默认不可变，无需 WPF Freeze()。
 					list.Add(solidColorBrush);
 				}
 			}
