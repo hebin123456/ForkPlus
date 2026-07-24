@@ -1,5 +1,6 @@
-<dialogs:ForkPlusDialogWindow Width="1000" Height="400" xmlns:local="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.EditCustomCommandUIControlsWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<!-- 已从 WPF 迁移到 Avalonia：根元素添加 xmlns="https://github.com/avaloniaui"；删除 Grid 及子控件上的重复 xmlns / xmlns:x 声明；移除 RenderOptions.ClearTypeHint 属性。 -->
+<dialogs:ForkPlusDialogWindow Width="1000" Height="400" xmlns:local="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.EditCustomCommandUIControlsWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns="https://github.com/avaloniaui">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />
       <ColumnDefinition />
@@ -20,7 +21,7 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="23" />
         </Grid.RowDefinitions>
-        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" Style="{DynamicResource {x:Type ListBox}}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ControlsListBox">
+        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" Style="{DynamicResource {x:Type ListBox}}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemContainerStyle>
             <Style TargetType="{x:Type local:DragAndDropListBoxItem}" BasedOn="{StaticResource ListBoxItemWithBorderStyle}">
               <Setter Property="UIElement.AllowDrop" Value="True" />
@@ -81,7 +82,7 @@
         </local:DragAndDropListBox>
         <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
           <StackPanel Orientation="Horizontal">
-            <controls:DropDownButton Margin="-1,-1,0,-1" Style="{DynamicResource InlineToggleButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AddCustomCommandUIControlDropDownButton">
+            <controls:DropDownButton Margin="-1,-1,0,-1" Style="{DynamicResource InlineToggleButton}" x:Name="AddCustomCommandUIControlDropDownButton">
               <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
               <controls:DropDownButton.ContextMenu>
                 <ContextMenu>
@@ -100,13 +101,13 @@
                 </ContextMenu>
               </controls:DropDownButton.ContextMenu>
             </controls:DropDownButton>
-            <Button Style="{DynamicResource InlineButton}" Margin="0,-1,0,-1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
+            <Button Style="{DynamicResource InlineButton}" Margin="0,-1,0,-1" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
               <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
             </Button>
           </StackPanel>
         </Border>
       </Grid>
-      <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" RenderOptions.ClearTypeHint="Enabled" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}">
+      <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -125,7 +126,7 @@
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Control Type:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-            <ComboBox Grid.Row="0" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="ControlTypeComboBox_SelectionChanged" x:Name="ControlTypeComboBox">
+            <ComboBox Grid.Row="0" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Stretch" SelectionChanged="ControlTypeComboBox_SelectionChanged" x:Name="ControlTypeComboBox">
               <ComboBoxItem x:Name="TextBoxComboBoxItem">
                 <TextBlock Text="Text Box" FontSize="13" />
               </ComboBoxItem>
@@ -136,8 +137,8 @@
                 <TextBlock Text="Check Box" FontSize="13" />
               </ComboBoxItem>
             </ComboBox>
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Text Box Type:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TextBoxTypeTextBlock" />
-            <ComboBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="TextBoxTypeComboBox_SelectionChanged" x:Name="TextBoxTypeComboBox">
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Text Box Type:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="TextBoxTypeTextBlock" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Stretch" SelectionChanged="TextBoxTypeComboBox_SelectionChanged" x:Name="TextBoxTypeComboBox">
               <ComboBoxItem x:Name="GenericComboBoxItem">
                 <TextBlock Text="Generic" FontSize="13" />
               </ComboBoxItem>
@@ -146,8 +147,8 @@
               </ComboBoxItem>
             </ComboBox>
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Title:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
-            <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Control Title" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TitleTextBox" />
-            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="GenericTextBoxControlsContainer">
+            <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Control Title" x:Name="TitleTextBox" />
+            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" x:Name="GenericTextBoxControlsContainer">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110" />
                 <ColumnDefinition Width="*" />
@@ -162,7 +163,7 @@
               <TextBlock Grid.Row="1" Grid.Column="0" Text="Placeholder:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
               <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Placeholder Text (optional)" x:Name="GenericPlaceholderTextBox" />
             </Grid>
-            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="PathTextBoxControlsContainer">
+            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" x:Name="PathTextBoxControlsContainer">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110" />
                 <ColumnDefinition Width="*" />
@@ -191,7 +192,7 @@
               <TextBlock Grid.Row="2" Grid.Column="0" Text="File Name:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="FileNameTextBlock" />
               <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="File Name (optional)" x:Name="FileNameTextBox" />
             </Grid>
-            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DropdownControlsContainer">
+            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" x:Name="DropdownControlsContainer">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110" />
                 <ColumnDefinition Width="*" />
@@ -203,7 +204,7 @@
               <TextBlock Grid.Row="0" Grid.Column="0" Text="Filter:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
               <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Full reference filter (e.g. 'refs/heads/')" x:Name="DropdownFilterTextBox" />
             </Grid>
-            <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CheckBoxControlsContainer">
+            <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" x:Name="CheckBoxControlsContainer">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110" />
                 <ColumnDefinition Width="*" />
@@ -223,12 +224,12 @@
           </Grid>
           <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
             <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">
-              <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DescriptionTextBlock" />
+              <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
             </ScrollViewer>
           </Border>
         </Grid>
       </Border>
-      <uc:FallbackUserControl Margin="10,0,2,0" Grid.Column="1" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FallbackUserControl" />
+      <uc:FallbackUserControl Margin="10,0,2,0" Grid.Column="1" Visibility="Collapsed" x:Name="FallbackUserControl" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

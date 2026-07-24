@@ -1,5 +1,6 @@
-<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionChangesUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid ClipToBounds="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="ContainerGrid">
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; RenderOptions.ClearTypeHint attribute removed. -->
+<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionChangesUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid ClipToBounds="True" x:Name="ContainerGrid">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -34,7 +35,7 @@
         <ContextMenu />
       </userControls:FileListUserControl.ContextMenu>
     </userControls:FileListUserControl>
-    <controls:FileDiffControl Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Background="{DynamicResource BackgroundBrush}" RenderOptions.ClearTypeHint="Enabled" x:Name="FileDiffControl" />
+    <controls:FileDiffControl Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileDiffControl" />
     <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Style="{DynamicResource VerticalGridSplitter}" HorizontalAlignment="Right" x:Name="GridSplitter" />
   </Grid>
 </UserControl>

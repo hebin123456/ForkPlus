@@ -1,27 +1,31 @@
-<TabItem Margin="10" Padding="0" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ServiceTabItem" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（clr-namespace / presentation）
+     - <Grid.Children> 展开为直接子元素
+     - ModernTabControl/PullRequestsTabItem/IssuesTabItem 改用前缀（controls:/fuu:）
+     -->
+<TabItem Margin="10" Padding="0" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls" x:Class="ForkPlus.UI.UserControls.ServiceTabItem">
   <Grid>
-    <Grid.Children>
-      <ModernTabControl SelectionChanged="TabControl_SelectionChanged" Margin="0,-3,0,0" Padding="0" xmlns="clr-namespace:ForkPlus.UI.Controls">
-        <ModernTabControl.Background>
-          <DynamicResource ResourceKey="Sidebar.Static.Background" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </ModernTabControl.Background>
-        <PullRequestsTabItem Header="Pull Requests" xmlns="clr-namespace:ForkPlus.UI.UserControls" x:Name="PullRequestsTabItem">
-          <PullRequestsTabItem.Style>
-            <DynamicResource ResourceKey="ModernTabControlTabItemStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-          </PullRequestsTabItem.Style>
-          <PullRequestsTabItem.Background>
-            <DynamicResource ResourceKey="Sidebar.Static.Background" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-          </PullRequestsTabItem.Background>
-        </PullRequestsTabItem>
-        <IssuesTabItem Header="Issues" xmlns="clr-namespace:ForkPlus.UI.UserControls" x:Name="IssuesTabItem">
-          <IssuesTabItem.Style>
-            <DynamicResource ResourceKey="ModernTabControlTabItemStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-          </IssuesTabItem.Style>
-          <IssuesTabItem.Background>
-            <DynamicResource ResourceKey="Sidebar.Static.Background" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-          </IssuesTabItem.Background>
-        </IssuesTabItem>
-      </ModernTabControl>
-    </Grid.Children>
+    <controls:ModernTabControl SelectionChanged="TabControl_SelectionChanged" Margin="0,-3,0,0" Padding="0">
+      <controls:ModernTabControl.Background>
+        <DynamicResource ResourceKey="Sidebar.Static.Background" />
+      </controls:ModernTabControl.Background>
+      <fuu:PullRequestsTabItem Header="Pull Requests" x:Name="PullRequestsTabItem">
+        <fuu:PullRequestsTabItem.Style>
+          <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
+        </fuu:PullRequestsTabItem.Style>
+        <fuu:PullRequestsTabItem.Background>
+          <DynamicResource ResourceKey="Sidebar.Static.Background" />
+        </fuu:PullRequestsTabItem.Background>
+      </fuu:PullRequestsTabItem>
+      <fuu:IssuesTabItem Header="Issues" x:Name="IssuesTabItem">
+        <fuu:IssuesTabItem.Style>
+          <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
+        </fuu:IssuesTabItem.Style>
+        <fuu:IssuesTabItem.Background>
+          <DynamicResource ResourceKey="Sidebar.Static.Background" />
+        </fuu:IssuesTabItem.Background>
+      </fuu:IssuesTabItem>
+    </controls:ModernTabControl>
   </Grid>
 </TabItem>

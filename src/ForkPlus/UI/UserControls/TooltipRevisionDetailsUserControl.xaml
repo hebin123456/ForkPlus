@@ -1,97 +1,86 @@
-<UserControl FontFamily="Segoe UI Variable Display" MaxWidth="700" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.TooltipRevisionDetailsUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; Border.Child/Grid.Children/StackPanel.Children property elements expanded into direct content; RenderOptions.ClearTypeHint removed. -->
+<UserControl FontFamily="Segoe UI Variable Display" MaxWidth="700" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.TooltipRevisionDetailsUserControl">
   <Border>
     <Border.Style>
-      <DynamicResource ResourceKey="MenuShadowBorderStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <DynamicResource ResourceKey="MenuShadowBorderStyle" />
     </Border.Style>
-    <Border.Child>
-      <Border BorderThickness="1">
-        <Border.BorderBrush>
-          <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </Border.BorderBrush>
-        <Border.Background>
-          <DynamicResource ResourceKey="BackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </Border.Background>
-        <Border.CornerRadius>6</Border.CornerRadius>
-        <Border.Padding>15,13,15,13</Border.Padding>
-        <Border.Child>
-          <Grid>
-            <Grid.Children>
-              <Grid x:Name="DetailsContainer">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.Children>
-                  <Grid Grid.Row="0" RenderOptions.ClearTypeHint="Enabled">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.Children>
-                      <controls:AvatarImage Grid.Column="0" HorizontalAlignment="Left" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" x:Name="AuthorAvatarImage" />
-                      <controls:SelectableTextBlock Grid.Column="1" Margin="0,0,5,0" FontSize="13" FontWeight="Medium" x:Name="AuthorTextBlock">
-                        <TextBlock.Foreground>
-                          <DynamicResource ResourceKey="LabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </TextBlock.Foreground>
-                      </controls:SelectableTextBlock>
-                      <controls:SelectableTextBlock Grid.Column="2" Margin="0,1,10,0" FontSize="12" x:Name="AuthorDateTextBlock">
-                        <TextBlock.Foreground>
-                          <DynamicResource ResourceKey="SecondaryLabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </TextBlock.Foreground>
-                      </controls:SelectableTextBlock>
-                      <StackPanel Orientation="Horizontal" Grid.Column="4" HorizontalAlignment="Right">
-                        <StackPanel.Children>
-                          <controls:SelectableTextBlock Margin="0,1,4,0" FontSize="12" x:Name="ShaTextBlock">
-                            <TextBlock.Foreground>
-                              <DynamicResource ResourceKey="SecondaryLabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                            </TextBlock.Foreground>
-                          </controls:SelectableTextBlock>
-                          <Button Width="16" Height="16" Padding="0" Margin="0,0,0,0" VerticalAlignment="Center" BorderThickness="0" Click="ShowRevisionInSeparateWindowButton_Click" x:Name="ShowRevisionInSeparateWindowButton">
-                            <Button.Background>
-                              <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#00FFFFFF</SolidColorBrush>
-                            </Button.Background>
-                            <ToolTipService.ToolTip>Open in separate window</ToolTipService.ToolTip>
-                            <Button.Style>
-                              <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                            </Button.Style>
-                            <Image>
-                              <Image.Source>
-                                <DynamicResource ResourceKey="OpenInSeparateWindowIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                              </Image.Source>
-                              <Image.Height>14</Image.Height>
-                              <Image.Width>14</Image.Width>
-                            </Image>
-                          </Button>
-                        </StackPanel.Children>
-                      </StackPanel>
-                    </Grid.Children>
-                  </Grid>
-                  <controls:ReferencePanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" FontSize="12" x:Name="ReferencePanel">
-                    <controls:ReferencePanel.Style>
-                      <DynamicResource ResourceKey="MultilineReferencePanelStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </controls:ReferencePanel.Style>
-                  </controls:ReferencePanel>
-                  <controls:SelectableTextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="14" FontWeight="Medium" x:Name="SubjectTextBlock">
-                    <TextBlock.Foreground>
-                      <DynamicResource ResourceKey="LabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                    </TextBlock.Foreground>
-                    <TextBlock.TextTrimming>CharacterEllipsis</TextBlock.TextTrimming>
-                  </controls:SelectableTextBlock>
-                </Grid.Children>
-              </Grid>
-              <TextBlock TextAlignment="Center" Text="Not available" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="FallbackMessageTextBlock">
+    <Border BorderThickness="1">
+      <Border.BorderBrush>
+        <DynamicResource ResourceKey="BorderBrush" />
+      </Border.BorderBrush>
+      <Border.Background>
+        <DynamicResource ResourceKey="BackgroundBrush" />
+      </Border.Background>
+      <Border.CornerRadius>6</Border.CornerRadius>
+      <Border.Padding>15,13,15,13</Border.Padding>
+      <Grid>
+        <Grid x:Name="DetailsContainer">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <controls:AvatarImage Grid.Column="0" HorizontalAlignment="Left" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" x:Name="AuthorAvatarImage" />
+            <controls:SelectableTextBlock Grid.Column="1" Margin="0,0,5,0" FontSize="13" FontWeight="Medium" x:Name="AuthorTextBlock">
+              <TextBlock.Foreground>
+                <DynamicResource ResourceKey="LabelBrush" />
+              </TextBlock.Foreground>
+            </controls:SelectableTextBlock>
+            <controls:SelectableTextBlock Grid.Column="2" Margin="0,1,10,0" FontSize="12" x:Name="AuthorDateTextBlock">
+              <TextBlock.Foreground>
+                <DynamicResource ResourceKey="SecondaryLabelBrush" />
+              </TextBlock.Foreground>
+            </controls:SelectableTextBlock>
+            <StackPanel Orientation="Horizontal" Grid.Column="4" HorizontalAlignment="Right">
+              <controls:SelectableTextBlock Margin="0,1,4,0" FontSize="12" x:Name="ShaTextBlock">
                 <TextBlock.Foreground>
-                  <DynamicResource ResourceKey="SecondaryLabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  <DynamicResource ResourceKey="SecondaryLabelBrush" />
                 </TextBlock.Foreground>
-              </TextBlock>
-            </Grid.Children>
+              </controls:SelectableTextBlock>
+              <Button Width="16" Height="16" Padding="0" Margin="0,0,0,0" VerticalAlignment="Center" BorderThickness="0" Click="ShowRevisionInSeparateWindowButton_Click" x:Name="ShowRevisionInSeparateWindowButton">
+                <Button.Background>
+                  <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                </Button.Background>
+                <ToolTipService.ToolTip>Open in separate window</ToolTipService.ToolTip>
+                <Button.Style>
+                  <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" />
+                </Button.Style>
+                <Image>
+                  <Image.Source>
+                    <DynamicResource ResourceKey="OpenInSeparateWindowIcon" />
+                  </Image.Source>
+                  <Image.Height>14</Image.Height>
+                  <Image.Width>14</Image.Width>
+                </Image>
+              </Button>
+            </StackPanel>
           </Grid>
-        </Border.Child>
-      </Border>
-    </Border.Child>
+          <controls:ReferencePanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" FontSize="12" x:Name="ReferencePanel">
+            <controls:ReferencePanel.Style>
+              <DynamicResource ResourceKey="MultilineReferencePanelStyle" />
+            </controls:ReferencePanel.Style>
+          </controls:ReferencePanel>
+          <controls:SelectableTextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="14" FontWeight="Medium" x:Name="SubjectTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="LabelBrush" />
+            </TextBlock.Foreground>
+            <TextBlock.TextTrimming>CharacterEllipsis</TextBlock.TextTrimming>
+          </controls:SelectableTextBlock>
+        </Grid>
+        <TextBlock TextAlignment="Center" Text="Not available" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="FallbackMessageTextBlock">
+          <TextBlock.Foreground>
+            <DynamicResource ResourceKey="SecondaryLabelBrush" />
+          </TextBlock.Foreground>
+        </TextBlock>
+      </Grid>
+    </Border>
   </Border>
 </UserControl>

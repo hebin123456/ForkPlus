@@ -1,49 +1,46 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.NotificationBarUserControl">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（presentation）
+     - <Border.Child>/<Grid.Children>/<StackPanel.Children> 展开为直接子元素
+     -->
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.NotificationBarUserControl">
   <Border>
     <Border.BorderBrush>
-      <DynamicResource ResourceKey="BorderBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <DynamicResource ResourceKey="BorderBrush" />
     </Border.BorderBrush>
     <Border.Background>
-      <DynamicResource ResourceKey="BackgroundBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <DynamicResource ResourceKey="BackgroundBrush" />
     </Border.Background>
     <Border.BorderThickness>0,0,0,1</Border.BorderThickness>
     <Border.Height>0</Border.Height>
     <Border.Style>
-      <StaticResource ResourceKey="NotificationBarBorder" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <StaticResource ResourceKey="NotificationBarBorder" />
     </Border.Style>
-    <Border.Child>
-      <Grid>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Margin="5,4,5,4" Width="18" Height="Auto" VerticalAlignment="Center" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+      <TextBlock Grid.Column="1" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="14" x:Name="NotificationTextBlock" />
+      <Grid Grid.Column="1" Visibility="Collapsed" x:Name="RebaseContainer">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
-          <ColumnDefinition />
           <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid.Children>
-          <Image Grid.Column="0" Margin="5,4,5,4" Width="18" Height="Auto" VerticalAlignment="Center" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
-          <TextBlock Grid.Column="1" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="14" x:Name="NotificationTextBlock" />
-          <Grid Grid.Column="1" Visibility="Collapsed" x:Name="RebaseContainer">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.Children>
-              <TextBlock Grid.Column="0" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="13" x:Name="RebaseNotificationTextBlock" />
-              <ProgressBar Grid.Column="1" Height="5" Margin="8,8,0,4" Width="100" x:Name="RebaseProgressBar" />
-              <TextBlock Grid.Column="2" Margin="14,4,0,4" VerticalAlignment="Center" FontSize="13" x:Name="RebaseAdditionalNotificationTextBlock" />
-            </Grid.Children>
-          </Grid>
-          <StackPanel Grid.Column="2" Margin="0,0,6,0" Orientation="Horizontal">
-            <StackPanel.Children>
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button1" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button2" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button3" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="AbortButton">Abort</Button>
-            </StackPanel.Children>
-          </StackPanel>
-        </Grid.Children>
+        <TextBlock Grid.Column="0" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="13" x:Name="RebaseNotificationTextBlock" />
+        <ProgressBar Grid.Column="1" Height="5" Margin="8,8,0,4" Width="100" x:Name="RebaseProgressBar" />
+        <TextBlock Grid.Column="2" Margin="14,4,0,4" VerticalAlignment="Center" FontSize="13" x:Name="RebaseAdditionalNotificationTextBlock" />
       </Grid>
-    </Border.Child>
+      <StackPanel Grid.Column="2" Margin="0,0,6,0" Orientation="Horizontal">
+        <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button1" />
+        <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button2" />
+        <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="Button3" />
+        <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" x:Name="AbortButton">Abort</Button>
+      </StackPanel>
+    </Grid>
   </Border>
 </UserControl>

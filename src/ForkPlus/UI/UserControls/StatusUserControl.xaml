@@ -1,138 +1,125 @@
-<UserControl Width="300" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatusUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除子元素 / SolidColorBrush / ToggleButton / Popup / Button / Grid 上的重复 xmlns 声明；展开 Border.Child / Grid.Children 属性元素语法；事件名按规则保留。 -->
+<UserControl Width="300" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatusUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <Border>
     <Border.Background>
-      <DynamicResource ResourceKey="StatusBar.Background" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+      <DynamicResource ResourceKey="StatusBar.Background" />
     </Border.Background>
     <Border.CornerRadius>3</Border.CornerRadius>
-    <Border.Child>
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition MinWidth="20" Width="Auto" />
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition MinWidth="20" Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="18" />
-          <RowDefinition Height="16" />
-          <RowDefinition Height="2" />
-        </Grid.RowDefinitions>
-        <Grid.Children>
-          <Grid Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,2" ClipToBounds="True">
-            <Grid.Children>
-              <Grid Height="32" Margin="0,-8,0,-8" VerticalAlignment="Stretch" HorizontalAlignment="Center" x:Name="TitleContainer">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="16" />
-                  <RowDefinition Height="16" />
-                </Grid.RowDefinitions>
-                <Grid.Children>
-                  <Grid Grid.Row="0" HorizontalAlignment="Center" x:Name="SecondaryTitleGrid">
-                    <Grid.Children>
-                      <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
-                        <ProgressBar.Style>
-                          <DynamicResource ResourceKey="CircularProgressBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </ProgressBar.Style>
-                        <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
-                      </ProgressBar>
-                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="SecondaryTitleTextBlock">
-                        <TextBlock.Foreground>
-                          <DynamicResource ResourceKey="LabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </TextBlock.Foreground>
-                      </TextBlock>
-                    </Grid.Children>
-                  </Grid>
-                  <Grid Grid.Row="1" HorizontalAlignment="Center" x:Name="TitleGrid">
-                    <Grid.Children>
-                      <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
-                        <ProgressBar.Style>
-                          <DynamicResource ResourceKey="CircularProgressBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </ProgressBar.Style>
-                        <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
-                      </ProgressBar>
-                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="TitleTextBlock">
-                        <TextBlock.Foreground>
-                          <DynamicResource ResourceKey="LabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                        </TextBlock.Foreground>
-                      </TextBlock>
-                    </Grid.Children>
-                  </Grid>
-                </Grid.Children>
-                <Grid.RenderTransform>
-                  <TranslateTransform x:Name="TitleContainerTranslateTransform" Y="-8" />
-                </Grid.RenderTransform>
-              </Grid>
-            </Grid.Children>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition MinWidth="20" Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition MinWidth="20" Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="18" />
+        <RowDefinition Height="16" />
+        <RowDefinition Height="2" />
+      </Grid.RowDefinitions>
+      <Grid Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,2" ClipToBounds="True">
+        <Grid Height="32" Margin="0,-8,0,-8" VerticalAlignment="Stretch" HorizontalAlignment="Center" x:Name="TitleContainer">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="16" />
+            <RowDefinition Height="16" />
+          </Grid.RowDefinitions>
+          <Grid Grid.Row="0" HorizontalAlignment="Center" x:Name="SecondaryTitleGrid">
+            <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
+              <ProgressBar.Style>
+                <DynamicResource ResourceKey="CircularProgressBar" />
+              </ProgressBar.Style>
+              <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
+            </ProgressBar>
+            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="SecondaryTitleTextBlock">
+              <TextBlock.Foreground>
+                <DynamicResource ResourceKey="LabelBrush" />
+              </TextBlock.Foreground>
+            </TextBlock>
           </Grid>
-          <Button Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="0,8,4,0" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Center" Height="16" Width="16" BorderThickness="0" Click="CancelButton_Click" x:Name="CancelButton">
-            <Button.Background>
-              <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#00FFFFFF</SolidColorBrush>
-            </Button.Background>
-            <Button.Visibility>Collapsed</Button.Visibility>
-            <Button.Style>
-              <DynamicResource ResourceKey="InlineButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-            </Button.Style>
-            <Image>
-              <Image.Source>
-                <DynamicResource ResourceKey="CancelJobIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-              </Image.Source>
-            </Image>
-          </Button>
-          <controls:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
-            <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTipService.ToolTip="Activity Manager" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="ShowActivityManagerToggleButton">
-              <ToggleButton.Style>
-                <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-              </ToggleButton.Style>
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
-              <Image>
-                <Image.Source>
-                  <DynamicResource ResourceKey="ListIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                </Image.Source>
-              </Image>
-            </ToggleButton>
-            <Popup StaysOpen="False" AllowsTransparency="true" HorizontalOffset="-370" UseLayoutRounding="False" PopupAnimation="Slide" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="ActivityManagerPopup">
-              <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
-            </Popup>
-            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Click="FilterButton_Click" x:Name="FilterButton">
-              <Button.Style>
-                <DynamicResource ResourceKey="BranchOptionButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-              </Button.Style>
-              <Image x:Name="FilterButtonImage">
-                <Image.Source>
-                  <DynamicResource ResourceKey="BranchFilterOffIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                </Image.Source>
-              </Image>
-            </Button>
-            <Grid HorizontalAlignment="Left" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-              <Grid.Children>
-                <Image Margin="0" Width="12" Height="12" x:Name="DescriptionIcon">
-                  <Image.Source>
-                    <DynamicResource ResourceKey="BranchIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                  </Image.Source>
-                  <Image.Visibility>Collapsed</Image.Visibility>
-                  <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
-                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
-                  <ToolTipService.ToolTip>Cancel</ToolTipService.ToolTip>
-                </Image>
-                <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" MouseUp="DescriptionTextBlock_MouseUp" x:Name="DescriptionTextBlock">
-                  <TextBlock.Foreground>
-                    <DynamicResource ResourceKey="LabelBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-                  </TextBlock.Foreground>
-                  <TextBlock.FontSize>12</TextBlock.FontSize>
-                </TextBlock>
-              </Grid.Children>
-            </Grid>
-          </controls:CenteredDockPanel>
-          <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Margin="0" Visibility="Visible" x:Name="StatusProgressBar">
-            <ProgressBar.Foreground>
-              <DynamicResource ResourceKey="SystemAccentBrush" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-            </ProgressBar.Foreground>
-            <ProgressBar.BorderBrush>
-              <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#00FFFFFF</SolidColorBrush>
-            </ProgressBar.BorderBrush>
-          </ProgressBar>
-        </Grid.Children>
+          <Grid Grid.Row="1" HorizontalAlignment="Center" x:Name="TitleGrid">
+            <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
+              <ProgressBar.Style>
+                <DynamicResource ResourceKey="CircularProgressBar" />
+              </ProgressBar.Style>
+              <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
+            </ProgressBar>
+            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="TitleTextBlock">
+              <TextBlock.Foreground>
+                <DynamicResource ResourceKey="LabelBrush" />
+              </TextBlock.Foreground>
+            </TextBlock>
+          </Grid>
+          <Grid.RenderTransform>
+            <TranslateTransform x:Name="TitleContainerTranslateTransform" Y="-8" />
+          </Grid.RenderTransform>
+        </Grid>
       </Grid>
-    </Border.Child>
+      <Button Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="0,8,4,0" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Center" Height="16" Width="16" BorderThickness="0" Click="CancelButton_Click" x:Name="CancelButton">
+        <Button.Background>
+          <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+        </Button.Background>
+        <Button.Visibility>Collapsed</Button.Visibility>
+        <Button.Style>
+          <DynamicResource ResourceKey="InlineButton" />
+        </Button.Style>
+        <Image>
+          <Image.Source>
+            <DynamicResource ResourceKey="CancelJobIcon" />
+          </Image.Source>
+        </Image>
+      </Button>
+      <controls:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
+        <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTipService.ToolTip="Activity Manager" x:Name="ShowActivityManagerToggleButton">
+          <ToggleButton.Style>
+            <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+          </ToggleButton.Style>
+          <ToggleButton.FocusVisualStyle>
+            <x:Null />
+          </ToggleButton.FocusVisualStyle>
+          <Image>
+            <Image.Source>
+              <DynamicResource ResourceKey="ListIcon" />
+            </Image.Source>
+          </Image>
+        </ToggleButton>
+        <Popup StaysOpen="False" AllowsTransparency="true" HorizontalOffset="-370" UseLayoutRounding="False" PopupAnimation="Slide" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
+          <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
+        </Popup>
+        <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Click="FilterButton_Click" x:Name="FilterButton">
+          <Button.Style>
+            <DynamicResource ResourceKey="BranchOptionButton" />
+          </Button.Style>
+          <Image x:Name="FilterButtonImage">
+            <Image.Source>
+              <DynamicResource ResourceKey="BranchFilterOffIcon" />
+            </Image.Source>
+          </Image>
+        </Button>
+        <Grid HorizontalAlignment="Left">
+          <Image Margin="0" Width="12" Height="12" x:Name="DescriptionIcon">
+            <Image.Source>
+              <DynamicResource ResourceKey="BranchIcon" />
+            </Image.Source>
+            <Image.Visibility>Collapsed</Image.Visibility>
+            <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
+            <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            <ToolTipService.ToolTip>Cancel</ToolTipService.ToolTip>
+          </Image>
+          <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" MouseUp="DescriptionTextBlock_MouseUp" x:Name="DescriptionTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="LabelBrush" />
+            </TextBlock.Foreground>
+            <TextBlock.FontSize>12</TextBlock.FontSize>
+          </TextBlock>
+        </Grid>
+      </controls:CenteredDockPanel>
+      <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Margin="0" Visibility="Visible" x:Name="StatusProgressBar">
+        <ProgressBar.Foreground>
+          <DynamicResource ResourceKey="SystemAccentBrush" />
+        </ProgressBar.Foreground>
+        <ProgressBar.BorderBrush>
+          <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+        </ProgressBar.BorderBrush>
+      </ProgressBar>
+    </Grid>
   </Border>
 </UserControl>

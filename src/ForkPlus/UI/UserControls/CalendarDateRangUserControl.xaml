@@ -1,8 +1,7 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CalendarDateRangUserControl">
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；展开 StackPanel.Children 属性元素语法。Calendar 控件及其事件名按规则保留。 -->
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CalendarDateRangUserControl">
   <StackPanel Orientation="Horizontal">
-    <StackPanel.Children>
-      <Calendar SelectionMode="SingleDate" SelectedDatesChanged="StartCalendar_SelectedDatesChanged" GotMouseCapture="Calendar_GotMouseCapture" x:Name="StartCalendar" />
-      <Calendar SelectionMode="SingleDate" SelectedDatesChanged="EndCalendar_SelectedDatesChanged" GotMouseCapture="Calendar_GotMouseCapture" x:Name="EndCalendar" />
-    </StackPanel.Children>
+    <Calendar SelectionMode="SingleDate" SelectedDatesChanged="StartCalendar_SelectedDatesChanged" GotMouseCapture="Calendar_GotMouseCapture" x:Name="StartCalendar" />
+    <Calendar SelectionMode="SingleDate" SelectedDatesChanged="EndCalendar_SelectedDatesChanged" GotMouseCapture="Calendar_GotMouseCapture" x:Name="EndCalendar" />
   </StackPanel>
 </UserControl>

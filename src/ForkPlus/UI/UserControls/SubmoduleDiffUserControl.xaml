@@ -1,5 +1,6 @@
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SubmoduleDiffUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid Background="{DynamicResource BackgroundBrush}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 Grid 及子控件上的重复 xmlns / xmlns:x 声明。控件结构、事件、GridView/GridViewColumn 等保持原样。 -->
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SubmoduleDiffUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid Background="{DynamicResource BackgroundBrush}">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -16,14 +17,14 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="Auto" />
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Center" FontSize="16" FontWeight="Medium" TextTrimming="CharacterEllipsis" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TitleTextBlock" />
-      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BehindAheadContainer">
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Center" FontSize="16" FontWeight="Medium" TextTrimming="CharacterEllipsis" x:Name="TitleTextBlock" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" x:Name="BehindAheadContainer">
         <TextBlock VerticalAlignment="Center" Margin="4,0,0,-3" Foreground="{DynamicResource SecondaryLabelBrush}" FontSize="12" x:Name="BehindAheadTextBlock" />
         <TextBlock VerticalAlignment="Center" Margin="4,0,2,-3" FontSize="12" FontWeight="Medium" Foreground="#FFFF0000" x:Name="UncommittedFilesTextBlock" />
       </StackPanel>
     </Grid>
-    <usercontrols:RevisionsHeaderUserControl Grid.Row="1" Margin="0,4,0,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionHeaderUserControl" />
-    <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Grid.Row="2" Margin="0,0,0,0" Style="{DynamicResource ListViewWithGridViewStyle}" ItemContainerStyle="{DynamicResource NoSelectionRevisionListViewItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionListView">
+    <usercontrols:RevisionsHeaderUserControl Grid.Row="1" Margin="0,4,0,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" x:Name="RevisionHeaderUserControl" />
+    <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Grid.Row="2" Margin="0,0,0,0" Style="{DynamicResource ListViewWithGridViewStyle}" ItemContainerStyle="{DynamicResource NoSelectionRevisionListViewItemStyle}" x:Name="RevisionListView">
       <controls:NoUIAutomationListView.View>
         <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
           <GridViewColumn>
@@ -169,8 +170,8 @@
       </controls:NoUIAutomationListView.View>
     </controls:NoUIAutomationListView>
     <StackPanel Grid.Row="3" Margin="0,10,0,10" Orientation="Horizontal" HorizontalAlignment="Center">
-      <Button Content="Update Submodule" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UpdateSubmoduleButton" />
-      <Button Content="Open Submodule" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="OpenSubmoduleButton" />
+      <Button Content="Update Submodule" Visibility="Collapsed" x:Name="UpdateSubmoduleButton" />
+      <Button Content="Open Submodule" x:Name="OpenSubmoduleButton" />
     </StackPanel>
   </Grid>
 </UserControl>

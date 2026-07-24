@@ -1,7 +1,13 @@
-<TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（presentation / x）
+     - DataTemplate DataType="{x:Type local:Foo}" → DataType="local:Foo"
+     - TODO：DataTemplate.Triggers/DataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
+     -->
+<TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <TabItem.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:SidebarSearchItem}}" DataType="{x:Type local:SidebarSearchItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <DataTemplate x:Key="{DataTemplateKey {x:Type local:SidebarSearchItem}}" DataType="local:SidebarSearchItem">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -43,7 +49,7 @@
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:SidebarSearchFileItem}}" DataType="{x:Type local:SidebarSearchFileItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type local:SidebarSearchFileItem}}" DataType="local:SidebarSearchFileItem">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -84,7 +90,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </TabItem.Resources>
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
@@ -97,20 +103,20 @@
       </Grid.RowDefinitions>
       <TextBlock Margin="10,2,0,2" FontSize="15" FontWeight="Medium" Text="Search Commits" Foreground="{DynamicResource ForegroundBrush}" />
       <Grid Grid.Row="1" Margin="4,4,4,0">
-        <controls:FilterTextBox UseSecondaryTextBoxBackground="True" ShowDropdown="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FilterTextBox" />
-        <ProgressBar Margin="0,0,20,1" Style="{DynamicResource CircularProgressBar}" Visibility="Collapsed" Width="12" Height="12" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BusyIndicator" />
+        <controls:FilterTextBox UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />
+        <ProgressBar Margin="0,0,20,1" Style="{DynamicResource CircularProgressBar}" Visibility="Collapsed" Width="12" Height="12" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
       </Grid>
       <DockPanel Grid.Row="2" Margin="6,3,6,3">
-        <controls:DropDownButton DockPanel.Dock="Left" Height="20" Padding="4,0,4,0" VerticalAlignment="Center" Style="{DynamicResource ArrowDropDownButtonStyle}" BorderBrush="#00FFFFFF" Background="#00FFFFFF" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SearchDropdownButton">
+        <controls:DropDownButton DockPanel.Dock="Left" Height="20" Padding="4,0,4,0" VerticalAlignment="Center" Style="{DynamicResource ArrowDropDownButtonStyle}" BorderBrush="#00FFFFFF" Background="#00FFFFFF" x:Name="SearchDropdownButton">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="SearchDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
         </controls:DropDownButton>
-        <TextBlock DockPanel.Dock="Right" Margin="0,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FoundCommitsTextBlock" />
+        <TextBlock DockPanel.Dock="Right" Margin="0,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="FoundCommitsTextBlock" />
       </DockPanel>
     </Grid>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Margin="0" Style="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TreeView">
+      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Margin="0" Style="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}" x:Name="TreeView">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

@@ -1,7 +1,8 @@
-<ui:CustomWindow Width="620" Height="370" ShowHeader="False" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource WindowBorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:local="clr-namespace:ForkPlus.UI.QuickLaunch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.QuickLaunch.QuickLaunchWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns/x declarations removed; MouseUp renamed to PointerReleased (matching code-behind RepositoriesListBox_MouseUp with PointerReleasedEventArgs); DataTemplate DataType simplified (removed {x:Type}); SnapsToDevicePixels attributes removed; LayoutTransform kept as-is for later migration; DataTemplate.Triggers kept as-is for later Selector migration. -->
+<ui:CustomWindow Width="620" Height="370" ShowHeader="False" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource WindowBorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.QuickLaunch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.QuickLaunch.QuickLaunchWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <ui:CustomWindow.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="FrameworkElement.FocusVisualStyle">
           <Setter.Value>
             <x:Null />
@@ -10,8 +11,8 @@
         <Setter Property="Control.Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type ListBoxItem}">
-              <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="true" LayoutTransform="{DynamicResource LayoutScaleTransform}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" LayoutTransform="{DynamicResource LayoutScaleTransform}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
               </Border>
               <ControlTemplate.Triggers>
                 <MultiTrigger>
@@ -37,7 +38,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:CommandProviderItem}}" DataType="{x:Type local:CommandProviderItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type local:CommandProviderItem}}" DataType="local:CommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
             <Image.Source>
@@ -85,7 +86,7 @@
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="{x:Type local:HeaderCommandProviderItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
             <TextBlock.Text>
@@ -94,7 +95,7 @@
           </TextBlock>
         </DockPanel>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:RepositoryInfoItem}}" DataType="{x:Type local:RepositoryInfoItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type local:RepositoryInfoItem}}" DataType="local:RepositoryInfoItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
             <Image.Source>
@@ -144,7 +145,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
-  <Grid Margin="0,10,0,0" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid Margin="0,10,0,0">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -153,10 +154,10 @@
     <Border Grid.Row="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
       <StackPanel Orientation="Horizontal" Margin="10,0,0,7">
         <Image Source="{DynamicResource SearchIcon}" Margin="0,3,6,0" Width="16" />
-        <controls:CommandTextBox FontSize="16" BorderThickness="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommandTextBox" />
+        <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
       </StackPanel>
     </Border>
-    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" ItemContainerStyle="{DynamicResource QuickLaunchListBoxItemStyle}" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" MouseUp="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox">
+    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" ItemContainerStyle="{DynamicResource QuickLaunchListBoxItemStyle}" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" PointerReleased="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox">
       <ListBox.FocusVisualStyle>
         <x:Null />
       </ListBox.FocusVisualStyle>

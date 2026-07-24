@@ -1,7 +1,8 @@
-<UserControl xmlns:Preferences="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GitUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。 -->
+<UserControl xmlns:Preferences="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GitUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <Style x:Key="GitInstanceComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="GitInstanceComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
         <Style.Triggers>
           <DataTrigger>
             <DataTrigger.Binding>
@@ -21,7 +22,7 @@
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid Width="500" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Grid Width="500">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="Auto" />
@@ -38,7 +39,7 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
-    <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
+    <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <TextBlock FontSize="13" VerticalAlignment="Center">
@@ -49,9 +50,9 @@
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
-    <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="VerboseGitOutputCheckBox_Checked" Unchecked="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
+    <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" Checked="VerboseGitOutputCheckBox_Checked" Unchecked="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
     <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
-    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
+    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <TextBlock FontSize="13" VerticalAlignment="Center">
@@ -64,12 +65,12 @@
     </ComboBox>
     <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
     <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="Global User Information" Style="{DynamicResource SettingsHeaderTextBlockStyle}" />
-    <controls:AvatarImage Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" Margin="10,0,0,0" Width="42" Height="42" HorizontalAlignment="Right" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AuthorAvatarImage" />
-    <controls:PlaceholderTextBox TextChanged="UserNameTextBox_TextChanged" LostFocus="UserNameTextBox_LostFocus" Grid.Row="5" Grid.Column="2" Margin="10,0,0,4" Padding="4,2,4,2" Placeholder="User name" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UserNameTextBox" />
-    <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" LostFocus="EmailTextBox_LostFocus" Grid.Row="6" Grid.Column="2" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="Email" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="EmailTextBox" />
+    <controls:AvatarImage Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" Margin="10,0,0,0" Width="42" Height="42" HorizontalAlignment="Right" x:Name="AuthorAvatarImage" />
+    <controls:PlaceholderTextBox TextChanged="UserNameTextBox_TextChanged" LostFocus="UserNameTextBox_LostFocus" Grid.Row="5" Grid.Column="2" Margin="10,0,0,4" Padding="4,2,4,2" Placeholder="User name" x:Name="UserNameTextBox" />
+    <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" LostFocus="EmailTextBox_LostFocus" Grid.Row="6" Grid.Column="2" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="Email" x:Name="EmailTextBox" />
     <TextBlock Grid.Row="7" Grid.Column="2" Margin="12,0,10,0" VerticalAlignment="Center">
       <Span>
-        <Run>Change the avatar at</Run> <Hyperlink Style="{DynamicResource BlueHyperlinkStyle}" NavigateUri="https://gravatar.com" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" RequestNavigate="Hyperlink_RequestNavigate"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></Hyperlink></Span>
+        <Run>Change the avatar at</Run> <Hyperlink Style="{DynamicResource BlueHyperlinkStyle}" NavigateUri="https://gravatar.com" RequestNavigate="Hyperlink_RequestNavigate"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></Hyperlink></Span>
     </TextBlock>
   </Grid>
 </UserControl>

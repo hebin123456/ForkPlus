@@ -1,11 +1,12 @@
-<UserControl Width="600" Height="340" xmlns:RepositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositorySettings.IssueTrackerUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除子元素重复 xmlns 与 xmlns:x 声明。 -->
+<UserControl Width="600" Height="340" xmlns:RepositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositorySettings.IssueTrackerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <CheckBox Grid.Row="0" Margin="0,0,0,10" HorizontalAlignment="Left" Content="Add hyperlinks to issue numbers in commit messages" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="IsEnabledCheckbox_Changed" Unchecked="IsEnabledCheckbox_Changed" x:Name="IsEnabledCheckbox" />
-    <controls:ContentContainer Grid.Row="1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ContentContainer">
+    <CheckBox Grid.Row="0" Margin="0,0,0,10" HorizontalAlignment="Left" Content="Add hyperlinks to issue numbers in commit messages" Checked="IsEnabledCheckbox_Changed" Unchecked="IsEnabledCheckbox_Changed" x:Name="IsEnabledCheckbox" />
+    <controls:ContentContainer Grid.Row="1" x:Name="ContentContainer">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="200" />

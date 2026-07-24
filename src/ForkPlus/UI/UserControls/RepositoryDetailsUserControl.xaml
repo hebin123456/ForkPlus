@@ -1,27 +1,32 @@
-<UserControl Background="{DynamicResource SecondaryBackgroundBrush}" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryDetailsUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid RenderOptions.ClearTypeHint="Enabled" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（presentation / x）
+     - 移除 WPF 特有 RenderOptions.ClearTypeHint
+     -->
+<UserControl Background="{DynamicResource SecondaryBackgroundBrush}" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryDetailsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <TextBlock Grid.Row="0" Margin="25,10,0,3" FontSize="22" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}" TextTrimming="CharacterEllipsis" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RepositoryName" />
-    <Button Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" Content="Open" Margin="0,0,20,0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="OpenRepositoryButton_Click" />
+    <TextBlock Grid.Row="0" Margin="25,10,0,3" FontSize="22" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}" TextTrimming="CharacterEllipsis" x:Name="RepositoryName" />
+    <Button Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" Content="Open" Margin="0,0,20,0" Click="OpenRepositoryButton_Click" />
     <StackPanel Grid.Row="1" Orientation="Horizontal">
-      <TextBlock Margin="25,0,0,10" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RepositoryPath" />
-      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip="Open in File Explorer" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
+      <TextBlock Margin="25,0,0,10" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="RepositoryPath" />
+      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip="Open in File Explorer" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
         <Image Source="{DynamicResource OpenInExplorerArrowIcon}" Height="10" Width="10" />
       </Button>
     </StackPanel>
     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Background="#00FFFFFF">
-      <Grid RenderOptions.ClearTypeHint="Enabled" Background="#00FFFFFF">
+      <Grid Background="#00FFFFFF">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="1" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" RenderOptions.ClearTypeHint="Enabled" Margin="8,0,8,0" Style="{DynamicResource TileBorder}">
+        <Border Grid.Row="0" Margin="8,0,8,0" Style="{DynamicResource TileBorder}">
           <Grid Grid.Row="0" Margin="16,10,0,10">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="250" />
@@ -39,17 +44,17 @@
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
               <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Right" FontSize="13" Text="Uncommitted Files:" FontWeight="Medium" />
-              <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ChangedFilesTextBlock" />
+              <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" x:Name="ChangedFilesTextBlock" />
               <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Right" FontSize="13" Text="Commits:" FontWeight="Medium" />
-              <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitsTextBlock" />
+              <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" x:Name="CommitsTextBlock" />
               <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Right" FontSize="13" Text="Initial Commit:" FontWeight="Medium" />
-              <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="InitialCommitDateTextBlock" />
+              <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" x:Name="InitialCommitDateTextBlock" />
               <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Right" FontSize="13" Text="Last Commit:" FontWeight="Medium" />
-              <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LastCommitDateTextBlock" />
+              <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Margin="0,0,10,0" FontSize="13" x:Name="LastCommitDateTextBlock" />
             </Grid>
             <StackPanel Grid.Column="1">
               <TextBlock Margin="0,0,10,0" Text="Remotes:" FontSize="13" FontWeight="Medium" />
-              <ItemsControl Grid.IsSharedSizeScope="True" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RemotesItemsControl">
+              <ItemsControl Grid.IsSharedSizeScope="True" x:Name="RemotesItemsControl">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
                     <Grid Height="22">
@@ -130,10 +135,10 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <Border Grid.Row="2" RenderOptions.ClearTypeHint="Enabled" Margin="-2,2,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="2" Margin="-2,2,-2,0" Style="{DynamicResource TileBorderDark}">
                 <StackPanel Grid.Row="4" Margin="15">
                   <TextBlock Text="Branches" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
-                  <ItemsControl Margin="10" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="BranchesItemsControl">
+                  <ItemsControl Margin="10" x:Name="BranchesItemsControl">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <Grid Height="22">
@@ -178,10 +183,10 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="4" RenderOptions.ClearTypeHint="Enabled" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="4" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
                 <StackPanel Grid.Row="4" Margin="15">
                   <TextBlock Grid.Row="3" Text="Tags" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
-                  <ItemsControl Margin="10" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TagsItemsControl">
+                  <ItemsControl Margin="10" x:Name="TagsItemsControl">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <Grid Height="22">
@@ -220,10 +225,10 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="6" RenderOptions.ClearTypeHint="Enabled" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="6" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
                 <StackPanel Grid.Row="6" Margin="15">
                   <TextBlock Grid.Row="5" Text="Commits" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
-                  <ItemsControl Margin="10" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitsItemsControl">
+                  <ItemsControl Margin="10" x:Name="CommitsItemsControl">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <Grid Height="22">
@@ -262,7 +267,7 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="8" RenderOptions.ClearTypeHint="Enabled" Margin="-2,4,-2,4" Style="{DynamicResource TileBorderDark}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ReadmeContainer">
+              <Border Grid.Row="8" Margin="-2,4,-2,4" Style="{DynamicResource TileBorderDark}" x:Name="ReadmeContainer">
                 <StackPanel Grid.Row="7" Margin="15">
                   <TextBlock Grid.Row="7" Margin="10,0,0,0" Text="README.MD" FontSize="16" FontWeight="Bold" FontFamily="Consolas" />
                   <TextBox FontFamily="Consolas" MaxWidth="500" Margin="10" HorizontalAlignment="Left" TextWrapping="Wrap" BorderThickness="0" FontSize="13" Background="#00FFFFFF" x:Name="ReadmeTextBox" />
@@ -270,7 +275,7 @@
               </Border>
             </Grid>
           </TabItem>
-          <TabItem Header="Statistics" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StatisticsTabItem">
+          <TabItem Header="Statistics" x:Name="StatisticsTabItem">
             <Border Margin="-2,2,-2,4" Padding="2" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource TileBorderBrush}" Background="{DynamicResource BackgroundBrush}">
               <usercontrols:StatisticsUserControl x:Name="StatisticsUserControl" />
             </Border>
@@ -278,8 +283,8 @@
         </controls:ModernTabControl>
       </Grid>
     </ScrollViewer>
-    <usercontrols:FallbackUserControl Button1Click="FallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository Not Found" FallbackMessage="Repository was deleted or moved. Do you want to remove the reference from Fork?" Button1Title="Remove" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="FallbackUserControl" />
-    <usercontrols:FallbackUserControl Button1Click="UnsafeRepositoryFallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository is located at the place owned by someone else" FallbackMessage="Repository is unsafe and owned by someone else. Is it safe?" Button1Title="Mark it as safe" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="UnsafeRepositoryFallbackUserControl" />
-    <usercontrols:FallbackUserControl Grid.RowSpan="3" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DirectoryFallbackUserControl" />
+    <usercontrols:FallbackUserControl Button1Click="FallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository Not Found" FallbackMessage="Repository was deleted or moved. Do you want to remove the reference from Fork?" Button1Title="Remove" Visibility="Collapsed" x:Name="FallbackUserControl" />
+    <usercontrols:FallbackUserControl Button1Click="UnsafeRepositoryFallbackUserControl_Button1Click" Grid.RowSpan="3" FallbackTitle="Repository is located at the place owned by someone else" FallbackMessage="Repository is unsafe and owned by someone else. Is it safe?" Button1Title="Mark it as safe" Visibility="Collapsed" x:Name="UnsafeRepositoryFallbackUserControl" />
+    <usercontrols:FallbackUserControl Grid.RowSpan="3" Visibility="Collapsed" x:Name="DirectoryFallbackUserControl" />
   </Grid>
 </UserControl>

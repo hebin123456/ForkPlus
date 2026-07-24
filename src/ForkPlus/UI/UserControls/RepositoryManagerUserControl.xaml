@@ -1,8 +1,15 @@
-<UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（presentation / x）
+     - DataTemplate DataType="{x:Type userControls:Foo}" → DataType="userControls:Foo"
+     - 移除 WPF 特有 RenderOptions.ClearTypeHint
+     - MouseDoubleClick 绑定移除（由 code-behind 显式订阅 DoubleTapped）
+     -->
+<UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <Style x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="{x:Type controls:RepositoryManagerEditableTextBlock}" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSectionItem}}" DataType="{x:Type userControls:RepositoryManagerSectionItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <Style x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="{x:Type controls:RepositoryManagerEditableTextBlock}" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" />
+      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSectionItem}}" DataType="userControls:RepositoryManagerSectionItem">
         <Grid Height="22">
           <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
             <TextBlock.Text>
@@ -11,7 +18,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSourceDirectoryItem}}" DataType="{x:Type userControls:RepositoryManagerSourceDirectoryItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSourceDirectoryItem}}" DataType="userControls:RepositoryManagerSourceDirectoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -28,7 +35,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryFolderItem}}" DataType="{x:Type userControls:RepositoryManagerRepositoryFolderItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryFolderItem}}" DataType="userControls:RepositoryManagerRepositoryFolderItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -42,7 +49,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryItem}}" DataType="{x:Type userControls:RepositoryManagerRepositoryItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryItem}}" DataType="userControls:RepositoryManagerRepositoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="18" />
@@ -74,7 +81,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="RepositoryManagerGrid">
+  <Grid x:Name="RepositoryManagerGrid">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
@@ -90,13 +97,13 @@
       <TextBlock Margin="40,0,40,200" TextAlignment="Center" HorizontalAlignment="Center" MinWidth="300" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="16" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Drop repository here to add" x:Name="FallbackMessage" />
       <Image Source="{DynamicResource FallbackIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="128" MaxWidth="128" />
     </Grid>
-    <controls:MultiselectionTreeView MouseDoubleClick="RepositoriesListBox_MouseDoubleClick" SelectionChanged="RepositoriesListBox_SelectionChanged" Grid.Row="2" Grid.Column="0" Visibility="Hidden" ItemContainerStyle="{DynamicResource RepositoryManagerTreeViewControlItemStyle}" TextSearch.TextPath="Name" Background="{DynamicResource Sidebar.Static.Background}" x:Name="RepositoriesTreeView">
+    <controls:MultiselectionTreeView SelectionChanged="RepositoriesListBox_SelectionChanged" Grid.Row="2" Grid.Column="0" Visibility="Hidden" ItemContainerStyle="{DynamicResource RepositoryManagerTreeViewControlItemStyle}" TextSearch.TextPath="Name" Background="{DynamicResource Sidebar.Static.Background}" x:Name="RepositoriesTreeView">
       <controls:MultiselectionTreeView.ContextMenu>
         <ContextMenu />
       </controls:MultiselectionTreeView.ContextMenu>
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
-          <ContentControl RenderOptions.ClearTypeHint="Enabled">
+          <ContentControl>
             <ContentControl.Content>
               <Binding />
             </ContentControl.Content>

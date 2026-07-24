@@ -1,7 +1,8 @@
-<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; DataTemplate DataType simplified (x:Type removed); MouseDoubleClick binding removed (handler is subscribed via FilesTreeView.DoubleTapped in code-behind per Avalonia migration); RenderOptions.ClearTypeHint attribute removed. -->
+<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RevisionFileTreeViewItem}}" DataType="{x:Type userControls:RevisionFileTreeViewItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary>
+      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RevisionFileTreeViewItem}}" DataType="userControls:RevisionFileTreeViewItem">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -21,12 +22,12 @@
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="ContainerGrid">
+  <Grid x:Name="ContainerGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition MinWidth="220" MaxWidth="850" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <controls:MultiselectionTreeView MouseDoubleClick="FilesTreeView_MouseDoubleClick" SelectionChanged="FilesTreeView_SelectedItemChanged" ContextMenuOpening="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" TextSearch.TextPath="Title" x:Name="FilesTreeView">
+    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextMenuOpening="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" TextSearch.TextPath="Title" x:Name="FilesTreeView">
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
           <ContentControl>
@@ -40,7 +41,7 @@
         <ContextMenu />
       </controls:MultiselectionTreeView.ContextMenu>
     </controls:MultiselectionTreeView>
-    <controls:FileContentControl Grid.Column="1" Background="{DynamicResource BackgroundBrush}" RenderOptions.ClearTypeHint="Enabled" x:Name="FileContentControl" />
+    <controls:FileContentControl Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileContentControl" />
     <GridSplitter Grid.Column="0" Style="{DynamicResource VerticalGridSplitter}" HorizontalAlignment="Right" x:Name="GridSplitter" />
   </Grid>
 </UserControl>

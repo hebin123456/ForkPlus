@@ -1,11 +1,12 @@
-<UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionSummaryUserControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; RenderOptions.ClearTypeHint attributes removed. -->
+<UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionSummaryUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-      <Grid RenderOptions.ClearTypeHint="Enabled">
+      <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -16,7 +17,7 @@
         <ColumnDefinition Width="48" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AuthorDetailsContainer">
+      <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" x:Name="AuthorDetailsContainer">
         <Grid.RowDefinitions>
           <RowDefinition Height="25" />
           <RowDefinition Height="30" />
@@ -42,7 +43,7 @@
         </DockPanel>
         <controls:SelectableTextBlock Grid.Row="2" Grid.Column="1" Margin="16,0,4,15" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock" />
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CommitterDetailsContainer">
+      <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" x:Name="CommitterDetailsContainer">
         <Grid.RowDefinitions>
           <RowDefinition Height="25" />
           <RowDefinition Height="30" />
@@ -68,7 +69,7 @@
         </DockPanel>
         <controls:SelectableTextBlock Grid.Row="2" Grid.Column="1" Margin="16,0,10,15" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommitterDateTextBlock" />
       </Grid>
-      <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" RenderOptions.ClearTypeHint="Enabled">
+      <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="18" />
@@ -84,24 +85,24 @@
           <ColumnDefinition Width="82" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="REFS" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ReferencesTextBlock" />
-        <controls:ReferencePanel Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Style="{DynamicResource MultilineReferencePanelStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ReferencePanel" />
+        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="REFS" x:Name="ReferencesTextBlock" />
+        <controls:ReferencePanel Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Style="{DynamicResource MultilineReferencePanelStyle}" x:Name="ReferencePanel" />
         <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="SHA" />
         <DockPanel Grid.Row="1" Grid.Column="1" Margin="16,2,0,0" HorizontalAlignment="Left">
-          <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ShaTextBlock" />
-          <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip="Use AI to explain this commit" x:Name="AiExplainCommitButton" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-            <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" x:Name="AiExplainCommitButtonText" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+          <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" x:Name="ShaTextBlock" />
+          <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip="Use AI to explain this commit" x:Name="AiExplainCommitButton">
+            <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" x:Name="AiExplainCommitButtonText" />
           </Button>
-          <StackPanel Orientation="Horizontal" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RevisionRemoteButtonsContainer" />
+          <StackPanel Orientation="Horizontal" x:Name="RevisionRemoteButtonsContainer" />
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Right" Margin="16,4,0,5" Foreground="{DynamicResource SecondaryLabelBrush}" Text="PARENTS" />
-        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,5" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ParentsContainer" />
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,5" x:Name="ParentsContainer" />
         <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="20,10,20,5" />
-        <controls:SelectableTextBlock Grid.Row="4" Grid.Column="1" Margin="16,5,10,5" FontWeight="Medium" FontSize="15" TextWrapping="Wrap" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SubjectTextBlock" />
-        <controls:SelectableTextBlock Grid.Row="5" Grid.Column="1" Margin="16,0,10,0" TextWrapping="Wrap" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DescriptionTextBlock" />
+        <controls:SelectableTextBlock Grid.Row="4" Grid.Column="1" Margin="16,5,10,5" FontWeight="Medium" FontSize="15" TextWrapping="Wrap" x:Name="SubjectTextBlock" />
+        <controls:SelectableTextBlock Grid.Row="5" Grid.Column="1" Margin="16,0,10,0" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
         <Separator Grid.Row="6" Grid.ColumnSpan="2" Margin="20,8,20,4" />
         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
-          <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DiffList">
+          <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="DiffList">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <ListBoxItem HorizontalContentAlignment="Stretch" Style="{DynamicResource DiffListListBoxItemStyle}" ContextMenuOpening="ListBoxItem_ContextMenuOpening">
@@ -142,9 +143,9 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <Button Margin="8,0,20,0" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{DynamicResource TransparentButtonStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Click="ExpandAllButton_Click" x:Name="ExpandAllButton" />
+          <Button Margin="8,0,20,0" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{DynamicResource TransparentButtonStyle}" Click="ExpandAllButton_Click" x:Name="ExpandAllButton" />
         </Grid>
-        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" Visibility="Collapsed" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="DiffListLimitTextBlock" />
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" Visibility="Collapsed" x:Name="DiffListLimitTextBlock" />
       </Grid>
       </Grid>
     </ScrollViewer>

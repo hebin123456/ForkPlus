@@ -1,12 +1,15 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.PathTextBoxUserControl">
+<!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
+     - xmlns schemas.microsoft.com → https://github.com/avaloniaui
+     - 删除子元素重复 xmlns（presentation）
+     - <DockPanel.Children> 展开为直接子元素
+     -->
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.PathTextBoxUserControl">
   <DockPanel>
-    <DockPanel.Children>
-      <Button DockPanel.Dock="Right" Margin="2,0,0,0" Click="BrowseButton_Click">
-        <Button.Style>
-          <DynamicResource ResourceKey="BrowseButtonStyle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-        </Button.Style>
-      </Button>
-      <TextBox Margin="0" Padding="4,2,4,2" x:Name="PathTextBox" />
-    </DockPanel.Children>
+    <Button DockPanel.Dock="Right" Margin="2,0,0,0" Click="BrowseButton_Click">
+      <Button.Style>
+        <DynamicResource ResourceKey="BrowseButtonStyle" />
+      </Button.Style>
+    </Button>
+    <TextBox Margin="0" Padding="4,2,4,2" x:Name="PathTextBox" />
   </DockPanel>
 </UserControl>
