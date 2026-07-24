@@ -1,5 +1,23 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns/x declarations removed; MouseUp renamed to PointerReleased (matching code-behind RepositoriesListBox_MouseUp with PointerReleasedEventArgs); DataTemplate DataType simplified (removed {x:Type}); SnapsToDevicePixels attributes removed; LayoutTransform kept as-is for later migration; DataTemplate.Triggers kept as-is for later Selector migration. -->
 <ui:CustomWindow Width="620" Height="370" ShowHeader="False" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource WindowBorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.QuickLaunch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.QuickLaunch.QuickLaunchWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <ui:CustomWindow.Styles>
+    <!-- 阶段 4.5：替代原 ControlTemplate/DataTemplate.Triggers 中的 IsSelected 触发器。
+         原触发器：ListBoxItem 选中态时（IsSelectionActive=True/False）设置 Bd 的 Background/BorderBrush/Foreground；
+         ItemTemplate 内 PathTextBlock/DashTextBlock.Foreground=ForegroundBrush.Light；IconImage.Source=SelectedIcon。
+         Avalonia 中 :selected 伪类等价于 WPF IsSelected=True，:focus 表示 IsSelectionActive=True。
+         SelectedIcon 替换无法用纯 Selector 表达（需绑定到 SelectedIcon 属性），保留为 DataTemplate 内直接绑定。 -->
+    <Style Selector="ListBoxItem:selected /template/ Border#Bd">
+      <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected TextBlock#PathTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected TextBlock#DashTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </ui:CustomWindow.Styles>
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
       <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
@@ -14,30 +32,6 @@
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
-<!-- TODO 4.5 (Avalonia): ControlTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <ControlTemplate.Triggers>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition Property="IsSelectionActive" Value="False" />
-                    <Condition Property="ListBoxItem.IsSelected" Value="True" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition Property="IsSelectionActive" Value="True" />
-                    <Condition Property="ListBoxItem.IsSelected" Value="True" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                </MultiTrigger>
-              </ControlTemplate.Triggers> -->
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -71,28 +65,20 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-          <DataTrigger Value="True">
-            <DataTrigger.Binding>
-              <Binding Path="IsSelected">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                </Binding.RelativeSource>
-              </Binding>
-            </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="IconImage" Property="Image.Source">
-              <Setter.Value>
-                <Binding Path="SelectedIcon" />
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </DataTemplate.Triggers> -->
+<!-- TODO 4.5 (Avalonia): PathTextBlock/DashTextBlock foreground migration moved to top-level
+         Style Selector above (ListBoxItem:selected). Remaining IconImage.Source=SelectedIcon
+         on :selected state cannot be expressed via pure Selector (requires re-binding Source).
+         Reimplement via either:
+           (a) two stacked Images (default + selected) toggled via IsVisible binding to ancestor
+               ListBoxItem.IsSelected, or
+           (b) a converter that picks Icon vs SelectedIcon based on selection state, or
+           (c) exposing a computed CurrentIcon property on the view-model.
+         Original WPF trigger preserved for reference.
+    <DataTrigger Binding="...IsSelected" Value="True">
+      <Setter TargetName="IconImage" Property="Image.Source">
+        <Setter.Value><Binding Path="SelectedIcon" /></Setter.Value>
+      </Setter>
+    </DataTrigger> -->
       </DataTemplate>
       <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
@@ -132,28 +118,20 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-          <DataTrigger Value="True">
-            <DataTrigger.Binding>
-              <Binding Path="IsSelected">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                </Binding.RelativeSource>
-              </Binding>
-            </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            <Setter TargetName="IconImage" Property="Image.Source">
-              <Setter.Value>
-                <Binding Path="SelectedIcon" />
-              </Setter.Value>
-            </Setter>
-          </DataTrigger>
-        </DataTemplate.Triggers> -->
+<!-- TODO 4.5 (Avalonia): PathTextBlock/DashTextBlock foreground migration moved to top-level
+         Style Selector above (ListBoxItem:selected). Remaining IconImage.Source=SelectedIcon
+         on :selected state cannot be expressed via pure Selector (requires re-binding Source).
+         Reimplement via either:
+           (a) two stacked Images (default + selected) toggled via IsVisible binding to ancestor
+               ListBoxItem.IsSelected, or
+           (b) a converter that picks Icon vs SelectedIcon based on selection state, or
+           (c) exposing a computed CurrentIcon property on the view-model.
+         Original WPF trigger preserved for reference.
+    <DataTrigger Binding="...IsSelected" Value="True">
+      <Setter TargetName="IconImage" Property="Image.Source">
+        <Setter.Value><Binding Path="SelectedIcon" /></Setter.Value>
+      </Setter>
+    </DataTrigger> -->
       </DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
