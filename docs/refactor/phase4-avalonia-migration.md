@@ -29,8 +29,9 @@
   - 拒绝方案 C（CefNet 直接使用）：同上风险更高
   - 过渡方案 D（Windows 保留 WebView2 + 跨平台 fallback）：可作增量迁移过渡
   - JS 互操作：`AiTextResultWindow`/`AiCodeReviewWindow` 用 `window.chrome.webview.postMessage` 做滚动追踪和建议卡按钮回调，需改为原生 Avalonia 事件
-- [ ] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d）
-  - 涉及：`OpenDialog` 静态类（阶段 2 已迁移到 `IFileSystemDialogService`）
+- [x] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d 完成）
+  - 涉及：`OpenDialog` 静态类（阶段 2 已迁移到 `IFileSystemDialogService`）、`WpfFileSystemDialogService`、`IFileSystemDialogService`
+  - 已完成：`CommonOpenFileDialog` → `OpenFolderPickerAsync`/`OpenFilePickerAsync`、`CommonSaveFileDialog` → `SaveFilePickerAsync`、`GetAwaiter().GetResult()` 同步阻塞异步调用、`PreventRefreshAfterChildDialogClose` 保留、`FilePickerFileType.Patterns` glob 规范化（WPF `.txt` → Avalonia `*.txt`）
 
 ### 基类重写（里程碑 4.2，已完成）
 

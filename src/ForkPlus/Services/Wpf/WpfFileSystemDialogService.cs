@@ -3,9 +3,8 @@ using ForkPlus.UI;
 namespace ForkPlus.Services.Wpf
 {
 	/// <summary>
-	/// WPF 平台的 <see cref="IFileSystemDialogService"/> 实现，委托给现有 <see cref="OpenDialog"/> 静态类
-	/// （内部使用 <c>Microsoft.WindowsAPICodePack.CommonOpenFileDialog/CommonSaveFileDialog</c>）。
-	/// 阶段 0 仅注册，不替换现有调用点。
+	/// 阶段 4 里程碑 4.7-d：原 WPF 平台实现，现委托给已迁移到 Avalonia StorageProvider 的 <see cref="OpenDialog"/>。
+	/// 类名保留 "Wpf" 前缀以避免 App.axaml.cs 注册点的大面积改动；实际底层已使用 Avalonia 原生文件对话框。
 	/// </summary>
 	public class WpfFileSystemDialogService : IFileSystemDialogService
 	{

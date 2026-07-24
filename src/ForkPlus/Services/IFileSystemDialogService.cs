@@ -1,9 +1,9 @@
 namespace ForkPlus.Services
 {
 	/// <summary>
-	/// 文件/目录选择对话框抽象（替换 WPF <c>Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog</c> /
-	/// <c>CommonSaveFileDialog</c>，即 <see cref="ForkPlus.UI.OpenDialog"/> 静态类）。
-	/// Avalonia 实现将使用 <c>StorageProvider.OpenFilePickerAsync</c> / <c>SaveFilePickerAsync</c>。
+	/// 文件/目录选择对话框抽象（阶段 4.7-d：已从 WPF Microsoft.WindowsAPICodePack.Dialogs 迁移到
+	/// Avalonia StorageProvider.OpenFilePickerAsync / SaveFilePickerAsync / OpenFolderPickerAsync）。
+	/// 接口保持同步（bool + out）以最小化调用方改动；Avalonia 异步 API 在实现层用 GetAwaiter().GetResult() 同步阻塞。
 	/// </summary>
 	public interface IFileSystemDialogService
 	{
