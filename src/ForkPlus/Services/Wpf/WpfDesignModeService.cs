@@ -17,16 +17,11 @@ namespace ForkPlus.Services.Wpf
 
 		private static bool ComputeIsDesignMode()
 		{
+			// 阶段 4.5：WPF DesignerProperties.GetIsInDesignMode(new DependencyObject()) 在 Avalonia 中无等价 API。
+			// Avalonia 设计时检测改用 Designer.IsDesignMode（Avalonia.Markup.Xaml），但服务层无控件引用，
+			// 此处仅保留 LicenseManager + 进程名检测（跨平台有效）。
 			if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
 				return true;
-
-			try
-			{
-				var element = new System.Windows.DependencyObject();
-				if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(element))
-					return true;
-			}
-			catch { }
 
 			try
 			{

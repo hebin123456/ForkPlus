@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
+using ForkPlus.Services;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
@@ -201,7 +202,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
 					PreferencesLocalization.Current("AI Commit Composer"),
 					MessageBoxButton.OK,
@@ -210,7 +211,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (_stagedFiles.Length == 0)
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("No staged files to compose. Stage some files first."),
 					PreferencesLocalization.Current("AI Commit Composer"),
 					MessageBoxButton.OK,
@@ -394,7 +395,7 @@ namespace ForkPlus.UI.Dialogs
 					ListBoxItem warn = new ListBoxItem
 					{
 						Content = PreferencesLocalization.FormatCurrent("{0}  (not staged)", unmatched),
-						Foreground = System.Windows.Media.Brushes.OrangeRed
+						Foreground = Brushes.OrangeRed
 					};
 					FilesListBox.Items.Add(warn);
 				}
@@ -480,7 +481,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (string.IsNullOrWhiteSpace(g.Subject))
 				{
-					MessageBox.Show(
+					ServiceLocator.MessageBox.Show(
 						PreferencesLocalization.FormatCurrent("Group {0} has an empty subject. Please fill in a commit subject or skip the group.", i + 1),
 						PreferencesLocalization.Current("AI Commit Composer"),
 						MessageBoxButton.OK,

@@ -346,11 +346,11 @@ namespace ForkPlus
 		public App()
 		{
 			if (IsDebug)
-			{
-				LogManager.Configuration = new DebugLoggingConfiguration();
-				PresentationTraceSources.DataBindingSource.Listeners.Add(new BindingErrorTraceListener());
-				PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Error;
-			}
+		{
+			LogManager.Configuration = new DebugLoggingConfiguration();
+			// NOTE (Avalonia limitation): WPF PresentationTraceSources.DataBindingSource 用于捕获绑定错误，
+			// Avalonia 无等价 API。绑定诊断改由 Avalonia.Logging.Log 在 Debug 配置下输出。
+		}
 			else
 			{
 				LogManager.Configuration = new ProductionLoggingConfiguration();
@@ -598,7 +598,7 @@ namespace ForkPlus
 			SubscribeToUserPreferences();
 			if (!Environment.Is64BitOperatingSystem)
 			{
-				MessageBox.Show(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Currently Fork doesn't support 32-bit Windows"));
+				ServiceLocator.MessageBox.Show(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Currently Fork doesn't support 32-bit Windows"));
 			}
 			else if (IsDebug || InitializeForkInstance())
 			{
@@ -792,7 +792,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is older than the required {1}. Some features (diff, status, empty-changes detection) may not work correctly. Please upgrade git.",
 						versionText, minText);
-					System.Windows.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+					ServiceLocator.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
 				}
 				else if (result.Status == GitVersionStatus.Outdated)
 				{
@@ -801,7 +801,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is below the recommended {1}. Consider upgrading for better compatibility.",
 						versionText, recText);
-					System.Windows.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+					ServiceLocator.MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), MessageBoxButton.OK, MessageBoxImage.Information);
 				}
 			}
 			catch (Exception ex)

@@ -1,4 +1,8 @@
 using System;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI;
 using ForkPlus.UI.Dialogs;
@@ -6,7 +10,7 @@ using ForkPlus.UI.Dialogs;
 namespace ForkPlus.Services.Wpf
 {
 	/// <summary>
-	/// WPF 平台的窗口管理服务。
+	/// 平台窗口管理服务（阶段 4.5：WPF System.Windows.Application → Avalonia.Application）。
 	/// 阶段 2 扩展：承接 Commands 层对 <c>MainWindow.Instance.TabManager</c> 与
 	/// <c>Application.Current</c> 的直接访问，转发到具体 View。
 	/// </summary>
@@ -24,14 +28,15 @@ namespace ForkPlus.Services.Wpf
 
 		public bool TryActivateWindowByTitle(string title)
 		{
-			System.Windows.WindowCollection windowCollection = System.Windows.Application.Current?.Windows;
-			if (windowCollection == null)
+			// 阶段 4.5：WPF System.Windows.Application.Current.Windows → Avalonia.Application.Current.Windows。
+			var windows = Application.Current?.Windows;
+			if (windows == null)
 			{
 				return false;
 			}
-			foreach (object item in windowCollection)
+			foreach (Window window in windows)
 			{
-				if (item is AiCodeReviewWindow aiCodeReviewWindow && aiCodeReviewWindow.Title == title)
+				if (window is AiCodeReviewWindow aiCodeReviewWindow && aiCodeReviewWindow.Title == title)
 				{
 					aiCodeReviewWindow.Activate();
 					return true;
@@ -42,7 +47,8 @@ namespace ForkPlus.Services.Wpf
 
 		public void DispatchToUiThread(Action action)
 		{
-			System.Windows.Application.Current?.Dispatcher.Async(action);
+			// 阶段 4.5：WPF Application.Current.Dispatcher.Async → Avalonia Dispatcher.UIThread.Post。
+			Dispatcher.UIThread.Post(action);
 		}
 
 		// ===== 阶段 2 新增：Tab 管理 =====
@@ -115,7 +121,8 @@ namespace ForkPlus.Services.Wpf
 
 		public void RefreshLayoutScaling()
 		{
-			System.Windows.Application.Current?.RefreshLayoutScaling();
+			// 阶段 4.5：WPF Application.Current.RefreshLayoutScaling() → Avalonia ApplicationExtensions.RefreshLayoutScaling()。
+			Application.Current?.RefreshLayoutScaling();
 		}
 
 		public void CheckForUpdates()

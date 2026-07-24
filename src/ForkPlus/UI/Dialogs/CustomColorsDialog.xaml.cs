@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Microsoft.Win32;
@@ -395,7 +396,7 @@ namespace ForkPlus.UI.Dialogs
 
 		if (_workingCopy == null || _workingCopy.Count == 0)
 		{
-			MessageBox.Show(this,
+			ServiceLocator.MessageBox.Show(
 				PreferencesLocalization.Translate("No custom colors to export. Customize some colors first.", lang),
 				PreferencesLocalization.Translate("Export Colors", lang),
 				MessageBoxButton.OK, MessageBoxImage.Information);
@@ -418,7 +419,7 @@ namespace ForkPlus.UI.Dialogs
 			string json = CustomColorsDialogViewModel.BuildExportJson(_workingCopy, ForkPlusSettings.Default.Theme.ToString());
 			File.WriteAllText(dlg.FileName, json);
 
-			MessageBox.Show(this,
+			ServiceLocator.MessageBox.Show(
 				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
 					_workingCopy.Count, dlg.FileName),
 				PreferencesLocalization.Translate("Export Colors", lang),
@@ -426,7 +427,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(this,
+			ServiceLocator.MessageBox.Show(
 				PreferencesLocalization.Translate("Export failed: ", lang) + ex.Message,
 				PreferencesLocalization.Translate("Export Colors", lang),
 				MessageBoxButton.OK, MessageBoxImage.Error);
@@ -460,7 +461,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(this,
+			ServiceLocator.MessageBox.Show(
 				PreferencesLocalization.Translate("Cannot read file: ", lang) + ex.Message,
 				PreferencesLocalization.Translate("Import Colors", lang),
 				MessageBoxButton.OK, MessageBoxImage.Error);
@@ -490,7 +491,7 @@ namespace ForkPlus.UI.Dialogs
 		MessageBoxImage icon = result.IsSuccess ? MessageBoxImage.Information
 			: (result.Status == ImportStatus.EntryErrors || result.Status == ImportStatus.NoValidEntries
 				? MessageBoxImage.Warning : MessageBoxImage.Error);
-		MessageBox.Show(this, result.Message,
+		ServiceLocator.MessageBox.Show( result.Message,
 			PreferencesLocalization.Translate("Import Colors", lang),
 			MessageBoxButton.OK, icon);
 	}

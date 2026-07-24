@@ -83,18 +83,18 @@ namespace ForkPlus.UI.Dialogs
 			FileDiffControl.Target = ((mode is ShowFileHistoryWindowCommand.Mode.Hunk) ? FileDiffControlTarget.HunkHistory : FileDiffControlTarget.History);
 			base.SizeChanged += FileHistoryWindow_SizeChanged;
 			base.Activated += FileHistoryWindow_Activated;
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "DiffContextSizeChanged", delegate
-			{
-				_delayedAction.ReinvokeNow();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
-			{
-				_delayedAction.ReinvokeNow();
-			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
-			{
-				_delayedAction.ReinvokeNow();
-			});
+			NotificationCenter.Current.DiffContextSizeChanged += delegate
+		{
+			_delayedAction.ReinvokeNow();
+		};
+		NotificationCenter.Current.DiffIgnoreWhitespacesChanged += delegate
+		{
+			_delayedAction.ReinvokeNow();
+		};
+		NotificationCenter.Current.DiffShowEntireFileChanged += delegate
+		{
+			_delayedAction.ReinvokeNow();
+		};
 			base.KeyBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutKeyBinding(delegate
 			{
 				HistoryEntryViewModel historyEntryViewModel4 = _selectedHistoryEntries?.FirstItem();

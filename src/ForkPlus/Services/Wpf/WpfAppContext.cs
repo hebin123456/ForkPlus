@@ -1,4 +1,6 @@
 using System;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using ForkPlus.Services;
 
 namespace ForkPlus.Services.Wpf
@@ -20,10 +22,8 @@ namespace ForkPlus.Services.Wpf
 
 		public void Shutdown()
 		{
-			System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-			{
-				System.Windows.Application.Current.Shutdown();
-			});
+			// 阶段 4.5：WPF System.Windows.Application.Current.Shutdown() → Avalonia IClassicDesktopStyleApplicationLifetime.Shutdown()。
+			(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 		}
 	}
 }

@@ -1,8 +1,10 @@
+using ForkPlus.UI.Dialogs;
+
 namespace ForkPlus.Services.Wpf
 {
 	/// <summary>
-	/// WPF 平台的 <see cref="IMessageBoxService"/> 实现，委托给 <c>System.Windows.MessageBox</c>。
-	/// 阶段 0 仅注册到 ServiceLocator，不替换现有调用点。
+	/// 平台无关的 <see cref="IMessageBoxService"/> 实现，委托给 <c>MessageBoxWindow</c>。
+	/// 阶段 4.5：WPF System.Windows.MessageBox → Avalonia MessageBoxWindow.ShowDialog()。
 	/// </summary>
 	public class WpfMessageBoxService : IMessageBoxService
 	{
@@ -12,59 +14,34 @@ namespace ForkPlus.Services.Wpf
 			MessageBoxButton buttons = MessageBoxButton.OK,
 			MessageBoxImage icon = MessageBoxImage.None)
 		{
-			System.Windows.MessageBoxButton wpfButtons = MapButtons(buttons);
-			System.Windows.MessageBoxImage wpfIcon = MapIcon(icon);
-			System.Windows.MessageBoxResult wpfResult = System.Windows.MessageBox.Show(
-				message, title ?? string.Empty, wpfButtons, wpfIcon);
-			return MapResult(wpfResult);
-		}
+			bool showCancelButton = buttons != MessageBoxButton.OK;
+			// MessageBoxButton.YesNo / YesNoCancel：Submit 按钮文案用 "Yes"，Cancel 用 "No"（仅 YesNo）或 "Cancel"（YesNoCancel）。
+			// MessageBoxButton.OK / OKCancel：Submit 用 "OK"，Cancel 用 "Cancel"。
+			string submitTitle = (buttons == MessageBoxButton.YesNo || buttons == MessageBoxButton.YesNoCancel) ? "Yes" : "OK";
+			string cancelTitle = buttons == MessageBoxButton.YesNo ? "No" : "Cancel";
+			bool showWarningIcon = icon == MessageBoxImage.Warning || icon == MessageBoxImage.Error;
 
-		private static System.Windows.MessageBoxButton MapButtons(MessageBoxButton buttons)
-		{
+			MessageBoxWindow window = new MessageBoxWindow(
+				title ?? string.Empty,
+				message,
+				submitTitle,
+				cancelTitle,
+				showCancelButton: showCancelButton,
+				width: 600.0,
+				showWarningIcon: showWarningIcon);
+
+			bool submitted = window.ShowDialog().GetValueOrDefault();
+
 			switch (buttons)
 			{
-				case MessageBoxButton.OKCancel:
-					return System.Windows.MessageBoxButton.OKCancel;
 				case MessageBoxButton.YesNo:
-					return System.Windows.MessageBoxButton.YesNo;
+					return submitted ? MessageBoxResult.Yes : MessageBoxResult.No;
 				case MessageBoxButton.YesNoCancel:
-					return System.Windows.MessageBoxButton.YesNoCancel;
+					return submitted ? MessageBoxResult.Yes : MessageBoxResult.Cancel;
+				case MessageBoxButton.OKCancel:
+					return submitted ? MessageBoxResult.OK : MessageBoxResult.Cancel;
 				default:
-					return System.Windows.MessageBoxButton.OK;
-			}
-		}
-
-		private static System.Windows.MessageBoxImage MapIcon(MessageBoxImage icon)
-		{
-			switch (icon)
-			{
-				case MessageBoxImage.Information:
-					return System.Windows.MessageBoxImage.Information;
-				case MessageBoxImage.Warning:
-					return System.Windows.MessageBoxImage.Warning;
-				case MessageBoxImage.Error:
-					return System.Windows.MessageBoxImage.Error;
-				case MessageBoxImage.Question:
-					return System.Windows.MessageBoxImage.Question;
-				default:
-					return System.Windows.MessageBoxImage.None;
-			}
-		}
-
-		private static MessageBoxResult MapResult(System.Windows.MessageBoxResult result)
-		{
-			switch (result)
-			{
-				case System.Windows.MessageBoxResult.OK:
 					return MessageBoxResult.OK;
-				case System.Windows.MessageBoxResult.Cancel:
-					return MessageBoxResult.Cancel;
-				case System.Windows.MessageBoxResult.Yes:
-					return MessageBoxResult.Yes;
-				case System.Windows.MessageBoxResult.No:
-					return MessageBoxResult.No;
-				default:
-					return MessageBoxResult.None;
 			}
 		}
 	}

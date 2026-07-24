@@ -8,6 +8,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -66,7 +67,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					Translate("AI is not configured. Please configure AI review settings in Preferences first."),
 					Translate("AI Generate Stash Name"),
 					MessageBoxButton.OK,
@@ -99,7 +100,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						base.Dispatcher.Async(delegate
 						{
-							MessageBox.Show(
+							ServiceLocator.MessageBox.Show(
 								Translate("No working directory changes detected. Nothing to generate a stash message for."),
 								Translate("AI Generate Stash Name"),
 								MessageBoxButton.OK,

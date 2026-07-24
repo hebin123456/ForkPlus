@@ -703,7 +703,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					_adorner = new RewordAdorner(RevisionListView);
 					_adorner.Child = CreateAdornerContent(revision);
-					AdornerLayer.GetAdornerLayer(RevisionListView)?.Add(_adorner);
+				_adorner.AttachTo(RevisionListView);
 				}
 				else if (_adorner.Child is RewordUserControl rewordUserControl)
 				{
@@ -754,7 +754,7 @@ namespace ForkPlus.UI.Dialogs
 			if (_adorner != null)
 			{
 				_adorner.Child = null;
-				AdornerLayer.GetAdornerLayer(RevisionListView)?.Remove(_adorner);
+				_adorner.DetachFrom(RevisionListView);
 				_adorner = null;
 			}
 		}

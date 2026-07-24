@@ -211,7 +211,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 			});
 			RefreshBrushes();
-			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}
 
 		private void RefreshData(ForkPlus.Services.CalendarDateRange dateRange)

@@ -15,6 +15,7 @@ using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Parsing;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Jobs;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -129,10 +130,10 @@ namespace ForkPlus.UI.Dialogs
 			};
 			MergedMergeEditor.IsReadOnly = false;
 			MergedMergeEditor.Document.Changing += Document_Changing;
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
-				RefreshCodeEditorFontSize(ForkPlusSettings.Default.CodeEditorFontSize);
-			});
+			NotificationCenter.Current.CodeEditorFontSizeChanged += delegate
+		{
+			RefreshCodeEditorFontSize(ForkPlusSettings.Default.CodeEditorFontSize);
+		};
 			RefreshCodeEditorFontSize(ForkPlusSettings.Default.CodeEditorFontSize);
 		}
 
@@ -249,7 +250,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -276,7 +277,7 @@ namespace ForkPlus.UI.Dialogs
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to read conflict file: " + ex.Message);
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -287,7 +288,7 @@ namespace ForkPlus.UI.Dialogs
 			if (string.IsNullOrEmpty(conflictedContent)
 				|| !conflictedContent.Contains("<<<<<<<") || !conflictedContent.Contains(">>>>>>>"))
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("No conflict markers found in the file."),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -354,7 +355,7 @@ namespace ForkPlus.UI.Dialogs
 			if (requestError != null)
 			{
 				Log.Error("AI Resolve failed: " + requestError.Message);
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -370,7 +371,7 @@ namespace ForkPlus.UI.Dialogs
 			resolved = OpenAiService.StripCodeFences(resolved);
 			if (string.IsNullOrWhiteSpace(resolved))
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("AI returned empty content. Aborting."),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -381,7 +382,7 @@ namespace ForkPlus.UI.Dialogs
 			// 残留冲突标记检测：若 AI 输出仍包含冲突标记，说明没解决干净，提示用户
 			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
 			{
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.Current("AI output still contains conflict markers. Please review and try again, or resolve manually."),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,
@@ -389,7 +390,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 
-			MessageBoxResult confirm = MessageBox.Show(
+			MessageBoxResult confirm = ServiceLocator.MessageBox.Show(
 				PreferencesLocalization.Current("AI resolved all conflicts. Apply the resolved content and close?"),
 				PreferencesLocalization.Current("AI Resolve"),
 				MessageBoxButton.YesNo,
@@ -407,7 +408,7 @@ namespace ForkPlus.UI.Dialogs
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to write back: " + ex.Message);
-				MessageBox.Show(
+				ServiceLocator.MessageBox.Show(
 					PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
 					PreferencesLocalization.Current("AI Resolve"),
 					MessageBoxButton.OK,

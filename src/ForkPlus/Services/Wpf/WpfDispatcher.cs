@@ -1,5 +1,4 @@
 using System;
-using System.Windows.Threading;
 using Avalonia.Threading;
 
 namespace ForkPlus.Services.Wpf
@@ -15,7 +14,7 @@ namespace ForkPlus.Services.Wpf
 
 		public void Post(Action action)
 		{
-			_dispatcher.BeginInvoke(action);
+			_dispatcher.Post(action);
 		}
 
 		public void Invoke(Action action)
