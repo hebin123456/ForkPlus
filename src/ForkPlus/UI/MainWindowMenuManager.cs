@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -16,6 +17,13 @@ using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF System.Windows.* → Avalonia.*（Controls/Input/Interactivity）。
+	// WPF WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(..., "ActiveTabChanged", ...)
+	// → 直接事件订阅 NotificationCenter.Current.ActiveTabChanged += handler（阶段 6 改用 Avalonia WeakEvent）。
+	// WPF RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs。
+	// WPF Visibility（Collapsed/Visible）→ Avalonia.Visibility（同名枚举，行为一致）。
+	// Menu/MenuItem/Separator 已是 Avalonia.Controls 类型；MenuItem.SubmenuOpened / Items / IsChecked / IsCheckable / Header / Click API 与 WPF 兼容。
+	// 业务逻辑（菜单结构、命令绑定、主题切换、Git Flow/LFS 子菜单构建）保持不变。
 	public class MainWindowMenuManager
 	{
 		private readonly Menu _mainMenu;
@@ -42,7 +50,9 @@ namespace ForkPlus.UI
 
 		public void Initialize()
 		{
-			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
+			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
+			// TODO(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
+			NotificationCenter.Current.ActiveTabChanged += ActiveTabChanged;
 			RefreshRepositoryItemState();
 		}
 
