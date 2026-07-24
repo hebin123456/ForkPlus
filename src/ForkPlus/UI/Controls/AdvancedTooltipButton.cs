@@ -1,14 +1,17 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Threading;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Controls
 {
+	// 阶段 4.5：WPF Button + MouseEnter/MouseLeave → Avalonia Button + PointerEntered/PointerExited。
+	// WPF DispatcherTimer 在 Avalonia 中为 Avalonia.Threading.DispatcherTimer（同名命名空间差异）。
+	// WPF Popup.StaysOpen=true → Avalonia Popup.IsLightDismissEnabled=false。
+	// WPF Popup.IsMouseOver → 手动跟踪 _isPopupMouseOver（在 popup.Child 上订阅 Pointer 事件）。
 	public class AdvancedTooltipButton : Button
 	{
 		private readonly RepositoryUserControl _repositoryUserControl;
@@ -20,6 +23,8 @@ namespace ForkPlus.UI.Controls
 		private readonly DispatcherTimer _closePopupTimer = new DispatcherTimer();
 
 		private readonly Action _action;
+
+		private bool _isPopupMouseOver;
 
 		[Null]
 		private Popup _popup;
@@ -34,13 +39,13 @@ namespace ForkPlus.UI.Controls
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
 			base.Click += AdvancedTooltipButton_Click;
-			base.MouseEnter += delegate(object s, MouseEventArgs e)
+			base.PointerEntered += delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
 				_closePopupTimer.Stop();
 				_showPopupTimer.Start();
 			};
-			base.MouseLeave += delegate(object s, MouseEventArgs e)
+			base.PointerExited += delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
 				_showPopupTimer.Stop();
@@ -78,7 +83,8 @@ namespace ForkPlus.UI.Controls
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			// 阶段 4.5：WPF popup.IsMouseOver → 手动跟踪 _isPopupMouseOver。
+			if (_popup != null && _popup.IsOpen && (!_isPopupMouseOver || hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");
@@ -92,9 +98,8 @@ namespace ForkPlus.UI.Controls
 			{
 				HorizontalOffset = 0.0,
 				VerticalOffset = -4.0,
-				StaysOpen = true,
-				AllowsTransparency = true,
-				PopupAnimation = PopupAnimation.Fade,
+				// 阶段 4.5：WPF StaysOpen=true → Avalonia IsLightDismissEnabled=false。
+				IsLightDismissEnabled = false,
 				PlacementTarget = this
 			};
 			TooltipRevisionDetailsUserControl tooltipRevisionDetailsUserControl = new TooltipRevisionDetailsUserControl(_repositoryUserControl, _sha);
@@ -102,11 +107,18 @@ namespace ForkPlus.UI.Controls
 			{
 				ClosePopup(hardClose: true);
 			});
-			VisualTreeAttachmentHelper.TrySetPopupChild(obj, tooltipRevisionDetailsUserControl, GetType().Name + ".Popup");
-			obj.MouseLeave += delegate
+			// 阶段 4.5：WPF popup.MouseLeave → 在 popup.Child 上订阅 PointerExited。
+			tooltipRevisionDetailsUserControl.PointerEntered += delegate
 			{
+				_isPopupMouseOver = true;
+				_closePopupTimer.Stop();
+			};
+			tooltipRevisionDetailsUserControl.PointerExited += delegate
+			{
+				_isPopupMouseOver = false;
 				_closePopupTimer.Start();
 			};
+			VisualTreeAttachmentHelper.TrySetPopupChild(obj, tooltipRevisionDetailsUserControl, GetType().Name + ".Popup");
 			return obj;
 		}
 	}

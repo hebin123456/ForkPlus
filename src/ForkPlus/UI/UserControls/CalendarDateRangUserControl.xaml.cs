@@ -1,13 +1,16 @@
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia.Controls;
+using Avalonia.Input;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.UserControls
 {
+	// 阶段 4.5：WPF System.Windows.Controls.CalendarDateRange → ForkPlus.Services.CalendarDateRange。
+	// WPF Calendar 控件在 Avalonia 中为 Avalonia.Controls.Calendar，API 大体兼容。
+	// WPF Calendar.GotMouseCapture + CalendarDayButton/CalendarItem 鼠标捕获释放
+	// 在 Avalonia 中无对应；Avalonia Calendar 不持有鼠标捕获，移除该处理。
+	// TODO(4.5-i): Avalonia Calendar 的 DisplayDateStart/DisplayDateEnd/DisplayDate 属性
+	// 需运行时验证是否存在；如不存在需用 BlackoutDates 或自定义替代。
 	public partial class CalendarDateRangUserControl : UserControl
 	{
 		private DateTime _start;
@@ -18,10 +21,7 @@ namespace ForkPlus.UI.UserControls
 
 		public DateTime Start
 		{
-			get
-			{
-				return _start;
-			}
+			get => _start;
 			set
 			{
 				_start = value;
@@ -31,10 +31,7 @@ namespace ForkPlus.UI.UserControls
 
 		public DateTime End
 		{
-			get
-			{
-				return _end;
-			}
+			get => _end;
 			set
 			{
 				_end = value;
@@ -46,7 +43,7 @@ namespace ForkPlus.UI.UserControls
 
 		public DateTime? MaxDate { get; set; }
 
-		public event EventHandler<EventArgs<CalendarDateRange>> DateRangeChanged;
+		public event EventHandler<EventArgs<Services.CalendarDateRange>> DateRangeChanged;
 
 		public CalendarDateRangUserControl()
 		{
@@ -64,7 +61,7 @@ namespace ForkPlus.UI.UserControls
 					dateTime = dateTime2;
 					StartCalendar.SelectedDate = dateTime2;
 				}
-				this.DateRangeChanged?.Invoke(this, new EventArgs<CalendarDateRange>(new CalendarDateRange(dateTime, dateTime2)));
+				this.DateRangeChanged?.Invoke(this, new EventArgs<Services.CalendarDateRange>(new Services.CalendarDateRange(dateTime, dateTime2)));
 			}
 		}
 
@@ -79,16 +76,7 @@ namespace ForkPlus.UI.UserControls
 					dateTime2 = dateTime;
 					EndCalendar.SelectedDate = dateTime;
 				}
-				this.DateRangeChanged?.Invoke(this, new EventArgs<CalendarDateRange>(new CalendarDateRange(dateTime, dateTime2)));
-			}
-		}
-
-		private void Calendar_GotMouseCapture(object sender, MouseEventArgs e)
-		{
-			UIElement uIElement = e.OriginalSource as UIElement;
-			if (uIElement is CalendarDayButton || uIElement is CalendarItem)
-			{
-				uIElement.ReleaseMouseCapture();
+				this.DateRangeChanged?.Invoke(this, new EventArgs<Services.CalendarDateRange>(new Services.CalendarDateRange(dateTime, dateTime2)));
 			}
 		}
 
@@ -99,6 +87,7 @@ namespace ForkPlus.UI.UserControls
 			if (minDate.HasValue)
 			{
 				DateTime valueOrDefault = minDate.GetValueOrDefault();
+				// TODO(4.5-i): 验证 Avalonia Calendar.DisplayDateStart 是否存在。
 				StartCalendar.DisplayDateStart = valueOrDefault;
 				EndCalendar.DisplayDateStart = valueOrDefault;
 			}
@@ -106,6 +95,7 @@ namespace ForkPlus.UI.UserControls
 			if (minDate.HasValue)
 			{
 				DateTime valueOrDefault2 = minDate.GetValueOrDefault();
+				// TODO(4.5-i): 验证 Avalonia Calendar.DisplayDateEnd 是否存在。
 				EndCalendar.DisplayDateEnd = valueOrDefault2;
 				StartCalendar.DisplayDateEnd = valueOrDefault2;
 			}
@@ -115,6 +105,5 @@ namespace ForkPlus.UI.UserControls
 			EndCalendar.DisplayDate = End;
 			_isCalendarUpdatingInProgress = false;
 		}
-
 	}
 }

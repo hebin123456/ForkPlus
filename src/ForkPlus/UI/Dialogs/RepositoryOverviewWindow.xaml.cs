@@ -107,7 +107,7 @@ namespace ForkPlus.UI.Dialogs
 								string text = dataSource.GetPath(selectedIndexPath).TrimEnd('/');
 								string text2 = text;
 								string text3 = "";
-								Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
+								Sha[] shas = repositoryOverviewWindow._repositoryOverviewData.GetShas(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize(), text);
 								GitCommandResult<RevisionHeader[]> gitCommandResult = new GetRevisionHeadersGitCommand().Execute(repositoryOverviewWindow._gitModule, shas);
 								if (!gitCommandResult.Succeeded)
 								{
@@ -128,7 +128,7 @@ namespace ForkPlus.UI.Dialogs
 									// 跳过提交列表更新，避免 IndexOutOfRangeException 崩溃。
 									Log.Error(Translate("Revision header count mismatch"));
 								}
-								(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize(), text);
+								(int, int, DateTime)[] authorStats = repositoryOverviewWindow._repositoryOverviewData.GetAuthorStats(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize(), text);
 								repositoryOverviewWindow.AuthorsUserControl.UpdateData(authorStats, repositoryOverviewWindow._repositoryOverviewData.UserIdentities);
 								int num = text.LastIndexOf("/");
 								if (num != -1)
@@ -158,7 +158,7 @@ namespace ForkPlus.UI.Dialogs
 			};
 			DateRangeButton.DateRangeChanged += delegate
 			{
-				repositoryOverviewWindow.RefreshData(repositoryOverviewWindow.DateRangeButton.DateRange.ToServiceCalendarDateRange().Quantize());
+				repositoryOverviewWindow.RefreshData(repositoryOverviewWindow.DateRangeButton.DateRange.Quantize());
 			};
 			Fallback.Show();
 			Fallback.FallbackTitle = Translate("Loading...");
@@ -197,7 +197,7 @@ namespace ForkPlus.UI.Dialogs
 							repositoryOverviewWindow.DateRangeButton.Show();
 							repositoryOverviewWindow.DateRangeButton.MinDate = dateTime;
 							repositoryOverviewWindow.DateRangeButton.MaxDate = dateTime2;
-							repositoryOverviewWindow.DateRangeButton.DateRange = new CalendarDateRange(dateTime, dateTime2);
+							repositoryOverviewWindow.DateRangeButton.DateRange = new ForkPlus.Services.CalendarDateRange(dateTime, dateTime2);
 							repositoryOverviewWindow.Fallback.Hide();
 						});
 					}

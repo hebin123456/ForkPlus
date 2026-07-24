@@ -283,7 +283,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (!_isCalendarUpdatingInProgress)
 				{
-				UpdatePreview(_gitModule, DateRangeButton.DateRange.ToServiceCalendarDateRange());
+				UpdatePreview(_gitModule, DateRangeButton.DateRange);
 				}
 			};
 			StatsContainer.Collapse();
@@ -390,7 +390,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 								DateRangeButton.MinDate = _stats.Start;
 								DateRangeButton.MaxDate = _stats.End;
 							}
-							DateRangeButton.DateRange = new CalendarDateRange(_stats.Start, _stats.End);
+							DateRangeButton.DateRange = new ForkPlus.Services.CalendarDateRange(_stats.Start, _stats.End);
 							_isCalendarUpdatingInProgress = false;
 							UpdatePlots(_stats);
 							// 消费待滚动请求：此时 StatsContainer 已 Show，UpdatePlots 已渲染各图表，
