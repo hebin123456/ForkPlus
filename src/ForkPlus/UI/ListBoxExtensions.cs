@@ -1,10 +1,18 @@
 using System;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI
 {
+	// 阶段 4.5：WPF System.Windows.Controls.ListBox + ItemContainerGenerator.ContainerFromIndex
+	// → Avalonia ListBox + ItemContainerGenerator.ContainerFromIndex（API 兼容）。
+	// WPF Keyboard.Focus → Avalonia Control.Focus。
+	// WPF VisualTreeHelper.GetChild + ScrollViewer 嵌套查找
+	// → Avalonia IVisual.GetVisualDescendants() + OfType<ScrollViewer>()。
+	// WPF ListBox.ScrollIntoView(object) 在 Avalonia 11 中为 ListBox.ScrollIntoView(object)，
+	// 但签名/行为可能不同；通过查找内部 ScrollViewer 直接设置偏移以保持原语义。
 	public static class ListBoxExtensions
 	{
 		public enum SelectOptions
@@ -85,21 +93,27 @@ namespace ForkPlus.UI
 		private static void SetKeyboardFocus(ListBox listBox, int row)
 		{
 			listBox.UpdateLayout();
+			// 阶段 4.5：WPF Keyboard.Focus(element) → Avalonia Control.Focus()。
+			// MainWindow.Instance.IsActive 检查保留（Avalonia Window.IsActive 同样存在）。
 			if (listBox.ItemContainerGenerator.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
 			{
-				Keyboard.Focus(element);
+				element.Focus();
 			}
 		}
 
 		private static void ScrollRowIntoView(ListBox listBox, int row)
 		{
-			if (VisualTreeHelper.GetChildrenCount(listBox) != 0)
+			// 阶段 4.5：WPF VisualTreeHelper.GetChild 嵌套查找 ScrollViewer
+			// → Avalonia IVisual.GetVisualDescendants + OfType<ScrollViewer>()。
+			// WPF ListBox 内部结构是 ListBox → Border → ScrollViewer；Avalonia 同样嵌套 ScrollViewer，
+			// 但通过 GetVisualDescendants 查找更稳健（不依赖具体层级）。
+			ScrollViewer scrollViewer = listBox.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+			if (scrollViewer != null)
 			{
-				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
 				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
 				{
-					scrollViewer.ScrollToVerticalOffset(num);
+					scrollViewer.Offset = new Vector(scrollViewer.Offset.X, num);
 				}
 			}
 		}
