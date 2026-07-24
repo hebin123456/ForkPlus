@@ -20,15 +20,25 @@
 - [x] `OxyPlot.Wpf` → `OxyPlot.Avalonia`（4.7-b 完成）
   - 涉及：`StatisticsUserControl`、`StatisticsUserControlViewModel`
   - 已完成：`OxyPlot.Wpf` → `OxyPlot.Avalonia`、`WeakEventManager` → 直接订阅、`ListCollectionView`/`CollectionViewSource` → 过滤 `ObservableCollection`、`Dispatcher.BeginInvoke` → `Dispatcher.Post`、`ToOxyColor()` 扩展方法（`OxyPlotExtensions.cs`）、XAML xmlns 替换、`{x:Type}` → Selector 语法
-- [ ] `Microsoft.Web.WebView2` → 调研替代方案（4.7-c 评估完成，**最大工作量**）
-  - **评估结论：推荐方案 B（Markdig + Avalonia 原生 Markdown 渲染）**
+- [ ] `Microsoft.Web.WebView2` → 调研替代方案（4.7-c 进行中，**最大工作量**）
+  - **评估结论：推荐方案 B（Markdig + Avalonia 原生 Markdown 渲染）**——采用现成包 `OneWare.Markdown.Avalonia.Tight` 11.3.17.1（Avalonia 11.3.17 + net10.0，MIT，fork 自 whistyun/Markdown.Avalonia），无需自建 `MarkdownAvaloniaRenderer`
   - 与 csproj 声明一致："阶段 4.7 由 AvaloniaEdit + Markdown 渲染替代后移除"
   - 涉及：`AiDevelopmentWindow` / `AiCodeReviewWindow` / `AiTextResultWindow` / `GitMmReferenceWindow` / `WebView2EnvironmentHelper` / `AiStreamingMarkdownViewModel`
-  - 工作量：~3-4 周（需构建 `MarkdownAvaloniaRenderer` 组件，逐窗口迁移）
   - 拒绝方案 A（CefNet/Avalonia.WebView）：CefNet 未维护，~150MB Chromium 依赖，不推进跨平台目标
   - 拒绝方案 C（CefNet 直接使用）：同上风险更高
   - 过渡方案 D（Windows 保留 WebView2 + 跨平台 fallback）：可作增量迁移过渡
   - JS 互操作：`AiTextResultWindow`/`AiCodeReviewWindow` 用 `window.chrome.webview.postMessage` 做滚动追踪和建议卡按钮回调，需改为原生 Avalonia 事件
+  - **进度**：
+    - [x] 4.7-c-1：`GitMmReferenceWindow` 迁移完成（最简单，无 JS 互操作）
+      - `WebView2.NavigateToString(HTML)` → `MarkdownScrollViewer.Markdown` 属性（原生 Avalonia 控件渲染）
+      - 移除全部 HTML 生成代码（`MarkdownToHtml`/`AppendHtmlTable`/`ConvertInlineMarkdownToHtml`/`CreateHtmlDocument`/`Bt.bt_md_to_html` 调用）
+      - GFM 表格改由 Markdown.Avalonia 内置支持（替代自研 `IsTableRow`/`SplitTableRow` 解析）
+      - 移除 `Microsoft.Web.WebView2.Core` using；删除 `GitMmReferenceWindowTests`（测试已移除的 `MarkdownToHtml` 方法）
+      - 保留 `FallbackUserControl`（仍 WPF，44 文件共用，单独迁移）
+    - [ ] 4.7-c-2：`AiDevelopmentWindow`（无 postMessage，但有多气泡 + 动态 WebView 创建 + `ExecuteScriptAsync` 测高）
+    - [ ] 4.7-c-3：`AiTextResultWindow`（scroll-at-bottom JS 互操作 → Avalonia ScrollViewer 事件）
+    - [ ] 4.7-c-4：`AiCodeReviewWindow`（scroll 追踪 + 建议卡按钮回调 preview/apply suggestion → 原生 Avalonia 事件/Command，最复杂）
+    - [ ] 4.7-c-5：`WebView2EnvironmentHelper` 删除 + csproj 移除 `Microsoft.Web.WebView2` 包 + `CopyWebView2LoaderToRoot` MSBuild target 删除
 - [x] `Microsoft-WindowsAPICodePack-Shell` → Avalonia `StorageProvider.OpenFilePickerAsync` / `SaveFilePickerAsync`（4.7-d 完成）
   - 涉及：`OpenDialog` 静态类（阶段 2 已迁移到 `IFileSystemDialogService`）、`WpfFileSystemDialogService`、`IFileSystemDialogService`
   - 已完成：`CommonOpenFileDialog` → `OpenFolderPickerAsync`/`OpenFilePickerAsync`、`CommonSaveFileDialog` → `SaveFilePickerAsync`、`GetAwaiter().GetResult()` 同步阻塞异步调用、`PreventRefreshAfterChildDialogClose` 保留、`FilePickerFileType.Patterns` glob 规范化（WPF `.txt` → Avalonia `*.txt`）

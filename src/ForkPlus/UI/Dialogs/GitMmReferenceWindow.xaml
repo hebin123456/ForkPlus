@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow CanResize="True" Height="680" Width="860" MinHeight="420" MinWidth="560" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmReferenceWindow">
+<dialogs:ForkPlusDialogWindow CanResize="True" Height="680" Width="860" MinHeight="420" MinWidth="560" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmReferenceWindow">
   <Grid xmlns="https://github.com/avaloniaui">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -10,8 +10,12 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid Grid.Row="1" Grid.Column="1" Margin="0,12,0,4">
-      <wv2:WebView2 x:Name="ManualWebView" />
-      <userControls:FallbackUserControl Visibility="Collapsed" x:Name="ManualFallback">
+      <!-- 阶段 4 里程碑 4.7-c-1：WebView2 NavigateToString(HTML) → Markdown.Avalonia 原生控件渲染。
+           MarkdownScrollViewer 内置 ScrollViewer，将 Markdown 字符串渲染为 Border/Grid/TextBlock 等
+           原生 Avalonia 控件（含 GFM 表格、代码块、标题等）。Markdown 内容在 code-behind 中通过
+           LoadManual() 读取 .md 文件后赋值给 Markdown 属性。 -->
+      <md:MarkdownScrollViewer x:Name="ManualMarkdownViewer" />
+      <userControls:FallbackUserControl IsVisible="False" x:Name="ManualFallback">
         <UserControl.Background>
           <SolidColorBrush xmlns="https://github.com/avaloniaui">#00FFFFFF</SolidColorBrush>
         </UserControl.Background>
