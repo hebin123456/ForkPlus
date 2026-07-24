@@ -12,11 +12,11 @@
        FrameworkElement.OverridesDefaultStyle -> OverridesDefaultStyle, Border.BorderBrush -> BorderBrush,
        Border.BorderThickness -> BorderThickness, Control.Padding -> Padding, TextElement.FontWeight -> FontWeight,
        ToolTip.HasDropShadow -> HasDropShadow, UIElement.Effect -> Effect.
-     - TemplateBinding class prefixes stripped ({TemplateBinding Panel.Background} -> {TemplateBinding Background},
-       {TemplateBinding Control.Padding} -> {TemplateBinding Padding}, {TemplateBinding FrameworkElement.Width}
-       -> {TemplateBinding Width}, {TemplateBinding FrameworkElement.Height} -> {TemplateBinding Height},
-       {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush},
-       {TemplateBinding Border.BorderThickness} -> {TemplateBinding BorderThickness}).
+     - TemplateBinding class prefixes stripped ({TemplateBinding Background} -> {TemplateBinding Background},
+       {TemplateBinding Padding} -> {TemplateBinding Padding}, {TemplateBinding Width}
+       -> {TemplateBinding Width}, {TemplateBinding Height} -> {TemplateBinding Height},
+       {TemplateBinding BorderBrush} -> {TemplateBinding BorderBrush},
+       {TemplateBinding BorderThickness} -> {TemplateBinding BorderThickness}).
      - Custom attached properties preserved (controls:GitPointView.IconMargin, ScrollViewer.HorizontalScrollBarVisibility,
        KeyboardNavigation.IsTabStop).
      - CodeEditor ControlTemplate.Triggers (WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled)
@@ -74,7 +74,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="2" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -83,7 +83,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -199,7 +199,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ToolTip}">
-          <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" SnapsToDevicePixels="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
+          <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
           </Border>
           <!-- TODO: ControlTemplate.Triggers ToolTip.HasDropShadow=True -> Margin=10 on templated parent +

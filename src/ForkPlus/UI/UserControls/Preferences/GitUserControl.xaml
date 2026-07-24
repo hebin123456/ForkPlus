@@ -8,9 +8,9 @@
             <DataTrigger.Binding>
               <Binding Path="GitInstanceType" />
             </DataTrigger.Binding>
-            <Setter Property="FrameworkElement.Height" Value="1" />
-            <Setter Property="UIElement.IsEnabled" Value="False" />
-            <Setter Property="Control.Template">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBoxItem}">
                   <Separator HorizontalAlignment="Stretch" Margin="0" />

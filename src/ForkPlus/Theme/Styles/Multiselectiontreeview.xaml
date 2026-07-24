@@ -9,8 +9,8 @@
        Control.Padding -> Padding, Control.Template -> Template, TextElement.Foreground -> Foreground,
        TextElement.FontSize -> FontSize, Path.Data -> Data, ToggleButton.IsChecked -> IsChecked,
        ItemsControl.ItemContainerStyle -> ItemContainerStyle).
-     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding FrameworkElement.Height} -> {TemplateBinding Height},
-       {TemplateBinding Panel.Background} -> {TemplateBinding Background}).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Height} -> {TemplateBinding Height},
+       {TemplateBinding Background} -> {TemplateBinding Background}).
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
      - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, ToggleButton.IsChecked=True -> :checked.
      - MultiTrigger (Selector.IsSelectionActive=True AND ListBoxItem.IsSelected=True) -> :selected:focus-within.
@@ -62,11 +62,10 @@
     <Setter Property="Padding" Value="2" />
     <Setter Property="Margin" Value="2,0,2,0" />
     <Setter Property="Height" Value="20" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ListViewItem}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" SnapsToDevicePixels="True" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
@@ -88,7 +87,7 @@
                   <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
                 </ToggleButton.Visibility>
               </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             </Grid>
           </Border>
         </ControlTemplate>
@@ -126,15 +125,15 @@
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource TreeViewControlItemStyle}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type controls:MultiselectionTreeView}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+              <ItemsPresenter />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
@@ -155,12 +154,11 @@
     <Setter Property="Padding" Value="2" />
     <Setter Property="Margin" Value="2,0" />
     <Setter Property="Height" Value="Auto" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ListViewItem}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" SnapsToDevicePixels="True" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
@@ -182,7 +180,7 @@
                   <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
                 </ToggleButton.Visibility>
               </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             </Grid>
           </Border>
         </ControlTemplate>
@@ -225,7 +223,6 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
   </Style>
   <Style x:Key="SideBarSearchMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView" BasedOn="{StaticResource FileHistoryMultiselectionTreeViewStyle}">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
@@ -239,7 +236,6 @@
     <Setter Property="Height" Value="Auto" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
   </Style>
   <Style x:Key="SideBarIssuesMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView" BasedOn="{StaticResource FileHistoryMultiselectionTreeViewStyle}">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
@@ -251,7 +247,6 @@
     <Setter Property="Height" Value="22" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
   </Style>
   <Style x:Key="SideBarMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
@@ -275,15 +270,14 @@
     <Setter Property="Padding" Value="2" />
     <Setter Property="Margin" Value="2,0" />
     <Setter Property="Height" Value="20" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ListViewItem}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -309,9 +303,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type controls:MultiselectionTreeView}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF" Style="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="0,4,0,0" />
+              <ItemsPresenter Margin="0,4,0,0" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>

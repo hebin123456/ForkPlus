@@ -3,35 +3,35 @@
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
       <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-        <Setter Property="FrameworkElement.FocusVisualStyle">
+        <Setter Property="FocusVisualStyle">
           <Setter.Value>
             <x:Null />
           </Setter.Value>
         </Setter>
-        <Setter Property="Control.Template">
+        <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type ListBoxItem}">
-              <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="0" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Control.Padding}" LayoutTransform="{DynamicResource LayoutScaleTransform}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
               <ControlTemplate.Triggers>
                 <MultiTrigger>
                   <MultiTrigger.Conditions>
-                    <Condition Property="Selector.IsSelectionActive" Value="False" />
+                    <Condition Property="IsSelectionActive" Value="False" />
                     <Condition Property="ListBoxItem.IsSelected" Value="True" />
                   </MultiTrigger.Conditions>
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiTrigger>
                 <MultiTrigger>
                   <MultiTrigger.Conditions>
-                    <Condition Property="Selector.IsSelectionActive" Value="True" />
+                    <Condition Property="IsSelectionActive" Value="True" />
                     <Condition Property="ListBoxItem.IsSelected" Value="True" />
                   </MultiTrigger.Conditions>
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Panel.Background" />
-                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="Border.BorderBrush" />
-                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+                  <Setter TargetName="Bd" Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+                  <Setter TargetName="Bd" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiTrigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -76,8 +76,8 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
             <Setter TargetName="IconImage" Property="Image.Source">
               <Setter.Value>
                 <Binding Path="SelectedIcon" />
@@ -133,8 +133,8 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
             <Setter TargetName="IconImage" Property="Image.Source">
               <Setter.Value>
                 <Binding Path="SelectedIcon" />
@@ -157,7 +157,7 @@
         <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
       </StackPanel>
     </Border>
-    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" ItemContainerStyle="{DynamicResource QuickLaunchListBoxItemStyle}" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" PointerReleased="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox">
+    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" ItemContainerStyle="{DynamicResource QuickLaunchListBoxItemStyle}" PointerReleased="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox">
       <ListBox.FocusVisualStyle>
         <x:Null />
       </ListBox.FocusVisualStyle>

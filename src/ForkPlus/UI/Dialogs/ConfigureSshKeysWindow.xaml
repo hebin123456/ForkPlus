@@ -72,7 +72,7 @@
                     </Condition>
                   </MultiDataTrigger.Conditions>
                   <MultiDataTrigger.Setters>
-                    <Setter TargetName="KeyNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                    <Setter TargetName="KeyNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                   </MultiDataTrigger.Setters>
                 </MultiDataTrigger>
               </DataTemplate.Triggers>

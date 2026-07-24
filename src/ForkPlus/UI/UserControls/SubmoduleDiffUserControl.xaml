@@ -160,7 +160,7 @@
                     <DataTrigger.Binding>
                       <Binding Path="IsSearchMatch" />
                     </DataTrigger.Binding>
-                    <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Panel.Background" />
+                    <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Background" />
                   </DataTrigger>
                 </DataTemplate.Triggers>
               </DataTemplate>

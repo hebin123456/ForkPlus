@@ -67,8 +67,8 @@
             <DataTrigger.Value>
               <x:Null />
             </DataTrigger.Value>
-            <Setter TargetName="SourceBranchIcon" Property="UIElement.Visibility" Value="Collapsed" />
-            <Setter TargetName="SourceBranchButton" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="SourceBranchIcon" Property="IsVisible" Value="False" />
+            <Setter TargetName="SourceBranchButton" Property="IsVisible" Value="False" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>

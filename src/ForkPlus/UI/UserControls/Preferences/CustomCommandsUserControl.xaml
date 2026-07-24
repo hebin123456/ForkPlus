@@ -4,7 +4,7 @@
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <Style x:Key="QuestionmarkTextBlock" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="FrameworkElement.ToolTip">
+        <Setter Property="ToolTip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>
@@ -23,7 +23,7 @@
         </Setter>
       </Style>
       <Style x:Key="NameQuestionmarkTextBlock" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="FrameworkElement.ToolTip">
+        <Setter Property="ToolTip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>
@@ -104,8 +104,8 @@
                   </Condition>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
-                  <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                  <Setter TargetName="TargetTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="TargetTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiDataTrigger.Setters>
               </MultiDataTrigger>
             </DataTemplate.Triggers>

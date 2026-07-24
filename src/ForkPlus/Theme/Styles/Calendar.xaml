@@ -7,7 +7,7 @@
        FrameworkElement.MinWidth -> MinWidth, FrameworkElement.MinHeight -> MinHeight, FrameworkElement.Margin -> Margin,
        TextElement.FontSize -> FontSize, Calendar.CalendarDayButtonStyle -> CalendarDayButtonStyle,
        Calendar.CalendarButtonStyle -> CalendarButtonStyle, UIElement.Visibility -> IsVisible).
-     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Panel.Background} -> {TemplateBinding Background}).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Background} -> {TemplateBinding Background}).
      - UIElement.Visibility (enum) -> IsVisible (bool): Visible -> True, Hidden/Collapsed -> False.
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
      - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, CalendarButton.IsInactive=True -> :inactive,

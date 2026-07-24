@@ -27,8 +27,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="#00FFFFFF" Background="#00FFFFFF" BorderThickness="0" SnapsToDevicePixels="true" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <Border BorderBrush="#00FFFFFF" Background="#00FFFFFF" BorderThickness="0" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -54,7 +54,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" SnapsToDevicePixels="True" Width="{TemplateBinding Width}" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -75,7 +75,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" Height="{TemplateBinding Height}" SnapsToDevicePixels="True" Width="{TemplateBinding Width}" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -100,7 +100,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid SnapsToDevicePixels="true" x:Name="Bg">
+          <Grid x:Name="Bg">
             <Grid.RowDefinitions>
               <RowDefinition Height="10" />
               <RowDefinition Height="0.00001*" />
@@ -164,7 +164,7 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate>
-            <Grid SnapsToDevicePixels="true" x:Name="Bg">
+            <Grid x:Name="Bg">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="0.00001*" />
@@ -226,7 +226,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid SnapsToDevicePixels="true" x:Name="Bg">
+          <Grid x:Name="Bg">
             <Grid.RowDefinitions>
               <RowDefinition Height="10" />
               <RowDefinition Height="0.00001*" />
@@ -290,7 +290,7 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate>
-            <Grid SnapsToDevicePixels="true" x:Name="Bg">
+            <Grid x:Name="Bg">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="0.00001*" />
@@ -356,13 +356,13 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
-            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" x:Name="PART_ScrollContentPresenter" />
-            <ScrollBar ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" Grid.Row="0" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
+            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" CanContentScroll="{TemplateBinding CanContentScroll}" x:Name="PART_ScrollContentPresenter" />
+            <ScrollBar ViewportSize="{TemplateBinding ViewportHeight}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Grid.Row="0" Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
-            <ScrollBar ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" Grid.Row="1" Orientation="Horizontal" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
+            <ScrollBar ViewportSize="{TemplateBinding ViewportWidth}" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Grid.Row="1" Orientation="Horizontal" Minimum="0" Maximum="{TemplateBinding ScrollableWidth}" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>

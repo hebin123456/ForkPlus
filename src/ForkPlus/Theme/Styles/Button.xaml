@@ -48,7 +48,7 @@
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <DockPanel>
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
                 <ContentPresenter.Resources>
                   <ResourceDictionary>
                     <Style Selector="TextBlock">
@@ -105,8 +105,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
           <Style Selector="^:pressed /template/ Border#Border">
@@ -140,7 +140,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
           <!-- TODO: ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
                (no Avalonia pseudoclass for IsDefaulted). Original logic:
@@ -176,8 +176,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
           <Style Selector="^:pressed /template/ Border#Border">
@@ -219,9 +219,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <StackPanel>
-              <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               <TextBlock Text="{TemplateBinding Title}" Style="{DynamicResource ToolbarButtonTitle}" />
             </StackPanel>
           </Border>
@@ -284,8 +284,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#Border">
@@ -316,10 +316,10 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <StackPanel>
               <Grid Width="42">
-                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
                 <Path HorizontalAlignment="Center" Margin="32,3,0,0" VerticalAlignment="Center" Fill="{DynamicResource ToolbarForeground}" Data="{DynamicResource ArrowGeometry}">
                   <Path.IsVisible>
                     <Binding Path="IsArrowVisible" RelativeSource="{RelativeSource TemplatedParent}" />
@@ -383,8 +383,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="border">
-            <ContentPresenter Focusable="False" RecognizesAccessKey="True" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#border">
@@ -424,7 +424,7 @@
             <Grid.RowDefinitions>
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <ContentPresenter Grid.Row="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Grid.Row="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Grid>
           <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
           <Style Selector="^:checked /template/ ContentPresenter#contentPresenter">
@@ -442,7 +442,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="20,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="20,0,0,0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -451,7 +451,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -466,7 +466,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid Background="#00FFFFFF" SnapsToDevicePixels="True" Height="17" x:Name="TemplateRoot">
+          <Grid Background="#00FFFFFF" Height="17" x:Name="TemplateRoot">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
@@ -476,7 +476,7 @@
                 <Ellipse Fill="{DynamicResource RadioButton.OptionMark.Static.Glyph}" Width="8" Height="8" Opacity="0" x:Name="OptionMark" />
               </Grid>
             </Border>
-            <ContentPresenter Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Grid>
           <!-- TODO: ControlTemplate.Triggers Trigger on ContentControl.HasContent=true could not be
                converted (no Avalonia pseudoclass for HasContent). Original logic:
@@ -537,8 +537,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#border">
@@ -564,8 +564,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#border">
@@ -608,8 +608,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" SnapsToDevicePixels="true" x:Name="border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="border">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
           <!-- TODO: ControlTemplate.Triggers Trigger on Button.IsDefaulted=true could not be converted
                (no Avalonia pseudoclass for IsDefaulted). Original logic:
@@ -655,8 +655,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" SnapsToDevicePixels="true" x:Name="Border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="Border">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#Border">
@@ -687,7 +687,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextTrimming="CharacterEllipsis" x:Name="textBlock" />
+          <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextTrimming="CharacterEllipsis" x:Name="textBlock" />
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ TextBlock#textBlock">
             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
@@ -710,7 +710,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid>
-            <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextWrapping="Wrap" x:Name="textBlock" />
+            <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextWrapping="Wrap" x:Name="textBlock" />
           </Grid>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ TextBlock#textBlock">
@@ -740,7 +740,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Border CornerRadius="8" Background="{DynamicResource ShowButton.Static.Background}" x:Name="border">
-            <ContentPresenter Focusable="False" RecognizesAccessKey="True" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#border">
@@ -786,9 +786,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" Width="{TemplateBinding Width}" x:Name="Border">
+          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
             <StackPanel Orientation="Horizontal">
-              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
             </StackPanel>
           </Border>
@@ -840,9 +840,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" Width="{TemplateBinding Width}" x:Name="Border">
+          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
             <StackPanel Orientation="Horizontal">
-              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
             </StackPanel>
           </Border>
@@ -879,11 +879,11 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" Width="{TemplateBinding Width}" x:Name="Border">
+          <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
             <DockPanel>
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
               <StackPanel Orientation="Horizontal">
-                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
                 <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
               </StackPanel>
             </DockPanel>
@@ -941,7 +941,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -972,8 +972,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#Border">
@@ -1007,10 +1007,10 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border SnapsToDevicePixels="true" Padding="0,2,2,2" Background="#00FFFFFF">
+          <Border Padding="0,2,2,2" Background="#00FFFFFF">
             <Grid>
               <Ellipse Height="13" Width="13" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1" x:Name="Ellipse" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="contentPresenter" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
             </Grid>
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
@@ -1035,10 +1035,10 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border SnapsToDevicePixels="true">
+          <Border>
             <Grid>
               <Rectangle RadiusX="3" RadiusY="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
-              <Path Data="{DynamicResource CloseGeometry}" Height="10" Width="10" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="False" SnapsToDevicePixels="True" Fill="#FFFFFFFF" x:Name="ClearIcon" />
+              <Path Data="{DynamicResource CloseGeometry}" Height="10" Width="10" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="False" Fill="#FFFFFFFF" x:Name="ClearIcon" />
             </Grid>
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->

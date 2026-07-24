@@ -7,10 +7,10 @@
             <x:Null />
           </Setter.Value>
         </Setter>
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
         <Style.Triggers>
           <Trigger Property="ContentElement.IsMouseOver" Value="True">
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
           </Trigger>
         </Style.Triggers>
       </Style>

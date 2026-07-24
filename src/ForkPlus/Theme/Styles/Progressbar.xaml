@@ -6,7 +6,7 @@
        FrameworkElement.MaxWidth -> MaxWidth, FrameworkElement.VerticalAlignment -> VerticalAlignment,
        ProgressBar.IsIndeterminate -> IsIndeterminate, Control.Template -> Template,
        RangeBase.Maximum -> Maximum, Border.BorderThickness -> BorderThickness.
-     - TemplateBinding class prefixes stripped ({TemplateBinding Panel.Background} -> {TemplateBinding Background}).
+     - TemplateBinding class prefixes stripped ({TemplateBinding Background} -> {TemplateBinding Background}).
      - ControlTemplate.Triggers MultiTrigger (ProgressBar.IsIndeterminate=True AND UIElement.IsVisible=True)
        used BeginStoryboard/RemoveStoryboard to start/stop BusyIndicatorStoryboard (12 Rectangle opacity
        key-frame animations, RepeatBehavior=Forever). Avalonia does not support WPF Storyboard markup;

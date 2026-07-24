@@ -78,10 +78,10 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="RevisionSubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="RevisionSubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
@@ -172,7 +172,7 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
@@ -205,7 +205,7 @@
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>
       </controls:MultiselectionTreeView>
-      <Border Grid.Column="2" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}" RenderOptions.ClearTypeHint="Enabled">
+      <Border Grid.Column="2" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}">
         <controls:FileDiffControl Target="History" x:Name="FileDiffControl" />
       </Border>
       <GridSplitter Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" />

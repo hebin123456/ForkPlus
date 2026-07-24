@@ -24,7 +24,7 @@
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" Style="{DynamicResource {x:Type ListBox}}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemContainerStyle>
             <Style TargetType="{x:Type local:DragAndDropListBoxItem}" BasedOn="{StaticResource ListBoxItemWithBorderStyle}">
-              <Setter Property="UIElement.AllowDrop" Value="True" />
+              <Setter Property="AllowDrop" Value="True" />
               <EventSetter Event="Drop" Handler="ListBoxItem_Drop" />
             </Style>
           </local:DragAndDropListBox.ItemContainerStyle>
@@ -72,8 +72,8 @@
                     </Condition>
                   </MultiDataTrigger.Conditions>
                   <MultiDataTrigger.Setters>
-                    <Setter TargetName="VariableTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                    <Setter TargetName="ControlTypeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                    <Setter TargetName="VariableTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                    <Setter TargetName="ControlTypeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                   </MultiDataTrigger.Setters>
                 </MultiDataTrigger>
               </DataTemplate.Triggers>

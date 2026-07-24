@@ -36,14 +36,13 @@
       </Setter.Value>
     </Setter>
     <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Grid Background="#00FFFFFF">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -67,7 +66,7 @@
             <Trigger.Value>
               <x:Null />
             </Trigger.Value>
-            <Setter TargetName="IconElement" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
           </Trigger>
           -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
@@ -111,14 +110,13 @@
       </Setter.Value>
     </Setter>
     <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Grid Background="#00FFFFFF">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -143,7 +141,7 @@
             <Trigger.Value>
               <x:Null />
             </Trigger.Value>
-            <Setter TargetName="IconElement" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
           </Trigger>
           -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
@@ -179,7 +177,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Grid Background="#00FFFFFF">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -204,7 +202,7 @@
             <Trigger.Value>
               <x:Null />
             </Trigger.Value>
-            <Setter TargetName="iconElement" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="iconElement" Property="IsVisible" Value="False" />
           </Trigger>
           -->
         </ControlTemplate>
@@ -219,7 +217,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Grid Background="#00FFFFFF">
               <ScrollViewer Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Background="#00FFFFFF" x:Name="PART_ContentHost" />
               <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Width="1" Margin="{TemplateBinding controls:CommitDescriptionTextBox.GuideLineMargin}" IsVisible="True" HorizontalAlignment="Left" x:Name="PART_GuideLine" />
@@ -250,7 +248,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Grid Background="#00FFFFFF">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -274,7 +272,7 @@
             <Trigger.Value>
               <x:Null />
             </Trigger.Value>
-            <Setter TargetName="IconElement" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
           </Trigger>
           -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
@@ -295,7 +293,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <Border.RenderTransform>
               <TranslateTransform x:Name="PART_TranslateTransform" />
             </Border.RenderTransform>
@@ -340,7 +338,7 @@
             <Trigger.Value>
               <x:Null />
             </Trigger.Value>
-            <Setter TargetName="HintTextBlock" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="HintTextBlock" Property="IsVisible" Value="False" />
           </Trigger>
           -->
           <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->

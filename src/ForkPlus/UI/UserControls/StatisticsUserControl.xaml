@@ -43,7 +43,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Margin="0,20,0,0">
           <TextBlock Text="All contributors" Margin="10,0,0,10" FontSize="16" FontWeight="Medium" />
-          <ListBox Width="350" Margin="35,0,0,0" BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="AuthorStatListBox">
+          <ListBox Width="350" Margin="35,0,0,0" BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="AuthorStatListBox">
             <ListBox.ItemContainerStyle>
               <Style Selector="ListBoxItem">
                 <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
@@ -107,7 +107,7 @@
                       <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <controls:PlaceholderTextBox Grid.Row="0" Margin="4,4,4,2" Style="{DynamicResource SearchPanelPlaceholderTextBox}" Placeholder="{DynamicResource Search}" controls:PlaceholderTextBox.Icon="{DynamicResource SearchOnIcon}" x:Name="CodeLinesRefSearchBox" TextChanged="CodeLinesRefSearchBox_TextChanged" />
-                    <ListBox Grid.Row="1" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" x:Name="CodeLinesRefListBox" SelectionChanged="CodeLinesRefListBox_SelectionChanged" />
+                    <ListBox Grid.Row="1" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" x:Name="CodeLinesRefListBox" SelectionChanged="CodeLinesRefListBox_SelectionChanged" />
                   </Grid>
                 </Border>
               </Popup>
@@ -151,12 +151,12 @@
               <TextBlock Grid.Column="4" Text="Comments" FontWeight="Medium" TextAlignment="Right" />
               <TextBlock Grid.Column="5" Text="Blanks" FontWeight="Medium" TextAlignment="Right" />
             </Grid>
-            <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="CodeLinesListBox">
+            <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="CodeLinesListBox">
               <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
-                  <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
-                  <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
-                  <Setter Property="Border.BorderBrush" Value="{DynamicResource BorderBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+                  <Setter Property="BorderThickness" Value="0,0,0,1" />
+                  <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
                 </Style>
               </ListBox.ItemContainerStyle>
               <ListBox.ItemTemplate>

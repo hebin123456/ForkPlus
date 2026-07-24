@@ -60,7 +60,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter Property="Shape.Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
+        <Setter Property="Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
       </MultiDataTrigger>
     </Style.Triggers>
     -->
@@ -100,7 +100,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter Property="Shape.Fill" Value="#FFFFFFFF" />
+        <Setter Property="Fill" Value="#FFFFFFFF" />
       </MultiDataTrigger>
     </Style.Triggers>
     -->
@@ -239,13 +239,12 @@
     <Setter Property="Padding" Value="0" />
     <Setter Property="MinWidth" Value="240" />
     <Setter Property="MinHeight" Value="80" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
-              <Grid LayoutTransform="{DynamicResource LayoutScaleTransform}">
+            <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+              <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" />
@@ -296,7 +295,7 @@
                 <Condition Property="Window.ResizeMode" Value="CanResizeWithGrip" />
                 <Condition Property="Window.WindowState" Value="Normal" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="ResizeGrip" Property="UIElement.Visibility" Value="Visible" />
+              <Setter TargetName="ResizeGrip" Property="IsVisible" Value="True" />
             </MultiTrigger>
           </ControlTemplate.Triggers>
           -->
@@ -311,8 +310,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-            <Border SnapsToDevicePixels="True" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
-              <Grid LayoutTransform="{DynamicResource LayoutScaleTransform}">
+            <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+              <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" />
@@ -363,7 +362,7 @@
                 <Condition Property="Window.ResizeMode" Value="CanResizeWithGrip" />
                 <Condition Property="Window.WindowState" Value="Normal" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="ResizeGrip" Property="UIElement.Visibility" Value="Visible" />
+              <Setter TargetName="ResizeGrip" Property="IsVisible" Value="True" />
             </MultiTrigger>
           </ControlTemplate.Triggers>
           -->

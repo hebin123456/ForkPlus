@@ -71,6 +71,6 @@
     <!-- Row 12: Loaded skills list (scrollable with max height) -->
     <TextBlock Grid.Row="12" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Loaded skills:" />
     <ListBox Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,0" Height="200" BorderThickness="1"
-             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" x:Name="SkillListBox" />
+             ScrollViewer.VerticalScrollBarVisibility="Auto" x:Name="SkillListBox" />
   </Grid>
 </UserControl>

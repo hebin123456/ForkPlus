@@ -8,9 +8,9 @@
        Panel.Background -> Background, FrameworkContentElement.FocusVisualStyle -> FocusVisualStyle,
        Inline.TextDecorations -> TextDecorations, TextBlock.Text -> Text, FrameworkElement.ToolTip -> ToolTip,
        Control.Template -> Template.
-     - TemplateBinding class prefixes stripped ({TemplateBinding FrameworkElement.Width} -> {TemplateBinding Width},
-       {TemplateBinding Panel.Background} -> {TemplateBinding Background}, {TemplateBinding TextElement.FontSize} ->
-       {TemplateBinding FontSize}, {TemplateBinding TextElement.Foreground} -> {TemplateBinding Foreground}).
+     - TemplateBinding class prefixes stripped ({TemplateBinding Width} -> {TemplateBinding Width},
+       {TemplateBinding Background} -> {TemplateBinding Background}, {TemplateBinding FontSize} ->
+       {TemplateBinding FontSize}, {TemplateBinding Foreground} -> {TemplateBinding Foreground}).
      - 5 Hyperlink Style.Triggers (ContentElement.IsMouseOver=True) converted to nested <Style.Styles> with
        ^:pointerover selectors (scoped to each named style via parent x:Key). -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -30,7 +30,6 @@
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Margin" Value="4,-3,4,2" />
     <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
   </Style>
   <Style x:Key="LfsLabel" Selector="Label">
     <Setter Property="Height" Value="16" />

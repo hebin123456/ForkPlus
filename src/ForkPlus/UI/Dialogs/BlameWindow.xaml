@@ -128,7 +128,7 @@
       <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,1,0,1" x:Name="RevisionListFallbackBorder">
         <userControls:FallbackUserControl Grid.Column="0" x:Name="RevisionListFallbackUserControl" />
       </Border>
-      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" ContextMenuOpening="BlameListBox_ContextMenuOpening" x:Name="BlameListBox">
+      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ContextMenuOpening="BlameListBox_ContextMenuOpening" x:Name="BlameListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

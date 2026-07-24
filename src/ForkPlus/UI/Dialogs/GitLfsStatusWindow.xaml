@@ -16,7 +16,7 @@
         <RowDefinition Height="23" />
       </Grid.RowDefinitions>
       <controls:FilterTextBox Margin="0,0,0,4" x:Name="FilterTextBox" />
-      <ListBox Grid.Row="1" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" SelectionMode="Extended" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
+      <ListBox Grid.Row="1" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" SelectionMode="Extended" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid Height="20" UseLayoutRounding="True">
@@ -61,8 +61,8 @@
                   </Condition>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
-                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                  <Setter TargetName="OwnerTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="OwnerTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiDataTrigger.Setters>
               </MultiDataTrigger>
             </DataTemplate.Triggers>

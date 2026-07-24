@@ -41,8 +41,8 @@
                   </Binding.RelativeSource>
                 </Binding>
               </DataTrigger.Binding>
-              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedActive.Background}" Property="Border.BorderBrush" />
-              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Border.Background" />
+              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedActive.Background}" Property="BorderBrush" />
+              <Setter TargetName="Border" Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
             </DataTrigger>
           </DataTemplate.Triggers>
         </DataTemplate>

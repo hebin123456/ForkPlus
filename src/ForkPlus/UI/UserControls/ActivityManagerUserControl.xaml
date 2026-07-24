@@ -110,12 +110,12 @@
                     </Binding.RelativeSource>
                   </Binding>
                 </DataTrigger.Binding>
-                <Setter TargetName="NameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                <Setter TargetName="FinishTimeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                <Setter TargetName="JobProgressProgressBar" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                <Setter TargetName="CellBorder" Property="Border.BorderBrush" Value="#00FFFFFF" />
-                <Setter TargetName="CancelButton" Property="ContentControl.Content">
+                <Setter TargetName="NameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                <Setter TargetName="FinishTimeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                <Setter TargetName="JobProgressProgressBar" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                <Setter TargetName="CellBorder" Property="BorderBrush" Value="#00FFFFFF" />
+                <Setter TargetName="CancelButton" Property="Content">
                   <Setter.Value>
                     <Image Source="{DynamicResource CancelJobSelectedIcon}" />
                   </Setter.Value>

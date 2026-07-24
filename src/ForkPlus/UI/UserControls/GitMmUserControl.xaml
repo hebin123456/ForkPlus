@@ -3,30 +3,30 @@
   <UserControl.Resources>
     <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" ShadowDepth="2" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
     <Style x:Key="GitMmSubrepoTabItemStyle" TargetType="{x:Type TabItem}" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
-      <Setter Property="FrameworkElement.Height" Value="28" />
-      <Setter Property="FrameworkElement.MinWidth" Value="140" />
-      <Setter Property="Control.Padding" Value="14,2" />
-      <Setter Property="Control.Template">
+      <Setter Property="Height" Value="28" />
+      <Setter Property="MinWidth" Value="140" />
+      <Setter Property="Padding" Value="14,2" />
+      <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="{x:Type TabItem}">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
             </Grid>
             <ControlTemplate.Triggers>
-              <Trigger Property="UIElement.IsMouseOver" Value="true">
-                <Setter TargetName="Bd" Property="Panel.Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-                <Setter TargetName="Bd" Property="Border.BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+              <Trigger Property="IsMouseOver" Value="true">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
               </Trigger>
-              <Trigger Property="TabItem.IsSelected" Value="true">
-                <Setter Property="Panel.ZIndex" Value="1" />
-                <Setter TargetName="Bd" Property="Panel.Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
-                <Setter TargetName="Bd" Property="Border.BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
-                <Setter TargetName="Bd" Property="UIElement.Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
-                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+              <Trigger Property="IsSelected" Value="true">
+                <Setter Property="ZIndex" Value="1" />
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+                <Setter TargetName="Bd" Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
+                <Setter TargetName="contentPresenter" Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
               </Trigger>
-              <Trigger Property="UIElement.IsEnabled" Value="false">
-                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+              <Trigger Property="IsEnabled" Value="false">
+                <Setter TargetName="contentPresenter" Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -39,7 +39,7 @@
           <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />
         </ResourceDictionary>
       </Style.Resources>
-      <Setter Property="Control.Template">
+      <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="{x:Type controls:ModernTabControl}">
             <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
@@ -55,8 +55,8 @@
                   </Canvas>
                 </Grid>
               </ScrollViewer>
-              <Border BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" Grid.Row="1" KeyboardNavigation.DirectionalNavigation="Contained" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-                <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Control.Padding}" x:Name="PART_SelectedContentHost" />
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" KeyboardNavigation.DirectionalNavigation="Contained" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+                <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
               </Border>
             </Grid>
           </ControlTemplate>

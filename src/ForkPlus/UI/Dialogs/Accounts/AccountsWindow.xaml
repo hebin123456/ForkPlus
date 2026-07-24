@@ -70,8 +70,8 @@
                   </Condition>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
-                  <Setter TargetName="ServiceTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-                  <Setter TargetName="UserNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                  <Setter TargetName="ServiceTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="UserNameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </MultiDataTrigger.Setters>
               </MultiDataTrigger>
             </DataTemplate.Triggers>

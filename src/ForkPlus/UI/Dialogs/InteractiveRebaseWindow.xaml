@@ -21,7 +21,7 @@
         </Canvas>
       </DataTemplate>
       <DataTemplate x:Key="TargetDataTemplate" DataType="{x:Type dialogs:GraphItemType}">
-        <Canvas Height="22" Width="22" SnapsToDevicePixels="True">
+        <Canvas Height="22" Width="22">
           <Grid Canvas.Top="0" Canvas.Left="11" Height="14" Width="18">
             <Path Stretch="Fill" StrokeThickness="0" Margin="-1,0,0,0" Fill="{DynamicResource ForegroundBrush.Gray}" Data="M8.38,11.598C3.523,9.982,-0.0640000000000001,5.335,0.00100000000000122,0.159000000000001L0.00100000000000122,6.93889390390723E-16C0.487000000000001,0.00100000000000069 0.974000000000001,0.00300000000000069 1.46,0.00400000000000069 1.447,4.469 4.236,8.469 8.38,10.051L8.38,7.566 18.034,10.784 8.38,14.002 8.38,11.598z" />
           </Grid>
@@ -69,17 +69,17 @@
           </dialogs:MultiselectionListView.FocusVisualStyle>
           <dialogs:MultiselectionListView.ItemContainerStyle>
             <Style TargetType="{x:Type dialogs:MultiselectionListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}">
-              <Setter Property="FrameworkElement.FocusVisualStyle">
+              <Setter Property="FocusVisualStyle">
                 <Setter.Value>
                   <x:Null />
                 </Setter.Value>
               </Setter>
-              <Setter Property="FrameworkElement.Height" Value="22" />
-              <Setter Property="Control.HorizontalContentAlignment" Value="Stretch" />
-              <Setter Property="Control.VerticalContentAlignment" Value="Stretch" />
-              <Setter Property="Control.Padding" Value="0" />
-              <Setter Property="FrameworkElement.Margin" Value="0" />
-              <Setter Property="UIElement.AllowDrop" Value="True" />
+              <Setter Property="Height" Value="22" />
+              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              <Setter Property="VerticalContentAlignment" Value="Stretch" />
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="Margin" Value="0" />
+              <Setter Property="AllowDrop" Value="True" />
               <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
             </Style>
           </dialogs:MultiselectionListView.ItemContainerStyle>
@@ -142,7 +142,7 @@
                             </Condition.Binding>
                           </Condition>
                         </MultiDataTrigger.Conditions>
-                        <Setter TargetName="ActionsComboBox" Value="{DynamicResource ForegroundBrush}" Property="TextElement.Foreground" />
+                        <Setter TargetName="ActionsComboBox" Value="{DynamicResource ForegroundBrush}" Property="Foreground" />
                       </MultiDataTrigger>
                     </DataTemplate.Triggers>
                   </DataTemplate>
@@ -160,37 +160,37 @@
                       </ContentControl.DataContext>
                       <ContentControl.Style>
                         <Style TargetType="{x:Type ContentControl}">
-                          <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
+                          <Setter Property="ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
                           <Style.Triggers>
                             <DataTrigger Value="None">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
                               </DataTrigger.Binding>
-                              <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
+                              <Setter Property="ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
                             </DataTrigger>
                             <DataTrigger Value="Start">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
                               </DataTrigger.Binding>
-                              <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource StartDataTemplate}" />
+                              <Setter Property="ContentTemplate" Value="{StaticResource StartDataTemplate}" />
                             </DataTrigger>
                             <DataTrigger Value="Middle">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
                               </DataTrigger.Binding>
-                              <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource MiddleDataTemplate}" />
+                              <Setter Property="ContentTemplate" Value="{StaticResource MiddleDataTemplate}" />
                             </DataTrigger>
                             <DataTrigger Value="Through">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
                               </DataTrigger.Binding>
-                              <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource ThroughDataTemplate}" />
+                              <Setter Property="ContentTemplate" Value="{StaticResource ThroughDataTemplate}" />
                             </DataTrigger>
                             <DataTrigger Value="Target">
                               <DataTrigger.Binding>
                                 <Binding Path="GraphType" />
                               </DataTrigger.Binding>
-                              <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource TargetDataTemplate}" />
+                              <Setter Property="ContentTemplate" Value="{StaticResource TargetDataTemplate}" />
                             </DataTrigger>
                           </Style.Triggers>
                         </Style>
@@ -225,7 +225,7 @@
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                         </DataTrigger.Binding>
-                        <Setter TargetName="SubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="SubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                       </DataTrigger>
                       <DataTrigger Value="Drop">
                         <DataTrigger.Binding>
@@ -264,7 +264,7 @@
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                         </DataTrigger.Binding>
-                        <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                       </DataTrigger>
                       <DataTrigger Value="Drop">
                         <DataTrigger.Binding>
@@ -292,7 +292,7 @@
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                         </DataTrigger.Binding>
-                        <Setter TargetName="AbbreviatedShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="AbbreviatedShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                       </DataTrigger>
                       <DataTrigger Value="Drop">
                         <DataTrigger.Binding>
@@ -320,7 +320,7 @@
                         <DataTrigger.Binding>
                           <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                         </DataTrigger.Binding>
-                        <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                       </DataTrigger>
                       <DataTrigger Value="Drop">
                         <DataTrigger.Binding>

@@ -52,8 +52,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: ToggleButton.IsChecked=true -> :checked -->
           <Style Selector="^:checked /template/ Border#border">
@@ -82,8 +82,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="border">
-            <Path Height="16" Width="16" Margin="{TemplateBinding Padding}" Focusable="False" Data="{TemplateBinding Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ImagePath" />
+          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+            <Path Height="16" Width="16" Margin="{TemplateBinding Padding}" Focusable="False" Data="{TemplateBinding Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ImagePath" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: DataTrigger IsChecked (RelativeSource Self)=True -> :checked -->
           <Style Selector="^:checked /template/ Path#ImagePath">
@@ -174,24 +174,24 @@
           <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <DataTrigger Value="Filter">
         <DataTrigger.Binding>
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="False" />
       </DataTrigger>
       <DataTrigger Value="Hide">
         <DataTrigger.Binding>
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -206,7 +206,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -257,24 +257,24 @@
           <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <DataTrigger Value="Filter">
         <DataTrigger.Binding>
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="False" />
       </DataTrigger>
       <DataTrigger Value="Hide">
         <DataTrigger.Binding>
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -289,7 +289,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -365,11 +365,11 @@
           <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
         </DataTrigger.Binding>
         <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
-        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="PinButton" Property="IsVisible" Value="True" />
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -424,8 +424,8 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="False" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -452,7 +452,7 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -487,7 +487,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -549,11 +549,11 @@
           <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
         </DataTrigger.Binding>
         <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
-        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="PinButton" Property="IsVisible" Value="True" />
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -608,8 +608,8 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="False" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -636,7 +636,7 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -671,7 +671,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -747,7 +747,7 @@
           <Binding Path="LocalBranch.IsActive" />
         </DataTrigger.Binding>
         <Setter TargetName="BranchImage" Value="{DynamicResource ActiveBranchIcon}" Property="Image.Source" />
-        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+        <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -774,11 +774,11 @@
           <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
         </DataTrigger.Binding>
         <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Image.Source" />
-        <Setter TargetName="PinButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="PinButton" Property="IsVisible" Value="True" />
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -833,8 +833,8 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Image.Source" />
-        <Setter TargetName="FilterButton" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Hidden" />
+        <Setter TargetName="FilterButton" Property="IsVisible" Value="True" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="False" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -861,7 +861,7 @@
           <Binding Path="FilterState" />
         </DataTrigger.Binding>
         <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Image.Source" />
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -896,7 +896,7 @@
             </Condition.Binding>
           </Condition>
         </MultiDataTrigger.Conditions>
-        <Setter TargetName="HideButton" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
       </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -1001,7 +1001,7 @@
         <DataTrigger.Binding>
           <Binding Path="Worktree.IsActive" />
         </DataTrigger.Binding>
-        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+        <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
       </DataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
@@ -1041,7 +1041,7 @@
         <DataTrigger.Binding>
           <Binding Path="Worktree.IsActive" />
         </DataTrigger.Binding>
-        <Setter TargetName="TitleTextBlock" Property="TextElement.FontWeight" Value="Bold" />
+        <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
       </DataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>

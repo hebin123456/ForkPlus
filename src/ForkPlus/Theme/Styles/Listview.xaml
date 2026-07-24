@@ -91,8 +91,8 @@
               <DataTrigger.Binding>
                 <Binding Path="IsActive" />
               </DataTrigger.Binding>
-              <Setter TargetName="NameTextBlock" Property="TextElement.FontWeight" Value="Bold" />
-              <Setter TargetName="ActiveBranchIcon" Property="UIElement.Visibility" Value="Visible" />
+              <Setter TargetName="NameTextBlock" Property="FontWeight" Value="Bold" />
+              <Setter TargetName="ActiveBranchIcon" Property="IsVisible" Value="True" />
             </DataTrigger>
             <MultiDataTrigger>
               <MultiDataTrigger.Conditions>
@@ -107,9 +107,9 @@
                   </Condition.Binding>
                 </Condition>
               </MultiDataTrigger.Conditions>
-              <Setter TargetName="IconBorder" Property="UIElement.Visibility" Value="Visible" />
-              <Setter TargetName="IconBorder" Property="Border.BorderThickness" Value="0,0,1,0" />
-              <Setter TargetName="IconBorder" Value="{DynamicResource ListBox.Static.Background}" Property="Panel.Background" />
+              <Setter TargetName="IconBorder" Property="IsVisible" Value="True" />
+              <Setter TargetName="IconBorder" Property="BorderThickness" Value="0,0,1,0" />
+              <Setter TargetName="IconBorder" Value="{DynamicResource ListBox.Static.Background}" Property="Background" />
             </MultiDataTrigger>
           </DataTemplate.Triggers>
           -->
@@ -151,16 +151,16 @@
               <DataTrigger.Binding>
                 <Binding Path="HasDownstream" />
               </DataTrigger.Binding>
-              <Setter TargetName="NameContainer" Property="UIElement.Visibility" Value="Collapsed" />
-              <Setter TargetName="Border" Property="Border.CornerRadius" Value="4" />
-              <Setter TargetName="Container" Property="FrameworkElement.Margin" Value="3,2,1,2" />
+              <Setter TargetName="NameContainer" Property="IsVisible" Value="False" />
+              <Setter TargetName="Border" Property="CornerRadius" Value="4" />
+              <Setter TargetName="Container" Property="Margin" Value="3,2,1,2" />
             </DataTrigger>
             <DataTrigger Value="false">
               <DataTrigger.Binding>
                 <Binding Path="HasDownstream" />
               </DataTrigger.Binding>
-              <Setter TargetName="NameContainer" Property="UIElement.Visibility" Value="Visible" />
-              <Setter TargetName="Border" Property="Border.CornerRadius" Value="4,0,0,4" />
+              <Setter TargetName="NameContainer" Property="IsVisible" Value="True" />
+              <Setter TargetName="Border" Property="CornerRadius" Value="4,0,0,4" />
             </DataTrigger>
           </DataTemplate.Triggers>
           -->
@@ -187,9 +187,9 @@
                 <Binding Path="IsGood" />
               </DataTrigger.Binding>
               <Setter TargetName="Icon" Value="{DynamicResource BisectGoodIcon}" Property="Image.Source" />
-              <Setter TargetName="IconBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="Border.BorderBrush" />
-              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="Border.BorderBrush" />
-              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBackground}" Property="Panel.Background" />
+              <Setter TargetName="IconBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
+              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
+              <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBackground}" Property="Background" />
             </DataTrigger>
           </DataTemplate.Triggers>
           -->
@@ -220,7 +220,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="2" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -242,12 +242,11 @@
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=True -> :pointerover -->
           <Style Selector="^:pointerover /template/ Border#Bd">
@@ -281,13 +280,11 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
     <Setter Property="FocusVisualStyle">
       <Setter.Value>
         <x:Null />
@@ -296,9 +293,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
             <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+              <ItemsPresenter />
             </ScrollViewer>
           </Border>
         </ControlTemplate>
@@ -310,7 +307,7 @@
          ItemContainerStyle via a binding/converter.
     <Style.Triggers>
       <Trigger Property="ListBox.SelectionMode" Value="Extended">
-        <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
+        <Setter Property="ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
       </Trigger>
     </Style.Triggers>
     -->
@@ -324,7 +321,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+          <Grid Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
@@ -335,7 +332,7 @@
             </Grid.RowDefinitions>
             <DockPanel Margin="{TemplateBinding Padding}">
               <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                <GridViewHeaderRowPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
+                <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
                   <GridViewHeaderRowPresenter.AllowsColumnReorder>
                     <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                   </GridViewHeaderRowPresenter.AllowsColumnReorder>
@@ -353,21 +350,21 @@
                   </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
                 </GridViewHeaderRowPresenter>
               </controls:TouchpadAwareScrollViewer>
-              <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" KeyboardNavigation.DirectionalNavigation="Local" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" x:Name="PART_ScrollContentPresenter" />
+              <ScrollContentPresenter CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" KeyboardNavigation.DirectionalNavigation="Local" x:Name="PART_ScrollContentPresenter" />
             </DockPanel>
-            <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" IsVisible="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
+            <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" IsVisible="{TemplateBinding ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ViewportWidth}" Style="{DynamicResource HorizontalScrollBarStyle}" x:Name="PART_HorizontalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
-            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Minimum="0" Orientation="Vertical" IsVisible="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
+            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Minimum="0" Orientation="Vertical" IsVisible="{TemplateBinding ComputedVerticalScrollBarVisibility}" ViewportSize="{TemplateBinding ViewportHeight}" Style="{DynamicResource VerticalScrollBarStyle}" x:Name="PART_VerticalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
             <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
-              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" IsVisible="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" />
-              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" IsVisible="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" IsVisible="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" IsVisible="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
             </DockPanel>
           </Grid>
         </ControlTemplate>
@@ -379,11 +376,11 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
           <Style Selector="^:selected /template/ Border#Bd">
@@ -411,9 +408,9 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+              <ItemsPresenter />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
@@ -439,13 +436,13 @@
         <DataTrigger.Binding>
           <Binding Path="IsHead" />
         </DataTrigger.Binding>
-        <Setter Property="TextElement.FontWeight" Value="Bold" />
+        <Setter Property="FontWeight" Value="Bold" />
       </DataTrigger>
       <DataTrigger>
         <DataTrigger.Binding>
           <Binding Path="IsReachable" />
         </DataTrigger.Binding>
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
       </DataTrigger>
     </Style.Triggers>
     -->
@@ -458,12 +455,11 @@
     </Setter>
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
           <Style Selector="^:selected /template/ Border#Bd">
@@ -486,11 +482,11 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Margin="4,0,4,0" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
           <Style Selector="^:selected /template/ Border#Bd">
@@ -518,12 +514,11 @@
     </Setter>
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -536,12 +531,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemNotRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemNotRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
           <Style Selector="^:selected /template/ Border#Bd">
@@ -568,19 +562,17 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+              <ItemsPresenter />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
@@ -592,7 +584,7 @@
          ItemContainerStyle via a binding/converter.
     <Style.Triggers>
       <Trigger Property="ListBox.SelectionMode" Value="Extended">
-        <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
+        <Setter Property="ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
       </Trigger>
     </Style.Triggers>
     -->
@@ -603,7 +595,7 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource NoSelectionListBoxItemStyle}" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource NoSelectionListBoxItemStyle}" />
   </Style>
   <Style x:Key="AutoCompleteListBoxStyle" Selector="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     <Setter Property="VerticalAlignment" Value="Top" />
@@ -614,11 +606,10 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <Setter Property="ItemsControl.ItemContainerStyle" Value="{DynamicResource AutocompleteListBoxItemStyle}" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource AutocompleteListBoxItemStyle}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-    <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -628,9 +619,9 @@
                 <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" ShadowDepth="1" />
               </Border.Effect>
             </Border>
-            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" CornerRadius="6" x:Name="Bd">
+            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
               <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                <ItemsPresenter />
               </ScrollViewer>
             </Border>
           </Grid>
@@ -699,8 +690,8 @@
               </DataTemplate>
             </ResourceDictionary>
           </ControlTemplate.Resources>
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
           <Style Selector="^:selected /template/ Border#Bd">
@@ -718,12 +709,11 @@
       </Setter.Value>
     </Setter>
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -760,7 +750,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid SnapsToDevicePixels="true">
+          <Grid>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
               <Grid>
                 <Grid.RowDefinitions>
@@ -768,7 +758,7 @@
                   <RowDefinition />
                 </Grid.RowDefinitions>
                 <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
-                  <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
                 </Border>
               </Grid>
             </Border>
@@ -799,7 +789,7 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="ItemsControl.ItemTemplate">
+    <Setter Property="ItemTemplate">
       <Setter.Value>
         <DataTemplate>
           <DataTemplate.Resources>
@@ -864,7 +854,7 @@
         </DataTemplate>
       </Setter.Value>
     </Setter>
-    <Setter Property="ItemsControl.ItemsPanel">
+    <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
           <StackPanel Orientation="Horizontal" />
@@ -873,7 +863,7 @@
     </Setter>
   </Style>
   <Style x:Key="MultilineReferencePanelStyle" Selector="controls:ReferencePanel" BasedOn="{StaticResource ReferencePanelStyle}">
-    <Setter Property="ItemsControl.ItemsPanel">
+    <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
           <WrapPanel Orientation="Horizontal" />

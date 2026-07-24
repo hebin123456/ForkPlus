@@ -41,7 +41,7 @@
             <DataTrigger.Value>
               <x:Null />
             </DataTrigger.Value>
-            <Setter TargetName="Image" Property="UIElement.Visibility" Value="Collapsed" />
+            <Setter TargetName="Image" Property="IsVisible" Value="False" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
@@ -74,7 +74,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <userControls:FileListTreeView SizeChanged="TreeView_SizeChanged" TextSearch.TextPath="Title" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" x:Name="TreeView">
+  <userControls:FileListTreeView SizeChanged="TreeView_SizeChanged" TextSearch.TextPath="Title" x:Name="TreeView">
     <userControls:FileListTreeView.View>
       <GridView>
         <GridViewColumn>

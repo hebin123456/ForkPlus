@@ -7,7 +7,7 @@
        Control.HorizontalContentAlignment -> HorizontalContentAlignment, Control.Template -> Template,
        Control.Padding -> Padding, FrameworkElement.FocusVisualStyle -> FocusVisualStyle,
        Shape.Fill -> Fill, UIElement.Opacity -> Opacity, ToggleButton.IsChecked -> IsChecked.
-     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush}).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding BorderBrush} -> {TemplateBinding BorderBrush}).
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
      - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, ButtonBase.IsPressed=True -> :pressed,
        ToggleButton.IsChecked=True -> :checked, ToggleButton.IsChecked=Null -> :indeterminate.
@@ -17,7 +17,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -34,7 +34,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CheckBox}">
-          <Grid Background="#00FFFFFF" SnapsToDevicePixels="True" Height="17" x:Name="TemplateRoot">
+          <Grid Background="#00FFFFFF" Height="17" x:Name="TemplateRoot">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
@@ -45,7 +45,7 @@
                 <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
               </Grid>
             </Border>
-            <ContentPresenter Grid.Column="1" Focusable="False" RecognizesAccessKey="True" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Grid.Column="1" Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -110,7 +110,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CheckBox}">
-          <Grid Background="#00FFFFFF" SnapsToDevicePixels="True" x:Name="TemplateRoot">
+          <Grid Background="#00FFFFFF" x:Name="TemplateRoot">
             <Border CornerRadius="5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentBorder">
               <DockPanel Margin="{TemplateBinding Padding}">
                 <Border DockPanel.Dock="Left" Height="16" Width="16" Margin="4,2,12,0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
@@ -119,7 +119,7 @@
                     <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
                   </Grid>
                 </Border>
-                <ContentPresenter Focusable="False" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </DockPanel>
             </Border>
           </Grid>

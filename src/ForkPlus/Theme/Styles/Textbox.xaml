@@ -8,7 +8,7 @@
        Border.CornerRadius -> CornerRadius, Control.Template -> Template, UIElement.Opacity -> Opacity,
        PasswordBox.PasswordChar -> PasswordChar, PasswordBox.CaretBrush -> CaretBrush,
        TextBoxBase.SelectionBrush -> SelectionBrush).
-     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding Border.BorderBrush} -> {TemplateBinding BorderBrush}).
+     - TemplateBinding class prefixes stripped (e.g. {TemplateBinding BorderBrush} -> {TemplateBinding BorderBrush}).
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
      - Pseudo-class mapping: UIElement.IsEnabled=False -> :disabled, UIElement.IsKeyboardFocused=True -> :focus.
      - TODO: Style.Triggers MultiTrigger (IsInactiveSelectionHighlightEnabled=true AND IsSelectionActive=false)
@@ -29,13 +29,12 @@
       </Setter.Value>
     </Setter>
     <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type TextBox}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
           </Border>
         </ControlTemplate>
@@ -70,13 +69,12 @@
       </Setter.Value>
     </Setter>
     <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type PasswordBox}">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <ScrollViewer Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
           </Border>
         </ControlTemplate>

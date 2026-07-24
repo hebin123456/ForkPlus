@@ -44,8 +44,8 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="RevisionSubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
-            <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="RevisionSubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+            <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
@@ -84,7 +84,7 @@
                 </Binding.RelativeSource>
               </Binding>
             </DataTrigger.Binding>
-            <Setter TargetName="FilePathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+            <Setter TargetName="FilePathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
           </DataTrigger>
         </DataTemplate.Triggers>
       </DataTemplate>
