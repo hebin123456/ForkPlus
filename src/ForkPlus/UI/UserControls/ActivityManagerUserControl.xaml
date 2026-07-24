@@ -5,6 +5,30 @@
      - TODO：DataTemplate.Triggers/DataTrigger/MultiDataTrigger 是 WPF 特有语法，Avalonia 需用 Selector 重写，此处保留原样待后续迁移
      -->
 <UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ActivityManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor">
+  <UserControl.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 IsSelected DataTrigger。
+         当祖先 ListBoxItem.IsSelected=True 时设置 NameTextBlock/DetailsTextBlock/FinishTimeTextBlock/
+         JobProgressProgressBar.Foreground=ForegroundBrush.Light；CellBorder.BorderBrush 透明；
+         CancelButton.Content 替换为选中态取消图标。 -->
+    <Style Selector="ListBoxItem:selected TextBlock#NameTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected TextBlock#DetailsTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected TextBlock#FinishTimeTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected ProgressBar#JobProgressProgressBar">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected Border#CellBorder">
+      <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    </Style>
+    <Style Selector="ListBoxItem:selected Button#CancelButton">
+      <Setter Property="Content" Value="{DynamicResource CancelJobSelectedIcon}" />
+    </Style>
+  </UserControl.Styles>
   <Border Width="1024" Height="440" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" Margin="10,5,10,10" CornerRadius="6">
     <Border.Effect>
       <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" ShadowDepth="2" />
@@ -101,46 +125,30 @@
                 </ProgressBar>
               </Grid>
             </Border>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-              <DataTrigger Value="True">
-                <DataTrigger.Binding>
-                  <Binding Path="IsSelected">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </DataTrigger.Binding>
-                <Setter TargetName="NameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                <Setter TargetName="FinishTimeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                <Setter TargetName="JobProgressProgressBar" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                <Setter TargetName="CellBorder" Property="BorderBrush" Value="#00FFFFFF" />
-                <Setter TargetName="CancelButton" Property="Content">
-                  <Setter.Value>
-                    <Image Source="{DynamicResource CancelJobSelectedIcon}" />
-                  </Setter.Value>
-                </Setter>
-              </DataTrigger>
-              <DataTrigger Binding="{Binding IsGitMmScanJob}" Value="True">
-                <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource SearchIcon}" />
-              </DataTrigger>
-              <DataTrigger Binding="{Binding IsGitMmStatusJob}" Value="True">
-                <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource RefreshIcon}" />
-              </DataTrigger>
-              <DataTrigger Binding="{Binding IsGitMmSyncJob}" Value="True">
-                <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PullIcon}" />
-              </DataTrigger>
-              <DataTrigger Binding="{Binding IsGitMmUploadJob}" Value="True">
-                <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PushIcon}" />
-              </DataTrigger>
-              <DataTrigger Binding="{Binding IsGitMmStartJob}" Value="True">
-                <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource BranchIcon}" />
-              </DataTrigger>
-            </DataTemplate.Triggers> -->
+<!-- TODO 4.5 (Avalonia): VM-bound DataTriggers below preserved verbatim - Avalonia does not support
+         DataTemplate.Triggers. IsSelected trigger above migrated to top-level Style Selector with
+         :selected pseudoclass. Remaining 5 DataTriggers bind to IsGitMmScanJob/IsGitMmStatusJob/
+         IsGitMmSyncJob/IsGitMmUploadJob/IsGitMmStartJob bool flags and set GitMmCategoryImage.Source
+         to the corresponding icon. Reimplement via either:
+           (a) a multi-value converter that returns an ImageSource based on the job-type flags, or
+           (b) replacing the single Image with 5 stacked Images each bound IsVisible to its flag, or
+           (c) adding a computed CategoryIcon property to the job view-model.
+         Original WPF trigger block preserved for reference.
+    <DataTrigger Binding="{Binding IsGitMmScanJob}" Value="True">
+      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource SearchIcon}" />
+    </DataTrigger>
+    <DataTrigger Binding="{Binding IsGitMmStatusJob}" Value="True">
+      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource RefreshIcon}" />
+    </DataTrigger>
+    <DataTrigger Binding="{Binding IsGitMmSyncJob}" Value="True">
+      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PullIcon}" />
+    </DataTrigger>
+    <DataTrigger Binding="{Binding IsGitMmUploadJob}" Value="True">
+      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PushIcon}" />
+    </DataTrigger>
+    <DataTrigger Binding="{Binding IsGitMmStartJob}" Value="True">
+      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource BranchIcon}" />
+    </DataTrigger> -->
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>

@@ -1,4 +1,11 @@
 <UserControl xmlns:RepositoryOverview="clr-namespace:ForkPlus.UI.Dialogs.RepositoryOverview" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RepositoryOverview.RepositoryOverviewCommitsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Styles>
+    <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 DataTrigger。
+         当祖先 ListBoxItem.IsSelected=True 时设置 AuthorDateTextBlock.Foreground=ForegroundBrush.Light。 -->
+    <Style Selector="ListBoxItem:selected TextBlock#AuthorDateTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+    </Style>
+  </UserControl.Styles>
   <Grid>
     <ListBox BorderThickness="1" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="RevisionsListBox_ContextMenuOpening" x:Name="RevisionsListBox">
       <ListBox.ContextMenu>
@@ -31,18 +38,6 @@
               </controls:AutoTooltipTextBlock.Text>
             </controls:AutoTooltipTextBlock>
           </DockPanel>
-<!-- TODO 4.5 (Avalonia): DataTemplate.Triggers below preserved verbatim - Avalonia does not support
-         Triggers in templates/styles. Reimplement via nested <Style Selector="^:pseudoclass /template/ ...">
-         for control-state triggers, top-level <Style Selector="..."> with converters, or code-behind
-         for view-model-bound triggers. Original WPF trigger block preserved for reference.
-    <DataTemplate.Triggers>
-            <DataTrigger Value="True">
-              <DataTrigger.Binding>
-                <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListBoxItem}" /></Binding.RelativeSource></Binding>
-              </DataTrigger.Binding>
-              <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-            </DataTrigger>
-          </DataTemplate.Triggers> -->
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
