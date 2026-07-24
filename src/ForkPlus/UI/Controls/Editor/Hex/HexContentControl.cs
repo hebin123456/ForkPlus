@@ -1,7 +1,11 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git;
+using ForkPlus.Services;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -48,6 +52,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			_bytesPerRowComboBox.Items.Add(16);
 			_bytesPerRowComboBox.Items.Add(32);
 			_bytesPerRowComboBox.SelectedItem = ForkPlusSettings.Default.HexViewBytesPerRow;
+			// 阶段 4 里程碑 4.7-a：WPF ComboBox.SelectionChanged → Avalonia SelectionChanged
+			// （Avalonia.SelectingItemsControl.SelectionChangedEventArgs，签名兼容）。
 			_bytesPerRowComboBox.SelectionChanged += BytesPerRowComboBox_SelectionChanged;
 			DockPanel.SetDock(_bytesPerRowComboBox, Dock.Left);
 			toolbar.Children.Add(_bytesPerRowComboBox);
@@ -60,8 +66,9 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showAsciiCheckBox.Checked += ShowAsciiCheckBox_Changed;
-			_showAsciiCheckBox.Unchecked += ShowAsciiCheckBox_Changed;
+			// 阶段 4 里程碑 4.7-a：WPF CheckBox.Checked/Unchecked → Avalonia IsCheckedChanged
+			// （Avalonia CheckBox 无独立 Checked/Unchecked 事件，统一通过 IsCheckedChanged 监听）。
+			_showAsciiCheckBox.IsCheckedChanged += ShowAsciiCheckBox_Changed;
 			DockPanel.SetDock(_showAsciiCheckBox, Dock.Left);
 			toolbar.Children.Add(_showAsciiCheckBox);
 
@@ -73,8 +80,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-			_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+			_showOffsetCheckBox.IsCheckedChanged += ShowOffsetCheckBox_Changed;
 			DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
 			toolbar.Children.Add(_showOffsetCheckBox);
 
@@ -144,7 +150,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			}
 		}
 
-		private void ShowAsciiCheckBox_Changed(object sender, RoutedEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs
+		private void ShowAsciiCheckBox_Changed(object sender, EventArgs e)
 		{
 			bool v = _showAsciiCheckBox.IsChecked.GetValueOrDefault();
 			_editor.ShowAscii = v;
@@ -152,7 +159,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			ForkPlusSettings.Default.Save();
 		}
 
-		private void ShowOffsetCheckBox_Changed(object sender, RoutedEventArgs e)
+		private void ShowOffsetCheckBox_Changed(object sender, EventArgs e)
 		{
 			bool v = _showOffsetCheckBox.IsChecked.GetValueOrDefault();
 			_editor.ShowOffset = v;
@@ -160,21 +167,22 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			ForkPlusSettings.Default.Save();
 		}
 
-		private void SearchButton_Click(object sender, RoutedEventArgs e)
+		private void SearchButton_Click(object sender, global::Avalonia.Interactivity.RoutedEventArgs e)
 		{
 			_editor.InstallSearchPanel();
 			_editor.ShowSearch();
 		}
 
-		private void CopyRawButton_Click(object sender, RoutedEventArgs e)
+		private void CopyRawButton_Click(object sender, global::Avalonia.Interactivity.RoutedEventArgs e)
 		{
 			byte[] bytes = _editor.GetSelectedBytes();
 			if (bytes.Length == 0) return;
 			try
 			{
-				Clipboard.SetData(DataFormats.Serializable, bytes);
-				// 同时设置文本格式，方便粘贴到文本编辑器
-				Clipboard.SetData(DataFormats.Text, BitConverter.ToString(bytes).Replace("-", " "));
+				// 阶段 4 里程碑 4.7-a：WPF Clipboard.SetData(DataFormats.Serializable/Text) →
+				// ServiceLocator.Clipboard.SetText（Avalonia 剪贴板仅支持文本；二进制数据以 hex 文本形式提供）。
+				// TODO(4.7-a): 如需保留二进制剪贴板格式，需扩展 IClipboardService 支持二进制数据。
+				ServiceLocator.Clipboard.SetText(BitConverter.ToString(bytes).Replace("-", " "));
 			}
 			catch { }
 		}

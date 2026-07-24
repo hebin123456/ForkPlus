@@ -1,7 +1,8 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Helpers;
@@ -20,17 +21,10 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	{
 		private const int MaxBytesForDiffHighlight = 2 * 1024 * 1024; // 2MB：超过此阈值跳过逐字节比较（避免大文件卡顿）
 
+		// 阶段 4 里程碑 4.7-a：WPF Brush → Avalonia IBrush；WPF SolidColorBrush.Freeze() → 移除（Avalonia 画刷默认不可变）。
 		// 差异字节背景色（橙黄）
-		private static readonly Brush DiffByteBackgroundBrush;
-		private static readonly Brush DiffByteForegroundBrush;
-
-		static HexDiffUserControl()
-		{
-			DiffByteBackgroundBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xD7, 0x00)); // Gold
-			DiffByteBackgroundBrush.Freeze();
-			DiffByteForegroundBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x00, 0x00)); // Black
-			DiffByteForegroundBrush.Freeze();
-		}
+		private static readonly IBrush DiffByteBackgroundBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xD7, 0x00)); // Gold
+		private static readonly IBrush DiffByteForegroundBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x00, 0x00)); // Black
 
 		private readonly HexEditor _srcEditor;
 	private readonly HexEditor _dstEditor;
@@ -87,8 +81,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showAsciiCheckBox.Checked += ShowAsciiCheckBox_Changed;
-			_showAsciiCheckBox.Unchecked += ShowAsciiCheckBox_Changed;
+			// 阶段 4 里程碑 4.7-a：WPF CheckBox.Checked/Unchecked → Avalonia IsCheckedChanged。
+			_showAsciiCheckBox.IsCheckedChanged += ShowAsciiCheckBox_Changed;
 			DockPanel.SetDock(_showAsciiCheckBox, Dock.Left);
 			toolbar.Children.Add(_showAsciiCheckBox);
 
@@ -99,20 +93,19 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			VerticalAlignment = VerticalAlignment.Center,
 			Margin = new Thickness(0, 0, 8, 0)
 		};
-		_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-		_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+		_showOffsetCheckBox.IsCheckedChanged += ShowOffsetCheckBox_Changed;
 		DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
 		toolbar.Children.Add(_showOffsetCheckBox);
 
-		// v3.1.1：左右行对齐 — 默认勾上。勾上时左右两侧 HexEditor 同步垂直/水平滚动，
-		// 一侧拉到第 N 行，另一侧也拉到第 N 行。
-		_syncScrollCheckBox = new CheckBox
-		{
-			Content = PreferencesLocalization.Current("Sync scroll"),
-			IsChecked = true,
-			VerticalAlignment = VerticalAlignment.Center,
-			Margin = new Thickness(0, 0, 8, 0)
-		};
+	// v3.1.1：左右行对齐 — 默认勾上。勾上时左右两侧 HexEditor 同步垂直/水平滚动，
+	// 一侧拉到第 N 行，另一侧也拉到第 N 行。
+	_syncScrollCheckBox = new CheckBox
+	{
+		Content = PreferencesLocalization.Current("Sync scroll"),
+		IsChecked = true,
+		VerticalAlignment = VerticalAlignment.Center,
+		Margin = new Thickness(0, 0, 8, 0)
+	};
 		DockPanel.SetDock(_syncScrollCheckBox, Dock.Left);
 		toolbar.Children.Add(_syncScrollCheckBox);
 
@@ -130,7 +123,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Left,
 				Margin = new Thickness(4, 2, 0, 2),
-				FontWeight = FontWeights.Medium
+				FontWeight = FontWeight.Medium
 			};
 			headerGrid.Children.Add(srcLabel);
 			SetColumn(srcLabel, 0);
@@ -141,7 +134,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Left,
 				Margin = new Thickness(4, 2, 0, 2),
-				FontWeight = FontWeights.Medium
+				FontWeight = FontWeight.Medium
 			};
 			headerGrid.Children.Add(dstLabel);
 			SetColumn(dstLabel, 1);
@@ -233,7 +226,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			}
 		}
 
-		private void ShowAsciiCheckBox_Changed(object sender, RoutedEventArgs e)
+		// 阶段 4 里程碑 4.7-a：WPF RoutedEventArgs → Avalonia EventArgs（IsCheckedChanged 签名）。
+		private void ShowAsciiCheckBox_Changed(object sender, EventArgs e)
 		{
 			bool v = _showAsciiCheckBox.IsChecked.GetValueOrDefault();
 			_srcEditor.ShowAscii = v;
@@ -242,7 +236,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			ForkPlusSettings.Default.Save();
 		}
 
-		private void ShowOffsetCheckBox_Changed(object sender, RoutedEventArgs e)
+		private void ShowOffsetCheckBox_Changed(object sender, EventArgs e)
 	{
 		bool v = _showOffsetCheckBox.IsChecked.GetValueOrDefault();
 		_srcEditor.ShowOffset = v;
