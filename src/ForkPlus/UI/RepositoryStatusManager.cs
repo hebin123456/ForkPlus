@@ -1,7 +1,11 @@
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Threading → using Avalonia.Threading（Dispatcher 命名空间迁移）
+// - Application.Current.TabManager() / Dispatcher / dispatcher.Async 已由 4.3-b 门面适配，逻辑无变化
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;

@@ -1,5 +1,10 @@
-using System.Windows;
-using System.Windows.Media;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage（Avalonia.Media）
+// - Application.Current.TryFindResource(key) as ImageSource → Theme.FindImage(key)（4.3-b 门面）
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls.Preferences;
@@ -8,9 +13,9 @@ namespace ForkPlus.UI.QuickLaunch
 {
 	public class PaletteCommandItem : CommandProviderItem
 	{
-		public override ImageSource Icon => Application.Current.TryFindResource("ConsoleIcon") as ImageSource;
+		public override IImage Icon => Theme.FindImage("ConsoleIcon");
 
-		public override ImageSource SelectedIcon => Application.Current.TryFindResource("ConsoleEmphasizedIcon") as ImageSource;
+		public override IImage SelectedIcon => Theme.FindImage("ConsoleEmphasizedIcon");
 
 		public CommandDescriptor Command { get; }
 

@@ -1,32 +1,37 @@
-using System.Windows;
-using System.Windows.Media;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Media → using Avalonia.Media
+// - ImageSource → IImage
+// - Application.Current.TryFindResource(key) as ImageSource → Theme.FindImage(key)
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class ReferenceItem : CommandProviderItem
 	{
-		public override ImageSource Icon
+		public override IImage Icon
 		{
 			get
 			{
 				if (Reference is Tag)
 				{
-					return Application.Current.TryFindResource("TagIcon") as ImageSource;
+					return Theme.FindImage("TagIcon");
 				}
-				return Application.Current.TryFindResource("BranchIcon") as ImageSource;
+				return Theme.FindImage("BranchIcon");
 			}
 		}
 
-		public override ImageSource SelectedIcon
+		public override IImage SelectedIcon
 		{
 			get
 			{
 				if (Reference is Tag)
 				{
-					return Application.Current.TryFindResource("TagSelectedIcon") as ImageSource;
+					return Theme.FindImage("TagSelectedIcon");
 				}
-				return Application.Current.TryFindResource("BranchSelectedIcon") as ImageSource;
+				return Theme.FindImage("BranchSelectedIcon");
 			}
 		}
 

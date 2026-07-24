@@ -1,4 +1,9 @@
-using System.Windows;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows → using Avalonia + using Avalonia.Input
+// - DragDropEffects / DragEventArgs → Avalonia.Input 同名类型
+// - e.Effects → e.DragEffects
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
 
@@ -25,7 +30,7 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects = DragDropEffects.None;
 			e.Handled = true;
 		}
 	}
