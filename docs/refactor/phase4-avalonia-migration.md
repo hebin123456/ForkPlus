@@ -36,6 +36,16 @@
       - 移除 `Microsoft.Web.WebView2.Core` using；删除 `GitMmReferenceWindowTests`（测试已移除的 `MarkdownToHtml` 方法）
       - 保留 `FallbackUserControl`（仍 WPF，44 文件共用，单独迁移）
     - [ ] 4.7-c-2：`AiDevelopmentWindow`（无 postMessage，但有多气泡 + 动态 WebView 创建 + `ExecuteScriptAsync` 测高）
+      - **进度**：
+        - [x] 移除 `Microsoft.Web.WebView2.Core`/`Wpf` using，添加 `using Markdown.Avalonia;`
+        - [x] `_streamingWebView` 类型 `WebView2` → `MarkdownScrollViewer`
+        - [x] `RenderMarkdownToWebView(WebView2, md)` → `RenderMarkdownToViewer(MarkdownScrollViewer, md)`：`NavigateToString(HTML)` → `Markdown = markdown` 直接绑定（移除 `AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocument` 调用）
+        - [x] `TryRenderStreamingPreview`：`.CoreWebView2 == null` 判空 → `== null` 判空
+        - [x] `InitializeAiMessageWebViewAsync(WebView2)` → `ConfigureMarkdownViewer(MarkdownScrollViewer)`：删除 `EnsureCoreWebView2Async`/`PreferredColorScheme`/`ContextMenuRequested`/`NavigationCompleted` + `ExecuteScriptAsync("scrollHeight")` JS 自动高度测量（Avalonia 原生布局自动处理高度）；仅保留 `MaxHeight = 480` 防溢出
+        - [x] `CreateStreamingResponseBubble`：`new WebView2 { DefaultBackgroundColor = Transparent }` → `new MarkdownScrollViewer()`；删除 `_ = InitializeAiMessageWebViewAsync(webView)` 异步初始化调用
+        - [x] `AddAiResponseMessage` 非流式气泡：同上替换；`await InitializeAiMessageWebViewAsync` + `RenderMarkdownToWebView` → `RenderMarkdownToViewer`（同步调用）
+        - [x] `RemoveStreamingResponseBubble`/`FinalizeStreamingResponseBubble` 参数类型 `WebView2` → `MarkdownScrollViewer`；`.CoreWebView2 != null` → `!= null`
+        - [x] 顺手修复 WPF 残留：`PreviewKeyDown` → `KeyDown`（Avalonia 无隧道事件）；`System.Windows.Input.KeyEventArgs`/`Key`/`Keyboard.IsKeyDown` → `Avalonia.Input.KeyEventArgs`/`Key`/`e.KeyModifiers.HasFlag`；`Dispatcher.BeginInvoke(Delegate, DispatcherPriority.Background)` → `Dispatcher.Post(Action)`；`(Brush)FindResource(...)` → `Theme.FindBrush(...)`
     - [ ] 4.7-c-3：`AiTextResultWindow`（scroll-at-bottom JS 互操作 → Avalonia ScrollViewer 事件）
     - [ ] 4.7-c-4：`AiCodeReviewWindow`（scroll 追踪 + 建议卡按钮回调 preview/apply suggestion → 原生 Avalonia 事件/Command，最复杂）
     - [ ] 4.7-c-5：`WebView2EnvironmentHelper` 删除 + csproj 移除 `Microsoft.Web.WebView2` 包 + `CopyWebView2LoaderToRoot` MSBuild target 删除

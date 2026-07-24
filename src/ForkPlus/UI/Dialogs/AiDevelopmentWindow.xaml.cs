@@ -16,8 +16,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
+using Markdown.Avalonia;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -64,11 +63,11 @@ namespace ForkPlus.UI.Dialogs
 		private const int KeepRecentMessagesOnCompress = 6;
 		private bool _isCompressingContext;
 
-		// 流式渲染状态/协议/Markdown转换/CSS 由 VM 承载（零 WPF），本类仅负责 WebView2 实例操作 + UI 切换。
+		// 流式渲染状态/协议/Markdown 节流由 VM 承载（零 WPF），本类仅负责 MarkdownScrollViewer 实例操作 + UI 切换。
 		private readonly AiDevelopmentWindowViewModel _viewModel = new AiDevelopmentWindowViewModel();
 
-		// 当前流式响应的 WebView2（onChunk 追加到 VM 缓冲后节流渲染到这里；多对话气泡模式下动态创建）
-		private WebView2 _streamingWebView;
+		// 当前流式响应的 MarkdownScrollViewer（onChunk 追加到 VM 缓冲后节流渲染到这里；多对话气泡模式下动态创建）
+		private MarkdownScrollViewer _streamingWebView;
 
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
@@ -78,7 +77,7 @@ namespace ForkPlus.UI.Dialogs
 			base.Title = PreferencesLocalization.Current("AI-Assisted Development");
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			InputTextBox.TextChanged += InputTextBox_TextChanged;
-			InputTextBox.PreviewKeyDown += InputTextBox_PreviewKeyDown;
+			InputTextBox.KeyDown += InputTextBox_KeyDown;
 			Loaded += AiDevelopmentWindow_Loaded;
 			_statusTimer = new DispatcherTimer
 			{
@@ -234,7 +233,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("Describe your development requirement below. The AI will analyze your codebase and generate file changes. You can have a continuous conversation - the AI remembers previous context in this session."),
 				FontSize = 12,
 				TextWrapping = TextWrapping.Wrap,
-				Foreground = (Brush)FindResource("SecondaryLabelBrush"),
+				Foreground = Theme.FindBrush("SecondaryLabelBrush"),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 			panel.Children.Add(title);
@@ -248,12 +247,16 @@ namespace ForkPlus.UI.Dialogs
 			UpdateSendButton();
 		}
 
-		private void InputTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		// Avalonia 无 WPF 的 PreviewKeyDown 隧道事件，改用 KeyDown 气泡事件；
+		// e.Handled = true 仍可阻止 TextBox 默认的 Enter 换行行为。
+		// 修饰键检测：WPF Keyboard.IsKeyDown(Key.LeftShift/RightShift) → e.KeyModifiers.HasFlag(KeyModifiers.Shift)，
+		// 事件参数自带修饰键状态，避免依赖全局 Keyboard 静态查询。
+		private void InputTextBox_KeyDown(object sender, KeyEventArgs e)
 		{
 			bool sendOnEnter = ForkPlusSettings.Default.AiDevSendMode == "Enter";
-			bool enterPressed = e.Key == System.Windows.Input.Key.Enter;
-			bool shiftPressed = System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightShift);
-			bool ctrlPressed = System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl);
+			bool enterPressed = e.Key == Key.Enter;
+			bool shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+			bool ctrlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
 
 			if (sendOnEnter)
 			{
@@ -375,7 +378,7 @@ namespace ForkPlus.UI.Dialogs
 			Dictionary<string, string> beforeContents = GetCurrentFileContents();
 
 			// Create streaming response bubble (will be populated chunk by chunk)
-			WebView2 streamingWebView = null;
+			MarkdownScrollViewer streamingWebView = null;
 			base.Dispatcher.Async(delegate
 			{
 				streamingWebView = CreateStreamingResponseBubble();
@@ -398,7 +401,7 @@ namespace ForkPlus.UI.Dialogs
 						AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
 					});
 
-					// 流式输出：onChunk 回调实时追加到 _streamingMarkdown，节流渲染到 WebView2
+					// 流式输出：onChunk 回调实时追加到 _streamingMarkdown，节流渲染到 MarkdownScrollViewer
 				// 工具调用循环：AI 可通过 <list_dir>/<read_file> 标签请求读取仓库文件/目录，
 				// 本地执行后把结果作为新 user 消息续发，直到 AI 不再请求工具或达到最大轮数。
 				ServiceResult<OpenAiResponse> result = null;
@@ -643,31 +646,30 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。
-		/// Markdown转换/CSS/HTML文档构建由基类 AiStreamingMarkdownViewModel 承载（零 WPF）。
-		/// 气泡模式不注入 scrollScript（用自动高度 + 总是 ScrollToEnd，无 scroll-at-bottom 跟踪）。</summary>
-		private void RenderMarkdownToWebView(WebView2 webView, string markdown)
+		/// <summary>把 Markdown 渲染到 MarkdownScrollViewer（直接设置 Markdown 属性，由原生 Avalonia 控件渲染）。
+		/// Markdown.Avalonia 内置 GFM 表格/代码块/列表/emoji 支持，无需 HTML 转换或 CSS 注入。
+		/// 气泡模式不注入 scrollScript（用 MaxHeight + 总是 ScrollToEnd，无 scroll-at-bottom 跟踪）。</summary>
+		private void RenderMarkdownToViewer(MarkdownScrollViewer viewer, string markdown)
 		{
-			if (webView?.CoreWebView2 == null || string.IsNullOrEmpty(markdown))
+			if (viewer == null || string.IsNullOrEmpty(markdown))
 			{
 				return;
 			}
-			string html = AiStreamingMarkdownViewModel.RenderMarkdownToHtmlDocument(markdown);
 			try
 			{
-				webView.NavigateToString(html);
+				viewer.Markdown = markdown;
 			}
 			catch (Exception ex)
 			{
-				Log.Warn("AI message WebView navigate failed: " + ex.Message);
+				Log.Warn("AI message markdown render failed: " + ex.Message);
 			}
 		}
 
-		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入流式 WebView。
+		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 直接写入流式 MarkdownScrollViewer。
 		/// 节流判定 + 缓冲快照由 VM 承载。</summary>
 		private void TryRenderStreamingPreview()
 		{
-			if (_streamingWebView?.CoreWebView2 == null)
+			if (_streamingWebView == null)
 			{
 				return;
 			}
@@ -680,61 +682,24 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			RenderMarkdownToWebView(_streamingWebView, md);
+			RenderMarkdownToViewer(_streamingWebView, md);
 			ScrollToEnd();
 		}
 
-		/// <summary>异步初始化 WebView2：创建环境、禁用右键菜单、导航完成后自动测量内容高度并调整控件高度。</summary>
-		private async Task InitializeAiMessageWebViewAsync(WebView2 webView)
+		/// <summary>配置 MarkdownScrollViewer 的最大高度限制。
+		/// 原 WebView2 需异步初始化环境/主题/右键菜单/JS 自动高度测量；MarkdownScrollViewer 是原生 Avalonia 控件，
+		/// 无需任何初始化——主题由 Avalonia 主题系统自动应用，右键菜单由控件自身处理，高度由布局系统自动测量。
+		/// 仅设置 MaxHeight 防止单条超长消息撑爆父 ScrollViewer（沿用 v3.5.2 修复策略）：
+		/// 内容长时封顶到 MaxMessageViewerHeight，超出部分由 MarkdownScrollViewer 内置 ScrollViewer 滚动。</summary>
+		private const double MaxMessageViewerHeight = 480.0;
+
+		private void ConfigureMarkdownViewer(MarkdownScrollViewer viewer)
 		{
-			try
+			if (viewer == null)
 			{
-				await webView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
-				webView.CoreWebView2.Profile.PreferredColorScheme =
-				ForkPlusSettings.Default.Theme.IsDarkBase()
-					? CoreWebView2PreferredColorScheme.Dark
-					: CoreWebView2PreferredColorScheme.Light;
-				webView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
-				{
-					e.Handled = true;
-				};
-				// 自动高度：导航完成后用 JS 测量内容高度，调整 WebView2 的 Height 使其完整显示
-			// 修复（v3.5.2）：长回答会让 WebView2 撑得过高，导致整页溢出父 ScrollViewer。
-			//   限制单条消息 WebView2 最大高度，超出部分由 WebView2 内部滚动；外层 MainScrollViewer
-			//   只滚动消息列表本身，不再因单条超长消息把整页撑爆。
-			const double MaxMessageWebViewHeight = 480.0;
-			webView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
-			{
-				if (!e.IsSuccess)
-				{
-					return;
-				}
-				webView.CoreWebView2.ExecuteScriptAsync("document.documentElement.scrollHeight").ContinueWith(delegate(Task<string> t)
-				{
-					try
-					{
-						string result = t.Result;
-						if (double.TryParse(result, out double h))
-						{
-							base.Dispatcher.Async(delegate
-							{
-								// 内容短：高度贴合内容；内容长：封顶到 MaxMessageWebViewHeight，超出由 WebView2 内部滚动
-								webView.MaxHeight = MaxMessageWebViewHeight;
-								webView.Height = Math.Max(Math.Min(h, MaxMessageWebViewHeight), 20);
-								ScrollToEnd();
-							});
-						}
-					}
-					catch
-					{
-					}
-				});
-			};
+				return;
 			}
-			catch (Exception ex)
-			{
-				Log.Warn("Failed to init AI message WebView2: " + ex.Message);
-			}
+			viewer.MaxHeight = MaxMessageViewerHeight;
 		}
 
 		private void AddUserMessage(string message)
@@ -784,9 +749,9 @@ namespace ForkPlus.UI.Dialogs
 
 		/// <summary>
 		/// 创建流式响应气泡，AI 生成内容逐 chunk 追加到 _streamingMarkdown，
-		/// 节流渲染到 WebView2（Markdown→HTML），支持代码块/列表/表格/emoji 彩色显示。
+		/// 节流渲染到 MarkdownScrollViewer（直接 Markdown 属性），支持代码块/列表/表格/emoji。
 		/// </summary>
-		private WebView2 CreateStreamingResponseBubble()
+		private MarkdownScrollViewer CreateStreamingResponseBubble()
 		{
 			Border aiBorder = new Border
 			{
@@ -807,15 +772,16 @@ namespace ForkPlus.UI.Dialogs
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
-			WebView2 webView = new WebView2
+			// MarkdownScrollViewer：原生 Avalonia 控件，内置 ScrollViewer，自带主题/右键菜单/自动高度
+			MarkdownScrollViewer viewer = new MarkdownScrollViewer
 			{
-				MinHeight = 20,
-				DefaultBackgroundColor = System.Drawing.Color.Transparent
+				MinHeight = 20
 			};
+			ConfigureMarkdownViewer(viewer);
 
 			StackPanel innerPanel = new StackPanel();
 			innerPanel.Children.Add(header);
-			innerPanel.Children.Add(webView);
+			innerPanel.Children.Add(viewer);
 			aiBorder.Child = innerPanel;
 
 			MessagePanel.Children.Add(aiBorder);
@@ -823,38 +789,35 @@ namespace ForkPlus.UI.Dialogs
 
 			// 重置流式状态（VM 承载：清空缓冲 + 重置节流计时）
 			_viewModel.ClearStreamingBuffer();
-			_streamingWebView = webView;
+			_streamingWebView = viewer;
 
-			// 异步初始化 WebView2（环境/主题/右键菜单/自动高度），fire-and-forget
-			_ = InitializeAiMessageWebViewAsync(webView);
-
-			return webView;
+			return viewer;
 		}
 
 		/// <summary>有文件变更时移除流式气泡（改用 diff 展示）。</summary>
-		private void RemoveStreamingResponseBubble(WebView2 streamingWebView)
+		private void RemoveStreamingResponseBubble(MarkdownScrollViewer streamingViewer)
 		{
-			if (streamingWebView?.Parent is StackPanel panel && panel.Parent is Border border)
+			if (streamingViewer?.Parent is StackPanel panel && panel.Parent is Border border)
 			{
 				MessagePanel.Children.Remove(border);
 			}
-			if (_streamingWebView == streamingWebView)
+			if (_streamingWebView == streamingViewer)
 			{
 				_streamingWebView = null;
 			}
 		}
 
 		/// <summary>无文件变更时保留流式气泡作为最终响应，做一次最终渲染确保完整内容显示。</summary>
-		private void FinalizeStreamingResponseBubble(WebView2 streamingWebView)
+		private void FinalizeStreamingResponseBubble(MarkdownScrollViewer streamingViewer)
 		{
 			// 最终渲染（无节流），确保流式结束后完整 Markdown 已渲染（VM 取最终完整 markdown）
 			string md = _viewModel.GetFinalMarkdown();
-			if (!string.IsNullOrEmpty(md) && streamingWebView?.CoreWebView2 != null)
+			if (!string.IsNullOrEmpty(md) && streamingViewer != null)
 			{
-				RenderMarkdownToWebView(streamingWebView, md);
+				RenderMarkdownToViewer(streamingViewer, md);
 				ScrollToEnd();
 			}
-			if (_streamingWebView == streamingWebView)
+			if (_streamingWebView == streamingViewer)
 			{
 				_streamingWebView = null;
 			}
@@ -1089,26 +1052,23 @@ namespace ForkPlus.UI.Dialogs
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
-			WebView2 webView = new WebView2
+			// MarkdownScrollViewer：原生 Avalonia 控件，无需异步初始化
+			MarkdownScrollViewer viewer = new MarkdownScrollViewer
 			{
-				MinHeight = 20,
-				DefaultBackgroundColor = System.Drawing.Color.Transparent
+				MinHeight = 20
 			};
+			ConfigureMarkdownViewer(viewer);
 
 			StackPanel innerPanel = new StackPanel();
 			innerPanel.Children.Add(header);
-			innerPanel.Children.Add(webView);
+			innerPanel.Children.Add(viewer);
 			aiBorder.Child = innerPanel;
 
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
 
-			// 初始化 WebView2 后渲染 Markdown（非流式一次性渲染）
-			base.Dispatcher.Async(async delegate
-			{
-				await InitializeAiMessageWebViewAsync(webView);
-				RenderMarkdownToWebView(webView, response);
-			});
+			// 直接渲染 Markdown（非流式一次性渲染，MarkdownScrollViewer 无需异步初始化）
+			RenderMarkdownToViewer(viewer, response);
 		}
 
 		private void AddStatusMessage(string message, Brush foreground)
@@ -1126,12 +1086,14 @@ namespace ForkPlus.UI.Dialogs
 			ScrollToEnd();
 		}
 
+		// Avalonia Dispatcher 无 BeginInvoke(Delegate, DispatcherPriority) 重载，改用 Post（fire-and-forget，
+		// 默认 Background 优先级）。原 WPF DispatcherPriority.Background 等价于 Avalonia Dispatcher 的默认后台优先级。
 		private void ScrollToEnd()
 		{
-			base.Dispatcher.BeginInvoke(new Action(() =>
+			base.Dispatcher.Post(() =>
 			{
 				MainScrollViewer.ScrollToEnd();
-			}), DispatcherPriority.Background);
+			});
 		}
 
 		private void SaveSkillList()
