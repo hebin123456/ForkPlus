@@ -1,9 +1,8 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
@@ -13,10 +12,10 @@ namespace ForkPlus.UI.Controls
 		{
 			if (values.Length < 2)
 			{
-				return Visibility.Collapsed;
+				return false;
 			}
 			SolidColorBrush solidColorBrush = (SolidColorBrush)values[0];
-			return (!(bool)values[1]) ? ((solidColorBrush == null) ? Visibility.Collapsed : Visibility.Visible) : Visibility.Visible;
+			return (!(bool)values[1]) ? ((solidColorBrush == null) ? false : true) : true;
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

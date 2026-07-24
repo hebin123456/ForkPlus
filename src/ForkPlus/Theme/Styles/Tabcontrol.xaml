@@ -215,7 +215,7 @@
               <ContentPresenter.Content>
                 <controls:CenteredDockPanel Background="#00FFFFFF" x:Name="PART_Header">
                   <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding controls:ClosableTabItem.TagBrush}" StrokeThickness="2">
-                    <Ellipse.Visibility>
+                    <Ellipse.IsVisible>
                       <MultiBinding>
                         <MultiBinding.Converter>
                           <controls:TabEllipseVisibilityConverter />
@@ -231,7 +231,7 @@
                           </Binding.RelativeSource>
                         </Binding>
                       </MultiBinding>
-                    </Ellipse.Visibility>
+                    </Ellipse.IsVisible>
                     <Ellipse.Fill>
                       <MultiBinding>
                         <MultiBinding.Converter>

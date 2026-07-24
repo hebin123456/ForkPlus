@@ -128,13 +128,13 @@
                 </Binding.RelativeSource>
               </Binding>
             </TextBlock.Text>
-            <TextBlock.Visibility>
+            <TextBlock.IsVisible>
               <Binding Path="IsInEditMode" Converter="{StaticResource InverseBooleanToVisibility}">
                 <Binding.RelativeSource>
                   <RelativeSource Mode="TemplatedParent" />
                 </Binding.RelativeSource>
               </Binding>
-            </TextBlock.Visibility>
+            </TextBlock.IsVisible>
           </TextBlock>
         </ControlTemplate>
       </Setter.Value>

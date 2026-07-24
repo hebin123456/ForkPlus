@@ -96,9 +96,9 @@
           <controls:PlaceholderTextBox.Text>
             <Binding ElementName="ToolsListBox" Path="SelectedItem.Name" UpdateSourceTrigger="PropertyChanged" />
           </controls:PlaceholderTextBox.Text>
-          <controls:PlaceholderTextBox.Visibility>
+          <controls:PlaceholderTextBox.IsVisible>
             <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource InverseBooleanToVisibility}" />
-          </controls:PlaceholderTextBox.Visibility>
+          </controls:PlaceholderTextBox.IsVisible>
         </controls:PlaceholderTextBox>
         <TextBlock Grid.Row="0" Grid.Column="1" Margin="10,0,0,0" Padding="7,2,4,2" Width="195" HorizontalAlignment="Left" VerticalAlignment="Center">
           <TextBlock.Text>

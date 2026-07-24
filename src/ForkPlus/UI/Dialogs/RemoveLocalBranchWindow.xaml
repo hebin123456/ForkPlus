@@ -46,9 +46,9 @@
                       <Binding Path="UpstreamVisibility" />
                     </DockPanel.Visibility>
                     <TextBlock Text="&#x2192;" Margin="4,0,0,0">
-                      <TextBlock.Visibility>
+                      <TextBlock.IsVisible>
                         <Binding Path="UpstreamName"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
-                      </TextBlock.Visibility>
+                      </TextBlock.IsVisible>
                     </TextBlock>
                     <Image Height="16" Width="16" Margin="4,0,0,0">
                       <Image.Source>
