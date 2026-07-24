@@ -1,10 +1,23 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.* 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Documents → 移除（AdornerLayer 由 AttachTo/DetachFrom 替代）
+// - using System.Windows.Input → using Avalonia.Input
+// - 基类 ListViewItem → Avalonia.Controls.ListViewItem
+// - OnPropertyChanged(DependencyPropertyChangedEventArgs) → OnPropertyChanged(AvaloniaPropertyChangedEventArgs)
+// - FrameworkElement.DataContextProperty → Control.DataContextProperty
+// - OnMouseLeftButtonDown/Up/Move → OnPointerPressed/Released/Moved
+// - Mouse.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+// - CaptureMouse/ReleaseMouseCapture/IsMouseCaptured → e.Pointer.Capture + _isPointerCaptured 字段
+// - AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)
+// - SystemParameters.Minimum*DragDistance → 常量 10.0
+// - OnGiveFeedback 移除（Avalonia DoDragDrop 异步阻塞，无 GiveFeedback 事件）
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
@@ -15,16 +28,21 @@ namespace ForkPlus.UI.Controls
 
 		private bool _wasSelected;
 
+		// 阶段 4.5：替代 WPF IsMouseCaptured，跟踪 Pointer 捕获状态。
+		private bool _isPointerCaptured;
+
 		private DragAdorner _adorner;
 
 		public MultiselectionTreeViewItem Node => base.DataContext as MultiselectionTreeViewItem;
 
 		public MultiselectionTreeView ParentTreeView { get; internal set; }
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF OnPropertyChanged(DependencyPropertyChangedEventArgs) → Avalonia OnPropertyChanged(AvaloniaPropertyChangedEventArgs)。
+		// WPF FrameworkElement.DataContextProperty → Avalonia Control.DataContextProperty。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
-			if (e.Property == FrameworkElement.DataContextProperty)
+			if (e.Property == Control.DataContextProperty)
 			{
 				UpdateDataContext(e.OldValue as MultiselectionTreeViewItem, e.NewValue as MultiselectionTreeViewItem);
 			}
@@ -69,63 +87,65 @@ namespace ForkPlus.UI.Controls
 			return num;
 		}
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				base.OnPointerPressed(e);
 			}
-			if (ParentTreeView.AllowDragDrop && Mouse.LeftButton == MouseButtonState.Pressed)
+			// 阶段 4.5：WPF Mouse.LeftButton == MouseButtonState.Pressed → Avalonia e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
+			if (ParentTreeView.AllowDragDrop && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_startPoint = e.GetPosition(null);
-				CaptureMouse();
+				// 阶段 4.5：WPF CaptureMouse() → Avalonia e.Pointer.Capture(this)。
+				e.Pointer.Capture(this);
+				_isPointerCaptured = true;
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(PointerEventArgs e)
 		{
-			if (!base.IsMouseCaptured)
+			// 阶段 4.5：WPF IsMouseCaptured → 自定义 _isPointerCaptured 字段。
+			if (!_isPointerCaptured)
 			{
 				return;
 			}
 			Point position = e.GetPosition(null);
-			if (!(Math.Abs(position.X - _startPoint.X) >= SystemParameters.MinimumHorizontalDragDistance) && !(Math.Abs(position.Y - _startPoint.Y) >= SystemParameters.MinimumVerticalDragDistance))
+			// 阶段 4.5：WPF SystemParameters.MinimumDragDistance → 常量 10.0。
+			if (!(Math.Abs(position.X - _startPoint.X) >= 10.0) && !(Math.Abs(position.Y - _startPoint.Y) >= 10.0))
 			{
 				return;
 			}
 			_adorner = new DragAdorner(this, e.GetPosition(this));
 			if (_adorner != null)
 			{
-				AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(ParentTreeView);
-				if (adornerLayer != null)
-				{
-					adornerLayer.Add(_adorner);
-					MultiselectionTreeViewItem[] nodes = ParentTreeView.GetTopLevelSelection().ToArray();
-					Node?.StartDrag(this, nodes);
-					adornerLayer.Remove(_adorner);
-				}
+				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
+				_adorner.AttachTo(ParentTreeView);
+				MultiselectionTreeViewItem[] nodes = ParentTreeView.GetTopLevelSelection().ToArray();
+				Node?.StartDrag(this, nodes);
+				_adorner.DetachFrom(ParentTreeView);
 			}
 		}
 
-		protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
-		{
-			if (base.IsVisible && _adorner != null)
-			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
-				_adorner.UpdatePosition(position);
-			}
-		}
+		// TODO(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
 
-		protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			// 阶段 4.5：WPF ReleaseMouseCapture() → Avalonia e.Pointer.Capture(null)。
+			e.Pointer.Capture(null);
+			_isPointerCaptured = false;
 			if (_wasSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				// TODO(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
+				// Avalonia OnPointerPressed(PointerPressedEventArgs) 与 OnPointerReleased(PointerReleasedEventArgs) 参数类型不同，
+				// 无法从 OnPointerReleased 直接调用 base.OnPointerPressed。阶段 6 需重新实现选中切换逻辑。
+				// base.OnPointerPressed(e);
 			}
 		}
 
+		// TODO(4.5): ParentTreeView (MultiselectionTreeView) 尚未迁移到 Avalonia，其 HandleDrag* 方法仍接受 System.Windows.DragEventArgs。
+		// 此处传入 Avalonia.Input.DragEventArgs，存在跨阶段类型不匹配；待 MultiselectionTreeView 迁移后自动消解。
 		protected override void OnDragEnter(DragEventArgs e)
 		{
 			ParentTreeView.HandleDragEnter(this, e);

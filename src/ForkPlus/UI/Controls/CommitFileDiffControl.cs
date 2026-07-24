@@ -1,5 +1,10 @@
+// 阶段 4.5：WPF System.Windows.Controls → Avalonia.Controls + Avalonia.Controls.Primitives。
+// WPF PreviewMouseWheel → Avalonia PointerWheelChanged（参考已迁移的 FileDiffControl.cs）。
+// WPF ContextMenu/Separator/ContextMenuEventArgs → Avalonia.Controls 同名类型。
+// WPF ScrollBarVisibility → Avalonia.Controls.Primitives.ScrollBarVisibility。
 using System;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
@@ -93,7 +98,8 @@ namespace ForkPlus.UI.Controls
 						if (base.SubControlMode)
 						{
 							textDiffControl.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl.PreviewMouseWheel += base.DiffCodeEditor_PreviewMouseWheel;
+						// 阶段 4.5：WPF PreviewMouseWheel → Avalonia PointerWheelChanged。
+						textDiffControl.PointerWheelChanged += base.DiffCodeEditor_PreviewMouseWheel;
 						}
 						textDiffControl.PositionCache = _positionCache;
 						return textDiffControl;

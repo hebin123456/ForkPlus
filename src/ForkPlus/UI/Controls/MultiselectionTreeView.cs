@@ -1,14 +1,31 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.* 迁移。
+// WPF DependencyProperty → Avalonia StyledProperty（AvaloniaProperty.Register<TOwner, TType>）。
+// WPF DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs。
+// WPF DependencyObject（容器参数）→ Avalonia.Control。
+// WPF FrameworkElement → Avalonia.Control。
+// WPF Brush → Avalonia.Media.IBrush。
+// WPF OnPreviewMouseRightButtonDown (tunneling) → Avalonia OnPointerPressed + IsRightButtonPressed 检查。
+// WPF OnMouseDoubleClick → Avalonia OnDoubleTapped。
+// WPF e.OriginalSource → Avalonia e.Source。
+// WPF ItemContainerGenerator.ContainerFromItem → Avalonia ContainerFromItem。
+// WPF GetContainerForItemOverride → Avalonia CreateContainerForItemOverride。
+// WPF Dispatcher.BeginInvoke(DispatcherPriority, ...) → Avalonia Dispatcher.Async(...)。
+// WPF e.Effects → Avalonia e.DragEffects（DragEventArgs → Avalonia.Input.DragEventArgs）。
+// WPF Application.Current.TryFindResource → Theme.FindResource。
+// WPF ActualHeight → Avalonia Bounds.Height。
+// WPF Control.BackgroundProperty → Avalonia TemplatedControl.BackgroundProperty。
+// WPF MoveFocus(TraversalRequest) 在 Avalonia 中无等价物，标记 TODO(4.5)。
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.UI.Controls.Flattener;
 
 namespace ForkPlus.UI.Controls
@@ -44,7 +61,8 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public static readonly DependencyProperty RootItemProperty;
+		// 阶段 4.5：WPF DependencyProperty → Avalonia StyledProperty。
+		public static readonly StyledProperty<MultiselectionTreeViewItem> RootItemProperty;
 
 		[Null]
 		private ExpandedTreeViewElement[] _itemsToExpand;
@@ -123,8 +141,11 @@ namespace ForkPlus.UI.Controls
 
 		static MultiselectionTreeView()
 		{
-			RootItemProperty = DependencyProperty.Register("RootItem", typeof(MultiselectionTreeViewItem), typeof(MultiselectionTreeView));
-			VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(typeof(MultiselectionTreeView), new FrameworkPropertyMetadata(VirtualizationMode.Recycling));
+			// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
+			RootItemProperty = AvaloniaProperty.Register<MultiselectionTreeView, MultiselectionTreeViewItem>(nameof(RootItem));
+			// TODO(4.5): WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata 在 Avalonia 中无等价物。
+			// Avalonia ListView 默认使用虚拟化，无需显式设置 Recycling 模式。原 WPF 代码（已注释）：
+			// VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(typeof(MultiselectionTreeView), new FrameworkPropertyMetadata(VirtualizationMode.Recycling));
 		}
 
 		public void Refilter()
@@ -162,7 +183,8 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override DependencyObject GetContainerForItemOverride()
+		// 阶段 4.5：WPF GetContainerForItemOverride() 返回 DependencyObject → Avalonia CreateContainerForItemOverride() 返回 Control。
+		protected override Control CreateContainerForItemOverride()
 		{
 			return new TreeViewControlItem();
 		}
@@ -172,7 +194,8 @@ namespace ForkPlus.UI.Controls
 			return item is TreeViewControlItem;
 		}
 
-		protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+		// 阶段 4.5：WPF PrepareContainerForItemOverride(DependencyObject, object) → Avalonia PrepareContainerForItemOverride(Control, object)。
+		protected override void PrepareContainerForItemOverride(Control element, object item)
 		{
 			base.PrepareContainerForItemOverride(element, item);
 			(element as TreeViewControlItem).ParentTreeView = this;
@@ -193,7 +216,8 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			TreeViewControlItem treeViewControlItem = e.OriginalSource as TreeViewControlItem;
+			// 阶段 4.5：WPF e.OriginalSource → Avalonia e.Source。
+			TreeViewControlItem treeViewControlItem = e.Source as TreeViewControlItem;
 			switch (e.Key)
 			{
 			case Key.Left:
@@ -219,7 +243,9 @@ namespace ForkPlus.UI.Controls
 					}
 					else if (treeViewControlItem.Node.Children.Count > 0)
 					{
-						treeViewControlItem.MoveFocus(new TraversalRequest(FocusNavigationDirection.Down));
+						// TODO(4.5): WPF UIElement.MoveFocus(TraversalRequest(FocusNavigationDirection.Down)) 在 Avalonia 中无等价物。
+						// 需改用 Avalonia FocusManager 或 KeyboardNavigation.TabOnceActiveElement 导航。原 WPF 代码（已注释）：
+						// treeViewControlItem.MoveFocus(new TraversalRequest(FocusNavigationDirection.Down));
 					}
 					e.Handled = true;
 				}
@@ -231,22 +257,32 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
+		// 阶段 4.5：WPF OnPreviewMouseRightButtonDown (tunneling) → Avalonia OnPointerPressed + IsRightButtonPressed 检查。
+		// WPF MouseButtonEventArgs → Avalonia PointerPressedEventArgs。
+		// WPF Mouse.PrimaryDevice.RightButton → Avalonia GetCurrentPoint().Properties.IsRightButtonPressed。
+		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
-			base.OnPreviewMouseRightButtonDown(e);
-			Point position = e.GetPosition(this);
-			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
+			base.OnPointerPressed(e);
+			if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+			{
+				Point position = e.GetPosition(this);
+				LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
+			}
 		}
 
-		protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+		// 阶段 4.5：WPF OnMouseDoubleClick(MouseButtonEventArgs) → Avalonia OnDoubleTapped(TappedEventArgs)。
+		// WPF MouseButtonEventArgs → Avalonia.Input.TappedEventArgs。
+		protected override void OnDoubleTapped(TappedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
 			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
-			base.OnMouseDoubleClick(e);
+			base.OnDoubleTapped(e);
 			LastClickedItem = null;
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		// 阶段 4.5：WPF DependencyPropertyChangedEventArgs → Avalonia AvaloniaPropertyChangedEventArgs。
+		// Avalonia 11 中 OnPropertyChanged 签名为 (AvaloniaPropertyChangedEventArgs)，e.NewValue/e.Property 兼容。
+		protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == RootItemProperty)
@@ -277,13 +313,16 @@ namespace ForkPlus.UI.Controls
 				throw new ArgumentNullException("node");
 			}
 			ScrollIntoView(node);
+			// TODO(4.5): WPF ItemContainerGenerator.Status → Avalonia ItemContainerGenerator.PropertyChanged 事件监听，需验证
 			if (base.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
 			{
 				OnFocusItem(node);
 			}
 			else
 			{
-				base.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new DispatcherOperationCallback(OnFocusItem), node);
+				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, DispatcherOperationCallback, object)
+				// → Avalonia Dispatcher.Async(Action)。TODO(4.5): 验证 DispatcherPriority.Loaded 等价性。
+				base.Dispatcher.Async(() => OnFocusItem(node));
 			}
 		}
 
@@ -306,10 +345,8 @@ namespace ForkPlus.UI.Controls
 			if (multiselectionTreeViewItem != node)
 			{
 				ScrollIntoView((object)multiselectionTreeViewItem);
-				base.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, (Action)delegate
-				{
-					ScrollIntoView((object)node);
-				});
+				// 阶段 4.5：WPF Dispatcher.BeginInvoke(DispatcherPriority.Loaded, Action) → Avalonia Dispatcher.Async(Action)。
+				base.Dispatcher.Async(() => ScrollIntoView((object)node));
 			}
 		}
 
@@ -335,7 +372,9 @@ namespace ForkPlus.UI.Controls
 
 		private object OnFocusItem(object item)
 		{
-			if (base.ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement frameworkElement)
+			// 阶段 4.5：WPF ItemContainerGenerator.ContainerFromItem → Avalonia ContainerFromItem。
+			// 阶段 4.5：WPF FrameworkElement → Avalonia Control。
+			if (base.ContainerFromItem(item) is Control frameworkElement)
 			{
 				frameworkElement.Focus();
 			}
@@ -371,6 +410,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (!_updatesLocked)
 			{
+				// TODO(4.5): 验证 Avalonia SelectingItemsControl.SetSelectedItems(IEnumerable) API 兼容性。
 				SetSelectedItems(newSelection ?? Enumerable.Empty<MultiselectionTreeViewItem>());
 				if (base.SelectedItem == null)
 				{
@@ -386,6 +426,7 @@ namespace ForkPlus.UI.Controls
 			return enumerable.Where((MultiselectionTreeViewItem item) => item.Ancestors().All((MultiselectionTreeViewItem a) => !selectionHash.Contains(a)));
 		}
 
+		// 阶段 4.5：WPF DragEventArgs → Avalonia.Input.DragEventArgs。WPF e.Effects → Avalonia e.DragEffects。
 		protected override void OnDragEnter(DragEventArgs e)
 		{
 			OnDragOver(e);
@@ -393,22 +434,22 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnDragOver(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects = DragDropEffects.None;
 			if (RootItem != null)
 			{
 				e.Handled = true;
-				e.Effects = RootItem.GetDropEffect(e, RootItem.Children.Count);
+				e.DragEffects = RootItem.GetDropEffect(e, RootItem.Children.Count);
 			}
 		}
 
 		protected override void OnDrop(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects = DragDropEffects.None;
 			if (RootItem != null)
 			{
 				e.Handled = true;
-				e.Effects = RootItem.GetDropEffect(e, RootItem.Children.Count);
-				if (e.Effects != 0)
+				e.DragEffects = RootItem.GetDropEffect(e, RootItem.Children.Count);
+				if (e.DragEffects != 0)
 				{
 					RootItem.InternalDrop(e, RootItem.Children.Count);
 				}
@@ -423,12 +464,12 @@ namespace ForkPlus.UI.Controls
 		internal void HandleDragOver(TreeViewControlItem item, DragEventArgs e)
 		{
 			HidePreview();
-			e.Effects = DragDropEffects.None;
+			e.DragEffects = DragDropEffects.None;
 			DropTarget dropTarget = GetDropTarget(item, e);
 			if (dropTarget != null)
 			{
 				e.Handled = true;
-				e.Effects = dropTarget.Effect;
+				e.DragEffects = dropTarget.Effect;
 				ShowPreview(dropTarget.Item);
 			}
 		}
@@ -442,7 +483,7 @@ namespace ForkPlus.UI.Controls
 				if (dropTarget != null)
 				{
 					e.Handled = true;
-					e.Effects = dropTarget.Effect;
+					e.DragEffects = dropTarget.Effect;
 					dropTarget.Node.InternalDrop(e, dropTarget.Index);
 				}
 			}
@@ -478,7 +519,8 @@ namespace ForkPlus.UI.Controls
 			List<DropTarget> list = new List<DropTarget>();
 			_ = item.Node;
 			TryAddDropTarget(list, item, e);
-			double actualHeight = item.ActualHeight;
+			// 阶段 4.5：WPF FrameworkElement.ActualHeight → Avalonia Layoutable.Bounds.Height。
+			double actualHeight = item.Bounds.Height;
 			double num = 0.2 * actualHeight;
 			double y = actualHeight / 2.0;
 			double y2 = actualHeight - num;
@@ -529,14 +571,16 @@ namespace ForkPlus.UI.Controls
 		private void ShowPreview(TreeViewControlItem item)
 		{
 			_previewNodeView = item;
-			_previewNodeView.Background = Application.Current.TryFindResource("TreeViewItem.SelectedInactive.Background") as Brush;
+			// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindResource。WPF Brush → Avalonia IBrush。
+			_previewNodeView.Background = Theme.FindResource("TreeViewItem.SelectedInactive.Background") as IBrush;
 		}
 
 		private void HidePreview()
 		{
 			if (_previewNodeView != null)
 			{
-				_previewNodeView.ClearValue(Control.BackgroundProperty);
+				// 阶段 4.5：WPF Control.BackgroundProperty → Avalonia TemplatedControl.BackgroundProperty。
+				_previewNodeView.ClearValue(TemplatedControl.BackgroundProperty);
 				_previewNodeView = null;
 			}
 		}

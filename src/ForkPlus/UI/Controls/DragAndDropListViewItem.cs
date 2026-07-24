@@ -1,8 +1,21 @@
+// 阶段 4.5：WPF System.Windows.* → Avalonia.* 迁移。
+// - using System.Windows → using Avalonia
+// - using System.Windows.Controls → using Avalonia.Controls
+// - using System.Windows.Documents → 移除（AdornerLayer 由 AttachTo/DetachFrom 替代）
+// - using System.Windows.Input → using Avalonia.Input
+// - 基类 ListViewItem → Avalonia.Controls.ListViewItem
+// - OnMouseLeftButtonDown/Up/Move → OnPointerPressed/Released/Moved
+// - Mouse.LeftButton == MouseButtonState.Pressed → e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+// - CaptureMouse/ReleaseMouseCapture/IsMouseCaptured → e.Pointer.Capture + _isPointerCaptured 字段
+// - AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)
+// - SystemParameters.Minimum*DragDistance → 常量 10.0
+// - OnGiveFeedback 移除（Avalonia DoDragDrop 异步阻塞，无 GiveFeedback 事件）
+// - ItemContainerGenerator.ContainerFromItem → ContainerFromItem
+// - ActualHeight → Bounds.Height
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
@@ -12,6 +25,9 @@ namespace ForkPlus.UI.Controls
 		private bool _wasSelected;
 
 		private Point _dragStartPoint;
+
+		// 阶段 4.5：替代 WPF IsMouseCaptured，跟踪 Pointer 捕获状态。
+		private bool _isPointerCaptured;
 
 		private DragAndDropListViewAdorner _adorner;
 
@@ -23,34 +39,43 @@ namespace ForkPlus.UI.Controls
 
 		public bool AllowDrag { get; set; }
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				base.OnPointerPressed(e);
 			}
-			if (Mouse.LeftButton == MouseButtonState.Pressed)
+			// 阶段 4.5：WPF Mouse.LeftButton == MouseButtonState.Pressed → Avalonia e.GetCurrentPoint(this).Properties.IsLeftButtonPressed。
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				CaptureMouse();
+				// 阶段 4.5：WPF CaptureMouse() → Avalonia e.Pointer.Capture(this)。
+				e.Pointer.Capture(this);
+				_isPointerCaptured = true;
 			}
 		}
 
-		protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			// 阶段 4.5：WPF ReleaseMouseCapture() → Avalonia e.Pointer.Capture(null)。
+			e.Pointer.Capture(null);
+			_isPointerCaptured = false;
 			if (_wasSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				// TODO(4.5): WPF 在 OnMouseLeftButtonUp 中调用 base.OnMouseLeftButtonDown(e) 以切换已选中项的选中状态。
+				// Avalonia OnPointerPressed(PointerPressedEventArgs) 与 OnPointerReleased(PointerReleasedEventArgs) 参数类型不同，
+				// 无法从 OnPointerReleased 直接调用 base.OnPointerPressed。阶段 6 需重新实现选中切换逻辑。
+				// base.OnPointerPressed(e);
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(PointerEventArgs e)
 		{
-			if (!base.IsMouseCaptured)
+			// 阶段 4.5：WPF IsMouseCaptured → 自定义 _isPointerCaptured 字段。
+			if (!_isPointerCaptured)
 			{
-				base.OnMouseMove(e);
+				base.OnPointerMoved(e);
 				return;
 			}
 			Point position = e.GetPosition(null);
@@ -63,37 +88,31 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			ListViewItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ItemContainerGenerator.ContainerFromItem(x) as ListViewItem);
+			// TODO(4.5): 验证 Avalonia ContainerFromItem。
+			ListViewItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ContainerFromItem(x) as ListViewItem);
 			ParentListView?.ItemDrag?.Invoke(this, EventArgs.Empty);
 			if (AllowDrag)
 			{
 				ListBoxItem[] listBoxItems = array2;
 				_adorner = new DragAndDropListViewAdorner(this, listBoxItems, e.GetPosition(this));
-				AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(ParentListView);
-				if (adornerLayer != null)
-				{
-					adornerLayer.Add(_adorner);
-					DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
-					adornerLayer.Remove(_adorner);
-					ParentListView.StopDragAutoScroll();
-				}
+				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
+				_adorner.AttachTo(ParentListView);
+				// TODO(4.5): WPF DragDrop.DoDragDrop(this, array, ...) — array 非 IDataObject。
+				// Avalonia DataObject 无 (object) 构造函数；参考 ClosableTabItem 直接传 object（框架内部包装）。
+				_ = DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+				_adorner.DetachFrom(ParentListView);
+				ParentListView.StopDragAutoScroll();
 			}
 		}
 
-		protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
-		{
-			if (base.IsVisible && _adorner != null)
-			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
-				_adorner.UpdatePosition(position);
-			}
-		}
+		// TODO(4.5): WPF OnGiveFeedback 用于拖拽时实时更新 DragAdorner 位置。Avalonia DoDragDrop 异步阻塞，无法实时更新。阶段 6 考虑自定义拖拽逻辑替代。
 
 		private static bool ExceedDragDistance(Vector diff)
 		{
-			if (!(Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance))
+			// 阶段 4.5：WPF SystemParameters.MinimumDragDistance → 常量 10.0。
+			if (!(Math.Abs(diff.X) > 10.0))
 			{
-				return Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance;
+				return Math.Abs(diff.Y) > 10.0;
 			}
 			return true;
 		}
@@ -109,7 +128,8 @@ namespace ForkPlus.UI.Controls
 			{
 				item = decoratedRevision2;
 			}
-			if (ParentListView.ItemContainerGenerator.ContainerFromItem(item) is ListViewItem targetListViewItem)
+			// TODO(4.5): 验证 Avalonia ContainerFromItem。
+			if (ParentListView.ContainerFromItem(item) is ListViewItem targetListViewItem)
 			{
 				ClearDropAdorner();
 				DropPosition = GetDropPosition(e);
@@ -129,7 +149,8 @@ namespace ForkPlus.UI.Controls
 
 		private DropPosition GetDropPosition(DragEventArgs e)
 		{
-			double actualHeight = base.ActualHeight;
+			// 阶段 4.5：WPF ActualHeight → Avalonia Bounds.Height。
+			double actualHeight = base.Bounds.Height;
 			double y = e.GetPosition(this).Y;
 			double num = 3.0;
 			if (y < num)
@@ -146,19 +167,17 @@ namespace ForkPlus.UI.Controls
 		private void ShowDropAdorner(DropPosition dropPosition, ListViewItem targetListViewItem)
 		{
 			_dropAdorner = new DropPlaceAdorner(this, dropPosition, targetListViewItem);
-			AdornerLayer.GetAdornerLayer(ParentListView)?.Add(_dropAdorner);
+			// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent)?.Add → _dropAdorner.AttachTo(parent)。
+			_dropAdorner.AttachTo(ParentListView);
 		}
 
 		private void ClearDropAdorner()
 		{
 			if (_dropAdorner != null)
 			{
-				AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(ParentListView);
-				if (adornerLayer != null)
-				{
-					_dropAdorner.ClearBackground();
-					adornerLayer.Remove(_dropAdorner);
-				}
+				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent)?.Remove → _dropAdorner.DetachFrom(parent)。
+				_dropAdorner.ClearBackground();
+				_dropAdorner.DetachFrom(ParentListView);
 			}
 		}
 	}
