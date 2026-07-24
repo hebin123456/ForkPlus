@@ -1,6 +1,17 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.* → using Avalonia.*
+// - Grid/ColumnDefinition/RowDefinition/ScrollViewer/StackPanel/TextBlock/WrapPanel/Border → Avalonia.Controls 同名类型
+// - GridLength/GridLength.Auto/ColumnDefinition.Width/RowDefinition.Height（API 兼容）
+// - Grid.SetRow/Grid.SetColumn（API 兼容）
+// - FontWeights.Medium（API 兼容）
+// - SetResourceReference(ForegroundProperty, "Key") → 直接设置 Foreground = Theme.FindBrush("Key")
+//   （Theme.FindResource 已在内部用 TryGetResource 解析；动态主题切换由 IThemeService.Refresh 处理）
+// - TextWrapping.Wrap（API 兼容）
+// - ImageSource 未使用
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -157,7 +168,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Text = Translate(title),
 				FontSize = 14.0,
-				FontWeight = FontWeights.Medium,
+				FontWeight = FontWeight.Medium,
 				Margin = new Thickness(0.0, 12.0, 0.0, 5.0)
 			};
 			return textBlock;
@@ -182,7 +193,10 @@ namespace ForkPlus.UI.Dialogs
 				TextWrapping = TextWrapping.Wrap,
 				Margin = new Thickness(8.0, 0.0, 0.0, 0.0)
 			};
-			descriptionTextBlock.SetResourceReference(TextBlock.ForegroundProperty, "ForegroundBrush");
+			// 阶段 4.5：WPF SetResourceReference(TextBlock.ForegroundProperty, "ForegroundBrush")
+			// → 直接设置 Foreground = Theme.FindBrush("ForegroundBrush")。
+			// 动态主题切换由 IThemeService.Refresh 全局失效处理；如需精确动态响应，阶段 6 可改用 DynamicResource。
+			descriptionTextBlock.Foreground = Theme.FindBrush("ForegroundBrush");
 			Grid.SetColumn(descriptionTextBlock, 1);
 			grid.Children.Add(descriptionTextBlock);
 			return grid;
@@ -244,8 +258,9 @@ namespace ForkPlus.UI.Dialogs
 				Padding = new Thickness(5.0, 1.0, 5.0, 2.0),
 				Margin = new Thickness(1.0, 1.0, 1.0, 1.0)
 			};
-			border.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
-			border.SetResourceReference(Border.BackgroundProperty, "TextBox.Static.Background");
+			// 阶段 4.5：WPF SetResourceReference → 直接设置（见 CreateShortcutRow 同样注释）。
+			border.BorderBrush = Theme.FindBrush("BorderBrush");
+			border.Background = Theme.FindBrush("TextBox.Static.Background");
 			return border;
 		}
 
@@ -258,7 +273,7 @@ namespace ForkPlus.UI.Dialogs
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 12.0
 			};
-			textBlock.SetResourceReference(TextBlock.ForegroundProperty, "SecondaryLabelBrush");
+			textBlock.Foreground = Theme.FindBrush("SecondaryLabelBrush");
 			return textBlock;
 		}
 

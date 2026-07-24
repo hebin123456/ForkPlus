@@ -1,5 +1,10 @@
-using System.Windows;
-using System.Windows.Controls;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.* → using Avalonia.*
+// - ListView → Avalonia.Controls.ListView
+// - DependencyObject → AvaloniaObject（GetContainerForItemOverride 返回类型）
+// - GetContainerForItemOverride/IsItemItsOwnContainerOverride/PrepareContainerForItemOverride（API 兼容）
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.UI.Controls;
 
 namespace ForkPlus.UI.Dialogs
@@ -13,7 +18,7 @@ namespace ForkPlus.UI.Dialogs
 			_dragAutoScroll = new DragAutoScrollHelper(this);
 		}
 
-		protected override DependencyObject GetContainerForItemOverride()
+		protected override AvaloniaObject GetContainerForItemOverride()
 		{
 			return new MultiselectionListViewItem();
 		}
@@ -23,7 +28,7 @@ namespace ForkPlus.UI.Dialogs
 			return item is MultiselectionListViewItem;
 		}
 
-		protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+		protected override void PrepareContainerForItemOverride(AvaloniaObject element, object item)
 		{
 			base.PrepareContainerForItemOverride(element, item);
 			(element as MultiselectionListViewItem).ParentListView = this;

@@ -1,7 +1,15 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
+// 阶段 4.5：WPF→Avalonia 迁移。
+// - using System.Windows.* → using Avalonia.*
+// - Border/StackPanel/Image/TextBlock → Avalonia.Controls 同名类型
+// - ImageSource → IImage（Avalonia.Media）
+// - BindingOperations.SetBinding(_stackPanel, WidthProperty, new Binding("Width"){Source=this})
+//   → Avalonia Bind(WidthProperty, new Binding("Width"){Source=this}) 扩展方法
+// - CornerRadius/Thickness（API 兼容）
+// - TextTrimming.CharacterEllipsis（API 兼容）
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -56,14 +64,16 @@ namespace ForkPlus.UI.Dialogs
 			_descriptionTextBlock.Foreground = Theme.LabelBrush;
 			_stackPanel.Children.Add(_descriptionTextBlock);
 			Child = _stackPanel;
+			// 阶段 4.5：WPF BindingOperations.SetBinding(_stackPanel, FrameworkElement.WidthProperty, binding)
+			// → Avalonia AvaloniaObject.Bind(WidthProperty, binding) 扩展方法。
 			Binding binding = new Binding("Width")
 			{
 				Source = this
 			};
-			BindingOperations.SetBinding(_stackPanel, FrameworkElement.WidthProperty, binding);
+			_stackPanel.Bind(StackPanel.WidthProperty, binding);
 		}
 
-		public void SetDetails(ImageSource icon, string filename, string folder, string description)
+		public void SetDetails(IImage icon, string filename, string folder, string description)
 		{
 			_filenameTextBlock.Text = filename;
 			_pathTextBlock.Text = folder;
