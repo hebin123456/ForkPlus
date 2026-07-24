@@ -382,9 +382,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShowOnlyTab(RevisionDetailsTab tab)
 		{
-			SummaryUserControl.Visibility = ((tab == RevisionDetailsTab.Commit) ? Visibility.Visible : Visibility.Collapsed);
-			ChangesUserControl.Visibility = ((tab == RevisionDetailsTab.Changes) ? Visibility.Visible : Visibility.Collapsed);
-			FileTreeUserControl.Visibility = ((tab == RevisionDetailsTab.FileTree) ? Visibility.Visible : Visibility.Collapsed);
+			SummaryUserControl.IsVisible = (tab == RevisionDetailsTab.Commit);
+			ChangesUserControl.IsVisible = (tab == RevisionDetailsTab.Changes);
+			FileTreeUserControl.IsVisible = (tab == RevisionDetailsTab.FileTree);
 		}
 
 		private static GitCommandResult<FullRevisionDetails> GetFullRevisionDetails(GitModule gitModule, Submodule[] submodules, RevisionDiffTarget target, JobMonitor monitor)

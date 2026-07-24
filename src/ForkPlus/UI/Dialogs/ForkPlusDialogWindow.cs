@@ -148,7 +148,7 @@ namespace ForkPlus.UI.Dialogs
 				_pendingShowSubmitButton = value;
 				if (Footer != null)
 				{
-					Footer.SubmitButton.Visibility = ((!value) ? Visibility.Collapsed : Visibility.Visible);
+					Footer.SubmitButton.IsVisible = !(!value);
 				}
 			}
 		}
@@ -184,7 +184,7 @@ namespace ForkPlus.UI.Dialogs
 				_pendingShowCancelButton = value;
 				if (Footer != null)
 				{
-					Footer.CancelButton.Visibility = ((!value) ? Visibility.Collapsed : Visibility.Visible);
+					Footer.CancelButton.IsVisible = !(!value);
 				}
 			}
 		}

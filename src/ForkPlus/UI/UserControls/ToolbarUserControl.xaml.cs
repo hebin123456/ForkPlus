@@ -377,14 +377,14 @@ namespace ForkPlus.UI.UserControls
 	private void RefreshUndoRedoButtons()
 	{
 		// v3.0.4：开关关闭时隐藏 Undo/Redo 按钮组
-		bool enabled = ForkPlusSettings.Default.UndoRedoEnabled;
-		Visibility undoRedoVisibility = enabled ? Visibility.Visible : Visibility.Collapsed;
-		UndoToolbarButton.Visibility = undoRedoVisibility;
-		UndoToolbarDropdownButton.Visibility = undoRedoVisibility;
-		RedoToolbarButton.Visibility = undoRedoVisibility;
-		RedoToolbarDropdownButton.Visibility = undoRedoVisibility;
-		// v3.4.1：独立 Reflog 按钮也跟随 UndoRedo 开关可见性，但始终可用
-		ReflogToolbarButton.Visibility = undoRedoVisibility;
+	// 阶段 5：WPF Visibility 变量 → 直接用 bool IsVisible。
+	bool enabled = ForkPlusSettings.Default.UndoRedoEnabled;
+	UndoToolbarButton.IsVisible = enabled;
+	UndoToolbarDropdownButton.IsVisible = enabled;
+	RedoToolbarButton.IsVisible = enabled;
+	RedoToolbarDropdownButton.IsVisible = enabled;
+	// v3.4.1：独立 Reflog 按钮也跟随 UndoRedo 开关可见性，但始终可用
+	ReflogToolbarButton.IsVisible = enabled;
 		if (!enabled)
 		{
 			return;

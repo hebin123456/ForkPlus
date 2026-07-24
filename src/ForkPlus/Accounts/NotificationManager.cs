@@ -142,7 +142,8 @@ namespace ForkPlus.Accounts
 				GitServiceNotification[] result = list.ToArray();
 				if (!monitor.IsCanceled)
 				{
-					Services.Dispatcher.UIThread.Post(delegate
+					// 阶段 5：Services.Dispatcher → Avalonia.Threading.Dispatcher（using 已导入）。
+					Dispatcher.UIThread.Post(delegate
 					{
 						AccountManager.Current.Save();
 						IsUpdating = false;
@@ -184,13 +185,15 @@ namespace ForkPlus.Accounts
 			if (toastNotificaton != null)
 			{
 				new Uri(toastNotificaton.Url).OpenInBrowser();
-				Services.Dispatcher.UIThread.Post(delegate
+				// 阶段 5：Services.Dispatcher → Avalonia.Threading.Dispatcher（using 已导入）。
+				Dispatcher.UIThread.Post(delegate
 				{
 					UnsetUnread(toastNotificaton.ThreadId);
 				});
 				return;
 			}
-			Services.Dispatcher.UIThread.Post(delegate
+			// 阶段 5：Services.Dispatcher → Avalonia.Threading.Dispatcher（using 已导入）。
+			Dispatcher.UIThread.Post(delegate
 			{
 				var windowManager = Services.ServiceLocator.WindowManager;
 				if (windowManager != null)

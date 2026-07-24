@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Styling;
 using ForkPlus.Services;
 
 namespace ForkPlus.Services.Avalonia
@@ -83,11 +84,13 @@ namespace ForkPlus.Services.Avalonia
 			}
 
 			// fallback: 使用资源中的 AccentBrush
-			if (Application.Current?.Resources.TryGetResource("AccentBrush", out object accent) == true
-				&& accent is IBrush brush)
-			{
-				return brush;
-			}
+		// 阶段 5：Avalonia IResourceNode.TryGetResource 签名为
+		// (object key, ThemeVariant? theme, out object? value)，需显式传 ThemeVariant.Default。
+		if (Application.Current?.Resources.TryGetResource("AccentBrush", ThemeVariant.Default, out object accent) == true
+			&& accent is IBrush brush)
+		{
+			return brush;
+		}
 			return Brushes.Transparent;
 		}
 	}

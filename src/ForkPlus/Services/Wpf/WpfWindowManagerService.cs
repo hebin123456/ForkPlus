@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI;
@@ -28,8 +29,8 @@ namespace ForkPlus.Services.Wpf
 
 		public bool TryActivateWindowByTitle(string title)
 		{
-			// 阶段 4.5：WPF System.Windows.Application.Current.Windows → Avalonia.Application.Current.Windows。
-			var windows = Application.Current?.Windows;
+			// 阶段 4.5：WPF Application.Current.Windows → Avalonia IClassicDesktopStyleApplicationLifetime.Windows。
+			var windows = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows;
 			if (windows == null)
 			{
 				return false;

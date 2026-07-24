@@ -134,8 +134,9 @@ namespace ForkPlus.UI.UserControls
 				}
 				else
 				{
-					CancelButton.Visibility = ((primaryJob.Status == JobStatus.Finished) ? Visibility.Collapsed : Visibility.Visible);
-					DescriptionTextBlock.Text = Translate(primaryJob.Monitor.ProgressMessage ?? "");
+					// 阶段 5：WPF UIElement.Visibility → Avalonia Control.IsVisible（bool）。
+				CancelButton.IsVisible = primaryJob.Status != JobStatus.Finished;
+				DescriptionTextBlock.Text = Translate(primaryJob.Monitor.ProgressMessage ?? "");
 				}
 				double? progress = primaryJob.Monitor.Progress;
 				if (progress.HasValue)

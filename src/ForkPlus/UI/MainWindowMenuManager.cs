@@ -71,22 +71,23 @@ namespace ForkPlus.UI
 		}
 
 		private void RefreshRepositoryItemState()
+	{
+		// 阶段 5：WPF Visibility 局部变量 → bool（Avalonia Control.IsVisible）。
+		bool visible = false;
+		try
 		{
-			Visibility visibility = Visibility.Collapsed;
-			try
+			RepositoryUserControl activeRepositoryUserControl = Application.Current.TabManager().ActiveRepositoryUserControl;
+			if (activeRepositoryUserControl != null)
 			{
-				RepositoryUserControl activeRepositoryUserControl = Application.Current.TabManager().ActiveRepositoryUserControl;
-				if (activeRepositoryUserControl != null)
-				{
-					visibility = Visibility.Visible;
-				}
-			}
-			finally
-			{
-				_viewMenuItem.Visibility = visibility;
-				_repositoryMenuItem.Visibility = visibility;
+				visible = true;
 			}
 		}
+		finally
+		{
+			_viewMenuItem.IsVisible = visible;
+			_repositoryMenuItem.IsVisible = visible;
+		}
+	}
 
 		private MenuItem AddRootMenuItem(string header)
 		{

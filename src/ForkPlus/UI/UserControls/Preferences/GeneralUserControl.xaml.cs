@@ -105,7 +105,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void RefreshSourceDirs()
 		{
 			SrcDirsListBox.ItemsSource = RepositoryManager.Instance.SourceDirs.ToSortedArray((string x, string y) => NumericIgnoreCaseStringComparer.Comparer.Compare(x, y)).Map((string x) => new SrcDirViewModel(x));
-			RemoveSrcDirButton.Visibility = ((RepositoryManager.Instance.SourceDirs.Length <= 1) ? Visibility.Collapsed : Visibility.Visible);
+			RemoveSrcDirButton.IsVisible = !(RepositoryManager.Instance.SourceDirs.Length <= 1);
 		}
 
 		private void InitializeDiffCodeEditor()

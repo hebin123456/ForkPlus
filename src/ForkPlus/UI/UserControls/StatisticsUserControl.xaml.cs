@@ -23,14 +23,6 @@ using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
 using Theme = ForkPlus.UI.Theme;
-using Axis = OxyPlot.Avalonia.Axis;
-using CategoryAxis = OxyPlot.Avalonia.CategoryAxis;
-using DateTimeAxis = OxyPlot.Avalonia.DateTimeAxis;
-using LinearAxis = OxyPlot.Avalonia.LinearAxis;
-using Legend = OxyPlot.Avalonia.Legend;
-using Series = OxyPlot.Avalonia.Series;
-using BarSeries = OxyPlot.Avalonia.BarSeries;
-using PieSeries = OxyPlot.Avalonia.PieSeries;
 
 namespace ForkPlus.UI.UserControls
 {

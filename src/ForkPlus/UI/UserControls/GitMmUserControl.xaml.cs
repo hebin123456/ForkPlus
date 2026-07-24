@@ -513,7 +513,7 @@ namespace ForkPlus.UI.UserControls
 			AddSummaryButton("Hidden: {0}", hiddenCount, "hidden", visibleButtonKeys);
 			foreach (KeyValuePair<string, Button> item in _summaryButtons)
 			{
-				item.Value.Visibility = visibleButtonKeys.Contains(item.Key) ? Visibility.Visible : Visibility.Collapsed;
+				item.Value.IsVisible = (visibleButtonKeys.Contains(item.Key));
 			}
 		}
 
@@ -942,11 +942,11 @@ namespace ForkPlus.UI.UserControls
 		private void SetBusy(bool isBusy)
 		{
 			_isBusy = isBusy;
-			BusyProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+			BusyProgressBar.IsVisible = (isBusy);
 			StartButton.IsEnabled = !isBusy;
 			SyncButton.IsEnabled = !isBusy;
 			UploadButton.IsEnabled = !isBusy;
-			CancelCommandButton.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+			CancelCommandButton.IsVisible = (isBusy);
 			SubreposTabControl.IsEnabled = !isBusy;
 			SubrepoFilterButton.IsEnabled = !isBusy;
 		}
@@ -1851,7 +1851,7 @@ namespace ForkPlus.UI.UserControls
 					// 阶段 4.5：WPF Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush → ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush。
 					brush = ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
 				}
-				colorEllipse.Visibility = brush == null ? Visibility.Collapsed : Visibility.Visible;
+				colorEllipse.IsVisible = !(brush == null);
 				colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;
 				colorEllipse.Height = subrepo.IsRootRepository ? 11.0 : 8.0;
 				colorEllipse.StrokeThickness = subrepo.IsRootRepository ? 1.0 : 2.0;
@@ -2224,7 +2224,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(statusPanel, statusPanel.Children.Count == 0 ? null : BuildSubrepoStatusToolTip(subrepo));
-			statusPanel.Visibility = statusPanel.Children.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+			statusPanel.IsVisible = !(statusPanel.Children.Count == 0);
 		}
 
 		private static string BuildSubrepoStatusToolTip(GitMmSubrepoItem subrepo)

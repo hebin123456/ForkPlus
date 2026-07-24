@@ -158,12 +158,15 @@ namespace ForkPlus.UI
 				decorator.Child = null;
 				return true;
 			}
-			if (parent is ContentControl headeredContentControl && ReferenceEquals(headeredContentControl.Header, child))
+			// 阶段 5：Avalonia ContentControl 无 Header 属性；Header 在 HeaderedContentControl 上
+			//（Avalonia.Controls.Primitives）。WPF HeaderedContentControl → Avalonia HeaderedContentControl。
+			if (parent is HeaderedContentControl headeredContentControl && ReferenceEquals(headeredContentControl.Header, child))
 			{
 				headeredContentControl.Header = null;
 				return true;
 			}
-			if (parent is ItemsControl headeredItemsControl && ReferenceEquals(headeredItemsControl.Header, child))
+			// 阶段 5：Avalonia ItemsControl 无 Header 属性；Header 在 HeaderedItemsControl 上。
+			if (parent is HeaderedItemsControl headeredItemsControl && ReferenceEquals(headeredItemsControl.Header, child))
 			{
 				headeredItemsControl.Header = null;
 				return true;

@@ -138,7 +138,7 @@ namespace ForkPlus.UI.UserControls
 			HeaderToggleButton.IsChecked = isExpanded;
 			_updatingToggleButton = false;
 			ArrowPath.Data = isExpanded ? ExpandedArrowGeometry : CollapsedArrowGeometry;
-			SeparatorBorder.Visibility = isExpanded ? Visibility.Visible : Visibility.Collapsed;
+			SeparatorBorder.IsVisible = (isExpanded);
 			if (!isExpanded)
 			{
 				SetDiffContent(null);

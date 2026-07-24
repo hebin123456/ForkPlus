@@ -135,7 +135,7 @@ namespace ForkPlus.UI.UserControls
 			SubjectTextBlock.Text = subject;
 			DescriptionTextBlock.Text = description;
 			// 阶段 4.5：WPF Visibility.Visible/Collapsed → Avalonia.Layout.Visibility（参考 RevisionDetailsUserControl）。
-			DescriptionTextBlock.Visibility = (string.IsNullOrEmpty(description) ? Visibility.Collapsed : Visibility.Visible);
+			DescriptionTextBlock.IsVisible = !(string.IsNullOrEmpty(description));
 			ApplySearch();
 			int num = 100;
 			RebuildDiffRows(fullRevisionDetails.ChangedFiles.Take(num));
