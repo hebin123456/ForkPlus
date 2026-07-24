@@ -9,6 +9,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

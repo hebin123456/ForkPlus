@@ -5,6 +5,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.Dialogs
 {

@@ -259,7 +259,7 @@
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0">
               <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png" x:Name="RemoteChangeTypeImage" />
+                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/status_edit.png" x:Name="RemoteChangeTypeImage" />
                 <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteChangeTypeTextBlock" />
               </StackPanel>
               <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
@@ -294,7 +294,7 @@
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0">
               <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png" x:Name="LocalChangeTypeImage" />
+                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/status_edit.png" x:Name="LocalChangeTypeImage" />
                 <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="LocalChangeTypeTextBlock" />
               </StackPanel>
               <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />

@@ -1,3 +1,4 @@
+using Avalonia.Controls.Metadata;
 // 阶段 4.5：WPF System.Windows.* → Avalonia.*。WPF TextBox → Avalonia.Controls.TextBox。
 // WPF FrameworkElement（TemplatePart 类型）→ Avalonia.Controls.Control。WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体）。
 // WPF Key/KeyEventArgs → Avalonia.Input.Key/KeyEventArgs。WPF VerticalAlignment → Avalonia.Layout.VerticalAlignment。

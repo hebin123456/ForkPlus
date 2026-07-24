@@ -1,7 +1,11 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
+using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +37,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private static readonly Pen _hoverBorderPen;
 
-		private static readonly BitmapImage FolderIcon;
+		private static readonly Bitmap FolderIcon;
 
 		private Brush _labelBrush;
 
@@ -58,9 +62,12 @@ namespace ForkPlus.UI.Dialogs
 			_typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 			_itemBackgroundBrush = new SolidColorBrush(Color.FromArgb(8, 170, 170, 170));
 			_hoverBorderPen = new Pen(new SolidColorBrush(Colors.Gray), 1.0);
-			FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
-			_itemBackgroundBrush.Freeze();
-			_hoverBorderPen.Freeze();
+			// 阶段 4.5：WPF BitmapImage + pack:// URI → Avalonia Bitmap + AssetLoader.Open。
+		using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/assets/folder.png")))
+		{
+			FolderIcon = new Bitmap(stream);
+		}
+		// Avalonia SolidColorBrush/Pen 构造后即不可变，无需 Freeze。
 		}
 
 		public RepositoryOverviewWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)

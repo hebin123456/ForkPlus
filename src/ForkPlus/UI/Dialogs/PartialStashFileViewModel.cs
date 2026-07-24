@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
 
@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public string FilePath { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public bool Selected { get; set; }
 

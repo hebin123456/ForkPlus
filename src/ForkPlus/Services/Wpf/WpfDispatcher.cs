@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Threading;
+using Avalonia.Threading;
 
 namespace ForkPlus.Services.Wpf
 {

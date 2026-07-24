@@ -67,7 +67,7 @@
                       <Binding Path="FinishTimeTextBlockVisibility" />
                     </TextBlock.Visibility>
                   </TextBlock>
-                  <Image Height="14" Width="14" Margin="0,0,2,0" VerticalAlignment="Center" Source="pack://application:,,,/ForkPlus;component/Assets/Warning.png" x:Name="WarningImage">
+                  <Image Height="14" Width="14" Margin="0,0,2,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/warning.png" x:Name="WarningImage">
                     <Image.Visibility>
                       <Binding Path="WarningImageVisibility" />
                     </Image.Visibility>

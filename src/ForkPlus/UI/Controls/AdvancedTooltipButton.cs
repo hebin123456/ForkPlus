@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {

@@ -6,6 +6,9 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace ForkPlus.UI
 {

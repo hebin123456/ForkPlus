@@ -10,6 +10,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

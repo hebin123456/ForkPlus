@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 
@@ -18,12 +18,12 @@ namespace ForkPlus.UI.UserControls
 		public string FilePath => ChangedFile.Path;
 
 		[Null]
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public ChangedFile ChangedFile { get; }
 
 		[Null]
-		public ImageSource ChangeTypeIcon { get; }
+		public IImage ChangeTypeIcon { get; }
 
 		public string ToolTip { get; }
 
@@ -70,7 +70,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private ImageSource GetIconFileType(string filePath)
+		private IImage GetIconFileType(string filePath)
 		{
 			try
 			{
@@ -84,7 +84,7 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private static ImageSource GetChangeTypeIcon(ChangedFile changedFile)
+		private static IImage GetChangeTypeIcon(ChangedFile changedFile)
 		{
 			if (changedFile.IsDirectory)
 			{

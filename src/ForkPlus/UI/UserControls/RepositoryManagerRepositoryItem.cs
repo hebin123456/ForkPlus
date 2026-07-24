@@ -1,4 +1,4 @@
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -10,7 +10,7 @@ namespace ForkPlus.UI.UserControls
 
 		private readonly bool _isGitMmWorkspace;
 
-		private ImageSource _repositoryIcon;
+		private IImage _repositoryIcon;
 
 		public string Name
 		{
@@ -39,7 +39,7 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		public SolidColorBrush RepositoryColor => RepositoryColorsUserControl.GetBrush(Repository.Color);
 
-		public ImageSource RepositoryIcon
+		public IImage RepositoryIcon
 		{
 			get
 			{

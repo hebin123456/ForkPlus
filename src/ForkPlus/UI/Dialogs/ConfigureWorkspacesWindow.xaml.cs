@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

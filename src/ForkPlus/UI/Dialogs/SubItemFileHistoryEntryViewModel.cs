@@ -1,5 +1,5 @@
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.UserControls;
@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class SubItemFileHistoryEntryViewModel : HistoryEntryViewModel
 	{
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public SubItemFileHistoryEntryViewModel(RevisionWithFiles revision, ChangedFile changedFile)
 			: base(revision, changedFile)

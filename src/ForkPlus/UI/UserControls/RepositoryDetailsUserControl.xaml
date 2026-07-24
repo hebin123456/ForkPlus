@@ -196,7 +196,7 @@
                             <ColumnDefinition Width="140" />
                             <ColumnDefinition Width="120" />
                           </Grid.ColumnDefinitions>
-                          <Image Grid.Column="0" Height="16" Source="pack://application:,,,/ForkPlus;component/Assets/Tag.png" VerticalAlignment="Center" />
+                          <Image Grid.Column="0" Height="16" Source="avares://ForkPlus/assets/tag.png" VerticalAlignment="Center" />
                           <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,4,0" TextTrimming="CharacterEllipsis">
                             <TextBlock.Text>
                               <Binding Path="Name" />
@@ -238,7 +238,7 @@
                             <ColumnDefinition Width="140" />
                             <ColumnDefinition Width="120" />
                           </Grid.ColumnDefinitions>
-                          <Image Grid.Column="0" Height="16" Source="pack://application:,,,/ForkPlus;component/Assets/Revision.png" VerticalAlignment="Center" />
+                          <Image Grid.Column="0" Height="16" Source="avares://ForkPlus/assets/revision.png" VerticalAlignment="Center" />
                           <TextBlock Grid.Column="1" Margin="4,0,4,0" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
                             <TextBlock.Text>
                               <Binding Path="RevisionSubject" />

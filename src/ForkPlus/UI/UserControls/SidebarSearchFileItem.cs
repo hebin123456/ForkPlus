@@ -1,5 +1,5 @@
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 
@@ -9,9 +9,9 @@ namespace ForkPlus.UI.UserControls
 	{
 		public ChangedFile ChangedFile { get; }
 
-		public ImageSource StatusImage { get; }
+		public IImage StatusImage { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public SidebarSearchFileItem(RevisionWithFiles revision, ChangedFile changedFile, string searchString)
 			: base(revision, searchString, initializeChangedFiles: false)

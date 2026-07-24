@@ -16,6 +16,8 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
+using Avalonia.Media;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -28,7 +30,7 @@ namespace ForkPlus.UI.Dialogs
 			[Null]
 			public Account Account { get; }
 
-			public ImageSource Icon { get; }
+			public IImage Icon { get; }
 
 			public string Title { get; }
 

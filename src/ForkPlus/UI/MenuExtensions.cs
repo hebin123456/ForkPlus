@@ -5,6 +5,8 @@ using Avalonia.Input;
 using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Interactivity;
+using System.Windows.Input;
 
 namespace ForkPlus.UI
 {

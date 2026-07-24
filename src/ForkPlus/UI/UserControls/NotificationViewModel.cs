@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Accounts;
 
 namespace ForkPlus.UI.UserControls
@@ -20,7 +20,7 @@ namespace ForkPlus.UI.UserControls
 
 		public DateTime DateTime => Notification.Date;
 
-		public ImageSource TargetTypeIcon => Notification.TargetType.Icon();
+		public IImage TargetTypeIcon => Notification.TargetType.Icon();
 
 		public string TargetUrl => Notification.TargetUrl;
 

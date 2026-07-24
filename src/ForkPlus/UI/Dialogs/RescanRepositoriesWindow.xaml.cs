@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls.Preferences;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

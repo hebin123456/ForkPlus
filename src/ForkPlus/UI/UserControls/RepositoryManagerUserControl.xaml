@@ -24,7 +24,7 @@
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="pack://application:,,,/ForkPlus;component/Assets/Folder.png" />
+          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/assets/folder.png" />
           <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
             <TextBlock.Text>
               <Binding Path="Title" />
@@ -41,7 +41,7 @@
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="pack://application:,,,/ForkPlus;component/Assets/Folder.png" />
+          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/assets/folder.png" />
           <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
             <TextBlock.Text>
               <Binding Path="Title" />

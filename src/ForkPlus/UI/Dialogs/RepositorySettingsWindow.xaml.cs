@@ -3,6 +3,7 @@ using System;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls.RepositorySettings;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

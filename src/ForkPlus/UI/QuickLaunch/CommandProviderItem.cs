@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia
 // - using System.Windows.Media → using Avalonia.Media

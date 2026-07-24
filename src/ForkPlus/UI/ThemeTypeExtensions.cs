@@ -64,7 +64,8 @@ namespace ForkPlus.UI
 		/// <summary>皮肤对应的资源字典 URI（Generic.{SkinName}.xaml）。</summary>
 		public static Uri ResourceUri(this ThemeType themeType)
 		{
-			return new Uri("pack://application:,,,/ForkPlus;component/Theme/Generic." + themeType.SkinName() + ".xaml");
+			// 阶段 4.5：WPF pack://application URI → Avalonia avares:// URI。
+			return new Uri("avares://ForkPlus/Theme/Generic." + themeType.SkinName() + ".xaml");
 		}
 
 		/// <summary>所有内置预设皮肤，用于主题选择菜单遍历。</summary>

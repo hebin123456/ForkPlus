@@ -13,6 +13,8 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Media;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -31,7 +33,7 @@ namespace ForkPlus.UI.Dialogs
 			public string RemoteName { get; }
 
 			[Null]
-			public ImageSource RemoteIcon { get; }
+			public IImage RemoteIcon { get; }
 
 			public Visibility UpstreamVisibility
 			{

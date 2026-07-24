@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -121,7 +121,7 @@ namespace ForkPlus.UI.UserControls
 		public string PrimaryLabel => PreferencesLocalization.Translate("primary", ForkPlusSettings.Default.UiLanguage);
 
 		[Null]
-		public ImageSource Icon => IconTools.GetImageSourceForFile(Path);
+		public IImage Icon => IconTools.GetImageSourceForFile(Path);
 
 		public ExternalTool ExternalTool => new ExternalTool(Type, Name, Path, _pathOverridden, Arguments.Split(Consts.Chars.Space), _argumentsOverridden, IsPredefined, IsPrimary, IsVisible);
 

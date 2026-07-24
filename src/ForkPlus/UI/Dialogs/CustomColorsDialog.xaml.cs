@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Microsoft.Win32;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {

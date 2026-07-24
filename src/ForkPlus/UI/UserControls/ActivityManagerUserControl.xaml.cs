@@ -1,3 +1,4 @@
+using Avalonia.Interactivity;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia（Visibility）
 // - using System.Windows.Controls → using Avalonia.Controls
