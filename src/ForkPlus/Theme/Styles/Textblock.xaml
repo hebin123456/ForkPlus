@@ -129,7 +129,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="ToolTip.Tip">
       <Setter.Value>
-        <ToolTip>
+        <ToolTip x:CompileBindings="False">
           <ToolTip.DataContext>
             <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
           </ToolTip.DataContext>

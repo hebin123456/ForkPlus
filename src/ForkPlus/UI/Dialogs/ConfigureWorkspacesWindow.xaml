@@ -35,7 +35,7 @@
           <ContextMenu />
         </ListBox.ContextMenu>
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:WorkspaceViewModel">
             <controls:RepositoryManagerEditableTextBlock FontSize="13" Height="22" VerticalAlignment="Center" x:Name="NameTextBlock">
               <controls:RepositoryManagerEditableTextBlock.Value>
                 <Binding Path="DisplayName" />

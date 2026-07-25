@@ -15,8 +15,8 @@
                           <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText ">" / "v"，
                                用两个堆叠 TextBlock + IsVisible 绑定 IsChecked 替代。 -->
                           <Grid Width="12">
-                            <TextBlock Text=">" VerticalAlignment="Center" IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
-                            <TextBlock Text="v" VerticalAlignment="Center" IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <TextBlock x:CompileBindings="False" Text=">" VerticalAlignment="Center" IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <TextBlock x:CompileBindings="False" Text="v" VerticalAlignment="Center" IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
                           </Grid>
                           <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" />
                         </DockPanel>

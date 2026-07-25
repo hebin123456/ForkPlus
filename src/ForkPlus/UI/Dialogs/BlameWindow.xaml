@@ -23,7 +23,7 @@
           </ItemsPanelTemplate>
         </ComboBox.ItemsPanel>
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:RevisionViewModel">
             <Grid Width="530">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="22" />

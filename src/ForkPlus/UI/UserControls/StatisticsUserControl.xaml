@@ -2,7 +2,7 @@
   <UserControl.Resources>
     
       <ControlTemplate x:Key="TrackerControlDataTemplate">
-        <oxy:TrackerControl Background="#FFF1F2F7" BorderBrush="#FF767676">
+        <oxy:TrackerControl Background="#FFF1F2F7" BorderBrush="#FF767676" x:CompileBindings="False">
           <oxy:TrackerControl.Position>
             <Binding Path="Position" />
           </oxy:TrackerControl.Position>
@@ -45,7 +45,7 @@
           <TextBlock Text="All contributors" Margin="10,0,0,10" FontSize="16" FontWeight="Medium" />
           <ListBox Width="350" Margin="35,0,0,0" BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="AuthorStatListBox">
             <ListBox.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="usercontrols:AuthorStatViewModel">
                 <Grid Height="18">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -146,7 +146,7 @@
             </Grid>
             <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="CodeLinesListBox">
               <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="usercontrols:CodeLineLanguageViewModel">
                   <Grid Height="20">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="10" />

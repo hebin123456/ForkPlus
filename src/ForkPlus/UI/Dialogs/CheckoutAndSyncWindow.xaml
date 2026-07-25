@@ -25,7 +25,7 @@
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Action:" Margin="0,1,0,4" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,2,0,4" HorizontalAlignment="Left"  SelectionChanged="CheckoutActionTypeComboBox_SelectionChanged" x:Name="CheckoutActionTypeComboBox">
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:CheckoutAndSyncWindow+CheckoutSyncOptionComboBoxItem">
             <Grid>
               <Separator IsVisible="{Binding IsSeparator}" Height="1" />
               <DockPanel Width="420" IsVisible="{Binding !IsSeparator}">

@@ -33,7 +33,7 @@
       <TextBlock Grid.Column="0" Grid.Row="2" Text="Detected Git:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,12,0,0" />
       <ListBox Grid.Column="1" Grid.Row="2" Margin="8,8,0,0" MinHeight="70" MaxHeight="160" BorderThickness="1" SelectionChanged="GitCandidatesListBox_SelectionChanged" x:Name="GitCandidatesListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:ConfigureGitInstanceWindow+GitCandidate">
             <Grid Margin="4,2">
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

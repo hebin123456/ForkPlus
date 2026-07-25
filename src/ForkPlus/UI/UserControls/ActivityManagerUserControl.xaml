@@ -55,7 +55,7 @@
       </Border>
       <ListBox Grid.Row="1" Grid.Column="0" SelectionMode="Single" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0" Background="#00FFFFFF" SelectionChanged="JobListBox_SelectionChanged" x:Name="JobListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="UserControls:ActivityManagerUserControl+JobViewModel">
             <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" x:Name="CellBorder">
               <Grid Margin="4,2,4,2">
                 <Grid.RowDefinitions>

@@ -1,5 +1,5 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed. -->
-<UserControl FontFamily="Segoe UI Variable Display" Width="600" Height="80" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionGraphTooltipUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<UserControl FontFamily="Segoe UI Variable Display" Width="600" Height="80" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionGraphTooltipUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI">
   <Border>
     <Border CornerRadius="6" Padding="4,10" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ListBox.Static.Background}">
       <Grid>
@@ -8,7 +8,7 @@
             <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
               <GridViewColumn>
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="ui:DecoratedRevision">
                     <Grid Height="23">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -49,7 +49,7 @@
               </GridViewColumn>
               <GridViewColumn Width="19">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="ui:DecoratedRevision">
                     <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
                       <Border.Background>
                         <Binding Path="UserBackgroundBrush" />
@@ -68,7 +68,7 @@
               </GridViewColumn>
               <GridViewColumn Width="125">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="ui:DecoratedRevision">
                     <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">
                       <TextBlock.Text>
                         <Binding Path="AuthorDateLongString" />

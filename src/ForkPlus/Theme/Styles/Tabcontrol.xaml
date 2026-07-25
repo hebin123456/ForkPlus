@@ -32,7 +32,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter" x:CompileBindings="False">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -208,7 +208,7 @@
             <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Content">
               <ContentPresenter.Content>
                 <controls:CenteredDockPanel Background="#00FFFFFF" x:Name="PART_Header">
-                  <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding TagBrush}" StrokeThickness="2">
+                  <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding TagBrush}" StrokeThickness="2" x:CompileBindings="False">
                     <Ellipse.IsVisible>
                       <MultiBinding>
                         <MultiBinding.Converter>
@@ -305,7 +305,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid Background="#00FFFFFF" x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" x:Name="contentPresenter" x:CompileBindings="False">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>

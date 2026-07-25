@@ -24,7 +24,7 @@
       <Border Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="BranchesContainer">
         <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl"><ItemsControl.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="dialogs:RemoveLocalBranchWindow+RemoveLocalBranchItem">
                 <Grid Height="20">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20" />

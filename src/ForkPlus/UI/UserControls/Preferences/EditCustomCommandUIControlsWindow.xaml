@@ -34,7 +34,7 @@
         </Grid.RowDefinitions>
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="local:CustomCommandUIControlViewModel">
               <StackPanel>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Left" FontSize="13" Margin="4,0,4,0" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="VariableTextBlock">

@@ -10,7 +10,7 @@
       </ItemsPanelTemplate>
     </ComboBox.ItemsPanel>
     <ComboBox.ItemTemplate>
-      <DataTemplate>
+      <DataTemplate DataType="fuu:ReferenceDropdownUserControl+DropdownItem">
         <StackPanel Orientation="Horizontal">
           <Image Height="16" Width="16" Margin="0" Source="{Binding Icon}" />
           <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" FontSize="13" Text="{Binding Title}" />

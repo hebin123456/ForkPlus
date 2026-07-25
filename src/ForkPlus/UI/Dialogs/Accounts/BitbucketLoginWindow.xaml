@@ -23,7 +23,7 @@
       <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />
       <ComboBox Grid.Row="2" Margin="95,4,0,6" HorizontalAlignment="Stretch" SelectionChanged="AuthenticationTypeComboBox_SelectionChanged" x:Name="AuthenticationTypeComboBox">
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="Accounts:AuthenticationItem">
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="0,0,4,0">
               <TextBlock.Text>
                 <Binding Path="Title" />

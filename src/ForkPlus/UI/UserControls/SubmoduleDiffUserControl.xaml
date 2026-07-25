@@ -1,5 +1,5 @@
 <!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 Grid 及子控件上的重复 xmlns / xmlns:x 声明。控件结构、事件、GridView/GridViewColumn 等保持原样。 -->
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SubmoduleDiffUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SubmoduleDiffUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI">
   <Grid Background="{DynamicResource BackgroundBrush}">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -7,7 +7,7 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <Grid Grid.Row="0" Margin="4,10,4,0" HorizontalAlignment="Center">
+    <Grid Grid.Row="0" Margin="4,10,4,0" HorizontalAlignment="Center" x:CompileBindings="False">
       <Grid.ColumnDefinitions>
         <ColumnDefinition MinWidth="20">
           <ColumnDefinition.Width>
@@ -29,7 +29,7 @@
         <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
           <GridViewColumn>
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="ui:DecoratedRevision">
                 <Grid Height="23">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -70,7 +70,7 @@
           </GridViewColumn>
           <GridViewColumn Width="19">
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="ui:DecoratedRevision">
                 <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
                   <Border.Background>
                     <Binding Path="UserBackgroundBrush" />
@@ -89,7 +89,7 @@
           </GridViewColumn>
           <GridViewColumn Width="120">
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="ui:DecoratedRevision">
                 <Border Margin="-7,2,0,2" BorderThickness="1" CornerRadius="0,3,3,0">
                   <Border.BorderBrush>
                     <Binding Path="UserBackgroundBrush" />
@@ -108,8 +108,8 @@
           </GridViewColumn>
           <GridViewColumn Width="70">
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <Border Margin="0,2,0,2" BorderThickness="0">
+              <DataTemplate DataType="ui:DecoratedRevision">
+                <Border Margin="0,2,0,2" BorderThickness="0" x:CompileBindings="False">
                   <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="5,0,0,0">
                     <controls:HighlightableTextBlock.Text>
                       <Binding Path="AbbreviatedSha" />
@@ -142,7 +142,7 @@
           </GridViewColumn>
           <GridViewColumn Width="125">
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="ui:DecoratedRevision">
                 <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">
                   <TextBlock.Text>
                     <Binding Path="AuthorDateLongString" />
@@ -153,7 +153,7 @@
           </GridViewColumn>
           <GridViewColumn Width="8">
             <GridViewColumn.CellTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="ui:DecoratedRevision">
                 <Border Margin="0,0,-4,0" Width="4" x:Name="SearchMatchBorder">
                   <Border.Background>
                     <Binding Path="IsSearchMatch">

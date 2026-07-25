@@ -56,7 +56,7 @@
       <!-- NOTE (Avalonia limitation): 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
       <ComboBox Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox">
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:CloneWindow+AccountItem">
             <Grid>
               <Separator IsVisible="{Binding ItemType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:CloneWindow+AccountItemType.Separator}}" Height="1" />
               <DockPanel IsVisible="{Binding ItemType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static dialogs:CloneWindow+AccountItemType.Separator}}">

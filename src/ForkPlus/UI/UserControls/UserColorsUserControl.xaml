@@ -9,7 +9,7 @@
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="UserControls:UserColorViewModel">
             <Grid Margin="1">
               <ToggleButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="UserColorRadioButton">
                 <ToggleButton.Background>

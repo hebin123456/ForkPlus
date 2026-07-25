@@ -22,7 +22,7 @@
     <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
     <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalAlignment="Stretch" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
       <ComboBox.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate DataType="Preferences:GitUserControl+GitInstanceItem">
           <Grid>
             <!-- 普通项：GitInstanceType != Separator -->
             <TextBlock FontSize="13" VerticalAlignment="Center" IsVisible="{Binding GitInstanceType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}">
@@ -40,7 +40,7 @@
     <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
     <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalAlignment="Stretch" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox">
       <ComboBox.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate DataType="Preferences:GitUserControl+GitInstanceItem">
           <Grid>
             <TextBlock FontSize="13" VerticalAlignment="Center" IsVisible="{Binding GitInstanceType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static Preferences:GitUserControl+GitInstanceType.Separator}}">
               <TextBlock.Text>

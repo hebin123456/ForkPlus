@@ -9,7 +9,7 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileListUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     
-      <DataTemplate x:Key="TreeViewTemplate">
+      <DataTemplate x:Key="TreeViewTemplate" DataType="userControls:FileListItem">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -36,7 +36,7 @@
           </controls:AutoTooltipTextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="ListViewTemplate">
+      <DataTemplate x:Key="ListViewTemplate" DataType="userControls:FileListItem">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="18" />
@@ -71,7 +71,7 @@
         <GridViewColumn>
           <GridViewColumnHeader Content="Name" SizeChanged="GridViewColumnHeader_SizeChanged" />
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="userControls:FileListItem">
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="18" />
@@ -103,7 +103,7 @@
         <GridViewColumn>
           <GridViewColumnHeader Content="Location" SizeChanged="GridViewColumnHeader_SizeChanged" Loaded="LocationColumnHeader_Loaded" />
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="userControls:FileListItem">
               <controls:AutoTooltipTextBlock FontSize="13">
                 <controls:AutoTooltipTextBlock.Text>
                   <Binding Path="FolderPath" />

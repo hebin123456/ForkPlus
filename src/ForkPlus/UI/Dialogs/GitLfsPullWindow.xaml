@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow Width="540" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitLfsPullWindow">
+<dialogs:ForkPlusDialogWindow Width="540" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitLfsPullWindow" xmlns:git="clr-namespace:ForkPlus.Git">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -17,7 +17,7 @@
       <TextBlock Grid.Column="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <ComboBox Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="git:Remote">
             <StackPanel Orientation="Horizontal">
               <Image Margin="0,0,4,0" Height="16" Width="16">
                 <Image.Source>

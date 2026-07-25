@@ -29,7 +29,7 @@
 <Setter Property="Padding" Value="4,0" />
     <Setter Property="Margin" Value="1,1" />
     <Setter Property="Height" Value="22" />
-    <Setter Property="HorizontalContentAlignment">
+    <Setter Property="HorizontalContentAlignment" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
@@ -254,7 +254,7 @@
         </ToggleButton.IsChecked>
       </ToggleButton>
       <Border Margin="0" CornerRadius="3,0,0,3" BorderThickness="1" Padding="4,2" Background="{DynamicResource TextBox.Static.Background}" BorderBrush="#00FFFFFF" x:Name="border">
-        <TextBox HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox">
+        <TextBox HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox" x:CompileBindings="False">
           <TextBox.IsReadOnly>
             <Binding Path="IsReadOnly"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </TextBox.IsReadOnly>

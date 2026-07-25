@@ -9,7 +9,7 @@
   <Grid>
     <ListBox BorderThickness="1" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
       <ListBox.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate DataType="RepositoryOverview:RepositoryOverviewAuthorViewModel">
           <Grid Height="30">
             <Grid.RowDefinitions>
               <RowDefinition Height="17" />

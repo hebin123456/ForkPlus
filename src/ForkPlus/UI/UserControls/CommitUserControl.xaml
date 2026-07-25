@@ -49,7 +49,7 @@
               <TextBlock FontSize="12" Foreground="{DynamicResource Diff.Removed.Foreground}" x:Name="StagedDiffDeletedRun" />
             </StackPanel>
             <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" x:Name="CommitButton" />
-            <controls:DropDownButton Grid.Row="0" Height="24" Margin="0" HorizontalAlignment="Right" ToolTip.Tip="Commit Settings" x:Name="CommitDropdownButton">
+            <controls:DropDownButton x:CompileBindings="False" Grid.Row="0" Height="24" Margin="0" HorizontalAlignment="Right" ToolTip.Tip="Commit Settings" x:Name="CommitDropdownButton">
               <controls:DropDownButton.IsEnabled>
                 <Binding Path="IsEnabled" />
               </controls:DropDownButton.IsEnabled>

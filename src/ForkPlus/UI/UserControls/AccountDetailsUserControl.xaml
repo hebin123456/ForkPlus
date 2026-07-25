@@ -18,7 +18,7 @@
         <controls:AvatarImage Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="20,0,8,0" Width="32" Height="32" VerticalAlignment="Center" x:Name="AvatarImage" />
         <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
           <TextBlock FontSize="13" Margin="4,0,4,0" x:Name="HeaderUserNameTextBlock" />
-          <TextBlock Margin="4,0,4,0" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="HeaderLoginTextBlock">
+          <TextBlock x:CompileBindings="False" Margin="4,0,4,0" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="HeaderLoginTextBlock">
             <TextBlock.Text>
               <Binding Path="UserName" />
             </TextBlock.Text>

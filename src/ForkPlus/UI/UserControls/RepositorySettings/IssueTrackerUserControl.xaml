@@ -19,7 +19,7 @@
           </Grid.RowDefinitions>
           <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="BugTrackerRulesListBox_SelectionChanged" x:Name="BugTrackerRulesListBox">
             <ListBox.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="RepositorySettings:BugtrackerRuleViewModel">
                 <StackPanel>
                   <TextBlock Margin="4,0,4,0" FontSize="13">
                     <TextBlock.Text>

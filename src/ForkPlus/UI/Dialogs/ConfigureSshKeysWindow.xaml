@@ -42,7 +42,7 @@
         </Grid.RowDefinitions>
         <ListBox VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="SshKeyListBox_SelectionChanged" x:Name="SshKeyListBox">
           <ListBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="dialogs:SshKeyViewModel">
               <DockPanel>
                 <CheckBox Margin="2,2,4,2" VerticalAlignment="Center" Checked="SshKeyCheckBox_Changed" Unchecked="SshKeyCheckBox_Changed">
                   <CheckBox.IsChecked>

@@ -21,7 +21,7 @@
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl"><ItemsControl.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="dialogs:PushMultipleBranchesWindow+PushBranchItem">
                 <Grid Height="18">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />

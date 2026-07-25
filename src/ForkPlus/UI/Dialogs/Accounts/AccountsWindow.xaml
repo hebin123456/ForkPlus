@@ -33,7 +33,7 @@
       </Grid.ColumnDefinitions>
       <ListBox Grid.Column="0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AccountsListBox_SelectionChanged" x:Name="AccountsListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="Accounts:AccountViewModel">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30" />

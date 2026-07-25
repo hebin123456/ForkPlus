@@ -1,5 +1,5 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; MouseDoubleClick binding removed (handler is subscribed via RevisionListView.PointerPressed in code-behind per Avalonia migration). -->
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionListViewUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionListViewUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI">
   <UserControl.Resources>
     
       <Geometry x:Key="OptionMarkGeomentry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</Geometry>
@@ -12,7 +12,7 @@
              Avalonia FontWeight 是 FontWeight 枚举（不可空），需 BoolToFontWeightConverter 转换。 -->
         <Setter Property="FontWeight">
           <Setter.Value>
-            <Binding Path="IsHead">
+            <Binding Path="IsHead" x:DataType="ui:DecoratedRevision">
               <Binding.Converter>
                 <controls:BoolToFontWeightConverter TrueWeight="Bold" />
               </Binding.Converter>
@@ -23,7 +23,7 @@
              TrueBrush=null 时返回 UnsetValue，保持继承的默认 Foreground。 -->
         <Setter Property="TextElement.Foreground">
           <Setter.Value>
-            <Binding Path="IsReachable">
+            <Binding Path="IsReachable" x:DataType="ui:DecoratedRevision">
               <Binding.Converter>
                 <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
               </Binding.Converter>
@@ -34,7 +34,7 @@
       <GridView x:Key="SingleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
         <GridViewColumn>
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <Grid Height="23">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
@@ -84,7 +84,7 @@
         </GridViewColumn>
         <GridViewColumn Width="19">
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
                 <Border.Background>
                   <Binding Path="UserBackgroundBrush" />
@@ -103,7 +103,7 @@
         </GridViewColumn>
         <GridViewColumn Width="120">
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <Border Margin="-7,2,0,2" BorderThickness="1" CornerRadius="0,3,3,0">
                 <Border.BorderBrush>
                   <Binding Path="UserBackgroundBrush" />
@@ -122,7 +122,7 @@
         </GridViewColumn>
         <GridViewColumn Width="70">
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="5,0,0,0">
                 <controls:HighlightableTextBlock.Text>
                   <Binding Path="AbbreviatedSha" />
@@ -136,7 +136,7 @@
         </GridViewColumn>
         <GridViewColumn Width="129">
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <TextBlock VerticalAlignment="Center" Margin="0,0,-5,0">
                 <TextBlock.Text>
                   <Binding Path="AuthorDateLongString" />
@@ -147,7 +147,7 @@
         </GridViewColumn>
         <GridViewColumn Width="4">
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <!-- 阶段 4.5：原 DataTrigger (IsSearchMatch=True -> Background=SearchMatch.BackgroundBrush)
                    用直接绑定 + BoolToBrushConverter 实现。FalseBrush=#00FFFFFF 与原默认值一致。 -->
               <Border Margin="-4,0,0,0" Width="4" x:Name="SearchMatchBorder">
@@ -166,7 +166,7 @@
       <GridView x:Key="DoubleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
         <GridViewColumn>
           <GridViewColumn.CellTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="ui:DecoratedRevision">
               <Grid Height="42">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="*" />

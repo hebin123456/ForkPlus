@@ -96,7 +96,7 @@
         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
           <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="DiffList">
             <ItemsControl.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate DataType="UserControls:DiffEntry">
                 <ListBoxItem HorizontalAlignment="Stretch">
                   <ListBoxItem.ContextMenu>
                     <ContextMenu />
@@ -109,7 +109,7 @@
                       <Binding Path="IsExpanded" Mode="TwoWay" />
                     </Expander.IsExpanded>
                     <Expander.HeaderTemplate>
-                      <DataTemplate>
+                      <DataTemplate DataType="UserControls:DiffEntry">
                         <Grid>
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="18" />

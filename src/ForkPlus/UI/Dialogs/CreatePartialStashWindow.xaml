@@ -16,7 +16,7 @@
       </Grid.RowDefinitions>
       <ListBox Grid.Row="0" Margin="0,0,0,2" Background="{DynamicResource TextBox.Static.Background}" x:Name="PartialStashListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:PartialStashFileViewModel">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

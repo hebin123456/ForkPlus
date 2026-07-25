@@ -45,7 +45,7 @@
           <ContextMenu />
         </ListBox.ContextMenu>
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="fuup:SrcDirViewModel">
             <DockPanel Height="18">
               <Button DockPanel.Dock="Right" Margin="2,0,0,0" Height="16" Width="18" Padding="1,0" Click="EditSrcDirButton_Click">
                 <Image>

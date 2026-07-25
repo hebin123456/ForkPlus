@@ -72,13 +72,13 @@
         <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Multiple,Toggle" x:Name="RevisionListView">
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Multiple,Toggle" x:Name="RevisionListView" x:DataType="dialogs:InteractiveRebaseWindow">
           <dialogs:MultiselectionListView.View>
             <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
               <GridViewColumn Width="100">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
-                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" BorderThickness="0" Background="#00FFFFFF" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox">
+                  <DataTemplate DataType="dialogs:RevisionEntry">
+                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" BorderThickness="0" Background="#00FFFFFF" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox" x:CompileBindings="False">
                       <ComboBox.Foreground>
                         <Binding Path="Foreground"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                       </ComboBox.Foreground>
@@ -89,7 +89,7 @@
                         <Binding Path="DataContext.InteractiveRebaseComboBoxItemsSource"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListView}" /></Binding.RelativeSource></Binding>
                       </ComboBox.ItemsSource>
                       <ComboBox.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate DataType="dialogs:InteractiveRebaseComboBoxItem">
                           <DockPanel Width="450">
                             <Ellipse DockPanel.Dock="Left" Height="12" Width="12" Margin="0,0,4,0">
                               <Ellipse.Fill>
@@ -123,7 +123,7 @@
               </GridViewColumn>
               <GridViewColumn Width="40">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <!-- 阶段 4.5：原 ContentControl.Style 的 Style.Triggers (GraphType 枚举 -> ContentTemplate)
                          用 5 个堆叠 ContentControl + EnumEqualsConverter 切换 IsVisible 实现。
                          每个 ContentControl 绑定对应的 DataTemplate，仅当 GraphType 匹配时可见。 -->
@@ -149,7 +149,7 @@
               </GridViewColumn>
               <GridViewColumn>
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <DockPanel>
                       <controls:ReferencePanel DockPanel.Dock="Left">
                         <controls:ReferencePanel.ItemsSource>
@@ -176,7 +176,7 @@
               </GridViewColumn>
               <GridViewColumn Width="19">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="-6,2,-6,2">
                       <controls:AvatarImage.UserIdentity>
                         <Binding Path="Author" />
@@ -187,7 +187,7 @@
               </GridViewColumn>
               <GridViewColumn Width="120">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <TextBlock VerticalAlignment="Center" Margin="-2,0,0,2" x:Name="AuthorTextBlock">
                       <TextBlock.Text>
                         <Binding Path="AuthorName" />
@@ -204,7 +204,7 @@
               </GridViewColumn>
               <GridViewColumn Width="70">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <TextBlock VerticalAlignment="Center" Margin="5,0,0,2" x:Name="AbbreviatedShaTextBlock">
                       <TextBlock.Text>
                         <Binding Path="AbbreviatedSha" />
@@ -221,7 +221,7 @@
               </GridViewColumn>
               <GridViewColumn Width="120">
                 <GridViewColumn.CellTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="dialogs:RevisionEntry">
                     <TextBlock VerticalAlignment="Center" Margin="0,0,-5,2" x:Name="AuthorDateTextBlock">
                       <TextBlock.Text>
                         <Binding Path="AuthorDate" />

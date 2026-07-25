@@ -43,7 +43,7 @@
     </Style>
   </Style>
   <Style x:Key="TreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable">
+    <Setter Property="Focusable" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="IsFocusable" />
       </Setter.Value>
@@ -57,7 +57,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -124,7 +124,7 @@
     </Setter>
   </Style>
   <Style x:Key="ExpandButtonAutoWidthTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable">
+    <Setter Property="Focusable" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="IsFocusable" />
       </Setter.Value>
@@ -139,7 +139,7 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -221,7 +221,7 @@
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
   </Style>
   <Style x:Key="TreeViewItemGridViewStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable">
+    <Setter Property="Focusable" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="IsFocusable" />
       </Setter.Value>
@@ -235,7 +235,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>

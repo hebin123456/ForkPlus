@@ -57,12 +57,12 @@
   </Style>
   <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
     <Setter Property="Padding" Value="4,1" />
-    <Setter Property="HorizontalContentAlignment">
+    <Setter Property="HorizontalContentAlignment" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="VerticalContentAlignment">
+    <Setter Property="VerticalContentAlignment" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
@@ -154,7 +154,7 @@
             </Grid.RowDefinitions>
             <DockPanel Margin="{TemplateBinding Padding}">
               <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False">
-                <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
+                <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}" x:CompileBindings="False">
                   <GridViewHeaderRowPresenter.AllowsColumnReorder>
                     <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                   </GridViewHeaderRowPresenter.AllowsColumnReorder>
@@ -192,7 +192,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListViewItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
 <Border.Styles>
 <Style Selector="^:selected /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
@@ -246,7 +246,7 @@
          (与 RevisionListViewUserControl ItemContainerStyle 同一模式)。
          - IsHead: BoolToFontWeightConverter (TrueWeight=Bold, false->Normal)
          - IsReachable: BoolToBrushConverter (FalseBrush=Unreachable; TrueBrush=null->UnsetValue 保持继承) -->
-    <Setter Property="FontWeight">
+    <Setter Property="FontWeight" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="IsHead">
           <Binding.Converter>
@@ -255,7 +255,7 @@
         </Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="TextElement.Foreground">
+    <Setter Property="TextElement.Foreground" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="IsReachable">
           <Binding.Converter>
@@ -297,7 +297,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
 <Border.Styles>
 <Style Selector="^:selected /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
@@ -473,7 +473,7 @@
   <Style x:Key="GridViewColumnHeaderGripper" Selector="Thumb">
     <Setter Property="Canvas.Right" Value="-9" />
     <Setter Property="Width" Value="18" />
-    <Setter Property="Height">
+    <Setter Property="Height" x:CompileBindings="False">
       <Setter.Value>
         <Binding Path="Bounds.Height"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
       </Setter.Value>

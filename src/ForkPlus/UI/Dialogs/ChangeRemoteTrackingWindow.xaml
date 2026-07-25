@@ -30,7 +30,7 @@
           </ItemsPanelTemplate>
         </ComboBox.ItemsPanel>
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:ChangeRemoteTrackingWindow+RemoteBranchItem">
             <Grid>
               <Separator IsVisible="{Binding ItemType, Converter={controls:EnumEqualsConverter}, ConverterParameter={x:Static dialogs:ChangeRemoteTrackingWindow+RemoteBranchItemType.Separator}}" Height="1" />
               <StackPanel Orientation="Horizontal" IsVisible="{Binding ItemType, Converter={controls:EnumNotEqualsConverter}, ConverterParameter={x:Static dialogs:ChangeRemoteTrackingWindow+RemoteBranchItemType.Separator}}">

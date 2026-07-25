@@ -26,7 +26,7 @@
         </ItemsPanelTemplate>
       </ListBox.ItemsPanel>
       <ListBox.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate DataType="Accounts:AddAccountWindow+ServiceViewModel">
           <Border Margin="5,5,5,5" BorderThickness="3" CornerRadius="3" BorderBrush="{DynamicResource Item.Static.Background}" x:Name="Border">
             <StackPanel Height="85" Width="75">
               <Image Height="24" Width="24" Margin="4,6,4,0" HorizontalAlignment="Center">

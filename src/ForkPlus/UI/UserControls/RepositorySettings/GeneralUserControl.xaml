@@ -47,7 +47,7 @@
         </ItemsPanelTemplate>
       </ComboBox.ItemsPanel>
       <ComboBox.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate DataType="RepositorySettings:GeneralUserControl+LocalBranchItem">
           <!-- 阶段 4.5：原 MainBranchComboBoxItemStyle 的 Style.Triggers DataTrigger (ItemType=Separator ->
                渲染 Separator 分隔线) 用堆叠控件 + EnumEqualsConverter 切换可见性实现。
                ItemType != Separator 时显示 Branch 行（图标+标题）；== Separator 时显示 Separator。 -->

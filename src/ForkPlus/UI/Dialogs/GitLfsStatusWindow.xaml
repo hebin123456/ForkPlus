@@ -28,7 +28,7 @@
       <controls:FilterTextBox Margin="0,0,0,4" x:Name="FilterTextBox" />
       <ListBox Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionMode="Multiple,Toggle" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:LfsFileViewModel">
             <Grid Height="20" UseLayoutRounding="True">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="18" />

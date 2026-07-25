@@ -17,7 +17,7 @@
 <Style x:Key="QuestionmarkTextBlock" Selector="TextBlock">
         <Setter Property="ToolTip.Tip">
           <Setter.Value>
-            <ToolTip>
+            <ToolTip x:CompileBindings="False">
               <ToolTip.DataContext>
                 <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
               </ToolTip.DataContext>
@@ -36,7 +36,7 @@
 <Style x:Key="NameQuestionmarkTextBlock" Selector="TextBlock">
         <Setter Property="ToolTip.Tip">
           <Setter.Value>
-            <ToolTip>
+            <ToolTip x:CompileBindings="False">
               <ToolTip.DataContext>
                 <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
               </ToolTip.DataContext>
@@ -67,7 +67,7 @@
       </Grid.RowDefinitions>
       <ListBox VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="CustomCommandsListBox_SelectionChanged" x:Name="CustomCommandsListBox">
         <ListBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="local:CustomCommandViewModel">
             <StackPanel>
               <DockPanel>
                 <Image DockPanel.Dock="Right" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center" Source="{DynamicResource ShareIcon}">
@@ -113,7 +113,7 @@
         </StackPanel>
       </Border>
     </Grid>
-    <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}">
+    <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}" x:CompileBindings="False">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />

@@ -29,7 +29,7 @@
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
       <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left"  SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate DataType="dialogs:MergeBranchWindow+MergeOptionComboBoxItem">
             <Grid>
               <Separator IsVisible="{Binding IsSeparator}" Height="1" />
               <DockPanel HorizontalAlignment="Stretch" IsVisible="{Binding !IsSeparator}">
