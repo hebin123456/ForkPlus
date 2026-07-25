@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Windows.Media;
+using Avalonia.Media;
 using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls

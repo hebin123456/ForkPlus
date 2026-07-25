@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Windows.Documents;
+using Avalonia.Controls.Documents;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Controls.Documents;

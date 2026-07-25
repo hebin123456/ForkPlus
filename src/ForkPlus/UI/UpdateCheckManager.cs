@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using ForkPlus.UI.Dialogs;
 using Avalonia.Threading;
 

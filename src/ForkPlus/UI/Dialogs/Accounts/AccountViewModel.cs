@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using Avalonia.Media;

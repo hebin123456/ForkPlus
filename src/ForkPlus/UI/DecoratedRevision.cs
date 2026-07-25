@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using Avalonia.Media;

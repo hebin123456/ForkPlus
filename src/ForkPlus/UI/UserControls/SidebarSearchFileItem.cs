@@ -1,5 +1,5 @@
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using Avalonia.Media;
