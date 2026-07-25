@@ -108,6 +108,9 @@ namespace ForkPlus.UI.UserControls
 
 		private readonly Dictionary<string, Button> _summaryButtons = new Dictionary<string, Button>(StringComparer.OrdinalIgnoreCase);
 
+		// 阶段 5：Avalonia XAML 编译器未为以下 x:Name 生成字段，手动声明 + FindControl 初始化（参考 ReflogWindow）。
+		internal StackPanel OutputTextBox;
+
 		private bool _filterNonDefaultBranchOnly;
 
 		private bool _filterFailedOnly;
@@ -165,6 +168,7 @@ namespace ForkPlus.UI.UserControls
 		public GitMmUserControl(string workspacePath)
 		{
 			InitializeComponent();
+			OutputTextBox = this.FindControl<StackPanel>("OutputTextBox");
 			_workspace = new GitMmWorkspaceItem(workspacePath);
 			_workspace.PropertyChanged += Workspace_PropertyChanged;
 			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler(obj, "Event", h) → 直接事件订阅（参考 ClosableTabItem）。

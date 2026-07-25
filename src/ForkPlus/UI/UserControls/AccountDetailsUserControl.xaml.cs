@@ -23,9 +23,16 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private Account _account;
 
+		// 阶段 5：Avalonia XAML 编译器未为 HeaderProfileUrlHyperlink 生成字段，手动声明 + FindControl 初始化。
+		private Hyperlink HeaderProfileUrlHyperlink;
+
 		public AccountDetailsUserControl()
 		{
 			InitializeComponent();
+			// 阶段 5：Hyperlink（Avalonia.Controls.Documents）是 Inline 不是 Control，
+			// FindControl<T> 不可用（CS0311）。改用 NameScope API 按 x:Name 查找。
+			INameScope nameScope = NameScope.GetNameScope(this);
+			HeaderProfileUrlHyperlink = nameScope?.Find("HeaderProfileUrlHyperlink") as Hyperlink;
 		}
 
 		public void ShowDetails([Null] Account account)

@@ -33,7 +33,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					if (_child != null)
 					{
-						RemoveVisualChild(_child);
+						// 阶段 5：Avalonia 11 无 AddVisualChild/RemoveVisualChild（视觉树自动管理），移除调用。
+						// RemoveVisualChild(_child);
 						LogicalChildren.Remove(_child);
 					}
 					if (value != null && !VisualTreeAttachmentHelper.PrepareForNewParent(value, GetType().Name + ".Child"))
@@ -44,7 +45,8 @@ namespace ForkPlus.UI.Dialogs
 					if (_child != null)
 					{
 						LogicalChildren.Add(_child);
-						AddVisualChild(_child);
+						// 阶段 5：Avalonia 11 无 AddVisualChild/RemoveVisualChild（视觉树自动管理），移除调用。
+						// AddVisualChild(_child);
 					}
 					InvalidateMeasure();
 				}

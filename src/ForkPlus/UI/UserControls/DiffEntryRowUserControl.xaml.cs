@@ -92,7 +92,8 @@ namespace ForkPlus.UI.UserControls
 			}
 			else
 			{
-				BringIntoView();
+				// 阶段 5：Avalonia 需显式指定目标控件调用 BringIntoView（裸调用编译为 CS0103）。
+				this.BringIntoView();
 			}
 		}
 

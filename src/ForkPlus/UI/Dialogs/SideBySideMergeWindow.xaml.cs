@@ -67,6 +67,10 @@ namespace ForkPlus.UI.Dialogs
 		// AI 解决冲突进行中标志，避免重复触发
 		private bool _aiResolving;
 
+		// 阶段 5：Avalonia XAML 编译器未为以下 x:Name 生成字段，手动声明 + FindControl 初始化。
+		private ColumnDefinition MergeCodeEditorMiddleColumn;
+		private ColumnDefinition TopCheckBoxMiddleColumn;
+
 		// 阶段 3：承接 SideBySideMerge 的提交允许判定。
 		// MergeCodeEditor/AvalonEdit/MergeConflictView 等重度 WPF 逻辑全留 View。
 		private readonly SideBySideMergeWindowViewModel _viewModel;
@@ -98,6 +102,11 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowHeader = false;
 			base.ShowLogo = false;
 			InitializeComponent();
+			// 阶段 5：ColumnDefinition 不是 Control，FindControl<T> 不可用（CS0311）。
+			// 改用 NameScope API 按 x:Name 查找（适用于任意类型的命名元素，含 ColumnDefinition）。
+			INameScope nameScope = NameScope.GetNameScope(this);
+			MergeCodeEditorMiddleColumn = nameScope?.Find("MergeCodeEditorMiddleColumn") as ColumnDefinition;
+			TopCheckBoxMiddleColumn = nameScope?.Find("TopCheckBoxMiddleColumn") as ColumnDefinition;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Resolve");
 			FileMergeControl.RepositoryUserControl = repositoryUserControl;
 			LocalMergeEditor.ViewMode = MergeConflictPart.Local;

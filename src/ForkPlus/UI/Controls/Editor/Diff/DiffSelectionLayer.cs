@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;

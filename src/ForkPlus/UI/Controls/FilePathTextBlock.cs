@@ -37,12 +37,14 @@ namespace ForkPlus.UI.Controls
 		public FilePathTextBlock()
 		{
 			RefreshBrushes();
-			// 阶段 4.5：WPF MouseEnter → Avalonia PointerEnter。
-			PointerEnter += delegate(object s, PointerEventArgs e)
+			// 阶段 4.5：WPF MouseEnter → Avalonia PointerEntered。
+			// 阶段 5：SelectableTextBlock 无 PointerEntered CLR 事件，改用 AddHandler(InputElement.PointerEnteredEvent, ...) 订阅路由事件。
+			// 注意：Avalonia 11 用 PointerEnteredEvent（带 "ed"），不是 WPF 的 PointerEnterEvent。
+			AddHandler(InputElement.PointerEnteredEvent, new EventHandler<PointerEventArgs>(delegate(object s, PointerEventArgs e)
 			{
 				e.Handled = true;
 				ToolTip.SetTip(this, TextIsTrimmed() ? GetToolTipText() : null);
-			};
+			}));
 			// 阶段 4.5：WPF WeakEventManager → 直接事件订阅。
 			NotificationCenter.Current.ApplicationThemeChanged += ApplicationThemeChanged;
 		}

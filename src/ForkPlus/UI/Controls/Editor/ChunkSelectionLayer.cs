@@ -45,14 +45,16 @@ namespace ForkPlus.UI.Controls.Editor
 					{
 						if (_child != null)
 						{
-							RemoveVisualChild(_child);
+							// 阶段 5：Avalonia 11 无 AddVisualChild/RemoveVisualChild（视觉树自动管理），移除调用。
+							// RemoveVisualChild(_child);
 						}
 						// NOTE(4.7-a): WPF 版用 VisualTreeAttachmentHelper.PrepareForNewParent 先 detach。
 						// Avalonia 无等价物；假设 child 没有旧 parent（CreateAdornerContent 每次创建新实例）。
 						_child = value;
 						if (_child != null)
 						{
-							AddVisualChild(_child);
+							// 阶段 5：Avalonia 11 无 AddVisualChild/RemoveVisualChild（视觉树自动管理），移除调用。
+							// AddVisualChild(_child);
 						}
 						InvalidateMeasure();
 					}
