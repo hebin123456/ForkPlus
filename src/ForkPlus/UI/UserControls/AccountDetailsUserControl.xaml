@@ -25,7 +25,7 @@
           </TextBlock>
         </StackPanel>
         <TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Margin="4,0,8,0" Padding="0" VerticalAlignment="Top">
-          <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" x:Name="HeaderProfileUrlHyperlink">
+          <Hyperlink Click="Hyperlink_Click" x:Name="HeaderProfileUrlHyperlink">
             <TextBlock HorizontalAlignment="Center" x:Name="HeaderProfileUrlTextBlock" />
           </Hyperlink>
         </TextBlock>

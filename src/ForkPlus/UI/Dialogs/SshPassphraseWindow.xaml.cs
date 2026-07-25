@@ -11,8 +11,6 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly string _sshKeyPath;
 
-		private Avalonia.Controls.PasswordBox PasswordBox;
-
 		// 阶段 3：承接 passphrase 非空校验（纯判断，SetStatus 副作用留 override）。
 		private readonly SshPassphraseWindowViewModel _viewModel = new SshPassphraseWindowViewModel();
 
@@ -29,7 +27,6 @@ namespace ForkPlus.UI.Dialogs
 		public SshPassphraseWindow(string sshKeyName, string sshKeyPath)
 		{
 			InitializeComponent();
-			PasswordBox = this.FindControl<Avalonia.Controls.PasswordBox>("PasswordBox");
 			_sshKeyPath = sshKeyPath;
 			base.DialogTitle = Translate("Passphrase for SSH key");
 			base.DialogDescription = string.Format(Translate("Enter passphrase for SSH key '{0}'"), sshKeyName);
