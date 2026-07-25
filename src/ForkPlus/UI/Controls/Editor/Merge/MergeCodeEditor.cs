@@ -11,6 +11,7 @@ using ForkPlus.Settings;
 using AvaloniaEdit.Rendering;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
@@ -151,41 +152,52 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private void RefreshScrollbarMap()
 		{
-			if (_blocks != null && base.VerticalScrollBarVisibility != ScrollBarVisibility.Hidden && base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) && base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
+			// TODO(5): Migrate TryFindName to INameScope.Find in OnApplyTemplate.
+			// 阶段 4.5：WPF ControlTemplate.TryFindName → Avalonia 无 TryFindName；
+			// 改用 GetTemplateChildren().OfType<Path>() 查找模板内 Path 元素。
+			Path match = this.GetTemplateChildren().OfType<Path>().FirstOrDefault((Path p) => p.Name == "SrcBlockPath");
+			Path match2 = this.GetTemplateChildren().OfType<Path>().FirstOrDefault((Path p) => p.Name == "DstBlockPath");
+			if (_blocks == null || base.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden || match == null || match2 == null)
 			{
-				StreamGeometry streamGeometry = new StreamGeometry();
-				streamGeometry.FillRule = FillRule.NonZero;
-				// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
-				// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
-				using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-				StreamGeometry streamGeometry2 = new StreamGeometry();
-				streamGeometry2.FillRule = FillRule.NonZero;
-				using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-				int num = 6;
-				int num2 = 1;
-				double num3 = 12.0;
-				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
-				Block[] blocks = _blocks;
-				for (int i = 0; i < blocks.Length; i++)
-				{
-					Block block = blocks[i];
-					double num5 = num3 + num4 * block.Start;
-					double num6 = Math.Max(2.0, num4 * block.Length);
-					StreamGeometryContext obj = ((block.Kind == Block.BlockKind.Resolved) ? streamGeometryContext2 : streamGeometryContext);
-					// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / PolyLineTo(pts, isStroked, isSmoothJoin) →
-					// Avalonia BeginFigure(p, isFilled) / PolyLineTo(pts, isStroked) + EndFigure(isClosed)。
-					obj.BeginFigure(new Point(num2, num5), isFilled: true);
-					obj.PolyLineTo(new Point[3]
-					{
-						new Point(num2 + num, num5),
-						new Point(num2 + num, num5 + num6),
-						new Point(num2, num5 + num6)
-					}, isStroked: false);
-					obj.EndFigure(isClosed: true);
-				}
-				match.Data = streamGeometry;
-				match2.Data = streamGeometry2;
+				return;
 			}
+			StreamGeometry streamGeometry = new StreamGeometry();
+			// TODO(5): Set FillRule on Path control instead of geometry (Avalonia StreamGeometry 不直接暴露 FillRule)。
+			// streamGeometry.FillRule = FillRule.NonZero;
+			// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
+			// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
+			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+			StreamGeometry streamGeometry2 = new StreamGeometry();
+			// TODO(5): Set FillRule on Path control instead of geometry (Avalonia StreamGeometry 不直接暴露 FillRule)。
+			// streamGeometry2.FillRule = FillRule.NonZero;
+			using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+			int num = 6;
+			int num2 = 1;
+			double num3 = 12.0;
+			double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
+			Block[] blocks = _blocks;
+			for (int i = 0; i < blocks.Length; i++)
+			{
+				Block block = blocks[i];
+				double num5 = num3 + num4 * block.Start;
+				double num6 = Math.Max(2.0, num4 * block.Length);
+				StreamGeometryContext obj = ((block.Kind == Block.BlockKind.Resolved) ? streamGeometryContext2 : streamGeometryContext);
+				// 阶段 4 里程碑 4.7-a：WPF PolyLineTo(pts, isStroked, isSmoothJoin) → Avalonia 循环 LineTo(pt)（LineTo 无 isStroked 参数）。
+				obj.BeginFigure(new Point(num2, num5), isFilled: true);
+				Point[] pts = new Point[3]
+				{
+					new Point(num2 + num, num5),
+					new Point(num2 + num, num5 + num6),
+					new Point(num2, num5 + num6)
+				};
+				foreach (Point pt in pts)
+				{
+					obj.LineTo(pt);
+				}
+				obj.EndFigure(isClosed: true);
+			}
+			match.Data = streamGeometry;
+			match2.Data = streamGeometry2;
 		}
 
 		private static Block[] CreateBlocks(MergeConflictView.Chunk[] chunks)

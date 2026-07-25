@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -17,7 +18,8 @@ namespace ForkPlus.UI.Controls
 	// WPF LostKeyboardFocus → Avalonia LostFocus。
 	// NOTE(4.5-p): 父 Panel 叠加方案可能影响布局；如需绝对定位，
 	// 阶段 6 可改用 Avalonia OverlayLayer 或 Popup 实现。
-	public class EditableTextBlock : Control
+	// 阶段 4.5：基类由 WPF Control 改为 Avalonia TemplatedControl，以获得 Padding / FontSize / FontWeight 等文本相关属性。
+	public class EditableTextBlock : TemplatedControl
 	{
 		// 阶段 4.5：WPF DependencyProperty.Register + FrameworkPropertyMetadata → Avalonia StyledProperty.Register。
 		public static readonly StyledProperty<string> ValueProperty =

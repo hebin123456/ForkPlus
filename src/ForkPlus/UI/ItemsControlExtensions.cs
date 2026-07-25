@@ -25,7 +25,7 @@ namespace ForkPlus.UI
 			{
 				return null;
 			}
-			return control.ItemContainerGenerator.ItemFromContainer(containerAtPoint);
+			return ItemFromContainer(control, containerAtPoint);
 		}
 
 		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : AvaloniaObject
@@ -37,7 +37,9 @@ namespace ForkPlus.UI
 			{
 				return null;
 			}
-			AvaloniaObject dependencyObject = hitTestResult as AvaloniaObject;
+			// 阶段 4.5：GetVisualParent() 是 Avalonia.VisualTree 扩展方法，接收者为 Visual（不是 AvaloniaObject）。
+			// IInputElement 在 Avalonia 中实现者均为 Visual，直接转 Visual。
+			Visual dependencyObject = hitTestResult as Visual;
 			// 阶段 4.5：WPF VisualTreeHelper.GetParent → Avalonia GetVisualParent()（沿视觉树向上）。
 			while (dependencyObject?.GetVisualParent() != null && !(dependencyObject is ItemContainer))
 			{
@@ -54,6 +56,20 @@ namespace ForkPlus.UI
 				// 阶段 4.5：WPF Keyboard.Focus(element) → Avalonia InputElement.Focus()。
 				element.Focus();
 			}
+		}
+
+		// 阶段 4.5：Avalonia 11.3 ItemContainerGenerator 无 ItemFromContainer 方法。
+		// 通过遍历 Items + ContainerFromItem 反向查找数据项。
+		private static object ItemFromContainer(ItemsControl itemsControl, object container)
+		{
+			foreach (var item in itemsControl.Items)
+			{
+				if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) == container)
+				{
+					return item;
+				}
+			}
+			return null;
 		}
 	}
 }

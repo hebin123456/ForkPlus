@@ -326,8 +326,9 @@ namespace ForkPlus.UI.Controls
 				throw new ArgumentNullException("node");
 			}
 			ScrollIntoView(node);
-			// NOTE(4.5): WPF ItemContainerGenerator.Status → Avalonia ItemContainerGenerator.PropertyChanged 事件监听，需验证
-			if (base.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
+			// 阶段 4.5：Avalonia 11.3 ItemContainerGenerator 无 Status 属性（WPF GeneratorStatus.ContainersGenerated）。
+			// 直接尝试获取容器；若尚未物化，则延迟到下一帧布局完成后再聚焦。
+			if (base.ContainerFromItem(node) != null)
 			{
 				OnFocusItem(node);
 			}
@@ -423,8 +424,14 @@ namespace ForkPlus.UI.Controls
 		{
 			if (!_updatesLocked)
 			{
-				// NOTE(4.5): 验证 Avalonia SelectingItemsControl.SetSelectedItems(IEnumerable) API 兼容性。
-				SetSelectedItems(newSelection ?? Enumerable.Empty<MultiselectionTreeViewItem>());
+				// 阶段 4.5：Avalonia SelectingItemsControl 无 SetSelectedItems(IEnumerable) 方法。
+				// 直接清空 SelectedItems 并逐项添加（ListBox.SelectedItems 可写）。
+				var selectedItems = base.SelectedItems;
+				selectedItems.Clear();
+				foreach (var item in newSelection ?? Enumerable.Empty<MultiselectionTreeViewItem>())
+				{
+					selectedItems.Add(item);
+				}
 				if (base.SelectedItem == null)
 				{
 					base.SelectedIndex = topSelectedIndex;
@@ -586,7 +593,9 @@ namespace ForkPlus.UI.Controls
 		{
 			_previewNodeView = item;
 			// 阶段 4.5：WPF Application.Current.TryFindResource → Theme.FindResource。WPF Brush → Avalonia IBrush。
-			_previewNodeView.Background = Theme.FindResource("TreeViewItem.SelectedInactive.Background") as IBrush;
+			// 阶段 4.5：MultiselectionTreeView 继承 TemplatedControl，实例 Theme 属性（ControlTheme）遮蔽 ForkPlus.UI.Theme 静态类。
+			// 必须用完全限定名 ForkPlus.UI.Theme 调用静态 FindResource。
+			_previewNodeView.Background = ForkPlus.UI.Theme.FindResource("TreeViewItem.SelectedInactive.Background") as IBrush;
 		}
 
 		private void HidePreview()

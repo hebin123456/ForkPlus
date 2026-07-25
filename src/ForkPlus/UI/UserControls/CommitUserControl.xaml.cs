@@ -1731,13 +1731,13 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShowCommitDropdown()
 		{
-			CommitButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
+			CommitButton.Styles.Add(ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
 			CommitDropdownButton.Show();
 		}
 
 		private void HideCommitButtonDropdown()
 		{
-			CommitButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
+			CommitButton.Styles.Add(ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
 			CommitDropdownButton.Collapse();
 		}
 

@@ -230,7 +230,7 @@ namespace ForkPlus.UI.Controls
 						// 阶段 4.5：Avalonia BeginFigure(Point, bool isFilled) — 无 isClosed 参数。
 						streamGeometryContext.BeginFigure(point2, isFilled: false);
 						// 阶段 4.5：Avalonia BezierTo(Point, Point, Point) — 无 isStroked/isSmoothJoin 参数。
-						streamGeometryContext.BezierTo(new Point(point2.X, point3.Y - 5.0), new Point(point3.X, point2.Y + 5.0), point3);
+						streamGeometryContext.CubicBezierTo(new Point(point2.X, point3.Y - 5.0), new Point(point3.X, point2.Y + 5.0), point3);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry);
 				}
@@ -244,7 +244,7 @@ namespace ForkPlus.UI.Controls
 					using (StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open())
 					{
 						streamGeometryContext2.BeginFigure(point2, isFilled: false);
-						streamGeometryContext2.BezierTo(new Point(point2.X, point.Y), new Point(point.X + 5.0, point.Y), point);
+						streamGeometryContext2.CubicBezierTo(new Point(point2.X, point.Y), new Point(point.X + 5.0, point.Y), point);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry2);
 				}
@@ -265,7 +265,7 @@ namespace ForkPlus.UI.Controls
 				using (StreamGeometryContext streamGeometryContext3 = streamGeometry3.Open())
 				{
 					streamGeometryContext3.BeginFigure(point, isFilled: false);
-					streamGeometryContext3.BezierTo(new Point(point4.X, point.Y), new Point(point4.X, point.Y + 5.0), point4);
+					streamGeometryContext3.CubicBezierTo(new Point(point4.X, point.Y), new Point(point4.X, point.Y + 5.0), point4);
 				}
 				drawingContext.DrawGeometry(null, pen, streamGeometry3);
 			}

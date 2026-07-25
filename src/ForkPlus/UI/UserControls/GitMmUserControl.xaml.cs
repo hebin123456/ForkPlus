@@ -964,7 +964,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
 		{
-			SetCommandOutputCollapsed(CommandOutputPanel.Visibility == Visibility.Visible, save: true);
+			SetCommandOutputCollapsed(CommandOutputPanel.IsVisible, save: true);
 		}
 
 		private void SetCommandOutputCollapsed(bool isCollapsed, bool save)
@@ -997,7 +997,7 @@ namespace ForkPlus.UI.UserControls
 
 		private bool IsCommandOutputCollapsed()
 		{
-			return CommandOutputPanel.Visibility != Visibility.Visible;
+			return !CommandOutputPanel.IsVisible;
 		}
 
 		private double CommandOutputHeight()
@@ -1840,7 +1840,7 @@ namespace ForkPlus.UI.UserControls
 			if (title != null)
 			{
 				title.Value = subrepo.DisplayName;
-				title.FontWeight = subrepo.IsRootRepository ? FontWeights.Bold : FontWeights.Normal;
+				title.FontWeight = subrepo.IsRootRepository ? FontWeight.Bold : FontWeight.Normal;
 			}
 			Ellipse colorEllipse = panel.Children.OfType<Ellipse>().FirstOrDefault();
 			if (colorEllipse != null)

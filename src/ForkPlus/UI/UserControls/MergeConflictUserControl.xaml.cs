@@ -296,15 +296,15 @@ namespace ForkPlus.UI.UserControls
 				ResolveInExternalMergerButton.Show();
 				ResolveInExternalMergerButton.Content = state.ExternalMergerLabel;
 				if (state.ShowDropdown)
-				{
-					ResolveInExternalMergerButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
-					ResolveInExternalMergerDropdownButton.Show();
-				}
-				else
-				{
-					ResolveInExternalMergerButton.Style = ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
-					ResolveInExternalMergerDropdownButton.Collapse();
-				}
+			{
+				ResolveInExternalMergerButton.Styles.Add(ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
+				ResolveInExternalMergerDropdownButton.Show();
+			}
+			else
+			{
+				ResolveInExternalMergerButton.Styles.Add(ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
+				ResolveInExternalMergerDropdownButton.Collapse();
+			}
 			}
 			else
 			{

@@ -317,10 +317,11 @@ namespace ForkPlus.UI
 			}
 			themeParent.Items.Add(solidColorsParent);
 			// "Custom Colors..."单项：点击打开编辑对话框，IsChecked 反映是否已启用自定义颜色覆盖
+			// 阶段 4.5：Avalonia MenuItem 无 IsCheckable 属性，改用 ToggleType = MenuItemToggleType.CheckBox。
 			MenuItem customColorsItem = new MenuItem
 			{
 				Header = PreferencesLocalization.Translate("Custom Colors...", language),
-				IsCheckable = true,
+				ToggleType = MenuItemToggleType.CheckBox,
 				IsChecked = useCustom
 			};
 			customColorsItem.Click += delegate

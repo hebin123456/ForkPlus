@@ -326,9 +326,9 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_tooltipView != null)
 			{
-				// NOTE(4.5): WPF Visual.PointFromScreen → Avalonia 无 Canvas.PointFromScreen 等价物，需运行时验证。
-				// MouseHelper 仍为 WPF 实现，待其迁移后一并处理（PointToClient / 屏幕坐标转换）。
-				Point point = Canvas.PointFromScreen(MouseHelper.GetMousePosition());
+				// 阶段 4.5：WPF Visual.PointFromScreen → Avalonia Visual.PointToClient(PixelPoint)。
+			// MouseHelper.GetMousePosition() 返回 Point；用 PixelPoint.FromPoint(pt, 1.0) 转为 PixelPoint 后再 PointToClient。
+			Point point = Canvas.PointToClient(PixelPoint.FromPoint(MouseHelper.GetMousePosition(), 1.0));
 				// NOTE(4.5): WPF Point.Offset(double,double) → Avalonia Point + Vector（Point 为只读结构体）。
 				point = point + new Vector(10.0, 10.0);
 				Canvas.SetLeft(_tooltipView, point.X);

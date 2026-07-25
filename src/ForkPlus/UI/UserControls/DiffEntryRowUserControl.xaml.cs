@@ -86,7 +86,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void BringDiffContentIntoView()
 		{
-			if (DiffContentHost.Visibility == Visibility.Visible)
+			if (DiffContentHost.IsVisible)
 			{
 				DiffContentHost.BringIntoView();
 			}

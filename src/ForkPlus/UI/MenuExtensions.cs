@@ -1,5 +1,6 @@
 // 阶段 4.5：移除未使用的 using System.Windows.Input;（ICommand/KeyGesture 已由 using Avalonia.Input 提供）。
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -99,7 +100,9 @@ namespace ForkPlus.UI
 			menuItem.IsEnabled = isEnabled;
 			if (keyGesture != null)
 			{
-				menuItem.InputGestureText = keyGesture.ToFriendlyString();
+				// 阶段 4.5：Avalonia MenuItem 无 InputGestureText 属性，改用 InputGesture（KeyGesture 类型）。
+				// 直接赋值 keyGesture，由 Avalonia 内部负责显示格式化。
+				menuItem.InputGesture = keyGesture;
 			}
 			if (clickHandler != null)
 			{
@@ -140,7 +143,8 @@ namespace ForkPlus.UI
 			};
 		}
 
-		private static void SetItems(IList<object> targetItems, IEnumerable<Control> items, string ownerDescription)
+		// 阶段 4.5：Avalonia 11.3 ItemsControl.Items 返回弱类型 IList（非 IList<object>），目标参数同步改为 IList。
+	private static void SetItems(IList targetItems, IEnumerable<Control> items, string ownerDescription)
 		{
 			targetItems.Clear();
 			HashSet<Control> hashSet = new HashSet<Control>();

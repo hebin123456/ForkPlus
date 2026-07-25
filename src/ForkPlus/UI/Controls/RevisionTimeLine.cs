@@ -9,6 +9,7 @@
 // - FormattedText 去掉 pixelsPerDip 参数（Avalonia FormattedText 无此参数）
 // - DrawRectangle/DrawLine/DrawGeometry/DrawText 签名兼容，保持不变
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia;
@@ -155,7 +156,8 @@ namespace ForkPlus.UI.Controls
 			};
 			pathFigure.Segments.Add(new PolyLineSegment
 			{
-				Points = new PointCollection
+				// 阶段 4.5：WPF PointCollection（System.Windows.Media）→ Avalonia 用 IList<Point>；此处用 List<Point>。
+				Points = new List<Point>
 				{
 					new Point(x + 4.0, 0.0),
 					new Point(x, 5.0)

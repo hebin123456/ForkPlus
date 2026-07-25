@@ -151,7 +151,7 @@ namespace ForkPlus.UI.Dialogs
 			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
 			Hyperlink hyperlink = new Hyperlink(new Run(".gitignore"));
 			hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
-			hyperlink.Style = (Style)TryFindResource("BlueUnderlineHyperlinkStyle");
+			hyperlink.Styles.Add((Style)Application.Current.FindResource("BlueUnderlineHyperlinkStyle"));
 			hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
 			base.DescriptionTextBlock.Inlines.Add(hyperlink);
 			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
@@ -250,12 +250,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				(string, List<int>) tuple3 = array2[i];
 				TextBlock element = new TextBlock
-				{
-					Text = tuple3.Item1,
-					FontWeight = FontWeights.Bold,
-					FontSize = 11.0,
-					Margin = new Thickness(4.0, 6.0, 0.0, 2.0)
-				};
+			{
+				Text = tuple3.Item1,
+				FontWeight = FontWeight.Bold,
+				FontSize = 11.0,
+				Margin = new Thickness(4.0, 6.0, 0.0, 2.0)
+			};
 				TemplateListPanel.Children.Add(element);
 				foreach (int item3 in tuple3.Item2)
 				{
