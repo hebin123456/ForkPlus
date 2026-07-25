@@ -46,7 +46,9 @@ namespace ForkPlus.UI
 		/// </summary>
 		private static void EnsureTransitions(Grid placeholder, TranslateTransform transform)
 		{
-			if (!placeholder.Transitions.HasAny)
+			// 阶段 5：Avalonia Transitions 无 HasAny 扩展方法（System.Reactive 才有），
+			// 用 Count > 0 判断（参考 Avalonia 11.3 Transitions 继承 AvaloniaList<ITransition>）。
+			if (placeholder.Transitions == null || placeholder.Transitions.Count == 0)
 			{
 				placeholder.Transitions = new Transitions
 				{
@@ -58,7 +60,7 @@ namespace ForkPlus.UI
 					}
 				};
 			}
-			if (transform.Transitions == null || !transform.Transitions.HasAny)
+			if (transform.Transitions == null || transform.Transitions.Count == 0)
 			{
 				transform.Transitions = new Transitions
 				{

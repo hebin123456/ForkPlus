@@ -242,9 +242,10 @@ namespace ForkPlus.UI
 
 		public static object FindResource(string resourceKey)
 		{
-			// Avalonia: Application.Current.FindResource 在资源不存在时抛异常，
-			// 用 TryGetResource 安全查找（Avalonia 11 API）。
-			if (Application.Current?.Resources.TryGetResource(resourceKey, out object value) == true)
+			// 阶段 5：Avalonia 11 的 IResourceNode.TryGetResource 签名增加 ThemeVariant? 参数：
+			//   bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+			// 传 ThemeVariant.Default 表示取默认主题资源（与原"任意主题"语义一致）。
+			if (Application.Current?.Resources.TryGetResource(resourceKey, ThemeVariant.Default, out object value) == true)
 			{
 				return value;
 			}

@@ -101,12 +101,14 @@ namespace ForkPlus.UI
 			{
 				// Avalonia 自定义标题栏：扩展客户区到整个窗口
 				ExtendClientAreaToDecorationsHint = true;
-				ExtendClientAreaChromeHints = Avalonia.Controls.ExtendClientAreaChromeHints.NoChrome;
+				// 阶段 5：ExtendClientAreaChromeHints 在 Avalonia.Platform 命名空间（非 Avalonia.Controls）。
+				ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
 				ExtendClientAreaTitleBarHeightHint = -1;
 			}
 			base.Loaded += Window_Loaded;
-			// 阶段 5：Avalonia Window 无 OnWindowStateChanged 虚方法，改订阅 WindowStateChanged 事件。
-			this.WindowStateChanged += Window_WindowStateChanged;
+			// 阶段 5：Avalonia 11 Window 无 WindowStateChanged 公开事件（仅 IWindowImpl 平台层回调）。
+			// 改用 GetObservable 订阅 WindowState 属性变更（等价 WPF StateChanged）。
+			this.GetObservable(WindowStateProperty).Subscribe(_ => Window_WindowStateChanged(this, EventArgs.Empty));
 		}
 
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

@@ -66,13 +66,18 @@ namespace ForkPlus.UI
 			for (int i = 0; i < text.Length; i++)
 			{
 				int valueOrDefault = ReadCodePoint(text, ref i).GetValueOrDefault(63);
-				if (!_glyphTypeface.CharacterToGlyphMap.TryGetValue(valueOrDefault, out var value))
+				// 阶段 5：Avalonia 11.3 IGlyphTypeface 无 CharacterToGlyphMap 字典，
+				// 改用 TryGetGlyph(uint codepoint, out ushort glyph) / GetGlyph(uint)。
+				ushort value;
+				if (!_glyphTypeface.TryGetGlyph((uint)valueOrDefault, out value))
 				{
-					value = _glyphTypeface.CharacterToGlyphMap[63];
+					value = _glyphTypeface.GetGlyph(63);
 				}
 				if (!_glyphWidthsCache.TryGetValue(value, out var value2))
 				{
-					value2 = _glyphTypeface.AdvanceWidths[value] * _emSize;
+					// 阶段 5：IGlyphTypeface.GetGlyphAdvance(ushort) 返回 int（design units），
+					// 乘以 emSize 得到像素宽度（与 WPF AdvanceWidths[value] * emSize 等价）。
+					value2 = _glyphTypeface.GetGlyphAdvance(value) * _emSize;
 					_glyphWidthsCache.Add(value, value2);
 				}
 				list.Add(value);
@@ -80,8 +85,8 @@ namespace ForkPlus.UI
 				num += value2;
 				if (trimming && num > rect.Width)
 				{
-					double num2 = _glyphTypeface.AdvanceWidths[46] + 2.0;
-					ushort item = _glyphTypeface.CharacterToGlyphMap[46];
+					double num2 = _glyphTypeface.GetGlyphAdvance(46) + 2.0;
+					ushort item = _glyphTypeface.GetGlyph(46);
 					while (num + num2 * 3.0 > rect.Width && list.Count > 0)
 					{
 						list.RemoveAt(list.Count - 1);
@@ -110,12 +115,17 @@ namespace ForkPlus.UI
 				double num3 = (rect.Width - num) / 2.0;
 				baselineOrigin = new Point(rect.X + num3, rect.Bottom);
 			}
-			// 阶段 4.5：WPF GlyphRun 14 参数构造 → Avalonia GlyphRun 属性初始化。
-			// Avalonia GlyphRun 关键属性：GlyphTypeface, FontRenderingEmSize, GlyphIndices,
-			// GlyphAdvances, GlyphOffsets, BaselineOrigin。
-			// NOTE(4.5-l): pixelsPerDip 在 Avalonia GlyphRun 中无对应属性，
-			// Avalonia 通过 RenderOptions.TextRenderingMode 或 DisplayProperties 处理 DPI。
-			GlyphRun glyphRun = new GlyphRun(_glyphTypeface, _emSize, list, baselineOrigin, list2);
+			// 阶段 5：Avalonia 11.3 GlyphRun 构造签名：
+			// (IGlyphTypeface, double fontRenderingEmSize, ReadOnlyMemory<char> characters,
+			//  IReadOnlyList<ushort> glyphIndices, Point? baselineOrigin, int biDiLevel)
+			// pixelsPerDip 在 Avalonia 中无对应属性（由 RenderOptions 处理 DPI）。
+			GlyphRun glyphRun = new GlyphRun(
+				_glyphTypeface,
+				_emSize,
+				text.AsMemory(),
+				list,
+				(Point?)baselineOrigin,
+				0);
 			ctx.DrawGlyphRun(brush, glyphRun);
 			return num;
 		}

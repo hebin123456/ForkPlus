@@ -101,8 +101,9 @@ namespace ForkPlus.UI
 		// 纯状态切换（最大化↔正常）由 Window_WindowStateChanged 兜底保存。
 		base.Resized += (_, _) => SaveMainWindowLocationState();
 		base.PositionChanged += (_, _) => SaveMainWindowLocationState();
-		// 阶段 5：Avalonia Window 无 OnWindowStateChanged/OnDrop 虚方法，改订阅事件。
-		this.WindowStateChanged += Window_WindowStateChanged;
+		// 阶段 5：Avalonia 11 Window 无 WindowStateChanged 公开事件（仅 IWindowImpl 平台层回调）。
+		// 改用 GetObservable 订阅 WindowState 属性变更（等价 WPF StateChanged，参考 CustomWindow）。
+		this.GetObservable(WindowStateProperty).Subscribe(_ => Window_WindowStateChanged(this, EventArgs.Empty));
 		AddHandler(DragDrop.DropEvent, OnDropHandler);
 			if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
