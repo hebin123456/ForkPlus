@@ -289,7 +289,12 @@ namespace ForkPlus.UI.Dialogs
 			_isClosed = true;
 			_aiReviewJob?.Monitor.Cancel();
 			_fileReviewDiffJob?.Monitor.Cancel();
-			AiResponseWebView?.Dispose();
+			// 阶段 5：MarkdownScrollViewer 无 Dispose 方法（原生 Avalonia 控件由 GC 回收）。
+			// 仅清理 Markdown 内容以释放引用。
+			if (AiResponseWebView != null)
+			{
+				AiResponseWebView.Markdown = null;
+			}
 			ActivateMainWindow();
 		}
 
@@ -1037,7 +1042,9 @@ namespace ForkPlus.UI.Dialogs
 						}
 						else
 						{
-							ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, btResult.Result, replaceAll);
+							// 阶段 5：btResult.Result 为 BT 转换的 HTML，当前 MarkdownScrollViewer 直接渲染 Markdown，
+							// 不需要 HTML 中间产物。保留 btResult.Succeeded 检查，丢弃 HTML 结果。
+							ApplyAiReviewResult(target, aiReviewDisplayMarkdown, aiReviewMarkdown, replaceAll);
 							SendAiReviewCompletedNotification(gitModule, success: true);
 						}
 					});

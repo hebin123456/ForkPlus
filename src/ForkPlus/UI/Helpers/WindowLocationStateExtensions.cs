@@ -181,21 +181,23 @@ namespace ForkPlus.UI.Helpers
 		private static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
 		// 阶段 4.5：Avalonia Window.TryGetPlatformHandle 返回 IPlatformHandle（Handle 为 IntPtr HWND）。
-		// 替代 WPF WindowInteropHelper(window).Handle。非 Windows 平台返回 false。
-		private static bool TryGetWindowHandle(Window window, out IntPtr handle)
+	// 替代 WPF WindowInteropHelper(window).Handle。非 Windows 平台返回 false。
+	// 阶段 5：Avalonia 11.3 TryGetPlatformHandle 返回 IPlatformHandle（非 bool+out）。
+	private static bool TryGetWindowHandle(Window window, out IntPtr handle)
+	{
+		handle = IntPtr.Zero;
+		if (window == null || !IsWindows)
 		{
-			handle = IntPtr.Zero;
-			if (window == null || !IsWindows)
-			{
-				return false;
-			}
-			if (window.TryGetPlatformHandle(out IPlatformHandle platformHandle))
-			{
-				handle = platformHandle.Handle;
-				return handle != IntPtr.Zero;
-			}
 			return false;
 		}
+		IPlatformHandle platformHandle = window.TryGetPlatformHandle();
+		if (platformHandle != null)
+		{
+			handle = platformHandle.Handle;
+			return handle != IntPtr.Zero;
+		}
+		return false;
+	}
 
 		public static void SetWindowLocationState(this Window window, WindowLocationState state)
 		{

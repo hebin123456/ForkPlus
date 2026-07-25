@@ -116,12 +116,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			streamGeometry.FillRule = FillRule.NonZero;
-			// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
-			// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
+			// 阶段 5：Avalonia StreamGeometry 无 FillRule 属性。默认 EvenOdd 填充规则
+			// 对滚动条映射的矩形块视觉无影响（每个 figure 自闭合）。
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			StreamGeometry streamGeometry2 = new StreamGeometry();
-			streamGeometry2.FillRule = FillRule.NonZero;
 			using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
@@ -169,15 +167,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			double num2 = base.TextArea.Bounds.Height - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
-			// 阶段 4 里程碑 4.7-a：WPF BeginFigure(p, isFilled, isClosed) / PolyLineTo(pts, isStroked, isSmoothJoin) →
-			// Avalonia BeginFigure(p, isFilled) / PolyLineTo(pts, isStroked) + EndFigure(isClosed)。
+			// 阶段 5：Avalonia 11.3 StreamGeometryContext 无 PolyLineTo 方法，
+			// 改用多个 LineTo 调用绘制矩形的三个边（第四边由 EndFigure(isClosed:true) 自动闭合）。
 			ctx.BeginFigure(new Point(x, num3), isFilled: true);
-			ctx.PolyLineTo(new Point[3]
-			{
-				new Point(x + width, num3),
-				new Point(x + width, num3 + num4),
-				new Point(x, num3 + num4)
-			}, isStroked: false);
+			ctx.LineTo(new Point(x + width, num3), isStroked: false);
+			ctx.LineTo(new Point(x + width, num3 + num4), isStroked: false);
+			ctx.LineTo(new Point(x, num3 + num4), isStroked: false);
 			ctx.EndFigure(isClosed: true);
 		}
 

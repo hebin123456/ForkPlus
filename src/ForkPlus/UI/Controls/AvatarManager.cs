@@ -15,6 +15,9 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using Avalonia.Controls.Documents;
+// 阶段 5：WpfBridgeExtensions（DrawRoundedRectangle/Pop/ToMutableBrush 等）位于 ForkPlus.UI 命名空间，
+// 父命名空间查找对扩展方法不生效，需显式 using。
+using ForkPlus.UI;
 
 // AvatarManager 使用 WebClient 的事件回调模式（DownloadDataCompleted）来下载头像，
 // 改写为 HttpClient + Task.Run 涉及异步逻辑重写，风险较大。.NET 10 上 WebClient
@@ -51,7 +54,10 @@ namespace ForkPlus.UI.Controls
 
 		private static AvatarManager _default;
 
-		private static Typeface _typeface = null;
+		// 阶段 5：Avalonia Typeface 是值类型（struct），不能赋 null。用 default(Typeface) 作占位，
+	// 实际使用前在 EnsureTypeface 中初始化为真实字体。
+	private static Typeface _typeface = default(Typeface);
+	private static bool _typefaceInitialized;
 
 		private static LinearGradientBrush[] _avatarGradients = null;
 
@@ -82,10 +88,11 @@ namespace ForkPlus.UI.Controls
 		{
 			get
 			{
-				if (_typeface == null)
+				if (!_typefaceInitialized)
 				{
 					// 阶段 4.5：WPF Typeface(FontFamily, FontStyle, FontWeight, FontStretch) → Avalonia Typeface(FontFamily, FontStyle, FontWeight)。
 					_typeface = new Typeface(new FontFamily("Segoe UI, Malgun Gothic, Yu Gothic"), FontStyle.Normal, FontWeight.Normal);
+					_typefaceInitialized = true;
 				}
 				return _typeface;
 			}

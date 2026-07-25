@@ -141,6 +141,10 @@ namespace ForkPlus.UI.Controls
 
 		public MultiselectionTreeViewItem LastClickedItem { get; private set; }
 
+		// 阶段 5：WPF TreeView.ListView.View 兼容占位（FileListTreeView 在 XAML 中使用 View=GridView）。
+		// Avalonia TreeView/ListBox 无 View 属性，本属性仅用于编译兼容，运行时不渲染 GridView。
+		public object View { get; set; }
+
 		// 阶段 5：Avalonia 无 OnDrag*/OnSelectionChanged/OnDoubleTapped 虚方法，改用事件订阅。
 		public MultiselectionTreeView()
 		{

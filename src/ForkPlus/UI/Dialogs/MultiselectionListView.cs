@@ -13,6 +13,10 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly DragAutoScrollHelper _dragAutoScroll;
 
+		// 阶段 5：WPF ListView.View 属性兼容占位。WPF ListView 可设 View=GridView 实现多列布局；
+		// Avalonia ListBox 无 View 属性。本属性仅用于编译兼容，运行时不渲染 GridView（阶段 6 迁移到 DataGrid）。
+		public object View { get; set; }
+
 		public MultiselectionListView()
 		{
 			_dragAutoScroll = new DragAutoScrollHelper(this);

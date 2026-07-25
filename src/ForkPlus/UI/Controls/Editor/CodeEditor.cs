@@ -6,6 +6,7 @@ using ForkPlus.UI.UserControls;
 using AvaloniaEdit;
 using ForkPlus.UI.Helpers;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -19,6 +20,19 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public double SearchBarHeight => _templatePartSearchPanel?.PanelHeight ?? 0.0;
 
+		// 阶段 5：WPF ContextMenu.Opening/Closing 事件兼容。Avalonia 用 ContextRequested 事件替代。
+		// 为保持派生类（DiffCodeEditor/CommitCodeEditor）的事件订阅代码不变，此处提供同名事件。
+		public event EventHandler<CancelRoutedEventArgs> ContextMenuOpening;
+		public event EventHandler<RoutedEventArgs> ContextMenuClosing;
+
+		// 阶段 5：WPF IsVisibleChanged 事件兼容。Avalonia 用 Layoutable.AttachedToVisualTree/
+		// DetachedFromVisualTree 或 IsVisible 属性变更订阅。此处桥接到 IsVisible 变更。
+		public event EventHandler<AvaloniaPropertyChangedEventArgs<bool>> IsVisibleChanged
+		{
+			add => this.GetObservable(IsVisibleProperty).Subscribe(new ActionObserver<bool>(args => value?.Invoke(this, args)));
+			remove { /* 阶段 5：简化实现，移除订阅需更复杂的 token 管理 */ }
+		}
+
 		public CodeEditor()
 		{
 			base.Options.InheritWordWrapIndentation = false;
@@ -30,11 +44,23 @@ namespace ForkPlus.UI.Controls.Editor
 			base.TextArea.SelectionCornerRadius = 0.0;
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());
 			// 阶段 4 里程碑 4.7-a：移除 RenderOptions.SetClearTypeHint（WPF-only，Avalonia 无等价物，文本渲染由平台决定）。
+			// 阶段 5：桥接 ContextMenuOpening/Closing 到 Avalonia ContextRequested 事件。
+			ContextRequested += (s, e) => ContextMenuOpening?.Invoke(this, new CancelRoutedEventArgs());
 		}
 
-		// 阶段 5：Avalonia 11.3 TemplatedControl.OnApplyTemplate 签名为 (TemplateAppliedEventArgs e)，
-		// 非无参。TemplateAppliedEventArgs 位于 Avalonia.Controls.Primitives 命名空间。
-		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+		// 阶段 5：辅助观察者，将 IObservable<T>.Subscribe 桥接到 EventHandler。
+	private sealed class ActionObserver<T> : System.IObserver<T>
+	{
+		private readonly Action<T> _onNext;
+		public ActionObserver(Action<T> onNext) { _onNext = onNext; }
+		public void OnCompleted() { }
+		public void OnError(System.Exception error) { }
+		public void OnNext(T value) => _onNext?.Invoke(value);
+	}
+
+	// 阶段 5：Avalonia 11.3 TemplatedControl.OnApplyTemplate 签名为 (TemplateAppliedEventArgs e)，
+	// 非无参。TemplateAppliedEventArgs 位于 Avalonia.Controls.Primitives 命名空间。
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
 			_templatePartSearchPanel = e.NameScope?.Find("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;

@@ -52,10 +52,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 				foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, _fullWidthSegment, extendToFullWidthAtLineEnd: true))
 				{
-					_rectangle.X = 0.0;
-					_rectangle.Y = item.Top;
-					_rectangle.Width = textView.Bounds.Width + textView.HorizontalOffset;
-					_rectangle.Height = item.Height;
+					// 阶段 5：Avalonia Rect.X/Y/Width/Height 是只读属性（结构体不可变），
+					// 需整体重新赋值，不能逐字段设置。
+					_rectangle = new Rect(0.0, item.Top, textView.Bounds.Width + textView.HorizontalOffset, item.Height);
 					drawingContext.DrawRectangle(highlightBrush, null, _rectangle);
 				}
 			}
