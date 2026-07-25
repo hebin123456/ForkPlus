@@ -1,4 +1,4 @@
-using System.Windows;
+using Avalonia.Controls;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
