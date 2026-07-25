@@ -14,10 +14,18 @@ jobs:
         include:
           - os: windows-latest
             artifact_suffix: windows
+            # Windows runner 生成 Windows 专属 TFM 产物（含 WinRT / Microsoft.Win32.Registry 等）。
+            build_framework: net10.0-windows10.0.19041.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0
           - os: ubuntu-latest
             artifact_suffix: linux
+            # 非 Windows 仅构建跨平台 net10.0 目标（Linux ELF 可执行文件 + libbiturbo.so + tokei）。
+            build_framework: net10.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0
           - os: macos-latest
             artifact_suffix: macos
+            build_framework: net10.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -26,48 +34,98 @@ jobs:
         with:
           submodules: recursive
 
-      # .NET 10 SDK：windows-latest runner 默认未预装 .NET 10，需 setup-dotnet 安装。
-      # 非 Windows 也装上（虽然非 Windows 只跑 biturbo 冒烟，但 setup-dotnet 跨平台一致）。
+      # .NET 10 SDK：所有 runner（windows/ubuntu/macos-latest）默认均未预装 .NET 10，需 setup-dotnet 安装。
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # ===== biturbo 原生库拉取冒烟测试（所有平台）=====
-      # 验证 ForkPlus.csproj 中 RestoreBiturbo target 描述的多平台 asset 可达：
-      #   Windows → biturbo.dll, Linux → libbiturbo.so, macOS → libbiturbo.dylib
-      # Windows 后续 build 步骤会再次走 RestoreBiturbo（命中已下载文件，跳过）；
-      # 非 Windows 暂只做这一步冒烟（WPF net10.0-windows 还无法在非 Windows 上构建）。
-      - name: Fetch biturbo native lib (non-Windows smoke test)
-        if: runner.os != 'Windows'
+      # ===== biturbo / tokei 原生库预拉取（所有平台）=====
+      # ForkPlus.csproj 的 RestoreBiturbo / RestoreTokei target 会在 build 时自动按 OS 拉取对应 asset
+      # 到 third_party/。这里单独跑一次冒烟，便于在 build 之前就发现 release 下载问题
+      # （SSL_ERROR_SYSCALL / 404 等），日志也更清晰。
+      - name: Fetch native deps (biturbo + tokei)
         shell: bash
         run: |
           set -e
           mkdir -p third_party
           case "$RUNNER_OS" in
-            macOS) asset=libbiturbo.dylib ;;
-            *)     asset=libbiturbo.so ;;
+            Windows)
+              biturbo_asset=biturbo.dll
+              tokei_asset=tokei-x86_64-pc-windows-msvc.exe
+              ;;
+            macOS)
+              biturbo_asset=libbiturbo.dylib
+              tokei_asset=tokei-aarch64-apple-darwin.tar.gz
+              ;;
+            Linux)
+              biturbo_asset=libbiturbo.so
+              tokei_asset=tokei-x86_64-unknown-linux-gnu.tar.gz
+              ;;
+            *)
+              echo "Unknown RUNNER_OS: $RUNNER_OS"
+              exit 1
+              ;;
           esac
-          url="https://github.com/hebin123456/Biturbo/releases/latest/download/$asset"
-          echo "Fetching $url → third_party/$asset"
-          curl -fsSL "$url" -o "third_party/$asset"
-          ls -lh "third_party/$asset"
-          echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
+          biturbo_url="https://github.com/hebin123456/Biturbo/releases/latest/download/$biturbo_asset"
+          echo "Fetching $biturbo_url → third_party/$biturbo_asset"
+          curl -fsSL "$biturbo_url" -o "third_party/$biturbo_asset" --retry 5 --retry-delay 5 --retry-all-errors
+          ls -lh "third_party/$biturbo_asset"
+          echo "✓ Biturbo native lib ($biturbo_asset) fetched successfully on $RUNNER_OS"
 
-      # tokei 现已从 hebin123456/tokei 仓库最新 release 拉取预编译二进制（与 biturbo 一致），
-      # 不再从源码 cargo 编译。RestoreTokei target 会在 Windows build 时自动下载到 third_party/tokei.exe，
-      # 无需单独缓存步骤。
-      # 以下完整构建 / 测试 / 产物 / 发布仅 Windows 跑。
-      # 非 Windows 等 ForkPlus 迁移到跨平台 UI 框架后再放开。
+          tokei_url="https://github.com/hebin123456/tokei/releases/latest/download/$tokei_asset"
+          echo "Fetching $tokei_url → third_party/$tokei_asset"
+          if [[ "$tokei_asset" == *.tar.gz ]]; then
+            curl -fsSL "$tokei_url" -o "third_party/tokei.tar.gz" --retry 5 --retry-delay 5 --retry-all-errors
+            tar -xzf "third_party/tokei.tar.gz" -C third_party/ tokei 2>/dev/null || tar -xzf "third_party/tokei.tar.gz" -C third_party/ --strip-components=1
+            chmod +x third_party/tokei
+            rm -f third_party/tokei.tar.gz
+            ls -lh third_party/tokei
+          else
+            curl -fsSL "$tokei_url" -o "third_party/tokei.exe" --retry 5 --retry-delay 5 --retry-all-errors
+            ls -lh "third_party/tokei.exe"
+          fi
+          echo "✓ tokei fetched successfully on $RUNNER_OS"
+
       # .NET 10 迁移：原 msbuild + setup-msbuild + setup-nuget 已替换为 dotnet CLI
       # （SDK 风格工程自带 restore，无需 nuget.exe）。
+      # 所有平台都直接构建 .csproj（不构建 .sln）。原因：.sln 的 SolutionConfigurationPlatforms
+      # 用 "Any CPU"（带空格）作为平台名，会导致输出目录变成 bin/Any CPU/Release/...，
+      # 与 CI artifact 路径 bin/Release/... 不一致。直接构建 .csproj 时默认平台是 AnyCPU（无空格），
+      # 输出目录为 bin/Release/...，三平台一致。
+      # Windows 构建：主工程（含 AskPass / RI ProjectReference）+ 三个测试工程（ForkPlus.Tests /
+      #   AskPass.Tests / RI.Tests）的 net10.0-windows TFM。AutomationTests 暂不构建（ST 步骤已注释）。
+      # 非 Windows 构建：主工程 + ForkPlus.Tests 的 net10.0 TFM（AskPass.Tests / RI.Tests /
+      #   AutomationTests 仍为 net10.0-windows 单 TFM，无法在非 Windows 上构建）。
+      # 非 Windows 需 EnableWindowsTargeting=true：主工程 csproj 是双 TFM（net10.0;net10.0-windows），
+      # restore / build 评估时仍会读取 net10.0-windows 的 PackageReference，不设此属性会报 NETSDK1100。
+      # 该属性只允许评估 Windows TFM（cross-compile），不会改变 -f net10.0 仅构建跨平台目标的行为。
       - name: Restore (Release)
-        if: runner.os == 'Windows'
-        run: dotnet restore ForkPlus.sln --verbosity minimal
+        shell: bash
+        run: |
+          set -e
+          projects="src/ForkPlus/ForkPlus.csproj src/ForkPlus.Tests/ForkPlus.Tests.csproj"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            projects="$projects src/ForkPlus.AskPass.Tests/ForkPlus.AskPass.Tests.csproj src/ForkPlus.RI.Tests/ForkPlus.RI.Tests.csproj"
+          fi
+          for proj in $projects; do
+            dotnet restore "$proj" --verbosity minimal ${{ runner.os != 'Windows' && '-p:EnableWindowsTargeting=true' || '' }}
+          done
 
       - name: Build (Release)
-        if: runner.os == 'Windows'
-        run: dotnet build ForkPlus.sln -c Release --no-restore -p:Platform="Any CPU" -v minimal
+        shell: bash
+        run: |
+          set -e
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            dotnet build src/ForkPlus/ForkPlus.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.AskPass.Tests/ForkPlus.AskPass.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.RI.Tests/ForkPlus.RI.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
+          else
+            # 非 Windows：先构建主工程（含 AskPass / RI 子进程 ProjectReference），再构建测试工程。
+            dotnet build src/ForkPlus/ForkPlus.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -p:EnableWindowsTargeting=true -v minimal
+            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -p:EnableWindowsTargeting=true -v minimal
+          fi
 
       - name: Run unit tests
         if: runner.os == 'Windows'
@@ -128,6 +186,39 @@ jobs:
             Write-Host "No result line parsed — exiting $testExit"
           }
           exit $testExit
+
+      # 非 Windows（Linux/macOS）运行 net10.0 目标的纯单元测试（无 WPF/UI 依赖的测试类）。
+      # AskPass.Tests / RI.Tests / AutomationTests 仍为 net10.0-windows 单 TFM，不在非 Windows 跑。
+      - name: Run unit tests (non-Windows, net10.0 only)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -e
+          dll="src/ForkPlus.Tests/bin/Release/net10.0/ForkPlus.Tests.dll"
+          if [ ! -f "$dll" ]; then
+            echo "Test assembly not found at $dll — skipping tests"
+            exit 0
+          fi
+          # 仅运行无 UI/无 Windows 专属依赖的纯逻辑测试类（与 Windows 上的 --filter 列表保持一致子集）。
+          filter='FullyQualifiedName~ShaTests|FullyQualifiedName~ShaCompareTests|FullyQualifiedName~WindowLocationStateMappingTests|FullyQualifiedName~WindowLocationStateCodecTests|FullyQualifiedName~StringExtensionsTests|FullyQualifiedName~FuzzySearchTests|FullyQualifiedName~LruCacheTests|FullyQualifiedName~DateTimeExtensionsTests|FullyQualifiedName~ArrayExtensionsTests|FullyQualifiedName~ArrayDiffTests|FullyQualifiedName~DictionaryExtensionsTests|FullyQualifiedName~IReadOnlyListExtensionsTests|FullyQualifiedName~IListExtensionsTests|FullyQualifiedName~RangeTests|FullyQualifiedName~RangeExtensionsTests|FullyQualifiedName~GitUrlTests|FullyQualifiedName~ChangeTypeHelperTests|FullyQualifiedName~StatusTypeHelperTests|FullyQualifiedName~RevisionParserTests|FullyQualifiedName~RevisionSearchQueryCoderTests|FullyQualifiedName~GitConfigTests|FullyQualifiedName~DiffStringHelperTests|FullyQualifiedName~UnifiedMergeTokenizerTests|FullyQualifiedName~UnifiedMergeParserTests|FullyQualifiedName~PathHelperTests|FullyQualifiedName~GitCommandTests|FullyQualifiedName~PipeStreamExtensionsTests|FullyQualifiedName~ChangedFilesDisplayNormalizerTests|FullyQualifiedName~AskPassParserTests|FullyQualifiedName~ReferenceNameValidatorTests|FullyQualifiedName~PerformanceTelemetryTests|FullyQualifiedName~GitStatusParsingTests|FullyQualifiedName~FeatureCoverageManifestTests|FullyQualifiedName~AssemblySmokeTests|FullyQualifiedName~UndoRedoStackTests|FullyQualifiedName~WipCommitGroupTests|FullyQualifiedName~WipCommitPlanTests|FullyQualifiedName~OpenAiServiceStaticTests|FullyQualifiedName~HexFormatterTests|FullyQualifiedName~ThemeTypeExtensionsTests|FullyQualifiedName~JobMonitorTests|FullyQualifiedName~ReflogHistoryProviderTests|FullyQualifiedName~UndoIndexStoreTests|FullyQualifiedName~ReflogViewItemTests'
+          # testhost hang workaround 与 Windows 一致：解析 "Passed!/Failed!" 行，Failed=0 视为通过。
+          output=$(dotnet test "$dll" --no-build --framework net10.0 \
+            --filter "$filter" \
+            -- RunConfiguration.TestSessionTimeout=240000 2>&1 || true)
+          echo "$output"
+          result_line=$(echo "$output" | grep -E '^(Passed|Failed)!\s+-\s+Failed:\s+[0-9]+,' | tail -n 1 || true)
+          if [ -n "$result_line" ]; then
+            failed=$(echo "$result_line" | grep -oE 'Failed:\s+[0-9]+' | grep -oE '[0-9]+' || echo "999")
+            echo "Parsed Failed count from result line: $failed"
+            if [ "$failed" = "0" ]; then
+              echo "All tests passed (testhost hang workaround) — exiting 0"
+              exit 0
+            fi
+            echo "Tests reported $failed failure(s)"
+            exit 1
+          fi
+          echo "No result line parsed — exiting non-zero"
+          exit 1
 
       # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
       # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
@@ -194,23 +285,29 @@ jobs:
           }
 
       - name: Upload artifact
-        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: ForkPlus-${{ matrix.artifact_suffix }}
-          path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/
+          path: ${{ matrix.build_artifact_path }}/
           if-no-files-found: error
 
       - name: Package release zip
-        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
-        shell: pwsh
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
         run: |
-          Compress-Archive -Path src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            # Windows runner 默认无 zip 命令，用 7z（runner 预装）打包 .zip。
+            7z a -tzip "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip" "${{ matrix.build_artifact_path }}/"
+          else
+            tar -czf "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.tar.gz" -C "${{ matrix.build_artifact_path }}" .
+          fi
+          ls -lh "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}."*
 
       - name: Release on tag
-        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
+            ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.tar.gz
           generate_release_notes: true

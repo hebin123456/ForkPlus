@@ -165,39 +165,46 @@
          Linux   → libbiturbo.so
          macOS   → libbiturbo.dylib
        本 target 按 $(OS) 选择对应 asset，缺失时下载到 third_party/；已存在则跳过。
-       CI 每次全新 checkout 都会拉最新版。-->
+       CI 每次全新 checkout 都会拉最新版。
+       带 curl 重试（5 次，指数退避）以容忍 GitHub release 下载偶发 SSL 连接中断
+       （非 Windows runner 在 release-assets.githubusercontent.com 上偶发 SSL_ERROR_SYSCALL）。-->
   <Target Name="RestoreBiturbo" BeforeTargets="Build">
     <PropertyGroup>
       <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
     </PropertyGroup>
-    <!-- Windows: PowerShell 拉取 biturbo.dll -->
+    <!-- Windows: PowerShell 拉取 biturbo.dll（带 3 次重试 + 指数退避） -->
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
-          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(BiturboBaseUrl)/biturbo.dll'; $out='..\..\third_party\biturbo.dll'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
     <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
-         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。-->
+         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。
+         retry 选项应对 release-assets.githubusercontent.com 偶发 SSL_ERROR_SYSCALL (curl 35)。-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
-          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot; --user-agent &quot;ForkPlus-Build&quot; --connect-timeout 120 --retry 5 --retry-delay 5 --retry-all-errors; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
 
   <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
        不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。
        Windows: tokei-x86_64-pc-windows-msvc.exe → tokei.exe
        Linux:   tokei-x86_64-unknown-linux-gnu.tar.gz → 解压取 tokei
-       macOS:   tokei-x86_64-apple-darwin.tar.gz → 解压取 tokei
+       macOS:   tokei-aarch64-apple-darwin.tar.gz → 解压取 tokei
+                （tokei 上游仅发布 ARM64 asset；Intel Mac 通过 Rosetta 2 运行）
        本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。
-       带重试（3 次，指数退避）以容忍 GitHub release 下载偶发连接中断。-->
+       带重试（5 次，指数退避）以容忍 GitHub release 下载偶发 SSL 连接中断
+       （release-assets.githubusercontent.com 偶发 SSL_ERROR_SYSCALL）。-->
   <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe') And !Exists('..\..\third_party\tokei')">
     <PropertyGroup>
       <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/latest/download</TokeiBaseUrl>
     </PropertyGroup>
-    <!-- Windows: PowerShell 拉取 tokei.exe -->
+    <!-- Windows: PowerShell 拉取 tokei.exe（带 3 次重试 + 指数退避） -->
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')"
           Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
     <!-- Unix (Linux/macOS): bash + curl + tar，按 uname -s 选 asset。
-         tar.gz 解压后只保留 tokei 二进制（删除 .tar.gz），文件名去掉 .exe 后缀。-->
+         tar.gz 解压后只保留 tokei 二进制（删除 .tar.gz），文件名去掉 .exe 后缀。
+         macOS asset 名为 aarch64-apple-darwin（tokei 上游仅发布 ARM64）；
+         retry-all-errors 选项应对 release-assets.githubusercontent.com 偶发 SSL_ERROR_SYSCALL。-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')"
-          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmpfile=&quot;../../third_party/tokei.tar.gz&quot;; curl -fsSL &quot;$url&quot; -o &quot;$tmpfile&quot; --user-agent &quot;ForkPlus-Build&quot; --connect-timeout 120 --retry 3 --retry-delay 5; tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ tokei 2>/dev/null || tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ --strip-components=1; chmod +x ../../third_party/tokei; rm -f &quot;$tmpfile&quot;; echo &quot;Restored tokei from tokei latest release&quot;'" />
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-aarch64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmpfile=&quot;../../third_party/tokei.tar.gz&quot;; curl -fsSL &quot;$url&quot; -o &quot;$tmpfile&quot; --user-agent &quot;ForkPlus-Build&quot; --connect-timeout 120 --retry 5 --retry-delay 5 --retry-all-errors; tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ tokei 2>/dev/null || tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ --strip-components=1; chmod +x ../../third_party/tokei; rm -f &quot;$tmpfile&quot;; echo &quot;Restored tokei from tokei latest release&quot;'" />
   </Target>
 
   <Target Name="CopyHelperExecutables" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
