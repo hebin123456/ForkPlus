@@ -1,63 +1,12 @@
 <ui:CustomWindow xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.BlameWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:diff="clr-namespace:ForkPlus.UI.Controls.Editor.Diff">
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <DataTemplate DataType="dialogs:DummyBlameItemViewModel">
-        <Grid Height="16.393333333333334">
-          <Border Margin="-4,0,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
-        </Grid>
-      </DataTemplate>
-      <DataTemplate DataType="dialogs:BlameItemViewModel">
-        <Grid Height="16.393333333333334">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="22" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="46" />
-            <ColumnDefinition Width="18" />
-          </Grid.ColumnDefinitions>
-          <Border Grid.Column="0" Grid.ColumnSpan="5" Margin="-4,-1,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
-          <controls:AvatarImage Grid.Column="0" Margin="4,2,6,1" VerticalAlignment="Top" Height="12" Width="12">
-            <controls:AvatarImage.UserIdentity>
-              <Binding Path="Author" />
-            </controls:AvatarImage.UserIdentity>
-            <ToolTip.Tip>
-              <Binding Path="FullCredentials" />
-            </ToolTip.Tip>
-          </controls:AvatarImage>
-          <controls:AutoTooltipTextBlock Grid.Column="1" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" Padding="0,-2,0,0" FontSize="12">
-            <controls:AutoTooltipTextBlock.Text>
-              <Binding Path="RevisionSubject" />
-            </controls:AutoTooltipTextBlock.Text>
-          </controls:AutoTooltipTextBlock>
-          <TextBlock Grid.Column="2" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" HorizontalAlignment="Right">
-            <TextBlock.Text>
-              <Binding Path="AuthorDate" />
-            </TextBlock.Text>
-            <ToolTip.Tip>
-              <Binding Path="AuthorDate" />
-            </ToolTip.Tip>
-          </TextBlock>
-          <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
-            <Button.Content>
-              <Binding Path="AbbreviatedSha" />
-            </Button.Content>
-            <ToolTip.Tip>
-              <Binding Path="ShaToolTip" />
-            </ToolTip.Tip>
-          </Button>
-          <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
-            <ToolTip.Tip>
-              <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </ToolTip.Tip>
-            <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
-          </Button>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate DataType="dialogs:BlameItemBodyViewModel">
-        <Grid Height="16.393333333333334" />
-      </DataTemplate>
+      
+      
+      
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
+
   <Grid Margin="20,2,20,20">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

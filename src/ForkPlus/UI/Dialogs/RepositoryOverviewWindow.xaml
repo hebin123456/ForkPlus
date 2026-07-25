@@ -19,7 +19,7 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
-          <TextBlock Text="?" DockPanel.Dock="Left" Margin="4,0,2,2" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" ToolTipService.ShowDuration="30000">
+          <TextBlock Text="?" DockPanel.Dock="Left" Margin="4,0,2,2" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}">
             <ToolTip.Tip>
               <ToolTip>
                 <StackPanel MaxWidth="380">

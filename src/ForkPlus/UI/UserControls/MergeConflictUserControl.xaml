@@ -20,7 +20,7 @@
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate>
+            <ControlTemplate TargetType="CheckBox">
               <Grid Background="#00FFFFFF" x:Name="TemplateRoot">
 <Grid.Styles>
 <Style Selector="^:disabled /template/ Border#ContentBorder">
@@ -110,7 +110,7 @@
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate>
+            <ControlTemplate TargetType="CheckBox">
               <Grid x:Name="TemplateRoot">
 <Grid.Styles>
 <Style Selector="^:disabled /template/ Border#ContentBorder">
@@ -234,7 +234,7 @@
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate>
+            <ControlTemplate TargetType="ListBoxItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
@@ -257,7 +257,7 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,15,0,0">
-          <Image DockPanel.Dock="Left" Width="20" Height="Auto" Source="/ForkPlus;component/Assets/Warning.png" />
+          <Image DockPanel.Dock="Left" Width="20" Source="/ForkPlus;component/Assets/Warning.png" />
           <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="16" Text="Merge conflict" FontWeight="Medium" />
         </DockPanel>
         <TextBlock Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" FontSize="14" Text="Select the changes or merge them manually" Foreground="{DynamicResource SecondaryLabelBrush}" />
@@ -293,7 +293,7 @@
                 <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/status_edit.png" x:Name="RemoteChangeTypeImage" />
                 <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteChangeTypeTextBlock" />
               </StackPanel>
-              <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
+              <controls:GitPointView Margin="6,0,0,0" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
             </DockPanel>
             <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" IsVisible="False" x:Name="SrcSeparator" />
             <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" IsVisible="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalAlignment="Stretch" x:Name="SrcRevisionsListBox">
@@ -326,7 +326,7 @@
                 <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/status_edit.png" x:Name="LocalChangeTypeImage" />
                 <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="LocalChangeTypeTextBlock" />
               </StackPanel>
-              <controls:GitPointView Margin="6,0,0,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />
+              <controls:GitPointView Margin="6,0,0,0" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />
             </DockPanel>
             <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" IsVisible="False" x:Name="DstSeparator" />
             <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" IsVisible="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalAlignment="Stretch" x:Name="DstRevisionsListBox">

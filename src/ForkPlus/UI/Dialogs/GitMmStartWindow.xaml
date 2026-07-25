@@ -1,14 +1,15 @@
 <dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmStartWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <Grid>
-    <Grid.Resources>
-      <Style x:Key="GitMmAdvancedOptionsExpanderStyle" Selector="Expander">
+    
+<Grid.Resources><ResourceDictionary>
+<Style x:Key="GitMmAdvancedOptionsExpanderStyle" Selector="Expander">
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate>
+            <ControlTemplate TargetType="Expander">
               <DockPanel>
                 <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left">
                   <ToggleButton.Template>
-                    <ControlTemplate>
+                    <ControlTemplate TargetType="Expander">
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
                           <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText ">" / "v"，
@@ -30,7 +31,8 @@
           </Setter.Value>
         </Setter>
       </Style>
-    </Grid.Resources>
+</ResourceDictionary></Grid.Resources>
+
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
       <ColumnDefinition Width="*" />

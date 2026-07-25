@@ -111,7 +111,7 @@
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -134,7 +134,7 @@
     <Setter Property="Height" Value="24" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -160,7 +160,7 @@
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -188,7 +188,7 @@
     <Setter Property="Height" Value="24" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -219,7 +219,7 @@
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -249,7 +249,7 @@
     <Setter Property="MinHeight" Value="80" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CustomWindow">
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
             <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
               <Grid>
@@ -316,7 +316,7 @@
     <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ForkPlusDialogWindow">
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
             <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
               <Grid>

@@ -18,7 +18,7 @@
         <DynamicResource ResourceKey="ForegroundBrush.Gray" />
       </ProgressBar.Foreground>
     </ProgressBar>
-    <Image DockPanel.Dock="Left" Margin="0,0,5,0" Width="18" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+    <Image DockPanel.Dock="Left" Margin="0,0,5,0" Width="18" HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" IsVisible="False" x:Name="StatusMessageTextBlock" />
   </DockPanel>
 </UserControl>

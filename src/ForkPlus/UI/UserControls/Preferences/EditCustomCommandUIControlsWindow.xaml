@@ -33,11 +33,6 @@
           <RowDefinition Height="23" />
         </Grid.RowDefinitions>
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
-          <local:DragAndDropListBox.ItemContainerStyle>
-            <Style Selector="local|DragAndDropListBoxItem">
-              <Setter Property="AllowDrop" Value="True" />
-            </Style>
-          </local:DragAndDropListBox.ItemContainerStyle>
           <local:DragAndDropListBox.ItemTemplate>
             <DataTemplate>
               <StackPanel>

@@ -26,7 +26,7 @@
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RepeatButton">
           <Rectangle Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Fill="{TemplateBinding Background}" />
         </ControlTemplate>
       </Setter.Value>

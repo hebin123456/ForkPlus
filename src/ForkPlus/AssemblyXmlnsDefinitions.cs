@@ -22,6 +22,10 @@ using Avalonia.Metadata;
 // GridView / GridViewColumn / GridViewColumnHeader 桥接类型（WPF System.Windows.Controls.GridView 兼容）
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "ForkPlus.UI.Compatibility")]
 
+// PopupAnimation / Keyboard / SystemSounds / TextGuidelineHelper / ActionObserver 桥接类型
+// （ForkPlus.UI 命名空间下，用于 XAML <PopupAnimation> 元素解析）
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "ForkPlus.UI")]
+
 // TabPanel / ResizeGrip / RichTextBox / AdornerDecorator / WindowChrome 桥接类型已在 Avalonia.Controls /
 // Avalonia.Controls.Primitives / Avalonia.Media 命名空间下（Avalonia 核心命名空间，XAML 默认即可解析）。
 // SystemColors / SystemParameters 桥接类型（WPF System.Windows.SystemColors / SystemParameters 兼容）

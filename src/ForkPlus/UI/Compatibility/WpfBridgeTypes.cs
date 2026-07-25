@@ -194,7 +194,40 @@ namespace Avalonia.Controls
 	{
 		public static readonly AttachedProperty<bool> ResizeBorderThicknessProperty =
 			AvaloniaProperty.RegisterAttached<WindowChrome, Window, bool>("ResizeBorderThickness");
+		public static readonly AttachedProperty<bool> IsHitTestVisibleInChromeProperty =
+			AvaloniaProperty.RegisterAttached<WindowChrome, Control, bool>("IsHitTestVisibleInChrome");
+		public static readonly AttachedProperty<ResizeGripDirection> ResizeGripDirectionProperty =
+			AvaloniaProperty.RegisterAttached<WindowChrome, Control, ResizeGripDirection>("ResizeGripDirection");
+
+		public static bool GetIsHitTestVisibleInChrome(Control element) => element.GetValue(IsHitTestVisibleInChromeProperty);
+		public static void SetIsHitTestVisibleInChrome(Control element, bool value) => element.SetValue(IsHitTestVisibleInChromeProperty, value);
+		public static ResizeGripDirection GetResizeGripDirection(Control element) => element.GetValue(ResizeGripDirectionProperty);
+		public static void SetResizeGripDirection(Control element, ResizeGripDirection value) => element.SetValue(ResizeGripDirectionProperty, value);
 		// Stub - no implementation
+	}
+
+	/// <summary>WPF ResizeGripDirection enum. Avalonia handles resize natively; stub for XAML.</summary>
+	public enum ResizeGripDirection
+	{
+		None, TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, Caption
+	}
+
+	/// <summary>WPF ListView bridge. Avalonia uses ListBox; this subclass keeps XAML &lt;ListView&gt; tags compiling.</summary>
+	public class ListView : ListBox
+	{
+		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
+		public static readonly StyledProperty<GridView> ViewProperty =
+			AvaloniaProperty.Register<ListView, GridView>(nameof(View));
+		public GridView View
+		{
+			get => GetValue(ViewProperty);
+			set => SetValue(ViewProperty, value);
+		}
+	}
+
+	/// <summary>WPF ListViewItem bridge. Avalonia uses ListBoxItem; this subclass keeps XAML &lt;ListViewItem&gt; tags and Selector="ListViewItem" compiling.</summary>
+	public class ListViewItem : ListBoxItem
+	{
 	}
 }
 
@@ -203,11 +236,20 @@ namespace Avalonia.Controls.Primitives
 	/// <summary>WPF GridViewHeaderRowPresenter bridge.</summary>
 	public class GridViewHeaderRowPresenter : Control
 	{
+		public System.Collections.IList Columns { get; } = new System.Collections.ArrayList();
+		public bool AllowsColumnReorder { get; set; }
+		public object ColumnHeaderContainerStyle { get; set; }
+		public object ColumnHeaderTemplate { get; set; }
+		public object ColumnHeaderTemplateSelector { get; set; }
+		public object ColumnHeaderStringFormat { get; set; }
+		public object ColumnHeaderContextMenu { get; set; }
+		public object ColumnHeaderToolTip { get; set; }
 	}
 
 	/// <summary>WPF GridViewRowPresenter bridge.</summary>
 	public class GridViewRowPresenter : Control
 	{
+		public System.Collections.IList Columns { get; } = new System.Collections.ArrayList();
 	}
 }
 

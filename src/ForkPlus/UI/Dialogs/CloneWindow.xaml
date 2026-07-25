@@ -34,7 +34,7 @@
         </StackPanel>
       </controls:DropDownButton>
       <ProgressBar Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" IsVisible="False" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
-      <Image Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+      <Image Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" Width="18" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
       <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
         <TextBlock IsVisible="False" Margin="8,3,0,3" FontSize="13" x:Name="StatusTextBlock" />
         <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" IsVisible="False" Click="TestButton_Click" x:Name="TestButton" />

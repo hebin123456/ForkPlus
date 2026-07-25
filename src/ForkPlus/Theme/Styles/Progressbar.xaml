@@ -28,7 +28,7 @@
     <Setter Property="IsIndeterminate" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ProgressBar">
           <Grid Background="{TemplateBinding Background}" ClipToBounds="False" x:Name="TemplateRoot">
             <Viewbox>
               <Canvas Height="16" Width="16">

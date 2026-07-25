@@ -4,50 +4,7 @@
      - DataTemplate DataType="local:Foo" → DataType="local:Foo"
      -->
 <TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.IssuesTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <TabItem.Resources>
-    
-      <DataTemplate DataType="local:IssueItem">
-        <Grid Height="50">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="16" />
-            <RowDefinition Height="17" />
-            <RowDefinition Height="17" />
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="14" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="20" />
-          </Grid.ColumnDefinitions>
-          <Ellipse Grid.Column="0" Width="6" Height="6" Margin="6,1,2,0" VerticalAlignment="Center">
-            <Ellipse.Fill>
-              <Binding Path="State"><Binding.Converter><local:IssueStateToColorConverter /></Binding.Converter></Binding>
-            </Ellipse.Fill>
-          </Ellipse>
-          <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Margin="2,0,4,0" VerticalAlignment="Center" FontWeight="Medium">
-            <TextBlock.Text>
-              <Binding Path="IssueNumber" />
-            </TextBlock.Text>
-          </TextBlock>
-          <controls:AvatarImage Grid.Column="2" Height="16" Width="16" Margin="2,1,2,0" VerticalAlignment="Center">
-            <controls:AvatarImage.Url>
-              <Binding Path="AvatarUrl" />
-            </controls:AvatarImage.Url>
-            <ToolTip.Tip>
-              <Binding Path="AvatarTooltip" />
-            </ToolTip.Tip>
-          </controls:AvatarImage>
-          <Button Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2" Height="34" Margin="2,0,0,0" FontSize="12" HorizontalAlignment="Stretch"  VerticalAlignment="Top"  Foreground="{DynamicResource ForegroundBrush}" Click="IssueButton_Click">
-            <Button.Content>
-              <Binding Path="Title" />
-            </Button.Content>
-            <ToolTip.Tip>
-              <Binding Path="Title" />
-            </ToolTip.Tip>
-          </Button>
-        </Grid>
-      </DataTemplate>
-    
-  </TabItem.Resources>
+
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

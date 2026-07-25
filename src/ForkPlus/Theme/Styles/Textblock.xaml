@@ -42,7 +42,7 @@
     <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Label">
           <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
             <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
@@ -60,7 +60,7 @@
     <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Label">
           <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
             <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
@@ -127,11 +127,11 @@
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="ToolTip">
+    <Setter Property="ToolTip.Tip">
       <Setter.Value>
         <ToolTip>
           <ToolTip.DataContext>
-            <Binding Path="PlacementTarget" RelativeSource="{x:Static RelativeSource.Self}" />
+            <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
           </ToolTip.DataContext>
           <StackPanel>
             <TextBlock>

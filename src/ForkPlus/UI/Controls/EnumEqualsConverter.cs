@@ -70,6 +70,9 @@ namespace ForkPlus.UI.Controls
 		// 改用实例类型 TextDecorationCollection（Avalonia.Media）。
 		public TextDecorationCollection MatchDecorations { get; set; } = TextDecorations.Strikethrough;
 
+		/// <summary>WPF-style ConverterParameter set on converter instance. Used when XAML writes ConverterParameter="Drop" on the converter element.</summary>
+		public object ConverterParameter { get; set; }
+
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value == null || parameter == null)

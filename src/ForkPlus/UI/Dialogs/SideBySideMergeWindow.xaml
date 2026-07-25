@@ -24,7 +24,7 @@
               <RowDefinition Height="18" />
               <RowDefinition Height="18" />
             </Grid.RowDefinitions>
-            <controls:GitPointView IconMargin="2,0,6,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
+            <controls:GitPointView IconMargin="2,0,6,0" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource LabelBrush}" x:Name="RemoteGitPointView" />
             <DockPanel Grid.Row="1">
               <controls:AvatarImage DockPanel.Dock="Left" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="RemoteAuthorAvatarImage" />
               <TextBlock DockPanel.Dock="Right" Margin="8,1,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteAuthorDateTextBlock" />
@@ -56,7 +56,7 @@
                 <RowDefinition Height="18" />
                 <RowDefinition Height="18" />
               </Grid.RowDefinitions>
-              <controls:GitPointView IconMargin="2,0,6,0" TextBlock.FontSize="14" TextBlock.FontWeight="Medium" TextBlock.Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />
+              <controls:GitPointView IconMargin="2,0,6,0" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource LabelBrush}" x:Name="LocalGitPointView" />
               <DockPanel Grid.Row="1" x:Name="LocalCheckBoxDetails">
                 <controls:AvatarImage DockPanel.Dock="Left" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="LocalAuthorAvatarImage" />
                 <TextBlock DockPanel.Dock="Right" Margin="8,1,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="LocalAuthorDateTextBlock" />

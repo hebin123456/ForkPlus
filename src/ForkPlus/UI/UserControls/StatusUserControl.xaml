@@ -59,7 +59,7 @@
         </Image>
       </Button>
       <controls:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
-        <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTipService.ToolTip.Tip="Activity Manager" x:Name="ShowActivityManagerToggleButton"><Image>
+        <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTip.Tip="Activity Manager" x:Name="ShowActivityManagerToggleButton"><Image>
             <Image.Source>
               <DynamicResource ResourceKey="ListIcon" />
             </Image.Source>

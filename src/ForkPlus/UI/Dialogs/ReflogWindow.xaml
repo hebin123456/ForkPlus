@@ -7,14 +7,17 @@
     Height="500" Width="700"
     MinHeight="300" MinWidth="500"
     WindowStartupLocation="CenterOwner">
-  <ui:CustomWindow.Resources>
-    <ResourceDictionary>
-      <Style x:Key="ReflogListItemStyle" Selector="ListViewItem">
+  <ui:CustomWindow.Resources><ResourceDictionary>
+      
+    </ResourceDictionary></ui:CustomWindow.Resources>
+
+<ui:CustomWindow.Resources><ResourceDictionary>
+<Style x:Key="ReflogListItemStyle" Selector="ListViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="6,3" />
       </Style>
-    </ResourceDictionary>
-  </ui:CustomWindow.Resources>
+</ResourceDictionary></ui:CustomWindow.Resources>
+
   <Grid Margin="8">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

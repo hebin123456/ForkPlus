@@ -24,12 +24,12 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" PreviewKeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,74,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" TabIndex="2" x:Name="CommitSubjectTextBox" />
+        <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,74,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" TabIndex="2" x:Name="CommitSubjectTextBox" />
         <TextBlock Grid.Row="0" Margin="1,3,47,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
         <Button Grid.Row="0" Background="Transparent" Height="18" Width="18" Margin="1,1,25,1" Padding="0" BorderThickness="0" HorizontalAlignment="Right"  VerticalAlignment="Center" Focusable="False" ToolTip.Tip="Clear commit message" Click="ClearCommitMessageButton_Click" x:Name="ClearCommitMessageButton">
           <Grid Width="12" Height="12" IsHitTestVisible="False">
-            <Line Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"  StartPoint="3,3" EndPoint="9,9" />
-            <Line Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"  StartPoint="9,3" EndPoint="3,9" />
+            <Line Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6"  StartPoint="3,3" EndPoint="9,9" />
+            <Line Stroke="{DynamicResource SecondaryLabelBrush}" StrokeThickness="1.6"  StartPoint="9,3" EndPoint="3,9" />
           </Grid>
         </Button>
         <controls:DropDownButton Grid.Row="0" Background="Transparent" Height="18" Width="18" Margin="1,1,3,1" BorderThickness="0" ClickMode="Press" HorizontalAlignment="Right" Focusable="False" ToolTip.Tip="Recent Commit Messages" x:Name="RecentCommitMessagesDropDownButton">
@@ -38,7 +38,7 @@
           </controls:DropDownButton.ContextMenu>
           <Image Source="{DynamicResource ListIcon}" Margin="2" />
         </controls:DropDownButton>
-        <controls:CommitDescriptionTextBox TextChanged="CommitDescriptionTextBox_TextChanged" PreviewKeyDown="CommitDescriptionTextBox_PreviewKeyDown" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="1" Margin="0,-1,0,0" BorderThickness="1,0,1,1" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" TabIndex="3" x:Name="CommitDescriptionTextBox" />
+        <controls:CommitDescriptionTextBox TextChanged="CommitDescriptionTextBox_TextChanged" GotFocus="CommitTextBox_GotFocus" LostFocus="CommitTextBox_LostFocus" Grid.Row="1" Margin="0,-1,0,0" BorderThickness="1,0,1,1" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" TabIndex="3" x:Name="CommitDescriptionTextBox" />
         <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Height="1" VerticalAlignment="Bottom" Margin="1,0,1,0" />
         <DockPanel Grid.Row="2" LastChildFill="False" Margin="0,8,0,0">
           <CheckBox IsThreeState="False" Content="Amend" DockPanel.Dock="Left" Margin="0,6,0,4" VerticalAlignment="Center" Checked="AmendCheckBox_Changed" Unchecked="AmendCheckBox_Changed" x:Name="CheckBoxAmend" />
@@ -60,7 +60,7 @@
           </StackPanel>
           <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" x:Name="WarningMessageContainer">
             <TextBlock Margin="4,2,4,2" VerticalAlignment="Center" x:Name="WarningTextBlock" />
-            <Image Grid.Column="0" Margin="0,4,4,4" Width="16" Height="Auto" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" />
+            <Image Grid.Column="0" Margin="0,4,4,4" Width="16" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" />
           </StackPanel>
         </DockPanel>
       </Grid>

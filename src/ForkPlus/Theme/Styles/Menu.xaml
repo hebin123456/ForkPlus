@@ -47,7 +47,7 @@
     <Setter Property="Grid.IsSharedSizeScope" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ContextMenu">
           <Border>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
               <ScrollViewer>
@@ -59,14 +59,14 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:StaticExtension MenuItem.SeparatorStyleKey}" Selector="Separator">
+  <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" Selector="Separator">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Separator}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.Static.Separator}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="MinHeight" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Separator">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="0,1,0,1" />
         </ControlTemplate>
       </Setter.Value>
@@ -76,7 +76,7 @@
     <Setter Property="Height" Value="22" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="MenuItem">
           <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Background}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Menu.MenuItem.Static.Background}" x:Name="TemplateRoot">
             <Grid Margin="-1" x:Name="Grid">
               <Grid.ColumnDefinitions>
@@ -97,7 +97,7 @@
     <Setter Property="ButtonBase.ClickMode" Value="Hover" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RepeatButton">
           <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" x:Name="TemplateRoot">
             <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" Margin="6" VerticalAlignment="Center" />
           </Border>
@@ -106,11 +106,11 @@
     </Setter>
   </Style>
   <Style x:Key="MenuScrollViewer" Selector="ScrollViewer">
-    <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
-    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ScrollViewer">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
@@ -153,22 +153,22 @@
   <ControlTemplate x:Key="TopLevelHeaderTemplateKey" TargetType="MenuItem">
     <Border Margin="2,2,0,0" CornerRadius="3" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="TemplateRoot">
 <Border.Styles>
-<Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
+<Style x:Key="MenuItemcheckedtemplatePathGlyphPanel" Selector="MenuItem:checked /template/ Path#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="MenuItem:checked /template/ ContentPresenter#Icon">
+    <Style x:Key="MenuItemcheckedtemplateContentPresenterIcon" Selector="MenuItem:checked /template/ ContentPresenter#Icon">
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointerovertemplateBorderTemplateRoot" Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItemdisabledtemplateBorderTemplateRoot" Selector="MenuItem:disabled /template/ Border#TemplateRoot">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#GlyphPanel">
+    <Style x:Key="MenuItemdisabledtemplatePathGlyphPanel" Selector="MenuItem:disabled /template/ Path#GlyphPanel">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
 </Border.Styles>
@@ -181,7 +181,7 @@
         <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" HorizontalAlignment="Center" Height="16" Width="16" Margin="3" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource MainMenu.Static.Foreground}" x:Name="Icon" />
         <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="3" IsVisible="False" VerticalAlignment="Center" x:Name="GlyphPanel" />
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
-        <Popup Focusable="False" Placement="Bottom" x:Name="PART_Popup">
+        <Popup Focusable="False" PlacementMode="Bottom" x:Name="PART_Popup">
           <Popup.IsOpen>
             <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
@@ -231,26 +231,26 @@
   <ControlTemplate x:Key="TopLevelItemTemplateKey" TargetType="MenuItem">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="TemplateRoot">
 <Border.Styles>
-<Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
+<Style x:Key="MenuItemcheckedtemplatePathGlyphPanel" Selector="MenuItem:checked /template/ Path#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="MenuItem:checked /template/ ContentPresenter#Icon">
+    <Style x:Key="MenuItemcheckedtemplateContentPresenterIcon" Selector="MenuItem:checked /template/ ContentPresenter#Icon">
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointerovertemplateBorderTemplateRoot" Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItemdisabledtemplateBorderTemplateRoot" Selector="MenuItem:disabled /template/ Border#TemplateRoot">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#GlyphPanel">
+    <Style x:Key="MenuItemdisabledtemplatePathGlyphPanel" Selector="MenuItem:disabled /template/ Path#GlyphPanel">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsHighlighted + IsEnabled=False) -> :pointerover:disabled -->
-    <Style Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointeroverdisabledtemplateBorderTemplateRoot" Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="#0A000000" />
       <Setter Property="BorderBrush" Value="#21000000" />
     </Style>
@@ -270,26 +270,26 @@
   <ControlTemplate x:Key="SubmenuItemTemplateKey" TargetType="MenuItem">
     <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Background}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
 <Border.Styles>
-<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
+<Style x:Key="MenuItemcheckedtemplateBorderGlyphPanel" Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointerovertemplateBorderTemplateRoot" Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItemdisabledtemplateBorderTemplateRoot" Selector="MenuItem:disabled /template/ Border#TemplateRoot">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ ContentPresenter#menuHeaderContainer">
+    <Style x:Key="MenuItemdisabledtemplateContentPresentermenuHeaderContainer" Selector="MenuItem:disabled /template/ ContentPresenter#menuHeaderContainer">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#Glyph">
+    <Style x:Key="MenuItemdisabledtemplatePathGlyph" Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsHighlighted + IsEnabled=False) -> :pointerover:disabled -->
-    <Style Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointeroverdisabledtemplateBorderTemplateRoot" Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="#0A000000" />
       <Setter Property="BorderBrush" Value="#21000000" />
     </Style>
@@ -318,22 +318,22 @@
   <ControlTemplate x:Key="SubmenuHeaderTemplateKey" TargetType="MenuItem">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
 <Border.Styles>
-<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
+<Style x:Key="MenuItemcheckedtemplateBorderGlyphPanel" Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointerovertemplateBorderTemplateRoot" Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItemdisabledtemplateBorderTemplateRoot" Selector="MenuItem:disabled /template/ Border#TemplateRoot">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#Glyph">
+    <Style x:Key="MenuItemdisabledtemplatePathGlyph" Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#RightArrow">
+    <Style x:Key="MenuItemdisabledtemplatePathRightArrow" Selector="MenuItem:disabled /template/ Path#RightArrow">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
 </Border.Styles>
@@ -355,7 +355,7 @@
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" x:Name="ContentPresenter" />
         <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding MenuItem.InputGestureText}" VerticalAlignment="Center" x:Name="TextBlock" />
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
-        <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
+        <Popup Focusable="False" PlacementMode="Right" x:Name="PART_Popup">
           <Popup.IsOpen>
             <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
@@ -406,22 +406,22 @@
   <ControlTemplate x:Key="SearchableSubmenuHeaderTemplateKey" TargetType="MenuItem">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
 <Border.Styles>
-<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
+<Style x:Key="MenuItemcheckedtemplateBorderGlyphPanel" Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItempointerovertemplateBorderTemplateRoot" Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
       <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+    <Style x:Key="MenuItemdisabledtemplateBorderTemplateRoot" Selector="MenuItem:disabled /template/ Border#TemplateRoot">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#Glyph">
+    <Style x:Key="MenuItemdisabledtemplatePathGlyph" Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#RightArrow">
+    <Style x:Key="MenuItemdisabledtemplatePathRightArrow" Selector="MenuItem:disabled /template/ Path#RightArrow">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
 </Border.Styles>
@@ -443,7 +443,7 @@
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" x:Name="ContentPresenter" />
         <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding MenuItem.InputGestureText}" VerticalAlignment="Center" x:Name="TextBlock" />
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
-        <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
+        <Popup Focusable="False" PlacementMode="Right" x:Name="PART_Popup">
           <Popup.IsOpen>
             <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
@@ -543,7 +543,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Menu">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
             <ItemsPresenter />
           </Border>

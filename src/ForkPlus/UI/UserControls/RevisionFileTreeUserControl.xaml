@@ -1,27 +1,6 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; DataTemplate DataType simplified (x:Type removed); MouseDoubleClick binding removed (handler is subscribed via FilesTreeView.DoubleTapped in code-behind per Avalonia migration); RenderOptions.ClearTypeHint attribute removed. -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <UserControl.Resources>
-    
-      <DataTemplate DataType="userControls:RevisionFileTreeViewItem">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Height="14" Width="14">
-            <Image.Source>
-              <Binding Path="FileTypeIcon" />
-            </Image.Source>
-          </Image>
-          <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-    
-  </UserControl.Resources>
+
   <Grid x:Name="ContainerGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition MinWidth="220" MaxWidth="850" />

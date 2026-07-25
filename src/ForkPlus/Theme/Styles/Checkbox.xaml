@@ -17,7 +17,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -32,7 +32,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CheckBox">
           <Grid Background="#00FFFFFF" Height="17" x:Name="TemplateRoot">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
@@ -101,7 +101,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CheckBox">
           <Grid Background="#00FFFFFF" x:Name="TemplateRoot">
             <Border CornerRadius="5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentBorder">
               <DockPanel Margin="{TemplateBinding Padding}">

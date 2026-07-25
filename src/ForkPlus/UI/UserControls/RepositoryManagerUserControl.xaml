@@ -9,78 +9,13 @@
   <UserControl.Resources>
     
       <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls|RepositoryManagerEditableTextBlock" />
-      <DataTemplate DataType="userControls:RepositoryManagerSectionItem">
-        <Grid Height="22">
-          <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate DataType="userControls:RepositoryManagerSourceDirectoryItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/assets/folder.png" />
-          <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-            <ToolTip.Tip>
-              <Binding Path="SourceDir" />
-            </ToolTip.Tip>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate DataType="userControls:RepositoryManagerRepositoryFolderItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/assets/folder.png" />
-          <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate DataType="userControls:RepositoryManagerRepositoryItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="18" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="17" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="-1,2,3,0" Width="16" Height="16">
-            <Image.Source>
-              <Binding Path="RepositoryIcon" />
-            </Image.Source>
-          </Image>
-          <controls:RepositoryManagerEditableTextBlock Grid.Column="1" FontSize="14" Height="22">
-            <controls:RepositoryManagerEditableTextBlock.Value>
-              <Binding Path="Name" />
-            </controls:RepositoryManagerEditableTextBlock.Value>
-            <controls:RepositoryManagerEditableTextBlock.IsInEditMode>
-              <Binding Path="IsInEditMode" />
-            </controls:RepositoryManagerEditableTextBlock.IsInEditMode>
-          </controls:RepositoryManagerEditableTextBlock>
-          <Ellipse Grid.Column="2" Width="9" Height="9" Margin="4,2,4,2" HorizontalAlignment="Right" StrokeThickness="2">
-            <Ellipse.IsVisible>
-              <Binding Path="RepositoryColor"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
-            </Ellipse.IsVisible>
-            <Ellipse.Stroke>
-              <Binding Path="RepositoryColor" />
-            </Ellipse.Stroke>
-          </Ellipse>
-        </Grid>
-      </DataTemplate>
+      
+      
+      
+      
     
   </UserControl.Resources>
+
   <Grid x:Name="RepositoryManagerGrid">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -90,7 +25,7 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="350" MinWidth="200" />
       <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="* " />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <TextBlock Text="Repository Manager" FontSize="22" VerticalAlignment="Center" Margin="20,10,10,10" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush}" x:Name="RepositoryManagerTitleTextBlock" />
     <Grid Grid.Row="2" Grid.Column="0" Background="{DynamicResource FallbackBackgroundBrush}" x:Name="FallbackView">

@@ -12,7 +12,7 @@
             <DynamicResource ResourceKey="DropShadowColor" />
           </DropShadowEffect.Color>
           <DropShadowEffect.Opacity>0.2</DropShadowEffect.Opacity>
-          <DropShadowEffect.ShadowDepth>1</DropShadowEffect.ShadowDepth>
+          <DropShadowEffect.OffsetY>1</DropShadowEffect.OffsetY>
         </DropShadowEffect>
       </Border.Effect>
     </Border>

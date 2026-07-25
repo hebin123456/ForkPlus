@@ -2,7 +2,7 @@
   <UserControl.Resources>
     
       <ControlTemplate x:Key="TrackerControlDataTemplate">
-        <oxy:TrackerControl VerticalLineIsVisible="False" HorizontalLineIsVisible="False" Background="#FFF1F2F7" BorderBrush="#FF767676">
+        <oxy:TrackerControl Background="#FFF1F2F7" BorderBrush="#FF767676">
           <oxy:TrackerControl.Position>
             <Binding Path="Position" />
           </oxy:TrackerControl.Position>
@@ -92,7 +92,7 @@
                   <TextBlock x:Name="CodeLinesRefButtonText" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                 </DockPanel>
               </Button>
-              <Popup IsLightDismissEnabled="True" Placement="Bottom" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
+              <Popup IsLightDismissEnabled="True" PlacementMode="Bottom" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
                 <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1" CornerRadius="6" Padding="2" MinWidth="220" MaxHeight="400">
                   <Grid>
                     <Grid.RowDefinitions>

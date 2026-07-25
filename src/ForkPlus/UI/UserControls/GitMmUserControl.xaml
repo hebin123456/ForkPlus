@@ -8,7 +8,7 @@
       <Setter Property="Padding" Value="14,2" />
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate>
+          <ControlTemplate TargetType="TabItem">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
 <Grid.Styles>
 <Style Selector="^:pointerover /template/ Border#Bd">
@@ -46,13 +46,13 @@
       </Style.Resources>
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate>
+          <ControlTemplate TargetType="TabItem">
             <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.VerticalScrollBarVisibility="Disabled" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
                   <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
                   <Canvas>

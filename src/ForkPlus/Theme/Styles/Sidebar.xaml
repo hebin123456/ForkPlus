@@ -48,7 +48,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
 <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
 <Border.Styles>
 <Style Selector="^:checked /template/ Border#border">
@@ -80,7 +80,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:checked /template/ Path#ImagePath">
@@ -115,52 +115,52 @@
          LocalBranch.IsActive/Worktree.IsActive → TitleTextBlock.FontWeight (BoolToFontWeightConverter).
        Note: default Source/IsVisible moved out of DataTemplate attributes into StyleSetters so that
        :pointerover / :selected:focus-within StyleTriggers can override them (StyleTrigger > StyleSetter). -->
-  <Style Selector="controls|TreeViewControlItem Button#FilterButton">
+  <Style x:Key="controlsTreeViewControlItemButtonFilterButton" Selector="controls|TreeViewControlItem Button#FilterButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:pointerover Button#FilterButton">
+  <Style x:Key="controlsTreeViewControlItempointeroverButtonFilterButton" Selector="controls|TreeViewControlItem:pointerover Button#FilterButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Button#HideButton">
+  <Style x:Key="controlsTreeViewControlItemButtonHideButton" Selector="controls|TreeViewControlItem Button#HideButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:pointerover Button#HideButton">
+  <Style x:Key="controlsTreeViewControlItempointeroverButtonHideButton" Selector="controls|TreeViewControlItem:pointerover Button#HideButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Button#PinButton">
+  <Style x:Key="controlsTreeViewControlItemButtonPinButton" Selector="controls|TreeViewControlItem Button#PinButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:pointerover Button#PinButton">
+  <Style x:Key="controlsTreeViewControlItempointeroverButtonPinButton" Selector="controls|TreeViewControlItem:pointerover Button#PinButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Image#RemoteBranchImage">
+  <Style x:Key="controlsTreeViewControlItemImageRemoteBranchImage" Selector="controls|TreeViewControlItem Image#RemoteBranchImage">
     <Setter Property="Source" Value="{DynamicResource BranchIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:selected:focus-within Image#RemoteBranchImage">
+  <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageRemoteBranchImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#RemoteBranchImage">
     <Setter Property="Source" Value="{DynamicResource BranchSelectedIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Image#StashImage">
+  <Style x:Key="controlsTreeViewControlItemImageStashImage" Selector="controls|TreeViewControlItem Image#StashImage">
     <Setter Property="Source" Value="{DynamicResource SidebarStashIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:selected:focus-within Image#StashImage">
+  <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageStashImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#StashImage">
     <Setter Property="Source" Value="{DynamicResource SidebarStashSelectedIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Image#SubmoduleImage">
+  <Style x:Key="controlsTreeViewControlItemImageSubmoduleImage" Selector="controls|TreeViewControlItem Image#SubmoduleImage">
     <Setter Property="Source" Value="{DynamicResource SubmoduleIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:selected:focus-within Image#SubmoduleImage">
+  <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageSubmoduleImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#SubmoduleImage">
     <Setter Property="Source" Value="{DynamicResource SubmoduleSelectedIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Image#WorktreeImage">
+  <Style x:Key="controlsTreeViewControlItemImageWorktreeImage" Selector="controls|TreeViewControlItem Image#WorktreeImage">
     <Setter Property="Source" Value="{DynamicResource WorktreeIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:selected:focus-within Image#WorktreeImage">
+  <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageWorktreeImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#WorktreeImage">
     <Setter Property="Source" Value="{DynamicResource WorktreeSelectedIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem Image#TagImage">
+  <Style x:Key="controlsTreeViewControlItemImageTagImage" Selector="controls|TreeViewControlItem Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagIcon}" />
   </Style>
-  <Style Selector="controls|TreeViewControlItem:selected:focus-within Image#TagImage">
+  <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageTagImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagSelectedIcon}" />
   </Style>
   <DataTemplate DataType="ui:SidebarGroupItem">

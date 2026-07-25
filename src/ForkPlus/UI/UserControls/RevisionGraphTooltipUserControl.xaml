@@ -16,7 +16,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                       </Grid.ColumnDefinitions>
-                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip.Tip="False" />
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip="False" />
                       <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
                         <Ellipse.Fill>
                           <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>

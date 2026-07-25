@@ -69,16 +69,7 @@
         <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Multiple,Toggle" x:Name="RevisionListView"><dialogs:MultiselectionListView.ItemContainerStyle>
-            <Style Selector="dialogs|MultiselectionListViewItem">
-<Setter Property="Height" Value="22" />
-              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-              <Setter Property="VerticalContentAlignment" Value="Stretch" />
-              <Setter Property="Padding" Value="0" />
-              <Setter Property="Margin" Value="0" />
-              <Setter Property="AllowDrop" Value="True" />
-            </Style>
-          </dialogs:MultiselectionListView.ItemContainerStyle>
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Multiple,Toggle" x:Name="RevisionListView">
           <dialogs:MultiselectionListView.View>
             <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
               <GridViewColumn Width="100">
@@ -161,9 +152,7 @@
                         <controls:ReferencePanel.ItemsSource>
                           <Binding Path="RefViewModels" />
                         </controls:ReferencePanel.ItemsSource>
-                        <controls:ReferencePanel.Visibility>
-                          <Binding Path="IsChecked" />
-                        </controls:ReferencePanel.Visibility>
+                        
                       </controls:ReferencePanel>
                       <TextBlock VerticalAlignment="Center" Margin="2 0 0 2" x:Name="SubjectTextBlock">
                         <TextBlock.Text>

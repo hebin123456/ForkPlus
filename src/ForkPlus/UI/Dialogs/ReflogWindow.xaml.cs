@@ -34,15 +34,9 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly RepositoryUserControl _repositoryUserControl;
 
-		// 阶段 5：Avalonia XAML 编译器未为 ReflogListView 生成字段，手动声明 + FindControl 初始化。
-		// WPF ListView 在 Avalonia 无直接对应；用 ListBox（最接近的基类）。
-		// XAML 中的 <ListView> 由 Avalonia XAML 编译器以类型回退方式处理（阶段 6 再迁移到 DataGrid）。
-		private ListBox ReflogListView;
-
 		public ReflogWindow(RepositoryUserControl repositoryUserControl)
 		{
 			InitializeComponent();
-			ReflogListView = this.FindControl<ListBox>("ReflogListView");
 			_repositoryUserControl = repositoryUserControl;
 			ApplyLocalization();
 			LoadReflog();

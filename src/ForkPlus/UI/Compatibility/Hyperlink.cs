@@ -9,6 +9,7 @@
 // 放在命名空间 Avalonia.Controls.Documents：与 WPF System.Windows.Documents.Hyperlink
 // 命名空间风格一致，现有 `using Avalonia.Controls.Documents;` 直接解析到本类型。
 using System;
+using Avalonia;
 using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
 using ForkPlus.UI;
@@ -22,7 +23,15 @@ namespace Avalonia.Controls.Documents
 	public class Hyperlink : Span
 	{
 		/// <summary>导航目标 URI。点击时由宿主读取并打开。</summary>
-		public Uri NavigateUri { get; set; }
+		public static readonly StyledProperty<Uri> NavigateUriProperty =
+			AvaloniaProperty.Register<Hyperlink, Uri>(nameof(NavigateUri));
+
+		/// <summary>导航目标 URI。点击时由宿主读取并打开。</summary>
+		public Uri NavigateUri
+		{
+			get => GetValue(NavigateUriProperty);
+			set => SetValue(NavigateUriProperty, value);
+		}
 
 		/// <summary>WPF Hyperlink.RequestNavigate 的兼容事件。点击时触发。</summary>
 		public event EventHandler<RequestNavigateEventArgs> RequestNavigate;

@@ -42,7 +42,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:default /template/ Border#Border">
@@ -83,13 +83,11 @@
             <DockPanel>
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
               <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
-                <ContentPresenter.Resources>
-                  
-                    <Style Selector="TextBlock">
+                <ContentPresenter.Styles>
+<Style Selector="TextBlock">
                       <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                     </Style>
-                  
-                </ContentPresenter.Resources>
+</ContentPresenter.Styles>
               </ContentPresenter>
             </DockPanel>
           </Border>
@@ -104,7 +102,7 @@
     <Setter Property="Width" Value="24" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pressed /template/ Border#Border">
@@ -139,7 +137,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pressed /template/ Border#Border">
@@ -174,7 +172,7 @@
     <Setter Property="Width" Value="24" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pressed /template/ Border#Border">
@@ -218,7 +216,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToolbarButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -284,7 +282,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -318,7 +316,7 @@
     <Setter Property="ClickMode" Value="Press" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToolbarDropDownButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -387,7 +385,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -421,7 +419,7 @@
     <Setter Property="FontSize" Value="14" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Grid Background="#00FFFFFF">
 <Grid.Styles>
 <Style Selector="^:checked /template/ ContentPresenter#contentPresenter">
@@ -445,8 +443,8 @@
   <Style x:Key="RadioButton.FocusVisual" Selector="Control">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="20,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
+        <ControlTemplate TargetType="Control">
+          <Rectangle Margin="20,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -454,8 +452,8 @@
   <Style x:Key="RadioButton.OptionMarkFocusVisual" Selector="Control">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
+        <ControlTemplate TargetType="Control">
+          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -468,7 +466,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Grid Background="#00FFFFFF" Height="17" x:Name="TemplateRoot">
 <Grid.Styles>
 <Style Selector="^:disabled /template/ Border#RadioButtonBorder">
@@ -532,7 +530,7 @@
     <Setter Property="Padding" Value="2" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -561,7 +559,7 @@
   <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls|DropDownButton">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="DropDownButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -602,7 +600,7 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -642,7 +640,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -676,7 +674,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextTrimming="CharacterEllipsis" x:Name="textBlock" ><TextBlock.Styles>
 <Style Selector="^:pointerover /template/ TextBlock#textBlock">
             <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
@@ -698,7 +696,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Grid>
 <Grid.Styles>
 <Style Selector="^:pointerover /template/ TextBlock#textBlock">
@@ -721,7 +719,6 @@
     </Setter>
   </Style>
   <Style x:Key="LfsTextButtonStyle" Selector="Button">
-    <Setter Property="Height" Value="Auto" />
     <Setter Property="FontSize" Value="13" />
   </Style>
   <Style x:Key="LfsImageButtonStyle" Selector="Button">
@@ -729,7 +726,7 @@
     <Setter Property="Height" Value="44" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border CornerRadius="8" Background="{DynamicResource ShowButton.Static.Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -772,7 +769,7 @@
     <Setter Property="CornerRadius" Value="3,3,3,3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pressed /template/ Border#Border">
@@ -822,7 +819,7 @@
     <Setter Property="Padding" Value="6,0,4,0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="DateRangeButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:checked /template/ Border#Border">
@@ -857,7 +854,7 @@
     <Setter Property="CornerRadius" Value="0,3,3,0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pressed /template/ Border#Border">
@@ -915,7 +912,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
         </ControlTemplate>
       </Setter.Value>
@@ -945,7 +942,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -977,7 +974,7 @@
     <Setter Property="Padding" Value="2,2,2,2" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="RadioButton">
           <Border Padding="0,2,2,2" Background="#00FFFFFF">
 <Border.Styles>
 <Style Selector="^:checked /template/ Ellipse#Ellipse">
@@ -1002,7 +999,7 @@
     <Setter Property="Padding" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border>
 <Border.Styles>
 <Style Selector="^:checked /template/ Rectangle#Rectangle">

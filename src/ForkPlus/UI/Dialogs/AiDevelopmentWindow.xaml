@@ -53,8 +53,8 @@
         <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu x:Name="SendModeContextMenu">
-              <MenuItem x:Name="SendModeEnter" Header="Send on Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />
-              <MenuItem x:Name="SendModeCtrlEnter" Header="Send on Ctrl+Enter" IsCheckable="True" Click="SendModeMenuItem_Click" />
+              <MenuItem x:Name="SendModeEnter" Header="Send on Enter" ToggleType="CheckBox" Click="SendModeMenuItem_Click" />
+              <MenuItem x:Name="SendModeCtrlEnter" Header="Send on Ctrl+Enter" ToggleType="CheckBox" Click="SendModeMenuItem_Click" />
             </ContextMenu>
           </controls:DropDownButton.ContextMenu>
           <TextBlock Text="▼" FontSize="8" />

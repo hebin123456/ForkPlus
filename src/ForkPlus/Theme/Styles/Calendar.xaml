@@ -26,7 +26,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CalendarButton">
           <Grid>
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusX="1" RadiusY="1" x:Name="SelectedBackground" />
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusX="1" RadiusY="1" x:Name="Background" />
@@ -52,7 +52,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CalendarDayButton">
           <Border Background="{TemplateBinding Background}" x:Name="Border">
             <ContentPresenter Margin="5,1,5,1" Foreground="{DynamicResource Calendar.ButtonNormalForeground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
           </Border>
@@ -92,18 +92,7 @@
     <Setter Property="Margin" Value="0,3,0,3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
-          <ControlTemplate.Resources>
-            
-              <DataTemplate x:Key="{x:StaticExtension CalendarItem.DayTitleTemplateResourceKey}">
-                <TextBlock FontWeight="Medium" FontSize="13" HorizontalAlignment="Center" Margin="0,6,0,6" VerticalAlignment="Center">
-                  <TextBlock.Text>
-                    <Binding />
-                  </TextBlock.Text>
-                </TextBlock>
-              </DataTemplate>
-            
-          </ControlTemplate.Resources>
+        <ControlTemplate TargetType="CalendarItem">
           <Grid x:Name="PART_Root">
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="1">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="1">
@@ -184,7 +173,7 @@
     <Setter Property="CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Calendar">
           <StackPanel HorizontalAlignment="Center" x:Name="PART_Root">
             <CalendarItem BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="PART_CalendarItem" />
           </StackPanel>

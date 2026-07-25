@@ -57,7 +57,7 @@
                   <Image.VerticalAlignment>Center</Image.VerticalAlignment>
                 </Image>
               </Button>
-              <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0" VerticalAlignment="Center" Source="{Binding SrcFolderIcon}" ToolTipService.ToolTip.Tip="{Binding SrcFolderIconTooltip}" />
+              <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0" VerticalAlignment="Center" Source="{Binding SrcFolderIcon}" ToolTip.Tip="{Binding SrcFolderIconTooltip}" />
               <TextBlock FontSize="13" Margin="6,1,2,1" TextTrimming="CharacterEllipsis" Text="{Binding Path}" />
             </DockPanel>
           </DataTemplate>

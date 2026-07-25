@@ -17,17 +17,9 @@
        {TemplateBinding Header} -> {TemplateBinding Header}).
      - UIElement.Visibility (enum) -> IsVisible (bool): Visible -> True, Hidden/Collapsed -> False.
      - ControlTemplate.Triggers converted to nested <Style.Styles> using /template/ selectors with ^ parent reference.
-     - Pseudo-class mapping: UIElement.IsMouseOver=True -> :pointerover, ButtonBase.IsPressed=True -> :pressed,
-       UIElement.IsEnabled=False -> :disabled, TabItem.IsSelected=True -> :selected,
-       UIElement.IsKeyboardFocused=True -> :focus.
-     - MultiTrigger (IsSelected=false AND IsMouseOver=true) -> :pointerover:not(:selected).
-     - Style ordering ensures :selected overrides :pointerover for Bd background (matches WPF trigger precedence).
-     - NOTE (Avalonia limitation): MultiDataTrigger (TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false) cannot be expressed
-       as a selector; original logic preserved as comment.
-     - NOTE (Avalonia limitation): TabControl.TabStripPlacement enum triggers (Bottom/Left/Right) cannot be expressed as selectors;
-       original logic preserved as comments, needs code-behind or layout-specific templates. -->
+-->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="TabItem" Selector="TabItem">
+<Style x:Key="TabItem" Selector="TabItem">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
@@ -38,7 +30,7 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TabItem">
           <Grid x:Name="templateRoot">
             <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
@@ -53,15 +45,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="TabControl" Selector="TabControl">
-    <Style.Resources>
-      
-        <Style x:Key="TabPanel" Selector="TabPanel">
-          <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
-        </Style>
-        <Style x:Key="TabItem" Selector="TabItem" />
-      
-    </Style.Resources>
+<Style x:Key="TabControl" Selector="TabControl">
     <Setter Property="Padding" Value="2" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -71,7 +55,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TabItem">
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
               <ColumnDefinition />
@@ -116,7 +100,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="border">
             <Path Margin="3" Fill="{DynamicResource CloseButton.Static.Foreground}" Stretch="Uniform" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41z" x:Name="cross" />
           </Border>
@@ -146,7 +130,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="border">
             <Path Margin="3" Fill="{DynamicResource CloseButton.MouseOver.Foreground}" Stretch="Uniform" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Data="M19,13L13,13 13,19 11,19 11,13 5,13 5,11 11,11 11,5 13,5 13,11 19,11 19,13z" x:Name="plus" />
           </Border>
@@ -174,7 +158,7 @@
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ClosableTabControl">
           <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -199,7 +183,7 @@
   <Style x:Key="TabItemFocusVisual">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TabControl">
           <Rectangle StrokeThickness="0" Fill="#00FFFFFF" />
         </ControlTemplate>
       </Setter.Value>
@@ -217,7 +201,7 @@
     <Setter Property="AllowDrop" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ClosableTabItem">
           <Grid>
             <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" x:Name="TopBorder" />
             <Border BorderThickness="0,0,0,1" Margin="0,1,0,0" CornerRadius="4,4,0,0" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Bd" />
@@ -320,7 +304,7 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TabItem">
           <Grid Background="#00FFFFFF" x:Name="templateRoot">
             <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
@@ -342,18 +326,18 @@
     </Style>
   </Style>
   <Style x:Key="ModernTabControl" Selector="controls|ModernTabControl">
-    <Style.Resources>
-      
-        <Style x:Key="TabPanel" Selector="TabPanel">
+    <Style.Resources><Style x:Key="TabItem" Selector="TabItem" /></Style.Resources>
+
+<Style.Resources><ResourceDictionary>
+<Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="TabItem" Selector="TabItem" />
-      
-    </Style.Resources>
+</ResourceDictionary></Style.Resources>
+
     <Setter Property="BorderThickness" Value="0,1,0,0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TabItem">
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
               <ColumnDefinition />
@@ -381,15 +365,15 @@
     </Style>
   </Style>
   <Style x:Key="RepositoryManagerTabControl" Selector="controls|ModernTabControl">
-    <Style.Resources>
-      
-        <Style x:Key="TabPanel" Selector="TabPanel">
+    
+<Style.Resources><ResourceDictionary>
+<Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="TabItem" Selector="TabItem">
+<Style x:Key="TabItem" Selector="TabItem">
           <Setter Property="FontSize" Value="14" />
         </Style>
-      
-    </Style.Resources>
+</ResourceDictionary></Style.Resources>
+
   </Style>
 </ResourceDictionary>

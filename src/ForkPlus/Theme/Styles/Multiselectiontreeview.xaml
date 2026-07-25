@@ -30,7 +30,7 @@
     <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToggleButton">
           <Border Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Background="#00FFFFFF">
             <Path Data="M0,0L3.5,3.5 0,7" Margin="2,1,0,0" Stroke="{TemplateBinding Background}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ExpandPath" />
           </Border>
@@ -57,7 +57,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -109,11 +109,11 @@
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
-    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter />
@@ -136,11 +136,10 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Padding" Value="2" />
     <Setter Property="Margin" Value="2,0" />
-    <Setter Property="Height" Value="Auto" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -205,7 +204,6 @@
     <Setter Property="Height" Value="50" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
-    <Setter Property="Height" Value="Auto" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
   </Style>
@@ -237,7 +235,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -264,7 +262,7 @@
     <Setter Property="Padding" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter Margin="0,4,0,0" />

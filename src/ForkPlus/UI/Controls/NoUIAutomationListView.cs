@@ -26,6 +26,16 @@ namespace ForkPlus.UI.Controls
 			Focus
 		}
 
+		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
+		public static readonly StyledProperty<Avalonia.Controls.GridView> ViewProperty =
+			AvaloniaProperty.Register<NoUIAutomationListView, Avalonia.Controls.GridView>(nameof(View));
+		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
+		public Avalonia.Controls.GridView View
+		{
+			get => GetValue(ViewProperty);
+			set => SetValue(ViewProperty, value);
+		}
+
 		// 阶段 4.5：WPF AutomationPeer（UI 自动化桩）→ Avalonia 内置自动化系统，无需自定义 stub。
 		// 原 StubWindowAutomationPeer 内部类及 OnCreateAutomationPeer() 重写已移除。
 

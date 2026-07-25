@@ -27,9 +27,9 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="TextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Background="#00FFFFFF" Focusable="false" x:Name="PART_ContentHost" />
+            <ScrollViewer Background="#00FFFFFF" Focusable="false" x:Name="PART_ContentHost"><TextPresenter x:Name="PART_TextPresenter" /></ScrollViewer>
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -59,9 +59,9 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="PasswordBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Focusable="false" x:Name="PART_ContentHost" />
+            <ScrollViewer Focusable="false" x:Name="PART_ContentHost"><TextPresenter x:Name="PART_TextPresenter" /></ScrollViewer>
           </Border>
         </ControlTemplate>
       </Setter.Value>

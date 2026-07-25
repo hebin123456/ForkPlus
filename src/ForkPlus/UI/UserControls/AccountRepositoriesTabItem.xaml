@@ -4,41 +4,7 @@
      - DataTemplate DataType="local:Foo" → DataType="local:Foo"
      -->
 <TabItem xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.AccountRepositoriesTabItem" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <TabItem.Resources>
-    
-      <DataTemplate DataType="local:AccountRepositoryItem">
-        <DockPanel Height="20" Margin="10,0,0,0" x:Name="TestDockPanel">
-          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Center" Margin="0,0,4,0" x:Name="IconImage">
-            <Image.Source>
-              <Binding Path="Icon" />
-            </Image.Source>
-          </Image>
-          <Button DockPanel.Dock="Right" VerticalAlignment="Center" Click="CloneButton_Click" x:Name="CloneButton">
-            <ToolTip.Tip>
-              <Binding Path="Tooltip" />
-            </ToolTip.Tip>
-            <Image Source="{DynamicResource DownloadIcon}" x:Name="StarButtonImage" />
-          </Button>
-          <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" x:Name="NameTextBlock">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </DockPanel>
-      </DataTemplate>
-      <DataTemplate DataType="local:AccountHeaderItem">
-        <Grid Height="20">
-          <Border HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,0">
-            <TextBlock Margin="2,0,0,0" FontSize="13.5" FontWeight="Medium" VerticalAlignment="Center" x:Name="NameTextBlock">
-              <TextBlock.Text>
-                <Binding Path="Title" />
-              </TextBlock.Text>
-            </TextBlock>
-          </Border>
-        </Grid>
-      </DataTemplate>
-    
-  </TabItem.Resources>
+
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="30" />

@@ -11,15 +11,15 @@
       <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </UserControl.Styles>
-  <UserControl.Resources>
-    
-      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-      <Style x:Key="QuestionmarkTextBlock" Selector="TextBlock">
-        <Setter Property="ToolTip">
+  <UserControl.Resources><BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /></UserControl.Resources>
+
+<UserControl.Resources><ResourceDictionary>
+<Style x:Key="QuestionmarkTextBlock" Selector="TextBlock">
+        <Setter Property="ToolTip.Tip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>
-                <Binding Path="PlacementTarget" RelativeSource="{x:Static RelativeSource.Self}" />
+                <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
               </ToolTip.DataContext>
               <StackPanel>
                 <TextBlock Text="Available variables:" />
@@ -33,12 +33,12 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <Style x:Key="NameQuestionmarkTextBlock" Selector="TextBlock">
-        <Setter Property="ToolTip">
+<Style x:Key="NameQuestionmarkTextBlock" Selector="TextBlock">
+        <Setter Property="ToolTip.Tip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>
-                <Binding Path="PlacementTarget" RelativeSource="{x:Static RelativeSource.Self}" />
+                <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
               </ToolTip.DataContext>
               <StackPanel>
                 <TextBlock Text="Use '/' for nesting" />
@@ -53,8 +53,8 @@
           </Setter.Value>
         </Setter>
       </Style>
-    
-  </UserControl.Resources>
+</ResourceDictionary></UserControl.Resources>
+
   <Grid Width="900" Height="360">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="200" />

@@ -18,12 +18,18 @@
       <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </ui:CustomWindow.Styles>
-  <ui:CustomWindow.Resources>
-    <ResourceDictionary>
-      <Style x:Key="QuickLaunchListBoxItemStyle" Selector="ListBoxItem">
+  <ui:CustomWindow.Resources><ResourceDictionary>
+      
+      
+      
+      
+    </ResourceDictionary></ui:CustomWindow.Resources>
+
+<ui:CustomWindow.Resources><ResourceDictionary>
+<Style x:Key="QuickLaunchListBoxItemStyle" Selector="ListBoxItem">
 <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate>
+            <ControlTemplate TargetType="ListBoxItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
@@ -31,69 +37,8 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <DataTemplate DataType="local:CommandProviderItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <!-- 阶段 4.5：原 DataTrigger (IsSelected=True -> IconImage.Source=SelectedIcon) 用堆叠 Image 实现。
-               默认 Image 绑定 Icon，选中 Image 绑定 SelectedIcon，通过祖先 ListBoxItem.IsSelected 切换 IsVisible。 -->
-          <Grid DockPanel.Dock="Left" Width="14" Height="14" VerticalAlignment="Bottom" Margin="0,0,4,4">
-            <Image Width="14" Height="14" Source="{Binding Icon}" IsVisible="{Binding !IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
-            <Image Width="14" Height="14" Source="{Binding SelectedIcon}" IsVisible="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
-          </Grid>
-          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="Title" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" IsVisible="{Binding DescriptionVisibility}" x:Name="DashTextBlock" />
-          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="SecondaryTitle" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-        </DockPanel>
-      </DataTemplate>
-      <DataTemplate DataType="local:HeaderCommandProviderItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </DockPanel>
-      </DataTemplate>
-      <DataTemplate DataType="local:RepositoryInfoItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <Grid DockPanel.Dock="Left" Width="14" Height="14" VerticalAlignment="Bottom" Margin="0,0,4,4">
-            <Image Width="14" Height="14" Source="{Binding Icon}" IsVisible="{Binding !IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
-            <Image Width="14" Height="14" Source="{Binding SelectedIcon}" IsVisible="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />
-          </Grid>
-          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="Title" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" IsVisible="{Binding DescriptionVisibility}" x:Name="DashTextBlock" />
-          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="SecondaryTitle" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-        </DockPanel>
-      </DataTemplate>
-    </ResourceDictionary>
-  </ui:CustomWindow.Resources>
+</ResourceDictionary></ui:CustomWindow.Resources>
+
   <Grid Margin="0,10,0,0">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

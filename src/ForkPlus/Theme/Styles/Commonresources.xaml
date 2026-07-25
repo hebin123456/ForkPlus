@@ -24,7 +24,7 @@
      - ToolTip ControlTemplate.Triggers (ToolTip.HasDropShadow=True -> Margin=10 + Border Effect) has no
        Avalonia pseudoclass for HasDropShadow; left as NOTE comment. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <PopupAnimation x:Key="{x:StaticExtension SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
+  <PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
@@ -33,11 +33,11 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource CodeEditorForeground}" />
     <Setter Property="FontFamily" Value="Consolas" />
     <Setter Property="FontSize" Value="13.0" />
-    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="IsReadOnly" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CodeEditor">
           <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -74,7 +74,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -83,7 +83,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -100,7 +100,7 @@
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="GridSplitter">
           <Grid Background="#00FFFFFF">
             <Border BorderBrush="{TemplateBinding BorderBrush}" Height="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
           </Grid>
@@ -117,7 +117,7 @@
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="GridSplitter">
           <Grid Background="#00FFFFFF">
             <Border BorderBrush="{TemplateBinding BorderBrush}" Width="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
           </Grid>
@@ -137,7 +137,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
 <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="EditableTextBlock">
           <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis">
             <TextBlock.Text>
               <Binding Path="Value">
@@ -162,7 +162,7 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="CommandTextBox">
           <DockPanel>
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
             <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
@@ -192,7 +192,7 @@
     <Setter Property="Padding" Value="6,2,6,3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="ToolTip">
           <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
           </Border>
