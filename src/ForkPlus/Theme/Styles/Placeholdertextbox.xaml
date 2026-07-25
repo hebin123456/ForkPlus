@@ -24,7 +24,7 @@
   <Style x:Key="PlaceholderTextBox" Selector="controls|PlaceholderTextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="MinHeight" Value="24" />
     <Setter Property="BorderThickness" Value="1" />
@@ -37,18 +37,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <Grid Background="#00FFFFFF">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
-              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
-              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
-            </Grid>
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
@@ -71,6 +61,18 @@
           <Style Selector="^:focus /template/ Border#Border">
             <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
           </Style>
+</Border.Styles>
+
+            <Grid Background="#00FFFFFF">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
+              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
+              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
+            </Grid>
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -92,7 +94,7 @@
   <Style x:Key="AutoCompleteTextBox" Selector="controls|AutoCompleteTextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="MinHeight" Value="24" />
@@ -105,19 +107,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <Grid Background="#00FFFFFF">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
-              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
-              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
-              <Popup Focusable="False" VerticalOffset="-3" HorizontalOffset="-8" x:Name="Popup" />
-            </Grid>
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
@@ -140,6 +131,19 @@
           <Style Selector="^:focus /template/ Border#Border">
             <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
           </Style>
+</Border.Styles>
+
+            <Grid Background="#00FFFFFF">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
+              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
+              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
+              <Popup Focusable="False" VerticalOffset="-3" HorizontalOffset="-8" x:Name="Popup" />
+            </Grid>
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -166,6 +170,12 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#placeholderElement">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+</Border.Styles>
+
             <Grid Background="#00FFFFFF">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -177,10 +187,6 @@
               <Popup Focusable="False" VerticalOffset="-3" HorizontalOffset="-8" x:Name="Popup" />
             </Grid>
           </Border>
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#placeholderElement">
-            <Setter Property="IsVisible" Value="True" />
-          </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  iconElement.Visibility = Collapsed
@@ -206,6 +212,16 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#placeholderElement">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Padding" Value="4,2,4,3" />
+          </Style>
+          <Style Selector="^:empty /template/ Border#PART_GuideLine">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+</Border.Styles>
+
             <Grid Background="#00FFFFFF">
               <ScrollViewer Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
               <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Width="1" Margin="{TemplateBinding controls:CommitDescriptionTextBox.GuideLineMargin}" IsVisible="True" HorizontalAlignment="Left" x:Name="PART_GuideLine" />
@@ -213,14 +229,6 @@
               <Popup Focusable="False" VerticalOffset="-3" HorizontalOffset="-8" x:Name="Popup" />
             </Grid>
           </Border>
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#placeholderElement">
-            <Setter Property="IsVisible" Value="True" />
-            <Setter Property="Padding" Value="4,2,4,3" />
-          </Style>
-          <Style Selector="^:empty /template/ Border#PART_GuideLine">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -236,18 +244,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <Grid Background="#00FFFFFF">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
-              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
-              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
-            </Grid>
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
             <Setter Property="IsVisible" Value="True" />
           </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
@@ -266,6 +264,18 @@
           <Style Selector="^:disabled /template/ Border#Border">
             <Setter Property="Opacity" Value="0.56" />
           </Style>
+</Border.Styles>
+
+            <Grid Background="#00FFFFFF">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
+              <ScrollViewer Grid.Column="1" Focusable="false" Background="#00FFFFFF" x:Name="PART_ContentHost" />
+              <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" />
+            </Grid>
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -281,6 +291,33 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+<Border.Styles>
+<Style Selector="^:empty /template/ TextBlock#placeholderElement">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+          <Style Selector="^:empty /template/ Button#PART_ClearButton">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+          <Style Selector="^:empty /template/ Image#PART_Icon">
+            <Setter Property="Source" Value="{DynamicResource SearchIcon}" />
+          </Style>
+          <Style Selector="^:empty /template/ Image#DropdownButtonImage">
+            <Setter Property="Source" Value="{DynamicResource SearchIcon}" />
+          </Style>
+          <Style Selector="^:empty /template/ Path#DropdownButtonPath">
+            <Setter Property="Fill" Value="{DynamicResource ComboBox.Static.Glyph}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
+          <Style Selector="^:disabled /template/ Border#Border">
+            <Setter Property="Opacity" Value="0.56" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsKeyboardFocused=True -> :focus -->
+          <Style Selector="^:focus /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+          </Style>
+</Border.Styles>
+
             <Border.RenderTransform>
               <TranslateTransform />
             </Border.RenderTransform>
@@ -312,43 +349,6 @@
               </Button>
             </Grid>
           </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:FilterTextBox.Hint=null could not be
-               converted (no Avalonia pseudoclass for Hint=null). Original logic:
-                 HintTextBlock.Visibility = Collapsed
-               Reimplement using a binding on HintTextBlock.IsVisible with a null-to-bool converter, or add a
-               custom pseudoclass to FilterTextBox.
-          <Trigger Property="controls:FilterTextBox.Hint">
-            <Trigger.Value>
-              <x:Null />
-            </Trigger.Value>
-            <Setter TargetName="HintTextBlock" Property="IsVisible" Value="False" />
-          </Trigger>
-          -->
-          <!-- Converted from ControlTemplate.Triggers: TextBox.Text="" -> :empty -->
-          <Style Selector="^:empty /template/ TextBlock#placeholderElement">
-            <Setter Property="IsVisible" Value="True" />
-          </Style>
-          <Style Selector="^:empty /template/ Button#PART_ClearButton">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>
-          <Style Selector="^:empty /template/ Image#PART_Icon">
-            <Setter Property="Source" Value="{DynamicResource SearchIcon}" />
-          </Style>
-          <Style Selector="^:empty /template/ Image#DropdownButtonImage">
-            <Setter Property="Source" Value="{DynamicResource SearchIcon}" />
-          </Style>
-          <Style Selector="^:empty /template/ Path#DropdownButtonPath">
-            <Setter Property="Fill" Value="{DynamicResource ComboBox.Static.Glyph}" />
-          </Style>
-          <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
-          <Style Selector="^:disabled /template/ Border#Border">
-            <Setter Property="Opacity" Value="0.56" />
-          </Style>
-          <!-- Converted from ControlTemplate.Triggers: IsKeyboardFocused=True -> :focus -->
-          <Style Selector="^:focus /template/ Border#Border">
-            <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>

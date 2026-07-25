@@ -238,10 +238,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=True -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#Bd">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
           </Style>
@@ -249,7 +247,7 @@
           <Style Selector="^:selected /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
@@ -260,8 +258,12 @@
                  Bd.BorderBrush = Item.SelectedInactive.Border -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
           <Style Selector="^:disabled /template/ Border#Bd">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -271,7 +273,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -363,17 +365,19 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+<Border.Styles>
+<Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+</Border.Styles>
+
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
             <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-          <Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
@@ -423,7 +427,7 @@
         </Binding>
       </Setter.Value>
     </Setter>
-    <Setter Property="Foreground">
+    <Setter Property="TextElement.Foreground">
       <Setter.Value>
         <Binding Path="IsReachable">
           <Binding.Converter>
@@ -440,14 +444,16 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-          <Style Selector="^:selected /template/ Border#Bd">
+<Border.Styles>
+<Style Selector="^:selected /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
@@ -464,17 +470,19 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+<Border.Styles>
+<Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+          </Style>
+</Border.Styles>
+
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-          <Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling preserved below for reference; reimplement using a custom
@@ -511,14 +519,16 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-          <Style Selector="^:selected /template/ Border#Bd">
+<Border.Styles>
+<Style Selector="^:selected /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
                could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
                inactive-selection styling also set Bd.Style = ListItemRoundedBorderStyle (cannot set Style
@@ -537,7 +547,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -602,7 +612,7 @@
   <Style x:Key="AutocompleteListBoxItemStyle" Selector="ListBoxItem">
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-<Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+<Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="4,2,4,2" />
@@ -705,11 +715,21 @@
     <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Grid>
+<Grid.Styles>
+<Style Selector="^:pointerover /template/ Border#HeaderBorder">
+            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
+          </Style>
+          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+          <Style Selector="^:pressed /template/ Border#HeaderBorder">
+            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
+          </Style>
+</Grid.Styles>
+
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
               <Grid>
                 <Grid.RowDefinitions>
@@ -725,14 +745,6 @@
               <Thumb x:Name="PART_HeaderGripper" />
             </Canvas>
           </Grid>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#HeaderBorder">
-            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
-          </Style>
-          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-          <Style Selector="^:pressed /template/ Border#HeaderBorder">
-            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
-          </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
                (no Avalonia pseudoclass for Height=Auto). Original logic preserved below for reference;
                reimplement using a custom pseudoclass or a binding/converter.

@@ -26,7 +26,7 @@
   <Style x:Key="CheckBox" Selector="CheckBox">
     <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -61,7 +61,7 @@
       <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
     </Style>
     <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
       <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
@@ -95,7 +95,7 @@
   <Style x:Key="MergerSelectAllCheckBox" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="8,2,8,4" />
     <Setter Property="CornerRadius" Value="3" />

@@ -10,12 +10,8 @@
         <Setter.Value>
           <ControlTemplate>
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
-              <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
-            </Grid>
-            <!-- 阶段 4.5：ControlTemplate.Triggers (IsMouseOver/IsSelected/IsEnabled)
-                 → Avalonia 嵌套 Selector (:pointerover/:selected/:disabled)。 -->
-            <Style Selector="^:pointerover /template/ Border#Bd">
+<Grid.Styles>
+<Style Selector="^:pointerover /template/ Border#Bd">
               <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
               <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
             </Style>
@@ -28,11 +24,16 @@
               <Setter Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
             </Style>
             <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
-              <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
             </Style>
             <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-              <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
             </Style>
+</Grid.Styles>
+
+              <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+            </Grid>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
@@ -85,21 +86,12 @@
         </DockPanel>
         <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,6" Orientation="Horizontal">
           <controls:ToolbarButton Margin="0,3,0,3" Title="Start" Click="StartButton_Click" x:Name="StartButton">
-            <controls:ToolbarButton.Style>
-              <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource BranchIcon}" />
           </controls:ToolbarButton>
           <controls:ToolbarButton Margin="0,3,0,3" Title="Sync" Click="SyncButton_Click" x:Name="SyncButton">
-            <controls:ToolbarButton.Style>
-              <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PullIcon}" />
           </controls:ToolbarButton>
           <controls:ToolbarButton Margin="0,3,0,3" Title="Upload" Click="UploadButton_Click" x:Name="UploadButton">
-            <controls:ToolbarButton.Style>
-              <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
           </controls:ToolbarButton>
         </WrapPanel>

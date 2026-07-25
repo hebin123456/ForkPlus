@@ -36,20 +36,6 @@
     <ListView Grid.Row="1" x:Name="ReflogListView"
               SelectionChanged="ReflogListView_SelectionChanged"
              >
-      <ListView.View>
-        <GridView>
-          <GridViewColumn Header="Index" Width="60"
-                          DisplayMemberBinding="{Binding IndexDisplay}" />
-          <GridViewColumn Header="SHA" Width="80"
-                          DisplayMemberBinding="{Binding ShaDisplay}" />
-          <GridViewColumn Header="Operation" Width="220"
-                          DisplayMemberBinding="{Binding OperationName}" />
-          <GridViewColumn Header="Commit Subject" Width="220"
-                          DisplayMemberBinding="{Binding CommitSubject}" />
-          <GridViewColumn Header="Time" Width="140"
-                          DisplayMemberBinding="{Binding TimeDisplay}" />
-        </GridView>
-      </ListView.View>
     </ListView>
 
     <!-- 状态栏 -->

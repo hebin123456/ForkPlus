@@ -31,7 +31,7 @@
            (IsMouseOver AND IsSelected -> Foreground=ForegroundBrush)。简化为祖先 ListBoxItem
            选中+悬停时触发（:selected:pointerover 等价 WPF IsSelected AND IsMouseOver）。 -->
       <Style Selector="ListBoxItem:selected:pointerover ComboBox#ActionsComboBox">
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>

@@ -11,17 +11,11 @@
         <DynamicResource ResourceKey="Sidebar.Static.Background" />
       </controls:ModernTabControl.Background>
       <fuu:PullRequestsTabItem Header="Pull Requests" x:Name="PullRequestsTabItem">
-        <fuu:PullRequestsTabItem.Style>
-          <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
-        </fuu:PullRequestsTabItem.Style>
         <fuu:PullRequestsTabItem.Background>
           <DynamicResource ResourceKey="Sidebar.Static.Background" />
         </fuu:PullRequestsTabItem.Background>
       </fuu:PullRequestsTabItem>
       <fuu:IssuesTabItem Header="Issues" x:Name="IssuesTabItem">
-        <fuu:IssuesTabItem.Style>
-          <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
-        </fuu:IssuesTabItem.Style>
         <fuu:IssuesTabItem.Background>
           <DynamicResource ResourceKey="Sidebar.Static.Background" />
         </fuu:IssuesTabItem.Background>

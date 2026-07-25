@@ -65,7 +65,7 @@
             </Image.Source>
           </Image>
         </ToggleButton>
-        <Popup StaysOpen="False" HorizontalOffset="-370" UseLayoutRounding="False" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
+        <Popup IsLightDismissEnabled="True" HorizontalOffset="-370" UseLayoutRounding="False" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
           <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
         </Popup>
         <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Click="FilterButton_Click" x:Name="FilterButton">

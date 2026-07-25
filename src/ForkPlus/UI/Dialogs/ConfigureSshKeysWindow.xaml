@@ -6,7 +6,7 @@
          Avalonia 顶层 Style Selector 直接匹配 selected:focus 的 ListBoxItem 内名为
          KeyNameTextBlock 的 TextBlock（:focus 对应键盘焦点，等价于 WPF IsFocused）。 -->
     <Style Selector="ListBoxItem:selected:focus TextBlock#KeyNameTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>

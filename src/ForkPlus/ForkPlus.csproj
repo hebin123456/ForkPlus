@@ -8,8 +8,11 @@
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>false</UseWPF>
     <UseWindowsForms>false</UseWindowsForms>
-    <!-- Avalonia 11.3 默认 false，官方模板与 12 起默认 true。显式开启以获得编译期类型检查 + AOT 友好。 -->
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- 阶段 5：WPF→Avalonia 迁移过渡期关闭编译期绑定。
+         原 WPF XAML 全部使用运行时绑定（WPF 无编译期绑定），DataTemplate 未声明 DataType，
+         开启 CompiledBindingsByDefault 会导致大量 "Unable to resolve property on XamlPseudoType" 错误。
+         阶段 6 迁移完成后可重新开启，并为每个 DataTemplate 添加 DataType。 -->
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>
     <RootNamespace>ForkPlus</RootNamespace>

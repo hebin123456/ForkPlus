@@ -130,9 +130,6 @@
         <TextBlock.Text>Space character in branch names:</TextBlock.Text>
       </TextBlock>
       <ComboBox Width="40" Height="20" Margin="10,0,0,0" Padding="4,0,0,0" SelectionChanged="SpaceCharacterComboBox_SelectionChanged" x:Name="SpaceCharacterComboBox">
-        <ComboBox.ItemContainerStyle>
-          <DynamicResource ResourceKey="SmallComboBoxItemStyle" />
-        </ComboBox.ItemContainerStyle>
       </ComboBox>
     </StackPanel>
     <CheckBox Grid.Row="16" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="PushAutomaticallyOnCommitCheckBox_Changed" Unchecked="PushAutomaticallyOnCommitCheckBox_Changed" x:Name="PushAutomaticallyOnCommitCheckBox">Push automatically on commit</CheckBox>

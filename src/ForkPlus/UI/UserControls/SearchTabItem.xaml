@@ -12,13 +12,13 @@
          TreeViewItem 继承自 ListBoxItem，:selected 伪类等价于 WPF IsSelected=True。
          RevisionSubjectTextField 继承自 TextField（非 TextBlock），故用 Control# 选择器。 -->
     <Style Selector="controls|TreeViewControlItem:selected Control#RevisionSubjectTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="controls|TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="controls|TreeViewControlItem:selected TextBlock#FilePathTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </TabItem.Styles>
   <TabItem.Resources>

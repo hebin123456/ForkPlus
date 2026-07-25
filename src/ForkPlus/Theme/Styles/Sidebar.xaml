@@ -30,16 +30,16 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
   <Style x:Key="SidebarButton" Selector="RadioButton">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Padding" Value="20 2 20 2" />
     <Setter Property="Margin" Value="2,0,2,0" />
     <Setter Property="Height" Value="22" />
@@ -50,10 +50,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: ToggleButton.IsChecked=true -> :checked -->
-          <Style Selector="^:checked /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:checked /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Sidebar.SelectionActive.Background}" />
           </Style>
           <!-- IsChecked=false trigger is the default (unchecked) state; Background defaults to Sidebar.Static.Background -->
@@ -61,6 +59,10 @@
           <Style Selector="^:pressed /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -80,10 +82,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-            <Path Height="16" Width="16" Margin="{TemplateBinding Padding}" Focusable="False" Data="{TemplateBinding Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ImagePath" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: DataTrigger IsChecked (RelativeSource Self)=True -> :checked -->
-          <Style Selector="^:checked /template/ Path#ImagePath">
+<Border.Styles>
+<Style Selector="^:checked /template/ Path#ImagePath">
             <Setter Property="Fill" Value="{DynamicResource SystemAccentBrush}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
@@ -99,6 +99,10 @@
             <Setter Property="Opacity" Value="0.4" />
             <Setter Property="Background" Value="#00FFFFFF" />
           </Style>
+</Border.Styles>
+
+            <Path Height="16" Width="16" Margin="{TemplateBinding Padding}" Focusable="False" Data="{TemplateBinding Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ImagePath" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>

@@ -18,7 +18,7 @@
   <Style x:Key="TextBox" Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
@@ -50,7 +50,7 @@
     <Setter Property="PasswordChar" Value="●" />
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />

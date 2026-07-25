@@ -21,7 +21,7 @@
          原触发器：当祖先 ListBoxItem.IsSelected=true 时设置 ItemTemplate 内 PrimaryTextBlock.Foreground=ForegroundBrush.Light。
          Avalonia 顶层 Style Selector 直接匹配 selected ListBoxItem 内名为 PrimaryTextBlock 的 TextBlock。 -->
     <Style Selector="ListBoxItem:selected TextBlock#PrimaryTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </UserControl.Styles>
   <Grid>

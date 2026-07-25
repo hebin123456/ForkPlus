@@ -5,10 +5,10 @@
          当祖先 ListBoxItem.IsSelected=True 且 IsFocused=True 时设置
          DetailsTextBlock/TargetTextBlock.Foreground=ForegroundBrush.Light。 -->
     <Style Selector="ListBoxItem:selected:focus TextBlock#DetailsTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected:focus TextBlock#TargetTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </UserControl.Styles>
   <UserControl.Resources>

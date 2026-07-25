@@ -3,7 +3,7 @@
     <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 DataTrigger。
          当祖先 ListBoxItem.IsSelected=True 时设置 LastCommitTextBlock.Foreground=ForegroundBrush.Light。 -->
     <Style Selector="ListBoxItem:selected TextBlock#LastCommitTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </UserControl.Styles>
   <Grid>
@@ -25,9 +25,9 @@
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
                 </controls:AvatarImage.UserIdentity>
-                <controls:AvatarImage.ToolTip.Tip>
+                <ToolTip.Tip>
                   <Binding Path="FullCredentialsString" />
-                </controls:AvatarImage.ToolTip.Tip>
+                </ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
             <controls:AutoTooltipTextBlock Grid.Row="0" Grid.Column="1" Margin="4,0,2,0" FontSize="13" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis">

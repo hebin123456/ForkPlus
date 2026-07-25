@@ -58,9 +58,6 @@
             </StackPanel>
           </Grid>
           <controls:ReferencePanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" FontSize="12" x:Name="ReferencePanel">
-            <controls:ReferencePanel.Style>
-              <DynamicResource ResourceKey="MultilineReferencePanelStyle" />
-            </controls:ReferencePanel.Style>
           </controls:ReferencePanel>
           <controls:SelectableTextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="14" FontWeight="Medium" x:Name="SubjectTextBlock">
             <TextBlock.Foreground>

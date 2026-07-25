@@ -36,7 +36,7 @@
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontFamily" Value="Segoe UI" />
-    <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
@@ -152,6 +152,27 @@
   </Style>
   <ControlTemplate x:Key="TopLevelHeaderTemplateKey" TargetType="MenuItem">
     <Border Margin="2,2,0,0" CornerRadius="3" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="TemplateRoot">
+<Border.Styles>
+<Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="MenuItem:checked /template/ ContentPresenter#Icon">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
+    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
+      <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
+    </Style>
+    <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
+    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+    </Style>
+    <Style Selector="MenuItem:disabled /template/ Path#GlyphPanel">
+      <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+    </Style>
+</Border.Styles>
+
       <Grid VerticalAlignment="Center" x:Name="Grid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
@@ -202,14 +223,15 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
-         converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
-           PART_Popup.PopupAnimation = None -->
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
-         pseudoclass for null Icon). Original logic:
-           Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
-    <Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+         could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
+           OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
+           OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
+  </ControlTemplate>
+  <ControlTemplate x:Key="TopLevelItemTemplateKey" TargetType="MenuItem">
+    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="TemplateRoot">
+<Border.Styles>
+<Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="MenuItem:checked /template/ ContentPresenter#Icon">
@@ -222,18 +244,18 @@
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
     <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <Style Selector="MenuItem:disabled /template/ Path#GlyphPanel">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
-         could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
-           OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
-           OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
-  </ControlTemplate>
-  <ControlTemplate x:Key="TopLevelItemTemplateKey" TargetType="MenuItem">
-    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="TemplateRoot">
+    <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsHighlighted + IsEnabled=False) -> :pointerover:disabled -->
+    <Style Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
+      <Setter Property="Background" Value="#0A000000" />
+      <Setter Property="BorderBrush" Value="#21000000" />
+    </Style>
+</Border.Styles>
+
       <Grid VerticalAlignment="Center" x:Name="Grid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
@@ -244,15 +266,12 @@
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
       </Grid>
     </Border>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
-         pseudoclass for null Icon). Original logic:
-           Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
-    <Style Selector="MenuItem:checked /template/ Path#GlyphPanel">
+  </ControlTemplate>
+  <ControlTemplate x:Key="SubmenuItemTemplateKey" TargetType="MenuItem">
+    <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Background}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+<Border.Styles>
+<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <Style Selector="MenuItem:checked /template/ ContentPresenter#Icon">
-      <Setter Property="IsVisible" Value="False" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
     <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
@@ -261,9 +280,12 @@
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
     <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#GlyphPanel">
+    <Style Selector="MenuItem:disabled /template/ ContentPresenter#menuHeaderContainer">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+    </Style>
+    <Style Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsHighlighted + IsEnabled=False) -> :pointerover:disabled -->
@@ -271,9 +293,8 @@
       <Setter Property="Background" Value="#0A000000" />
       <Setter Property="BorderBrush" Value="#21000000" />
     </Style>
-  </ControlTemplate>
-  <ControlTemplate x:Key="SubmenuItemTemplateKey" TargetType="MenuItem">
-    <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Background}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+</Border.Styles>
+
       <Grid Margin="-1" x:Name="Grid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition SharedSizeGroup="MenuItemIconColumnGroup" Width="Auto" />
@@ -292,11 +313,12 @@
         <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding MenuItem.InputGestureText}" VerticalAlignment="Center" Foreground="{DynamicResource Menu.MenuItem.Static.Gesture.Foreground}" x:Name="menuGestureText" />
       </Grid>
     </Border>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
-         pseudoclass for null Icon). Original logic:
-           Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
-    <Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
+  </ControlTemplate>
+  <controls:PlacementRectangleConverter x:Key="PlacementRectangleConverter" />
+  <ControlTemplate x:Key="SubmenuHeaderTemplateKey" TargetType="MenuItem">
+    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+<Border.Styles>
+<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
@@ -306,23 +328,16 @@
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
     <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
-    </Style>
-    <Style Selector="MenuItem:disabled /template/ ContentPresenter#menuHeaderContainer">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <Style Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsHighlighted + IsEnabled=False) -> :pointerover:disabled -->
-    <Style Selector="MenuItem:pointerover:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Background" Value="#0A000000" />
-      <Setter Property="BorderBrush" Value="#21000000" />
+    <Style Selector="MenuItem:disabled /template/ Path#RightArrow">
+      <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-  </ControlTemplate>
-  <controls:PlacementRectangleConverter x:Key="PlacementRectangleConverter" />
-  <ControlTemplate x:Key="SubmenuHeaderTemplateKey" TargetType="MenuItem">
-    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+</Border.Styles>
+
       <Grid Margin="-1" x:Name="Grid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition SharedSizeGroup="MenuItemIconColumnGroup" Width="Auto" />
@@ -382,14 +397,16 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
-         converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
-           PART_Popup.PopupAnimation = None -->
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
-         pseudoclass for null Icon). Original logic:
-           Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
-    <Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
+    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
+         could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
+           OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
+           OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
+  </ControlTemplate>
+  <!-- 可搜索子菜单模板：Popup 内容改为 Grid(Rows: Auto, *)，第 0 行是置顶搜索框（不随列表滚动），第 1 行是可滚动的分支列表 -->
+  <ControlTemplate x:Key="SearchableSubmenuHeaderTemplateKey" TargetType="MenuItem">
+    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+<Border.Styles>
+<Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
@@ -399,7 +416,7 @@
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
     <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
     <Style Selector="MenuItem:disabled /template/ Path#Glyph">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
@@ -407,14 +424,8 @@
     <Style Selector="MenuItem:disabled /template/ Path#RightArrow">
       <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
     </Style>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
-         could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
-           OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
-           OpaqueRect.Canvas.Left = Binding SubMenuScrollViewer.HorizontalOffset (OneWay) -->
-  </ControlTemplate>
-  <!-- 可搜索子菜单模板：Popup 内容改为 Grid(Rows: Auto, *)，第 0 行是置顶搜索框（不随列表滚动），第 1 行是可滚动的分支列表 -->
-  <ControlTemplate x:Key="SearchableSubmenuHeaderTemplateKey" TargetType="MenuItem">
-    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="4" Margin="1" Height="21" x:Name="TemplateRoot">
+</Border.Styles>
+
       <Grid Margin="-1" x:Name="Grid">
         <Grid.ColumnDefinitions>
           <ColumnDefinition SharedSizeGroup="MenuItemIconColumnGroup" Width="Auto" />
@@ -482,31 +493,6 @@
         </Popup>
       </Grid>
     </Border>
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.IsSuspendingPopupAnimation=true could not be
-         converted (no Avalonia pseudoclass for IsSuspendingPopupAnimation). Original logic:
-           PART_Popup.PopupAnimation = None -->
-    <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on MenuItem.Icon=null could not be converted (no Avalonia
-         pseudoclass for null Icon). Original logic:
-           Icon.IsVisible = False (Collapsed). Reimplement using a binding with null-to-bool converter. -->
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsChecked=true -> :checked -->
-    <Style Selector="MenuItem:checked /template/ Border#GlyphPanel">
-      <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers: MenuItem.IsHighlighted=true -> :pointerover -->
-    <Style Selector="MenuItem:pointerover /template/ Border#TemplateRoot">
-      <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.MouseOver.Background}" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-    <Style Selector="MenuItem:disabled /template/ Border#TemplateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
-    </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#Glyph">
-      <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
-    </Style>
-    <Style Selector="MenuItem:disabled /template/ Path#RightArrow">
-      <Setter Property="Fill" Value="{DynamicResource Menu.MenuItem.Disabled.Foreground}" />
-    </Style>
     <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger SourceName=SubMenuScrollViewer Property=ScrollViewer.CanContentScroll=False
          could not be converted (SourceName triggers not supported in Avalonia selectors). Original logic:
            OpaqueRect.Canvas.Top = Binding SubMenuScrollViewer.VerticalOffset (OneWay)
@@ -533,14 +519,14 @@
         <Setter Property="Height" Value="26" />
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
-        <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
         <Setter Property="Template" Value="{DynamicResource TopLevelHeaderTemplateKey}" />
         <Setter Property="Padding" Value="5,0" />
       </Trigger>
       <Trigger Property="MenuItem.Role" Value="TopLevelItem">
         <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
-        <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
         <Setter Property="Template" Value="{DynamicResource TopLevelItemTemplateKey}" />
         <Setter Property="Padding" Value="6,0" />
       </Trigger>
@@ -552,7 +538,7 @@
   </Style>
   <Style x:Key="Menu" Selector="Menu">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
-    <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource {x:Type MenuItem}}" />

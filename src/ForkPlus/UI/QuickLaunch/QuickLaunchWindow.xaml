@@ -9,13 +9,13 @@
     <Style Selector="ListBoxItem:selected /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected TextBlock#PathTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected TextBlock#DashTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </ui:CustomWindow.Styles>
   <ui:CustomWindow.Resources>

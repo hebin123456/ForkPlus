@@ -30,9 +30,6 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" KeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,32,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" x:Name="CommitSubjectTextBox">
-          <controls:SpellingPlaceholderTextBox.Style>
-            <DynamicResource ResourceKey="CommitPlaceholderTextBox" />
-          </controls:SpellingPlaceholderTextBox.Style>
         </controls:SpellingPlaceholderTextBox>
         <TextBlock Grid.Row="0" Margin="0,4,6,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
         <Border Grid.Row="0">

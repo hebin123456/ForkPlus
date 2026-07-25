@@ -113,16 +113,18 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
           <Style Selector="^:pressed /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -134,16 +136,18 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
           <Style Selector="^:pressed /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -158,10 +162,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
@@ -173,6 +175,10 @@
             <Setter Property="Opacity" Value="0.4" />
             <Setter Property="Background" Value="#00FFFFFF" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -184,10 +190,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
@@ -199,6 +203,10 @@
             <Setter Property="Opacity" Value="0.4" />
             <Setter Property="Background" Value="#00FFFFFF" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -213,16 +221,18 @@
       <Setter.Value>
         <ControlTemplate>
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
-          <Style Selector="^:pointerover /template/ Border#border">
+<Border.Styles>
+<Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
           </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
           <Style Selector="^:pressed /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
           </Style>
+</Border.Styles>
+
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -230,7 +240,7 @@
   <Style x:Key="CustomWindow" Selector="ui|CustomWindow">
     <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource Window.Foreground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Window.Foreground}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="Margin" Value="0" />

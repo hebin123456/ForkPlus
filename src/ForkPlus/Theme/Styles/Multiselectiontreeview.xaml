@@ -88,7 +88,7 @@
          Approximated with :selected:focus-within (NOTE (Avalonia limitation): IsSelectionActive tracks parent focus, not item focus). -->
     <Style Selector="^:selected:focus-within /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
@@ -99,7 +99,7 @@
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
   </Style>
   <Style x:Key="MultiselectionTreeView" Selector="controls|MultiselectionTreeView">
@@ -108,7 +108,7 @@
 <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Margin" Value="0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource TreeViewItemStyle}" />
@@ -176,7 +176,7 @@
     <Style Selector="^:selected:focus-within /template/ Border#Bd">
       <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
@@ -186,7 +186,7 @@
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
     </Style>
   </Style>
   <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
@@ -255,14 +255,14 @@
     <!-- Active selection: IsSelectionActive=True AND IsSelected=True (approximated with :selected:focus-within). -->
     <Style Selector="^:selected:focus-within /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <!-- Inactive selection: IsSelectionActive=False AND IsSelected=True (approximated with :selected:not(:focus-within)). -->
     <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
   </Style>
   <Style x:Key="FileListMultiselectionTreeViewWithGridViewStyle" Selector="controls|MultiselectionTreeView">

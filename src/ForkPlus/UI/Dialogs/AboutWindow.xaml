@@ -1,7 +1,7 @@
 <dialogs:ForkPlusDialogWindow MinHeight="348" Width="240" SizeToContent="Height" Title="About" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AboutWindow">
   <dialogs:ForkPlusDialogWindow.Resources>
     <ResourceDictionary>
-      <Style x:Key="HyperlinkStyle" Selector="Hyperlink"><Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Style x:Key="HyperlinkStyle" Selector="Hyperlink"><Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>

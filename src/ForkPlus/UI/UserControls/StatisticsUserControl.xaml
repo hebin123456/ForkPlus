@@ -44,13 +44,6 @@
         <StackPanel Grid.Column="0" Margin="0,20,0,0">
           <TextBlock Text="All contributors" Margin="10,0,0,10" FontSize="16" FontWeight="Medium" />
           <ListBox Width="350" Margin="35,0,0,0" BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="AuthorStatListBox">
-            <ListBox.ItemContainerStyle>
-              <Style Selector="ListBoxItem">
-                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-              </Style>
-            </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <Grid Height="18">
@@ -99,7 +92,7 @@
                   <TextBlock x:Name="CodeLinesRefButtonText" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                 </DockPanel>
               </Button>
-              <Popup StaysOpen="False" Placement="Bottom" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
+              <Popup IsLightDismissEnabled="True" Placement="Bottom" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
                 <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1" CornerRadius="6" Padding="2" MinWidth="220" MaxHeight="400">
                   <Grid>
                     <Grid.RowDefinitions>
@@ -152,13 +145,6 @@
               <TextBlock Grid.Column="5" Text="Blanks" FontWeight="Medium" TextAlignment="Right" />
             </Grid>
             <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="CodeLinesListBox">
-              <ListBox.ItemContainerStyle>
-                <Style Selector="ListBoxItem">
-                  <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-                  <Setter Property="BorderThickness" Value="0,0,0,1" />
-                  <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                </Style>
-              </ListBox.ItemContainerStyle>
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <Grid Height="20">

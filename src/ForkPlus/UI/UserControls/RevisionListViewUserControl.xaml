@@ -22,7 +22,7 @@
         </Setter>
         <!-- 原 DataTrigger (IsReachable=False -> Foreground=UnreachableBrush) 用直接绑定实现。
              TrueBrush=null 时返回 UnsetValue，保持继承的默认 Foreground。 -->
-        <Setter Property="Foreground">
+        <Setter Property="TextElement.Foreground">
           <Setter.Value>
             <Binding Path="IsReachable">
               <Binding.Converter>
@@ -275,9 +275,9 @@
                     <controls:RevisionSubjectTextField.HighlightString>
                       <Binding Path="SubjectSearchString" />
                     </controls:RevisionSubjectTextField.HighlightString>
-                    <controls:RevisionSubjectTextField.ToolTip.Tip>
+                    <ToolTip.Tip>
                       <Binding Path="Subject" />
-                    </controls:RevisionSubjectTextField.ToolTip.Tip>
+                    </ToolTip.Tip>
                     <controls:RevisionSubjectTextField.HasBody>
                       <Binding Path="HasBody" />
                     </controls:RevisionSubjectTextField.HasBody>

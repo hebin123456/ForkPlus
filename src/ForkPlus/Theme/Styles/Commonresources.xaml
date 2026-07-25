@@ -30,7 +30,7 @@
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
   <Style x:Key="CodeEditor" Selector="editor|CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
-    <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource CodeEditorForeground}" />
     <Setter Property="FontFamily" Value="Consolas" />
     <Setter Property="FontSize" Value="13.0" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
@@ -186,7 +186,7 @@
     <Setter Property="HasDropShadow" Value="True" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Popup.BorderBrush}" />
     <Setter Property="Padding" Value="6,2,6,3" />

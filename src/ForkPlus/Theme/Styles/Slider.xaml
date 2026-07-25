@@ -59,7 +59,7 @@
   <Style x:Key="OnionSkinSliderStyle" Selector="Slider">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
     <Setter Property="Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
     <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsMouseOver on Thumb).
          Selector descends: Slider template -> Thumb#Thumb -> Thumb template -> Ellipse#grip. -->

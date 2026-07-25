@@ -55,7 +55,7 @@
     </Style>
     <!-- Converted from ControlTemplate.Triggers: UIElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover /template/ ContentPresenter#ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     </Style>
     <Style Selector="^:pointerover /template/ Path#Arrow">
       <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" />
@@ -74,7 +74,7 @@
     </Style>
   </Style>
   <Style x:Key="DiffListExpanderStyle" Selector="Expander">
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

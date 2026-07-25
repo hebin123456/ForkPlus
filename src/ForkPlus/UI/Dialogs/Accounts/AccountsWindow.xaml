@@ -5,10 +5,10 @@
          设置 ItemTemplate 内 ServiceTextBlock/UserNameTextBlock.Foreground=ForegroundBrush.Light。
          AutoTooltipTextBlock 继承自 TextBlock，因此 TextBlock#ServiceTextBlock 选择器可命中。 -->
     <Style Selector="ListBoxItem:selected:focus TextBlock#ServiceTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected:focus TextBlock#UserNameTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>

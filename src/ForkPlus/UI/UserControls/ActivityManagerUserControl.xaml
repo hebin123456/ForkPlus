@@ -11,16 +11,16 @@
          JobProgressProgressBar.Foreground=ForegroundBrush.Light；CellBorder.BorderBrush 透明；
          CancelButton.Content 替换为选中态取消图标。 -->
     <Style Selector="ListBoxItem:selected TextBlock#NameTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected TextBlock#DetailsTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected TextBlock#FinishTimeTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected ProgressBar#JobProgressProgressBar">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected Border#CellBorder">
       <Setter Property="BorderBrush" Value="#00FFFFFF" />

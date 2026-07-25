@@ -14,12 +14,14 @@
       <ToggleButton Grid.Row="0" Background="#00FFFFFF" BorderThickness="0" HorizontalAlignment="Stretch" MinHeight="0" MinWidth="0" Padding="0" Checked="HeaderToggleButton_CheckedChanged" Unchecked="HeaderToggleButton_CheckedChanged" x:Name="HeaderToggleButton"><ToggleButton.Template>
           <ControlTemplate>
             <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Border>
-            <!-- 阶段 4.5：ControlTemplate.Triggers (IsMouseOver=True -> Cursor=Hand) → 嵌套 Selector (:pointerover) -->
-            <Style Selector="^:pointerover">
+<Border.Styles>
+<Style Selector="^:pointerover">
               <Setter Property="Cursor" Value="Hand" />
             </Style>
+</Border.Styles>
+
+              <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
           </ControlTemplate>
         </ToggleButton.Template>
         <Grid>

@@ -28,7 +28,7 @@
        original logic preserved as comments, needs code-behind or layout-specific templates. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="TabItem" Selector="TabItem">
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
     <Setter Property="BorderThickness" Value="0" />
@@ -68,7 +68,7 @@
     <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -90,7 +90,7 @@
       </Setter.Value>
     </Setter>
     <Style Selector="^:disabled /template/ Grid#templateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
     </Style>
     <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Bottom:
          headerPanel Grid.Row=1, contentPanel Grid.Row=0, RowDefinition0 Height=*, RowDefinition1 Height=Auto.
@@ -207,7 +207,7 @@
   </Style>
   <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
   <Style x:Key="ClosableTabItem" Selector="controls|ClosableTabItem">
-    <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
     <Setter Property="Padding" Value="2,0,2,0" />
     <Setter Property="Height" Value="24" />
     <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Border}" />
@@ -285,7 +285,7 @@
     </Style>
     <Style Selector="^:selected">
       <Setter Property="ZIndex" Value="1" />
-      <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
     </Style>
     <Style Selector="^:selected /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
@@ -307,7 +307,7 @@
       <Setter Property="Margin" Value="-1,0,0,0" />
     </Style>
     <Style Selector="^:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Disabled.Background}" />
@@ -335,10 +335,10 @@
       </Setter.Value>
     </Setter>
     <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
     </Style>
   </Style>
   <Style x:Key="ModernTabControl" Selector="controls|ModernTabControl">
@@ -377,7 +377,7 @@
       </Setter.Value>
     </Setter>
     <Style Selector="^:disabled /template/ Grid#templateRoot">
-      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
     </Style>
   </Style>
   <Style x:Key="RepositoryManagerTabControl" Selector="controls|ModernTabControl">

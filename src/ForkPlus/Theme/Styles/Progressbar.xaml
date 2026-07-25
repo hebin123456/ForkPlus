@@ -21,7 +21,7 @@
   <circularProgressBar:RotateTransformConverter x:Key="RotateTransformConverter" />
   <circularProgressBar:RotateTransformCentreConverter x:Key="RotateTransformCentreConverter" />
   <Style x:Key="CircularProgressBar" Selector="ProgressBar">
-    <Setter Property="Foreground" Value="#FF007ACC" />
+    <Setter Property="TextElement.Foreground" Value="#FF007ACC" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />
@@ -148,6 +148,6 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
-    <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
   </Style>
 </ResourceDictionary>

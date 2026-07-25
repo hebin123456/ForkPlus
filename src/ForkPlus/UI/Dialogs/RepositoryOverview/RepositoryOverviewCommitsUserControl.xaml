@@ -3,7 +3,7 @@
     <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 DataTrigger。
          当祖先 ListBoxItem.IsSelected=True 时设置 AuthorDateTextBlock.Foreground=ForegroundBrush.Light。 -->
     <Style Selector="ListBoxItem:selected TextBlock#AuthorDateTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </UserControl.Styles>
   <Grid>
@@ -11,9 +11,6 @@
       <ListBox.ContextMenu>
         <ContextMenu />
       </ListBox.ContextMenu>
-      <ListBox.ItemContainerStyle>
-        <Style Selector="ListBoxItem" />
-      </ListBox.ItemContainerStyle>
       <ListBox.ItemTemplate>
         <DataTemplate>
           <DockPanel Height="20">
@@ -22,9 +19,9 @@
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
                 </controls:AvatarImage.UserIdentity>
-                <controls:AvatarImage.ToolTip.Tip>
+                <ToolTip.Tip>
                   <Binding Path="FullCredentialsString" />
-                </controls:AvatarImage.ToolTip.Tip>
+                </ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
             <TextBlock DockPanel.Dock="Right" Margin="4,0,0,2" VerticalAlignment="Bottom" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">

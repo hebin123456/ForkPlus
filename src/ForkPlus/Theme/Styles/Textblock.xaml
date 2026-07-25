@@ -20,7 +20,7 @@
     <Setter Property="Margin" Value="0,12,0,6" />
   </Style>
   <Style x:Key="ReferenceLabelTextBlockStyle" Selector="TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource ReferenceForeground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceForeground}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Margin" Value="2,-1,2,1" />
   </Style>
@@ -29,7 +29,7 @@
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Margin" Value="4,-3,4,2" />
-    <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ToolbarForeground}" />
   </Style>
   <Style x:Key="LfsLabel" Selector="Label">
     <Setter Property="Height" Value="16" />
@@ -39,7 +39,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
     <Setter Property="FontSize" Value="11" />
-    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -57,7 +57,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Background" Value="#FFFF6663" />
     <Setter Property="FontSize" Value="11" />
-    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -69,7 +69,7 @@
     </Setter>
   </Style>
   <Style x:Key="BugtrackerHyperlinkStyle" Selector="Hyperlink">
-<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -77,19 +77,19 @@
     </Setter>
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
   <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink">
-<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style>
   </Style>
   <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink">
-<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -97,15 +97,15 @@
     </Setter>
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
   <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink">
-<Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
+<Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style>
   </Style>
   <Style x:Key="GrayUnderlineHyperlinkStyle" Selector="Hyperlink">
@@ -116,7 +116,7 @@
     </Setter>
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ReferenceBrush}" />
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
@@ -126,7 +126,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="ToolTip">
       <Setter.Value>
         <ToolTip>

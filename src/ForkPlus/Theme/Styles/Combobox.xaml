@@ -53,7 +53,7 @@
     </Setter>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
     <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected (show selection indicator) -->
     <Style Selector="^:selected /template/ Border#SelectionIndicator">
@@ -203,7 +203,7 @@
     <Setter Property="AllowDrop" Value="true" />
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
@@ -271,7 +271,7 @@
   <Style x:Key="ComboBox" Selector="ComboBox">
     <Setter Property="Background" Value="{DynamicResource ComboBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Static.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
@@ -281,7 +281,7 @@
     <!-- Converted from ComboBoxEditableTemplate ControlTemplate.Triggers: IsKeyboardFocusWithin=true -> :focus-within.
          (Border#border only exists in the editable template, so the /template/ selector self-limits.) -->
     <Style Selector="^:focus-within">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
     <Style Selector="^:focus-within /template/ Border#border">
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />

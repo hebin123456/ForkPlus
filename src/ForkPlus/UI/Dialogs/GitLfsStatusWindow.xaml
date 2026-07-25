@@ -3,10 +3,10 @@
     <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger（单条件 IsSelected）。
          当祖先 ListBoxItem.IsSelected=True 时设置 PathTextBlock/OwnerTextBlock.Foreground=ForegroundBrush.Light。 -->
     <Style Selector="ListBoxItem:selected TextBlock#PathTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
     <Style Selector="ListBoxItem:selected TextBlock#OwnerTextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>

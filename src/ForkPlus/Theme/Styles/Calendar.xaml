@@ -40,7 +40,7 @@
       <Setter Property="Opacity" Value="0.75" />
     </Style>
     <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
-      <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
     </Style>
   </Style>
   <Style x:Key="CalendarDayButtonStyle" Selector="CalendarDayButton">
@@ -63,7 +63,7 @@
       <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
     </Style>
     <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
-      <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
     </Style>
   </Style>
   <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="Button">
@@ -88,7 +88,7 @@
     </Grid>
   </ControlTemplate>
   <Style x:Key="CalendarItemStyle" Selector="CalendarItem">
-    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="Margin" Value="0,3,0,3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -178,7 +178,7 @@
   <Style x:Key="Calendar" Selector="Calendar">
     <Setter Property="Background" Value="{DynamicResource Calendar.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
-    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CalendarDayButtonStyle" Value="{DynamicResource CalendarDayButtonStyle}" />
     <Setter Property="CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />

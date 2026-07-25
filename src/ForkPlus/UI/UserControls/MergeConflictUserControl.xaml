@@ -14,7 +14,7 @@
       <Style x:Key="MergeConflictCheckBox" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="15,10,15,12" />
         <Setter Property="CornerRadius" Value="3" />
@@ -22,6 +22,63 @@
           <Setter.Value>
             <ControlTemplate>
               <Grid Background="#00FFFFFF" x:Name="TemplateRoot">
+<Grid.Styles>
+<Style Selector="^:disabled /template/ Border#ContentBorder">
+                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Disabled.Border}" />
+              </Style>
+              <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
+              </Style>
+              <Style Selector="^:disabled /template/ Path#OptionMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+              </Style>
+              <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+              </Style>
+              <Style Selector="^:checked /template/ Border#ContentBorder">
+                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+              <Style Selector="^:checked /template/ Border#CheckBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+              <Style Selector="^:checked /template/ Path#OptionMark">
+                <Setter Property="Opacity" Value="1" />
+              </Style>
+              <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
+                <Setter Property="Opacity" Value="0" />
+              </Style>
+              <Style Selector="^:indeterminate /template/ Border#ContentBorder">
+                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.MouseOver.Border}" />
+              </Style>
+              <Style Selector="^:indeterminate /template/ Path#OptionMark">
+                <Setter Property="Opacity" Value="0" />
+              </Style>
+              <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
+                <Setter Property="Opacity" Value="1" />
+              </Style>
+              <!-- :pressed declared after :checked/:indeterminate so it overrides their backgrounds when both match
+                   (mirrors WPF trigger ordering semantics). -->
+              <Style Selector="^:pressed /template/ Border#ContentBorder">
+                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+              <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+              <Style Selector="^:pressed /template/ Path#OptionMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+              </Style>
+              <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+              </Style>
+</Grid.Styles>
+
                 <Grid.RowDefinitions>
                   <RowDefinition Height="31" />
                   <RowDefinition Height="*" />
@@ -40,11 +97,23 @@
                   <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
                 </Border>
               </Grid>
-              <!-- 阶段 4.5：ControlTemplate.Triggers (IsEnabled/ButtonBase.IsPressed/IsChecked/IsChecked=null)
-                   → Avalonia 嵌套 Selector (:disabled/:pressed/:checked/:indeterminate).
-                   WPF 中 Trigger 集合按声明顺序应用（后者覆盖前者），Avalonia 中相同样式按声明顺序合并，
-                   保留 :pressed 在 :checked/:indeterminate 之后以匹配 WPF 优先级。 -->
-              <Style Selector="^:disabled /template/ Border#ContentBorder">
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="MergeConflictCheckBoxInverted" Selector="CheckBox">
+<Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="15,10,15,12" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Grid x:Name="TemplateRoot">
+<Grid.Styles>
+<Style Selector="^:disabled /template/ Border#ContentBorder">
                 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Disabled.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Disabled.Border}" />
               </Style>
@@ -98,21 +167,8 @@
               <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
                 <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
               </Style>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-      <Style x:Key="MergeConflictCheckBoxInverted" Selector="CheckBox">
-<Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="15,10,15,12" />
-        <Setter Property="CornerRadius" Value="3" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate>
-              <Grid x:Name="TemplateRoot">
+</Grid.Styles>
+
                 <Grid.RowDefinitions>
                   <RowDefinition Height="31" />
                   <RowDefinition Height="*" />
@@ -131,64 +187,6 @@
                   </Grid>
                 </Border>
               </Grid>
-              <!-- 阶段 4.5：ControlTemplate.Triggers (IsEnabled/ButtonBase.IsPressed/IsChecked/IsChecked=null)
-                   → Avalonia 嵌套 Selector (:disabled/:pressed/:checked/:indeterminate).
-                   WPF 中 Trigger 集合按声明顺序应用（后者覆盖前者），Avalonia 中相同样式按声明顺序合并，
-                   保留 :pressed 在 :checked/:indeterminate 之后以匹配 WPF 优先级。 -->
-              <Style Selector="^:disabled /template/ Border#ContentBorder">
-                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
-                <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Path#OptionMark">
-                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
-                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-              </Style>
-              <Style Selector="^:checked /template/ Border#ContentBorder">
-                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <Style Selector="^:checked /template/ Border#CheckBoxBorder">
-                <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <Style Selector="^:checked /template/ Path#OptionMark">
-                <Setter Property="Opacity" Value="1" />
-              </Style>
-              <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
-                <Setter Property="Opacity" Value="0" />
-              </Style>
-              <Style Selector="^:indeterminate /template/ Border#ContentBorder">
-                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.MouseOver.Border}" />
-              </Style>
-              <Style Selector="^:indeterminate /template/ Path#OptionMark">
-                <Setter Property="Opacity" Value="0" />
-              </Style>
-              <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
-                <Setter Property="Opacity" Value="1" />
-              </Style>
-              <!-- :pressed declared after :checked/:indeterminate so it overrides their backgrounds when both match
-                   (mirrors WPF trigger ordering semantics). -->
-              <Style Selector="^:pressed /template/ Border#ContentBorder">
-                <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
-                <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <Style Selector="^:pressed /template/ Path#OptionMark">
-                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-              </Style>
-              <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
-                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-              </Style>
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -205,9 +203,9 @@
             <controls:AvatarImage.UserIdentity>
               <Binding Path="Author" />
             </controls:AvatarImage.UserIdentity>
-            <controls:AvatarImage.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="FullCredentialsString" />
-            </controls:AvatarImage.ToolTip.Tip>
+            </ToolTip.Tip>
           </controls:AvatarImage>
           <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
             <Button.Content>

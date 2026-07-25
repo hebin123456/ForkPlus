@@ -47,9 +47,6 @@
             </Image>
           </Button>
           <controls:PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" x:Name="SearchTextBox">
-            <controls:PlaceholderTextBox.Style>
-              <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" />
-            </controls:PlaceholderTextBox.Style>
             <controls:PlaceholderTextBox.Icon>
               <DynamicResource ResourceKey="SearchIcon" />
             </controls:PlaceholderTextBox.Icon>

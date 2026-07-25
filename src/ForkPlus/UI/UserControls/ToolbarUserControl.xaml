@@ -11,9 +11,6 @@
     </Grid.ColumnDefinitions>
     <StackPanel Orientation="Horizontal" Grid.Column="0">
       <controls:ToolbarButton Margin="8,3,0,3" Title="Quick Launch" x:Name="OpenQuicklyToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="OpenQuicklyIcon" />
@@ -24,9 +21,6 @@
         </Image>
       </controls:ToolbarButton>
       <controls:ToolbarButton Margin="16,3,0,3" Title="Fetch" x:Name="FetchToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="FetchIcon" />
@@ -37,9 +31,6 @@
         </Image>
       </controls:ToolbarButton>
       <controls:ToolbarButton Margin="0,3,0,3" Title="Pull" x:Name="PullToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="PullIcon" />
@@ -50,9 +41,6 @@
         </Image>
       </controls:ToolbarButton>
       <controls:ToolbarButton Margin="0,3,0,3" Title="Push" x:Name="PushToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="PushIcon" />
@@ -64,9 +52,6 @@
       </controls:ToolbarButton>
       <StackPanel Orientation="Horizontal" Margin="20,3,0,3">
         <controls:ToolbarButton Title="Stash" Padding="4,0,4,0" x:Name="StashToolbarButton">
-          <controls:ToolbarButton.Style>
-            <DynamicResource ResourceKey="StashToolbarButtonStyle" />
-          </controls:ToolbarButton.Style>
           <Image>
             <Image.Source>
               <DynamicResource ResourceKey="StashIcon" />
@@ -77,9 +62,6 @@
           </Image>
         </controls:ToolbarButton>
         <controls:DropDownButton Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="StashToolbarDropdownButton">
-          <controls:DropDownButton.Style>
-            <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
-          </controls:DropDownButton.Style>
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="StashToolbarDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
@@ -95,9 +77,6 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="8,3,0,3">
         <controls:ToolbarButton Title="Undo" Padding="4,0,4,0" x:Name="UndoToolbarButton">
-          <controls:ToolbarButton.Style>
-            <DynamicResource ResourceKey="StashToolbarButtonStyle" />
-          </controls:ToolbarButton.Style>
           <Image>
             <Image.Source>
               <DynamicResource ResourceKey="UndoIcon" />
@@ -108,9 +87,6 @@
           </Image>
         </controls:ToolbarButton>
         <controls:DropDownButton Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="UndoToolbarDropdownButton">
-          <controls:DropDownButton.Style>
-            <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
-          </controls:DropDownButton.Style>
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="UndoToolbarDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
@@ -126,9 +102,6 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="0,3,0,3">
         <controls:ToolbarButton Title="Redo" Padding="4,0,4,0" x:Name="RedoToolbarButton">
-          <controls:ToolbarButton.Style>
-            <DynamicResource ResourceKey="StashToolbarButtonStyle" />
-          </controls:ToolbarButton.Style>
           <Image>
             <Image.Source>
               <DynamicResource ResourceKey="RedoIcon" />
@@ -139,9 +112,6 @@
           </Image>
         </controls:ToolbarButton>
         <controls:DropDownButton Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="RedoToolbarDropdownButton">
-          <controls:DropDownButton.Style>
-            <DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
-          </controls:DropDownButton.Style>
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="RedoToolbarDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
@@ -156,9 +126,6 @@
         </controls:DropDownButton>
       </StackPanel>
       <controls:ToolbarButton Margin="8,3,0,3" Title="View Reflog..." x:Name="ReflogToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="RevisionListIcon" />
@@ -193,9 +160,6 @@
     <DockPanel Grid.Column="2" LastChildFill="False">
       <StackPanel Orientation="Horizontal" Margin="10,3,0,3">
         <controls:ToolbarButton Title="Branch" Padding="4,0,4,0" x:Name="BranchToolbarButton">
-          <controls:ToolbarButton.Style>
-            <DynamicResource ResourceKey="BranchToolbarButtonStyle" />
-          </controls:ToolbarButton.Style>
           <Image>
             <Image.Source>
               <DynamicResource ResourceKey="CreateBranchIcon" />
@@ -206,9 +170,6 @@
           </Image>
         </controls:ToolbarButton>
         <controls:DropDownButton Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="BranchToolbarDropdownButton">
-          <controls:DropDownButton.Style>
-            <DynamicResource ResourceKey="BranchToolbarDropdownButtonStyle" />
-          </controls:DropDownButton.Style>
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="BranchToolbarDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
@@ -223,9 +184,6 @@
         </controls:DropDownButton>
       </StackPanel>
       <controls:ToolbarDropDownButton DockPanel.Dock="Right" Margin="0,3,4,3" Title="Workspaces" x:Name="WorkspacesToolbarDropdownButton">
-        <controls:ToolbarDropDownButton.Style>
-          <DynamicResource ResourceKey="ToolbarDropdownButton" />
-        </controls:ToolbarDropDownButton.Style>
         <controls:ToolbarDropDownButton.ContextMenu>
           <ContextMenu />
         </controls:ToolbarDropDownButton.ContextMenu>
@@ -239,9 +197,6 @@
         </Image>
       </controls:ToolbarDropDownButton>
       <controls:ToolbarDropDownButton DockPanel.Dock="Right" Margin="0,3,0,3" Title="Appearance" x:Name="AppearanceToolbarDropdownButton" AutomationProperties.Name="Appearance">
-        <controls:ToolbarDropDownButton.Style>
-          <DynamicResource ResourceKey="ToolbarDropdownButton" />
-        </controls:ToolbarDropDownButton.Style>
         <controls:ToolbarDropDownButton.ContextMenu>
           <ContextMenu />
         </controls:ToolbarDropDownButton.ContextMenu>
@@ -255,9 +210,6 @@
         </Image>
       </controls:ToolbarDropDownButton>
       <controls:ToolbarButton Margin="0,3,0,3" DockPanel.Dock="Right" x:Name="OpenInConsoleToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="ConsoleIcon" />
@@ -268,9 +220,6 @@
         </Image>
       </controls:ToolbarButton>
       <controls:ToolbarButton Margin="0,3,0,3" DockPanel.Dock="Right" Title="AI-Assisted Development" x:Name="AiDevelopmentToolbarButton">
-        <controls:ToolbarButton.Style>
-          <DynamicResource ResourceKey="ToolbarButton" />
-        </controls:ToolbarButton.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="AiIcon" />
@@ -281,9 +230,6 @@
         </Image>
       </controls:ToolbarButton>
       <controls:ToolbarDropDownButton DockPanel.Dock="Right" Margin="4,3,4,3" Title="Open in" x:Name="OpenInDropDownButton">
-        <controls:ToolbarDropDownButton.Style>
-          <DynamicResource ResourceKey="ToolbarDropdownButton" />
-        </controls:ToolbarDropDownButton.Style>
         <controls:ToolbarDropDownButton.ContextMenu>
           <ContextMenu Opened="OpenInDropDownButtonContextMenu_Opened" />
         </controls:ToolbarDropDownButton.ContextMenu>
