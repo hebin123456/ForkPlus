@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {

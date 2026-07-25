@@ -5,6 +5,7 @@ using System.ComponentModel;
 using Avalonia.Media;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {

@@ -6,6 +6,7 @@ using System.IO;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {

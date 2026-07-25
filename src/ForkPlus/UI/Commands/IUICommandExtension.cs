@@ -1,5 +1,6 @@
 // 阶段 4.5：移除未使用的 using System.Windows.Input;（KeyGesture/KeyModifiers/ICommand 已由 using Avalonia.Input 提供）。
 using System;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using System.Windows.Input; // 阶段 5：Avalonia 使用标准 BCL 的 System.Windows.Input.ICommand（非 Avalonia.Input.ICommand），KeyBinding.Command 即此类型。

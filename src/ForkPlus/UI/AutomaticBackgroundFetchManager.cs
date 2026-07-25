@@ -12,6 +12,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {

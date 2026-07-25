@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Documents;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.CustomCommands
 {

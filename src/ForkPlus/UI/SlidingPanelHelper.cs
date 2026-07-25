@@ -16,7 +16,7 @@ namespace ForkPlus.UI
 		// （Avalonia 用 Easing 类型的属性，QuadraticEaseOut 是内置 Easing）。
 		private static readonly TimeSpan AnimationDuration = TimeSpan.FromSeconds(0.3);
 
-		private static readonly Easing EaseOut = new QuadraticEaseOut();
+		private static readonly Avalonia.Animation.Easing EaseOut = new Avalonia.Animation.QuadraticEaseOut();
 
 		public static bool ShowPanel(Grid placeholder, TranslateTransform transform, double height)
 		{
