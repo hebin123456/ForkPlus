@@ -564,7 +564,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			button = new Button
 			{
-				Style = ForkPlus.UI.Theme.TransparentButtonStyle,
+				Styles = { ForkPlus.UI.Theme.TransparentButtonStyle }, // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 				FontSize = 12.0,
 				Padding = new Thickness(3.0, 0.0, 3.0, 0.0)
 			};
@@ -1241,7 +1241,7 @@ namespace ForkPlus.UI.UserControls
 			tabItem.PointerPressed += SubrepoTabItem_PointerPressed;
 			tabItem.PointerMoved += SubrepoTabItem_PointerMoved;
 			tabItem.PointerReleased += SubrepoTabItem_PointerReleased;
-			tabItem.Drop += SubrepoTabItem_Drop;
+			tabItem.AddHandler(Avalonia.Input.DragDrop.DropEvent, SubrepoTabItem_Drop); // 阶段 5：Avalonia TabItem 无 Drop 事件，用 AddHandler(DragDrop.DropEvent)
 				SubreposTabControl.Items.Add(tabItem);
 				if (IsSamePath(subrepo.Path, preferredSubrepoPath))
 				{
@@ -1483,7 +1483,7 @@ namespace ForkPlus.UI.UserControls
 				Height = 30.0,
 				Margin = margin,
 				Padding = new Thickness(4.0),
-				Style = ForkPlus.UI.Theme.TransparentButtonStyle
+				Styles = { ForkPlus.UI.Theme.TransparentButtonStyle } // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 			};
 			// 阶段 4.5：WPF ToolTip 属性 → Avalonia ToolTip.SetTip 附加属性。
 			ToolTip.SetTip(button, tooltip);
@@ -1653,7 +1653,7 @@ namespace ForkPlus.UI.UserControls
 		// 阶段 4.5：WPF e.Source → e.Source；DependencyObject → Visual；ActualHeight/ActualWidth → Bounds.Height/Bounds.Width。
 		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is TabItem targetTabItem) || !(e.Data.Get(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
+			if (!(sender is TabItem targetTabItem) || !(e.Data.Get(typeof(WeakReference<TabItem>).FullName) /* 阶段 5：Avalonia IDataObject.Get 仅接受 string，传 Type.FullName */ is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
 			{
 				return;
 			}
@@ -1815,7 +1815,7 @@ namespace ForkPlus.UI.UserControls
 			return new MenuItem
 			{
 				Header = new RepositoryColorsUserControl(repository),
-				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
+				Styles = { ForkPlus.UI.Theme.CustomContentMenuItemStyle } // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 			};
 		}
 
@@ -1857,7 +1857,7 @@ namespace ForkPlus.UI.UserControls
 				if (brush == null && subrepo.IsRootRepository)
 				{
 					// 阶段 4.5：WPF Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush → ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush。
-					brush = ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
+					brush = ForkPlus.UI.Theme.FindBrush("SystemAccentBrush") as SolidColorBrush ?? new SolidColorBrush(Avalonia.Media.Colors.DodgerBlue); // 阶段 5：Brushes.DodgerBlue 返回 IImmutableSolidColorBrush，与 SolidColorBrush 的 ?? 不兼容，改用 new SolidColorBrush(Colors.DodgerBlue)
 				}
 				colorEllipse.IsVisible = !(brush == null);
 				colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;

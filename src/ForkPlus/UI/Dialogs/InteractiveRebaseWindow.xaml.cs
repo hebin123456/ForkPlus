@@ -712,11 +712,12 @@ namespace ForkPlus.UI.Dialogs
 				{
 					rewordUserControl.Refresh(revision.Subject, revision.Description);
 				}
-				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is ListBoxItem listViewItem)
-				{
-					UpdateAdornerMargin(listViewItem);
-					return;
-				}
+				// 阶段 5：Avalonia ItemContainerGenerator 无 ContainerFromItem，改用 ItemsControl.ContainerFromItem（直接在 ItemsControl 上调用）。
+			if (RevisionListView.ContainerFromItem(revision) is ListBoxItem listViewItem)
+			{
+				UpdateAdornerMargin(listViewItem);
+				return;
+			}
 				CloseRewordPopup();
 				SelectAndFocusRevision(revision);
 			}
@@ -726,8 +727,11 @@ namespace ForkPlus.UI.Dialogs
 		{
 			int num = 130;
 			int num2 = 22;
-			Point point = listViewItem.TransformToAncestor(RevisionListView).Transform(new Point(num, 0.0));
-			_adorner.Margin = new Thickness(num, point.Y + (double)num2, 0.0, 0.0);
+			// 阶段 5：Avalonia 无 Visual.TransformToAncestor(Visual).Transform(Point)。
+			// 用 TranslatePoint(Point, target) 将本地点转换到目标控件坐标系。
+			Point? point = listViewItem.TranslatePoint(new Point(num, 0.0), RevisionListView);
+			double y = point?.Y ?? 0.0;
+			_adorner.Margin = new Thickness(num, y + (double)num2, 0.0, 0.0);
 		}
 
 		private RewordUserControl CreateAdornerContent(RevisionEntry revision)

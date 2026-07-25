@@ -1,5 +1,3 @@
-using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 using AvaloniaEdit;
 using AvaloniaEdit.Rendering;
 
@@ -8,19 +6,16 @@ namespace ForkPlus.UI.Helpers
 	internal static class TextEditorExtensions
 	{
 		// 阶段 4 里程碑 4.7-a：System.Windows.Controls.Primitives.IScrollInfo → Avalonia.Controls.Primitives.IScrollInfo。
-		// Avalonia 的 IScrollInfo 用 Size Extent / Size Viewport（非 WPF 的 ExtentHeight/ViewportHeight 双精度属性）。
-		// 用 as 安全转型：若 Avalonia.AvalonEdit TextView 未实现 IScrollInfo，回退为 true（不阻断滚动逻辑），待 build 验证。
+		// 阶段 5：Avalonia 11.3 已移除 IScrollInfo 接口，TextView 不再实现该接口。
+		// 改用 TextView.Bounds.Height（视口高度）和 TextView.Bounds.Height + VerticalOffset（文档总高度）近似判断。
+		// 注：AvaloniaEdit TextView 的滚动范围由内部 ScrollInfo 管理，此处用 Bounds 近似（阶段 6 可改为访问内部 ScrollInfo）。
 		public static bool IsVerticalOffsetWithinDocumentArea(this TextEditor textEditor, double offset)
 		{
 			TextView textView = textEditor.TextArea.TextView;
-			IScrollInfo scrollInfo = textView as IScrollInfo;
-			// NOTE(4.7-a): 验证 Avalonia.AvalonEdit TextView 是否实现 Avalonia IScrollInfo；若否需改用 TextView 自身滚动范围属性。
-			if (scrollInfo == null)
-			{
-				return true;
-			}
-			double extentHeight = scrollInfo.Extent.Height;
-			double viewportHeight = scrollInfo.Viewport.Height;
+			// 阶段 5：用 TextView.Bounds.Height 作为视口高度，VerticalOffset 为当前滚动偏移。
+			// 文档总高度 = textView.Bounds.Height + textView.VerticalOffset（近似）。
+			double viewportHeight = textView.Bounds.Height;
+			double extentHeight = textView.Bounds.Height + textView.VerticalOffset;
 			if (offset + viewportHeight > extentHeight)
 			{
 				return false;
@@ -31,14 +26,9 @@ namespace ForkPlus.UI.Helpers
 		public static bool IsHorizontalOffsetWithinDocumentArea(this TextEditor textEditor, double offset)
 		{
 			TextView textView = textEditor.TextArea.TextView;
-			IScrollInfo scrollInfo = textView as IScrollInfo;
-			// NOTE(4.7-a): 同上，验证 TextView 的 IScrollInfo 实现。
-			if (scrollInfo == null)
-			{
-				return true;
-			}
-			double extentWidth = scrollInfo.Extent.Width;
-			double viewportWidth = scrollInfo.Viewport.Width;
+			// 阶段 5：同上，用 Bounds.Width + HorizontalOffset 近似文档总宽度。
+			double viewportWidth = textView.Bounds.Width;
+			double extentWidth = textView.Bounds.Width + textView.HorizontalOffset;
 			if (offset + viewportWidth > extentWidth)
 			{
 				return false;

@@ -19,6 +19,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using ForkPlus.UI;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.Helpers;
 
@@ -111,8 +112,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
 				_adorner.AttachTo(ParentListBox);
-				// 阶段 4.5：WPF DragDrop.DoDragDrop → Avalonia _ = DragDrop.DoDragDrop（异步返回 Task，丢弃）。
-				_ = DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+				// 阶段 5：WPF DragDrop.DoDragDrop(dragSource, data, effects) → DragDropBridge.DoDragDrop
+				// （Avalonia 原生签名需 PointerEventArgs + IDataObject，桥接通过 CapturePointerEvent 缓存 e 并自动包装 DataObject）。
+				DragDropBridge.CapturePointerEvent(e);
+				_ = DragDropBridge.DoDragDrop(this, array, DragDropEffects.Move);
 				_adorner.DetachFrom(ParentListBox);
 			}
 		}

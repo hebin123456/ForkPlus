@@ -310,7 +310,7 @@ namespace ForkPlus.UI.Dialogs
 
 			_aiResolving = true;
 			AiResolveButton.IsEnabled = false;
-			string originalToolTip = AiResolveButton.ToolTip?.ToString();
+			string originalToolTip = ToolTip.GetTip(AiResolveButton)?.ToString(); // 阶段 5：Avalonia ToolTip 为附加属性，读取用 ToolTip.GetTip
 			ToolTip.SetTip(AiResolveButton, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
 			string fileName = Path.GetFileName(_changedFile.Path);

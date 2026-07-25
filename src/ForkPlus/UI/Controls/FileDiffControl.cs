@@ -142,9 +142,11 @@ namespace ForkPlus.UI.Controls
 		// 通过 e.Handled = true 阻止后续处理，达到 Preview 的效果。
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			// 阶段 5：Avalonia 无 FocusManager.Instance 静态单例，FocusManager 是 Control 的实例属性。
-			// 通过 this.FocusManager?.GetFocusedElement() 获取当前焦点元素（等价 WPF Keyboard.FocusedElement）。
-			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(this.FocusManager?.GetFocusedElement() is TextBox))
+			// 阶段 5：Avalonia 无 Keyboard.FocusedElement 静态属性。
+			// 通过 TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() 获取当前焦点元素。
+			IFocusManager focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+			object focusedElement = focusManager?.GetFocusedElement();
+			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(focusedElement is TextBox))
 			{
 				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
 				if (repositoryUserControl != null)

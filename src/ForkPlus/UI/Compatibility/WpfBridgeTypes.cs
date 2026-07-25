@@ -69,6 +69,18 @@ namespace ForkPlus.UI
 		/// <summary>WPF SystemParameters.MinimumHorizontalDragDistance / MinimumVerticalDragDistance。</summary>
 		public const double MinimumHorizontalDragDistance = 10.0;
 		public const double MinimumVerticalDragDistance = 10.0;
+
+		/// <summary>WPF SystemParameters.VerticalScrollBarWidth：垂直滚动条宽度。Avalonia 跨平台无统一值，占位 18.0（Windows 默认）。</summary>
+		public const double VerticalScrollBarWidth = 18.0;
+
+		/// <summary>WPF SystemParameters.HorizontalScrollBarHeight：水平滚动条高度。占位 18.0。</summary>
+		public const double HorizontalScrollBarHeight = 18.0;
+
+		/// <summary>WPF SystemParameters.ScrollWidth：等价 VerticalScrollBarWidth。占位 18.0。</summary>
+		public const double ScrollWidth = 18.0;
+
+		/// <summary>WPF SystemParameters.ScrollHeight：等价 HorizontalScrollBarHeight。占位 18.0。</summary>
+		public const double ScrollHeight = 18.0;
 	}
 
 	/// <summary>

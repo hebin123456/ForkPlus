@@ -313,7 +313,8 @@ namespace ForkPlus.UI.Helpers
 			// 阶段 4.5：WPF PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice（Matrix M11/M22）
 			// → Avalonia Visual.RenderScaling（单一 DPI 因子，Avalonia 假设 X/Y DPI 一致）。
 			// 对绝大多数显示器成立；混合 DPI 多显示器场景由 Avalonia 自动按显示器缩放。
-			double scaling = visual.RenderScaling;
+			// 阶段 5：Avalonia Visual 无 RenderScaling 属性，用 GetRenderScaling() 扩展方法（从 IRenderRoot.RenderScaling 获取）。
+			double scaling = visual.GetRenderScaling();
 			unitX = (int)(pixelX / scaling);
 			unitY = (int)(pixelY / scaling);
 		}
@@ -326,7 +327,8 @@ namespace ForkPlus.UI.Helpers
 				pixelY = (int)unitY;
 				return;
 			}
-			double scaling = visual.RenderScaling;
+			// 阶段 5：Avalonia Visual 无 RenderScaling 属性，用 GetRenderScaling() 扩展方法。
+			double scaling = visual.GetRenderScaling();
 			pixelX = (int)(unitX * scaling);
 			pixelY = (int)(unitY * scaling);
 		}

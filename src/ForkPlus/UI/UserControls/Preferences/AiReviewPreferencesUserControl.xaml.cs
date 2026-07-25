@@ -288,7 +288,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 					Padding = new Thickness(0),
 					Margin = new Thickness(0, 0, 4, 0),
 					Tag = skill,
-					ToolTip = PreferencesLocalization.Current("Remove this skill")
+					// 阶段 5：Avalonia ToolTip 为附加属性，对象初始化器用 [ToolTip.TipProperty] = value（不带 ! 表示字面量赋值）。
+					[Avalonia.Controls.ToolTip.TipProperty] = PreferencesLocalization.Current("Remove this skill")
 				};
 				removeButton.Click += RemoveSkillButton_Click;
 				panel.Children.Add(removeButton);

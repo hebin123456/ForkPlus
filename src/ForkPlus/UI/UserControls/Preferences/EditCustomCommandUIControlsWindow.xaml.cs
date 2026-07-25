@@ -186,8 +186,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 				return;
 			}
 			CustomCommandUIControlViewModel targetItem = dataContext as CustomCommandUIControlViewModel;
-			// 阶段 4.5：WPF e.Data.GetData → Avalonia e.Data.Get。
-			if (targetItem == null || !(e.Data.Get(typeof(object[])) is object[] array) || array.Length != 1)
+			// 阶段 5：WPF e.Data.GetData(Type) → Avalonia e.Data.Get(string)。
+			// DragDropBridge 用 data.GetType().FullName 作为格式名注册 DataObject，
+			// 故此处需用 typeof(object[]).FullName 作为 format key 取回。
+			if (targetItem == null || !(e.Data.Get(typeof(object[]).FullName) is object[] array) || array.Length != 1)
 			{
 				return;
 			}

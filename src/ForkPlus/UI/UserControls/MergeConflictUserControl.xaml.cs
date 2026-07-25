@@ -151,7 +151,7 @@ namespace ForkPlus.UI.UserControls
 			GitModule gitModule = _repositoryUserControl?.GitModule;
 
 			AiResolveButton.IsEnabled = false;
-			string originalToolTip = AiResolveButton.ToolTip?.ToString();
+			string originalToolTip = ToolTip.GetTip(AiResolveButton)?.ToString(); // 阶段 5：Avalonia ToolTip 为附加属性，读取用 ToolTip.GetTip
 			ToolTip.SetTip(AiResolveButton, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
 			AiResolveResult result = await _viewModel.TryResolveWithAiAsync(gitModule, _changedFile).ConfigureAwait(true);

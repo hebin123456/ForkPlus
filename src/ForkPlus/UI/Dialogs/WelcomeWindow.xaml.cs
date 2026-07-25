@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using System;
 using System.IO;
@@ -69,7 +70,8 @@ namespace ForkPlus.UI.Dialogs
 				if (!gitCommandResult.Succeeded)
 				{
 					new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
-					Application.Current.Shutdown();
+					// 阶段 5：Avalonia Application 无 Shutdown() 方法，改用 IClassicDesktopStyleApplicationLifetime.Shutdown()。
+					(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 					return;
 				}
 				ForkPlusSettings.Default.Guid = Guid.NewGuid().ToString();

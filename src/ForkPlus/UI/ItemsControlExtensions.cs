@@ -60,11 +60,12 @@ namespace ForkPlus.UI
 
 		// 阶段 4.5：Avalonia 11.3 ItemContainerGenerator 无 ItemFromContainer 方法。
 		// 通过遍历 Items + ContainerFromItem 反向查找数据项。
+		// 阶段 5：Avalonia ItemContainerGenerator 也无 ContainerFromItem，改用 ItemsControl.ContainerFromItem（直接在 ItemsControl 上调用）。
 		private static object ItemFromContainer(ItemsControl itemsControl, object container)
 		{
 			foreach (var item in itemsControl.Items)
 			{
-				if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) == container)
+				if (itemsControl.ContainerFromItem(item) == container)
 				{
 					return item;
 				}

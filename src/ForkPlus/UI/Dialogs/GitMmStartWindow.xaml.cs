@@ -139,24 +139,26 @@ namespace ForkPlus.UI.Dialogs
 					{
 						Text = subrepo.Name
 					},
-					IsCheckable = true,
+					ToggleType = MenuItemToggleType.CheckBox, // 阶段 5：Avalonia MenuItem 无 IsCheckable，用 ToggleType = MenuItemToggleType.CheckBox
 					IsChecked = _selectedSubrepoPaths.Contains(subrepo.Path),
 					StaysOpenOnClick = true
 				};
-				menuItem.Checked += delegate
+				// 阶段 5：Avalonia MenuItem 无 Checked 事件，用 ForkPlus.UI.AddCheckedHandler 扩展
+				menuItem.AddCheckedHandler(delegate
 				{
 					_selectedSubrepoPaths.Add(subrepo.Path);
 					RefreshSubreposButton();
 					UpdateSubmitButton();
 					RefreshCommandPreview();
-				};
-				menuItem.Unchecked += delegate
+				});
+				// 阶段 5：Avalonia MenuItem 无 Unchecked 事件，用 ForkPlus.UI.AddUncheckedHandler 扩展
+				menuItem.AddUncheckedHandler(delegate
 				{
 					_selectedSubrepoPaths.Remove(subrepo.Path);
 					RefreshSubreposButton();
 					UpdateSubmitButton();
 					RefreshCommandPreview();
-				};
+				});
 				contextMenu.Items.Add(menuItem);
 			}
 			SubreposDropDownButton.ContextMenu = contextMenu;

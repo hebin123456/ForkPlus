@@ -1907,11 +1907,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			ImageToggleButton pinButton = new ImageToggleButton
 			{
-				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Styles = { ForkPlus.UI.Theme.BranchOptionButtonStyle }, // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 				Image = ForkPlus.UI.Theme.PinOnIcon,
 				AlternativeImage = ForkPlus.UI.Theme.PinOffIcon,
 				State = references.IsPinned(reference),
-				ToolTip = PreferencesLocalization.Current("Pin '" + reference.Name + "'")
+				// 阶段 5：Avalonia ToolTip 为附加属性，对象初始化器用 [ToolTip.TipProperty] = value（不带 ! 表示字面量赋值）。
+				[Avalonia.Controls.ToolTip.TipProperty] = PreferencesLocalization.Current("Pin '" + reference.Name + "'")
 			};
 			pinButton.Click += delegate
 			{
@@ -1927,19 +1928,21 @@ namespace ForkPlus.UI.UserControls
 			};
 			ImageToggleButton filterButton = new ImageToggleButton
 			{
-				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Styles = { ForkPlus.UI.Theme.BranchOptionButtonStyle }, // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 				Image = ForkPlus.UI.Theme.BranchFilterOnIcon,
 				AlternativeImage = ForkPlus.UI.Theme.BranchFilterOffIcon,
 				State = references.IsFiltered(reference),
-				ToolTip = PreferencesLocalization.Current("Show '" + reference.Name + "' commits only")
+				// 阶段 5：Avalonia ToolTip 为附加属性，对象初始化器用 [ToolTip.TipProperty] = value（不带 ! 表示字面量赋值）。
+				[Avalonia.Controls.ToolTip.TipProperty] = PreferencesLocalization.Current("Show '" + reference.Name + "' commits only")
 			};
 			ImageToggleButton hideButton = new ImageToggleButton
 			{
-				Style = ForkPlus.UI.Theme.BranchOptionButtonStyle,
+				Styles = { ForkPlus.UI.Theme.BranchOptionButtonStyle }, // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 				Image = ForkPlus.UI.Theme.HideBranchOnIcon,
 				AlternativeImage = ForkPlus.UI.Theme.HideBranchOffIcon,
 				State = references.IsHidden(reference),
-				ToolTip = PreferencesLocalization.Current("Hide '" + reference.Name + "' in the commit list")
+				// 阶段 5：Avalonia ToolTip 为附加属性，对象初始化器用 [ToolTip.TipProperty] = value（不带 ! 表示字面量赋值）。
+				[Avalonia.Controls.ToolTip.TipProperty] = PreferencesLocalization.Current("Hide '" + reference.Name + "' in the commit list")
 			};
 			filterButton.Click += delegate
 			{
@@ -1971,7 +1974,7 @@ namespace ForkPlus.UI.UserControls
 			return new MenuItem
 			{
 				Header = stackPanel,
-				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
+				Styles = { ForkPlus.UI.Theme.CustomContentMenuItemStyle } // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 			};
 		}
 

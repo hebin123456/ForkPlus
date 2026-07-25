@@ -76,7 +76,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			_aiGenerating = true;
 			AiGenerateStashNameButton.IsEnabled = false;
-			string originalToolTip = AiGenerateStashNameButton.ToolTip?.ToString();
+			string originalToolTip = ToolTip.GetTip(AiGenerateStashNameButton)?.ToString(); // 阶段 5：Avalonia ToolTip 为附加属性，读取用 ToolTip.GetTip
 			ToolTip.SetTip(AiGenerateStashNameButton, Translate("AI is generating..."));
 			StashMessageTextBox.Text = "";
 			StringBuilder liveMsg = new StringBuilder();

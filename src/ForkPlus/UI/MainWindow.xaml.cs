@@ -103,8 +103,8 @@ namespace ForkPlus.UI
 		base.PositionChanged += (_, _) => SaveMainWindowLocationState();
 		// 阶段 5：Avalonia 11 Window 无 WindowStateChanged 公开事件（仅 IWindowImpl 平台层回调）。
 		// 改用 GetObservable 订阅 WindowState 属性变更（等价 WPF StateChanged，参考 CustomWindow）。
-		// 阶段 5：显式构造 Action<WindowState> 避免 lambda 被解析为 IObserver<WindowState>（CS1660）。
-		this.GetObservable(WindowStateProperty).Subscribe((Action<WindowState>)(_ => Window_WindowStateChanged(this, EventArgs.Empty)));
+		// 阶段 5：用 ActionObserver<T> 包装 Action，避免 lambda 被错误解析为 IObserver<WindowState>（CS1660）。
+		this.GetObservable(WindowStateProperty).Subscribe(new ActionObserver<WindowState>(_ => Window_WindowStateChanged(this, EventArgs.Empty)));
 		AddHandler(DragDrop.DropEvent, OnDropHandler);
 			if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{

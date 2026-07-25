@@ -447,7 +447,7 @@ namespace ForkPlus.UI.UserControls
 						TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
 						MaxWidth = 260.0
 					},
-					Style = ForkPlus.UI.Theme.TransparentButtonStyle,
+					Styles = { ForkPlus.UI.Theme.TransparentButtonStyle }, // 阶段 5：Avalonia 用 Styles 集合替代 WPF Style 实例属性
 					// 阶段 4.5：WPF Application.Current.TryFindResource("AccentBrush") as Brush → ForkPlus.UI.Theme.FindBrush("AccentBrush")（参考 ActivityManagerUserControl）。
 					Foreground = ForkPlus.UI.Theme.FindBrush("AccentBrush"),
 					FontSize = 12.0,

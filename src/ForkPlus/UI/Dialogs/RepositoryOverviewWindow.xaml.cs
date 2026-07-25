@@ -330,7 +330,9 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				ctx.DrawImage(rectangle: new Rect(new Point(rect2.X + 6.0, rect2.Y + 6.0), new Size(12.0, 12.0)), imageSource: FolderIcon);
+				// 阶段 5：WPF ctx.DrawImage(imageSource, rectangle) → Avalonia ctx.DrawImage(source, rect)。
+				// 参数名不同（imageSource→source，rectangle→rect），且参数顺序为 (source, rect)。
+				ctx.DrawImage(FolderIcon, new Rect(new Point(rect2.X + 6.0, rect2.Y + 6.0), new Size(12.0, 12.0)));
 				if (!(rect2.Width < 30.0))
 				{
 					Rect rect3 = new Rect(rect2.X + 20.0, rect2.Y + 4.0, rect2.Width - 24.0, rect2.Height - 6.0);
