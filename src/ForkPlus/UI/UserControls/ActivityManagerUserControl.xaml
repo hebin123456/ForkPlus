@@ -31,7 +31,7 @@
   </UserControl.Styles>
   <Border Width="1024" Height="440" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" Margin="10,5,10,10" CornerRadius="6">
     <Border.Effect>
-      <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" ShadowDepth="2" />
+      <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" />
     </Border.Effect>
     <Grid>
       <Grid.RowDefinitions>
@@ -68,9 +68,7 @@
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Row="0" Grid.Column="0" LastChildFill="True">
                   <Border DockPanel.Dock="Left" Margin="0,0,4,0" Padding="3,0" CornerRadius="2" Background="{DynamicResource SystemAccentBrush}" VerticalAlignment="Center">
-                    <Border.Visibility>
-                      <Binding Path="GitMmBadgeVisibility" />
-                    </Border.Visibility>
+                    
                     <StackPanel Orientation="Horizontal">
                       <!-- 阶段 4.5：原 5 个 DataTrigger (IsGitMmScanJob/StatusJob/SyncJob/UploadJob/StartJob=True
                            -> GitMmCategoryImage.Source=对应图标) 用堆叠 Image + IsVisible 绑定实现。
@@ -95,26 +93,18 @@
                     <TextBlock.Text>
                       <Binding Path="FinishTime" />
                     </TextBlock.Text>
-                    <TextBlock.Visibility>
-                      <Binding Path="FinishTimeTextBlockVisibility" />
-                    </TextBlock.Visibility>
+                    
                   </TextBlock>
                   <Image Height="14" Width="14" Margin="0,0,2,0" VerticalAlignment="Center" Source="avares://ForkPlus/assets/warning.png" x:Name="WarningImage">
-                    <Image.Visibility>
-                      <Binding Path="WarningImageVisibility" />
-                    </Image.Visibility>
+                    
                   </Image>
                 </DockPanel>
                 <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                   <ProgressBar Margin="0,0,0,0" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator">
-                    <ProgressBar.Visibility>
-                      <Binding Path="BusyIndicatorVisibility" />
-                    </ProgressBar.Visibility>
+                    
                   </ProgressBar>
                   <Button Margin="4,0,0,0" Padding="0" VerticalAlignment="Center" Height="16" Width="16" Click="CancelButton_Click" x:Name="CancelButton">
-                    <Button.Visibility>
-                      <Binding Path="CancelButtonVisibility" />
-                    </Button.Visibility>
+                    
                     <Image Source="{DynamicResource CancelJobIcon}" />
                   </Button>
                 </StackPanel>
@@ -127,9 +117,7 @@
                   <ProgressBar.Value>
                     <Binding Path="CurrentProgress" />
                   </ProgressBar.Value>
-                  <ProgressBar.Visibility>
-                    <Binding Path="JobProgressProgressBarVisibility" />
-                  </ProgressBar.Visibility>
+                  
                 </ProgressBar>
               </Grid>
             </Border>

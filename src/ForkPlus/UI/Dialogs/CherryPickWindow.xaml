@@ -35,7 +35,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="GitPointsContainer">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints"><ItemsControl.ItemTemplate>
               <DataTemplate>
                 <controls:BindableGitPointView Margin="0,1,0,1">

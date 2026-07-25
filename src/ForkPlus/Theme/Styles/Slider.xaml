@@ -1,6 +1,6 @@
 <!-- Migration Notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
-     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved.
+     - Style TargetType="T" -> Selector="T"; x:Key values preserved.
      - Property prefixes stripped: FrameworkElement.OverridesDefaultStyle -> OverridesDefaultStyle,
        Panel.Background -> Background, UIElement.Focusable -> Focusable, Control.Template -> Template,
        FrameworkElement.Height -> Height, FrameworkElement.Width -> Width, Border.BorderBrush -> BorderBrush,
@@ -32,12 +32,12 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="{x:Type Thumb}">
+  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="Thumb">
     <Grid HorizontalAlignment="Center" UseLayoutRounding="True" VerticalAlignment="Center">
       <Ellipse Width="11" Height="11" VerticalAlignment="Center" Stretch="Fill" UseLayoutRounding="True" StrokeThickness="1" Fill="{DynamicResource SliderThumb.Static.Background}" Stroke="{DynamicResource SliderThumb.Static.Border}" x:Name="grip" />
     </Grid>
   </ControlTemplate>
-  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="{x:Type Slider}">
+  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="Slider">
     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
       <Grid MinHeight="{TemplateBinding MinHeight}">
         <Border Grid.Row="1" Height="4.0" Margin="5,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SliderThumb.Track.Border}" Background="{DynamicResource SliderThumb.Track.Background}" x:Name="TrackBackground">
@@ -46,12 +46,6 @@
           </Canvas>
         </Border>
         <Track Grid.Row="1" x:Name="PART_Track">
-          <Track.DecreaseRepeatButton>
-            <RepeatButton Command="{x:Static Slider.DecreaseLarge}" />
-          </Track.DecreaseRepeatButton>
-          <Track.IncreaseRepeatButton>
-            <RepeatButton Command="{x:Static Slider.IncreaseLarge}" />
-          </Track.IncreaseRepeatButton>
           <Track.Thumb>
             <Thumb Height="18" Width="11" VerticalAlignment="Center" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
           </Track.Thumb>
@@ -63,7 +57,6 @@
          toggled from code-behind, or remove if the selection-range feature is unused. -->
   </ControlTemplate>
   <Style x:Key="OnionSkinSliderStyle" Selector="Slider">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />

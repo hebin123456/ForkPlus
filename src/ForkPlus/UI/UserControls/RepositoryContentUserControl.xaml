@@ -23,9 +23,6 @@
       <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListViewUserControl" />
       <local:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" x:Name="RevisionDetails" />
       <GridSplitter Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" x:Name="FirstColumnHorizontalGridSplitter">
-        <GridSplitter.Style>
-          <DynamicResource ResourceKey="HorizontalGridSplitter" />
-        </GridSplitter.Style>
       </GridSplitter>
       <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Height="32" Margin="260,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="SecondColumnHorizontalGridSplitter">
         <GridSplitter.Background>
@@ -36,14 +33,8 @@
         </GridSplitter.BorderBrush>
         <GridSplitter.BorderThickness>0,1,0,0</GridSplitter.BorderThickness></GridSplitter>
       <GridSplitter Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" x:Name="ThirdColumnHorizontalGridSplitter">
-        <GridSplitter.Style>
-          <DynamicResource ResourceKey="HorizontalGridSplitter" />
-        </GridSplitter.Style>
       </GridSplitter>
       <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" HorizontalAlignment="Right" x:Name="VerticalGridSplitter">
-        <GridSplitter.Style>
-          <DynamicResource ResourceKey="VerticalGridSplitter" />
-        </GridSplitter.Style>
       </GridSplitter>
     </Grid>
   </Grid>

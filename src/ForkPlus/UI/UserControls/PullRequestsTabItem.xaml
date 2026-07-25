@@ -1,7 +1,7 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - DataTemplate DataType="{x:Type local:Foo}" → DataType="local:Foo"
+     - DataTemplate DataType="local:Foo" → DataType="local:Foo"
      - DataTemplate.Triggers/DataTrigger 已迁移为顶层 Style Selector（:selected 伪类）
      -->
 <TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.PullRequestsTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
@@ -41,9 +41,9 @@
             <DockPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
               <Image DockPanel.Dock="Left" Margin="4,1,1,0" Width="12" Height="12" Source="{DynamicResource BranchIcon}" IsVisible="{Binding SourceBranch, Converter={controls:NullToVisibilityConverter}}" x:Name="SourceBranchIcon" />
               <Button Margin="0,0,2,0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="SourceBranchButton_Click" IsVisible="{Binding SourceBranch, Converter={controls:NullToVisibilityConverter}}" x:Name="SourceBranchButton">
-                <Button.ToolTip.Tip>
+                <ToolTip.Tip>
                   <Binding Path="SourceBranch" />
-                </Button.ToolTip.Tip>
+                </ToolTip.Tip>
                 <Button.Content>
                   <Binding Path="SourceBranch" />
                 </Button.Content>
@@ -54,9 +54,9 @@
             <Button.Content>
               <Binding Path="Title" />
             </Button.Content>
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="Title" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
           </Button>
         </Grid>
       </DataTemplate>

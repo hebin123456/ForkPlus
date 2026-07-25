@@ -1,7 +1,7 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - DataTemplate DataType="{x:Type userControls:Foo}" → DataType="userControls:Foo"
+     - DataTemplate DataType="userControls:Foo" → DataType="userControls:Foo"
      - 移除 WPF 特有 SnapsToDevicePixels / RenderOptions.ClearTypeHint
      - ControlTemplate.Triggers (IsEnabled/IsPressed/IsChecked/IsChecked=null) → 嵌套 Selector
        (:disabled/:pressed/:checked/:indeterminate)；:pressed 声明在 :checked/:indeterminate 之后
@@ -33,7 +33,7 @@
                 <Border Grid.Row="0" Grid.Column="0" Height="16" Width="16" Margin="0,15,10,0" VerticalAlignment="Top" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
                   <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
-                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" CornerRadius="3" x:Name="IndeterminateMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
                   </Grid>
                 </Border>
                 <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="5" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentBorder">
@@ -127,7 +127,7 @@
                 <Border Grid.Row="0" Grid.Column="1" Height="16" Width="16" Margin="10,15,0,0" VerticalAlignment="Top" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
                   <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
-                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" CornerRadius="3" x:Name="IndeterminateMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
                   </Grid>
                 </Border>
               </Grid>
@@ -223,9 +223,9 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="AuthorDate" />
-            </TextBlock.ToolTip.Tip>
+            </ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>
@@ -312,9 +312,7 @@
           </Grid>
         </CheckBox>
         <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="10,23,0,10">
-          <Grid.Visibility>
-            <Binding ElementName="RemoteCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
-          </Grid.Visibility>
+          
           <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
           <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
         </Grid>
@@ -347,9 +345,7 @@
           </Grid>
         </CheckBox>
         <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,23,10,4">
-          <Grid.Visibility>
-            <Binding ElementName="LocalCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
-          </Grid.Visibility>
+          
           <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="0,1,0,0" />
           <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="-1,0,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="1,0,0,0" />
         </Grid>

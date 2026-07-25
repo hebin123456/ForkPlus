@@ -99,7 +99,7 @@
                   <TextBlock x:Name="CodeLinesRefButtonText" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                 </DockPanel>
               </Button>
-              <Popup StaysOpen="False" Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
+              <Popup StaysOpen="False" Placement="Bottom" x:Name="CodeLinesRefPopup" Opened="CodeLinesRefPopup_Opened" Closed="CodeLinesRefPopup_Closed">
                 <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1" CornerRadius="6" Padding="2" MinWidth="220" MaxHeight="400">
                   <Grid>
                     <Grid.RowDefinitions>

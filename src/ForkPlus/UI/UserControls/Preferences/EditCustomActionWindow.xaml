@@ -57,7 +57,7 @@
           <TextBlock Grid.Row="1" Grid.Column="0" Text="Url:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="UrlTextBlock" />
           <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="e.g. https://hebin.me" FontSize="13" x:Name="UrlTextBox" />
           <TextBlock Grid.Row="1" Grid.Column="0" Text="Script:" FontSize="13" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" x:Name="ShScriptTextBlock" />
-          <controls:PlaceholderTextBox Height="200" Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" x:Name="ShScriptTextBox" />
+          <controls:PlaceholderTextBox Height="200" Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" x:Name="ShScriptTextBox" />
           <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ProcessCustomCommandContainer">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="80" />
@@ -83,7 +83,7 @@
           <CheckBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,0" HorizontalAlignment="Left" Content="Always Show Output" FontSize="13" ToolTip.Tip="Show the process output after it is finished" x:Name="ShowOutputCheckBox" />
         </Grid>
         <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
-          <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">
+          <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
           </ScrollViewer>
         </Border>

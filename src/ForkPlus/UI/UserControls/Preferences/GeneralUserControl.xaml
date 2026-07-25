@@ -30,16 +30,13 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="0" Text="Source Code Folder" Margin="0">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <Grid Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0">
       <Grid.RowDefinitions>
         <RowDefinition Height="52" />
         <RowDefinition Height="17" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ContextMenuOpening="SrcDirsListBox_ContextMenuOpening" x:Name="SrcDirsListBox">
+      <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:Name="SrcDirsListBox">
         <ListBox.BorderBrush>
           <DynamicResource ResourceKey="BorderBrush" />
         </ListBox.BorderBrush>
@@ -75,9 +72,6 @@
         </Border.Background>
         <StackPanel Orientation="Horizontal">
           <Button Height="18" Width="18" Margin="-1,-1,0,-1" Click="AddSrcDirButton_Click">
-            <Button.Style>
-              <DynamicResource ResourceKey="InlineButton" />
-            </Button.Style>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="AddIcon" />
@@ -88,9 +82,6 @@
             </Image>
           </Button>
           <Button Margin="0,-1,0,-1" Height="18" Width="18" Click="RemoveSrcDirButton_Click" x:Name="RemoveSrcDirButton">
-            <Button.Style>
-              <DynamicResource ResourceKey="InlineButton" />
-            </Button.Style>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="RemoveIcon" />
@@ -105,9 +96,6 @@
     </Grid>
     <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
     <TextBlock Grid.Row="4" Grid.Column="0" Text="Diff View" Margin="0,4,0,0">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <editor:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
       <Control.BorderBrush>

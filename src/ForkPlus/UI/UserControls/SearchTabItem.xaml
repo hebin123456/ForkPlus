@@ -1,7 +1,7 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - DataTemplate DataType="{x:Type local:Foo}" → DataType="local:Foo"
+     - DataTemplate DataType="local:Foo" → DataType="local:Foo"
      - DataTemplate.Triggers/DataTrigger 已迁移为顶层 Style Selector（:selected 伪类）
      -->
 <TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
@@ -11,13 +11,13 @@
          RevisionSubjectTextBlock/AuthorDateTextBlock/FilePathTextBlock.Foreground=ForegroundBrush.Light。
          TreeViewItem 继承自 ListBoxItem，:selected 伪类等价于 WPF IsSelected=True。
          RevisionSubjectTextField 继承自 TextField（非 TextBlock），故用 Control# 选择器。 -->
-    <Style Selector="controls:TreeViewControlItem:selected Control#RevisionSubjectTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected Control#RevisionSubjectTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#FilePathTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#FilePathTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </TabItem.Styles>

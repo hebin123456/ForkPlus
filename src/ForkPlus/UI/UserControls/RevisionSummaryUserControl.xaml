@@ -5,7 +5,7 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer Grid.Row="0" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
       <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -97,7 +97,7 @@
           <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="DiffList">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <ListBoxItem HorizontalAlignment="Stretch" ContextMenuOpening="ListBoxItem_ContextMenuOpening">
+                <ListBoxItem HorizontalAlignment="Stretch">
                   <ListBoxItem.ContextMenu>
                     <ContextMenu />
                   </ListBoxItem.ContextMenu>

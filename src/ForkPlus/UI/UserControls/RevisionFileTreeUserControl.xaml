@@ -27,7 +27,7 @@
       <ColumnDefinition MinWidth="220" MaxWidth="850" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextMenuOpening="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView">
+    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView">
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
           <ContentControl>

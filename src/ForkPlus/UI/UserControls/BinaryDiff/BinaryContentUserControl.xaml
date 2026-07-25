@@ -12,23 +12,14 @@
         <ColumnDefinition Width="42" />
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Column="0" x:Name="LfsLabel">
-        <TextBlock.Style>
-          <DynamicResource ResourceKey="LfsLabel" />
-        </TextBlock.Style>
         <TextBlock.HorizontalAlignment>Left</TextBlock.HorizontalAlignment>
       </TextBlock>
       <TextBlock Grid.Column="0" x:Name="NotLfsLabel">
-        <TextBlock.Style>
-          <DynamicResource ResourceKey="NotLfsLabel" />
-        </TextBlock.Style>
       </TextBlock>
       <TextBlock Grid.Column="1" Margin="4,0,4,0" HorizontalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" />
     </Grid>
     <Grid Grid.Row="1">
       <Border>
-        <Border.Style>
-          <DynamicResource ResourceKey="BinaryDiffShadowBorder" />
-        </Border.Style>
         <Grid>
           <Border BorderThickness="8,8,8,8" x:Name="ImageContainer">
             <Border.BorderBrush>
@@ -66,9 +57,6 @@
                 </Grid.RowDefinitions>
                 <Image Grid.Row="0" Width="32" Height="32" Margin="0" VerticalAlignment="Center" x:Name="FileIcon" />
                 <Button Grid.Row="0" Margin="0" Click="ShowLfsImageButton_Click" x:Name="ShowLfsImageButton">
-                  <Button.Style>
-                    <DynamicResource ResourceKey="LfsImageButtonStyle" />
-                  </Button.Style>
                   <Image>
                     <Image.Source>
                       <DynamicResource ResourceKey="SearchIcon" />
@@ -80,9 +68,6 @@
                   </Image>
                 </Button>
                 <Button Grid.Row="0" Margin="0" Click="CancelButton_Click" x:Name="CancelLfsButton">
-                  <Button.Style>
-                    <DynamicResource ResourceKey="LfsImageButtonStyle" />
-                  </Button.Style>
                   <Image>
                     <Image.Source>
                       <DynamicResource ResourceKey="CancelJobIcon" />
@@ -99,9 +84,6 @@
                   </TextBlock.Foreground>
                 </TextBlock>
                 <ProgressBar Grid.Row="2" Margin="2,4,2,0" VerticalAlignment="Center" x:Name="LfsProgressBar">
-                  <ProgressBar.Style>
-                    <DynamicResource ResourceKey="LfsProgressBar" />
-                  </ProgressBar.Style>
                 </ProgressBar>
               </Grid>
             </Grid>

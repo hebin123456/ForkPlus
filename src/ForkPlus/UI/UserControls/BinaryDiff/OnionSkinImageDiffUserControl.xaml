@@ -9,14 +9,8 @@
       <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" HorizontalAlignment="Left">
         <Grid HorizontalAlignment="Left">
           <TextBlock Margin="0,10,0,6" x:Name="OldLfsLabel">
-            <TextBlock.Style>
-              <DynamicResource ResourceKey="LfsLabel" />
-            </TextBlock.Style>
           </TextBlock>
           <TextBlock Margin="0,10,0,6" x:Name="OldNotLfsLabel">
-            <TextBlock.Style>
-              <DynamicResource ResourceKey="NotLfsLabel" />
-            </TextBlock.Style>
           </TextBlock>
         </Grid>
         <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="old" HorizontalAlignment="Right" x:Name="OldTextBlock">
@@ -28,14 +22,8 @@
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
         <Grid HorizontalAlignment="Right">
           <TextBlock Margin="0,10,0,6" x:Name="NewLfsLabel">
-            <TextBlock.Style>
-              <DynamicResource ResourceKey="LfsLabel" />
-            </TextBlock.Style>
           </TextBlock>
           <TextBlock Margin="0,10,0,6" x:Name="NewNotLfsLabel">
-            <TextBlock.Style>
-              <DynamicResource ResourceKey="NotLfsLabel" />
-            </TextBlock.Style>
           </TextBlock>
         </Grid>
         <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="new" HorizontalAlignment="Right" x:Name="NewTextBlock">
@@ -46,9 +34,6 @@
       </StackPanel>
     </DockPanel>
     <Border Grid.Row="1" HorizontalAlignment="Center">
-      <Border.Style>
-        <DynamicResource ResourceKey="BinaryDiffShadowBorder" />
-      </Border.Style>
       <Grid>
         <Grid.Background>
           <DynamicResource ResourceKey="BinaryDiffBackground" />
@@ -65,9 +50,6 @@
       </Grid>
     </Border>
     <Slider Grid.Row="2" Margin="0,0,0,-22" VerticalAlignment="Bottom" Width="220" Minimum="0" Maximum="1" Value="1" TickFrequency="0.01" IsSnapToTickEnabled="True" ValueChanged="Slider_ValueChanged" x:Name="Slider">
-      <Slider.Style>
-        <DynamicResource ResourceKey="OnionSkinSliderStyle" />
-      </Slider.Style>
     </Slider>
   </Grid>
 </UserControl>

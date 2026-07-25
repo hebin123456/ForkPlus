@@ -11,7 +11,7 @@
   </UserControl.Resources>
   <Border Width="350" Height="460" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ToolbarBackgroundBrush}" Margin="10,0,10,10">
     <Border.Effect>
-      <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" ShadowDepth="2" />
+      <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" />
     </Border.Effect>
     <Grid>
       <Grid.RowDefinitions>
@@ -39,9 +39,7 @@
                   <RowDefinition />
                 </Grid.RowDefinitions>
                 <Ellipse Grid.Row="0" Grid.RowSpan="1" Margin="4,4,4,0" Width="6" Height="6" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource AccentBrush}">
-                  <Ellipse.Visibility>
-                    <Binding Path="Unread" />
-                  </Ellipse.Visibility>
+                  
                 </Ellipse>
                 <controls:AvatarImage Grid.Column="1" Width="16" Height="16" Margin="3,3,7,0" VerticalAlignment="Center">
                   <controls:AvatarImage.Url>

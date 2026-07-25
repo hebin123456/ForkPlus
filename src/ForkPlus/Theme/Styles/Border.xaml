@@ -1,6 +1,6 @@
 <!-- Migration Notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; added xmlns:x on root, removed duplicate xmlns:x on child elements.
-     - Style TargetType="{x:Type Border}" -> Selector="Border"; x:Key values preserved, BasedOn preserved.
+     - Style TargetType="Border" -> Selector="Border"; x:Key values preserved, BasedOn preserved.
      - Property prefixes stripped: FrameworkElement.HorizontalAlignment -> HorizontalAlignment,
        FrameworkElement.Margin -> Margin, FrameworkElement.Height -> Height, FrameworkElement.MinWidth -> MinWidth,
        Border.CornerRadius -> CornerRadius, Border.Padding -> Padding, Border.BorderThickness -> BorderThickness,
@@ -26,7 +26,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Effect">
       <Setter.Value>
-        <DropShadowEffect BlurRadius="8" Color="Black" Opacity="0.25" ShadowDepth="0" Direction="270" />
+        <DropShadowEffect BlurRadius="8" Color="Black" Opacity="0.25" Direction="270" />
       </Setter.Value>
     </Setter>
   </Style>

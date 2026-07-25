@@ -64,10 +64,7 @@
     </Grid.ColumnDefinitions>
     <StackPanel Grid.Column="0" Orientation="Horizontal" IsVisible="False" x:Name="TextModeNavigationButtonsContainer">
       <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
-        <Button.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-        </Button.Style>
-        <ToolTipService.ToolTip>Go to previous change</ToolTipService.ToolTip>
+        <ToolTip.Tip>Go to previous change</ToolTip.Tip>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="UpIcon" />
@@ -76,10 +73,7 @@
         </Image>
       </Button>
       <Button IsTabStop="False" Click="NextButton_Click" x:Name="NextButton">
-        <Button.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-        </Button.Style>
-        <ToolTipService.ToolTip>Go to next change</ToolTipService.ToolTip>
+        <ToolTip.Tip>Go to next change</ToolTip.Tip>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="DownIcon" />
@@ -99,31 +93,19 @@
     </DockPanel>
     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="False" x:Name="TextModeButtonsContainer">
       <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
-        <ToolTipService.ToolTip>Ignore whitespaces</ToolTipService.ToolTip>
+        <ToolTip.Tip>Ignore whitespaces</ToolTip.Tip>
         <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="ShowHiddenSymbolsToggleButton_Click" x:Name="ShowHiddenSymbolsToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
-        <ToolTipService.ToolTip>Show hidden symbols</ToolTipService.ToolTip>
+        <ToolTip.Tip>Show hidden symbols</ToolTip.Tip>
         <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="WordWrapToggleButton_Click" x:Name="WordWrapToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
-        <ToolTipService.ToolTip>Word wrap</ToolTipService.ToolTip>
+        <ToolTip.Tip>Word wrap</ToolTip.Tip>
         <Image />
       </ToggleButton>
       <Button IsTabStop="False" Click="DecreaseVisibleLines_Click" x:Name="DecreaseNumberOfVisibleLinesButton">
-        <Button.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-        </Button.Style>
-        <ToolTipService.ToolTip>Decrease number of visible lines</ToolTipService.ToolTip>
+        <ToolTip.Tip>Decrease number of visible lines</ToolTip.Tip>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="DecreaseVisibleLinesIcon" />
@@ -131,10 +113,7 @@
         </Image>
       </Button>
       <Button IsTabStop="False" Click="IncreaseVisibleLines_Click" x:Name="IncreaseNumberOfVisibleLinesButton">
-        <Button.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-        </Button.Style>
-        <ToolTipService.ToolTip>Increase number of visible lines</ToolTipService.ToolTip>
+        <ToolTip.Tip>Increase number of visible lines</ToolTip.Tip>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="IncreaseVisibleLinesIcon" />
@@ -142,25 +121,16 @@
         </Image>
       </Button>
       <ToggleButton IsTabStop="False" Click="ShowEntireFileToggleButton_Click" x:Name="ShowEntireFileToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
-        <ToolTipService.ToolTip>Show entire file</ToolTipService.ToolTip>
+        <ToolTip.Tip>Show entire file</ToolTip.Tip>
         <Image />
       </ToggleButton>
       <ToggleButton IsTabStop="False" Click="DiffLayoutModeToggleButton_Click" x:Name="DiffLayoutModeToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
         <Image />
       </ToggleButton>
     </StackPanel>
     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="False" x:Name="ImageModeButtonsContainer">
       <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
-        <ToggleButton.Style>
-          <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-        </ToggleButton.Style>
-        <ToolTipService.ToolTip>Highlight pixels</ToolTipService.ToolTip>
+        <ToolTip.Tip>Highlight pixels</ToolTip.Tip>
         <Image />
       </ToggleButton>
     </StackPanel>

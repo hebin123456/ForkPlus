@@ -7,7 +7,7 @@
   <UserControl.Background>
     <DynamicResource ResourceKey="FallbackBackgroundBrush" />
   </UserControl.Background>
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+  <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
     <DockPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
       <Image DockPanel.Dock="Top" Margin="0" Height="100" MaxWidth="100" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="FallbackImage">
         <Image.Source>

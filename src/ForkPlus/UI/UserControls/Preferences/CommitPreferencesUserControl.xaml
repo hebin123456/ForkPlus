@@ -16,9 +16,6 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="0" Text="Commit Message">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <TextBlock Grid.Row="1" Grid.Column="0" Margin="0" HorizontalAlignment="Right" Text="Length indicator:" VerticalAlignment="Bottom" />
     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
@@ -50,6 +47,6 @@
     <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Page guide at column:" />
     <TextBox Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Width="30" HorizontalAlignment="Left" TextChanged="PageGuideLinePositionTextBox_TextChanged" x:Name="PageGuideLinePositionTextBox" />
     <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Commit message regex:" />
-    <TextBox Grid.Row="4" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
+    <TextBox Grid.Row="4" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
   </Grid>
 </UserControl>

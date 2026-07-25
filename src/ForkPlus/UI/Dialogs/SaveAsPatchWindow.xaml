@@ -16,7 +16,7 @@
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" FontSize="13" VerticalAlignment="Center" x:Name="RevisionsTextBlock" />
       <Border Grid.Row="1" Height="80" Margin="0,6,0,2" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="RevisionsItemsControl">
             <ItemsControl.ItemTemplate>
               <DataTemplate>

@@ -15,7 +15,7 @@
        cannot be expressed as a single Avalonia selector (both conditions are non-pseudo-class properties);
        original logic preserved as comment, needs code-behind or a data-trigger approach. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="{x:Type TextBox}" Selector="TextBox">
+  <Style x:Key="TextBox" Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -24,13 +24,12 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
 <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False" x:Name="PART_ContentHost" />
+            <ScrollViewer Background="#00FFFFFF" Focusable="false" x:Name="PART_ContentHost" />
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -47,7 +46,7 @@
          Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
          Needs code-behind or a binding-based approach. -->
   </Style>
-  <Style x:Key="{x:Type PasswordBox}" Selector="PasswordBox">
+  <Style x:Key="PasswordBox" Selector="PasswordBox">
     <Setter Property="PasswordChar" Value="●" />
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
@@ -57,13 +56,12 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
 <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Focusable="false" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False" x:Name="PART_ContentHost" />
+            <ScrollViewer Focusable="false" x:Name="PART_ContentHost" />
           </Border>
         </ControlTemplate>
       </Setter.Value>

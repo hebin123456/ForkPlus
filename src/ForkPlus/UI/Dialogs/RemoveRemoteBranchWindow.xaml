@@ -21,7 +21,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,6,0,2" FontSize="13" VerticalAlignment="top" HorizontalAlignment="Right" x:Name="StartPointTextBlock" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" x:Name="GitPointView" />
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="GitPointsContainer">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints"><ItemsControl.ItemTemplate>
               <DataTemplate>
                 <controls:BindableGitPointView>

@@ -33,22 +33,22 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="AuthorDate" />
-            </TextBlock.ToolTip.Tip>
+            </ToolTip.Tip>
           </TextBlock>
           <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
             <Button.Content>
               <Binding Path="AbbreviatedSha" />
             </Button.Content>
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="ShaToolTip" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
           </Button>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
         </Grid>
@@ -128,7 +128,7 @@
       <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,1,0,1" x:Name="RevisionListFallbackBorder">
         <userControls:FallbackUserControl Grid.Column="0" x:Name="RevisionListFallbackUserControl" />
       </Border>
-      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" ContextMenuOpening="BlameListBox_ContextMenuOpening" x:Name="BlameListBox">
+      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" x:Name="BlameListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

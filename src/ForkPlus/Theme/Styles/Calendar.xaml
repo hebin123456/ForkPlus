@@ -28,8 +28,8 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid>
-            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" CornerRadius="1" x:Name="SelectedBackground" />
-            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" CornerRadius="1" x:Name="Background" />
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusX="1" RadiusY="1" x:Name="SelectedBackground" />
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusX="1" RadiusY="1" x:Name="Background" />
             <ContentPresenter Margin="5,1,5,1" Foreground="{DynamicResource Calendar.ButtonNormalForeground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
           </Grid>
         </ControlTemplate>
@@ -66,7 +66,7 @@
       <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
     </Style>
   </Style>
-  <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="{x:Type Button}">
+  <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="Button">
     <Grid Cursor="Hand">
       <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
       <Grid>
@@ -74,7 +74,7 @@
       </Grid>
     </Grid>
   </ControlTemplate>
-  <ControlTemplate x:Key="NextButtonTemplate" TargetType="{x:Type Button}">
+  <ControlTemplate x:Key="NextButtonTemplate" TargetType="Button">
     <Grid Cursor="Hand">
       <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
       <Grid>
@@ -82,7 +82,7 @@
       </Grid>
     </Grid>
   </ControlTemplate>
-  <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="{x:Type Button}">
+  <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="Button">
     <Grid Cursor="Hand">
       <ContentPresenter Margin="1,2,1,4" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="buttonContent" />
     </Grid>
@@ -156,7 +156,7 @@
                 </Grid>
               </Border>
             </Border>
-            <Rectangle Fill="{DynamicResource Calendar.DisabledBrush}" Opacity="0" CornerRadius="2" Stretch="Fill" Stroke="{DynamicResource Calendar.DisabledBrush}" StrokeThickness="1" IsVisible="False" x:Name="PART_DisabledVisual" />
+            <Rectangle Fill="{DynamicResource Calendar.DisabledBrush}" Opacity="0" RadiusX="2" RadiusY="2" Stretch="Fill" Stroke="{DynamicResource Calendar.DisabledBrush}" StrokeThickness="1" IsVisible="False" x:Name="PART_DisabledVisual" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -175,7 +175,7 @@
          Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
          Needs code-behind or a ViewModel-driven approach. -->
   </Style>
-  <Style x:Key="{x:Type Calendar}" Selector="Calendar">
+  <Style x:Key="Calendar" Selector="Calendar">
     <Setter Property="Background" Value="{DynamicResource Calendar.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />

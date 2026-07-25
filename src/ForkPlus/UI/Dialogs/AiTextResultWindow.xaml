@@ -33,9 +33,6 @@
         <ProgressBar.Foreground>
           <DynamicResource ResourceKey="ForegroundBrush.Gray" />
         </ProgressBar.Foreground>
-        <ProgressBar.Style>
-          <DynamicResource ResourceKey="CircularProgressBar" />
-        </ProgressBar.Style>
       </ProgressBar>
       <userControls:FallbackUserControl x:Name="AiResponseFallback">
         <UserControl.Background>

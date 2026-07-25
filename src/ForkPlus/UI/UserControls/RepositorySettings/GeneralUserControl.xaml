@@ -1,5 +1,5 @@
 <!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明。
-     - Style TargetType="{x:Type ComboBoxItem}" → Selector="ComboBoxItem"
+     - Style TargetType="ComboBoxItem" → Selector="ComboBoxItem"
      - Style.Triggers DataTrigger 绑定 ItemType（用于渲染 Separator 分隔项）已在阶段 4.5 收尾迁移：
        ItemTemplate 内用堆叠控件 + EnumEqualsConverter 切换可见性（见下方 ComboBox.ItemTemplate）。
        MainBranchComboBoxItemStyle 保留空壳以兼容 ItemContainerStyle 引用。 -->

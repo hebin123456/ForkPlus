@@ -171,9 +171,6 @@
     </StackPanel>
     <Canvas Grid.Column="0" IsHitTestVisible="False" x:Name="BadgesCanvas">
       <Border x:Name="PullBadge">
-        <Border.Style>
-          <DynamicResource ResourceKey="PullPushBadge" />
-        </Border.Style>
         <Border.IsVisible>False</Border.IsVisible>
         <TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PullBadgeText">
           <TextBlock.Foreground>
@@ -183,9 +180,6 @@
         </TextBlock>
       </Border>
       <Border x:Name="PushBadge">
-        <Border.Style>
-          <DynamicResource ResourceKey="PullPushBadge" />
-        </Border.Style>
         <Border.IsVisible>False</Border.IsVisible>
         <TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PushBadgeText">
           <TextBlock.Foreground>

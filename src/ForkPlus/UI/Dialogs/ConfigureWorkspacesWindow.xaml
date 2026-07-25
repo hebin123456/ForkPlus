@@ -1,7 +1,7 @@
 <dialogs:ForkPlusDialogWindow Height="370" Width="330" MinHeight="300" MinWidth="250" CanResize="True" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ConfigureWorkspacesWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <dialogs:ForkPlusDialogWindow.Resources>
     <ResourceDictionary>
-      <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls:RepositoryManagerEditableTextBlock" />
+      <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls|RepositoryManagerEditableTextBlock" />
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
   <dialogs:ForkPlusDialogWindow.Styles>
@@ -30,7 +30,7 @@
         <RowDefinition Height="23" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="WorkspacesListBox_ContextMenuOpening" KeyDown="WorkspacesListBox_KeyDown" x:Name="WorkspacesListBox">
+      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="WorkspacesListBox_KeyDown" x:Name="WorkspacesListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

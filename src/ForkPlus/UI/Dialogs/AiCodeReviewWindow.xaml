@@ -37,7 +37,7 @@
           <ColumnDefinition Width="5" />
           <ColumnDefinition Width="*" MinWidth="200" />
         </Grid.ColumnDefinitions>
-        <userControls:FileListUserControl Grid.Column="0" EnableMultiSelection="True" ContextMenuOpening="FileReviewFileListUserControl_ContextMenuOpening" x:Name="FileReviewFileListUserControl">
+        <userControls:FileListUserControl Grid.Column="0" EnableMultiSelection="True" x:Name="FileReviewFileListUserControl">
           <userControls:FileListUserControl.ContextMenu>
             <ContextMenu />
           </userControls:FileListUserControl.ContextMenu>
@@ -47,7 +47,7 @@
       </Grid>
       <Grid Grid.Row="2" Grid.Column="2">
         <Grid.Children>
-          <ScrollViewer x:Name="AiResponseScrollViewer" VerticalScrollBarVisibility="Auto">
+          <ScrollViewer x:Name="AiResponseScrollViewer" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <StackPanel>
               <md:MarkdownScrollViewer x:Name="AiResponseWebView" />
               <StackPanel x:Name="SuggestionsPanel" />
@@ -57,9 +57,6 @@
             <ProgressBar.Foreground>
               <DynamicResource ResourceKey="ForegroundBrush.Gray" />
             </ProgressBar.Foreground>
-            <ProgressBar.Style>
-              <DynamicResource ResourceKey="CircularProgressBar" />
-            </ProgressBar.Style>
           </ProgressBar>
           <userControls:FallbackUserControl x:Name="AiResponseFallback">
             <UserControl.Background>
@@ -69,9 +66,6 @@
         </Grid.Children>
       </Grid>
       <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="GridSplitter">
-        <GridSplitter.Style>
-          <DynamicResource ResourceKey="VerticalGridSplitter" />
-        </GridSplitter.Style>
       </GridSplitter>
     </Grid.Children>
   </Grid>

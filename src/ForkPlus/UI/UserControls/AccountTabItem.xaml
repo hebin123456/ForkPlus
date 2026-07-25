@@ -30,9 +30,6 @@
     <DockPanel Grid.Row="3" Grid.Column="1">
       <Grid DockPanel.Dock="Left">
         <ProgressBar Margin="1,0,6,-1" Width="14" Height="14" IsVisible="False" x:Name="StatusBusyIndicator">
-          <ProgressBar.Style>
-            <DynamicResource ResourceKey="CircularProgressBar" />
-          </ProgressBar.Style>
           <ProgressBar.Foreground>
             <DynamicResource ResourceKey="ForegroundBrush.Gray" />
           </ProgressBar.Foreground>

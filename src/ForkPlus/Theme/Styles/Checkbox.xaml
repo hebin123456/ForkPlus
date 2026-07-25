@@ -1,6 +1,6 @@
 <!-- Migration Notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
-     - Style TargetType="{x:Type CheckBox}" -> Selector="CheckBox"; x:Key values preserved.
+     - Style TargetType="CheckBox" -> Selector="CheckBox"; x:Key values preserved.
      - Property prefixes stripped: Panel.Background -> Background, Border.BorderBrush -> BorderBrush,
        Border.BorderThickness -> BorderThickness, Border.CornerRadius -> CornerRadius,
        TextElement.Foreground -> Foreground, Control.VerticalContentAlignment -> VerticalContentAlignment,
@@ -23,7 +23,7 @@
     </Setter>
   </Style>
   <Geometry x:Key="OptionMarkGeomentry">M12.667,4.712L6.127,11.252L5.813,11.553L5.498,11.252L1.998,7.752L3.045,6.705L5.813,9.473L11.621,3.665L12.667,4.712Z</Geometry>
-  <Style x:Key="{x:Type CheckBox}" Selector="CheckBox">
+  <Style x:Key="CheckBox" Selector="CheckBox">
     <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -41,7 +41,7 @@
             <Border Grid.Column="0" Height="16" Width="16" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
               <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
-                <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" CornerRadius="3" x:Name="IndeterminateMark" />
+                <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
               </Grid>
             </Border>
             <ContentPresenter Grid.Column="1" Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
@@ -108,7 +108,7 @@
                 <Border DockPanel.Dock="Left" Height="16" Width="16" Margin="4,2,12,0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
                   <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
-                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" CornerRadius="3" x:Name="IndeterminateMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
                   </Grid>
                 </Border>
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />

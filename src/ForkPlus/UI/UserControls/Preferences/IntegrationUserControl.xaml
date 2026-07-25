@@ -19,36 +19,21 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Column="0" Grid.Row="0" Text="Issue Tracker Integration" Margin="0,0,0,6">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <CheckBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" x:Name="ShowBugtrackerLinksCheckBox">Highlight issue tracker links in commit messages</CheckBox>
     <TextBlock Grid.Column="0" Grid.Row="2" Text="External Merge Tools">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <uc:ExternalToolsUserControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="3" x:Name="ExternalMergeToolsUserControl" />
     <TextBlock Grid.Column="0" Grid.Row="4" Text="External Diff Tools">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <uc:ExternalToolsUserControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="5" x:Name="ExternalDiffToolsUserControl" />
     <TextBlock Grid.Column="0" Grid.Row="6" Text="Shell">
-      <TextBlock.Style>
-        <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
-      </TextBlock.Style>
     </TextBlock>
     <TextBlock Grid.Row="7" Grid.Column="0" Text="Shell:" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
     <ComboBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,4" SelectionChanged="ShellToolComboBox_SelectionChanged" x:Name="ShellToolComboBox" />
     <TextBlock Grid.Row="8" Grid.Column="0" Text="Shell Path:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
     <controls:PlaceholderTextBox Grid.Row="8" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" IsReadOnly="True" Placeholder="Select shell location" x:Name="ShellToolPathTextBox" />
     <Button Grid.Row="8" Grid.Column="2" Click="BrowseShellTool_Click">
-      <Button.Style>
-        <DynamicResource ResourceKey="BrowseButtonStyle" />
-      </Button.Style>
     </Button>
     <TextBlock Grid.Row="9" Grid.Column="0" Text="Arguments:" FontSize="13" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
     <controls:PlaceholderTextBox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,4" Padding="4,2,4,2" x:Name="ShellToolArgumentsTextBox" />

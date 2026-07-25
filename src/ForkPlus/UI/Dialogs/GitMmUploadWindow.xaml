@@ -24,7 +24,7 @@
                   </ToggleButton.Template>
                 </ToggleButton>
                 <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsExpanded 切换 Visibility，已改用 IsVisible Binding 替代 -->
-                <ContentPresenter DockPanel.Dock="Bottom" IsVisible="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" ContentSource="Content" x:Name="ExpandSite" />
+                <ContentPresenter DockPanel.Dock="Bottom" IsVisible="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" x:Name="ExpandSite" />
               </DockPanel>
             </ControlTemplate>
           </Setter.Value>
@@ -101,7 +101,7 @@
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="7" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
+      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
         <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
       </ScrollViewer>
     </Grid>

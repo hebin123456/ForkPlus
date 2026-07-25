@@ -11,9 +11,6 @@
     </StackPanel>
     <ContentControl DockPanel.Dock="Left" x:Name="CustomSection" />
     <ProgressBar DockPanel.Dock="Left" Margin="0,0,5,0" x:Name="BusyIndicator">
-      <ProgressBar.Style>
-        <DynamicResource ResourceKey="CircularProgressBar" />
-      </ProgressBar.Style>
       <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
       <ProgressBar.Width>14</ProgressBar.Width>
       <ProgressBar.Height>14</ProgressBar.Height>

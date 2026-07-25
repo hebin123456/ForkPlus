@@ -7,22 +7,22 @@
          RevisionSubjectTextBlock/PathTextBlock 是 AutoTooltipTextBlock (继承自 TextBlock)，用 TextBlock# 命中。
          跨 DataTemplate 的同名元素（如 AuthorDateTextBlock 同时存在于 HistoryEntry 与 FolderHistory 模板）
          在选中态时统一应用前景色，符合 WPF 行为。 -->
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#PathTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#PathTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#RevisionSubjectTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#RevisionSubjectTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#AuthorDateTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
-    <Style Selector="controls:TreeViewControlItem:selected TextBlock#ShaTextBlock">
+    <Style Selector="controls|TreeViewControlItem:selected TextBlock#ShaTextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
     </Style>
   </ui:CustomWindow.Styles>
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <DataTemplate DataType="{x:Type dialogs:HistoryEntryViewModel}">
+      <DataTemplate DataType="dialogs:HistoryEntryViewModel">
         <Grid Height="57">
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -52,13 +52,13 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip.Tip>
+            <ToolTip.Tip>
               <TextBlock>
                 <TextBlock.Text>
                   <Binding Path="AuthorDate" />
                 </TextBlock.Text>
               </TextBlock>
-            </TextBlock.ToolTip.Tip>
+            </ToolTip.Tip>
           </TextBlock>
           <TextBlock Grid.Column="3" Margin="6,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ShaTextBlock">
             <TextBlock.Text>
@@ -66,9 +66,9 @@
             </TextBlock.Text>
           </TextBlock>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
           <controls:AutoTooltipTextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Margin="4,0,2,0" FontSize="13" VerticalAlignment="Center" x:Name="RevisionSubjectTextBlock">
@@ -91,9 +91,9 @@
           </controls:AutoTooltipTextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate DataType="{x:Type dialogs:FolderHistoryEntryViewModel}">
+      <DataTemplate DataType="dialogs:FolderHistoryEntryViewModel">
         <Grid Height="18">
-          <Grid.ToolTip.Tip>
+          <ToolTip.Tip>
             <StackPanel Orientation="Horizontal">
               <TextBlock>
                 <TextBlock.Text>
@@ -107,7 +107,7 @@
                 </TextBlock.Text>
               </TextBlock>
             </StackPanel>
-          </Grid.ToolTip.Tip>
+          </ToolTip.Tip>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -130,23 +130,23 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip.Tip>
+            <ToolTip.Tip>
               <TextBlock>
                 <TextBlock.Text>
                   <Binding Path="AuthorDate" />
                 </TextBlock.Text>
               </TextBlock>
-            </TextBlock.ToolTip.Tip>
+            </ToolTip.Tip>
           </TextBlock>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
         </Grid>
       </DataTemplate>
-      <DataTemplate DataType="{x:Type dialogs:SubItemFileHistoryEntryViewModel}">
+      <DataTemplate DataType="dialogs:SubItemFileHistoryEntryViewModel">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -194,7 +194,7 @@
         <ColumnDefinition Width="1" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" ContextMenuOpening="TreeView_ContextMenuOpening" MouseDoubleClick="TreeView_MouseDoubleClick" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" x:Name="TreeView">
+      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" x:Name="TreeView">
         <controls:MultiselectionTreeView.ContextMenu>
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>

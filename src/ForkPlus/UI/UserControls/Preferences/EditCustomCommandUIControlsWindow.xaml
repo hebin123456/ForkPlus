@@ -34,7 +34,7 @@
         </Grid.RowDefinitions>
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemContainerStyle>
-            <Style Selector="local:DragAndDropListBoxItem">
+            <Style Selector="local|DragAndDropListBoxItem">
               <Setter Property="AllowDrop" Value="True" />
             </Style>
           </local:DragAndDropListBox.ItemContainerStyle>
@@ -205,7 +205,7 @@
             </Grid>
           </Grid>
           <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
-            <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
               <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
             </ScrollViewer>
           </Border>

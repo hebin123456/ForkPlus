@@ -24,9 +24,6 @@
           </Grid.RowDefinitions>
           <Grid Grid.Row="0" HorizontalAlignment="Center" x:Name="SecondaryTitleGrid">
             <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
-              <ProgressBar.Style>
-                <DynamicResource ResourceKey="CircularProgressBar" />
-              </ProgressBar.Style>
               <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
             </ProgressBar>
             <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="SecondaryTitleTextBlock">
@@ -37,9 +34,6 @@
           </Grid>
           <Grid Grid.Row="1" HorizontalAlignment="Center" x:Name="TitleGrid">
             <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
-              <ProgressBar.Style>
-                <DynamicResource ResourceKey="CircularProgressBar" />
-              </ProgressBar.Style>
               <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
             </ProgressBar>
             <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="TitleTextBlock">
@@ -49,7 +43,7 @@
             </TextBlock>
           </Grid>
           <Grid.RenderTransform>
-            <TranslateTransform x:Name="TitleContainerTranslateTransform" Y="-8" />
+            <TranslateTransform Y="-8" />
           </Grid.RenderTransform>
         </Grid>
       </Grid>
@@ -58,9 +52,6 @@
           <SolidColorBrush>#00FFFFFF</SolidColorBrush>
         </Button.Background>
         <Button.IsVisible>False</Button.IsVisible>
-        <Button.Style>
-          <DynamicResource ResourceKey="InlineButton" />
-        </Button.Style>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="CancelJobIcon" />
@@ -68,22 +59,16 @@
         </Image>
       </Button>
       <controls:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
-        <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTipService.ToolTip.Tip="Activity Manager" x:Name="ShowActivityManagerToggleButton">
-          <ToggleButton.Style>
-            <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-          </ToggleButton.Style><Image>
+        <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" ToolTipService.ToolTip.Tip="Activity Manager" x:Name="ShowActivityManagerToggleButton"><Image>
             <Image.Source>
               <DynamicResource ResourceKey="ListIcon" />
             </Image.Source>
           </Image>
         </ToggleButton>
-        <Popup StaysOpen="False" AllowsTransparency="true" HorizontalOffset="-370" UseLayoutRounding="False" PopupAnimation="Slide" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
+        <Popup StaysOpen="False" HorizontalOffset="-370" UseLayoutRounding="False" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
           <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
         </Popup>
         <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Click="FilterButton_Click" x:Name="FilterButton">
-          <Button.Style>
-            <DynamicResource ResourceKey="BranchOptionButton" />
-          </Button.Style>
           <Image x:Name="FilterButtonImage">
             <Image.Source>
               <DynamicResource ResourceKey="BranchFilterOffIcon" />
@@ -98,7 +83,7 @@
             <Image.IsVisible>False</Image.IsVisible>
             <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
             <Image.VerticalAlignment>Center</Image.VerticalAlignment>
-            <ToolTipService.ToolTip>Cancel</ToolTipService.ToolTip>
+            <ToolTip.Tip>Cancel</ToolTip.Tip>
           </Image>
           <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" MouseUp="DescriptionTextBlock_MouseUp" x:Name="DescriptionTextBlock">
             <TextBlock.Foreground>

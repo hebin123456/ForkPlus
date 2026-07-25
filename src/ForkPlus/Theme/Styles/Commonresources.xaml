@@ -1,8 +1,8 @@
 <!-- Migration Notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
-     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved.
-       Namespaced types use the Avalonia | selector syntax: TargetType="{x:Type editor:CodeEditor}"
-       -> Selector="editor|CodeEditor", TargetType="{x:Type controls:EditableTextBlock}"
+     - Style TargetType="T" -> Selector="T"; x:Key values preserved.
+       Namespaced types use the Avalonia | selector syntax: TargetType="editor:CodeEditor"
+       -> Selector="editor|CodeEditor", TargetType="controls:EditableTextBlock"
        -> Selector="controls|EditableTextBlock", etc.
      - Property prefixes stripped: Panel.Background -> Background, TextElement.Foreground -> Foreground,
        TextElement.FontFamily -> FontFamily, TextElement.FontSize -> FontSize, Control.Template -> Template,
@@ -44,7 +44,7 @@
               <RowDefinition />
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" CanContentScroll="True" ContentTemplate="{x:Null}" VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
               <controls:TouchpadAwareScrollViewer.Content>
                 <Binding Path="TextArea">
                   <Binding.RelativeSource>
@@ -88,7 +88,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type GridSplitter}" Selector="GridSplitter">
+  <Style x:Key="GridSplitter" Selector="GridSplitter">
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
   </Style>
   <Style x:Key="HorizontalGridSplitter" Selector="GridSplitter">
@@ -125,10 +125,10 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type Separator}" Selector="Separator">
+  <Style x:Key="Separator" Selector="Separator">
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
   </Style>
-  <Style x:Key="{x:Type CheckBox}" Selector="CheckBox">
+  <Style x:Key="CheckBox" Selector="CheckBox">
     <Setter Property="FontSize" Value="13" />
   </Style>
   <Style x:Key="EditableTextBlock" Selector="controls|EditableTextBlock">
@@ -182,7 +182,7 @@
   <Style x:Key="BindableGitPointView" Selector="controls|BindableGitPointView">
     <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
   </Style>
-  <Style x:Key="{x:Type ToolTip}" Selector="ToolTip">
+  <Style x:Key="ToolTip" Selector="ToolTip">
     <Setter Property="HasDropShadow" Value="True" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
@@ -202,12 +202,12 @@
                unconditionally / via a binding on HasDropShadow. Original logic:
                  <Setter Property="Margin" Value="10" />
                  <Setter TargetName="Border" Property="Effect">
-                   <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" ShadowDepth="1" />
+                   <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
                  </Setter> -->
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ContentControl}" Selector="ContentControl">
+  <Style x:Key="ContentControl" Selector="ContentControl">
 </Style>
 </ResourceDictionary>

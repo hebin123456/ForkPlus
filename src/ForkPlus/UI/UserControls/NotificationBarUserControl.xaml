@@ -13,9 +13,6 @@
     </Border.Background>
     <Border.BorderThickness>0,0,0,1</Border.BorderThickness>
     <Border.Height>0</Border.Height>
-    <Border.Style>
-      <StaticResource ResourceKey="NotificationBarBorder" />
-    </Border.Style>
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />

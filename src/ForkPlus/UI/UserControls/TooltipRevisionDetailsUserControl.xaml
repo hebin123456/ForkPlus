@@ -1,9 +1,6 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; Border.Child/Grid.Children/StackPanel.Children property elements expanded into direct content; RenderOptions.ClearTypeHint removed. -->
 <UserControl FontFamily="Segoe UI Variable Display" MaxWidth="700" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.TooltipRevisionDetailsUserControl">
   <Border>
-    <Border.Style>
-      <DynamicResource ResourceKey="MenuShadowBorderStyle" />
-    </Border.Style>
     <Border BorderThickness="1">
       <Border.BorderBrush>
         <DynamicResource ResourceKey="BorderBrush" />
@@ -49,10 +46,7 @@
                 <Button.Background>
                   <SolidColorBrush>#00FFFFFF</SolidColorBrush>
                 </Button.Background>
-                <ToolTipService.ToolTip>Open in separate window</ToolTipService.ToolTip>
-                <Button.Style>
-                  <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" />
-                </Button.Style>
+                <ToolTip.Tip>Open in separate window</ToolTip.Tip>
                 <Image>
                   <Image.Source>
                     <DynamicResource ResourceKey="OpenInSeparateWindowIcon" />

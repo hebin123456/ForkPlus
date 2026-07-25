@@ -1,6 +1,6 @@
 <!-- Migration notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
-     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - Style TargetType="T" -> Selector="T" (x:Key values preserved, BasedOn preserved).
      - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
      - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
        IsSelected->:selected, IsKeyboardFocused->:focus, IsKeyboardFocusWithin->:focus-within,
@@ -21,11 +21,11 @@
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Effect">
       <Setter.Value>
-        <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" ShadowDepth="1" />
+        <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem">
+  <Style x:Key="ComboBoxItem" Selector="ComboBoxItem">
 <Setter Property="Padding" Value="4,0" />
     <Setter Property="Margin" Value="1,1" />
     <Setter Property="Height" Value="22" />
@@ -157,14 +157,14 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border>
           <Border MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid Background="#00FFFFFF" x:Name="grid">
@@ -174,14 +174,14 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" x:Name="ItemsPresenter" />
+                <ItemsPresenter x:Name="ItemsPresenter" />
               </Grid>
             </ScrollViewer>
           </Border>
@@ -192,7 +192,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
     <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
@@ -205,11 +205,10 @@
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-<Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False" x:Name="PART_ContentHost" />
+          <ScrollViewer Background="#00FFFFFF" Focusable="false" x:Name="PART_ContentHost" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -220,14 +219,14 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border>
           <Border MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid Background="#00FFFFFF" x:Name="grid">
@@ -237,14 +236,14 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" x:Name="ItemsPresenter" />
+                <ItemsPresenter x:Name="ItemsPresenter" />
               </Grid>
             </ScrollViewer>
           </Border>
@@ -269,7 +268,7 @@
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings
          NOTE: IsKeyboardFocusWithin=true -> :focus-within was moved into the {x:Type ComboBox} style below. -->
   </ControlTemplate>
-  <Style x:Key="{x:Type ComboBox}" Selector="ComboBox">
+  <Style x:Key="ComboBox" Selector="ComboBox">
     <Setter Property="Background" Value="{DynamicResource ComboBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -278,7 +277,6 @@
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Padding" Value="6,3,0,3" />
     <Setter Property="Height" Value="24" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     <!-- Converted from ComboBoxEditableTemplate ControlTemplate.Triggers: IsKeyboardFocusWithin=true -> :focus-within.
          (Border#border only exists in the editable template, so the /template/ selector self-limits.) -->
@@ -320,14 +318,14 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="10" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border>
           <Border BorderBrush="{DynamicResource ComboBox.Popup.BorderBrush}" BorderThickness="1,1,1,1" Background="{DynamicResource ComboBox.Popup.BackgroundBrush}" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid x:Name="grid">
@@ -337,14 +335,14 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" x:Name="ItemsPresenter" />
+                <ItemsPresenter x:Name="ItemsPresenter" />
               </Grid>
             </ScrollViewer>
           </Border>
@@ -355,7 +353,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
     <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
@@ -371,7 +369,7 @@
     <Setter Property="Template" Value="{StaticResource InteractiveRebaseComboBoxTemplate}" />
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem">
+        <Style x:Key="ComboBoxItem" Selector="ComboBoxItem">
 </Style>
       </ResourceDictionary>
     </Style.Resources>

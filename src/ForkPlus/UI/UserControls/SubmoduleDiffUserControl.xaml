@@ -11,7 +11,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition MinWidth="20">
           <ColumnDefinition.Width>
-            <Binding Path="ActualWidth" />
+            <Binding Path="Bounds.Width" />
           </ColumnDefinition.Width>
         </ColumnDefinition>
         <ColumnDefinition Width="*" />

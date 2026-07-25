@@ -1,6 +1,6 @@
 <!-- Migration notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
-     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - Style TargetType="T" -> Selector="T" (x:Key values preserved, BasedOn preserved).
      - Style.Triggers / ControlTemplate.Triggers -> nested <Style Selector="^..."> using pseudoclasses
        (IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
         Thumb.IsDragging->:dragging, ScrollBar.Orientation=Horizontal->:horizontal).
@@ -86,8 +86,6 @@
     </Style>
   </Style>
   <Style x:Key="VerticalScrollBarStyle" Selector="ScrollBar">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -112,12 +110,6 @@
                   <sys:Double x:Key="{x:StaticExtension SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
                 </ResourceDictionary>
               </Track.Resources>
-              <Track.DecreaseRepeatButton>
-                <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" />
-              </Track.DecreaseRepeatButton>
-              <Track.IncreaseRepeatButton>
-                <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" />
-              </Track.IncreaseRepeatButton>
               <Track.Thumb>
                 <Thumb />
               </Track.Thumb>
@@ -171,12 +163,6 @@
                 <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
               </RepeatButton>
               <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
-                <Track.DecreaseRepeatButton>
-                  <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" />
-                </Track.DecreaseRepeatButton>
-                <Track.IncreaseRepeatButton>
-                  <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" />
-                </Track.IncreaseRepeatButton>
                 <Track.Thumb>
                   <Thumb />
                 </Track.Thumb>
@@ -212,8 +198,6 @@
     </Style>
   </Style>
   <Style x:Key="HorizontalScrollBarStyle" Selector="ScrollBar">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -238,12 +222,6 @@
                   <sys:Double x:Key="{x:StaticExtension SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
                 </ResourceDictionary>
               </Track.Resources>
-              <Track.DecreaseRepeatButton>
-                <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" />
-              </Track.DecreaseRepeatButton>
-              <Track.IncreaseRepeatButton>
-                <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" />
-              </Track.IncreaseRepeatButton>
               <Track.Thumb>
                 <Thumb />
               </Track.Thumb>
@@ -297,12 +275,6 @@
                 <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
               </RepeatButton>
               <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
-                <Track.DecreaseRepeatButton>
-                  <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" />
-                </Track.DecreaseRepeatButton>
-                <Track.IncreaseRepeatButton>
-                  <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" />
-                </Track.IncreaseRepeatButton>
                 <Track.Thumb>
                   <Thumb />
                 </Track.Thumb>
@@ -337,7 +309,7 @@
       </Style>
     </Style>
   </Style>
-  <Style x:Key="{x:Type ScrollViewer}" Selector="ScrollViewer">
+  <Style x:Key="ScrollViewer" Selector="ScrollViewer">
     <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
     <Setter Property="Template">
       <Setter.Value>
@@ -352,7 +324,7 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
-            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" CanContentScroll="{TemplateBinding CanContentScroll}" x:Name="PART_ScrollContentPresenter" />
+            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" x:Name="PART_ScrollContentPresenter" />
             <ScrollBar ViewportSize="{TemplateBinding ViewportHeight}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Grid.Row="0" Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar">
               <ScrollBar.Value>
                 <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
@@ -368,5 +340,5 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="TouchpadAwareScrollViewer" Selector="controls:TouchpadAwareScrollViewer" />
+  <Style x:Key="TouchpadAwareScrollViewer" Selector="controls|TouchpadAwareScrollViewer" />
 </ResourceDictionary>

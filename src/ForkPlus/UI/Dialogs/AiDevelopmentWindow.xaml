@@ -20,7 +20,7 @@
     </DockPanel>
     <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0" />
     <!-- Main content area: message list -->
-    <ScrollViewer Grid.Row="2" x:Name="MainScrollViewer" Margin="4,4,8,0" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer Grid.Row="2" x:Name="MainScrollViewer" Margin="4,4,8,0" ScrollViewer.VerticalScrollBarVisibility="Auto">
       <StackPanel x:Name="MessagePanel" Margin="8,4,8,8" />
     </ScrollViewer>
     <!-- Bottom area: progress + input -->
@@ -47,7 +47,7 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
+        <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
         <Button Grid.Column="1" x:Name="ClearConversationButton" Content="Clear" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" Click="ClearConversationButton_Click" MinHeight="28" ToolTip.Tip="Clear conversation history" />
         <Button Grid.Column="2" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
         <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8">

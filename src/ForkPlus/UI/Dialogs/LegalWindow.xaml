@@ -9,6 +9,6 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="13" IsReadOnly="True" x:Name="LicencesTextBox" />
+    <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="13" IsReadOnly="True" x:Name="LicencesTextBox" />
   </Grid>
 </dialogs:ForkPlusDialogWindow>

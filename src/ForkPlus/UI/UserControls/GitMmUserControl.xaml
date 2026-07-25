@@ -1,7 +1,7 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; PreviewMouseWheel renamed to PointerWheelChanged (matching code-behind SubreposTabControl_PointerWheelChanged); SnapsToDevicePixels attributes removed; ControlTemplate.Triggers (IsMouseOver/IsSelected/IsEnabled) -> nested Selectors (:pointerover/:selected/:disabled); TextElement.FontWeight/Foreground prefixes stripped. -->
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.GitMmUserControl">
   <UserControl.Resources>
-    <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" ShadowDepth="2" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
+    <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
     <Style x:Key="GitMmSubrepoTabItemStyle" Selector="TabItem">
       <Setter Property="Height" Value="28" />
       <Setter Property="MinWidth" Value="140" />
@@ -11,7 +11,7 @@
           <ControlTemplate>
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
             </Grid>
             <!-- 阶段 4.5：ControlTemplate.Triggers (IsMouseOver/IsSelected/IsEnabled)
                  → Avalonia 嵌套 Selector (:pointerover/:selected/:disabled)。 -->
@@ -37,10 +37,10 @@
         </Setter.Value>
       </Setter>
     </Style>
-    <Style x:Key="GitMmSubrepoTabControlStyle" Selector="controls:ModernTabControl">
+    <Style x:Key="GitMmSubrepoTabControlStyle" Selector="controls|ModernTabControl">
       <Style.Resources>
         <ResourceDictionary>
-          <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
+          <Style x:Key="TabItem" Selector="TabItem" />
         </ResourceDictionary>
       </Style.Resources>
       <Setter Property="Template">
@@ -51,7 +51,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" HorizontalScrollBarIsVisible="False" VerticalScrollBarVisibility="Disabled" CanContentScroll="False" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
                   <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
                   <Canvas>
@@ -59,8 +59,8 @@
                   </Canvas>
                 </Grid>
               </ScrollViewer>
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" KeyboardNavigation.DirectionalNavigation="Contained" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-                <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+                <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
               </Border>
             </Grid>
           </ControlTemplate>
@@ -129,7 +129,7 @@
         <DockPanel LastChildFill="True">
           <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
           <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
-          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <WrapPanel x:Name="UploadLinksPanel" />
           </ScrollViewer>
         </DockPanel>

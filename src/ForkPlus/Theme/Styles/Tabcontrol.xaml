@@ -27,7 +27,7 @@
      - NOTE (Avalonia limitation): TabControl.TabStripPlacement enum triggers (Bottom/Left/Right) cannot be expressed as selectors;
        original logic preserved as comments, needs code-behind or layout-specific templates. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="{x:Type TabItem}" Selector="TabItem">
+  <Style x:Key="TabItem" Selector="TabItem">
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}" />
@@ -40,7 +40,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid x:Name="templateRoot">
-            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -53,13 +53,13 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type TabControl}" Selector="TabControl">
+  <Style x:Key="TabControl" Selector="TabControl">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+        <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
+        <Style x:Key="TabItem" Selector="TabItem" />
       </ResourceDictionary>
     </Style.Resources>
     <Setter Property="Padding" Value="2" />
@@ -74,16 +74,16 @@
         <ControlTemplate>
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition x:Name="ColumnDefinition0" />
-              <ColumnDefinition Width="0" x:Name="ColumnDefinition1" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="0" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-              <RowDefinition Height="Auto" x:Name="RowDefinition0" />
-              <RowDefinition Height="*" x:Name="RowDefinition1" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TabPanel Grid.Column="0" IsItemsHost="true" Margin="0" Grid.Row="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
-            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+              <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
         </ControlTemplate>
@@ -168,7 +168,7 @@
       <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
     </Style>
   </Style>
-  <Style x:Key="ClosableTabControl" Selector="controls:ClosableTabControl">
+  <Style x:Key="ClosableTabControl" Selector="controls|ClosableTabControl">
     <Setter Property="BorderThickness" Value="0,0,0,0" />
     <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Background}" />
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
@@ -189,7 +189,7 @@
             <Button Grid.Row="0" Grid.Column="1" x:Name="PART_Add" />
             <Border Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" />
             <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
-              <ContentPresenter ContentSource="SelectedContent" x:Name="PART_SelectedContentHost" />
+              <ContentPresenter x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
         </ControlTemplate>
@@ -205,8 +205,8 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" ShadowDepth="4" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
-  <Style x:Key="ClosableTabItem" Selector="controls:ClosableTabItem">
+  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
+  <Style x:Key="ClosableTabItem" Selector="controls|ClosableTabItem">
     <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
     <Setter Property="Padding" Value="2,0,2,0" />
     <Setter Property="Height" Value="24" />
@@ -222,7 +222,7 @@
             <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" x:Name="TopBorder" />
             <Border BorderThickness="0,0,0,1" Margin="0,1,0,0" CornerRadius="4,4,0,0" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Bd" />
             <Border Margin="0,4,0,4" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource ClosableTabItem.SeparatorBorder}" x:Name="TabSeparatorBorder" />
-            <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Content">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Content">
               <ContentPresenter.Content>
                 <controls:CenteredDockPanel Background="#00FFFFFF" x:Name="PART_Header">
                   <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="3,0,3,-2" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{TemplateBinding TagBrush}" StrokeThickness="2">
@@ -322,7 +322,7 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid Background="#00FFFFFF" x:Name="templateRoot">
-            <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" x:Name="contentPresenter">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -341,13 +341,13 @@
       <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
     </Style>
   </Style>
-  <Style x:Key="ModernTabControl" Selector="controls:ModernTabControl">
+  <Style x:Key="ModernTabControl" Selector="controls|ModernTabControl">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+        <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
+        <Style x:Key="TabItem" Selector="TabItem" />
       </ResourceDictionary>
     </Style.Resources>
     <Setter Property="BorderThickness" Value="0,1,0,0" />
@@ -356,12 +356,12 @@
         <ControlTemplate>
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition x:Name="ColumnDefinition0" />
-              <ColumnDefinition Width="0" x:Name="ColumnDefinition1" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="0" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-              <RowDefinition Height="Auto" x:Name="RowDefinition0" />
-              <RowDefinition Height="*" x:Name="RowDefinition1" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" Grid.Row="0">
               <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
@@ -369,8 +369,8 @@
             <Canvas Grid.Column="0" Grid.Row="0">
               <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
             </Canvas>
-            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
-              <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
+              <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
             </Border>
           </Grid>
         </ControlTemplate>
@@ -380,13 +380,13 @@
       <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
     </Style>
   </Style>
-  <Style x:Key="RepositoryManagerTabControl" Selector="controls:ModernTabControl">
+  <Style x:Key="RepositoryManagerTabControl" Selector="controls|ModernTabControl">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
+        <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem">
+        <Style x:Key="TabItem" Selector="TabItem">
           <Setter Property="FontSize" Value="14" />
         </Style>
       </ResourceDictionary>

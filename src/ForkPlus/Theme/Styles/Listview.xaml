@@ -1,6 +1,6 @@
 <!-- Migration notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
-     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - Style TargetType="T" -> Selector="T" (x:Key values preserved, BasedOn preserved).
      - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
      - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
        IsSelected=True->:selected, IsKeyboardFocused->:focus, Thumb.IsDragging->:dragging.
@@ -41,7 +41,7 @@
   <DataTemplate x:Key="ReferencesDataTemplates">
     <DataTemplate.Resources>
       <ResourceDictionary>
-        <DataTemplate DataType="{x:Type ui:TagViewModel}">
+        <DataTemplate DataType="ui:TagViewModel">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
             <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.TagBorder}" Background="{DynamicResource ListBox.Static.Background}">
               <Image Source="{DynamicResource TagIcon}" Height="14" Width="14" Margin="2,0,2,0" />
@@ -58,7 +58,7 @@
             </Border>
           </StackPanel>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type ui:LocalBranchViewModel}">
+        <DataTemplate DataType="ui:LocalBranchViewModel">
           <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="3,2,3,2">
             <Border.BorderBrush>
               <Binding Path="BorderBrush" />
@@ -97,7 +97,7 @@
             </StackPanel>
           </Border>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type ui:RemoteBranchViewModel}">
+        <DataTemplate DataType="ui:RemoteBranchViewModel">
           <!-- 阶段 4.5：原 DataTemplate.Triggers (HasDownstream -> NameContainer.IsVisible/Border.CornerRadius/
                Container.Margin) 用直接绑定 + 转换器实现:
                - NameContainer.IsVisible = !HasDownstream (有下游时隐藏名称,仅显示图标)
@@ -146,7 +146,7 @@
             </Border>
           </StackPanel>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type ui:BisectMarkViewModel}">
+        <DataTemplate DataType="ui:BisectMarkViewModel">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
             <!-- 阶段 4.5：原 DataTrigger (IsGood=True -> IconBorder.BorderBrush/Icon.Source 切换为 Good)
                  用 BoolToBrushConverter 绑定 BorderBrush + 叠放两个 Image(IsVisible 绑定 IsGood/!IsGood)实现。 -->
@@ -188,7 +188,7 @@
             </Border>
           </StackPanel>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type ui:StashReferenceViewModel}">
+        <DataTemplate DataType="ui:StashReferenceViewModel">
           <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="3,2,3,2" BorderBrush="{DynamicResource RevisionList.StashBorder}" Background="{DynamicResource ListBox.Static.Background}">
             <DockPanel>
               <Image Source="{DynamicResource SidebarStashIcon}" DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0" />
@@ -266,7 +266,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ListView}" Selector="ListView">
+  <Style x:Key="ListView" Selector="ListView">
     <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -274,7 +274,6 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
 <Setter Property="Template">
@@ -318,7 +317,7 @@
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <DockPanel Margin="{TemplateBinding Padding}">
-              <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False">
+              <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False">
                 <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}">
                   <GridViewHeaderRowPresenter.AllowsColumnReorder>
                     <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
@@ -337,7 +336,7 @@
                   </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
                 </GridViewHeaderRowPresenter>
               </controls:TouchpadAwareScrollViewer>
-              <ScrollContentPresenter CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" KeyboardNavigation.DirectionalNavigation="Local" x:Name="PART_ScrollContentPresenter" />
+              <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
             </DockPanel>
             <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" IsVisible="{TemplateBinding ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ViewportWidth}" x:Name="PART_HorizontalScrollBar">
               <ScrollBar.Value>
@@ -389,7 +388,7 @@
   <Style x:Key="ListViewWithGridViewStyle" Selector="ListView">
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type ListViewItem}" Selector="ListViewItem" />
+        <Style x:Key="ListViewItem" Selector="ListViewItem" />
       </ResourceDictionary>
     </Style.Resources>
     <Setter Property="Template">
@@ -533,7 +532,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ListBox}" Selector="ListBox">
+  <Style x:Key="ListBox" Selector="ListBox">
     <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -541,7 +540,6 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
     <Setter Property="Template">
@@ -588,7 +586,7 @@
           <Grid>
             <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
               <Border.Effect>
-                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" ShadowDepth="1" />
+                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
               </Border.Effect>
             </Border>
             <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
@@ -614,14 +612,14 @@
         <ControlTemplate>
           <ControlTemplate.Resources>
             <ResourceDictionary>
-              <DataTemplate DataType="{x:Type controls:AutoCompleteSuggestion}">
+              <DataTemplate DataType="controls:AutoCompleteSuggestion">
                 <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
                   <TextBlock.Text>
                     <Binding Path="Suggestion" />
                   </TextBlock.Text>
                 </TextBlock>
               </DataTemplate>
-              <DataTemplate DataType="{x:Type controls:UserIdentityAutoCompleteSuggestion}">
+              <DataTemplate DataType="controls:UserIdentityAutoCompleteSuggestion">
                 <DockPanel>
                   <controls:AvatarImage Margin="0" DockPanel.Dock="Left" VerticalAlignment="Center" Height="14" Width="14" x:Name="AuthorAvatarImage">
                     <controls:AvatarImage.UserIdentity>
@@ -635,7 +633,7 @@
                   </TextBlock>
                 </DockPanel>
               </DataTemplate>
-              <DataTemplate DataType="{x:Type controls:GitmojiAutoCompleteSuggestion}">
+              <DataTemplate DataType="controls:GitmojiAutoCompleteSuggestion">
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center">
                     <TextBlock.Text>
@@ -685,7 +683,7 @@
     <Setter Property="Width" Value="18" />
     <Setter Property="Height">
       <Setter.Value>
-        <Binding Path="ActualHeight"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+        <Binding Path="Bounds.Height"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
     <Setter Property="Padding" Value="0" />
@@ -700,7 +698,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type GridViewColumnHeader}" Selector="GridViewColumnHeader">
+  <Style x:Key="GridViewColumnHeader" Selector="GridViewColumnHeader">
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Padding" Value="4,0,4,0" />
@@ -744,13 +742,13 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ReferencePanelStyle" Selector="controls:ReferencePanel">
+  <Style x:Key="ReferencePanelStyle" Selector="controls|ReferencePanel">
 <Setter Property="ItemTemplate">
       <Setter.Value>
         <DataTemplate>
           <DataTemplate.Resources>
             <ResourceDictionary>
-              <DataTemplate DataType="{x:Type controls:ReferencePanelTagViewModel}">
+              <DataTemplate DataType="controls:ReferencePanelTagViewModel">
                 <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
                   <DockPanel>
                     <Image Source="{DynamicResource TagIcon}" DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0" />
@@ -764,7 +762,7 @@
                   </DockPanel>
                 </Border>
               </DataTemplate>
-              <DataTemplate DataType="{x:Type controls:ReferencePanelLocalBranchViewModel}">
+              <DataTemplate DataType="controls:ReferencePanelLocalBranchViewModel">
                 <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
                   <TextBlock>
                     <TextBlock.Text>
@@ -773,7 +771,7 @@
                   </TextBlock>
                 </Border>
               </DataTemplate>
-              <DataTemplate DataType="{x:Type controls:ReferencePanelRemoteBranchViewModel}">
+              <DataTemplate DataType="controls:ReferencePanelRemoteBranchViewModel">
                 <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
                   <DockPanel>
                     <Image DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0">
@@ -791,7 +789,7 @@
                   </DockPanel>
                 </Border>
               </DataTemplate>
-              <DataTemplate DataType="{x:Type controls:ReferencePanelBisectMarkViewModel}">
+              <DataTemplate DataType="controls:ReferencePanelBisectMarkViewModel">
                 <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
                   <TextBlock>
                     <TextBlock.Text>
@@ -818,7 +816,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="MultilineReferencePanelStyle" Selector="controls:ReferencePanel">
+  <Style x:Key="MultilineReferencePanelStyle" Selector="controls|ReferencePanel">
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>

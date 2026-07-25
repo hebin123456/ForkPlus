@@ -29,7 +29,7 @@
       <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,4,0,0" FontSize="13" Text="Tag:" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:GitPointView Grid.Row="2" Grid.Column="1" Margin="16,4,0,0" x:Name="GitPointView" />
       <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,6,0,0" FontSize="13" Text="Message:" VerticalAlignment="Top" HorizontalAlignment="Right" />
-      <TextBox Grid.Row="3" Grid.Column="1" Margin="16,7,0,4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TagDetailsTextBox" />
+      <TextBox Grid.Row="3" Grid.Column="1" Margin="16,7,0,4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsReadOnly="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" x:Name="TagDetailsTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

@@ -1,7 +1,7 @@
 <!-- Migration notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
-     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
-     - Inner Style with x:Key="{x:Type TextBlock}" (implicit default) -> Selector="TextBlock" without x:Key
+     - Style TargetType="T" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - Inner Style with x:Key="TextBlock" (implicit default) -> Selector="TextBlock" without x:Key
        (Avalonia default style convention).
      - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
      - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled,
@@ -27,7 +27,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editorControl="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
   <Geometry x:Key="ArrowGeometry">M6,0.919L3,3.919L0,0.919L0.841,0.081L3,2.24T5.159,0.081L6,0.919Z</Geometry>
-  <Style x:Key="{x:Type Button}" Selector="Button">
+  <Style x:Key="Button" Selector="Button">
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
@@ -124,7 +124,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ToggleButton}" Selector="ToggleButton">
+  <Style x:Key="ToggleButton" Selector="ToggleButton">
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -189,17 +189,17 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="DropDownButton" Selector="controls:DropDownButton">
+  <Style x:Key="DropDownButton" Selector="controls|DropDownButton">
     <Setter Property="ClickMode" Value="Press" />
   </Style>
-  <Style x:Key="FloatingButton" Selector="editorControl:FloatingButton">
+  <Style x:Key="FloatingButton" Selector="editorControl|FloatingButton">
     <Setter Property="Margin" Value="2,2,2,2" />
     <Setter Property="Padding" Value="8,0,8,0" />
     <Setter Property="Height" Value="22" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontFamily" Value="Segoe UI" />
   </Style>
-  <Style x:Key="ToolbarButton" Selector="controls:ToolbarButton">
+  <Style x:Key="ToolbarButton" Selector="controls|ToolbarButton">
     <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
     <Setter Property="Padding" Value="10,0,10,0" />
     <Setter Property="Margin" Value="0" />
@@ -239,7 +239,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="StashToolbarButtonStyle" Selector="controls:ToolbarButton">
+  <Style x:Key="StashToolbarButtonStyle" Selector="controls|ToolbarButton">
     <Setter Property="CornerRadius" Value="3,0,0,3" />
     <!-- Converted from Style.Triggers DataTriggers (IsMouseOver/IsChecked bound to control's own state) -->
     <Style Selector="^:pointerover">
@@ -251,7 +251,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
     </Style>
   </Style>
-  <Style x:Key="BranchToolbarButtonStyle" Selector="controls:ToolbarButton">
+  <Style x:Key="BranchToolbarButtonStyle" Selector="controls|ToolbarButton">
     <Setter Property="CornerRadius" Value="3,0,0,3" />
     <!-- Converted from Style.Triggers DataTriggers (IsMouseOver/IsChecked bound to control's own state) -->
     <Style Selector="^:pointerover">
@@ -305,7 +305,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ToolbarDropdownButton" Selector="controls:ToolbarDropDownButton">
+  <Style x:Key="ToolbarDropdownButton" Selector="controls|ToolbarDropDownButton">
     <Setter Property="ClickMode" Value="Press" />
     <Setter Property="Template">
       <Setter.Value>
@@ -445,7 +445,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type RadioButton}" Selector="RadioButton">
+  <Style x:Key="RadioButton" Selector="RadioButton">
     <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -543,7 +543,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls:DropDownButton">
+  <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls|DropDownButton">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -785,7 +785,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="DateRangeButton" Selector="controls:DateRangeButton">
+  <Style x:Key="DateRangeButton" Selector="controls|DateRangeButton">
 <Setter Property="BorderThickness" Value="0" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -973,7 +973,7 @@
         <ControlTemplate>
           <Border>
             <Grid>
-              <Rectangle CornerRadius="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
+              <Rectangle RadiusX="3" RadiusY="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
               <Path Data="{DynamicResource CloseGeometry}" Height="10" Width="10" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="False" Fill="#FFFFFFFF" x:Name="ClearIcon" />
             </Grid>
           </Border>

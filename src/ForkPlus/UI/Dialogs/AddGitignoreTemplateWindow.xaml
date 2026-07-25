@@ -16,7 +16,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
           <StackPanel x:Name="TemplateListPanel" />
         </ScrollViewer>
       </Border>

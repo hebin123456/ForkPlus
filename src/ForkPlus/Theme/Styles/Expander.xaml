@@ -1,6 +1,6 @@
 <!-- Migration Notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed duplicate xmlns:x on child elements.
-     - Style TargetType="{x:Type T}" -> Selector="T"; x:Key values preserved.
+     - Style TargetType="T" -> Selector="T"; x:Key values preserved.
      - Property prefixes stripped: Control.Template -> Template, Control.Padding -> Padding,
        TextElement.Foreground -> Foreground, TextElement.FontSize -> FontSize, Panel.Background -> Background,
        Control.HorizontalContentAlignment -> HorizontalContentAlignment,

@@ -11,6 +11,6 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="1" Grid.Column="1" Text="Details:" Margin="0,10,0,0" />
-    <TextBox Grid.Row="2" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" IsReadOnly="True" FontFamily="Consolas" FontSize="13" x:Name="OutputTextBox" />
+    <TextBox Grid.Row="2" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" IsReadOnly="True" FontFamily="Consolas" FontSize="13" x:Name="OutputTextBox" />
   </Grid>
 </dialogs:ForkPlusDialogWindow>

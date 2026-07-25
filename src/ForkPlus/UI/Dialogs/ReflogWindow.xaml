@@ -34,7 +34,6 @@
 
     <!-- reflog 列表 -->
     <ListView Grid.Row="1" x:Name="ReflogListView"
-              MouseDoubleClick="ReflogListView_MouseDoubleClick"
               SelectionChanged="ReflogListView_SelectionChanged"
              >
       <ListView.View>

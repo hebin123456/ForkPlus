@@ -30,7 +30,7 @@
         <Image Source="{DynamicResource PreviewIcon}" />
       </Button>
     </DockPanel>
-    <userControls:FileListUserControl ContextMenuOpening="FileListUserControl_ContextMenuOpening" Grid.Row="2" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" UseLayoutRounding="False" x:Name="FileListUserControl">
+    <userControls:FileListUserControl Grid.Row="2" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" UseLayoutRounding="False" x:Name="FileListUserControl">
       <userControls:FileListUserControl.ContextMenu>
         <ContextMenu />
       </userControls:FileListUserControl.ContextMenu>

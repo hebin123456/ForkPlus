@@ -35,7 +35,7 @@
         <RowDefinition Height="85" />
         <RowDefinition Height="17" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" ContextMenuOpening="ToolsListBox_ContextMenuOpening" x:Name="ToolsListBox">
+      <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" x:Name="ToolsListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

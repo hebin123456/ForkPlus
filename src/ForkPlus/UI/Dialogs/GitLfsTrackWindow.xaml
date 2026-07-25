@@ -22,10 +22,10 @@
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Pattern:" FontSize="13" />
       <TextBlock Grid.Row="0" Grid.Column="2" FontSize="11" HorizontalAlignment="Right" x:Name="PatternLabelTextBlock" />
-      <controls:PlaceholderTextBox TextChanged="PatternTextBox_TextChanged" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,4,0,4" HorizontalAlignment="Stretch" Height="70" VerticalAlignment="Stretch" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" x:Name="PatternTextBox" />
+      <controls:PlaceholderTextBox TextChanged="PatternTextBox_TextChanged" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,4,0,4" HorizontalAlignment="Stretch" Height="70" VerticalAlignment="Stretch" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" x:Name="PatternTextBox" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Preview:" FontSize="13" Margin="0,8,0,0" />
       <TextBlock Grid.Row="2" Grid.Column="2" Margin="0,8,0,0" FontSize="11" HorizontalAlignment="Right" x:Name="PreviewLabelTextBlock" />
-      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Height="140" Margin="0,4,0,4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" x:Name="PreviewTextBox" />
+      <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Height="140" Margin="0,4,0,4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" IsReadOnly="True" x:Name="PreviewTextBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

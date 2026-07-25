@@ -1,6 +1,6 @@
 <!-- Migration notes (WPF -> Avalonia):
      - Root xmlns set to https://github.com/avaloniaui; removed redundant child xmlns:x declarations.
-     - Style TargetType="{x:Type T}" -> Selector="T" (x:Key values preserved, BasedOn preserved).
+     - Style TargetType="T" -> Selector="T" (x:Key values preserved, BasedOn preserved).
      - ControlTemplate.Triggers -> nested <Style Selector="^..."> with /template/ Element#Name selectors.
      - Pseudoclass mapping: IsMouseOver->:pointerover, IsPressed->:pressed, IsEnabled=False->:disabled.
      - Property prefixes stripped in Setters (Panel.Background->Background, Border.BorderBrush->BorderBrush,
@@ -227,7 +227,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CustomWindow" Selector="ui:CustomWindow">
+  <Style x:Key="CustomWindow" Selector="ui|CustomWindow">
     <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource Window.Foreground}" />
@@ -301,7 +301,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ForkPlusDialogWindowStyle" Selector="dialogs:ForkPlusDialogWindow">
+  <Style x:Key="ForkPlusDialogWindowStyle" Selector="dialogs|ForkPlusDialogWindow">
     <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
     <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
     <Setter Property="Template">

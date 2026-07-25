@@ -19,7 +19,7 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Text="Add Account" Margin="4,0,0,4" FontSize="15" FontWeight="Medium" VerticalAlignment="Center" />
-    <ListBox Grid.Column="1" Grid.Row="1" Padding="4,5,5,0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ServicesListBox_SelectionChanged" MouseDoubleClick="ServicesListBox_MouseDoubleClick" x:Name="ServicesListBox">
+    <ListBox Grid.Column="1" Grid.Row="1" Padding="4,5,5,0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ServicesListBox_SelectionChanged" x:Name="ServicesListBox">
       <ListBox.ItemsPanel>
         <ItemsPanelTemplate>
           <WrapPanel />

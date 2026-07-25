@@ -42,7 +42,7 @@
       <Setter Property="Margin" Value="0,2,0,0" />
     </Style>
   </Style>
-  <Style x:Key="TreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="TreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Focusable">
       <Setter.Value>
         <Binding Path="IsFocusable" />
@@ -76,9 +76,7 @@
                 <ToggleButton.IsChecked>
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
-                <ToggleButton.Visibility>
-                  <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
-                </ToggleButton.Visibility>
+                
               </ToggleButton>
               <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             </Grid>
@@ -104,7 +102,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
   </Style>
-  <Style x:Key="MultiselectionTreeView" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="MultiselectionTreeView" Selector="controls|MultiselectionTreeView">
     <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}" />
 <Setter Property="BorderThickness" Value="0" />
@@ -126,7 +124,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ExpandButtonAutoWidthTreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="ExpandButtonAutoWidthTreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Focusable">
       <Setter.Value>
         <Binding Path="IsFocusable" />
@@ -162,9 +160,7 @@
                 <ToggleButton.IsChecked>
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
-                <ToggleButton.Visibility>
-                  <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
-                </ToggleButton.Visibility>
+                
               </ToggleButton>
               <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             </Grid>
@@ -193,22 +189,22 @@
       <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
     </Style>
   </Style>
-  <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
     <Setter Property="BorderThickness" Value="1,1,0,1" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource ExpandButtonAutoWidthTreeViewItemStyle}" />
 </Style>
-  <Style x:Key="SideBarSearchTreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="SideBarSearchTreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Height" Value="22" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
   </Style>
-  <Style x:Key="SideBarSearchMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="SideBarSearchMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource SideBarSearchTreeViewItemStyle}" />
   </Style>
-  <Style x:Key="SideBarIssuesTreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="SideBarIssuesTreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Height" Value="50" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
@@ -216,22 +212,22 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
   </Style>
-  <Style x:Key="SideBarIssuesMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="SideBarIssuesMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource SideBarIssuesTreeViewItemStyle}" />
   </Style>
-  <Style x:Key="SideBarTreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="SideBarTreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Height" Value="22" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
   </Style>
-  <Style x:Key="SideBarMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="SideBarMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource SideBarTreeViewItemStyle}" />
   </Style>
-  <Style x:Key="TreeViewItemGridViewStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="TreeViewItemGridViewStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Focusable">
       <Setter.Value>
         <Binding Path="IsFocusable" />
@@ -269,7 +265,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     </Style>
   </Style>
-  <Style x:Key="FileListMultiselectionTreeViewWithGridViewStyle" Selector="controls:MultiselectionTreeView">
+  <Style x:Key="FileListMultiselectionTreeViewWithGridViewStyle" Selector="controls|MultiselectionTreeView">
     <Setter Property="Padding" Value="0" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource TreeViewItemGridViewStyle}" />
     <Setter Property="Template">
@@ -284,8 +280,8 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="FileListMultiselectionTreeViewDefaultStyle" Selector="controls:MultiselectionTreeView" />
-  <Style x:Key="RepositoryManagerTreeViewItemStyle" Selector="controls:TreeViewControlItem">
+  <Style x:Key="FileListMultiselectionTreeViewDefaultStyle" Selector="controls|MultiselectionTreeView" />
+  <Style x:Key="RepositoryManagerTreeViewItemStyle" Selector="controls|TreeViewControlItem">
     <Setter Property="Height" Value="22" />
     <Setter Property="Padding" Value="2,0,2,0" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />

@@ -39,9 +39,6 @@
     <TextBox Grid.Row="6" Grid.Column="1" Margin="10,8,0,0" Width="48" HorizontalAlignment="Left" TextChanged="TimeoutTextBox_TextChanged" x:Name="TimeoutTextBox" />
     <DockPanel Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,8,0,0" x:Name="StatusContainer">
       <ProgressBar DockPanel.Dock="Left" Margin="0,0,6,0" Width="14" Height="14" IsVisible="False" x:Name="BusyIndicator">
-        <ProgressBar.Style>
-          <DynamicResource ResourceKey="CircularProgressBar" />
-        </ProgressBar.Style>
       </ProgressBar>
       <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
     </DockPanel>

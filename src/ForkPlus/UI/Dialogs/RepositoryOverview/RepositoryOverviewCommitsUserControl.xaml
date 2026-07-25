@@ -7,7 +7,7 @@
     </Style>
   </UserControl.Styles>
   <Grid>
-    <ListBox BorderThickness="1" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="RevisionsListBox_ContextMenuOpening" x:Name="RevisionsListBox">
+    <ListBox BorderThickness="1" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="RevisionsListBox">
       <ListBox.ContextMenu>
         <ContextMenu />
       </ListBox.ContextMenu>

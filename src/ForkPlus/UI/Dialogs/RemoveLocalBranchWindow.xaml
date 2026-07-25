@@ -22,7 +22,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,2,0,2" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" x:Name="StartPointTextBlock" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" x:Name="GitPointView" />
       <Border Grid.Row="0" Grid.Column="1" Margin="8,0,0,0" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="BranchesContainer">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl"><ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Grid Height="20">
@@ -38,9 +38,7 @@
                     </TextBlock.Text>
                   </TextBlock>
                   <DockPanel Grid.Column="2" VerticalAlignment="Center">
-                    <DockPanel.Visibility>
-                      <Binding Path="UpstreamVisibility" />
-                    </DockPanel.Visibility>
+                    
                     <TextBlock Text="&#x2192;" Margin="4,0,0,0">
                       <TextBlock.IsVisible>
                         <Binding Path="UpstreamName"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>

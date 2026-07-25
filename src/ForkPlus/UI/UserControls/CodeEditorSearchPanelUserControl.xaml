@@ -11,9 +11,6 @@
       <DockPanel>
         <DockPanel.Children>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">
-            <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
@@ -26,9 +23,6 @@
             </Image>
           </Button>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="JumpToNextSearchResultButton_Click">
-            <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
@@ -41,9 +35,6 @@
             </Image>
           </Button>
           <Button DockPanel.Dock="Right" Margin="2,0,2,0" Click="JumpToPreviousSearchResultButton_Click">
-            <Button.Style>
-              <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>

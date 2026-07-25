@@ -1,7 +1,7 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - DataTemplate DataType="{x:Type local:Foo}" → DataType="local:Foo"
+     - DataTemplate DataType="local:Foo" → DataType="local:Foo"
      -->
 <TabItem xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.AccountRepositoriesTabItem" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <TabItem.Resources>
@@ -14,9 +14,9 @@
             </Image.Source>
           </Image>
           <Button DockPanel.Dock="Right" VerticalAlignment="Center" Click="CloneButton_Click" x:Name="CloneButton">
-            <Button.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="Tooltip" />
-            </Button.ToolTip.Tip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource DownloadIcon}" x:Name="StarButtonImage" />
           </Button>
           <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" x:Name="NameTextBlock">

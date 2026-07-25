@@ -15,6 +15,6 @@
       <Button DockPanel.Dock="Right" Content="Refresh" Click="RefreshButton_Click" x:Name="RefreshButton" />
       <TextBlock Text="Recent samples" FontWeight="Medium" VerticalAlignment="Center" />
     </DockPanel>
-    <TextBox Grid.Row="2" Grid.Column="1" FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="SamplesTextBox" />
+    <TextBox Grid.Row="2" Grid.Column="1" FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="SamplesTextBox" />
   </Grid>
 </dialogs:ForkPlusDialogWindow>

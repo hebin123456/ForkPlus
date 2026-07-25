@@ -1,14 +1,14 @@
 <!-- 阶段 4.5：WPF→Avalonia XAML 迁移。
      - xmlns schemas.microsoft.com → https://github.com/avaloniaui
      - 删除子元素重复 xmlns（presentation / x）
-     - DataTemplate DataType="{x:Type userControls:Foo}" → DataType="userControls:Foo"
+     - DataTemplate DataType="userControls:Foo" → DataType="userControls:Foo"
      - 移除 WPF 特有 RenderOptions.ClearTypeHint
      - MouseDoubleClick 绑定移除（由 code-behind 显式订阅 DoubleTapped）
      -->
 <UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls:RepositoryManagerEditableTextBlock" />
+      <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls|RepositoryManagerEditableTextBlock" />
       <DataTemplate DataType="userControls:RepositoryManagerSectionItem">
         <Grid Height="22">
           <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
@@ -29,9 +29,9 @@
             <TextBlock.Text>
               <Binding Path="Title" />
             </TextBlock.Text>
-            <TextBlock.ToolTip.Tip>
+            <ToolTip.Tip>
               <Binding Path="SourceDir" />
-            </TextBlock.ToolTip.Tip>
+            </ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>

@@ -56,7 +56,7 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <controls:PlaceholderTextBox Grid.Row="0" x:Name="SubjectTextBox" Placeholder="Subject" Padding="6,4" FontSize="13" TextChanged="SubjectTextBox_TextChanged" />
-          <controls:PlaceholderTextBox Grid.Row="1" x:Name="BodyTextBox" Margin="0,4,0,0" Placeholder="Body (optional)" Padding="6,4" FontSize="13" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="BodyTextBox_TextChanged" />
+          <controls:PlaceholderTextBox Grid.Row="1" x:Name="BodyTextBox" Margin="0,4,0,0" Placeholder="Body (optional)" Padding="6,4" FontSize="13" AcceptsReturn="True" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="BodyTextBox_TextChanged" />
           <TextBlock Grid.Row="2" x:Name="ReasonTextBlock" FontSize="11" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="0,6,0,0" TextWrapping="Wrap" />
         </Grid>
       </DockPanel>
