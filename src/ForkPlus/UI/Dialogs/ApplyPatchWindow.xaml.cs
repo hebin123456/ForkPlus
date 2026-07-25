@@ -74,14 +74,14 @@ namespace ForkPlus.UI.Dialogs
 		protected override string GetCommandPreview()
 	{
 		_viewModel.PatchPath = PathTextBox.Text;
-		_viewModel.CreateCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
+		_viewModel.CreateCommits = CreateCommitsCheckBox.IsVisible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
 		return _viewModel.CommandPreview;
 	}
 
 	protected override void OnSubmit()
 	{
 		GitModule gitModule = _repositoryUserControl.GitModule;
-		bool createCommits = CreateCommitsCheckBox.Visibility == Visibility.Visible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
+		bool createCommits = CreateCommitsCheckBox.IsVisible && CreateCommitsCheckBox.IsChecked.GetValueOrDefault();
 			DisableEditableControls();
 			SetStatus(ForkPlusDialogStatus.InProgress, Translate("Applying patch..."));
 			if (_patchData != null)

@@ -141,7 +141,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return _pendingShowSubmitButton.GetValueOrDefault(true);
 				}
-				return Footer.SubmitButton.Visibility == Visibility.Visible;
+				return Footer.SubmitButton.IsVisible;
 			}
 			set
 			{
@@ -177,7 +177,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return _pendingShowCancelButton.GetValueOrDefault(true);
 				}
-				return Footer.CancelButton.Visibility == Visibility.Visible;
+				return Footer.CancelButton.IsVisible;
 			}
 			set
 			{
@@ -478,7 +478,7 @@ namespace ForkPlus.UI.Dialogs
 			VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
 			HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
 			Margin = new Thickness(0.0, 4.0, 8.0, 0.0),
-			Visibility = Visibility.Collapsed
+			IsVisible = false
 		};
 		_commandPreviewLabel.SetValue(Grid.ColumnProperty, 0);
 		previewGrid.Children.Add(_commandPreviewLabel);
@@ -489,7 +489,7 @@ namespace ForkPlus.UI.Dialogs
 			TextWrapping = TextWrapping.Wrap,
 			Foreground = ForkPlus.UI.Theme.FindBrush("SecondaryLabelBrush"),
 			Margin = new Thickness(8.0, 4.0, 0.0, 0.0),
-			Visibility = Visibility.Collapsed
+			IsVisible = false
 		};
 		// 限制命令预览最大高度：长命令换行多时不再无限撑高窗口把确认按钮挤出可视区。
 		// 超出部分在 ScrollViewer 内滚动查看；同时悬停 ToolTip 显示完整命令文本。
@@ -499,7 +499,7 @@ namespace ForkPlus.UI.Dialogs
 			HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
 			MaxHeight = 120.0,
 			Margin = new Thickness(0.0, 0.0, 0.0, 0.0),
-			Visibility = Visibility.Collapsed
+			IsVisible = false
 		};
 		previewScrollViewer.SetValue(Grid.ColumnProperty, 1);
 		previewScrollViewer.Content = _commandPreviewTextBlock;
@@ -515,7 +515,7 @@ namespace ForkPlus.UI.Dialogs
 			Background = Brushes.Transparent,
 			BorderThickness = new Thickness(0.0),
 			Cursor = new Cursor(StandardCursorType.Hand),
-			Visibility = Visibility.Collapsed
+			IsVisible = false
 		};
 		ToolTip.SetTip(_commandPreviewCopyButton, PreferencesLocalization.Current("Copy to clipboard"));
 		_commandPreviewCopyButton.SetValue(Grid.ColumnProperty, 2);
