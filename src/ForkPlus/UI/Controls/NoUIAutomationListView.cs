@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -29,6 +30,23 @@ namespace ForkPlus.UI.Controls
 		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
 		public static readonly StyledProperty<Avalonia.Controls.GridView> ViewProperty =
 			AvaloniaProperty.Register<NoUIAutomationListView, Avalonia.Controls.GridView>(nameof(View));
+
+		static NoUIAutomationListView()
+		{
+			// 阶段 6：View 属性变化时自动从 GridView 构建 ItemTemplate，让多列内容能渲染。
+			ViewProperty.Changed.AddClassHandler<NoUIAutomationListView>((list, e) =>
+			{
+				if (e.NewValue is Avalonia.Controls.GridView gridView)
+				{
+					IDataTemplate template = Avalonia.Controls.GridViewRenderer.BuildItemTemplate(gridView);
+					if (template != null)
+					{
+						list.ItemTemplate = template;
+					}
+				}
+			});
+		}
+
 		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
 		public Avalonia.Controls.GridView View
 		{

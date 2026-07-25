@@ -571,18 +571,16 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshRevisionListViewTemplate()
 		{
-			// 阶段 5：Avalonia 无 WPF GridView 概念（ListView.View = GridView），
-			// 列表/网格视图切换改由 ItemTemplate 切换实现（参考 FileListUserControl.RefreshTreeViewItemTemplate）。
-			// WPF GridView 资源（SingleRowGridView/DoubleRowGridView）已无对应物，本方法暂空实现，
-			// 后续如需视图切换可基于 ItemTemplate 资源重构。
-			double num = 500.0;
-			switch (ForkPlusSettings.Default.RevisionListOrientation)
+			// 阶段 6：WPF GridView 列视图现已通过 GridViewRenderer 渲染。
+			// 根据 RevisionListOrientation 从 XAML 资源加载对应的 GridView（SingleRowGridView/DoubleRowGridView），
+			// 设置到 RevisionListView.View；View setter 的 class handler 会自动从 GridView 构建 ItemTemplate。
+			string resourceKey = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Horizontal
+				? "DoubleRowGridView"
+				: "SingleRowGridView";
+
+			if (this.FindResource(resourceKey) is Avalonia.Controls.GridView gridView)
 			{
-			case RevisionListOrientation.Vertical:
-				// 视图模板切换待后续基于 ItemTemplate 实现。
-				break;
-			case RevisionListOrientation.Horizontal:
-				break;
+				RevisionListView.View = gridView;
 			}
 		}
 

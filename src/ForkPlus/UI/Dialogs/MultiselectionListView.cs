@@ -3,8 +3,10 @@
 // - ListBox → Avalonia.Controls.ListBox
 // - DependencyObject → Control（CreateContainerForItemOverride 返回类型）
 // - 阶段 5：GetContainerForItemOverride → CreateContainerForItemOverride（3 参数）；IsItemItsOwnContainerOverride 不存在已移除
+// - 阶段 6：View 属性从 object 占位升级为 StyledProperty<GridView>，设置时自动构建 ItemTemplate 渲染多列内容。
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using ForkPlus.UI.Controls;
 
 namespace ForkPlus.UI.Dialogs
@@ -13,9 +15,31 @@ namespace ForkPlus.UI.Dialogs
 	{
 		private readonly DragAutoScrollHelper _dragAutoScroll;
 
-		// 阶段 5：WPF ListView.View 属性兼容占位。WPF ListView 可设 View=GridView 实现多列布局；
-		// Avalonia ListBox 无 View 属性。本属性仅用于编译兼容，运行时不渲染 GridView（阶段 6 迁移到 DataGrid）。
-		public object View { get; set; }
+		// 阶段 6：WPF ListView.View = GridView 多列布局。
+		// 设置时自动从 GridView.Columns 构建合并的 ItemTemplate（单列直接用 CellTemplate，多列用水平 Grid 排列）。
+		public static readonly StyledProperty<GridView> ViewProperty =
+			AvaloniaProperty.Register<MultiselectionListView, GridView>(nameof(View));
+
+		static MultiselectionListView()
+		{
+			ViewProperty.Changed.AddClassHandler<MultiselectionListView>((list, e) =>
+			{
+				if (e.NewValue is GridView gridView)
+				{
+					IDataTemplate template = GridViewRenderer.BuildItemTemplate(gridView);
+					if (template != null)
+					{
+						list.ItemTemplate = template;
+					}
+				}
+			});
+		}
+
+		public GridView View
+		{
+			get => GetValue(ViewProperty);
+			set => SetValue(ViewProperty, value);
+		}
 
 		public MultiselectionListView()
 		{

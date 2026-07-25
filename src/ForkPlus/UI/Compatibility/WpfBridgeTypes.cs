@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -215,9 +216,26 @@ namespace Avalonia.Controls
 	/// <summary>WPF ListView bridge. Avalonia uses ListBox; this subclass keeps XAML &lt;ListView&gt; tags compiling.</summary>
 	public class ListView : ListBox
 	{
-		/// <summary>WPF ListView.View property. Avalonia has no GridView; this stub accepts the bridge GridView type.</summary>
+		/// <summary>WPF ListView.View property. 设置时自动从 GridView 构建 ItemTemplate 以渲染多列内容。</summary>
 		public static readonly StyledProperty<GridView> ViewProperty =
 			AvaloniaProperty.Register<ListView, GridView>(nameof(View));
+
+		static ListView()
+		{
+			// 阶段 6：View 属性变化时自动从 GridView 构建 ItemTemplate，让多列内容能渲染。
+			ViewProperty.Changed.AddClassHandler<ListView>((list, e) =>
+			{
+				if (e.NewValue is GridView gridView)
+				{
+					IDataTemplate template = GridViewRenderer.BuildItemTemplate(gridView);
+					if (template != null)
+					{
+						list.ItemTemplate = template;
+					}
+				}
+			});
+		}
+
 		public GridView View
 		{
 			get => GetValue(ViewProperty);

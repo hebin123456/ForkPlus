@@ -3,7 +3,11 @@
 // - e.Effects → e.DragEffects（Avalonia DragEventArgs 属性名）
 // - e.Data.GetData(format) → e.Data.Get(format)（Avalonia IDataObject 方法名）
 // 基类 MultiselectionTreeView 已迁移，OnDragOver/OnDrop 签名兼容。
+// 阶段 6：View 属性支持 WPF TreeView.View = GridView 多列布局。
 using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
@@ -25,6 +29,32 @@ namespace ForkPlus.UI.UserControls
 		public static readonly string DragItemsFormat = "FileListItems";
 
 		public EventHandler<DropEventArgs> ItemsDrop;
+
+		// 阶段 6：WPF TreeView.View = GridView 多列布局。
+		// 设置时自动从 GridView.Columns 构建合并的 ItemTemplate（单列直接用 CellTemplate，多列用水平 Grid 排列）。
+		public static readonly StyledProperty<GridView> ViewProperty =
+			AvaloniaProperty.Register<FileListTreeView, GridView>(nameof(View));
+
+		static FileListTreeView()
+		{
+			ViewProperty.Changed.AddClassHandler<FileListTreeView>((tree, e) =>
+			{
+				if (e.NewValue is GridView gridView)
+				{
+					IDataTemplate template = GridViewRenderer.BuildItemTemplate(gridView);
+					if (template != null)
+					{
+						tree.ItemTemplate = template;
+					}
+				}
+			});
+		}
+
+		public GridView View
+		{
+			get => GetValue(ViewProperty);
+			set => SetValue(ViewProperty, value);
+		}
 
 		public FileListTreeView()
 		{
