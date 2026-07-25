@@ -157,10 +157,13 @@ namespace ForkPlus.UI.UserControls
 			// 阶段 4.5：WPF WeakEventManager<NotificationCenter,EventArgs>.AddHandler(obj,"Event",h)
 			// → Avalonia 直接事件订阅 obj.Event += h（参考 FileControlHeaderUserControl/RevisionListViewUserControl）。
 			NotificationCenter.Current.ReferenceSortOrderChanged += ReferenceSortOrderChanged;
-			SidebarTreeView.ContextMenuOpening += SidebarTreeView_ContextMenuOpening;
-			// 阶段 4.5：WPF AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(h))
-			// → Avalonia AddHandler(ButtonBase.ClickEvent, h)（方法组转换 EventHandler<RoutedEventArgs>）。
-			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, SidebarTreeView_ButtonClick);
+			// 阶段 5：Avalonia Control 无 ContextMenuOpening 事件；用 ContextRequested 替代
+			//（WPF ContextMenuOpening → Avalonia ContextRequested，事件参数为 ContextRequestedEventArgs）。
+			SidebarTreeView.ContextRequested += SidebarTreeView_ContextMenuOpening;
+			// 阶段 5：Avalonia 无 ButtonBase 类（WPF System.Windows.Controls.Primitives.ButtonBase）。
+			// 使用 Button.ClickEvent（Avalonia.Controls.Button）作为等价路由事件。
+			// AddHandler 签名：(RoutedEvent, EventHandler<RoutedEventArgs>, RoutingStrategies, bool)
+			SidebarTreeView.AddHandler(Button.ClickEvent, SidebarTreeView_ButtonClick);
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
 			// 阶段 4.5：WPF MouseDown/MouseDoubleClick → Avalonia PointerPressed/DoubleTapped。
 			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
@@ -534,13 +537,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (target is LocalBranch destinationBranch)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
+					// 阶段 5：Avalonia 无 LayoutTransform；用 RenderTransform 近似替代。
+					SidebarTreeView.ContextMenu.RenderTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
 					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.RenderTransform = ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
 					SidebarTreeView.ContextMenu.Open();
 				}
@@ -2605,55 +2609,54 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void SidebarTreeView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
+		// 阶段 5：Avalonia Control.DoubleTapped 事件使用 TappedEventArgs（非 PointerPressedEventArgs）。
+	// TappedEventArgs 无 IsClickedOnScrollbar 扩展方法（依赖 PointerPressedEventArgs）；
+	// DoubleTapped 仅在内容区触发，滚动条点击不会引发，故移除该检查。
+	private void SidebarTreeView_MouseDoubleClick(object sender, TappedEventArgs e)
+	{
+		MultiselectionTreeViewItem lastClickedItem = SidebarTreeView.LastClickedItem;
+		if (lastClickedItem != null && lastClickedItem.ShowExpander)
 		{
-			if (e.IsClickedOnScrollbar())
+			lastClickedItem.IsExpanded = !lastClickedItem.IsExpanded;
+			return;
+		}
+		RepositoryUserControl repositoryUserControl = RepositoryUserControl;
+		if (repositoryUserControl == null)
+		{
+			return;
+		}
+		GitModule gitModule = RepositoryUserControl.GitModule;
+		if (gitModule != null)
+		{
+			if (SidebarTreeView.SelectedItem is SubmoduleSidebarItem submoduleSidebarItem)
 			{
-				return;
+				RepositoryUserControl.Commands.OpenSubmodule.Execute(repositoryUserControl, gitModule, new Submodule[1] { submoduleSidebarItem.Submodule });
+				e.Handled = true;
 			}
-			MultiselectionTreeViewItem lastClickedItem = SidebarTreeView.LastClickedItem;
-			if (lastClickedItem != null && lastClickedItem.ShowExpander)
+			else if (SidebarTreeView.SelectedItem is WorktreeSidebarItem worktreeSidebarItem)
 			{
-				lastClickedItem.IsExpanded = !lastClickedItem.IsExpanded;
-				return;
+				RepositoryUserControl.Commands.OpenWorktree.Execute(repositoryUserControl, gitModule, new Worktree[1] { worktreeSidebarItem.Worktree });
+				e.Handled = true;
 			}
-			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
-			if (repositoryUserControl == null)
+			else if (SidebarTreeView.SelectedItem is LocalBranchSidebarItem { LocalBranch: var localBranch })
 			{
-				return;
+				RepositoryUserControl.Commands.ShowCheckoutBranchWindow.Execute(repositoryUserControl, localBranch);
 			}
-			GitModule gitModule = RepositoryUserControl.GitModule;
-			if (gitModule != null)
+			else if (SidebarTreeView.SelectedItem is RemoteBranchSidebarItem remoteBranchSidebarItem)
 			{
-				if (SidebarTreeView.SelectedItem is SubmoduleSidebarItem submoduleSidebarItem)
-				{
-					RepositoryUserControl.Commands.OpenSubmodule.Execute(repositoryUserControl, gitModule, new Submodule[1] { submoduleSidebarItem.Submodule });
-					e.Handled = true;
-				}
-				else if (SidebarTreeView.SelectedItem is WorktreeSidebarItem worktreeSidebarItem)
-				{
-					RepositoryUserControl.Commands.OpenWorktree.Execute(repositoryUserControl, gitModule, new Worktree[1] { worktreeSidebarItem.Worktree });
-					e.Handled = true;
-				}
-				else if (SidebarTreeView.SelectedItem is LocalBranchSidebarItem { LocalBranch: var localBranch })
-				{
-					RepositoryUserControl.Commands.ShowCheckoutBranchWindow.Execute(repositoryUserControl, localBranch);
-				}
-				else if (SidebarTreeView.SelectedItem is RemoteBranchSidebarItem remoteBranchSidebarItem)
-				{
-					RemoteBranch branch = remoteBranchSidebarItem.Reference as RemoteBranch;
-					RepositoryUserControl.Commands.ShowCheckoutBranchWindow.Execute(repositoryUserControl, branch);
-				}
-				else if (SidebarTreeView.SelectedItem is TagSidebarItem tagSidebarItem)
-				{
-					RepositoryUserControl.Commands.ShowCheckoutRevisionWindow.Execute(repositoryUserControl, tagSidebarItem.Reference, tagSidebarItem.Reference.Sha);
-				}
-				else if (SidebarTreeView.SelectedItem is StashSidebarItem stashSidebarItem)
-				{
-					RepositoryUserControl.Commands.ShowApplyStashWindow.Execute(repositoryUserControl, stashSidebarItem.Stash);
-				}
+				RemoteBranch branch = remoteBranchSidebarItem.Reference as RemoteBranch;
+				RepositoryUserControl.Commands.ShowCheckoutBranchWindow.Execute(repositoryUserControl, branch);
+			}
+			else if (SidebarTreeView.SelectedItem is TagSidebarItem tagSidebarItem)
+			{
+				RepositoryUserControl.Commands.ShowCheckoutRevisionWindow.Execute(repositoryUserControl, tagSidebarItem.Reference, tagSidebarItem.Reference.Sha);
+			}
+			else if (SidebarTreeView.SelectedItem is StashSidebarItem stashSidebarItem)
+			{
+				RepositoryUserControl.Commands.ShowApplyStashWindow.Execute(repositoryUserControl, stashSidebarItem.Stash);
 			}
 		}
+	}
 
 		private IEnumerable<Control> CreateLocalBranchDropContextMenuItems(RepositoryUserControl repositoryUserControl, GitModule gitModule, LocalBranch destinationBranch, Branch sourceBranch)
 		{

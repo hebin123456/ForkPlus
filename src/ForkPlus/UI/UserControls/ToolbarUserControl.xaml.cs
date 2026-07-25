@@ -611,10 +611,9 @@ namespace ForkPlus.UI.UserControls
 		customColorsItem.Click += delegate
 		{
 			// 阶段 4.5：WPF Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）。
-			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
-			{
-				Owner = (this.GetVisualRoot() as Window) ?? MainWindow.Instance
-			};
+			// 阶段 5：Avalonia WindowBase.Owner setter 是 internal，外部不能直接赋值。
+			// 改用 WindowDialogExtensions.ShowDialog() 无参重载，内部自动选 owner。
+			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
 			dialog.ShowDialog();
 			// 对话框关闭后刷新主题菜单（IsChecked 状态可能因 OK/Cancel 变化）
 			InitializeAppearanceToolBarButtonContextMenu();
