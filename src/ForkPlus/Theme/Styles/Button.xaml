@@ -28,8 +28,6 @@
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
   <Geometry x:Key="ArrowGeometry">M6,0.919L3,3.919L0,0.919L0.841,0.081L3,2.24T5.159,0.081L6,0.919Z</Geometry>
   <Style x:Key="{x:Type Button}" Selector="Button">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
@@ -127,7 +125,6 @@
     </Setter>
   </Style>
   <Style x:Key="{x:Type ToggleButton}" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -168,7 +165,6 @@
     </Setter>
   </Style>
   <Style x:Key="InlineToggleButton" Selector="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Height" Value="24" />
@@ -204,7 +200,6 @@
     <Setter Property="FontFamily" Value="Segoe UI" />
   </Style>
   <Style x:Key="ToolbarButton" Selector="controls:ToolbarButton">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
     <Setter Property="Padding" Value="10,0,10,0" />
     <Setter Property="Margin" Value="0" />
@@ -222,7 +217,7 @@
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <StackPanel>
               <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
-              <TextBlock Text="{TemplateBinding Title}" Style="{DynamicResource ToolbarButtonTitle}" />
+              <TextBlock Text="{TemplateBinding Title}" />
             </StackPanel>
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
@@ -269,7 +264,6 @@
     </Style>
   </Style>
   <Style x:Key="ToolbarToggleButton" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Padding" Value="8,0,8,0" />
@@ -326,7 +320,7 @@
                   </Path.IsVisible>
                 </Path>
               </Grid>
-              <TextBlock Text="{TemplateBinding Title}" Style="{DynamicResource ToolbarButtonTitle}" />
+              <TextBlock Text="{TemplateBinding Title}" />
             </StackPanel>
           </Border>
           <!-- Converted from ControlTemplate.Triggers: IsMouseOver=true -> :pointerover -->
@@ -404,11 +398,6 @@
     </Setter>
   </Style>
   <Style x:Key="RevisionDetailsBarButton" Selector="RadioButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Margin" Value="0" />
@@ -457,7 +446,6 @@
     </Setter>
   </Style>
   <Style x:Key="{x:Type RadioButton}" Selector="RadioButton">
-    <Setter Property="FocusVisualStyle" Value="{StaticResource RadioButton.FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -520,12 +508,7 @@
     </Setter>
   </Style>
   <Style x:Key="CodeEditorHeaderToggleButtonStyle" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Background" Value="#00FFFFFF" />
+<Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -593,12 +576,7 @@
     </Setter>
   </Style>
   <Style x:Key="CodeEditorHeaderButtonStyle" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+<Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Height" Value="16" />
     <Setter Property="Width" Value="16" />
     <Setter Property="Margin" Value="2,0,2,0" />
@@ -635,13 +613,7 @@
     </Setter>
   </Style>
   <Style x:Key="TransparentButtonStyle" Selector="Button">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Background" Value="#00FFFFFF" />
+<Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="3" />
@@ -729,7 +701,6 @@
     </Setter>
   </Style>
   <Style x:Key="LfsTextButtonStyle" Selector="Button" BasedOn="{StaticResource TextButtonStyle}">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="Height" Value="Auto" />
     <Setter Property="FontSize" Value="13" />
   </Style>
@@ -768,13 +739,7 @@
     <Setter Property="CornerRadius" Value="3,3,3,3" />
   </Style>
   <Style x:Key="ArrowDropDownButtonStyle" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="OverridesDefaultStyle" Value="True" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
+<Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -821,13 +786,7 @@
     </Setter>
   </Style>
   <Style x:Key="{x:Type controls:DateRangeButton}" Selector="controls:DateRangeButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="OverridesDefaultStyle" Value="True" />
-    <Setter Property="BorderThickness" Value="0" />
+<Setter Property="BorderThickness" Value="0" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="CornerRadius" Value="3,3,3,3" />
@@ -861,13 +820,7 @@
     </Setter>
   </Style>
   <Style x:Key="CommitDropDownButtonStyle" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="OverridesDefaultStyle" Value="true" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
+<Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
@@ -923,13 +876,7 @@
     </Setter>
   </Style>
   <Style x:Key="BranchOptionButton" Selector="Button">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Margin" Value="0,0,0,0" />
     <Setter Property="Padding" Value="0,0,0,0" />
@@ -960,7 +907,6 @@
     </Setter>
   </Style>
   <Style x:Key="IconButtonStyle" Selector="Button">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -993,12 +939,7 @@
     </Setter>
   </Style>
   <Style x:Key="RepositoryColorRadioButton" Selector="RadioButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
+<Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -1022,12 +963,7 @@
     </Setter>
   </Style>
   <Style x:Key="UserColorToggleButton" Selector="ToggleButton">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
+<Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Margin" Value="0" />
@@ -1037,7 +973,7 @@
         <ControlTemplate>
           <Border>
             <Grid>
-              <Rectangle RadiusX="3" RadiusY="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
+              <Rectangle CornerRadius="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
               <Path Data="{DynamicResource CloseGeometry}" Height="10" Width="10" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="False" Fill="#FFFFFFFF" x:Name="ClearIcon" />
             </Grid>
           </Border>

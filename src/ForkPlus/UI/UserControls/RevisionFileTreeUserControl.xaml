@@ -27,7 +27,7 @@
       <ColumnDefinition MinWidth="220" MaxWidth="850" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextMenuOpening="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" TextSearch.TextPath="Title" x:Name="FilesTreeView">
+    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextMenuOpening="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView">
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
           <ContentControl>
@@ -42,6 +42,6 @@
       </controls:MultiselectionTreeView.ContextMenu>
     </controls:MultiselectionTreeView>
     <controls:FileContentControl Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileContentControl" />
-    <GridSplitter Grid.Column="0" Style="{DynamicResource VerticalGridSplitter}" HorizontalAlignment="Right" x:Name="GridSplitter" />
+    <GridSplitter Grid.Column="0" HorizontalAlignment="Right" x:Name="GridSplitter" />
   </Grid>
 </UserControl>

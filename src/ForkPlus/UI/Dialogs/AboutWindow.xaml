@@ -1,13 +1,7 @@
 <dialogs:ForkPlusDialogWindow MinHeight="348" Width="240" SizeToContent="Height" Title="About" xmlns="https://github.com/avaloniaui" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AboutWindow">
   <dialogs:ForkPlusDialogWindow.Resources>
     <ResourceDictionary>
-      <Style x:Key="HyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}">
-        <Setter Property="FrameworkContentElement.FocusVisualStyle">
-          <Setter.Value>
-            <x:Null />
-          </Setter.Value>
-        </Setter>
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Style x:Key="HyperlinkStyle" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource {x:Type Hyperlink}}"><Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
       </Style>
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
@@ -26,7 +20,7 @@
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,10,0,8" Text="ForkPlus" FontSize="32" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" x:Name="VersionTextBlock" />
       <Label DockPanel.Dock="Top" HorizontalAlignment="Center" FontSize="13">
-        <Hyperlink NavigateUri="https://hebin.me" Style="{DynamicResource HyperlinkStyle}" RequestNavigate="Hyperlink_RequestNavigate">
+        <Hyperlink NavigateUri="https://hebin.me" RequestNavigate="Hyperlink_RequestNavigate">
           <TextBlock HorizontalAlignment="Center" Text="hebin.me" Margin="0" />
         </Hyperlink>
       </Label>

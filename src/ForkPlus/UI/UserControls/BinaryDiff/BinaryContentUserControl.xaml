@@ -118,11 +118,7 @@
           <DropDownButton.Background>
             <SolidColorBrush>#00FFFFFF</SolidColorBrush>
           </DropDownButton.Background>
-          <DropDownButton.Focusable>False</DropDownButton.Focusable>
-          <DropDownButton.FocusVisualStyle>
-            <x:Null />
-          </DropDownButton.FocusVisualStyle>
-          <DropDownButton.ContextMenu>
+          <DropDownButton.Focusable>False</DropDownButton.Focusable><DropDownButton.ContextMenu>
             <ContextMenu>
               <ContextMenu.Items>
                 <MenuItem Header="Save As..." Click="SaveAsMenuItem_Click" x:Name="SaveAsMenuItem" />

@@ -20,7 +20,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Start from:" FontSize="13" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" x:Name="LocalBranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -48,7 +48,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="PathTextBox" />
-        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
+        <Button Grid.Column="1" Click="BrowseButton_Click" />
       </Grid>
     </Grid>
   </Grid>

@@ -68,7 +68,7 @@
             <ProgressBar.Style>
               <DynamicResource ResourceKey="CircularProgressBar" />
             </ProgressBar.Style>
-            <ProgressBar.Visibility>Collapsed</ProgressBar.Visibility>
+            <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
             <ProgressBar.Width>12</ProgressBar.Width>
             <ProgressBar.Height>12</ProgressBar.Height>
             <ProgressBar.Foreground>

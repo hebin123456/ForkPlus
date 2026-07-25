@@ -10,7 +10,7 @@
     <DockPanel Grid.Row="0" Margin="12,8,12,4" LastChildFill="True">
       <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI-Assisted Development" />
       <!-- 右上角模型下拉选择：从 /v1/models 拉取列表，选中项保存到 AiReviewSelectedModel -->
-      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="320" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" ToolTip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
+      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="320" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" ToolTip.Tip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
@@ -37,7 +37,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <ProgressBar Grid.Column="0" x:Name="ProgressBar" Height="3" IsIndeterminate="True" IsVisible="False" Foreground="{DynamicResource AccentColorBrush}" />
-        <Button Grid.Column="1" x:Name="StopButton" Content="Stop" FontSize="11" Padding="8,1" Margin="6,0,0,0" IsVisible="False" Click="StopButton_Click" MinHeight="22" ToolTip="Stop the current AI task and abort its request" />
+        <Button Grid.Column="1" x:Name="StopButton" Content="Stop" FontSize="11" Padding="8,1" Margin="6,0,0,0" IsVisible="False" Click="StopButton_Click" MinHeight="22" ToolTip.Tip="Stop the current AI task and abort its request" />
       </Grid>
       <!-- Input area -->
       <Grid Grid.Row="1">
@@ -48,7 +48,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox Grid.Column="0" x:Name="InputTextBox" FontSize="13" Padding="6,4" TextWrapping="Wrap" AcceptsReturn="True" MaxLines="4" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" MinHeight="28" MaxHeight="80" Placeholder="Enter your development requirement..." />
-        <Button Grid.Column="1" x:Name="ClearConversationButton" Content="Clear" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" Click="ClearConversationButton_Click" MinHeight="28" ToolTip="Clear conversation history" />
+        <Button Grid.Column="1" x:Name="ClearConversationButton" Content="Clear" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" Click="ClearConversationButton_Click" MinHeight="28" ToolTip.Tip="Clear conversation history" />
         <Button Grid.Column="2" x:Name="SendButton" Content="Send (Enter)" FontSize="13" Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Bottom" IsEnabled="False" Click="SendButton_Click" MinHeight="28" />
         <controls:DropDownButton Grid.Column="3" x:Name="SendModeButton" Padding="2,0" MinHeight="28" VerticalAlignment="Bottom" BorderThickness="1" Background="Transparent" FontSize="8">
           <controls:DropDownButton.ContextMenu>

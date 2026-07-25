@@ -20,11 +20,7 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,6,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Text="Branches:" FontSize="13" />
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl">
-            <ItemsControl.FocusVisualStyle>
-              <x:Null />
-            </ItemsControl.FocusVisualStyle>
-            <ItemsControl.ItemTemplate>
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="BranchesItemsControl"><ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Grid Height="18">
                   <Grid.ColumnDefinitions>

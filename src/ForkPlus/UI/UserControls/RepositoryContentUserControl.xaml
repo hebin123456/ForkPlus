@@ -20,7 +20,7 @@
         <ColumnDefinition Width="40" />
       </Grid.ColumnDefinitions>
       <local:RevisionListStatusBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" IsVisible="False" x:Name="RevisionListStatusBarUserControl" />
-      <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" FocusVisualStyle="{x:Null}" x:Name="RevisionListViewUserControl" />
+      <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListViewUserControl" />
       <local:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" x:Name="RevisionDetails" />
       <GridSplitter Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" x:Name="FirstColumnHorizontalGridSplitter">
         <GridSplitter.Style>
@@ -34,11 +34,7 @@
         <GridSplitter.BorderBrush>
           <DynamicResource ResourceKey="BorderBrush" />
         </GridSplitter.BorderBrush>
-        <GridSplitter.BorderThickness>0,1,0,0</GridSplitter.BorderThickness>
-        <GridSplitter.FocusVisualStyle>
-          <x:Null />
-        </GridSplitter.FocusVisualStyle>
-      </GridSplitter>
+        <GridSplitter.BorderThickness>0,1,0,0</GridSplitter.BorderThickness></GridSplitter>
       <GridSplitter Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" x:Name="ThirdColumnHorizontalGridSplitter">
         <GridSplitter.Style>
           <DynamicResource ResourceKey="HorizontalGridSplitter" />

@@ -1,25 +1,25 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui">
   <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Styles/Brushes/Brushes.xaml" />
-    <ResourceDictionary Source="Styles/Geometries.xaml" />
-    <ResourceDictionary Source="Styles/Button.xaml" />
-    <ResourceDictionary Source="Styles/Border.xaml" />
-    <ResourceDictionary Source="Styles/CommonResources.xaml" />
-    <ResourceDictionary Source="Styles/Calendar.xaml" />
-    <ResourceDictionary Source="Styles/CheckBox.xaml" />
-    <ResourceDictionary Source="Styles/ComboBox.xaml" />
-    <ResourceDictionary Source="Styles/Expander.xaml" />
-    <ResourceDictionary Source="Styles/TextBlock.xaml" />
-    <ResourceDictionary Source="Styles/TextBox.xaml" />
-    <ResourceDictionary Source="Styles/PlaceholderTextBox.xaml" />
-    <ResourceDictionary Source="Styles/ListView.xaml" />
-    <ResourceDictionary Source="Styles/MultiselectionTreeView.xaml" />
-    <ResourceDictionary Source="Styles/TabControl.xaml" />
-    <ResourceDictionary Source="Styles/ProgressBar.xaml" />
-    <ResourceDictionary Source="Styles/ScrollViewer.xaml" />
-    <ResourceDictionary Source="Styles/Slider.xaml" />
-    <ResourceDictionary Source="Styles/Sidebar.xaml" />
-    <ResourceDictionary Source="Styles/Menu.xaml" />
-    <ResourceDictionary Source="Styles/Window.xaml" />
+    <ResourceInclude Source="Styles/Brushes/Brushes.xaml" />
+    <ResourceInclude Source="Styles/Geometries.xaml" />
+    <ResourceInclude Source="Styles/Button.xaml" />
+    <ResourceInclude Source="Styles/Border.xaml" />
+    <ResourceInclude Source="Styles/CommonResources.xaml" />
+    <ResourceInclude Source="Styles/Calendar.xaml" />
+    <ResourceInclude Source="Styles/CheckBox.xaml" />
+    <ResourceInclude Source="Styles/ComboBox.xaml" />
+    <ResourceInclude Source="Styles/Expander.xaml" />
+    <ResourceInclude Source="Styles/TextBlock.xaml" />
+    <ResourceInclude Source="Styles/TextBox.xaml" />
+    <ResourceInclude Source="Styles/PlaceholderTextBox.xaml" />
+    <ResourceInclude Source="Styles/ListView.xaml" />
+    <ResourceInclude Source="Styles/MultiselectionTreeView.xaml" />
+    <ResourceInclude Source="Styles/TabControl.xaml" />
+    <ResourceInclude Source="Styles/ProgressBar.xaml" />
+    <ResourceInclude Source="Styles/ScrollViewer.xaml" />
+    <ResourceInclude Source="Styles/Slider.xaml" />
+    <ResourceInclude Source="Styles/Sidebar.xaml" />
+    <ResourceInclude Source="Styles/Menu.xaml" />
+    <ResourceInclude Source="Styles/Window.xaml" />
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

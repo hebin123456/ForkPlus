@@ -18,16 +18,15 @@
        to the OnionSkinSliderStyle so they only match Thumbs within OnionSkinSlider Sliders.)
      - OnionSkinSliderTemplate ControlTemplate.Triggers (Slider.IsSelectionRangeEnabled=True ->
        PART_SelectionRange Visibility=Visible) has no direct Avalonia pseudoclass; left as NOTE comment.
-     - Visibility="Hidden" attribute on PART_SelectionRange converted to IsVisible="False". -->
+     - IsVisible="False" attribute on PART_SelectionRange converted to IsVisible="False". -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="RepeatButtonTransparent" Selector="RepeatButton">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type RepeatButton}">
+        <ControlTemplate>
           <Rectangle Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Fill="{TemplateBinding Background}" />
         </ControlTemplate>
       </Setter.Value>
@@ -48,13 +47,13 @@
         </Border>
         <Track Grid.Row="1" x:Name="PART_Track">
           <Track.DecreaseRepeatButton>
-            <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Style="{DynamicResource RepeatButtonTransparent}" />
+            <RepeatButton Command="{x:Static Slider.DecreaseLarge}" />
           </Track.DecreaseRepeatButton>
           <Track.IncreaseRepeatButton>
-            <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Style="{DynamicResource RepeatButtonTransparent}" />
+            <RepeatButton Command="{x:Static Slider.IncreaseLarge}" />
           </Track.IncreaseRepeatButton>
           <Track.Thumb>
-            <Thumb Height="18" Width="11" VerticalAlignment="Center" OverridesDefaultStyle="True" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
+            <Thumb Height="18" Width="11" VerticalAlignment="Center" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
           </Track.Thumb>
         </Track>
       </Grid>

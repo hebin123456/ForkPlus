@@ -37,7 +37,7 @@
               <Binding Path="AuthorDate" />
             </TextBlock.ToolTip>
           </TextBlock>
-          <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Style="{DynamicResource TextButtonStyle}" Click="ShaButton_Click">
+          <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
             <Button.Content>
               <Binding Path="AbbreviatedSha" />
             </Button.Content>
@@ -45,7 +45,7 @@
               <Binding Path="ShaToolTip" />
             </Button.ToolTip>
           </Button>
-          <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Style="{DynamicResource IconButtonStyle}" Click="OpenRevisionInSeparateWindowButton_Click">
+          <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
             <Button.ToolTip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
             </Button.ToolTip>
@@ -67,7 +67,7 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <DockPanel>
-      <ComboBox DockPanel.Dock="Right" HorizontalAlignment="Right" Height="22" Width="570" Padding="4,0,4,0" HorizontalContentAlignment="Stretch" Focusable="False" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="RevisionsComboBox_SelectionChanged" x:Name="RevisionsComboBox">
+      <ComboBox DockPanel.Dock="Right" HorizontalAlignment="Right" Height="22" Width="570" Padding="4,0,4,0" Focusable="False" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="RevisionsComboBox_SelectionChanged" x:Name="RevisionsComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>
             <VirtualizingStackPanel />
@@ -106,13 +106,13 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <Button DockPanel.Dock="Right" Margin="0,0,2,0" IsEnabled="False" Style="{DynamicResource IconButtonStyle}" ToolTip="Go Forward" Click="RedoButton_Click" x:Name="RedoButton">
+      <Button DockPanel.Dock="Right" Margin="0,0,2,0" IsEnabled="False" ToolTip.Tip="Go Forward" Click="RedoButton_Click" x:Name="RedoButton">
         <Image Source="{DynamicResource NextIcon}" Width="16" Height="16" VerticalAlignment="Center" />
       </Button>
-      <Button DockPanel.Dock="Right" Style="{DynamicResource IconButtonStyle}" ToolTip="Go Back" Click="UndoButton_Click" x:Name="UndoButton">
+      <Button DockPanel.Dock="Right" ToolTip.Tip="Go Back" Click="UndoButton_Click" x:Name="UndoButton">
         <Image Source="{DynamicResource PrevIcon}" Width="16" Height="16" VerticalAlignment="Center" />
       </Button>
-      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" Style="{DynamicResource CircularProgressBar}" IsVisible="True" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <ProgressBar DockPanel.Dock="Right" Margin="0,0,5,0" IsVisible="True" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
       <TextBlock Text="Blame" DockPanel.Dock="Left" Margin="4,0,0,2" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display" x:Name="BlameTitleTextBlock" />
       <Image DockPanel.Dock="Left" Width="14" Height="14" Margin="8,0,4,0" x:Name="FileIcon" />
       <controls:FilePathTextBlock FontSize="14" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display" x:Name="FileNameTextBlock" />
@@ -128,7 +128,7 @@
       <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,1,0,1" x:Name="RevisionListFallbackBorder">
         <userControls:FallbackUserControl Grid.Column="0" x:Name="RevisionListFallbackUserControl" />
       </Border>
-      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Style="{DynamicResource NoSelectionListBoxStyle}" ContextMenuOpening="BlameListBox_ContextMenuOpening" x:Name="BlameListBox">
+      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" ContextMenuOpening="BlameListBox_ContextMenuOpening" x:Name="BlameListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>
@@ -146,7 +146,7 @@
       <Border Grid.Column="2" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}">
         <diff:SplitTextDiffControl IsVisible="False" x:Name="TextDiffControl" />
       </Border>
-      <GridSplitter Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" />
+      <GridSplitter Grid.Column="1" />
       <userControls:FallbackUserControl BorderThickness="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="CodeEditorFallbackUserControl" />
     </Grid>
   </Grid>

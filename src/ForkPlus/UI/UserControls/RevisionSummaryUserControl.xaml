@@ -33,11 +33,7 @@
           <controls:SelectableTextBlock DockPanel.Dock="Left" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" x:Name="AuthorTextBlock" />
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorEmailTextBlock" />
-            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False" Checked="AuthorColorsToggleButton_Changed" x:Name="AuthorColorsToggleButton">
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
-              <Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
+            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" IsVisible="False" Checked="AuthorColorsToggleButton_Changed" x:Name="AuthorColorsToggleButton"><Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
             </ToggleButton>
           </Grid>
         </DockPanel>
@@ -59,11 +55,7 @@
           <controls:SelectableTextBlock DockPanel.Dock="Left" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" x:Name="CommitterTextBlock" />
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommitterEmailTextBlock" />
-            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" Style="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False" Checked="CommitterColorsToggleButton_Changed" x:Name="CommitterColorsToggleButton">
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
-              <Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
+            <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" IsVisible="False" Checked="CommitterColorsToggleButton_Changed" x:Name="CommitterColorsToggleButton"><Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
             </ToggleButton>
           </Grid>
         </DockPanel>
@@ -86,11 +78,11 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="REFS" x:Name="ReferencesTextBlock" />
-        <controls:ReferencePanel Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Style="{DynamicResource MultilineReferencePanelStyle}" x:Name="ReferencePanel" />
+        <controls:ReferencePanel Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" x:Name="ReferencePanel" />
         <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="SHA" />
         <DockPanel Grid.Row="1" Grid.Column="1" Margin="16,2,0,0" HorizontalAlignment="Left">
           <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" x:Name="ShaTextBlock" />
-          <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip="Use AI to explain this commit" x:Name="AiExplainCommitButton">
+          <Button DockPanel.Dock="Left" Margin="8,0,0,0" Padding="6,1" Height="20" FontSize="11" VerticalAlignment="Center" Click="AiExplainCommitButton_Click" ToolTip.Tip="Use AI to explain this commit" x:Name="AiExplainCommitButton">
             <TextBlock Text="🤖 AI Explain" FontFamily="Segoe UI, Segoe UI Emoji" x:Name="AiExplainCommitButtonText" />
           </Button>
           <StackPanel Orientation="Horizontal" x:Name="RevisionRemoteButtonsContainer" />
@@ -105,11 +97,11 @@
           <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="DiffList">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <ListBoxItem HorizontalContentAlignment="Stretch" Style="{DynamicResource DiffListListBoxItemStyle}" ContextMenuOpening="ListBoxItem_ContextMenuOpening">
+                <ListBoxItem HorizontalAlignment="Stretch" ContextMenuOpening="ListBoxItem_ContextMenuOpening">
                   <ListBoxItem.ContextMenu>
                     <ContextMenu />
                   </ListBoxItem.ContextMenu>
-                  <Expander HorizontalAlignment="Stretch" Padding="0,0,0,0" Style="{DynamicResource DiffListExpanderStyle}" Expanded="ExpandButton_Click" Collapsed="ExpandButton_Click">
+                  <Expander HorizontalAlignment="Stretch" Padding="0,0,0,0" Expanded="ExpandButton_Click" Collapsed="ExpandButton_Click">
                     <Expander.Header>
                       <Binding />
                     </Expander.Header>
@@ -126,7 +118,7 @@
                           </Grid.ColumnDefinitions>
                           <Image Grid.Column="0" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0" Source="{Binding ChangeTypeIcon}" />
                           <Image Grid.Column="1" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0" Source="{Binding FileTypeIcon}" />
-                          <TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Margin="11,0,0,0" VerticalAlignment="Center" Text="{Binding FilePath}" ToolTip="{Binding ToolTip}" />
+                          <TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Margin="11,0,0,0" VerticalAlignment="Center" Text="{Binding FilePath}" ToolTip.Tip="{Binding ToolTip}" />
                         </Grid>
                       </DataTemplate>
                     </Expander.HeaderTemplate>
@@ -143,7 +135,7 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <Button Margin="8,0,20,0" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{DynamicResource TransparentButtonStyle}" Click="ExpandAllButton_Click" x:Name="ExpandAllButton" />
+          <Button Margin="8,0,20,0" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Click="ExpandAllButton_Click" x:Name="ExpandAllButton" />
         </Grid>
         <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" IsVisible="False" x:Name="DiffListLimitTextBlock" />
       </Grid>

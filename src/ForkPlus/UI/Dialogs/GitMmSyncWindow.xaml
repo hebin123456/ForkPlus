@@ -4,11 +4,11 @@
       <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="Expander">
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate TargetType="Expander">
+            <ControlTemplate>
               <DockPanel>
-                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
+                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left">
                   <ToggleButton.Template>
-                    <ControlTemplate TargetType="ToggleButton">
+                    <ControlTemplate>
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
                           <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText ">" / "v"，
@@ -86,7 +86,7 @@
           <ComboBoxItem Content="10" />
         </ComboBox>
       </StackPanel>
-      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Style="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
+      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False">
         <Grid Margin="0,4,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -101,18 +101,18 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="avares://ForkPlus/Assets/Warning.png" x:Name="ForceSyncWarningImage" />
-          <CheckBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force sync" ToolTip="--force-sync" x:Name="ForceSyncCheckBox" />
-          <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Detach local branches" ToolTip="-d" x:Name="DetachCheckBox" />
-          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Update manifest" ToolTip="--update-manifest" x:Name="UpdateManifestCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force sync" ToolTip.Tip="--force-sync" x:Name="ForceSyncCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Detach local branches" ToolTip.Tip="-d" x:Name="DetachCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Update manifest" ToolTip.Tip="--update-manifest" x:Name="UpdateManifestCheckBox" />
           <Grid Grid.Column="1" Grid.Row="3" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="Local only" ToolTip="-l" x:Name="LocalOnlyCheckBox" />
-            <CheckBox Grid.Column="1" Content="Network only" ToolTip="-n" x:Name="NetworkOnlyCheckBox" />
-            <CheckBox Grid.Column="2" Content="Fail fast" ToolTip="--fail-fast" x:Name="FailFastCheckBox" />
+            <CheckBox Grid.Column="0" Content="Local only" ToolTip.Tip="-l" x:Name="LocalOnlyCheckBox" />
+            <CheckBox Grid.Column="1" Content="Network only" ToolTip.Tip="-n" x:Name="NetworkOnlyCheckBox" />
+            <CheckBox Grid.Column="2" Content="Fail fast" ToolTip.Tip="--fail-fast" x:Name="FailFastCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="4" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
@@ -120,9 +120,9 @@
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="All branches" ToolTip="-a" x:Name="AllBranchesCheckBox" />
-            <CheckBox Grid.Column="1" Content="Fetch tags" ToolTip="--tags" x:Name="TagsCheckBox" />
-            <CheckBox Grid.Column="2" Content="Fetch submodules" ToolTip="--fetch-submodules" x:Name="FetchSubmodulesCheckBox" />
+            <CheckBox Grid.Column="0" Content="All branches" ToolTip.Tip="-a" x:Name="AllBranchesCheckBox" />
+            <CheckBox Grid.Column="1" Content="Fetch tags" ToolTip.Tip="--tags" x:Name="TagsCheckBox" />
+            <CheckBox Grid.Column="2" Content="Fetch submodules" ToolTip.Tip="--fetch-submodules" x:Name="FetchSubmodulesCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="5" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
@@ -130,9 +130,9 @@
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="Force checkout" ToolTip="--force-checkout" x:Name="ForceCheckoutCheckBox" />
-            <CheckBox Grid.Column="1" Content="Force fetch" ToolTip="--force-fetch" x:Name="ForceFetchCheckBox" />
-            <CheckBox Grid.Column="2" Content="Remove dirty projects" ToolTip="--force-remove-dirty" x:Name="ForceRemoveDirtyCheckBox" />
+            <CheckBox Grid.Column="0" Content="Force checkout" ToolTip.Tip="--force-checkout" x:Name="ForceCheckoutCheckBox" />
+            <CheckBox Grid.Column="1" Content="Force fetch" ToolTip.Tip="--force-fetch" x:Name="ForceFetchCheckBox" />
+            <CheckBox Grid.Column="2" Content="Remove dirty projects" ToolTip.Tip="--force-remove-dirty" x:Name="ForceRemoveDirtyCheckBox" />
           </Grid>
         </Grid>
       </Expander>

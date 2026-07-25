@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui">
   <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Styles/Brushes/Colors.BlueLight.xaml" />
-    <ResourceDictionary Source="Styles/Images.Light.xaml" />
-    <ResourceDictionary Source="Generic.xaml" />
+    <ResourceInclude Source="Styles/Brushes/Colors.BlueLight.xaml" />
+    <ResourceInclude Source="Styles/Images.Light.xaml" />
+    <ResourceInclude Source="Generic.xaml" />
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

@@ -16,14 +16,14 @@
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0">
       <DockPanel Height="22" Margin="20,2,2,2">
-        <controls:DropDownButton DockPanel.Dock="Right" Margin="0" Padding="0" Height="16" Width="16" BorderThickness="0" Background="#00FFFFFF" ToolTip="Repository Settings" x:Name="RepositorySettingsDropdownButton">
+        <controls:DropDownButton DockPanel.Dock="Right" Margin="0" Padding="0" Height="16" Width="16" BorderThickness="0" Background="#00FFFFFF" ToolTip.Tip="Repository Settings" x:Name="RepositorySettingsDropdownButton">
           <controls:DropDownButton.ContextMenu>
             <ContextMenu MaxWidth="500" Opened="RepositorySettingsDropdownButtonContextMenu_Opened" />
           </controls:DropDownButton.ContextMenu>
           <Image Source="{DynamicResource SettingsIcon}" />
         </controls:DropDownButton>
         <TextBlock DockPanel.Dock="Left" Margin="0" FontWeight="Medium" VerticalAlignment="Center" FontSize="13.5">
-          <Hyperlink NavigateUri=" " Style="{DynamicResource RepositoryTitleHyperlinkStyle}" RequestNavigate="RepositoryParentNameTextBlock_RequestNavigate">
+          <Hyperlink NavigateUri=" " RequestNavigate="RepositoryParentNameTextBlock_RequestNavigate">
             <TextBlock HorizontalAlignment="Center" Margin="0" x:Name="RepositoryParentNameTextBlock" />
           </Hyperlink>
         </TextBlock>
@@ -31,7 +31,7 @@
           <controls:EditableTextBlock Margin="0" FontWeight="Medium" FontSize="13.5" Foreground="{DynamicResource ForegroundBrush}" x:Name="RepositoryNameTextBlock" />
         </AdornerDecorator>
       </DockPanel>
-      <RadioButton Style="{DynamicResource SidebarButton}" Click="Changes_Selected" x:Name="ChangesRadioButton">
+      <RadioButton Click="Changes_Selected" x:Name="ChangesRadioButton">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -41,7 +41,7 @@
           <TextBlock Grid.Column="1" Text="Changes" Margin="6,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" x:Name="ChangesTextBlock" />
         </Grid>
       </RadioButton>
-      <RadioButton IsChecked="True" HorizontalAlignment="Stretch" Style="{DynamicResource SidebarButton}" Click="AllCommits_Selected" x:Name="AllCommitsRadioButton">
+      <RadioButton IsChecked="True" HorizontalAlignment="Stretch" Click="AllCommits_Selected" x:Name="AllCommitsRadioButton">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -53,17 +53,17 @@
       </RadioButton>
       <Border Margin="0,5,0,0" HorizontalAlignment="Stretch" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource BorderBrush}">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" ToolTip="Branches" Content="{DynamicResource SidebarBranchGeometry}" x:Name="BranchesRadioButton">
+          <RadioButton ToolTip.Tip="Branches" Content="{DynamicResource SidebarBranchGeometry}" x:Name="BranchesRadioButton">
             <RadioButton.IsChecked>
               <Binding ElementName="BranchesTabItem" Path="IsSelected" Mode="TwoWay" />
             </RadioButton.IsChecked>
           </RadioButton>
-          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" ToolTip="Search Commits" Content="{DynamicResource SidebarSearchGeometry}" x:Name="SearchRadioButton">
+          <RadioButton ToolTip.Tip="Search Commits" Content="{DynamicResource SidebarSearchGeometry}" x:Name="SearchRadioButton">
             <RadioButton.IsChecked>
               <Binding ElementName="SearchTabItem" Path="IsSelected" Mode="TwoWay" />
             </RadioButton.IsChecked>
           </RadioButton>
-          <RadioButton Style="{DynamicResource SidebarPathImageRadioButtonStyle}" IsVisible="False" ToolTip="Pull Requests" Content="{DynamicResource GenericRemoteGeometry}" x:Name="ServiceRadioButton">
+          <RadioButton IsVisible="False" ToolTip.Tip="Pull Requests" Content="{DynamicResource GenericRemoteGeometry}" x:Name="ServiceRadioButton">
             <RadioButton.IsChecked>
               <Binding ElementName="ServiceTabItem" Path="IsSelected" Mode="TwoWay" />
             </RadioButton.IsChecked>
@@ -82,7 +82,7 @@
           <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" IsVisible="False" />
           <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
           <Grid Grid.Row="2">
-            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Style="{DynamicResource SideBarMultiselectionTreeViewStyle}" TextSearch.TextPath="Title" x:Name="SidebarTreeView">
+            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" x:Name="SidebarTreeView">
               <controls:MultiselectionTreeView.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>

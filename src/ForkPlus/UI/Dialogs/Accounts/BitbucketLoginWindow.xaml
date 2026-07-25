@@ -48,7 +48,7 @@
         <controls:PlaceholderTextBox Grid.Column="1" Grid.Row="1" Margin="0,4,0,0" Padding="4,2,4,2" FontSize="13" Placeholder="Token" x:Name="TokenTextBox" />
         <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal" x:Name="ApiTokenHint">
           <TextBlock Margin="0" FontSize="12" Text="Create" x:Name="StatusTextBlock" />
-          <Button Content="API token with scopes" Margin="2,-3,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenApiTokensConfigurationUrlButton_Click" x:Name="OpenApiTokensConfigurationUrlButton" />
+          <Button Content="API token with scopes" Margin="2,-3,0,0" HorizontalAlignment="Left" Click="OpenApiTokensConfigurationUrlButton_Click" x:Name="OpenApiTokensConfigurationUrlButton" />
         </StackPanel>
       </Grid>
     </Grid>

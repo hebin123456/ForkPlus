@@ -26,12 +26,7 @@
     </Setter>
   </Style>
   <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Padding" Value="4,0" />
+<Setter Property="Padding" Value="4,0" />
     <Setter Property="Margin" Value="1,1" />
     <Setter Property="Height" Value="22" />
     <Setter Property="HorizontalContentAlignment">
@@ -44,7 +39,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="4" />
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -106,7 +100,6 @@
     <Setter Property="Height" Value="18" />
   </Style>
   <Style x:Key="ComboBoxToggleButton" Selector="ToggleButton">
-    <Setter Property="OverridesDefaultStyle" Value="true" />
     <Setter Property="IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
     <Setter Property="ClickMode" Value="Press" />
@@ -168,7 +161,7 @@
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
-        <Border Style="{DynamicResource ComboboxShadowBorderStyle}">
+        <Border>
           <Border MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
               <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
@@ -194,7 +187,7 @@
           </Border>
         </Border>
       </Popup>
-      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" Style="{StaticResource ComboBoxToggleButton}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" x:Name="toggleButton">
+      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" x:Name="toggleButton">
         <ToggleButton.IsChecked>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
@@ -207,22 +200,16 @@
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->
   </ControlTemplate>
   <Style x:Key="ComboBoxEditableTextBox" Selector="TextBox">
-    <Setter Property="OverridesDefaultStyle" Value="true" />
     <Setter Property="AllowDrop" Value="true" />
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+<Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+          <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False" x:Name="PART_ContentHost" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -237,7 +224,7 @@
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
-        <Border Style="{DynamicResource ComboboxShadowBorderStyle}">
+        <Border>
           <Border MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
               <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
@@ -263,13 +250,13 @@
           </Border>
         </Border>
       </Popup>
-      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" Style="{StaticResource ComboBoxToggleButton}" x:Name="toggleButton">
+      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" x:Name="toggleButton">
         <ToggleButton.IsChecked>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
       <Border Margin="0" CornerRadius="3,0,0,3" BorderThickness="1" Padding="4,2" Background="{DynamicResource TextBox.Static.Background}" BorderBrush="#00FFFFFF" x:Name="border">
-        <TextBox HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" Style="{StaticResource ComboBoxEditableTextBox}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox">
+        <TextBox HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox">
           <TextBox.IsReadOnly>
             <Binding Path="IsReadOnly"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </TextBox.IsReadOnly>
@@ -283,7 +270,6 @@
          NOTE: IsKeyboardFocusWithin=true -> :focus-within was moved into the {x:Type ComboBox} style below. -->
   </ControlTemplate>
   <Style x:Key="{x:Type ComboBox}" Selector="ComboBox">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource ComboBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -307,7 +293,6 @@
          Reimplement using a custom :editable pseudoclass toggled from code-behind. -->
   </Style>
   <Style x:Key="InteractiveRebaseToggleButton" Selector="ToggleButton">
-    <Setter Property="OverridesDefaultStyle" Value="true" />
     <Setter Property="Margin" Value="0,2,0,2" />
     <Setter Property="IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
@@ -339,7 +324,7 @@
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
-        <Border Style="{DynamicResource ComboboxShadowBorderStyle}">
+        <Border>
           <Border BorderBrush="{DynamicResource ComboBox.Popup.BorderBrush}" BorderThickness="1,1,1,1" Background="{DynamicResource ComboBox.Popup.BackgroundBrush}" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
               <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
@@ -365,7 +350,7 @@
           </Border>
         </Border>
       </Popup>
-      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" Style="{StaticResource InteractiveRebaseToggleButton}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}" Grid.ColumnSpan="2" x:Name="toggleButton">
+      <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}" Grid.ColumnSpan="2" x:Name="toggleButton">
         <ToggleButton.IsChecked>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
@@ -378,12 +363,7 @@
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->
   </ControlTemplate>
   <Style x:Key="InteractiveRebaseComboBoxStyle" Selector="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Padding" Value="4,2,4,1" />
+<Setter Property="Padding" Value="4,2,4,1" />
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
@@ -392,12 +372,7 @@
     <Style.Resources>
       <ResourceDictionary>
         <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-          <Setter Property="FocusVisualStyle">
-            <Setter.Value>
-              <x:Null />
-            </Setter.Value>
-          </Setter>
-        </Style>
+</Style>
       </ResourceDictionary>
     </Style.Resources>
   </Style>

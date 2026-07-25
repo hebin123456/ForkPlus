@@ -21,7 +21,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Password:" x:Name="InputTextBlock" />
       <TextBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="InputTextBox" />
       <PasswordBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="InputPasswordBox" />
-      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember in Credential Manager" ToolTip="Remember in Windows Credential Manager" x:Name="RememberCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember in Credential Manager" ToolTip.Tip="Remember in Windows Credential Manager" x:Name="RememberCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

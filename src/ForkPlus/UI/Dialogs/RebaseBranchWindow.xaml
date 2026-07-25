@@ -25,8 +25,8 @@
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="SourceGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="On:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip="--update-refs" Checked="UpdateRefsCheckBox_Changed" Unchecked="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
-      <ListBox Grid.Row="3" Grid.Column="1" MaxHeight="72" Margin="30,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Padding="0" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="LocalBranchesListBox">
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip.Tip="--update-refs" Checked="UpdateRefsCheckBox_Changed" Unchecked="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
+      <ListBox Grid.Row="3" Grid.Column="1" MaxHeight="72" Margin="30,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Padding="0" x:Name="LocalBranchesListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>

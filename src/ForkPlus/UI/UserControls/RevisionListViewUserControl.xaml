@@ -4,12 +4,7 @@
     <ResourceDictionary>
       <Geometry x:Key="OptionMarkGeomentry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</Geometry>
       <Style x:Key="ItemContainerStyle" Selector="controls|DragAndDropListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
-        <Setter Property="FocusVisualStyle">
-          <Setter.Value>
-            <x:Null />
-          </Setter.Value>
-        </Setter>
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+<Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
@@ -314,7 +309,7 @@
       <RowDefinition />
     </Grid.RowDefinitions>
     <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" ContextMenuOpening="RevisionListView_ContextMenuOpening" Grid.Row="1" BorderThickness="0" SelectionMode="Extended" Style="{DynamicResource ListViewWithGridViewStyle}" Margin="0,0,0,0" ItemContainerStyle="{DynamicResource ItemContainerStyle}" x:Name="RevisionListView">
+    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" ContextMenuOpening="RevisionListView_ContextMenuOpening" Grid.Row="1" BorderThickness="0" SelectionMode="Extended" Margin="0,0,0,0" x:Name="RevisionListView">
       <controls:DragAndDropListView.ContextMenu>
         <ContextMenu />
       </controls:DragAndDropListView.ContextMenu>

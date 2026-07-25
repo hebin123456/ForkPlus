@@ -4,11 +4,11 @@
       <Style x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="Expander">
         <Setter Property="Template">
           <Setter.Value>
-            <ControlTemplate TargetType="Expander">
+            <ControlTemplate>
               <DockPanel>
-                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
+                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left">
                   <ToggleButton.Template>
-                    <ControlTemplate TargetType="ToggleButton">
+                    <ControlTemplate>
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
                           <!-- 阶段 4.5：原WPF ControlTemplate.Triggers 根据 IsChecked 切换 ArrowText ">" / "v"，
@@ -59,8 +59,8 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:PlaceholderTextBox TextChanged="BranchNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Branch name" x:Name="BranchNameTextBox" />
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Sub repositories:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <Button Grid.Column="1" Grid.Row="1" Margin="8,4,0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Click="SubreposDropDownButton_Click" x:Name="SubreposDropDownButton" />
-      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Style="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
+      <Button Grid.Column="1" Grid.Row="1" Margin="8,4,0,4" HorizontalAlignment="Stretch"  Click="SubreposDropDownButton_Click" x:Name="SubreposDropDownButton" />
+      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False">
         <Grid Margin="0,4,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -102,16 +102,16 @@
               <ColumnDefinition Width="180" />
               <ColumnDefinition Width="180" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow tag" ToolTip="--allow-tag" x:Name="AllowTagCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Allow commit" ToolTip="--allow-commit" x:Name="AllowCommitCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow tag" ToolTip.Tip="--allow-tag" x:Name="AllowTagCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Allow commit" ToolTip.Tip="--allow-commit" x:Name="AllowCommitCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="4" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="180" />
               <ColumnDefinition Width="180" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow no tracking branch" ToolTip="--allow-no-track" x:Name="AllowNoTrackCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Start from HEAD" ToolTip="--head" x:Name="HeadCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow no tracking branch" ToolTip.Tip="--allow-no-track" x:Name="AllowNoTrackCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Start from HEAD" ToolTip.Tip="--head" x:Name="HeadCheckBox" />
           </Grid>
         </Grid>
       </Expander>

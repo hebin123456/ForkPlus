@@ -17,7 +17,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="23" />
           </Grid.RowDefinitions>
-          <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ItemContainerStyle="{DynamicResource ListBoxItemWithBorderStyle}" SelectionChanged="BugTrackerRulesListBox_SelectionChanged" x:Name="BugTrackerRulesListBox">
+          <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="BugTrackerRulesListBox_SelectionChanged" x:Name="BugTrackerRulesListBox">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel>
@@ -37,7 +37,7 @@
           </ListBox>
           <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
             <StackPanel Orientation="Horizontal">
-              <controls:DropDownButton Margin="-1,-1,0,-1" Style="{DynamicResource InlineToggleButton}" x:Name="AddRuleDropDownButton">
+              <controls:DropDownButton Margin="-1,-1,0,-1" x:Name="AddRuleDropDownButton">
                 <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
                 <controls:DropDownButton.ContextMenu>
                   <ContextMenu>
@@ -49,7 +49,7 @@
                   </ContextMenu>
                 </controls:DropDownButton.ContextMenu>
               </controls:DropDownButton>
-              <Button Margin="0,-1,0,-1" Style="{DynamicResource InlineButton}" Click="RemoveRuleButton_Click" x:Name="RemoveRuleButton">
+              <Button Margin="0,-1,0,-1" Click="RemoveRuleButton_Click" x:Name="RemoveRuleButton">
                 <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
               </Button>
             </StackPanel>

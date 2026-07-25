@@ -27,7 +27,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="GitPathTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Path to git.exe" x:Name="GitPathTextBox" />
-        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
+        <Button Grid.Column="1" Click="BrowseButton_Click" />
       </Grid>
       <TextBlock Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" Text="ForkPlus requires a valid Git executable to continue." />
       <TextBlock Grid.Column="0" Grid.Row="2" Text="Detected Git:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,12,0,0" />

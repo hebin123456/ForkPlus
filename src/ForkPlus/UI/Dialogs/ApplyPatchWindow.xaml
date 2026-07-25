@@ -21,7 +21,7 @@
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Text="Location:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="LocationLabel" />
       <controls:PlaceholderTextBox TextChanged="PathTextBox_TextChanged" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Select patch to apply" x:Name="PathTextBox" />
-      <Button Grid.Column="2" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" x:Name="BrowseButton" />
+      <Button Grid.Column="2" Click="BrowseButton_Click" x:Name="BrowseButton" />
       <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Create commit" Checked="CreateCommitsCheckBox_Changed" Unchecked="CreateCommitsCheckBox_Changed" x:Name="CreateCommitsCheckBox" />
     </Grid>
   </Grid>

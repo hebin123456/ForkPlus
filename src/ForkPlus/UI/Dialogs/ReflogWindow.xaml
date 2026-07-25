@@ -36,7 +36,7 @@
     <ListView Grid.Row="1" x:Name="ReflogListView"
               MouseDoubleClick="ReflogListView_MouseDoubleClick"
               SelectionChanged="ReflogListView_SelectionChanged"
-              ItemContainerStyle="{StaticResource ReflogListItemStyle}">
+             >
       <ListView.View>
         <GridView>
           <GridViewColumn Header="Index" Width="60"

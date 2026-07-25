@@ -21,15 +21,10 @@
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
       <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-        <Setter Property="FocusVisualStyle">
+<Setter Property="Template">
           <Setter.Value>
-            <x:Null />
-          </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Style="{DynamicResource ListItemRoundedBorderStyle}" x:Name="Bd">
+            <ControlTemplate>
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
             </ControlTemplate>
@@ -111,11 +106,7 @@
         <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
       </StackPanel>
     </Border>
-    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" ItemContainerStyle="{DynamicResource QuickLaunchListBoxItemStyle}" PointerReleased="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox">
-      <ListBox.FocusVisualStyle>
-        <x:Null />
-      </ListBox.FocusVisualStyle>
-      <ListBox.ItemTemplate>
+    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" PointerReleased="RepositoriesListBox_MouseUp" x:Name="RepositoriesListBox"><ListBox.ItemTemplate>
         <DataTemplate>
           <ContentControl>
             <ContentControl.Content>

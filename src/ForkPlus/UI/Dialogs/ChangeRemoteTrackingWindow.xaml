@@ -22,7 +22,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Track:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <!-- NOTE (Avalonia limitation): TextSearch.TextPath="ShortName" 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
+      <!-- NOTE (Avalonia limitation): 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
       <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox">
         <ComboBox.ItemsPanel>
           <ItemsPanelTemplate>

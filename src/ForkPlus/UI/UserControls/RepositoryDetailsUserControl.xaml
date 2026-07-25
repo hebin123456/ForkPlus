@@ -14,7 +14,7 @@
     <Button Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" Content="Open" Margin="0,0,20,0" Click="OpenRepositoryButton_Click" />
     <StackPanel Grid.Row="1" Orientation="Horizontal">
       <TextBlock Margin="25,0,0,10" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="RepositoryPath" />
-      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip="Open in File Explorer" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
+      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip.Tip="Open in File Explorer" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
         <Image Source="{DynamicResource OpenInExplorerArrowIcon}" Height="10" Width="10" />
       </Button>
     </StackPanel>
@@ -26,7 +26,7 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" Margin="8,0,8,0" Style="{DynamicResource TileBorder}">
+        <Border Grid.Row="0" Margin="8,0,8,0">
           <Grid Grid.Row="0" Margin="16,10,0,10">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="250" />
@@ -80,7 +80,7 @@
                         <TextBlock.Visibility>
                           <Binding Path="IsWebsiteVisible" />
                         </TextBlock.Visibility>
-                        <Hyperlink Style="{StaticResource BlueHyperlinkStyle}" RequestNavigate="Hyperlink_RequestNavigate">
+                        <Hyperlink RequestNavigate="Hyperlink_RequestNavigate">
                           <Hyperlink.NavigateUri>
                             <Binding Path="WebsiteUrl" />
                           </Hyperlink.NavigateUri>
@@ -95,7 +95,7 @@
                         <TextBlock.Visibility>
                           <Binding Path="IsIssuesVisible" />
                         </TextBlock.Visibility>
-                        <Hyperlink Style="{StaticResource GrayHyperlinkStyle}" RequestNavigate="Hyperlink_RequestNavigate">
+                        <Hyperlink RequestNavigate="Hyperlink_RequestNavigate">
                           <Hyperlink.NavigateUri>
                             <Binding Path="IssuesUrl" />
                           </Hyperlink.NavigateUri>
@@ -106,7 +106,7 @@
                         <TextBlock.Visibility>
                           <Binding Path="IsPullRequestsVisible" />
                         </TextBlock.Visibility>
-                        <Hyperlink Style="{StaticResource GrayHyperlinkStyle}" RequestNavigate="Hyperlink_RequestNavigate">
+                        <Hyperlink RequestNavigate="Hyperlink_RequestNavigate">
                           <Hyperlink.NavigateUri>
                             <Binding Path="PullRequestsUrl" />
                           </Hyperlink.NavigateUri>
@@ -121,7 +121,7 @@
           </Grid>
         </Border>
         <Border Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="31" Margin="8,0,8,0" CornerRadius="4" BorderThickness="1" BorderBrush="#00FFFFFF" Background="#00FFFFFF" />
-        <controls:ModernTabControl SelectionChanged="ModernTabControl_SelectionChanged" Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}" Margin="8,0,8,0" Style="{DynamicResource RepositoryManagerTabControl}" BorderThickness="0">
+        <controls:ModernTabControl SelectionChanged="ModernTabControl_SelectionChanged" Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}" Margin="8,0,8,0" BorderThickness="0">
           <TabItem Header="Summary">
             <Grid>
               <Grid.RowDefinitions>
@@ -135,7 +135,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <Border Grid.Row="2" Margin="-2,2,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="2" Margin="-2,2,-2,0">
                 <StackPanel Grid.Row="4" Margin="15">
                   <TextBlock Text="Branches" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
                   <ItemsControl Margin="10" x:Name="BranchesItemsControl">
@@ -183,7 +183,7 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="4" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="4" Margin="-2,4,-2,0">
                 <StackPanel Grid.Row="4" Margin="15">
                   <TextBlock Grid.Row="3" Text="Tags" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
                   <ItemsControl Margin="10" x:Name="TagsItemsControl">
@@ -225,7 +225,7 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="6" Margin="-2,4,-2,0" Style="{DynamicResource TileBorderDark}">
+              <Border Grid.Row="6" Margin="-2,4,-2,0">
                 <StackPanel Grid.Row="6" Margin="15">
                   <TextBlock Grid.Row="5" Text="Commits" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
                   <ItemsControl Margin="10" x:Name="CommitsItemsControl">
@@ -267,7 +267,7 @@
                   </ItemsControl>
                 </StackPanel>
               </Border>
-              <Border Grid.Row="8" Margin="-2,4,-2,4" Style="{DynamicResource TileBorderDark}" x:Name="ReadmeContainer">
+              <Border Grid.Row="8" Margin="-2,4,-2,4" x:Name="ReadmeContainer">
                 <StackPanel Grid.Row="7" Margin="15">
                   <TextBlock Grid.Row="7" Margin="10,0,0,0" Text="README.MD" FontSize="16" FontWeight="Bold" FontFamily="Consolas" />
                   <TextBox FontFamily="Consolas" MaxWidth="500" Margin="10" HorizontalAlignment="Left" TextWrapping="Wrap" BorderThickness="0" FontSize="13" Background="#00FFFFFF" x:Name="ReadmeTextBox" />

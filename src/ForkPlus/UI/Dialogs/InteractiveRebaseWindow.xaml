@@ -66,21 +66,12 @@
         <controls:GitPointView Grid.Column="1" Margin="8,0,8,4" x:Name="SourceGitPointView" />
         <TextBlock Grid.Column="2" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="On:" />
         <controls:GitPointView Grid.Column="3" Margin="8,0,0,4" x:Name="DestinationGitPointView" />
-        <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip="--update-refs" x:Name="UpdateRefsCheckBox" />
+        <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" MouseDoubleClick="RevisionListView_MouseDoubleClick" BorderThickness="0" SelectionMode="Extended" Style="{DynamicResource ListViewWithGridViewStyle}" x:Name="RevisionListView">
-          <dialogs:MultiselectionListView.FocusVisualStyle>
-            <x:Null />
-          </dialogs:MultiselectionListView.FocusVisualStyle>
-          <dialogs:MultiselectionListView.ItemContainerStyle>
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" MouseDoubleClick="RevisionListView_MouseDoubleClick" BorderThickness="0" SelectionMode="Extended" x:Name="RevisionListView"><dialogs:MultiselectionListView.ItemContainerStyle>
             <Style TargetType="{x:Type dialogs:MultiselectionListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}">
-              <Setter Property="FocusVisualStyle">
-                <Setter.Value>
-                  <x:Null />
-                </Setter.Value>
-              </Setter>
-              <Setter Property="Height" Value="22" />
+<Setter Property="Height" Value="22" />
               <Setter Property="HorizontalContentAlignment" Value="Stretch" />
               <Setter Property="VerticalContentAlignment" Value="Stretch" />
               <Setter Property="Padding" Value="0" />
@@ -94,7 +85,7 @@
               <GridViewColumn Width="100">
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" Style="{DynamicResource InteractiveRebaseComboBoxStyle}" BorderThickness="0" Background="#00FFFFFF" TextSearch.TextPath="DisplayTitle" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox">
+                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" BorderThickness="0" Background="#00FFFFFF" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox">
                       <ComboBox.Foreground>
                         <Binding Path="Foreground"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                       </ComboBox.Foreground>
@@ -167,7 +158,7 @@
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
                     <DockPanel>
-                      <controls:ReferencePanel DockPanel.Dock="Left" Style="{DynamicResource ReferencePanelStyle}">
+                      <controls:ReferencePanel DockPanel.Dock="Left">
                         <controls:ReferencePanel.ItemsSource>
                           <Binding Path="RefViewModels" />
                         </controls:ReferencePanel.ItemsSource>
@@ -259,9 +250,9 @@
         </dialogs:MultiselectionListView>
       </Grid>
       <userControls:RevisionDetailsUserControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" Background="{DynamicResource BackgroundBrush}" x:Name="RevisionDetails" />
-      <GridSplitter Grid.Row="3" Grid.Column="0" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
+      <GridSplitter Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" />
       <GridSplitter Grid.Row="3" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" />
-      <GridSplitter Grid.Row="3" Grid.Column="2" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
+      <GridSplitter Grid.Row="3" Grid.Column="2" VerticalAlignment="Top" />
       <userControls:FallbackUserControl Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListFallbackUserControl" />
     </Grid>
   </Grid>

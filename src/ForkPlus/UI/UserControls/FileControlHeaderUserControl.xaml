@@ -9,7 +9,7 @@
          <Style Selector="ToggleButton#<name> > Image"> 设默认 (unchecked) 图标
          <Style Selector="ToggleButton#<name>:checked > Image"> 设选中 (checked) 图标
        原来的内联 <Image.Style><Style.Triggers> 全部移除。
-     - Visibility="Collapsed" → IsVisible="False"（3 个容器 StackPanel）
+     - IsVisible="False" → IsVisible="False"（3 个容器 StackPanel）
      -->
 <UserControl BorderThickness="0,0,0,1" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileControlHeaderUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.BorderBrush>

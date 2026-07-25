@@ -9,9 +9,9 @@
     <!-- Title bar: title + model + retry + stop -->
     <DockPanel Grid.Row="0" Margin="12,8,12,4" LastChildFill="True">
       <TextBlock DockPanel.Dock="Left" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" x:Name="TitleTextBlock" Text="AI Commit Composer" />
-      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2" Margin="6,0,0,0" Content="Stop" x:Name="StopButton" IsVisible="False" Click="StopButton_Click" ToolTip="Stop the current AI task" />
-      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2" Margin="6,0,0,0" Content="Retry" x:Name="RetryButton" Click="RetryButton_Click" ToolTip="Retry" />
-      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="280" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" ToolTip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2" Margin="6,0,0,0" Content="Stop" x:Name="StopButton" IsVisible="False" Click="StopButton_Click" ToolTip.Tip="Stop the current AI task" />
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2" Margin="6,0,0,0" Content="Retry" x:Name="RetryButton" Click="RetryButton_Click" ToolTip.Tip="Retry" />
+      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="280" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" ToolTip.Tip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />

@@ -33,7 +33,6 @@
   </Style>
   <ScaleTransform x:Key="LayoutScaleTransform" />
   <Style x:Key="{x:Type ContextMenu}" TargetType="{x:Type ContextMenu}">
-    <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontFamily" Value="Segoe UI" />
@@ -48,10 +47,10 @@
     <Setter Property="Grid.IsSharedSizeScope" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ContextMenu}">
-          <Border Uid="Border_93" Style="{DynamicResource MenuShadowBorderStyle}">
+        <ControlTemplate>
+          <Border Uid="Border_93">
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Uid="Border_50" CornerRadius="6">
-              <ScrollViewer CanContentScroll="True" Uid="ScrollViewer_9" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+              <ScrollViewer CanContentScroll="True" Uid="ScrollViewer_9">
                 <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" Margin="{TemplateBinding Padding}" Uid="ItemsPresenter_5" />
               </ScrollViewer>
             </Border>
@@ -67,7 +66,7 @@
     <Setter Property="MinHeight" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Separator}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="0,1,0,1" />
         </ControlTemplate>
       </Setter.Value>
@@ -77,7 +76,7 @@
     <Setter Property="Height" Value="22" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type MenuItem}">
+        <ControlTemplate>
           <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Background}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Menu.MenuItem.Static.Background}" x:Name="TemplateRoot">
             <Grid Margin="-1" x:Name="Grid">
               <Grid.ColumnDefinitions>
@@ -98,7 +97,7 @@
     <Setter Property="ButtonBase.ClickMode" Value="Hover" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type RepeatButton}">
+        <ControlTemplate>
           <Border BorderBrush="#00FFFFFF" BorderThickness="1" Background="#00FFFFFF" x:Name="TemplateRoot">
             <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="Center" Margin="6" VerticalAlignment="Center" />
           </Border>
@@ -111,7 +110,7 @@
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ScrollViewer}">
+        <ControlTemplate>
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
@@ -124,7 +123,7 @@
             <Border Grid.Column="0" Grid.Row="1">
               <ScrollContentPresenter CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" Margin="{TemplateBinding Padding}" />
             </Border>
-            <RepeatButton Grid.Column="0" Command="ScrollBar.LineUpCommand" Focusable="False" Grid.Row="0" Style="{DynamicResource MenuRepeatButtonStyle}">
+            <RepeatButton Grid.Column="0" Command="ScrollBar.LineUpCommand" Focusable="False" Grid.Row="0">
               <RepeatButton.CommandTarget>
                 <Binding>
                   <Binding.RelativeSource>
@@ -161,7 +160,7 @@
               </RepeatButton.Visibility>
               <Path Data="M0,4L3.5,0 7,4z" Fill="{DynamicResource ForegroundBrush}" />
             </RepeatButton>
-            <RepeatButton Grid.Column="0" Command="ScrollBar.LineDownCommand" Focusable="False" Grid.Row="2" Style="{DynamicResource MenuRepeatButtonStyle}">
+            <RepeatButton Grid.Column="0" Command="ScrollBar.LineDownCommand" Focusable="False" Grid.Row="2">
               <RepeatButton.CommandTarget>
                 <Binding>
                   <Binding.RelativeSource>
@@ -229,9 +228,9 @@
               <Binding ElementName="TemplateRoot" Path="ActualHeight" />
             </MultiBinding>
           </Popup.PlacementRectangle>
-          <Border Style="{DynamicResource MenuShadowBorderStyle}" x:Name="ShadowBorder">
+          <Border x:Name="ShadowBorder">
             <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Border}" BorderThickness="1" Background="{DynamicResource Menu.MenuItem.Static.Background}" Padding="2" CornerRadius="6" x:Name="SubMenuBorder">
-              <ScrollViewer x:Name="SubMenuScrollViewer" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+              <ScrollViewer x:Name="SubMenuScrollViewer">
                 <Grid x:Name="Grid1">
                   <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0" x:Name="Canvas">
                     <Rectangle x:Name="OpaqueRect">
@@ -409,9 +408,9 @@
               <Binding ElementName="TemplateRoot" Path="ActualHeight" />
             </MultiBinding>
           </Popup.PlacementRectangle>
-          <Border Style="{DynamicResource MenuShadowBorderStyle}" x:Name="ShadowBorder">
+          <Border x:Name="ShadowBorder">
             <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Border}" BorderThickness="1" Background="{DynamicResource Menu.MenuItem.Static.Background}" Padding="2" CornerRadius="6" x:Name="SubMenuBorder">
-              <ScrollViewer x:Name="SubMenuScrollViewer" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+              <ScrollViewer x:Name="SubMenuScrollViewer">
                 <Grid x:Name="Grid1">
                   <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0" x:Name="Canvas">
                     <Rectangle x:Name="OpaqueRect">
@@ -501,7 +500,7 @@
               <Binding ElementName="TemplateRoot" Path="ActualHeight" />
             </MultiBinding>
           </Popup.PlacementRectangle>
-          <Border Style="{DynamicResource MenuShadowBorderStyle}" x:Name="ShadowBorder">
+          <Border x:Name="ShadowBorder">
             <Border BorderBrush="{DynamicResource Menu.MenuItem.Static.Border}" BorderThickness="1" Background="{DynamicResource Menu.MenuItem.Static.Background}" Padding="2" CornerRadius="6" x:Name="SubMenuBorder">
               <!-- Grid 两行：第 0 行搜索框置顶不滚动，第 1 行分支列表可滚动 -->
               <Grid>
@@ -509,8 +508,8 @@
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <controls:PlaceholderTextBox Grid.Row="0" Margin="4,4,4,2" Style="{DynamicResource SearchPanelPlaceholderTextBox}" Placeholder="{DynamicResource Search}" controls:PlaceholderTextBox.Icon="{DynamicResource SearchOnIcon}" x:Name="PART_SearchBox" />
-                <ScrollViewer Grid.Row="1" x:Name="SubMenuScrollViewer" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+                <controls:PlaceholderTextBox Grid.Row="0" Margin="4,4,4,2" Placeholder="{DynamicResource Search}" controls:PlaceholderTextBox.Icon="{DynamicResource SearchOnIcon}" x:Name="PART_SearchBox" />
+                <ScrollViewer Grid.Row="1" x:Name="SubMenuScrollViewer">
                   <Grid x:Name="Grid1">
                     <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0" x:Name="Canvas">
                       <Rectangle x:Name="OpaqueRect">
@@ -612,7 +611,7 @@
     <Setter Property="ItemContainerStyle" Value="{DynamicResource {x:Type MenuItem}}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Menu}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
             <ItemsPresenter />
           </Border>

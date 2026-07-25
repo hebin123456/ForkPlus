@@ -17,16 +17,16 @@
       </controls:FilterTextBox.AnimationPlaceholder>
     </controls:FilterTextBox>
     <DockPanel Grid.Row="0" Height="17" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}" LastChildFill="False">
-      <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip="Filter" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="FilterButton_Click">
+      <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip.Tip="Filter" Click="FilterButton_Click">
         <Image Source="{DynamicResource SearchIcon}" />
       </Button>
-      <controls:DropDownButton DockPanel.Dock="Right" ToolTip="View Mode" ClickMode="Press" Style="{DynamicResource CodeEditorHeaderDropDownButtonStyle}" x:Name="FileListSettingsDropdownButton">
+      <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton">
         <Image Source="{DynamicResource ListIcon}" VerticalAlignment="Center" />
         <controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="FileListSettingsDropdownButton_ContextMenuOpened" />
         </controls:DropDownButton.ContextMenu>
       </controls:DropDownButton>
-      <Button DockPanel.Dock="Right" ToolTip="Show diff side-by-side (space bar)" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton">
+      <Button DockPanel.Dock="Right" ToolTip.Tip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton">
         <Image Source="{DynamicResource PreviewIcon}" />
       </Button>
     </DockPanel>
@@ -36,6 +36,6 @@
       </userControls:FileListUserControl.ContextMenu>
     </userControls:FileListUserControl>
     <controls:FileDiffControl Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileDiffControl" />
-    <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Style="{DynamicResource VerticalGridSplitter}" HorizontalAlignment="Right" x:Name="GridSplitter" />
+    <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" HorizontalAlignment="Right" x:Name="GridSplitter" />
   </Grid>
 </UserControl>

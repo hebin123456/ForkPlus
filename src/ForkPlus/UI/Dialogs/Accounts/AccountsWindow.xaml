@@ -31,7 +31,7 @@
         <ColumnDefinition Width="220" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <ListBox Grid.Column="0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ItemContainerStyle="{DynamicResource ListBoxItemWithBorderStyle}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AccountsListBox_SelectionChanged" x:Name="AccountsListBox">
+      <ListBox Grid.Column="0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AccountsListBox_SelectionChanged" x:Name="AccountsListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>
@@ -64,10 +64,10 @@
       </ListBox>
       <Border Grid.Row="1" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" Background="{DynamicResource BackgroundBrush}">
         <StackPanel Orientation="Horizontal">
-          <Button Margin="-1,-1,0,-1" Style="{DynamicResource InlineButton}" Click="AddAccountButton_Click" x:Name="AddAccountButton">
+          <Button Margin="-1,-1,0,-1" Click="AddAccountButton_Click" x:Name="AddAccountButton">
             <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
           </Button>
-          <Button Margin="0,-1,0,-1" Style="{DynamicResource InlineButton}" Click="LogOutButton_Click" x:Name="LogOutButton">
+          <Button Margin="0,-1,0,-1" Click="LogOutButton_Click" x:Name="LogOutButton">
             <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
           </Button>
         </StackPanel>

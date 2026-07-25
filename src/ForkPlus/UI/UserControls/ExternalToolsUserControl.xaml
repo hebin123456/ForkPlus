@@ -5,7 +5,7 @@
      - DataTemplate.Triggers (MultiDataTrigger 绑定祖先 ListBoxItem.IsSelected) → 顶层
        <UserControl.Styles><Style Selector="ListBoxItem:selected TextBlock#PrimaryTextBlock">
      - TextBlock.Visibility (经 BooleanToVisibilityConverter) → TextBlock.IsVisible (直接绑定 bool)
-     - FallbackUserControl.Visibility="Collapsed" → IsVisible="False"
+     - FallbackUserControl.IsVisible="False" → IsVisible="False"
      - 移除未再使用的 BooleanToVisibilityConverter 资源（InverseBooleanToVisibility 返回 bool，
        名字虽含 "ToVisibility" 但已迁移为 Avalonia IValueConverter 返回 bool）
      -->
@@ -35,7 +35,7 @@
         <RowDefinition Height="85" />
         <RowDefinition Height="17" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" ContextMenuOpening="ToolsListBox_ContextMenuOpening" x:Name="ToolsListBox">
+      <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" ContextMenuOpening="ToolsListBox_ContextMenuOpening" x:Name="ToolsListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>
@@ -69,10 +69,10 @@
       </ListBox>
       <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
         <StackPanel Orientation="Horizontal">
-          <Button Height="18" Width="18" Margin="-1,-1,0,-1" Style="{DynamicResource InlineButton}" Click="AddToolButton_Click">
+          <Button Height="18" Width="18" Margin="-1,-1,0,-1" Click="AddToolButton_Click">
             <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
           </Button>
-          <Button Margin="0,-1,0,-1" Height="18" Width="18" Style="{DynamicResource InlineButton}" Click="RemoveToolButton_Click">
+          <Button Margin="0,-1,0,-1" Height="18" Width="18" Click="RemoveToolButton_Click">
             <Button.IsEnabled>
               <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource InverseBooleanConverter}" />
             </Button.IsEnabled>
@@ -117,7 +117,7 @@
             <Binding ElementName="ToolsListBox" Path="SelectedItem.Path" UpdateSourceTrigger="PropertyChanged" />
           </controls:PlaceholderTextBox.Text>
         </controls:PlaceholderTextBox>
-        <Button Grid.Row="1" Grid.Column="2" Margin="2,6,0,0" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
+        <Button Grid.Row="1" Grid.Column="2" Margin="2,6,0,0" Click="BrowseButton_Click" />
         <TextBlock Grid.Row="2" Grid.Column="0" Text="Arguments:" FontSize="13" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
         <Grid Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2" Margin="10,6,0,0">
           <controls:PlaceholderTextBox Padding="4,2,14,2" Placeholder="External tool arguments">
@@ -125,7 +125,7 @@
               <Binding ElementName="ToolsListBox" Path="SelectedItem.Arguments" UpdateSourceTrigger="PropertyChanged" />
             </controls:PlaceholderTextBox.Text>
           </controls:PlaceholderTextBox>
-          <TextBlock Style="{DynamicResource HintTextBlock}" x:Name="ArgumentsHintTextBlock" />
+          <TextBlock x:Name="ArgumentsHintTextBlock" />
         </Grid>
       </Grid>
     </Border>

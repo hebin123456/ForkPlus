@@ -32,7 +32,7 @@
       <controls:PlaceholderTextBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="Token" x:Name="TokenTextBox" />
       <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,-6,0,0" x:Name="PersonalAccessTokenHint">
         <TextBlock Margin="8,4,0,0" FontSize="12" Text="Manage " x:Name="StatusTextBlock" />
-        <Button Content="personal access tokens" Margin="0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" x:Name="OpenPersonalAccessTokenConfigurationUrlButton" />
+        <Button Content="personal access tokens" Margin="0" HorizontalAlignment="Left" Click="OpenPersonalAccessTokenConfigurationUrlButton_Click" x:Name="OpenPersonalAccessTokenConfigurationUrlButton" />
       </StackPanel>
     </Grid>
   </Grid>

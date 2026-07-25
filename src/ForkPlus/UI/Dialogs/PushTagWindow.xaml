@@ -21,7 +21,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Tag:" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,0" x:Name="TagGitPointView" />
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

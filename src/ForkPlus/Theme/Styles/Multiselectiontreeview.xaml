@@ -30,7 +30,7 @@
     <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ToggleButton}">
+        <ControlTemplate>
           <Border Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Background="#00FFFFFF">
             <Path Data="M0,0L3.5,3.5 0,7" Margin="2,1,0,0" Stroke="{TemplateBinding Background}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ExpandPath" />
           </Border>
@@ -50,11 +50,6 @@
         <Binding Path="IsFocusable" />
       </Setter.Value>
     </Setter>
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -64,7 +59,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListViewItem}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -79,7 +74,7 @@
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <ToggleButton Grid.Column="1" Style="{StaticResource ExpandCollapseToggleStyle}" VerticalAlignment="Center" x:Name="ExpandCollapseToggleButton">
+              <ToggleButton Grid.Column="1" VerticalAlignment="Center" x:Name="ExpandCollapseToggleButton">
                 <ToggleButton.IsChecked>
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
@@ -116,12 +111,7 @@
   <Style x:Key="{x:Type controls:MultiselectionTreeView}" Selector="controls:MultiselectionTreeView">
     <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="BorderThickness" Value="0" />
+<Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -130,7 +120,7 @@
     <Setter Property="ItemContainerStyle" Value="{DynamicResource TreeViewControlItemStyle}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type controls:MultiselectionTreeView}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter />
@@ -157,7 +147,7 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListViewItem}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -172,7 +162,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <ToggleButton Grid.Column="1" Style="{StaticResource ExpandCollapseToggleStyle}" VerticalAlignment="Center" Width="16" x:Name="ExpandCollapseToggleButton">
+              <ToggleButton Grid.Column="1" VerticalAlignment="Center" Width="16" x:Name="ExpandCollapseToggleButton">
                 <ToggleButton.IsChecked>
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
@@ -212,12 +202,7 @@
   <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
     <Setter Property="BorderThickness" Value="1,1,0,1" />
     <Setter Property="ItemContainerStyle" Value="{DynamicResource ExpandButtonAutoWidthTreeViewControlItemStyle}" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-  </Style>
+</Style>
   <Style x:Key="SideBarSearchTreeViewControlItemStyle" Selector="controls:TreeViewControlItem" BasedOn="{StaticResource ExpandButtonAutoWidthTreeViewControlItemStyle}">
     <Setter Property="Height" Value="22" />
     <Setter Property="BorderThickness" Value="0" />
@@ -258,11 +243,6 @@
         <Binding Path="IsFocusable" />
       </Setter.Value>
     </Setter>
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -272,7 +252,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ListViewItem}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -302,9 +282,9 @@
     <Setter Property="ItemContainerStyle" Value="{DynamicResource TreeViewControlItemGridViewStyle}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type controls:MultiselectionTreeView}">
+        <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF" Style="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
+            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter Margin="0,4,0,0" />
             </controls:TouchpadAwareScrollViewer>
           </Border>

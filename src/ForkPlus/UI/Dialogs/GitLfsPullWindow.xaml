@@ -15,7 +15,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Column="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
+      <ComboBox Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

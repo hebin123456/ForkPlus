@@ -22,14 +22,14 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <TextBlock Grid.Row="0" Grid.Column="0" Text="AI Model Configuration" Style="{DynamicResource SettingsHeaderTextBlockStyle}" />
+    <TextBlock Grid.Row="0" Grid.Column="0" Text="AI Model Configuration" />
     <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Inference service URL:" />
     <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,8,0,0" Padding="4,2,4,2" Placeholder="https://api.openai.com" TextChanged="ServiceUrlTextBox_TextChanged" x:Name="ServiceUrlTextBox" />
     <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="API Key:" />
     <controls:PlaceholderTextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,8,0,0" Padding="4,2,4,2" Placeholder="API key" TextChanged="ApiKeyTextBox_TextChanged" x:Name="ApiKeyTextBox" />
     <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Model:" />
-    <ComboBox Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Height="26" VerticalContentAlignment="Center" IsEditable="True" SelectionChanged="ModelComboBox_SelectionChanged" LostFocus="ModelComboBox_LostFocus" x:Name="ModelComboBox" />
-    <Button Grid.Row="3" Grid.Column="2" Margin="6,8,0,0" Width="26" Height="26" Padding="4" ToolTip="Refresh models" Click="RefreshModelsButton_Click" x:Name="RefreshModelsButton">
+    <ComboBox Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Height="26" VerticalAlignment="Center" IsEditable="True" SelectionChanged="ModelComboBox_SelectionChanged" LostFocus="ModelComboBox_LostFocus" x:Name="ModelComboBox" />
+    <Button Grid.Row="3" Grid.Column="2" Margin="6,8,0,0" Width="26" Height="26" Padding="4" ToolTip.Tip="Refresh models" Click="RefreshModelsButton_Click" x:Name="RefreshModelsButton">
       <Image Source="{DynamicResource RefreshIcon}" />
     </Button>
     <CheckBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,8,0,0" Content="Automatically fetch mounted models from URL and API key" Checked="AutoFetchModelsCheckBox_Changed" Unchecked="AutoFetchModelsCheckBox_Changed" x:Name="AutoFetchModelsCheckBox" />
@@ -46,11 +46,11 @@
       <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
     </DockPanel>
     <!-- Skills section - unified layout matching the menu pattern above -->
-    <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Text="Skills" Style="{DynamicResource SettingsHeaderTextBlockStyle}" Margin="0,12,0,0" />
+    <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Text="Skills" Margin="0,12,0,0" />
 
     <!-- Row 9: Skill name input + Add button -->
     <TextBlock Grid.Row="9" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Skill name:" />
-    <TextBox Grid.Row="9" Grid.Column="1" Margin="10,8,0,0" Padding="4,2,4,2" VerticalContentAlignment="Center" x:Name="SkillNameTextBox" />
+    <TextBox Grid.Row="9" Grid.Column="1" Margin="10,8,0,0" Padding="4,2,4,2" VerticalAlignment="Center" x:Name="SkillNameTextBox" />
     <Button Grid.Row="9" Grid.Column="2" Margin="6,8,0,0" Padding="8,4,8,4" FontSize="12" x:Name="AddCustomSkillButton">
       <TextBlock Text="Add Skill" TextDecorations="{x:Null}" />
     </Button>

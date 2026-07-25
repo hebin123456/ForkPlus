@@ -42,7 +42,7 @@
     <Setter Property="Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Label}">
+        <ControlTemplate>
           <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
             <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
@@ -60,7 +60,7 @@
     <Setter Property="Foreground" Value="#FFFFFFFF" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type Label}">
+        <ControlTemplate>
           <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
             <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
           </Border>
@@ -69,12 +69,7 @@
     </Setter>
   </Style>
   <Style x:Key="BugtrackerHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -89,12 +84,7 @@
     </Style.Styles>
   </Style>
   <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Style.Styles>
       <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
       <Style Selector="^:pointerover">
@@ -103,12 +93,7 @@
     </Style.Styles>
   </Style>
   <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -123,12 +108,7 @@
     </Style.Styles>
   </Style>
   <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
+<Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
     <Style.Styles>
       <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
       <Style Selector="^:pointerover">

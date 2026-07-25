@@ -32,7 +32,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Parent folder path" x:Name="ParentDirectoryTextBox" />
-        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
+        <Button Grid.Column="1" Click="BrowseButton_Click" />
       </Grid>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Repository name" x:Name="RepositoryNameTextBox" />

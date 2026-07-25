@@ -19,13 +19,13 @@
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="40" />
         </Grid.ColumnDefinitions>
-        <RadioButton Grid.Column="0" Grid.Row="0" Content="Commit" Style="{StaticResource RevisionDetailsBarButton}" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="CommitRadioButton" />
-        <RadioButton Grid.Column="1" Grid.Row="0" Content="Changes" Style="{StaticResource RevisionDetailsBarButton}" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="ChangesRadioButton" />
-        <RadioButton Grid.Column="2" Grid.Row="0" Content="File Tree" Style="{StaticResource RevisionDetailsBarButton}" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="FileTreeRadioButton" />
+        <RadioButton Grid.Column="0" Grid.Row="0" Content="Commit" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="CommitRadioButton" />
+        <RadioButton Grid.Column="1" Grid.Row="0" Content="Changes" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="ChangesRadioButton" />
+        <RadioButton Grid.Column="2" Grid.Row="0" Content="File Tree" FontWeight="Medium" GroupName="RevisionDetailsTabs" Checked="TabRadioButton_Checked" x:Name="FileTreeRadioButton" />
         <Canvas Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
           <Border Height="1.5" Margin="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" Canvas.Left="0" x:Name="IndicatorBorder" />
         </Canvas>
-        <Button Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Width="22" Height="22" Padding="2" Margin="0,1.5,10,0" ToolTip="Open in separate window" Style="{DynamicResource RevisionDetailsSwapButtonStyle}" x:Name="ShowRevisionInSeparateWindowButton">
+        <Button Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Width="22" Height="22" Padding="2" Margin="0,1.5,10,0" ToolTip.Tip="Open in separate window" x:Name="ShowRevisionInSeparateWindowButton">
           <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="16" Width="16" />
         </Button>
       </Grid>

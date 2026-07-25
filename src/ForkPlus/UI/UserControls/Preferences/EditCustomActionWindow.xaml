@@ -74,13 +74,13 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <controls:PlaceholderTextBox TextChanged="ScriptPathTextBox_TextChanged" Grid.Column="0" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" Placeholder="${git}, ${sh} or /path/to/script.bat" HorizontalAlignment="Stretch" x:Name="ScriptPathTextBox" />
-              <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="ScriptPathButton_Click" x:Name="ScriptPathButton" />
+              <Button Grid.Column="1" Click="ScriptPathButton_Click" x:Name="ScriptPathButton" />
             </Grid>
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Parameters:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
             <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="e.g. status --porcelain" FontSize="13" x:Name="ArgumentsTextBox" />
           </Grid>
-          <CheckBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Left" Content="Wait for Exit" ToolTip="Wait for the process to exit" FontSize="13" Checked="WaitForExitCheckBox_Changed" Unchecked="WaitForExitCheckBox_Changed" x:Name="WaitForExitCheckBox" />
-          <CheckBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,0" HorizontalAlignment="Left" Content="Always Show Output" FontSize="13" ToolTip="Show the process output after it is finished" x:Name="ShowOutputCheckBox" />
+          <CheckBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Left" Content="Wait for Exit" ToolTip.Tip="Wait for the process to exit" FontSize="13" Checked="WaitForExitCheckBox_Changed" Unchecked="WaitForExitCheckBox_Changed" x:Name="WaitForExitCheckBox" />
+          <CheckBox Grid.Row="3" Grid.Column="1" Margin="10,4,0,0" HorizontalAlignment="Left" Content="Always Show Output" FontSize="13" ToolTip.Tip="Show the process output after it is finished" x:Name="ShowOutputCheckBox" />
         </Grid>
         <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
           <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">

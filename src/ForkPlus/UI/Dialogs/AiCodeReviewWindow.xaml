@@ -13,8 +13,8 @@
     <Grid.Children>
       <!-- 标题栏：标题 + 模型下拉 + Stop + Retry -->
       <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="10,0,10,6" LastChildFill="True">
-        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry AI Review" Click="RetryButton_Click" x:Name="RetryButton" />
-        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip="Stop the current AI task and abort its request" Click="StopButton_Click" x:Name="StopButton" IsVisible="False" />
+        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip.Tip="Retry AI Review" Click="RetryButton_Click" x:Name="RetryButton" />
+        <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip.Tip="Stop the current AI task and abort its request" Click="StopButton_Click" x:Name="StopButton" IsVisible="False" />
         <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="160" MaxWidth="320" Margin="6,0,6,0" SelectionChanged="ModelComboBox_SelectionChanged">
           <ComboBox.ItemTemplate>
             <DataTemplate>
@@ -42,7 +42,7 @@
             <ContextMenu />
           </userControls:FileListUserControl.ContextMenu>
         </userControls:FileListUserControl>
-        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{DynamicResource VerticalGridSplitter}" x:Name="FileReviewGridSplitter" />
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" x:Name="FileReviewGridSplitter" />
         <controls:CommitFileDiffControl Grid.Column="2" x:Name="FileReviewDiffControl" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="2">

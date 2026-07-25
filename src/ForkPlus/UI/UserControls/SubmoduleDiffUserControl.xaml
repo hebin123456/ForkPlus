@@ -24,7 +24,7 @@
       </StackPanel>
     </Grid>
     <usercontrols:RevisionsHeaderUserControl Grid.Row="1" Margin="0,4,0,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" x:Name="RevisionHeaderUserControl" />
-    <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Grid.Row="2" Margin="0,0,0,0" Style="{DynamicResource ListViewWithGridViewStyle}" ItemContainerStyle="{DynamicResource NoSelectionRevisionListViewItemStyle}" x:Name="RevisionListView">
+    <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Grid.Row="2" Margin="0,0,0,0" x:Name="RevisionListView">
       <controls:NoUIAutomationListView.View>
         <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}">
           <GridViewColumn>
@@ -37,7 +37,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                   </Grid.ColumnDefinitions>
-                  <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip="False" />
+                  <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip.Tip="False" />
                   <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
                     <Ellipse.Fill>
                       <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>

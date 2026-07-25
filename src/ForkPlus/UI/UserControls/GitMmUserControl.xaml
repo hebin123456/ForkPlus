@@ -8,7 +8,7 @@
       <Setter Property="Padding" Value="14,2" />
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate TargetType="{x:Type TabItem}">
+          <ControlTemplate>
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
               <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" FontWeight="Medium" Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
@@ -45,13 +45,13 @@
       </Style.Resources>
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate TargetType="{x:Type controls:ModernTabControl}">
+          <ControlTemplate>
             <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" CanContentScroll="False" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" HorizontalScrollBarIsVisible="False" VerticalScrollBarVisibility="Disabled" CanContentScroll="False" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
                   <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
                   <Canvas>
@@ -78,8 +78,8 @@
     <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}">
       <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="8,6,8,4">
-          <Button DockPanel.Dock="Right" Margin="4,-2,0,-2" Padding="6,0" Width="24" Height="24" Foreground="{DynamicResource SecondaryLabelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" Style="{DynamicResource TransparentButtonStyle}" Content="?" FontWeight="SemiBold" ToolTip="git mm help" Click="GitMmHelpButton_Click" x:Name="GitMmHelpButton" />
-          <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Click="SubrepoFilterButton_Click" x:Name="SubrepoFilterButton" />
+          <Button DockPanel.Dock="Right" Margin="4,-2,0,-2" Padding="6,0" Width="24" Height="24" Foreground="{DynamicResource SecondaryLabelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" Content="?" FontWeight="SemiBold" ToolTip.Tip="git mm help" Click="GitMmHelpButton_Click" x:Name="GitMmHelpButton" />
+          <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Click="SubrepoFilterButton_Click" x:Name="SubrepoFilterButton" />
           <TextBlock Text="Sub repositories" FontWeight="Medium" VerticalAlignment="Center" x:Name="SubreposTitleTextBlock" />
           <WrapPanel Margin="10,0,0,0" VerticalAlignment="Center" x:Name="SubrepoSummaryPanel" />
         </DockPanel>
@@ -103,7 +103,7 @@
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
           </controls:ToolbarButton>
         </WrapPanel>
-        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource GitMmSubrepoTabControlStyle}" x:Name="SubreposTabControl" />
+        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SubreposTabControl" />
       </DockPanel>
     </Border>
 
@@ -119,15 +119,15 @@
       </Grid.RowDefinitions>
       <ProgressBar Grid.Row="0" Height="4" IsIndeterminate="True" IsVisible="False" x:Name="BusyProgressBar" />
       <DockPanel Grid.Row="1" Margin="0,6,0,4">
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Collapse" Click="ToggleCommandOutputButton_Click" x:Name="ToggleCommandOutputButton" />
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Cancel" IsVisible="False" Click="CancelCommandButton_Click" x:Name="CancelCommandButton" />
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Uploads" IsVisible="False" Click="ShowUploadLinksButton_Click" x:Name="ShowUploadLinksButton" />
-        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="History" Click="CommandHistoryButton_Click" x:Name="CommandHistoryButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Collapse" Click="ToggleCommandOutputButton_Click" x:Name="ToggleCommandOutputButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Cancel" IsVisible="False" Click="CancelCommandButton_Click" x:Name="CancelCommandButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Uploads" IsVisible="False" Click="ShowUploadLinksButton_Click" x:Name="ShowUploadLinksButton" />
+        <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="History" Click="CommandHistoryButton_Click" x:Name="CommandHistoryButton" />
         <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" />
       </DockPanel>
       <Border Grid.Row="2" Margin="0,0,0,4" Padding="8,5" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" IsVisible="False" x:Name="UploadLinksContainer">
         <DockPanel LastChildFill="True">
-          <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
+          <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
           <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
           <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <WrapPanel x:Name="UploadLinksPanel" />
@@ -139,6 +139,6 @@
       </Border>
       <TextBlock Grid.Row="4" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" x:Name="StatusTextBlock" />
     </Grid>
-    <Button Grid.Row="1" Margin="0,0,0,0" Padding="8,1" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Expand Command Output" IsVisible="False" Click="ToggleCommandOutputButton_Click" x:Name="ExpandCommandOutputButton" />
+    <Button Grid.Row="1" Margin="0,0,0,0" Padding="8,1" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Expand Command Output" IsVisible="False" Click="ToggleCommandOutputButton_Click" x:Name="ExpandCommandOutputButton" />
   </Grid>
 </UserControl>

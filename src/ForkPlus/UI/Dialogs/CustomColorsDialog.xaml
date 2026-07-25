@@ -43,7 +43,7 @@
                       Cursor="Hand"
                       MouseLeftButtonUp="ColorPreview_Click"
                       Tag="{Binding}"
-                      ToolTip="{Binding Key}">
+                      ToolTip.Tip="{Binding Key}">
                 <Rectangle Fill="{Binding PreviewBrush}" />
               </Border>
               <!-- hex 输入 -->

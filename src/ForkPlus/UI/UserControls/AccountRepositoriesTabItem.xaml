@@ -13,7 +13,7 @@
               <Binding Path="Icon" />
             </Image.Source>
           </Image>
-          <Button DockPanel.Dock="Right" VerticalAlignment="Center" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="CloneButton_Click" x:Name="CloneButton">
+          <Button DockPanel.Dock="Right" VerticalAlignment="Center" Click="CloneButton_Click" x:Name="CloneButton">
             <Button.ToolTip>
               <Binding Path="Tooltip" />
             </Button.ToolTip>
@@ -45,7 +45,7 @@
       <RowDefinition />
     </Grid.RowDefinitions>
     <controls:FilterTextBox Grid.Row="0" Margin="4" x:Name="FilterTextBox" />
-    <ListBox Grid.Row="1" BorderThickness="0" Margin="0,0,0,0" HorizontalContentAlignment="Stretch" x:Name="RepositoriesListBox">
+    <ListBox Grid.Row="1" BorderThickness="0" Margin="0,0,0,0" HorizontalAlignment="Stretch" x:Name="RepositoriesListBox">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <ContentControl>

@@ -27,7 +27,7 @@
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Into:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <TextBlock Grid.Row="4" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Merge Option:" />
-      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
+      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left"  SelectionChanged="MergeTypeComboBox_SelectionChanged" x:Name="MergeTypeComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <Grid>

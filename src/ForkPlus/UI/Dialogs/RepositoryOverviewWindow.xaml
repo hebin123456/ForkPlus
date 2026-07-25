@@ -58,7 +58,7 @@
             </TabItem>
           </controls:ModernTabControl>
         </Grid>
-        <GridSplitter Grid.Row="2" Grid.Column="1" Style="{DynamicResource VerticalGridSplitter}" x:Name="SidebarGridSplitter" />
+        <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="SidebarGridSplitter" />
         <usercontrols:FallbackUserControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="Fallback" />
         <TextBlock Grid.Row="1" Grid.RowSpan="2" Margin="2,0,4,-16" VerticalAlignment="Bottom" Foreground="{DynamicResource SecondaryLabelBrush}" Text="* double-click on folders to expand" />
       </Grid>

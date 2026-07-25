@@ -14,7 +14,7 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ListBox Grid.Row="0" Margin="0,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="PartialStashListBox">
+      <ListBox Grid.Row="0" Margin="0,0,0,2" Background="{DynamicResource TextBox.Static.Background}" x:Name="PartialStashListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>
@@ -26,11 +26,7 @@
               <CheckBox Margin="8,0,4,0" VerticalAlignment="Center" Checked="FileCheckBox_Changed" Unchecked="FileCheckBox_Changed">
                 <CheckBox.IsChecked>
                   <Binding Path="Selected" />
-                </CheckBox.IsChecked>
-                <CheckBox.FocusVisualStyle>
-                  <x:Null />
-                </CheckBox.FocusVisualStyle>
-              </CheckBox>
+                </CheckBox.IsChecked></CheckBox>
               <Image Grid.Column="1" VerticalAlignment="Center" Width="16" Margin="4,0,4,0">
                 <Image.Source>
                   <Binding Path="FileTypeIcon" />
@@ -51,7 +47,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" x:Name="StashMessageTextBox" />
-        <Button Grid.Column="1" Margin="6,0,0,0" Padding="8,2" Height="24" FontSize="12" VerticalAlignment="Center" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton">
+        <Button Grid.Column="1" Margin="6,0,0,0" Padding="8,2" Height="24" FontSize="12" VerticalAlignment="Center" Click="AiGenerateStashNameButton_Click" ToolTip.Tip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton">
           <TextBlock Text="🤖 AI" FontFamily="Segoe UI, Segoe UI Emoji" />
         </Button>
       </Grid>

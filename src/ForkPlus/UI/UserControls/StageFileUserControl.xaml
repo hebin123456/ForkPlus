@@ -24,19 +24,19 @@
         </controls:FilterTextBox.AnimationPlaceholder>
       </controls:FilterTextBox>
       <DockPanel Grid.Row="0" HorizontalAlignment="Stretch" LastChildFill="False" Background="{DynamicResource HeaderToolbarBackgroundBrush}">
-        <Button DockPanel.Dock="Left" ToolTip="Filter" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="FilterButton_Click">
+        <Button DockPanel.Dock="Left" ToolTip.Tip="Filter" Click="FilterButton_Click">
           <Image Source="{DynamicResource SearchIcon}" />
         </Button>
-        <controls:DropDownButton DockPanel.Dock="Right" ToolTip="View Mode" ClickMode="Press" Style="{DynamicResource CodeEditorHeaderDropDownButtonStyle}" x:Name="FileListSettingsDropdownButton">
+        <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton">
           <Image Source="{DynamicResource ListIcon}" VerticalAlignment="Center" />
           <controls:DropDownButton.ContextMenu>
             <ContextMenu Opened="FileListSettingsDropdownButton_ContextMenuOpened" />
           </controls:DropDownButton.ContextMenu>
         </controls:DropDownButton>
-        <Button DockPanel.Dock="Right" ToolTip="Show diff side-by-side (space bar)" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton">
+        <Button DockPanel.Dock="Right" ToolTip.Tip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton">
           <Image Source="{DynamicResource PreviewIcon}" />
         </Button>
-        <Button DockPanel.Dock="Right" ToolTip="Stage All" Style="{DynamicResource CodeEditorHeaderButtonStyle}" Click="StageAllButton_Click" x:Name="StageAllButton">
+        <Button DockPanel.Dock="Right" ToolTip.Tip="Stage All" Click="StageAllButton_Click" x:Name="StageAllButton">
           <Image Source="{DynamicResource StatageAllIcon}" x:Name="StageAllButtonIcon" />
         </Button>
       </DockPanel>
@@ -70,12 +70,8 @@
         </userControls:FileListUserControl.ContextMenu>
       </userControls:FileListUserControl>
     </Grid>
-    <GridSplitter Grid.Row="1" Grid.Column="0" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
-    <GridSplitter Grid.Row="1" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" IsTabStop="False">
-      <GridSplitter.FocusVisualStyle>
-        <x:Null />
-      </GridSplitter.FocusVisualStyle>
-    </GridSplitter>
-    <GridSplitter Grid.Row="1" Grid.Column="2" Style="{DynamicResource HorizontalGridSplitter}" VerticalAlignment="Top" />
+    <GridSplitter Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" />
+    <GridSplitter Grid.Row="1" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" IsTabStop="False"></GridSplitter>
+    <GridSplitter Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" />
   </Grid>
 </UserControl>

@@ -97,7 +97,7 @@
       <TextBlock Margin="40,0,40,200" TextAlignment="Center" HorizontalAlignment="Center" MinWidth="300" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="16" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Drop repository here to add" x:Name="FallbackMessage" />
       <Image Source="{DynamicResource FallbackIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="128" MaxWidth="128" />
     </Grid>
-    <controls:MultiselectionTreeView SelectionChanged="RepositoriesListBox_SelectionChanged" Grid.Row="2" Grid.Column="0" IsVisible="False" ItemContainerStyle="{DynamicResource RepositoryManagerTreeViewControlItemStyle}" TextSearch.TextPath="Name" Background="{DynamicResource Sidebar.Static.Background}" x:Name="RepositoriesTreeView">
+    <controls:MultiselectionTreeView SelectionChanged="RepositoriesListBox_SelectionChanged" Grid.Row="2" Grid.Column="0" IsVisible="False" Background="{DynamicResource Sidebar.Static.Background}" x:Name="RepositoriesTreeView">
       <controls:MultiselectionTreeView.ContextMenu>
         <ContextMenu />
       </controls:MultiselectionTreeView.ContextMenu>
@@ -106,15 +106,11 @@
           <ContentControl>
             <ContentControl.Content>
               <Binding />
-            </ContentControl.Content>
-            <ContentControl.FocusVisualStyle>
-              <x:Null />
-            </ContentControl.FocusVisualStyle>
-          </ContentControl>
+            </ContentControl.Content></ContentControl>
         </DataTemplate>
       </controls:MultiselectionTreeView.ItemTemplate>
     </controls:MultiselectionTreeView>
     <userControls:RepositoryDetailsUserControl Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="RepositoryDetailsUserControl" />
-    <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Style="{DynamicResource VerticalGridSplitter}" x:Name="GridSplitter" />
+    <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" x:Name="GridSplitter" />
   </Grid>
 </UserControl>

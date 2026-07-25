@@ -25,12 +25,7 @@
          FilterButtonImage/HideButtonImage/PinButtonImage On/Off/Selected icon switching is not implemented. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style x:Key="RepositoryTitleHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="TextDecorations">
+<Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
@@ -43,7 +38,6 @@
     </Style>
   </Style>
   <Style x:Key="SidebarButton" Selector="RadioButton">
-    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Padding" Value="20 2 20 2" />
@@ -52,12 +46,7 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Template">
+<Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
@@ -219,13 +208,13 @@
           <Binding Path="Tooltip" />
         </TextBlock.ToolTip>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" x:Name="FilterButton">
+      <Button Grid.Column="2" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" x:Name="HideButton">
+      <Button Grid.Column="3" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
@@ -261,13 +250,13 @@
           <Binding Path="Title" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarFilterButton}" x:Name="FilterButton">
+      <Button Grid.Column="2" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarHideButton}" x:Name="HideButton">
+      <Button Grid.Column="3" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
@@ -282,7 +271,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Column="1" FontSize="13" Margin="4,0,0,0" Padding="0" VerticalAlignment="Center">
-        <Hyperlink Style="{DynamicResource SidebarTruncateHyperlink}" NavigateUri=" ">
+        <Hyperlink NavigateUri=" ">
           <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
             <TextBlock.Text>
               <Binding Path="Title" />
@@ -302,24 +291,24 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <Image Grid.Column="0" Height="16" Width="16" x:Name="TagImage" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip="" Style="{DynamicResource SidebarTagTitleTextBlock}" x:Name="TagTitleTextBlock">
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip.Tip="" x:Name="TagTitleTextBlock">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" x:Name="PinButton">
+      <Button Grid.Column="2" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" x:Name="FilterButton">
+      <Button Grid.Column="3" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" x:Name="HideButton">
+      <Button Grid.Column="4" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
@@ -345,19 +334,19 @@
           <Binding Path="Tooltip" />
         </TextBlock.ToolTip>
       </TextBlock>
-      <Button Grid.Column="2" Style="{DynamicResource SidebarPinButton}" x:Name="PinButton">
+      <Button Grid.Column="2" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarFilterButton}" x:Name="FilterButton">
+      <Button Grid.Column="3" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarHideButton}" x:Name="HideButton">
+      <Button Grid.Column="4" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>
@@ -393,19 +382,19 @@
           <Binding Path="UpstreamStatusString" />
         </TextBlock.Text>
       </TextBlock>
-      <Button Grid.Column="3" Style="{DynamicResource SidebarPinButton}" x:Name="PinButton">
+      <Button Grid.Column="3" x:Name="PinButton">
         <Button.ToolTip>
           <Binding Path="PinTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
-      <Button Grid.Column="4" Style="{DynamicResource SidebarFilterButton}" x:Name="FilterButton">
+      <Button Grid.Column="4" x:Name="FilterButton">
         <Button.ToolTip>
           <Binding Path="FilterTooltip" />
         </Button.ToolTip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
-      <Button Grid.Column="5" Style="{DynamicResource SidebarHideButton}" x:Name="HideButton">
+      <Button Grid.Column="5" x:Name="HideButton">
         <Button.ToolTip>
           <Binding Path="HideTooltip" />
         </Button.ToolTip>

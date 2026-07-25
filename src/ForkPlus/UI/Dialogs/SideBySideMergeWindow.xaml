@@ -18,7 +18,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <DockPanel Grid.Column="0">
-        <CheckBox Margin="0,0,0,0" Width="320" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" Checked="AllRemoteCheckBox_Changed" Unchecked="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox">
+        <CheckBox Margin="0,0,0,0" Width="320" HorizontalAlignment="Stretch"  Checked="AllRemoteCheckBox_Changed" Unchecked="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox">
           <Grid HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
               <RowDefinition Height="18" />
@@ -50,7 +50,7 @@
           </StackPanel>
         </DockPanel>
         <DockPanel>
-          <CheckBox Margin="0,0,0,0" Width="360" HorizontalContentAlignment="Stretch" Style="{StaticResource MergerSelectAllCheckBox}" HorizontalAlignment="Left" Checked="AllLocalCheckBox_Changed" Unchecked="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox">
+          <CheckBox Margin="0,0,0,0" Width="360" HorizontalAlignment="Stretch"  Checked="AllLocalCheckBox_Changed" Unchecked="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox">
             <Grid HorizontalAlignment="Stretch">
               <Grid.RowDefinitions>
                 <RowDefinition Height="18" />
@@ -82,7 +82,7 @@
         <mergeControls:MergeCodeEditor Grid.Row="0" Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" x:Name="MergedMergeEditor" />
         <mergeControls:MergeCodeEditor Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" x:Name="LocalMergeEditor" />
         <Border Grid.Column="1" BorderThickness="1,0,1,0" BorderBrush="{DynamicResource BorderBrush}" x:Name="MergedVerticalBorder" />
-        <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" Style="{DynamicResource HorizontalGridSplitter}" x:Name="MergedHorizontalSeparator" />
+        <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" x:Name="MergedHorizontalSeparator" />
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,-16" Text="editing allowed" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="{DynamicResource SecondaryLabelBrush}" />
       </Grid>
     </Border>
@@ -90,10 +90,10 @@
       <controls:FileMergeControl Grid.Row="2" x:Name="FileMergeControl" />
     </Border>
     <DockPanel Grid.Row="3" Margin="0,12,0,2" HorizontalAlignment="Left">
-      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip="Switch orientation" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
+      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip.Tip="Switch orientation" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
         <Image Source="{DynamicResource HorizontalMergerIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LayoutOrientationToggleButtonImage" />
       </ToggleButton>
-      <Button Margin="6,0,0,0" Padding="8,0" Height="22" FontSize="12" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts" x:Name="AiResolveButton">
+      <Button Margin="6,0,0,0" Padding="8,0" Height="22" FontSize="12" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts" x:Name="AiResolveButton">
         <TextBlock Text="🤖 AI Resolve" FontFamily="Segoe UI, Segoe UI Emoji" />
       </Button>
     </DockPanel>

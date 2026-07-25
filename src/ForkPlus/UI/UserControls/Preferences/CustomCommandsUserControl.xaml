@@ -65,7 +65,7 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="23" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" ItemContainerStyle="{DynamicResource ListBoxItemWithBorderStyle}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="CustomCommandsListBox_SelectionChanged" x:Name="CustomCommandsListBox">
+      <ListBox VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="CustomCommandsListBox_SelectionChanged" x:Name="CustomCommandsListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <StackPanel>
@@ -97,7 +97,7 @@
       </ListBox>
       <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
         <StackPanel Orientation="Horizontal">
-          <controls:DropDownButton Margin="-1,-1,0,-1" Style="{DynamicResource InlineToggleButton}" x:Name="AddCustomCommandDropDownButton">
+          <controls:DropDownButton Margin="-1,-1,0,-1" x:Name="AddCustomCommandDropDownButton">
             <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
             <controls:DropDownButton.ContextMenu>
               <ContextMenu>
@@ -109,7 +109,7 @@
               </ContextMenu>
             </controls:DropDownButton.ContextMenu>
           </controls:DropDownButton>
-          <Button Style="{DynamicResource InlineButton}" Margin="0,-1,0,-1" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
+          <Button Margin="0,-1,0,-1" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
             <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
           </Button>
         </StackPanel>
@@ -218,7 +218,7 @@
                 <Binding Path="SelectedItem.Name" />
               </controls:PlaceholderTextBox.Text>
             </controls:PlaceholderTextBox>
-            <TextBlock Style="{DynamicResource NameQuestionmarkTextBlock}">
+            <TextBlock>
               <TextBlock.Tag>
                 <Binding Path="SelectedItem.VariablesString" />
               </TextBlock.Tag>
@@ -229,7 +229,7 @@
             <RadioButton Margin="15,0,0,0" Content="Action" Checked="UIMode_Changed" x:Name="ProcessRadioButton" />
           </StackPanel>
           <TextBlock Grid.Row="5" Grid.Column="0" Text="Action:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ProcessActionTypeTextBlock" />
-          <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,3" HorizontalContentAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
+          <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,3" HorizontalAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
             <Button.ToolTip>
               <Binding Path="SelectedItem.ActionViewModel.ToolTip" />
             </Button.ToolTip>
@@ -267,7 +267,7 @@
                   <Binding Path="SelectedItem.UIViewModel.DialogTitle" />
                 </controls:PlaceholderTextBox.Text>
               </controls:PlaceholderTextBox>
-              <TextBlock Style="{DynamicResource QuestionmarkTextBlock}">
+              <TextBlock>
                 <TextBlock.Tag>
                   <Binding Path="SelectedItem.VariablesString" />
                 </TextBlock.Tag>
@@ -280,14 +280,14 @@
                   <Binding Path="SelectedItem.UIViewModel.DialogDescription" />
                 </controls:PlaceholderTextBox.Text>
               </controls:PlaceholderTextBox>
-              <TextBlock Style="{DynamicResource QuestionmarkTextBlock}">
+              <TextBlock>
                 <TextBlock.Tag>
                   <Binding Path="SelectedItem.VariablesString" />
                 </TextBlock.Tag>
               </TextBlock>
             </Grid>
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Controls:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-            <Button Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Stretch" Margin="10,4,0,4" Padding="4,2,4,3" Click="UiControlsButton_Click" x:Name="UiControlsButton">
+            <Button Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="10,4,0,4" Padding="4,2,4,3" Click="UiControlsButton_Click" x:Name="UiControlsButton">
               <DockPanel>
                 <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                 <controls:AutoTooltipTextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
@@ -313,13 +313,13 @@
                     <Binding Path="SelectedItem.UIViewModel.Button1Title" />
                   </controls:PlaceholderTextBox.Text>
                 </controls:PlaceholderTextBox>
-                <TextBlock Style="{DynamicResource QuestionmarkTextBlock}">
+                <TextBlock>
                   <TextBlock.Tag>
                     <Binding Path="SelectedItem.VariablesString" />
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
-              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton1_Click" x:Name="UiActionButton1">
+              <Button HorizontalAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton1_Click" x:Name="UiActionButton1">
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
@@ -356,13 +356,13 @@
                     <Binding Path="SelectedItem.UIViewModel.Button2Title" />
                   </controls:PlaceholderTextBox.Text>
                 </controls:PlaceholderTextBox>
-                <TextBlock Style="{DynamicResource QuestionmarkTextBlock}">
+                <TextBlock>
                   <TextBlock.Tag>
                     <Binding Path="SelectedItem.VariablesString" />
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
-              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton2_Click" x:Name="UiActionButton2">
+              <Button HorizontalAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton2_Click" x:Name="UiActionButton2">
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>

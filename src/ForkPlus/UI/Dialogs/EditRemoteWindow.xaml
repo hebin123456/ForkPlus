@@ -26,11 +26,7 @@
       <controls:ReferenceTextBox TextChanged="RemoteNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Height="24" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Remote name" x:Name="RemoteNameTextBox" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Repository Url:" />
       <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,53,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
-      <controls:DropDownButton Grid.Row="1" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton">
-        <controls:DropDownButton.FocusVisualStyle>
-          <x:Null />
-        </controls:DropDownButton.FocusVisualStyle>
-        <controls:DropDownButton.ContextMenu>
+      <controls:DropDownButton Grid.Row="1" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton"><controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="NetworkProtocolContextMenu_Opened" />
         </controls:DropDownButton.ContextMenu>
         <StackPanel Orientation="Horizontal">
@@ -40,7 +36,7 @@
       </controls:DropDownButton>
       <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" IsChecked="True" Content="Sync submodule URL with parent repository" x:Name="SyncCheckBox" />
       <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Account:" FontSize="13" x:Name="AccountsTextBlock" />
-      <!-- NOTE (Avalonia limitation): TextSearch.TextPath="Title" 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
+      <!-- NOTE (Avalonia limitation): 已移除——Avalonia 无 TextSearch.TextPath 等价 API，ComboBox 选中项展示由 ItemTemplate 统一渲染。 -->
       <ComboBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
@@ -67,12 +63,12 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Style="{DynamicResource CircularProgressBar}" IsVisible="False" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
+      <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" IsVisible="False" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" />
       <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" Source="/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
       <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
         <TextBlock IsVisible="False" Margin="8,3,0,0" FontSize="13" x:Name="StatusTextBlock" />
-        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="TestButton_Click" x:Name="TestButton" />
-        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Style="{DynamicResource TextButtonStyle}" IsVisible="False" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
+        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" IsVisible="False" Click="TestButton_Click" x:Name="TestButton" />
+        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" IsVisible="False" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" />
       </StackPanel>
     </Grid>
   </Grid>

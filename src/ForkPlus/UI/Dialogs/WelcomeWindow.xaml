@@ -29,7 +29,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="DefaultCloneDirectoryTextBox_TextChanged" Grid.Column="0" Margin="0,4,0,4" Padding="4,2,4,2" Placeholder="Default source folder path" x:Name="DefaultCloneDirectoryTextBox" />
-        <Button Grid.Column="1" Style="{DynamicResource BrowseButtonStyle}" Click="BrowseButton_Click" />
+        <Button Grid.Column="1" Click="BrowseButton_Click" />
       </Grid>
       <StackPanel x:Name="ProgressBarContainer">
         <TextBlock FontSize="13" Margin="4,20,4,0" Text="Preparing Fork for the first run..." x:Name="ProgressTitleTextBlock" />

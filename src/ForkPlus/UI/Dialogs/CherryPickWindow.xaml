@@ -23,7 +23,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,6,0,2" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" x:Name="GitPointTextBlock" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,6,0,0" x:Name="RevisionGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Parent to skip:" x:Name="RevisionParentTextBlock" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,8,0,0" HorizontalContentAlignment="Stretch" SelectionChanged="RevisionParentComboBox_SelectionChanged" x:Name="RevisionParentComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Stretch" SelectionChanged="RevisionParentComboBox_SelectionChanged" x:Name="RevisionParentComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <controls:BindableGitPointView>
@@ -36,11 +36,7 @@
       </ComboBox>
       <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="GitPointsContainer">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints">
-            <ItemsControl.FocusVisualStyle>
-              <x:Null />
-            </ItemsControl.FocusVisualStyle>
-            <ItemsControl.ItemTemplate>
+          <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints"><ItemsControl.ItemTemplate>
               <DataTemplate>
                 <controls:BindableGitPointView Margin="0,1,0,1">
                   <controls:BindableGitPointView.GitPoint>
@@ -52,8 +48,8 @@
           </ItemsControl>
         </ScrollViewer>
       </Border>
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip="--no-commit (when unchecked)" Checked="CommitCheckBox_Changed" Unchecked="CommitCheckBox_Changed" x:Name="CommitCheckBox" />
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Append origin to commit message" ToolTip="-x" Checked="AppendOriginShaCheckBox_Changed" Unchecked="AppendOriginShaCheckBox_Changed" x:Name="AppendOriginShaCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip.Tip="--no-commit (when unchecked)" Checked="CommitCheckBox_Changed" Unchecked="CommitCheckBox_Changed" x:Name="CommitCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Append origin to commit message" ToolTip.Tip="-x" Checked="AppendOriginShaCheckBox_Changed" Unchecked="AppendOriginShaCheckBox_Changed" x:Name="AppendOriginShaCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

@@ -37,14 +37,14 @@
     <Setter Property="IsReadOnly" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type editor:CodeEditor}">
+        <ControlTemplate>
           <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
               <RowDefinition />
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" CanContentScroll="True" ContentTemplate="{x:Null}" VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalContentAlignment="Top" HorizontalContentAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" CanContentScroll="True" ContentTemplate="{x:Null}" VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
               <controls:TouchpadAwareScrollViewer.Content>
                 <Binding Path="TextArea">
                   <Binding.RelativeSource>
@@ -100,7 +100,7 @@
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type GridSplitter}">
+        <ControlTemplate>
           <Grid Background="#00FFFFFF">
             <Border BorderBrush="{TemplateBinding BorderBrush}" Height="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
           </Grid>
@@ -117,7 +117,7 @@
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type GridSplitter}">
+        <ControlTemplate>
           <Grid Background="#00FFFFFF">
             <Border BorderBrush="{TemplateBinding BorderBrush}" Width="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
           </Grid>
@@ -135,14 +135,9 @@
     <Setter Property="Height" Value="22" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="FocusVisualStyle">
+<Setter Property="Template">
       <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="{x:Type controls:EditableTextBlock}">
+        <ControlTemplate>
           <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis">
             <TextBlock.Text>
               <Binding Path="Value">
@@ -167,7 +162,7 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type controls:CommandTextBox}">
+        <ControlTemplate>
           <DockPanel>
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
             <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
@@ -188,7 +183,6 @@
     <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
   </Style>
   <Style x:Key="{x:Type ToolTip}" Selector="ToolTip">
-    <Setter Property="OverridesDefaultStyle" Value="true" />
     <Setter Property="HasDropShadow" Value="True" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
@@ -198,7 +192,7 @@
     <Setter Property="Padding" Value="6,2,6,3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ToolTip}">
+        <ControlTemplate>
           <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
           </Border>
@@ -215,10 +209,5 @@
     </Setter>
   </Style>
   <Style x:Key="{x:Type ContentControl}" Selector="ContentControl">
-    <Setter Property="FocusVisualStyle">
-      <Setter.Value>
-        <x:Null />
-      </Setter.Value>
-    </Setter>
-  </Style>
+</Style>
 </ResourceDictionary>

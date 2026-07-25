@@ -8,10 +8,10 @@
     </Grid.RowDefinitions>
     <!-- 标题栏：标题 + Model + Copy + Stop + Retry -->
     <DockPanel Grid.Row="0" Margin="10,0,10,6" LastChildFill="True">
-      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip="Retry" Click="RetryButton_Click" x:Name="RetryButton" />
-      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip="Stop the current AI task" Click="StopButton_Click" x:Name="StopButton" IsVisible="False" />
-      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Copy" ToolTip="Copy result to clipboard" Click="CopyButton_Click" x:Name="CopyButton" />
-      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="140" MaxWidth="260" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Content="Retry" ToolTip.Tip="Retry" Click="RetryButton_Click" x:Name="RetryButton" />
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Stop" ToolTip.Tip="Stop the current AI task" Click="StopButton_Click" x:Name="StopButton" IsVisible="False" />
+      <Button DockPanel.Dock="Right" MinWidth="64" Padding="10,2,10,2" Margin="6,0,0,0" Content="Copy" ToolTip.Tip="Copy result to clipboard" Click="CopyButton_Click" x:Name="CopyButton" />
+      <ComboBox DockPanel.Dock="Right" x:Name="ModelComboBox" FontSize="11" MinWidth="140" MaxWidth="260" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip.Tip="Select AI model" SelectionChanged="ModelComboBox_SelectionChanged">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />

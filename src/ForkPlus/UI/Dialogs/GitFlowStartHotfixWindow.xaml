@@ -21,7 +21,7 @@
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="hotfix/" x:Name="HotfixPrefixTextBlock" />
       <controls:ReferenceTextBox TextChanged="HotfixName_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Hotfix Name" x:Name="HotfixNameTextBox" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Start at:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" TextSearch.TextPath="Name" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

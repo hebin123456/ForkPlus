@@ -7,7 +7,7 @@
     </Style>
   </UserControl.Styles>
   <Grid>
-    <ListBox BorderThickness="1" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
+    <ListBox BorderThickness="1" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid Height="30">

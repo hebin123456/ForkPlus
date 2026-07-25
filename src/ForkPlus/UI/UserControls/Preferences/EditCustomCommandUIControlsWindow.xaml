@@ -32,7 +32,7 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="23" />
         </Grid.RowDefinitions>
-        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" Style="{DynamicResource {x:Type ListBox}}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
+        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemContainerStyle>
             <Style TargetType="{x:Type local:DragAndDropListBoxItem}" BasedOn="{StaticResource ListBoxItemWithBorderStyle}">
               <Setter Property="AllowDrop" Value="True" />
@@ -65,7 +65,7 @@
         </local:DragAndDropListBox>
         <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
           <StackPanel Orientation="Horizontal">
-            <controls:DropDownButton Margin="-1,-1,0,-1" Style="{DynamicResource InlineToggleButton}" x:Name="AddCustomCommandUIControlDropDownButton">
+            <controls:DropDownButton Margin="-1,-1,0,-1" x:Name="AddCustomCommandUIControlDropDownButton">
               <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
               <controls:DropDownButton.ContextMenu>
                 <ContextMenu>
@@ -84,7 +84,7 @@
                 </ContextMenu>
               </controls:DropDownButton.ContextMenu>
             </controls:DropDownButton>
-            <Button Style="{DynamicResource InlineButton}" Margin="0,-1,0,-1" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
+            <Button Margin="0,-1,0,-1" Click="RemoveCustomCommandButton_Click" x:Name="RemoveCustomCommandButton">
               <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
             </Button>
           </StackPanel>
