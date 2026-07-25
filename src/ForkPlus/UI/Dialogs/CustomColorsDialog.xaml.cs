@@ -111,19 +111,19 @@ namespace ForkPlus.UI.Dialogs
 					Margin = new Thickness(2),
 					BorderBrush = (IBrush)Application.Current.Resources["BorderBrush"],
 					BorderThickness = new Thickness(1),
-					Cursor = Cursors.Hand,
-					Tag = hex,
-				};
-				try { swatch.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex)); }
-				catch { continue; }
-				swatch.MouseLeftButtonUp += Swatch_Click;
+					Cursor = new Cursor(StandardCursorType.Hand),
+				Tag = hex,
+			};
+			try { swatch.Background = new SolidColorBrush(Color.Parse(hex)); }
+			catch { continue; }
+			swatch.PointerReleased += Swatch_Click;
 				SwatchPanel.Children.Add(swatch);
 			}
 		}
 
 		#region HSV 调色盘
 
-		private void Swatch_Click(object sender, PointerPressedEventArgs e)
+		private void Swatch_Click(object sender, PointerReleasedEventArgs e)
 		{
 			if (sender is Border b && b.Tag is string hex)
 			{
@@ -137,7 +137,7 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>颜色预览块点击 → 打开颜色选择 Popup。</summary>
 		private void ColorPreview_Click(object sender, PointerPressedEventArgs e)
 		{
-			if (sender is Layoutable fe && fe.Tag is CustomColorItem item)
+			if (sender is Border fe && fe.Tag is CustomColorItem item)
 			{
 				_popupEditingItem = item;
 				// 初始化阶段标志：用 item 当前 hex 填充 Popup 控件时不要回写 _workingCopy
@@ -154,8 +154,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			try
 			{
-				Color c = (Color)ColorConverter.ConvertFromString(hex);
-				// RGB 滑块
+				Color c = Color.Parse(hex);
+			// RGB 滑块
 				_suppressUpdates = true;
 				RSlider.Value = c.R;
 				GSlider.Value = c.G;
@@ -183,7 +183,7 @@ namespace ForkPlus.UI.Dialogs
 			string hex = PopupHexBox.Text.Trim();
 			if (string.IsNullOrEmpty(hex)) return;
 			if (!hex.StartsWith("#")) hex = "#" + hex;
-			try { ColorConverter.ConvertFromString(hex); }
+			try { Color.Parse(hex); }
 			catch { return; }
 			_popupEditingItem.HexValue = hex;
 			_popupEditingItem.IsCustomized = true;
@@ -211,22 +211,26 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdateHueIndicator(double h)
 		{
 			double y = (h / 360.0) * 160;
-			HueIndicator.Y1 = y;
-			HueIndicator.Y2 = y;
+			// Avalonia Line 用 StartPoint/EndPoint（Point）替代 WPF 的 X1/Y1/X2/Y2。
+			// XAML 中 X1=0, X2=20，故保持 X 不变只改 Y。
+			HueIndicator.StartPoint = new Point(0, y);
+			HueIndicator.EndPoint = new Point(20, y);
 		}
 
 		// HSV 方块鼠标交互
 		private void HsvCanvas_MouseDown(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHsv = true;
-			HsvCanvas.CaptureMouse();
+			// Avalonia 鼠标捕获在 Pointer 上，而非控件上：e.Pointer.Capture(control)。
+			e.Pointer.Capture(HsvCanvas);
 			UpdateHsvFromMouse(e.GetPosition(HsvCanvas));
 		}
 
 		private void HsvCanvas_MouseUp(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHsv = false;
-			HsvCanvas.ReleaseMouseCapture();
+			// 释放捕获：e.Pointer.Capture(null)。
+			e.Pointer.Capture(null);
 		}
 
 		private void HsvCanvas_MouseMove(object sender, PointerEventArgs e)
@@ -258,14 +262,16 @@ namespace ForkPlus.UI.Dialogs
 		private void HueCanvas_MouseDown(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHue = true;
-			HueCanvas.CaptureMouse();
+			// Avalonia 鼠标捕获在 Pointer 上：e.Pointer.Capture(control)。
+			e.Pointer.Capture(HueCanvas);
 			UpdateHueFromMouse(e.GetPosition(HueCanvas));
 		}
 
 		private void HueCanvas_MouseUp(object sender, PointerPressedEventArgs e)
 		{
 			_isDraggingHue = false;
-			HueCanvas.ReleaseMouseCapture();
+			// 释放捕获：e.Pointer.Capture(null)。
+			e.Pointer.Capture(null);
 		}
 
 		private void HueCanvas_MouseMove(object sender, PointerEventArgs e)
@@ -295,7 +301,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private double GetHueFromIndicator()
 		{
-			return (HueIndicator.Y1 / 160) * 360;
+			return (HueIndicator.StartPoint.Y / 160) * 360;
 		}
 
 		private void GetSvFromIndicator(out double s, out double v)
@@ -352,9 +358,9 @@ namespace ForkPlus.UI.Dialogs
 				if (string.IsNullOrEmpty(hex)) return;
 				if (!hex.StartsWith("#")) hex = "#" + hex;
 				try
-				{
-					ColorConverter.ConvertFromString(hex);
-					item.HexValue = hex;
+			{
+				Color.Parse(hex);
+				item.HexValue = hex;
 					item.IsCustomized = true;
 					_workingCopy[item.Key] = hex;
 					ApplyAndRefresh();
@@ -681,7 +687,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				get
 				{
-					try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(HexValue)); }
+					try { return new SolidColorBrush(Color.Parse(HexValue)); }
 					catch { return Brushes.White; }
 				}
 			}
