@@ -111,7 +111,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void CommitDescriptionTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Back && CommitDescriptionTextBox.CaretIndex == 0 && CommitDescriptionTextBox.SelectionLength == 0)
+			// 阶段 5：Avalonia TextBox 无 SelectionLength 属性（WPF 才有）。
+			// 用 SelectionStart == SelectionEnd 等价表达"无选中文本"。
+			if (e.Key == Key.Back && CommitDescriptionTextBox.CaretIndex == 0 && CommitDescriptionTextBox.SelectionStart == CommitDescriptionTextBox.SelectionEnd)
 			{
 				CommitSubjectTextBox.Focus();
 				CommitSubjectTextBox.CaretIndex = CommitSubjectTextBox.Text.Length;

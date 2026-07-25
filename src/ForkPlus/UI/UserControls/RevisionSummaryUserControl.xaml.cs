@@ -258,7 +258,9 @@ namespace ForkPlus.UI.UserControls
 			button.Padding = new Thickness(0.0);
 			button.IsTabStop = false;
 			button.BorderThickness = new Thickness(0.0);
-			button.Style = ForkPlus.UI.Theme.TransparentButtonStyle;
+			// 阶段 5：Avalonia 11 Control.Style 是 internal，外部不能直接赋值。
+			// 改用 control.Styles.Add(style)（参考 AutoCompleteTextBox.cs:134 同样的迁移模式）。
+			button.Styles.Add(ForkPlus.UI.Theme.TransparentButtonStyle);
 			ToolTip.SetTip(button, Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName()));
 			button.Content = content;
 			button.Click += delegate

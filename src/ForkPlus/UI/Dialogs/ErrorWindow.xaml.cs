@@ -198,7 +198,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RefreshTheme()
 		{
-			MessageEditor.TextArea.TextView.LinkTextForegroundBrush = Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush;
+			// 阶段 5：Avalonia 11 无 Application.TryFindResource(key) 单参重载，改用 Theme.FindBrush 门面。
+			MessageEditor.TextArea.TextView.LinkTextForegroundBrush = ForkPlus.UI.Theme.FindBrush("CodeEditorLinkForeground");
 		}
 
 		private static void OpenCredentialManager()

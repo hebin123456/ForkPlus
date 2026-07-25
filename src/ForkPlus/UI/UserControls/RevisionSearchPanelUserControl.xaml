@@ -6,7 +6,7 @@
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
-      <TranslateTransform x:Name="TranslateTransform" />
+      <TranslateTransform x:Name="PanelTranslateTransform" />
     </Border.RenderTransform>
     <DockPanel>
       <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">

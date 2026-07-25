@@ -1323,10 +1323,13 @@ namespace ForkPlus.UI.UserControls
 				Header = remoteName
 			};
 			// 应用可搜索子菜单模板（置顶搜索框 + 可滚动分支列表）
-			Style searchableStyle = (Style)Application.Current.TryFindResource("SearchableSubmenuMenuItem");
+			// 阶段 5：Avalonia 11 无 Application.TryFindResource(key) 单参重载，
+			// 改用 ForkPlus.UI.Theme.FindStyle 门面（内部走 Resources.TryGetResource）。
+			Style searchableStyle = ForkPlus.UI.Theme.FindStyle("SearchableSubmenuMenuItem");
 			if (searchableStyle != null)
 			{
-				groupItem.Style = searchableStyle;
+				// 阶段 5：Avalonia 11 Control.Style 是 internal，改用 Styles.Add（参考 AutoCompleteTextBox.cs:134）。
+				groupItem.Styles.Add(searchableStyle);
 			}
 			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
 			{

@@ -62,7 +62,8 @@ namespace ForkPlus.UI
 
 		private bool _showHeader = true;
 
-		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsDesignMode();
+		// 阶段 5：DesignTimeHelper 提供 IsInDesignMode()（非 IsDesignMode()）。
+	private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		public double HeaderHeight
 		{

@@ -34,7 +34,8 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowLogo = false;
 			InitializeComponent();
 			base.TitleTextBlock.FontSize = 18.0;
-			base.TitleTextBlock.Foreground = Application.Current.TryFindResource("ForegroundBrush.WindowsInfo") as Brush;
+			// 阶段 5：Avalonia 11 无 Application.TryFindResource(key) 单参重载，改用 Theme.FindBrush 门面。
+			base.TitleTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("ForegroundBrush.WindowsInfo");
 			base.DialogTitle = Translate("User information");
 			base.DialogDescription = Translate("Set up your user name and email address. This information will be associated with your Git commits.");
 			base.SubmitButtonTitle = Translate("Finish");

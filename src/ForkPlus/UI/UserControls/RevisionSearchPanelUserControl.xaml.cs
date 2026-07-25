@@ -71,7 +71,9 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			base.Loaded += delegate
 			{
-				TranslateTransform.Y = 0.0 - SearchPanelHeight;
+				// 阶段 5：原 x:Name="TranslateTransform" 与 Avalonia.Media.TranslateTransform 类型名冲突，
+				// 编译器解析到类型而非字段。改 XAML 字段名为 PanelTranslateTransform 避开冲突。
+				PanelTranslateTransform.Y = 0.0 - SearchPanelHeight;
 				SearchPanelPlaceholder.Height = 0.0;
 			};
 			// 阶段 4.5：WPF PreviewKeyDown → Avalonia KeyDown（无 Preview 变体，参考 FilterTextBox）。
@@ -94,7 +96,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void ShowSearchBar()
 		{
-			if (SlidingPanelHelper.ShowPanel(SearchPanelPlaceholder, TranslateTransform, SearchPanelHeight))
+			if (SlidingPanelHelper.ShowPanel(SearchPanelPlaceholder, PanelTranslateTransform, SearchPanelHeight))
 			{
 				SearchTextBox.Clear();
 			}
@@ -107,7 +109,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (IsSearchBarVisible)
 			{
-				SlidingPanelHelper.HidePanel(SearchPanelPlaceholder, TranslateTransform, SearchPanelHeight);
+				SlidingPanelHelper.HidePanel(SearchPanelPlaceholder, PanelTranslateTransform, SearchPanelHeight);
 				this.Closed?.Invoke(this, EventArgs.Empty);
 				IsSearchBarVisible = false;
 			}
