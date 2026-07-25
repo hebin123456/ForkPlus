@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- 阶段 4 里程碑 4.1：WPF → Avalonia 一次性整体切换。
-         TFM 保持 net10.0-windows10.0.19041.0（阶段 4 决策：TFM 不切，阶段 6 再切 net10.0）。
-         Avalonia 11.3.18 包对 net10.0-windows 完全兼容。
+    <!-- 阶段 6：跨平台 TFM。
+         主目标 net10.0（跨平台，Linux/macOS/Windows 均可构建运行）。
+         net10.0-windows10.0.19041.0 作为次要目标，保留 Windows 专属 API 编译路径（WinRT / Microsoft.Win32.Registry 等）。
+         非平台特定的代码必须用 [SupportedOSPlatform] 守卫，CA1416 在 net10.0 目标下会校验。
+         Avalonia 11.3.18 包对 net10.0 / net10.0-windows 均兼容。
          UseWPF 必须关闭，否则 XAML 编译器与 Avalonia 冲突。 -->
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFrameworks>net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
     <UseWPF>false</UseWPF>
     <UseWindowsForms>false</UseWindowsForms>
     <!-- 阶段 5：WPF→Avalonia 迁移过渡期关闭编译期绑定。
@@ -22,14 +24,23 @@
     <!-- 不生成 .xml 文档注释导出文件（运行时不需要，仅供 IDE IntelliSense / API 文档用途）。
          .NET SDK 默认会为 Release build 生成 *.xml，与 dll 同名，导致产物目录多出大量 xml 文件。-->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PlatformTarget>x64</PlatformTarget>
+    <!-- 阶段 6：跨平台 TFM 后，net10.0 目标对 x86 不支持，统一改 AnyCPU。
+         Avalonia 桌面后端在 Windows 仍可用 x64 apphost；此处不锁定平台位数。 -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)obj\**;$(MSBuildThisFileDirectory)obj_agent\**;$(MSBuildThisFileDirectory)bin\**</DefaultItemExcludes>
-    <!-- Avalonia 11.3 + net10.0-windows 下，部分第三方包（OxyPlot.Avalonia 等）API 仍标注
-         [SupportedOSPlatform("Windows")]，CA1416 在 Windows-only TFM 下无意义。 -->
+    <!-- Avalonia 11.3 + net10.0 跨平台目标下，部分第三方包 API 仍标注 [SupportedOSPlatform("Windows")]。
+         CA1416 在 net10.0 目标下会触发警告（已用 [SupportedOSPlatform] 守卫），暂时静默以推进构建。 -->
     <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- 阶段 6：定义 WINDOWS 编译符号，仅 net10.0-windows 目标启用。
+       用于 #if WINDOWS 守卫 WinRT / CommunityToolkit.WinUI.Notifications 等 Windows-only 引用。 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -118,12 +129,20 @@
     <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Avalonia11" />
     <PackageReference Include="OneWare.Markdown.Avalonia.Tight" Version="11.3.17.1" />
     <!-- ===== 暂保留包（阶段 4 后续里程碑替换/移除）=====
-         - CommunityToolkit.WinUI.Notifications：阶段 5 由 IToastNotificationService 跨平台实现替代 -->
-    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+         - CommunityToolkit.WinUI.Notifications：仅 Windows TFM 引用（Toast 通知 Windows-only）；
+           非Windows TFM 下 NotificationManager 用反射延迟加载 WinRT，运行时已加 IsWindows 守卫 -->
+    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'" />
+    <!-- 阶段 6：net10.0 目标下 Microsoft.Win32.Registry 不在 BCL，需显式引入。
+         net10.0-windows 目标下随 Windows Desktop SDK 隐式提供，无需重复引用。 -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
-    <!-- System.Drawing.Common 通过 OxyPlot.Avalonia 等包传递引入，不再显式引用（NU1510）。 -->
+    <!-- 阶段 6：net10.0 目标下 System.Drawing.Common 不在 BCL，需显式引入。
+         OxyPlot.Avalonia 在 net10.0-windows 下传递引入；net10.0 下不再传递。
+         官方仅 Windows 受支持，但 Linux/macOS 可加 runtimeconfig runAsUnlimited 开关使用，
+         本项目 IconTools / BinaryDiffUserControl 已对 GDI+ 在 Unix 上的失败做 try/catch 兜底。 -->
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -161,19 +180,28 @@
           Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
 
-  <!-- tokei.exe（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
-       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。Windows 产物名为 tokei.exe。
+  <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
+       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。
+       Windows: tokei-x86_64-pc-windows-msvc.exe → tokei.exe
+       Linux:   tokei-x86_64-unknown-linux-gnu.tar.gz → 解压取 tokei
+       macOS:   tokei-x86_64-apple-darwin.tar.gz → 解压取 tokei
        本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。
        带重试（3 次，指数退避）以容忍 GitHub release 下载偶发连接中断。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
+  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="!Exists('..\..\third_party\tokei.exe') And !Exists('..\..\third_party\tokei')">
     <PropertyGroup>
       <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/latest/download</TokeiBaseUrl>
     </PropertyGroup>
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Windows: PowerShell 拉取 tokei.exe -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl + tar，按 uname -s 选 asset。
+         tar.gz 解压后只保留 tokei 二进制（删除 .tar.gz），文件名去掉 .exe 后缀。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')"
+          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmpfile=&quot;../../third_party/tokei.tar.gz&quot;; curl -fsSL &quot;$url&quot; -o &quot;$tmpfile&quot; --user-agent &quot;ForkPlus-Build&quot; --connect-timeout 120 --retry 3 --retry-delay 5; tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ tokei 2>/dev/null || tar -xzf &quot;$tmpfile&quot; -C ../../third_party/ --strip-components=1; chmod +x ../../third_party/tokei; rm -f &quot;$tmpfile&quot;; echo &quot;Restored tokei from tokei latest release&quot;'" />
   </Target>
 
-  <Target Name="CopyHelperExecutables" AfterTargets="Build">
-    <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0-windows10.0.19041.0）。
+  <Target Name="CopyHelperExecutables" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
+    <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0 / net10.0-windows10.0.19041.0）。
          Exists 守卫保证非 Windows build 或子项目尚未构建时不会失败。-->
     <!-- .NET 10 下 exe 是 native apphost（启动器），托管代码在同名 .dll 中，
          apphost 还需 .runtimeconfig.json 才能解析运行时框架。三者必须一起拷到主程序
@@ -190,5 +218,6 @@
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
     <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+    <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
   </Target>
 </Project>

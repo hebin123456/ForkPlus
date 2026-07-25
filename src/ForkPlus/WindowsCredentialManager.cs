@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace ForkPlus
 {
+	// 阶段 5：凭据管理跨平台化。
+	// Windows: 仍使用 advapi32 CredRead/CredWrite/CredDelete（CredEnumerate）。
+	// Unix:    回退到本地文件存储 ~/.local/share/ForkPlus/credentials/<hash>.json
+	//          （无 OS 钥匙串集成，仅作为开发期降级；生产可后续接入 libsecret / Keychain）。
+	// P/Invoke 全部加 [SupportedOSPlatform("windows")]，运行时按 OperatingSystem.IsWindows() 分支。
 	public static class WindowsCredentialManager
 	{
 		private enum CredentialPersistence : uint
@@ -102,6 +109,16 @@ namespace ForkPlus
 
 		public static Credential ReadCredential(string applicationName)
 		{
+			if (OperatingSystem.IsWindows())
+			{
+				return ReadCredentialWindows(applicationName);
+			}
+			return ReadCredentialUnix(applicationName);
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static Credential ReadCredentialWindows(string applicationName)
+		{
 			if (CredRead(applicationName, CredentialType.Generic, 0, out var credentialPtr))
 			{
 				using (CriticalCredentialHandle criticalCredentialHandle = new CriticalCredentialHandle(credentialPtr))
@@ -110,6 +127,32 @@ namespace ForkPlus
 				}
 			}
 			return null;
+		}
+
+		// 阶段 5：Unix 平台凭据降级到本地文件。
+		// 文件路径 ~/.local/share/ForkPlus/credentials/<sha256(applicationName)>.json
+		// 仅存明文（无钥匙串加密），仅供开发期使用；生产应接入 libsecret / Keychain。
+		private static Credential ReadCredentialUnix(string applicationName)
+		{
+			try
+			{
+				string file = GetCredentialFilePath(applicationName);
+				if (!File.Exists(file))
+				{
+					return null;
+				}
+				string[] lines = File.ReadAllLines(file);
+				if (lines.Length < 2)
+				{
+					return null;
+				}
+				return new Credential(CredentialType.Generic, applicationName, lines[0], lines[1]);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to read credential '" + applicationName + "' from unix store", ex);
+				return null;
+			}
 		}
 
 		private static Credential ReadCredential(CREDENTIAL credential)
@@ -125,6 +168,16 @@ namespace ForkPlus
 		}
 
 		public static int WriteCredential(string applicationName, string userName, string secret)
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return WriteCredentialWindows(applicationName, userName, secret);
+			}
+			return WriteCredentialUnix(applicationName, userName, secret);
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static int WriteCredentialWindows(string applicationName, string userName, string secret)
 		{
 			if (Encoding.Unicode.GetBytes(secret).Length > 512)
 			{
@@ -153,12 +206,68 @@ namespace ForkPlus
 			throw new Exception($"CredWrite failed with the error code {lastWin32Error}.");
 		}
 
+		private static int WriteCredentialUnix(string applicationName, string userName, string secret)
+		{
+			try
+			{
+				string file = GetCredentialFilePath(applicationName);
+				Directory.CreateDirectory(Path.GetDirectoryName(file));
+				// 文件权限 0600：仅 owner 可读写
+				File.WriteAllLines(file, new[] { userName ?? Environment.UserName, secret });
+				try
+				{
+					if (!OperatingSystem.IsWindows())
+					{
+						File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+					}
+				}
+				catch
+				{
+					// SetUnixFileMode 在旧 .NET 或不支持平台时忽略
+				}
+				return 0;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to write credential '" + applicationName + "' to unix store", ex);
+				return -1;
+			}
+		}
+
 		public static bool RemoveCredential(string key)
 		{
-			return CredDelete(key, CredentialType.Generic, 0);
+			if (OperatingSystem.IsWindows())
+			{
+				return CredDelete(key, CredentialType.Generic, 0);
+			}
+			try
+			{
+				string file = GetCredentialFilePath(key);
+				if (File.Exists(file))
+				{
+					File.Delete(file);
+					return true;
+				}
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to remove credential '" + key + "' from unix store", ex);
+				return false;
+			}
 		}
 
 		public static IReadOnlyList<Credential> EnumerateCrendentials()
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return EnumerateCredentialsWindows();
+			}
+			return EnumerateCredentialsUnix();
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static IReadOnlyList<Credential> EnumerateCredentialsWindows()
 		{
 			List<Credential> list = new List<Credential>();
 			if (CredEnumerate(null, 0, out var count, out var pCredentials))
@@ -173,19 +282,83 @@ namespace ForkPlus
 			throw new Win32Exception(Marshal.GetLastWin32Error());
 		}
 
+		private static IReadOnlyList<Credential> EnumerateCredentialsUnix()
+		{
+			List<Credential> list = new List<Credential>();
+			try
+			{
+				string dir = GetCredentialStoreDirectory();
+				if (!Directory.Exists(dir))
+				{
+					return list;
+				}
+				foreach (string file in Directory.EnumerateFiles(dir))
+				{
+					try
+					{
+						string[] lines = File.ReadAllLines(file);
+						if (lines.Length >= 2)
+						{
+							list.Add(new Credential(CredentialType.Generic, Path.GetFileNameWithoutExtension(file), lines[0], lines[1]));
+						}
+					}
+					catch
+					{
+						// 跳过损坏文件
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to enumerate credentials from unix store", ex);
+			}
+			return list;
+		}
+
+		private static string GetCredentialStoreDirectory()
+		{
+			string baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			if (string.IsNullOrEmpty(baseDir))
+			{
+				// Unix 上 LocalApplicationData 通常为 ~/.local/share；fallback 到 ~/.forkplus
+				baseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".forkplus");
+			}
+			return Path.Combine(baseDir, "ForkPlus", "credentials");
+		}
+
+		private static string GetCredentialFilePath(string applicationName)
+		{
+			// 用 applicationName 的 SHA-256 hash 作文件名，避免路径非法字符
+			using (var sha = System.Security.Cryptography.SHA256.Create())
+			{
+				byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(applicationName));
+				StringBuilder sb = new StringBuilder(64);
+				foreach (byte b in hash)
+				{
+					sb.Append(b.ToString("x2"));
+				}
+				return Path.Combine(GetCredentialStoreDirectory(), sb.ToString() + ".cred");
+			}
+		}
+
 		[DllImport("Advapi32.dll", CharSet = CharSet.Unicode, EntryPoint = "CredReadW", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
 
 		[DllImport("Advapi32.dll", CharSet = CharSet.Unicode, EntryPoint = "CredWriteW", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool CredWrite([In] ref CREDENTIAL userCredential, [In] uint flags);
 
 		[DllImport("Advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool CredEnumerate(string filter, int flag, out int count, out IntPtr pCredentials);
 
 		[DllImport("Advapi32.dll", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool CredFree([In] IntPtr cred);
 
 		[DllImport("Advapi32.dll", CharSet = CharSet.Unicode, EntryPoint = "CredDeleteW", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool CredDelete(string target, CredentialType type, int reservedFlag);
 	}
 }

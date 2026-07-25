@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace ForkPlus.Services.Wpf
@@ -7,6 +8,7 @@ namespace ForkPlus.Services.Wpf
 	/// <summary>
 	/// Windows 平台的 <see cref="IFileAssociationService"/> 实现，
 	/// 封装 <c>Shlwapi.dll!AssocQueryString</c> P/Invoke。
+	/// 阶段 5：非 Windows 平台返回 null/false（无文件关联查询能力）。
 	/// </summary>
 	public class WindowsFileAssociationService : IFileAssociationService
 	{
@@ -60,6 +62,7 @@ namespace ForkPlus.Services.Wpf
 		}
 
 		[DllImport("Shlwapi.dll", CharSet = CharSet.Unicode)]
+		[SupportedOSPlatform("windows")]
 		private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [System.Runtime.InteropServices.Out] StringBuilder pszOut, ref uint pcchOut);
 
 		public string GetAssociatedExecutable(string extension)
@@ -68,19 +71,14 @@ namespace ForkPlus.Services.Wpf
 			{
 				return null;
 			}
+			// 阶段 5：非 Windows 平台无文件关联查询 API（Linux/macOS 的 mime 类型查询走不同机制）。
+			if (!OperatingSystem.IsWindows())
+			{
+				return null;
+			}
 			try
 			{
-				uint pcchOut = 0u;
-				if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, null, ref pcchOut) != 1)
-				{
-					return null;
-				}
-				StringBuilder sb = new StringBuilder((int)pcchOut);
-				if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, sb, ref pcchOut) != 0)
-				{
-					return null;
-				}
-				return sb.ToString();
+				return GetAssociatedExecutableWindows(extension);
 			}
 			catch (System.Exception ex)
 			{
@@ -89,11 +87,32 @@ namespace ForkPlus.Services.Wpf
 			}
 		}
 
+		[SupportedOSPlatform("windows")]
+		private static string GetAssociatedExecutableWindows(string extension)
+		{
+			uint pcchOut = 0u;
+			if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, null, ref pcchOut) != 1)
+			{
+				return null;
+			}
+			StringBuilder sb = new StringBuilder((int)pcchOut);
+			if (AssocQueryString(AssocF.None, AssocStr.Executable, extension, null, sb, ref pcchOut) != 0)
+			{
+				return null;
+			}
+			return sb.ToString();
+		}
+
 		public bool IsEditorAvailable(string extension)
 		{
 			if (string.IsNullOrEmpty(extension))
 			{
 				return false;
+			}
+			// 阶段 5：非 Windows 平台无法判断编辑器可用性，保守返回 true 让 UI 提供默认编辑器入口。
+			if (!OperatingSystem.IsWindows())
+			{
+				return true;
 			}
 			string executable = GetAssociatedExecutable(extension);
 			if (string.IsNullOrEmpty(executable))

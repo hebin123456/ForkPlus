@@ -126,8 +126,10 @@ namespace ForkPlus
 			{
 				Log.Warn("Failed to normalize path for comparison '" + path + "': " + ex.Message);
 			}
-			normalizedPath = Normalize(normalizedPath).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-			return normalizedPath.Split(new char[2] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+			normalizedPath = Normalize(normalizedPath).Trim('\\', '/');
+			// 阶段 6：跨平台兼容。Normalize 把 / 统一成 \，但 Split 必须同时按 \ 和 / 分割，
+			// 否则在 Linux/macOS 上 Path.DirectorySeparatorChar 是 /，无法分割 \ 分隔的路径。
+			return normalizedPath.Split(new char[2] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
 		}
 	}
 }

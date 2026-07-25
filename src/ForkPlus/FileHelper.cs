@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace ForkPlus
 {
@@ -83,21 +84,43 @@ namespace ForkPlus
 			return false;
 		}
 
+		// 阶段 5：跨平台"在文件管理器中显示"。
+		// Windows: explorer.exe /select,<path>
+		// Linux:   xdg-open <containing_dir>（xdg-open 不支持 /select 选中，仅打开所在目录）
+		// macOS:   open -R <path>（-R 表示在 Finder 中显示并选中）
 		public static void OpenInWindowsExplorer(string absolutePath)
 		{
 			try
 			{
-				if (File.Exists(absolutePath))
-			{
-				// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
-				// 会忽略 /select 直接打开"文档"库而非选中目标文件。
-				string arguments = "/select,\"" + absolutePath + "\"";
-				Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
-			}
-			else if (Directory.Exists(absolutePath))
-			{
-				Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
-			}
+				if (OperatingSystem.IsWindows())
+				{
+					if (File.Exists(absolutePath))
+					{
+						// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
+						// 会忽略 /select 直接打开"文档"库而非选中目标文件。
+						string arguments = "/select,\"" + absolutePath + "\"";
+						Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
+					}
+					else if (Directory.Exists(absolutePath))
+					{
+						Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
+					}
+				}
+				else if (OperatingSystem.IsMacOS())
+				{
+					// macOS: open -R 在 Finder 中选中文件/目录
+					Process.Start(new ProcessStartInfo("open", "-R \"" + absolutePath + "\"") { UseShellExecute = false });
+				}
+				else if (OperatingSystem.IsLinux())
+				{
+					// Linux: xdg-open 仅能打开所在目录，无法选中目标文件
+					string dir = File.Exists(absolutePath) ? Path.GetDirectoryName(absolutePath)
+						: (Directory.Exists(absolutePath) ? absolutePath : null);
+					if (dir != null)
+					{
+						Process.Start(new ProcessStartInfo("xdg-open", "\"" + dir + "\"") { UseShellExecute = false });
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -114,7 +137,25 @@ namespace ForkPlus
 			}
 			try
 			{
-				MoveFileEx(tempFileName, filePath, MoveFileFlags.ReplaceExisting | MoveFileFlags.CopyAllowed | MoveFileFlags.WriteThrough);
+				// 阶段 5：原子写跨平台化。
+				// Windows: Kernel32!MoveFileEx(MOVEFILE_REPLACE_EXISTING) 支持跨卷原子替换
+				// Unix:    File.Move 在同卷内原子，跨卷回退到 File.Replace（.NET 7+ 已跨平台支持）
+				if (OperatingSystem.IsWindows())
+				{
+					MoveFileEx(tempFileName, filePath, MoveFileFlags.ReplaceExisting | MoveFileFlags.CopyAllowed | MoveFileFlags.WriteThrough);
+				}
+				else
+				{
+					// Unix 下 File.Move 在同文件系统内原子；目标已存在时需先 File.Replace
+					if (File.Exists(filePath))
+					{
+						File.Replace(tempFileName, filePath, destinationBackupFileName: null);
+					}
+					else
+					{
+						File.Move(tempFileName, filePath);
+					}
+				}
 			}
 			catch (Exception)
 			{
@@ -124,6 +165,7 @@ namespace ForkPlus
 		}
 
 		[DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern bool MoveFileEx([In] string lpExistingFileName, [In] string lpNewFileName, [In] MoveFileFlags dwFlags);
 	}
 }

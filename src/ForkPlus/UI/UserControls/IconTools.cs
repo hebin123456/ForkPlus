@@ -10,12 +10,15 @@
 //   → CreateBitmapFromIcon(icon)：System.Drawing.Icon.ToBitmap() 得 GDI+ Bitmap，
 //     PNG 编码入 MemoryStream，再由 Avalonia.Media.Imaging.Bitmap(stream) 加载
 // - BitmapSource.Freeze() → 移除（Avalonia Bitmap 构造后即不可变）
-// 注：Icon / shell32 / user32 P/Invoke 仍为 Windows-only，跨平台替代见阶段 5（phase5-platform-crossplatform.md）。
+// 阶段 5：跨平台化。Windows 走 shell32 SHGetFileInfo；非 Windows 平台无等价 API，返回 null（UI 调用方需兜底）。
+// System.Drawing.Common 在非 Windows 平台靠 OxyPlot.Avalonia 等包传递引入，但官方仅 Windows 受支持，
+// GDI+ Icon/Bitmap 在 Unix 上可能抛 PlatformNotSupportedException，已加 try/catch 兜底。
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Avalonia.Media;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
@@ -26,9 +29,11 @@ namespace ForkPlus.UI.UserControls
 		private class NativeMethods
 		{
 			[DllImport("shell32.dll")]
+			[SupportedOSPlatform("windows")]
 			public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbSizeFileInfo, ShellIconSize uFlags);
 
 			[DllImport("user32.dll", CharSet = CharSet.Auto)]
+			[SupportedOSPlatform("windows")]
 			public static extern bool DestroyIcon(IntPtr handle);
 		}
 
@@ -74,7 +79,28 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		// 阶段 5：非 Windows 平台返回 null（调用方 UI 应使用文本/通用图标兜底）。
+		// GDI+ Icon 在 Unix 上可能抛 PlatformNotSupportedException，全部 try/catch 兜底。
+		[Null]
 		public static Icon GetIconForFile(string filename, ShellIconSize size)
+		{
+			if (!OperatingSystem.IsWindows())
+			{
+				return null;
+			}
+			try
+			{
+				return GetIconForFileWindows(filename, size);
+			}
+			catch (Exception ex)
+			{
+				Log.Debug("GetIconForFile failed on non-Windows or GDI+ unavailable: " + ex.Message);
+				return null;
+			}
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static Icon GetIconForFileWindows(string filename, ShellIconSize size)
 		{
 			SHFILEINFO psfi = default(SHFILEINFO);
 			NativeMethods.SHGetFileInfo(filename, 0u, ref psfi, (uint)Marshal.SizeOf(psfi), size);
@@ -142,6 +168,11 @@ namespace ForkPlus.UI.UserControls
 			if (!File.Exists(filePath))
 			{
 				return imageSource;
+			}
+			if (!OperatingSystem.IsWindows())
+			{
+				// 阶段 5：非 Windows 平台无系统图标 API，返回 null（调用方兜底显示通用图标）。
+				return null;
 			}
 			try
 			{

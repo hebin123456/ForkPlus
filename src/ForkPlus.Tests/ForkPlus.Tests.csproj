@@ -1,14 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- 引用 ForkPlus 主工程，必须使用 windows TFM（WPF）。与主工程对齐 19041。-->
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <!-- 阶段 6：测试工程跨平台化，与主工程对齐双 TFM。
+         UseWPF 已关闭（主工程不再依赖 WPF）。net10.0-windows10.0.19041.0 目标保留 Windows 专属测试。-->
+    <TargetFrameworks>net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <UseWPF>false</UseWPF>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- 阶段 6：仅 net10.0-windows 目标定义 WINDOWS 编译符号（与主工程一致）。 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,7 +58,7 @@
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $out='..\..\third_party\tokei.exe'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $cargo = Get-Command cargo -ErrorAction SilentlyContinue; if(-not $cargo){ throw &quot;tokei.exe not found at $out and cargo not on PATH. Install Rust (https://rustup.rs) and re-run, or manually build tokei from https://github.com/XAMPPRocky/tokei and place the executable at $out.&quot; }; $root='..\..\third_party\.tokei-install'; if(Test-Path $root){ Remove-Item $root -Recurse -Force }; Write-Host 'Building tokei via cargo install (first run may take a few minutes)...'; &amp; cargo install tokei --version 14.0.0 --locked --root $root --no-track; if($LASTEXITCODE -ne 0){ throw 'cargo install tokei failed with exit code ' + $LASTEXITCODE }; $built = Join-Path $root 'bin\tokei.exe'; if(-not (Test-Path $built)){ throw &quot;tokei.exe not found at $built after cargo install&quot; }; Move-Item $built $out -Force; Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue; Write-Host &quot;Built and installed tokei.exe to $out&quot;&quot;" />
   </Target>
 
-  <Target Name="CopyHelperExecutables" AfterTargets="Build">
+  <Target Name="CopyHelperExecutables" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
     <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM。Exists 守卫保证非 Windows
          build 或子项目尚未构建时不会失败。
          .NET 10 下 .exe 是 native apphost，托管代码在同名 .dll 中：

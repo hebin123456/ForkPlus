@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -64,10 +65,16 @@ namespace ForkPlus
 		private class NativeMethods
 		{
 			[DllImport("shell32.dll", SetLastError = true)]
+			[SupportedOSPlatform("windows")]
 			private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
 
 			public static void SetAppUserModelID(string appUserModelID)
 			{
+				// 阶段 5：AppUserModelID 仅 Windows 任务栏分组需要，非 Windows 平台无意义，直接跳过。
+				if (!OperatingSystem.IsWindows())
+				{
+					return;
+				}
 				try
 				{
 					SetCurrentProcessExplicitAppUserModelID(appUserModelID);

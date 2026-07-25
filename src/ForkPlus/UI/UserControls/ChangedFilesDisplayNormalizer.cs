@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -263,9 +264,11 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern SafeFileHandle CreateFile(string fileName, uint desiredAccess, uint shareMode, IntPtr securityAttributes, uint creationDisposition, uint flagsAndAttributes, IntPtr templateFile);
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern uint GetFinalPathNameByHandle(SafeFileHandle file, StringBuilder filePath, uint filePathLength, uint flags);
 
 		[Null]
@@ -281,36 +284,64 @@ namespace ForkPlus.UI.UserControls
 				{
 					return null;
 				}
-				const uint fileShareReadWriteDelete = 0x00000001 | 0x00000002 | 0x00000004;
-				const uint openExisting = 3;
-				const uint fileFlagBackupSemantics = 0x02000000;
-				using (SafeFileHandle handle = CreateFile(path, 0, fileShareReadWriteDelete, IntPtr.Zero, openExisting, fileFlagBackupSemantics, IntPtr.Zero))
+				// 阶段 5：跨平台 reparse point 解析。
+				// Windows: 走 CreateFile + GetFinalPathNameByHandle（解析符号链接/junction 目标）
+				// Unix:    用 Mono.Unix 或 System.IO.Path.ResolveSymbolicLink（.NET 7+）；此处用 File.ResolveLinkTarget（.NET 7+）
+				if (OperatingSystem.IsWindows())
 				{
-					if (handle.IsInvalid)
-					{
-						return null;
-					}
-					StringBuilder buffer = new StringBuilder(1024);
-					uint length = GetFinalPathNameByHandle(handle, buffer, (uint)buffer.Capacity, 0);
-					if (length == 0)
-					{
-						return null;
-					}
-					if (length >= buffer.Capacity)
-					{
-						buffer = new StringBuilder((int)length + 1);
-						length = GetFinalPathNameByHandle(handle, buffer, (uint)buffer.Capacity, 0);
-						if (length == 0)
-						{
-							return null;
-						}
-					}
-					return NormalizeWin32FinalPath(buffer.ToString());
+					return TryResolveReparsePointTargetWindows(path);
 				}
+				return TryResolveReparsePointTargetUnix(path);
 			}
 			catch (Exception ex)
 			{
 				Log.Debug("Failed to resolve reparse point target for '" + path + "': " + ex);
+				return null;
+			}
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static string TryResolveReparsePointTargetWindows(string path)
+		{
+			const uint fileShareReadWriteDelete = 0x00000001 | 0x00000002 | 0x00000004;
+			const uint openExisting = 3;
+			const uint fileFlagBackupSemantics = 0x02000000;
+			using (SafeFileHandle handle = CreateFile(path, 0, fileShareReadWriteDelete, IntPtr.Zero, openExisting, fileFlagBackupSemantics, IntPtr.Zero))
+			{
+				if (handle.IsInvalid)
+				{
+					return null;
+				}
+				StringBuilder buffer = new StringBuilder(1024);
+				uint length = GetFinalPathNameByHandle(handle, buffer, (uint)buffer.Capacity, 0);
+				if (length == 0)
+				{
+					return null;
+				}
+				if (length >= buffer.Capacity)
+				{
+					buffer = new StringBuilder((int)length + 1);
+					length = GetFinalPathNameByHandle(handle, buffer, (uint)buffer.Capacity, 0);
+					if (length == 0)
+					{
+						return null;
+					}
+				}
+				return NormalizeWin32FinalPath(buffer.ToString());
+			}
+		}
+
+		// 阶段 5：Unix 平台符号链接解析。
+		// .NET 7+ 提供 File.ResolveLinkTarget(path, returnFinalTarget: true)，跨平台支持。
+		private static string TryResolveReparsePointTargetUnix(string path)
+		{
+			try
+			{
+				FileSystemInfo? target = File.ResolveLinkTarget(path, returnFinalTarget: true);
+				return target?.FullName;
+			}
+			catch
+			{
 				return null;
 			}
 		}

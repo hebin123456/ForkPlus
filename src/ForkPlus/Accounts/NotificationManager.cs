@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+#if WINDOWS
 using CommunityToolkit.WinUI.Notifications;
+#endif
 using ForkPlus.Jobs;
 using ForkPlus.Services;
 using ForkPlus.Utils.Http;
@@ -81,7 +83,20 @@ namespace ForkPlus.Accounts
 
 		public NotificationManager()
 		{
-			ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+			// 阶段 5：ToastNotificationManagerCompat 是 Windows-only，非 Windows 平台跳过注册。
+#if WINDOWS
+			if (OperatingSystem.IsWindows())
+			{
+				try
+				{
+					ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to subscribe ToastNotificationManagerCompat.OnActivated", ex);
+				}
+			}
+#endif
 			if (Services.ServiceLocator.Timer != null)
 			{
 				Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
@@ -171,6 +186,7 @@ namespace ForkPlus.Accounts
 			Refresh();
 		}
 
+#if WINDOWS
 		private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
 		{
 			Log.Info("Activated toast notification");
@@ -202,6 +218,7 @@ namespace ForkPlus.Accounts
 				}
 			});
 		}
+#endif
 
 		private void UnsetUnread(string notificationId)
 		{
@@ -238,14 +255,40 @@ namespace ForkPlus.Accounts
 				Services.ServiceLocator.Toast.Show(xmlString);
 				return;
 			}
-			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）
+			// 阶段 5：WinRT Toast 仅 Windows 平台可用，非 Windows 平台静默降级（仅记日志）。
+			if (!OperatingSystem.IsWindows())
+			{
+				Log.Info("Toast notification skipped on non-Windows platform");
+				return;
+			}
+			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）。
+			// 用反射延迟加载 WinRT 类型，避免在非 Windows 平台编译/加载时引发 TypeLoadException。
 			try
 			{
-				Windows.Data.Xml.Dom.XmlDocument document = new Windows.Data.Xml.Dom.XmlDocument();
-				document.LoadXml(xmlString);
-				Windows.UI.Notifications.ToastNotifier notifier = Windows.UI.Notifications.ToastNotificationManager.GetDefault().CreateToastNotifier("com.squirrel.ForkPlus.ForkPlus");
-				Windows.UI.Notifications.ToastNotification notification = new Windows.UI.Notifications.ToastNotification(document);
-				notifier.Show(notification);
+				Type xmlDocType = Type.GetType("Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType=WindowsRuntime", throwOnError: false);
+				if (xmlDocType == null)
+				{
+					Log.Info("WinRT XmlDocument unavailable, toast notification skipped");
+					return;
+				}
+				object document = Activator.CreateInstance(xmlDocType);
+				xmlDocType.GetMethod("LoadXml")?.Invoke(document, new object[] { xmlString });
+
+				Type managerType = Type.GetType("Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType=WindowsRuntime", throwOnError: false);
+				if (managerType == null)
+				{
+					return;
+				}
+				object defaultObj = managerType.GetProperty("Default")?.GetValue(null);
+				object notifier = managerType.GetMethod("CreateToastNotifier", new[] { typeof(string) })?.Invoke(defaultObj, new object[] { "com.squirrel.ForkPlus.ForkPlus" });
+
+				Type toastType = Type.GetType("Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType=WindowsRuntime", throwOnError: false);
+				if (toastType == null)
+				{
+					return;
+				}
+				object notification = Activator.CreateInstance(toastType, document);
+				notifier.GetType().GetMethod("Show")?.Invoke(notifier, new[] { notification });
 			}
 			catch (Exception ex)
 			{

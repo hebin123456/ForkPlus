@@ -19,9 +19,14 @@ _ReSharper*/
 # Scratch / migration helper scripts (not part of source tree)
 tmp/
 
-# biturbo.dll 不再提交，构建期从 Biturbo 仓库最新 release 拉取
+# 原生库不再提交，构建期从 Biturbo/tokei 仓库最新 release 按平台拉取
+# Windows: biturbo.dll / tokei.exe
+# Linux:   libbiturbo.so / tokei
+# macOS:   libbiturbo.dylib / tokei
 third_party/biturbo.dll
-
-# tokei.exe 不再提交，缺失时用 cargo install 从源码编译（tokei 上游不发布预编译二进制）
+third_party/libbiturbo.so
+third_party/libbiturbo.dylib
 third_party/tokei.exe
+third_party/tokei
+third_party/tokei.tar.gz
 third_party/.tokei-install/

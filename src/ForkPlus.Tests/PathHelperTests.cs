@@ -61,7 +61,12 @@ namespace ForkPlus.Tests
 		[Fact]
 		public void FindFirstDifferentComponent_ReturnsFirstDifferingComponent()
 		{
-			var result = PathHelper.FindFirstDifferentComponent("C:\\repo\\src\\file.cs", "C:\\repo\\src\\other.cs");
+			// 阶段 6：用平台无关的相对路径，避免 Path.GetFullPath 在 Linux/macOS 上
+			// 把 Windows 风格路径（C:\\...）当作相对路径解析导致测试失败。
+			string path1 = Path.Combine("repo", "src", "file.cs");
+			string path2 = Path.Combine("repo", "src", "other.cs");
+
+			var result = PathHelper.FindFirstDifferentComponent(path1, path2);
 
 			Assert.Equal("file.cs", result.Item1);
 			Assert.Equal("other.cs", result.Item2);

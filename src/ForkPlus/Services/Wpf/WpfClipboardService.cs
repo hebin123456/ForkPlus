@@ -12,6 +12,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -111,15 +112,35 @@ namespace ForkPlus.Services.Wpf
 		}
 
 		[DllImport("user32.dll", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern IntPtr GetOpenClipboardWindow();
 
 		[DllImport("user32.dll", SetLastError = true)]
+		[SupportedOSPlatform("windows")]
 		private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
+		// 阶段 5：剪贴板锁诊断仅 Windows 平台可用；非 Windows 平台直接返回 null。
 		private static Process GetProcessLockingClipboard()
 		{
+			if (!OperatingSystem.IsWindows())
+			{
+				return null;
+			}
+			return GetProcessLockingClipboardWindows();
+		}
+
+		[SupportedOSPlatform("windows")]
+		private static Process GetProcessLockingClipboardWindows()
+		{
 			GetWindowThreadProcessId(GetOpenClipboardWindow(), out var lpdwProcessId);
-			return Process.GetProcessById(lpdwProcessId);
+			try
+			{
+				return Process.GetProcessById(lpdwProcessId);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 	}
 }
