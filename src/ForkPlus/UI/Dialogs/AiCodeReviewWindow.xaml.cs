@@ -845,17 +845,15 @@ namespace ForkPlus.UI.Dialogs
 			}
 			AiReviewSuggestion suggestion = _suggestions[index];
 			try
+		{
+			AiSuggestionPreviewWindow window = new AiSuggestionPreviewWindow(_repositoryUserControl, suggestion.File, suggestion.Comment, suggestion.OldText, suggestion.NewText);
+			window.SetOwner(this);
+			if (window.ShowDialog().GetValueOrDefault())
 			{
-				AiSuggestionPreviewWindow window = new AiSuggestionPreviewWindow(_repositoryUserControl, suggestion.File, suggestion.Comment, suggestion.OldText, suggestion.NewText)
-				{
-					Owner = this
-				};
-				if (window.ShowDialog().GetValueOrDefault())
-				{
-					ApplySuggestion(index);
-				}
+				ApplySuggestion(index);
 			}
-			catch (Exception ex)
+		}
+		catch (Exception ex)
 			{
 				Log.Warn("Failed to show AI suggestion preview", ex);
 				ShowError(ex.Message);

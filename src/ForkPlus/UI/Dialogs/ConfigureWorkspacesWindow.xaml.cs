@@ -125,11 +125,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RemoveWorkspace(WorkspaceViewModel workspace)
 		{
-			if (new MessageBoxWindow("Do you want to delete the workspace '" + workspace.Name + "'?", "You can't undo this action", "Delete", "Cancel", showCancelButton: true, 500.0)
+			MessageBoxWindow messageBoxWindow = new MessageBoxWindow("Do you want to delete the workspace '" + workspace.Name + "'?", "You can't undo this action", "Delete", "Cancel", showCancelButton: true, 500.0)
 			{
-				Owner = this,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+			};
+			messageBoxWindow.SetOwner(this);
+			if (messageBoxWindow.ShowDialog().GetValueOrDefault())
 			{
 				int num = _workspaceViewModels.IndexOf(workspace);
 				_workspaceViewModels.Remove(workspace);

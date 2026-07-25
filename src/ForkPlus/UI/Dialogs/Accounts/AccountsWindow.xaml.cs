@@ -37,10 +37,9 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private void AddAccountButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (new AddAccountWindow
-			{
-				Owner = this
-			}.ShowDialog().GetValueOrDefault())
+			AddAccountWindow addAccountWindow = new AddAccountWindow();
+			addAccountWindow.SetOwner(this);
+			if (addAccountWindow.ShowDialog().GetValueOrDefault())
 			{
 				Activate();
 			}
@@ -52,15 +51,17 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		private void LogOutButton_Click(object sender, RoutedEventArgs e)
 		{
 			Account account = (AccountsListBox.SelectedItem as AccountViewModel)?.Account;
-			if (account != null && new MessageBoxWindow(string.Format(Translate("Log out of {0}?"), account.ServerUrl), Translate("You can always log back in at any time"), Translate("Log out"), Translate("Cancel"), showCancelButton: true, 500.0)
+			if (account != null)
 			{
-				Owner = this
-			}.ShowDialog().GetValueOrDefault())
-			{
-				AccountManager.Current.LogOut(account);
-				Refresh();
-				AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault();
-				MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes);
+				MessageBoxWindow messageBoxWindow = new MessageBoxWindow(string.Format(Translate("Log out of {0}?"), account.ServerUrl), Translate("You can always log back in at any time"), Translate("Log out"), Translate("Cancel"), showCancelButton: true, 500.0);
+				messageBoxWindow.SetOwner(this);
+				if (messageBoxWindow.ShowDialog().GetValueOrDefault())
+				{
+					AccountManager.Current.LogOut(account);
+					Refresh();
+					AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault();
+					MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes);
+				}
 			}
 		}
 

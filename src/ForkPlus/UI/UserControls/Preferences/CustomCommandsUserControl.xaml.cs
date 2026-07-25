@@ -191,11 +191,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void RemoveCustomCommandButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (CustomCommandsListBox.SelectedItem is CustomCommandViewModel item && new MessageBoxWindow("Do you want to remove the selected custom command?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
+			MessageBoxWindow messageBoxWindow = new MessageBoxWindow("Do you want to remove the selected custom command?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
 			{
-				Owner = _parentWindow,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+			};
+			messageBoxWindow.SetOwner(_parentWindow);
+			if (CustomCommandsListBox.SelectedItem is CustomCommandViewModel item && messageBoxWindow.ShowDialog().GetValueOrDefault())
 			{
 				int num = _customCommandViewModels.IndexOf(item) - 1;
 				_customCommandViewModels.Remove(item);

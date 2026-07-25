@@ -117,11 +117,12 @@ namespace ForkPlus.UI.UserControls
 
 		private void RemoveToolButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (ToolsListBox.SelectedItem is ExternalToolViewModel item && new MessageBoxWindow("Do you want to remove the selected external tool?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
+			MessageBoxWindow messageBoxWindow = new MessageBoxWindow("Do you want to remove the selected external tool?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
 			{
-				Owner = _parentWindow,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+			};
+			messageBoxWindow.SetOwner(_parentWindow);
+			if (ToolsListBox.SelectedItem is ExternalToolViewModel item && messageBoxWindow.ShowDialog().GetValueOrDefault())
 			{
 				int num = _toolViewModels.IndexOf(item) - 1;
 				_toolViewModels.Remove(item);

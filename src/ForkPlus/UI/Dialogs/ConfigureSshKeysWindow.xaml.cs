@@ -134,10 +134,9 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (gitCommandResult.Result == ValidateSshKeyShellCommand.Result.IncorrectPassphrase)
 			{
-				return new SshPassphraseWindow(keyName, keyPath)
-				{
-					Owner = this
-				}.ShowDialog().GetValueOrDefault();
+				SshPassphraseWindow sshPassphraseWindow = new SshPassphraseWindow(keyName, keyPath);
+				sshPassphraseWindow.SetOwner(this);
+				return sshPassphraseWindow.ShowDialog().GetValueOrDefault();
 			}
 			return false;
 		}

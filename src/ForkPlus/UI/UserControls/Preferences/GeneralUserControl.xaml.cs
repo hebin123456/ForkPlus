@@ -347,11 +347,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void RemoveSrcDir(string path)
 		{
-			if (new MessageBoxWindow("Do you want to remove the selected source directory?", "Fork will not look for repositories in this folder automatically", "Remove", "Cancel", showCancelButton: true, 550.0)
+			MessageBoxWindow messageBoxWindow = new MessageBoxWindow("Do you want to remove the selected source directory?", "Fork will not look for repositories in this folder automatically", "Remove", "Cancel", showCancelButton: true, 550.0)
 			{
-				Owner = _parentWindow,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+			};
+			messageBoxWindow.SetOwner(_parentWindow);
+			if (messageBoxWindow.ShowDialog().GetValueOrDefault())
 			{
 				List<string> list = new List<string>(RepositoryManager.Instance.SourceDirs);
 				list.Remove(path);
