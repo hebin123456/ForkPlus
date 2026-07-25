@@ -58,14 +58,8 @@ namespace ForkPlus.UI.Controls.Editor
 				}
 			}
 
-			protected override int VisualChildrenCount => (_child != null) ? 1 : 0;
-
-			protected override IVisual GetVisualChild(int index)
-			{
-				if (index != 0 || _child == null)
-					throw new ArgumentOutOfRangeException(nameof(index));
-				return _child;
-			}
+			// 阶段 4.5：Avalonia 11 无 VisualChildrenCount/GetVisualChild 虚方法 override。
+			// Visual 子项通过 AddVisualChild 添加后由框架自动管理。
 
 			protected override Size MeasureOverride(Size constraint)
 			{

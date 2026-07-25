@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 

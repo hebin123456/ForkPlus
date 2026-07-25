@@ -38,6 +38,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using DependencyObject = Avalonia.AvaloniaObject;
+using FrameworkElement = Avalonia.StyledElement;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -1445,18 +1447,20 @@ namespace ForkPlus.UI.UserControls
 			{
 				return null;
 			}
-			int count = VisualTreeHelper.GetChildrenCount(root);
-			for (int i = 0; i < count; i++)
+			// 阶段 4.5：VisualTreeHelper.GetChildrenCount/GetChild → Visual.GetVisualChildren()
+			if (root is Visual visualRoot)
 			{
-				DependencyObject child = VisualTreeHelper.GetChild(root, i);
-				if (child is T typed && typed.Name == name)
+				foreach (DependencyObject child in visualRoot.GetVisualChildren().OfType<DependencyObject>())
 				{
-					return typed;
-				}
-				T found = FindVisualDescendantByName<T>(child, name);
-				if (found != null)
-				{
-					return found;
+					if (child is T typed && typed.Name == name)
+					{
+						return typed;
+					}
+					T found = FindVisualDescendantByName<T>(child, name);
+					if (found != null)
+					{
+						return found;
+					}
 				}
 			}
 			return null;

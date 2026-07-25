@@ -16,6 +16,10 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using DependencyObject = Avalonia.AvaloniaObject;
+using DependencyPropertyChangedEventArgs = Avalonia.AvaloniaPropertyChangedEventArgs;
+using FrameworkElement = Avalonia.StyledElement;
+using Avalonia.VisualTree;
 using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -426,14 +430,8 @@ namespace ForkPlus
 
 		private static void RegisterScrollViewerContentTemplateGuard()
 		{
-			try
-			{
-				ContentControl.ContentTemplateProperty.OverrideMetadata(typeof(ScrollViewer), new FrameworkPropertyMetadata(null, ScrollViewerContentTemplateChanged));
-				ContentPresenter.ContentTemplateProperty.OverrideMetadata(typeof(ScrollContentPresenter), new FrameworkPropertyMetadata(null, ScrollContentPresenterContentTemplateChanged));
-			}
-			catch (InvalidOperationException)
-			{
-			}
+			// 阶段 4.5：Avalonia 无 OverrideMetadata/FrameworkPropertyMetadata 机制。
+			// 原 WPF 通过属性元数据回调在 ContentTemplate 被设置时清空，Avalonia 不需要此 guard。
 		}
 
 		private static void ScrollViewerContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -487,11 +485,6 @@ namespace ForkPlus
 				parts.Add("DataContext=" + (frameworkElement.DataContext?.GetType().FullName ?? "<null>"));
 				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkElement.TemplatedParent));
 			}
-			else if (dependencyObject is FrameworkContentElement frameworkContentElement)
-			{
-				parts.Add("DataContext=" + (frameworkContentElement.DataContext?.GetType().FullName ?? "<null>"));
-				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkContentElement.TemplatedParent));
-			}
 			return string.Join(", ", parts);
 		}
 
@@ -521,14 +514,15 @@ namespace ForkPlus
 			{
 				return null;
 			}
-			DependencyObject parent = LogicalTreeHelper.GetParent(child);
-			if (parent != null)
+			// 阶段 4.5：Avalonia 无 LogicalTreeHelper/VisualTreeHelper 静态类，
+			// 用 ILogical.LogicalParent / IVisual.GetVisualParent() 扩展方法替代。
+			if (child is ILogical logical && logical.LogicalParent is DependencyObject logicalParent)
 			{
-				return parent;
+				return logicalParent;
 			}
-			if (child is Visual || child is Visual3D)
+			if (child is IVisual visual)
 			{
-				return VisualTreeHelper.GetParent(child);
+				return visual.GetVisualParent() as DependencyObject;
 			}
 			return null;
 		}
@@ -568,10 +562,13 @@ namespace ForkPlus
 				{
 					parts.Add("Scroll-like ContentPresenter " + VisualTreeAttachmentHelper.Describe(contentPresenter) + ", Content=" + DescribeObject(contentPresenter.Content) + ", ContentTemplate=" + DescribeObject(contentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(contentPresenter, 8));
 				}
-				int childrenCount = VisualTreeHelper.GetChildrenCount(item);
-				for (int i = 0; i < childrenCount; i++)
+				// 阶段 4.5：VisualTreeHelper.GetChildrenCount/GetChild → IVisual.GetVisualChildren() 扩展方法。
+				if (item is IVisual visualItem)
 				{
-					CollectScrollContentPresenterDiagnostics(VisualTreeHelper.GetChild(item, i), parts, depth + 1);
+					foreach (DependencyObject child in visualItem.GetVisualChildren().OfType<DependencyObject>())
+					{
+						CollectScrollContentPresenterDiagnostics(child, parts, depth + 1);
+					}
 				}
 			}
 			catch (Exception ex)

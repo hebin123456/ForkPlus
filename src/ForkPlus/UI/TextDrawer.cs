@@ -18,7 +18,7 @@ namespace ForkPlus.UI
 	//   GlyphAdvances, GlyphOffsets, BaselineOrigin。
 	public class TextDrawer
 	{
-		private readonly GlyphTypeface _glyphTypeface;
+		private readonly Avalonia.Media.GlyphTypeface _glyphTypeface;
 
 		private readonly double _emSize;
 

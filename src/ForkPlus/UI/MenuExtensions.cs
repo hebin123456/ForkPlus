@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Interactivity;
-using Avalonia.Input;
 
 namespace ForkPlus.UI
 {

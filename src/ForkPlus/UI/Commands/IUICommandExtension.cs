@@ -1,9 +1,9 @@
 using System;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Interactivity;
-using Avalonia.Input;
 
 namespace ForkPlus.UI.Commands
 {

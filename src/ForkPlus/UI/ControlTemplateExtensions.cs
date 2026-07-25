@@ -10,7 +10,7 @@ namespace ForkPlus.UI
 		// Avalonia TemplatedControl.GetTemplateChildren() 遍历按 Name 匹配。Avalonia 无
 		// ControlTemplate.FindName 等价物；标准做法是在 OnApplyTemplate 中用 e.NameScope.Find
 		// 缓存模板部件，此处保留帮助器以最小化调用方改动。
-		public static bool TryFindName<T>(this ControlTemplate source, string name, TemplatedControl templatedParent, out T match) where T : class
+		public static bool TryFindName<T>(this IControlTemplate source, string name, TemplatedControl templatedParent, out T match) where T : class
 		{
 			match = null;
 			foreach (Control child in templatedParent.GetTemplateChildren())

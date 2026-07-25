@@ -50,17 +50,14 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override int VisualChildrenCount => (Child != null) ? 1 : 0;
+		// 阶段 4.5：Avalonia 11 无 VisualChildrenCount/GetVisualChild 虚方法 override。
+		// Visual 子项通过 AddVisualChild 添加后由框架自动管理。
+		// 保留 Child 属性供 MeasureOverride/ArrangeOverride 使用。
 
 		// 阶段 4.5：原 WPF Adorner 构造接收被装饰元素；Avalonia 无 Adorner 基类，
 		// 保留参数以兼容调用方，但不再持有引用（布局由调用方挂载位置决定）。
 		public RewordAdorner(Control adornernedElement)
 		{
-		}
-
-		protected override Visual GetVisualChild(int index)
-		{
-			return Child;
 		}
 
 		protected override Size MeasureOverride(Size constraint)
