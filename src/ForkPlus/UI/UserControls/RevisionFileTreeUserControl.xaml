@@ -2,7 +2,7 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RevisionFileTreeViewItem}}" DataType="userControls:RevisionFileTreeViewItem">
+      <DataTemplate DataType="userControls:RevisionFileTreeViewItem">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />

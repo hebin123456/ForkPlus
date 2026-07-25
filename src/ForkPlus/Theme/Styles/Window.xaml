@@ -127,7 +127,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowRoundedButton" Selector="Button" BasedOn="{StaticResource WindowButton}">
+  <Style x:Key="WindowRoundedButton" Selector="Button">
     <Setter Property="Margin" Value="0,2,6,0" />
     <Setter Property="Height" Value="24" />
     <Setter Property="Template">
@@ -177,7 +177,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="WindowRoundedToggleButton" Selector="ToggleButton" BasedOn="{StaticResource WindowToggleButton}">
+  <Style x:Key="WindowRoundedToggleButton" Selector="ToggleButton">
     <Setter Property="Margin" Value="0,2,6,0" />
     <Setter Property="Height" Value="24" />
     <Setter Property="Template">
@@ -227,7 +227,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type ui:CustomWindow}" Selector="ui:CustomWindow">
+  <Style x:Key="CustomWindow" Selector="ui:CustomWindow">
     <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource Window.Foreground}" />
@@ -301,7 +301,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ForkPlusDialogWindowStyle" Selector="dialogs:ForkPlusDialogWindow" BasedOn="{StaticResource {x:Type ui:CustomWindow}}">
+  <Style x:Key="ForkPlusDialogWindowStyle" Selector="dialogs:ForkPlusDialogWindow">
     <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
     <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
     <Setter Property="Template">

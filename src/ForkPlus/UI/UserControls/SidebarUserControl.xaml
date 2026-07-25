@@ -2,11 +2,11 @@
 <UserControl xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SidebarUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <Style x:Key="SidebarFilterButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" />
-      <Style x:Key="SidebarHideButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" />
-      <Style x:Key="SidebarPinButton" TargetType="{x:Type Button}" BasedOn="{StaticResource BranchOptionButton}" />
-      <Style x:Key="SidebarTruncateHyperlink" TargetType="{x:Type Hyperlink}" BasedOn="{StaticResource GrayUnderlineHyperlinkStyle}" />
-      <Style x:Key="SidebarTagTitleTextBlock" TargetType="{x:Type TextBlock}" />
+      <Style x:Key="SidebarFilterButton" Selector="Button" />
+      <Style x:Key="SidebarHideButton" Selector="Button" />
+      <Style x:Key="SidebarPinButton" Selector="Button" />
+      <Style x:Key="SidebarTruncateHyperlink" Selector="Hyperlink" />
+      <Style x:Key="SidebarTagTitleTextBlock" Selector="TextBlock" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid Background="{DynamicResource Sidebar.Static.Background}">

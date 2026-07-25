@@ -70,7 +70,7 @@
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
         <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" MouseDoubleClick="RevisionListView_MouseDoubleClick" BorderThickness="0" SelectionMode="Extended" x:Name="RevisionListView"><dialogs:MultiselectionListView.ItemContainerStyle>
-            <Style TargetType="{x:Type dialogs:MultiselectionListViewItem}" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+            <Style Selector="dialogs:MultiselectionListViewItem">
 <Setter Property="Height" Value="22" />
               <Setter Property="HorizontalContentAlignment" Value="Stretch" />
               <Setter Property="VerticalContentAlignment" Value="Stretch" />

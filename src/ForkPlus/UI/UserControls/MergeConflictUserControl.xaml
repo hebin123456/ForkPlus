@@ -11,7 +11,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-      <Style x:Key="MergeConflictCheckBox" TargetType="{x:Type CheckBox}">
+      <Style x:Key="MergeConflictCheckBox" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -102,7 +102,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <Style x:Key="MergeConflictCheckBoxInverted" TargetType="{x:Type CheckBox}">
+      <Style x:Key="MergeConflictCheckBoxInverted" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -193,7 +193,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:MergeRevisionViewModel}}" DataType="userControls:MergeRevisionViewModel">
+      <DataTemplate DataType="userControls:MergeRevisionViewModel">
         <Grid Height="20">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22" />
@@ -205,9 +205,9 @@
             <controls:AvatarImage.UserIdentity>
               <Binding Path="Author" />
             </controls:AvatarImage.UserIdentity>
-            <controls:AvatarImage.ToolTip>
+            <controls:AvatarImage.ToolTip.Tip>
               <Binding Path="FullCredentialsString" />
-            </controls:AvatarImage.ToolTip>
+            </controls:AvatarImage.ToolTip.Tip>
           </controls:AvatarImage>
           <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
             <Button.Content>
@@ -223,13 +223,13 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <TextBlock.ToolTip.Tip>
               <Binding Path="AuthorDate" />
-            </TextBlock.ToolTip>
+            </TextBlock.ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <Style x:Key="MergeListBoxItemContainerStyle" TargetType="{x:Type ListBoxItem}">
+      <Style x:Key="MergeListBoxItemContainerStyle" Selector="ListBoxItem">
         <Setter Property="Focusable" Value="False" />
 <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="0" />

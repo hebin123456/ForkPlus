@@ -14,7 +14,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-      <Style x:Key="QuestionmarkTextBlock" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HintTextBlock}">
+      <Style x:Key="QuestionmarkTextBlock" Selector="TextBlock">
         <Setter Property="ToolTip">
           <Setter.Value>
             <ToolTip>
@@ -33,7 +33,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <Style x:Key="NameQuestionmarkTextBlock" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HintTextBlock}">
+      <Style x:Key="NameQuestionmarkTextBlock" Selector="TextBlock">
         <Setter Property="ToolTip">
           <Setter.Value>
             <ToolTip>
@@ -230,9 +230,9 @@
           </StackPanel>
           <TextBlock Grid.Row="5" Grid.Column="0" Text="Action:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ProcessActionTypeTextBlock" />
           <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,3" HorizontalAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
-            <Button.ToolTip>
+            <Button.ToolTip.Tip>
               <Binding Path="SelectedItem.ActionViewModel.ToolTip" />
-            </Button.ToolTip>
+            </Button.ToolTip.Tip>
             <DockPanel>
               <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
               <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium" x:Name="ProcessActionButtonTitleTextBlock">
@@ -323,9 +323,9 @@
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
-                <Button.ToolTip>
+                <Button.ToolTip.Tip>
                   <Binding Path="SelectedItem.UIViewModel.Button1ActionViewModel.ToolTip" />
-                </Button.ToolTip>
+                </Button.ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
@@ -366,9 +366,9 @@
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
-                <Button.ToolTip>
+                <Button.ToolTip.Tip>
                   <Binding Path="SelectedItem.UIViewModel.Button2ActionViewModel.ToolTip" />
-                </Button.ToolTip>
+                </Button.ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">

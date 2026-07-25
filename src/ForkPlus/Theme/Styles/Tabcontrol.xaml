@@ -59,7 +59,7 @@
         <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
           <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource {x:Type TabItem}}" />
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
       </ResourceDictionary>
     </Style.Resources>
     <Setter Property="Padding" Value="2" />
@@ -168,7 +168,7 @@
       <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
     </Style>
   </Style>
-  <Style x:Key="{x:Type controls:ClosableTabControl}" Selector="controls:ClosableTabControl">
+  <Style x:Key="ClosableTabControl" Selector="controls:ClosableTabControl">
     <Setter Property="BorderThickness" Value="0,0,0,0" />
     <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Static.Background}" />
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
@@ -206,7 +206,7 @@
     </Setter>
   </Style>
   <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" ShadowDepth="4" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
-  <Style x:Key="{x:Type controls:ClosableTabItem}" Selector="controls:ClosableTabItem">
+  <Style x:Key="ClosableTabItem" Selector="controls:ClosableTabItem">
     <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
     <Setter Property="Padding" Value="2,0,2,0" />
     <Setter Property="Height" Value="24" />
@@ -314,7 +314,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Disabled.Border}" />
     </Style>
   </Style>
-  <Style x:Key="ModernTabControlTabItemStyle" Selector="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+  <Style x:Key="ModernTabControlTabItemStyle" Selector="TabItem">
 <Setter Property="Height" Value="30" />
     <Setter Property="Padding" Value="16,2" />
     <Setter Property="FontSize" Value="13" />
@@ -341,13 +341,13 @@
       <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
     </Style>
   </Style>
-  <Style x:Key="{x:Type controls:ModernTabControl}" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type TabControl}}">
+  <Style x:Key="ModernTabControl" Selector="controls:ModernTabControl">
     <Style.Resources>
       <ResourceDictionary>
         <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}" />
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
       </ResourceDictionary>
     </Style.Resources>
     <Setter Property="BorderThickness" Value="0,1,0,0" />
@@ -380,13 +380,13 @@
       <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
     </Style>
   </Style>
-  <Style x:Key="RepositoryManagerTabControl" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
+  <Style x:Key="RepositoryManagerTabControl" Selector="controls:ModernTabControl">
     <Style.Resources>
       <ResourceDictionary>
         <Style x:Key="{x:Type TabPanel}" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
-        <Style x:Key="{x:Type TabItem}" Selector="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
+        <Style x:Key="{x:Type TabItem}" Selector="TabItem">
           <Setter Property="FontSize" Value="14" />
         </Style>
       </ResourceDictionary>

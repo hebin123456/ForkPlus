@@ -20,9 +20,9 @@
             <controls:AvatarImage.UserIdentity>
               <Binding Path="Author" />
             </controls:AvatarImage.UserIdentity>
-            <controls:AvatarImage.ToolTip>
+            <controls:AvatarImage.ToolTip.Tip>
               <Binding Path="FullCredentials" />
-            </controls:AvatarImage.ToolTip>
+            </controls:AvatarImage.ToolTip.Tip>
           </controls:AvatarImage>
           <controls:AutoTooltipTextBlock Grid.Column="1" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" Padding="0,-2,0,0" FontSize="12">
             <controls:AutoTooltipTextBlock.Text>
@@ -33,22 +33,22 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <TextBlock.ToolTip.Tip>
               <Binding Path="AuthorDate" />
-            </TextBlock.ToolTip>
+            </TextBlock.ToolTip.Tip>
           </TextBlock>
           <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click">
             <Button.Content>
               <Binding Path="AbbreviatedSha" />
             </Button.Content>
-            <Button.ToolTip>
+            <Button.ToolTip.Tip>
               <Binding Path="ShaToolTip" />
-            </Button.ToolTip>
+            </Button.ToolTip.Tip>
           </Button>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click">
-            <Button.ToolTip>
+            <Button.ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip>
+            </Button.ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
         </Grid>

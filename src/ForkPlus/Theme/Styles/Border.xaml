@@ -38,7 +38,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TileBorderBrush}" />
     <Setter Property="Background" Value="{DynamicResource TileBackgroundBrush}" />
   </Style>
-  <Style x:Key="TileBorderDark" Selector="Border" BasedOn="{StaticResource TileBorder}">
+  <Style x:Key="TileBorderDark" Selector="Border">
     <Setter Property="Background" Value="{DynamicResource TileBackgroundBrushDark}" />
   </Style>
   <Style x:Key="PullPushBadge" Selector="Border">

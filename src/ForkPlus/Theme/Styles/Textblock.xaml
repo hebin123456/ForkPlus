@@ -68,7 +68,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="BugtrackerHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <Style x:Key="BugtrackerHyperlinkStyle" Selector="Hyperlink">
 <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
@@ -81,14 +81,14 @@
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
-  <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink">
 <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
       <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style>
   </Style>
-  <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink">
 <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
       <Setter.Value>
@@ -101,14 +101,14 @@
       <Setter Property="TextDecorations" Value="Underline" />
     </Style>
   </Style>
-  <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink">
 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
     <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
     <Style Selector="^:pointerover">
       <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style>
   </Style>
-  <Style x:Key="GrayUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource GrayHyperlinkStyle}">
+  <Style x:Key="GrayUnderlineHyperlinkStyle" Selector="Hyperlink">
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />

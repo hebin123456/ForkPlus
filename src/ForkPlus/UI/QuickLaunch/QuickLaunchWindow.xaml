@@ -20,7 +20,7 @@
   </ui:CustomWindow.Styles>
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <Style x:Key="QuickLaunchListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+      <Style x:Key="QuickLaunchListBoxItemStyle" Selector="ListBoxItem">
 <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate>
@@ -31,7 +31,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:CommandProviderItem}}" DataType="local:CommandProviderItem">
+      <DataTemplate DataType="local:CommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <!-- 阶段 4.5：原 DataTrigger (IsSelected=True -> IconImage.Source=SelectedIcon) 用堆叠 Image 实现。
                默认 Image 绑定 Icon，选中 Image 绑定 SelectedIcon，通过祖先 ListBoxItem.IsSelected 切换 IsVisible。 -->
@@ -58,7 +58,7 @@
           </controls:FuzzyHighlightableTextBlock>
         </DockPanel>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
+      <DataTemplate DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
             <TextBlock.Text>
@@ -67,7 +67,7 @@
           </TextBlock>
         </DockPanel>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:RepositoryInfoItem}}" DataType="local:RepositoryInfoItem">
+      <DataTemplate DataType="local:RepositoryInfoItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <Grid DockPanel.Dock="Left" Width="14" Height="14" VerticalAlignment="Bottom" Margin="0,0,4,4">
             <Image Width="14" Height="14" Source="{Binding Icon}" IsVisible="{Binding !IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" />

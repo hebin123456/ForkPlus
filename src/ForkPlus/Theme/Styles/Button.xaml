@@ -95,7 +95,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="InlineButton" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="InlineButton" Selector="Button">
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Height" Value="24" />
@@ -164,7 +164,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="InlineToggleButton" Selector="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+  <Style x:Key="InlineToggleButton" Selector="ToggleButton">
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Height" Value="24" />
@@ -189,10 +189,10 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:DropDownButton}" Selector="controls:DropDownButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+  <Style x:Key="DropDownButton" Selector="controls:DropDownButton">
     <Setter Property="ClickMode" Value="Press" />
   </Style>
-  <Style x:Key="{x:Type editorControl:FloatingButton}" Selector="editorControl:FloatingButton" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="FloatingButton" Selector="editorControl:FloatingButton">
     <Setter Property="Margin" Value="2,2,2,2" />
     <Setter Property="Padding" Value="8,0,8,0" />
     <Setter Property="Height" Value="22" />
@@ -239,7 +239,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="StashToolbarButtonStyle" Selector="controls:ToolbarButton" BasedOn="{StaticResource ToolbarButton}">
+  <Style x:Key="StashToolbarButtonStyle" Selector="controls:ToolbarButton">
     <Setter Property="CornerRadius" Value="3,0,0,3" />
     <!-- Converted from Style.Triggers DataTriggers (IsMouseOver/IsChecked bound to control's own state) -->
     <Style Selector="^:pointerover">
@@ -251,7 +251,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
     </Style>
   </Style>
-  <Style x:Key="BranchToolbarButtonStyle" Selector="controls:ToolbarButton" BasedOn="{StaticResource ToolbarButton}">
+  <Style x:Key="BranchToolbarButtonStyle" Selector="controls:ToolbarButton">
     <Setter Property="CornerRadius" Value="3,0,0,3" />
     <!-- Converted from Style.Triggers DataTriggers (IsMouseOver/IsChecked bound to control's own state) -->
     <Style Selector="^:pointerover">
@@ -305,7 +305,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="ToolbarDropdownButton" Selector="controls:ToolbarDropDownButton" BasedOn="{StaticResource ToolbarToggleButton}">
+  <Style x:Key="ToolbarDropdownButton" Selector="controls:ToolbarDropDownButton">
     <Setter Property="ClickMode" Value="Press" />
     <Setter Property="Template">
       <Setter.Value>
@@ -347,7 +347,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="StashToolbarDropdownButtonStyle" Selector="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
+  <Style x:Key="StashToolbarDropdownButtonStyle" Selector="ToggleButton">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
     <Setter Property="ClickMode" Value="Press" />
     <!-- Converted from Style.Triggers DataTrigger (IsMouseOver bound to control's own state) -->
@@ -356,7 +356,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
     </Style>
   </Style>
-  <Style x:Key="BranchToolbarDropdownButtonStyle" Selector="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
+  <Style x:Key="BranchToolbarDropdownButtonStyle" Selector="ToggleButton">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
     <Setter Property="ClickMode" Value="Press" />
     <!-- Converted from Style.Triggers DataTrigger (IsMouseOver bound to control's own state) -->
@@ -543,7 +543,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls:DropDownButton" BasedOn="{StaticResource CodeEditorHeaderToggleButtonStyle}">
+  <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls:DropDownButton">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -575,7 +575,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CodeEditorHeaderButtonStyle" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="CodeEditorHeaderButtonStyle" Selector="Button">
 <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Height" Value="16" />
     <Setter Property="Width" Value="16" />
@@ -648,13 +648,13 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="RevisionDetailsSwapButtonStyle" Selector="Button" BasedOn="{StaticResource TransparentButtonStyle}">
+  <Style x:Key="RevisionDetailsSwapButtonStyle" Selector="Button">
     <!-- Converted from Style.Triggers: IsEnabled=false -> :disabled -->
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.7" />
     </Style>
   </Style>
-  <Style x:Key="TextButtonStyle" Selector="Button" BasedOn="{StaticResource TransparentButtonStyle}">
+  <Style x:Key="TextButtonStyle" Selector="Button">
     <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Template">
       <Setter.Value>
@@ -676,7 +676,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="MultilineTextButtonStyle" Selector="Button" BasedOn="{StaticResource TransparentButtonStyle}">
+  <Style x:Key="MultilineTextButtonStyle" Selector="Button">
     <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Template">
       <Setter.Value>
@@ -700,11 +700,11 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="LfsTextButtonStyle" Selector="Button" BasedOn="{StaticResource TextButtonStyle}">
+  <Style x:Key="LfsTextButtonStyle" Selector="Button">
     <Setter Property="Height" Value="Auto" />
     <Setter Property="FontSize" Value="13" />
   </Style>
-  <Style x:Key="LfsImageButtonStyle" Selector="Button" BasedOn="{StaticResource TransparentButtonStyle}">
+  <Style x:Key="LfsImageButtonStyle" Selector="Button">
     <Setter Property="Width" Value="44" />
     <Setter Property="Height" Value="44" />
     <Setter Property="Template">
@@ -732,10 +732,10 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="CommitButtonVisibleDropdownStyle" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="CommitButtonVisibleDropdownStyle" Selector="Button">
     <Setter Property="CornerRadius" Value="3,0,0,3" />
   </Style>
-  <Style x:Key="CommitButtonHiddenDropdownStyle" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="CommitButtonHiddenDropdownStyle" Selector="Button">
     <Setter Property="CornerRadius" Value="3,3,3,3" />
   </Style>
   <Style x:Key="ArrowDropDownButtonStyle" Selector="ToggleButton">
@@ -785,7 +785,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:DateRangeButton}" Selector="controls:DateRangeButton">
+  <Style x:Key="DateRangeButton" Selector="controls:DateRangeButton">
 <Setter Property="BorderThickness" Value="0" />
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -893,7 +893,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="BrowseButtonStyle" Selector="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Style x:Key="BrowseButtonStyle" Selector="Button">
     <Setter Property="Margin" Value="2,0,0,0" />
     <Setter Property="Padding" Value="0,0,0,0" />
     <Setter Property="Height" Value="23.3" />

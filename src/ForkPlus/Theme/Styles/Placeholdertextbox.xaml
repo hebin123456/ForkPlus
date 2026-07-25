@@ -21,7 +21,7 @@
        pseudoclass) + TextBoxBase.IsSelectionActive (no pseudoclass) could not be converted -> NOTE comments.
      - ControlTemplate internal control tree and layout preserved. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="{x:Type controls:PlaceholderTextBox}" Selector="controls:PlaceholderTextBox">
+  <Style x:Key="PlaceholderTextBox" Selector="controls:PlaceholderTextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -90,7 +90,7 @@
     </Style.Triggers>
     -->
   </Style>
-  <Style x:Key="{x:Type controls:AutoCompleteTextBox}" Selector="controls:AutoCompleteTextBox">
+  <Style x:Key="AutoCompleteTextBox" Selector="controls:AutoCompleteTextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -160,7 +160,7 @@
     </Style.Triggers>
     -->
   </Style>
-  <Style x:Key="CommitPlaceholderTextBox" Selector="controls:PlaceholderTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
+  <Style x:Key="CommitPlaceholderTextBox" Selector="controls:PlaceholderTextBox">
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="CornerRadius" Value="3,3,0,0" />
@@ -199,7 +199,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:CommitDescriptionTextBox}" Selector="controls:CommitDescriptionTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
+  <Style x:Key="CommitDescriptionTextBox" Selector="controls:CommitDescriptionTextBox">
     <Setter Property="FontFamily" Value="Consolas" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Padding" Value="4,4,4,2" />
@@ -227,9 +227,9 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:ReferenceTextBox}" Selector="controls:ReferenceTextBox" BasedOn="{StaticResource {x:Type controls:AutoCompleteTextBox}}" />
-  <Style x:Key="{x:Type controls:SpellingPlaceholderTextBox}" Selector="controls:SpellingPlaceholderTextBox" BasedOn="{StaticResource {x:Type controls:AutoCompleteTextBox}}" />
-  <Style x:Key="SearchPanelPlaceholderTextBox" Selector="controls:PlaceholderTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
+  <Style x:Key="ReferenceTextBox" Selector="controls:ReferenceTextBox" />
+  <Style x:Key="SpellingPlaceholderTextBox" Selector="controls:SpellingPlaceholderTextBox" />
+  <Style x:Key="SearchPanelPlaceholderTextBox" Selector="controls:PlaceholderTextBox">
     <Setter Property="Height" Value="22" />
     <Setter Property="MinHeight" Value="22" />
     <Setter Property="Padding" Value="2,1,2,1" />
@@ -272,7 +272,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:FilterTextBox}" Selector="controls:FilterTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
+  <Style x:Key="FilterTextBox" Selector="controls:FilterTextBox">
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="controls:PlaceholderTextBox.Placeholder" Value="Filter" />
     <Setter Property="MinHeight" Value="22" />
@@ -305,9 +305,9 @@
               <ScrollViewer Grid.Column="1" Focusable="false" HorizontalScrollBarIsVisible="False" VerticalScrollBarIsVisible="False" Background="#00FFFFFF" x:Name="PART_ContentHost" />
               <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsVisible="False" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="1,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="placeholderElement" />
               <TextBlock Grid.Column="2" Text="?" Margin="4,-2,4,0" VerticalAlignment="Center" FontWeight="Medium" Foreground="{DynamicResource AccentBrush}" ToolTipService.ShowDuration="15000" x:Name="HintTextBlock">
-                <TextBlock.ToolTip>
+                <TextBlock.ToolTip.Tip>
                   <Binding Path="Hint"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:FilterTextBox}" /></Binding.RelativeSource></Binding>
-                </TextBlock.ToolTip>
+                </TextBlock.ToolTip.Tip>
               </TextBlock>
               <Button Grid.Column="3" Margin="0,0,2,0" Height="16" Width="16" Padding="0" BorderThickness="0" Background="#00FFFFFF" x:Name="PART_ClearButton">
                 <Image Source="{DynamicResource CancelSearchIcon}" Width="14" Height="14" VerticalAlignment="Center" />

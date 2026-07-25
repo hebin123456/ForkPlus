@@ -13,10 +13,10 @@
        ContentElement.*->*, Inline.*->*, ContentControl.*->*, ButtonBase.*->*, ToggleButton.*->*).
      - TemplateBinding paths stripped of class prefixes (Panel.Background->Background, etc.).
      - DataTemplate.Triggers (binding to view-model properties Pinned/FilterState/LocalBranch.IsActive/
-       Worktree.IsActive and ancestor TreeViewControlItem state) converted in phase 4.5 cleanup:
-       * Ancestor TreeViewControlItem state (:pointerover / :selected:focus-within) → top-level Style
+       Worktree.IsActive and ancestor TreeViewItem state) converted in phase 4.5 cleanup:
+       * Ancestor TreeViewItem state (:pointerover / :selected:focus-within) → top-level Style
          Selectors below (FilterButton/HideButton/PinButton visible on hover; primary Image.Source
-         switches to *SelectedIcon when selected+focused). TreeViewControlItem inherits ListBoxItem, so
+         switches to *SelectedIcon when selected+focused). TreeViewItem inherits ListBoxItem, so
          :selected ≡ WPF IsSelected=True, :pointerover ≡ IsMouseOver=True, :focus-within ≡ IsKeyboardFocusWithin=True.
        * LocalBranch.IsActive / Worktree.IsActive → TitleTextBlock.FontWeight via BoolToFontWeightConverter.
        * Simplification: composite conditions (Pinned+IsSelected+IsKeyboardFocusWithin,
@@ -24,7 +24,7 @@
          driven persistent button visibility is not implemented (buttons show on hover only);
          FilterButtonImage/HideButtonImage/PinButtonImage On/Off/Selected icon switching is not implemented. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="RepositoryTitleHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <Style x:Key="RepositoryTitleHyperlinkStyle" Selector="Hyperlink">
 <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -104,69 +104,69 @@
     </Setter>
   </Style>
   <!-- Phase 4.5 cleanup: 9 DataTemplate.Triggers blocks migrated to top-level Styles + bindings.
-       Strategy A (ancestor TreeViewControlItem state → top-level Style Selector):
+       Strategy A (ancestor TreeViewItem state → top-level Style Selector):
          :pointerover → FilterButton/HideButton/PinButton visible (default hidden via StyleSetter).
          :selected:focus-within → primary Image.Source switches to *SelectedIcon (default via StyleSetter).
        Strategy B (VM properties → direct binding + converter):
          LocalBranch.IsActive/Worktree.IsActive → TitleTextBlock.FontWeight (BoolToFontWeightConverter).
        Note: default Source/IsVisible moved out of DataTemplate attributes into StyleSetters so that
        :pointerover / :selected:focus-within StyleTriggers can override them (StyleTrigger > StyleSetter). -->
-  <Style Selector="TreeViewControlItem Button#FilterButton">
+  <Style Selector="controls:TreeViewControlItem Button#FilterButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="TreeViewControlItem:pointerover Button#FilterButton">
+  <Style Selector="controls:TreeViewControlItem:pointerover Button#FilterButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="TreeViewControlItem Button#HideButton">
+  <Style Selector="controls:TreeViewControlItem Button#HideButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="TreeViewControlItem:pointerover Button#HideButton">
+  <Style Selector="controls:TreeViewControlItem:pointerover Button#HideButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="TreeViewControlItem Button#PinButton">
+  <Style Selector="controls:TreeViewControlItem Button#PinButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="TreeViewControlItem:pointerover Button#PinButton">
+  <Style Selector="controls:TreeViewControlItem:pointerover Button#PinButton">
     <Setter Property="IsVisible" Value="True" />
   </Style>
-  <Style Selector="TreeViewControlItem Image#RemoteBranchImage">
+  <Style Selector="controls:TreeViewControlItem Image#RemoteBranchImage">
     <Setter Property="Source" Value="{DynamicResource BranchIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem:selected:focus-within Image#RemoteBranchImage">
+  <Style Selector="controls:TreeViewControlItem:selected:focus-within Image#RemoteBranchImage">
     <Setter Property="Source" Value="{DynamicResource BranchSelectedIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem Image#StashImage">
+  <Style Selector="controls:TreeViewControlItem Image#StashImage">
     <Setter Property="Source" Value="{DynamicResource SidebarStashIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem:selected:focus-within Image#StashImage">
+  <Style Selector="controls:TreeViewControlItem:selected:focus-within Image#StashImage">
     <Setter Property="Source" Value="{DynamicResource SidebarStashSelectedIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem Image#SubmoduleImage">
+  <Style Selector="controls:TreeViewControlItem Image#SubmoduleImage">
     <Setter Property="Source" Value="{DynamicResource SubmoduleIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem:selected:focus-within Image#SubmoduleImage">
+  <Style Selector="controls:TreeViewControlItem:selected:focus-within Image#SubmoduleImage">
     <Setter Property="Source" Value="{DynamicResource SubmoduleSelectedIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem Image#WorktreeImage">
+  <Style Selector="controls:TreeViewControlItem Image#WorktreeImage">
     <Setter Property="Source" Value="{DynamicResource WorktreeIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem:selected:focus-within Image#WorktreeImage">
+  <Style Selector="controls:TreeViewControlItem:selected:focus-within Image#WorktreeImage">
     <Setter Property="Source" Value="{DynamicResource WorktreeSelectedIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem Image#TagImage">
+  <Style Selector="controls:TreeViewControlItem Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagIcon}" />
   </Style>
-  <Style Selector="TreeViewControlItem:selected:focus-within Image#TagImage">
+  <Style Selector="controls:TreeViewControlItem:selected:focus-within Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagSelectedIcon}" />
   </Style>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="{x:Type ui:SidebarGroupItem}">
+  <DataTemplate DataType="{x:Type ui:SidebarGroupItem}">
     <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
       <TextBlock.Text>
         <Binding Path="Title" />
       </TextBlock.Text>
     </TextBlock>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="{x:Type ui:RemoteSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:RemoteSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -181,13 +181,13 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="{x:Type ui:FilterableRemoteSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:FilterableRemoteSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -204,25 +204,25 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
       <Button Grid.Column="2" x:Name="FilterButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="HideButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="{x:Type ui:FolderSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:FolderSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -236,7 +236,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="{x:Type ui:FilterableFolderSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:FilterableFolderSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="18" />
@@ -251,20 +251,20 @@
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="2" x:Name="FilterButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="HideButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="{x:Type ui:TruncateSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:TruncateSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -281,7 +281,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="{x:Type ui:TagSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:TagSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -297,26 +297,26 @@
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="2" x:Name="PinButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="FilterButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="HideButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource SearchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="{x:Type ui:RemoteBranchSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:RemoteBranchSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -330,31 +330,31 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
       <Button Grid.Column="2" x:Name="PinButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="FilterButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="HideButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="{x:Type ui:LocalBranchSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:LocalBranchSidebarItem}">
     <Grid HorizontalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -373,9 +373,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
       <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,2,0">
         <TextBlock.Text>
@@ -383,26 +383,26 @@
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="3" x:Name="PinButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="FilterButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="5" x:Name="HideButton">
-        <Button.ToolTip>
+        <Button.ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </Button.ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="{x:Type ui:StashSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:StashSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -413,13 +413,13 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="{x:Type ui:SubmoduleSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:SubmoduleSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -433,7 +433,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="{x:Type ui:WorktreeSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:WorktreeSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -444,13 +444,13 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="{x:Type ui:MainWorktreeSidebarItem}">
+  <DataTemplate DataType="{x:Type ui:MainWorktreeSidebarItem}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -461,9 +461,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <TextBlock.ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </TextBlock.ToolTip.Tip>
       </TextBlock>
     </Grid>
   </DataTemplate>

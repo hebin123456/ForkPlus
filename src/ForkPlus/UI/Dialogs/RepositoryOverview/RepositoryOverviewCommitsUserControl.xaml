@@ -12,7 +12,7 @@
         <ContextMenu />
       </ListBox.ContextMenu>
       <ListBox.ItemContainerStyle>
-        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemStyle}" />
+        <Style Selector="ListBoxItem" />
       </ListBox.ItemContainerStyle>
       <ListBox.ItemTemplate>
         <DataTemplate>
@@ -22,9 +22,9 @@
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
                 </controls:AvatarImage.UserIdentity>
-                <controls:AvatarImage.ToolTip>
+                <controls:AvatarImage.ToolTip.Tip>
                   <Binding Path="FullCredentialsString" />
-                </controls:AvatarImage.ToolTip>
+                </controls:AvatarImage.ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
             <TextBlock DockPanel.Dock="Right" Margin="4,0,0,2" VerticalAlignment="Bottom" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">

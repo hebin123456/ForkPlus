@@ -28,7 +28,7 @@
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
   <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
-  <Style x:Key="{x:Type editor:CodeEditor}" Selector="editor|CodeEditor">
+  <Style x:Key="CodeEditor" Selector="editor|CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
     <Setter Property="FontFamily" Value="Consolas" />
@@ -131,7 +131,7 @@
   <Style x:Key="{x:Type CheckBox}" Selector="CheckBox">
     <Setter Property="FontSize" Value="13" />
   </Style>
-  <Style x:Key="{x:Type controls:EditableTextBlock}" Selector="controls|EditableTextBlock">
+  <Style x:Key="EditableTextBlock" Selector="controls|EditableTextBlock">
     <Setter Property="Height" Value="22" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -158,7 +158,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:CommandTextBox}" Selector="controls|CommandTextBox">
+  <Style x:Key="CommandTextBox" Selector="controls|CommandTextBox">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Template">
       <Setter.Value>
@@ -179,7 +179,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:BindableGitPointView}" Selector="controls|BindableGitPointView">
+  <Style x:Key="BindableGitPointView" Selector="controls|BindableGitPointView">
     <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
   </Style>
   <Style x:Key="{x:Type ToolTip}" Selector="ToolTip">

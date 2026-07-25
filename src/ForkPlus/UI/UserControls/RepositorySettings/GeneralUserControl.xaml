@@ -2,11 +2,11 @@
      - Style TargetType="{x:Type ComboBoxItem}" → Selector="ComboBoxItem"
      - Style.Triggers DataTrigger 绑定 ItemType（用于渲染 Separator 分隔项）已在阶段 4.5 收尾迁移：
        ItemTemplate 内用堆叠控件 + EnumEqualsConverter 切换可见性（见下方 ComboBox.ItemTemplate）。
-       MainBranchComboBoxItemStyle 保留空壳（仅 BasedOn）以兼容 ItemContainerStyle 引用。 -->
+       MainBranchComboBoxItemStyle 保留空壳以兼容 ItemContainerStyle 引用。 -->
 <UserControl xmlns:RepositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositorySettings.GeneralUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <Style x:Key="MainBranchComboBoxItemStyle" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}" />
+      <Style x:Key="MainBranchComboBoxItemStyle" Selector="ComboBoxItem" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid Width="450">

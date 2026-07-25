@@ -86,7 +86,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItem.ItemsviewSelectedHover.Border}" />
     </Style>
   </Style>
-  <Style x:Key="SeparatorComboBoxItemStyle" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+  <Style x:Key="SeparatorComboBoxItemStyle" Selector="ComboBoxItem">
     <Setter Property="Height" Value="1" />
     <Setter Property="Template">
       <Setter.Value>
@@ -96,7 +96,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="SmallComboBoxItemStyle" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+  <Style x:Key="SmallComboBoxItemStyle" Selector="ComboBoxItem">
     <Setter Property="Height" Value="18" />
   </Style>
   <Style x:Key="ComboBoxToggleButton" Selector="ToggleButton">
@@ -362,7 +362,7 @@
          - MultiTrigger IsGrouping=true + VirtualizingPanel.IsVirtualizingWhenGrouping=false -> ScrollViewer.CanContentScroll=false
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->
   </ControlTemplate>
-  <Style x:Key="InteractiveRebaseComboBoxStyle" Selector="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+  <Style x:Key="InteractiveRebaseComboBoxStyle" Selector="ComboBox">
 <Setter Property="Padding" Value="4,2,4,1" />
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -371,7 +371,7 @@
     <Setter Property="Template" Value="{StaticResource InteractiveRebaseComboBoxTemplate}" />
     <Style.Resources>
       <ResourceDictionary>
-        <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        <Style x:Key="{x:Type ComboBoxItem}" Selector="ComboBoxItem">
 </Style>
       </ResourceDictionary>
     </Style.Resources>

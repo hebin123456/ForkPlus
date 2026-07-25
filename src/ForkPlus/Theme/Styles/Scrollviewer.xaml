@@ -368,5 +368,5 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="{x:Type controls:TouchpadAwareScrollViewer}" Selector="controls:TouchpadAwareScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}" />
+  <Style x:Key="TouchpadAwareScrollViewer" Selector="controls:TouchpadAwareScrollViewer" />
 </ResourceDictionary>

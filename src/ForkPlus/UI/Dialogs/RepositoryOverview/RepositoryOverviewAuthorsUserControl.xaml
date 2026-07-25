@@ -25,9 +25,9 @@
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
                 </controls:AvatarImage.UserIdentity>
-                <controls:AvatarImage.ToolTip>
+                <controls:AvatarImage.ToolTip.Tip>
                   <Binding Path="FullCredentialsString" />
-                </controls:AvatarImage.ToolTip>
+                </controls:AvatarImage.ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
             <controls:AutoTooltipTextBlock Grid.Row="0" Grid.Column="1" Margin="4,0,2,0" FontSize="13" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis">

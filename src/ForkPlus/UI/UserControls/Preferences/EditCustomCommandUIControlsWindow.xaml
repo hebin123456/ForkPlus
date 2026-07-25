@@ -34,7 +34,7 @@
         </Grid.RowDefinitions>
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox">
           <local:DragAndDropListBox.ItemContainerStyle>
-            <Style TargetType="{x:Type local:DragAndDropListBoxItem}" BasedOn="{StaticResource ListBoxItemWithBorderStyle}">
+            <Style Selector="local:DragAndDropListBoxItem">
               <Setter Property="AllowDrop" Value="True" />
             </Style>
           </local:DragAndDropListBox.ItemContainerStyle>

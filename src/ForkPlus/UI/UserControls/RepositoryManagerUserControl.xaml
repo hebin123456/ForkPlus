@@ -8,8 +8,8 @@
 <UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <Style x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="{x:Type controls:RepositoryManagerEditableTextBlock}" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" />
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSectionItem}}" DataType="userControls:RepositoryManagerSectionItem">
+      <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls:RepositoryManagerEditableTextBlock" />
+      <DataTemplate DataType="userControls:RepositoryManagerSectionItem">
         <Grid Height="22">
           <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
             <TextBlock.Text>
@@ -18,7 +18,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSourceDirectoryItem}}" DataType="userControls:RepositoryManagerSourceDirectoryItem">
+      <DataTemplate DataType="userControls:RepositoryManagerSourceDirectoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -29,13 +29,13 @@
             <TextBlock.Text>
               <Binding Path="Title" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <TextBlock.ToolTip.Tip>
               <Binding Path="SourceDir" />
-            </TextBlock.ToolTip>
+            </TextBlock.ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryFolderItem}}" DataType="userControls:RepositoryManagerRepositoryFolderItem">
+      <DataTemplate DataType="userControls:RepositoryManagerRepositoryFolderItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -49,7 +49,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryItem}}" DataType="userControls:RepositoryManagerRepositoryItem">
+      <DataTemplate DataType="userControls:RepositoryManagerRepositoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="18" />

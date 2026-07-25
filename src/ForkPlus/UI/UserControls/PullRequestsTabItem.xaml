@@ -7,7 +7,7 @@
 <TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.PullRequestsTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <TabItem.Resources>
     <ResourceDictionary>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:PullRequestItem}}" DataType="local:PullRequestItem">
+      <DataTemplate DataType="local:PullRequestItem">
         <Grid Height="50">
           <Grid.RowDefinitions>
             <RowDefinition Height="16" />
@@ -34,16 +34,16 @@
               <controls:AvatarImage.Url>
                 <Binding Path="AvatarUrl" />
               </controls:AvatarImage.Url>
-              <controls:AvatarImage.ToolTip>
+              <controls:AvatarImage.ToolTip.Tip>
                 <Binding Path="AvatarTooltip" />
-              </controls:AvatarImage.ToolTip>
+              </controls:AvatarImage.ToolTip.Tip>
             </controls:AvatarImage>
             <DockPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
               <Image DockPanel.Dock="Left" Margin="4,1,1,0" Width="12" Height="12" Source="{DynamicResource BranchIcon}" IsVisible="{Binding SourceBranch, Converter={controls:NullToVisibilityConverter}}" x:Name="SourceBranchIcon" />
               <Button Margin="0,0,2,0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="SourceBranchButton_Click" IsVisible="{Binding SourceBranch, Converter={controls:NullToVisibilityConverter}}" x:Name="SourceBranchButton">
-                <Button.ToolTip>
+                <Button.ToolTip.Tip>
                   <Binding Path="SourceBranch" />
-                </Button.ToolTip>
+                </Button.ToolTip.Tip>
                 <Button.Content>
                   <Binding Path="SourceBranch" />
                 </Button.Content>
@@ -54,9 +54,9 @@
             <Button.Content>
               <Binding Path="Title" />
             </Button.Content>
-            <Button.ToolTip>
+            <Button.ToolTip.Tip>
               <Binding Path="Title" />
-            </Button.ToolTip>
+            </Button.ToolTip.Tip>
           </Button>
         </Grid>
       </DataTemplate>

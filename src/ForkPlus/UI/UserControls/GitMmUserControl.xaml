@@ -2,7 +2,7 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.GitMmUserControl">
   <UserControl.Resources>
     <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" ShadowDepth="2" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
-    <Style x:Key="GitMmSubrepoTabItemStyle" TargetType="{x:Type TabItem}" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
+    <Style x:Key="GitMmSubrepoTabItemStyle" Selector="TabItem">
       <Setter Property="Height" Value="28" />
       <Setter Property="MinWidth" Value="140" />
       <Setter Property="Padding" Value="14,2" />
@@ -37,10 +37,10 @@
         </Setter.Value>
       </Setter>
     </Style>
-    <Style x:Key="GitMmSubrepoTabControlStyle" TargetType="{x:Type controls:ModernTabControl}" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
+    <Style x:Key="GitMmSubrepoTabControlStyle" Selector="controls:ModernTabControl">
       <Style.Resources>
         <ResourceDictionary>
-          <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />
+          <Style x:Key="{x:Type TabItem}" Selector="TabItem" />
         </ResourceDictionary>
       </Style.Resources>
       <Setter Property="Template">

@@ -9,7 +9,7 @@
     WindowStartupLocation="CenterOwner">
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <Style x:Key="ReflogListItemStyle" TargetType="{x:Type ListViewItem}">
+      <Style x:Key="ReflogListItemStyle" Selector="ListViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="6,3" />
       </Style>
