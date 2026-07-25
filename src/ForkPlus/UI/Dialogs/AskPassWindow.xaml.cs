@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using System;
 using System.IO;
 using ForkPlus.Git;
@@ -12,11 +13,14 @@ namespace ForkPlus.UI.Dialogs
 
 		private string _arguments;
 
+		private Avalonia.Controls.PasswordBox InputPasswordBox;
+
 		public string Result { get; private set; }
 
 		public AskPassWindow(string arguments, string repositoryPath)
 		{
 			InitializeComponent();
+			InputPasswordBox = this.FindControl<Avalonia.Controls.PasswordBox>("InputPasswordBox");
 			_askPassRequest = AskPassRequest.Parse(arguments);
 			_arguments = arguments;
 			RememberCheckBox.Hide();
