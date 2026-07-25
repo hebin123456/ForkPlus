@@ -28,19 +28,6 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid>
-            <VisualStateManager.VisualStateGroups>
-              <VisualStateGroup x:Name="SelectionStates">
-                <VisualStateGroup.Transitions>
-                  <VisualTransition GeneratedDuration="0" />
-                </VisualStateGroup.Transitions>
-                <VisualState x:Name="Unselected" />
-                <VisualState x:Name="Selected">
-                  <Storyboard>
-                    <DoubleAnimation Duration="0" To=".75" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="SelectedBackground" />
-                  </Storyboard>
-                </VisualState>
-              </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" CornerRadius="1" x:Name="SelectedBackground" />
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" CornerRadius="1" x:Name="Background" />
             <ContentPresenter Margin="5,1,5,1" Foreground="{DynamicResource Calendar.ButtonNormalForeground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
@@ -48,15 +35,13 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Replicates VSM "Selected" state: SelectedBackground Opacity -> 0.75 -->
-      <Style Selector="^:selected /template/ Rectangle#SelectedBackground">
-        <Setter Property="Opacity" Value="0.75" />
-      </Style>
-      <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
-        <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
-      </Style>
-    </Style.Styles>
+    <!-- Replicates VSM "Selected" state: SelectedBackground Opacity -> 0.75 -->
+    <Style Selector="^:selected /template/ Rectangle#SelectedBackground">
+      <Setter Property="Opacity" Value="0.75" />
+    </Style>
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+      <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+    </Style>
   </Style>
   <Style x:Key="CalendarDayButtonStyle" Selector="CalendarDayButton">
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -74,23 +59,15 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:selected /template/ Border#Border">
-        <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
-      </Style>
-      <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
-        <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:selected /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
+    </Style>
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+      <Setter Property="Foreground" Value="{DynamicResource Calendar.ButtonInactiveForeground}" />
+    </Style>
   </Style>
   <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
-      <VisualStateManager.VisualStateGroups>
-        <VisualStateGroup x:Name="CommonStates">
-          <VisualState x:Name="Normal" />
-          <VisualState x:Name="Disabled" />
-        </VisualStateGroup>
-      </VisualStateManager.VisualStateGroups>
       <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
       <Grid>
         <Path Data="M288.75,232.25L288.75,240.625 283,236.625z" Margin="14,-2,0,0" Fill="{DynamicResource LabelBrush}" HorizontalAlignment="Left" Height="10" Stretch="Fill" VerticalAlignment="Center" Width="6" x:Name="path" />
@@ -99,12 +76,6 @@
   </ControlTemplate>
   <ControlTemplate x:Key="NextButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
-      <VisualStateManager.VisualStateGroups>
-        <VisualStateGroup x:Name="CommonStates">
-          <VisualState x:Name="Normal" />
-          <VisualState x:Name="Disabled" />
-        </VisualStateGroup>
-      </VisualStateManager.VisualStateGroups>
       <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
       <Grid>
         <Path Data="M282.875,231.875L282.875,240.375 288.625,236z" Margin="0,-2,14,0" Fill="{DynamicResource LabelBrush}" HorizontalAlignment="Right" Height="10" Stretch="Fill" VerticalAlignment="Center" Width="6" x:Name="path" />
@@ -113,12 +84,6 @@
   </ControlTemplate>
   <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="{x:Type Button}">
     <Grid Cursor="Hand">
-      <VisualStateManager.VisualStateGroups>
-        <VisualStateGroup x:Name="CommonStates">
-          <VisualState x:Name="Normal" />
-          <VisualState x:Name="Disabled" />
-        </VisualStateGroup>
-      </VisualStateManager.VisualStateGroups>
       <ContentPresenter Margin="1,2,1,4" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="buttonContent" />
     </Grid>
   </ControlTemplate>
@@ -140,16 +105,6 @@
             </ResourceDictionary>
           </ControlTemplate.Resources>
           <Grid x:Name="PART_Root">
-            <VisualStateManager.VisualStateGroups>
-              <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal" />
-                <VisualState x:Name="Disabled">
-                  <Storyboard>
-                    <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_DisabledVisual" />
-                  </Storyboard>
-                </VisualState>
-              </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="1">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="1">
                 <Grid>
@@ -206,21 +161,19 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Rectangle#PART_DisabledVisual">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-      <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Year":
-           <Setter TargetName="PART_MonthView" IsVisible="False" />
-           <Setter TargetName="PART_YearView" IsVisible="True" />
-           Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
-           Needs code-behind or a ViewModel-driven approach. -->
-      <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Decade":
-           <Setter TargetName="PART_MonthView" IsVisible="False" />
-           <Setter TargetName="PART_YearView" IsVisible="True" />
-           Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
-           Needs code-behind or a ViewModel-driven approach. -->
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Rectangle#PART_DisabledVisual">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Year":
+         <Setter TargetName="PART_MonthView" IsVisible="False" />
+         <Setter TargetName="PART_YearView" IsVisible="True" />
+         Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
+         Needs code-behind or a ViewModel-driven approach. -->
+    <!-- NOTE (Avalonia limitation): Original WPF DataTrigger Binding to ancestor Calendar.DisplayMode == "Decade":
+         <Setter TargetName="PART_MonthView" IsVisible="False" />
+         <Setter TargetName="PART_YearView" IsVisible="True" />
+         Cannot be expressed as an Avalonia selector (data trigger on ancestor property).
+         Needs code-behind or a ViewModel-driven approach. -->
   </Style>
   <Style x:Key="{x:Type Calendar}" Selector="Calendar">
     <Setter Property="Background" Value="{DynamicResource Calendar.Background}" />

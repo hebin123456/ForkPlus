@@ -89,22 +89,20 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Grid#templateRoot">
-        <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
-      </Style>
-      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Bottom:
-           headerPanel Grid.Row=1, contentPanel Grid.Row=0, RowDefinition0 Height=*, RowDefinition1 Height=Auto.
-           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
-      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Left:
-           headerPanel Grid.Row=0/Grid.Column=0, contentPanel Grid.Row=0/Grid.Column=1,
-           ColumnDefinition0 Width=Auto, ColumnDefinition1 Width=*, RowDefinition0 Height=*, RowDefinition1 Height=0.
-           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
-      <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Right:
-           headerPanel Grid.Row=0/Grid.Column=1, contentPanel Grid.Row=0/Grid.Column=0,
-           ColumnDefinition0 Width=*, ColumnDefinition1 Width=Auto, RowDefinition0 Height=*, RowDefinition1 Height=0.
-           Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Grid#templateRoot">
+      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+    </Style>
+    <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Bottom:
+         headerPanel Grid.Row=1, contentPanel Grid.Row=0, RowDefinition0 Height=*, RowDefinition1 Height=Auto.
+         Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
+    <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Left:
+         headerPanel Grid.Row=0/Grid.Column=0, contentPanel Grid.Row=0/Grid.Column=1,
+         ColumnDefinition0 Width=Auto, ColumnDefinition1 Width=*, RowDefinition0 Height=*, RowDefinition1 Height=0.
+         Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
+    <!-- NOTE (Avalonia limitation): Original WPF Trigger TabControl.TabStripPlacement=Right:
+         headerPanel Grid.Row=0/Grid.Column=1, contentPanel Grid.Row=0/Grid.Column=0,
+         ColumnDefinition0 Width=*, ColumnDefinition1 Width=Auto, RowDefinition0 Height=*, RowDefinition1 Height=0.
+         Cannot be expressed as an Avalonia selector (enum property value); needs code-behind or a layout-specific template. -->
   </Style>
   <Style x:Key="CloseButtonStyle" Selector="Button">
     <Setter Property="Background" Value="{DynamicResource CloseButton.Static.Background}" />
@@ -125,20 +123,18 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:pointerover">
-        <Setter Property="Background" Value="{DynamicResource CloseButton.MouseOver.Background}" />
-      </Style>
-      <Style Selector="^:pointerover /template/ Path#cross">
-        <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
-      </Style>
-      <Style Selector="^:pressed">
-        <Setter Property="Background" Value="{DynamicResource CloseButton.Pressed.Background}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Path#cross">
-        <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource CloseButton.MouseOver.Background}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#cross">
+      <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Background" Value="{DynamicResource CloseButton.Pressed.Background}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#cross">
+      <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
+    </Style>
   </Style>
   <Style x:Key="AddButtonStyle" Selector="Button">
     <Setter Property="Background" Value="{DynamicResource AddButtonBackground}" />
@@ -157,22 +153,20 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
-      </Style>
-      <Style Selector="^:pointerover /template/ Path#plus">
-        <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
-      </Style>
-      <Style Selector="^:pressed">
-        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Path#plus">
-        <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#plus">
+      <Setter Property="Fill" Value="{DynamicResource CloseButton.MouseOver.Foreground}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#plus">
+      <Setter Property="Fill" Value="{DynamicResource CloseButton.Pressed.Foreground}" />
+    </Style>
   </Style>
   <Style x:Key="{x:Type controls:ClosableTabControl}" Selector="controls:ClosableTabControl">
     <Setter Property="BorderThickness" Value="0,0,0,0" />
@@ -278,49 +272,47 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- NOTE (Avalonia limitation): Original WPF MultiDataTrigger:
-           Conditions: TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false
-           Setter: PART_Close IsVisible=True.
-           Cannot be expressed as an Avalonia selector (second condition is a data binding on a template element).
-           The :selected style below also shows PART_Close; for non-selected hover, needs code-behind or a binding. -->
-      <Style Selector="^:pointerover /template/ Border#Bd">
-        <Setter Property="Background" Value="{DynamicResource TabItemHotBackground}" />
-      </Style>
-      <Style Selector="^:pointerover /template/ Border#TabSeparatorBorder">
-        <Setter Property="IsVisible" Value="False" />
-      </Style>
-      <Style Selector="^:selected">
-        <Setter Property="ZIndex" Value="1" />
-        <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
-      </Style>
-      <Style Selector="^:selected /template/ Border#Bd">
-        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
-        <Setter Property="BorderThickness" Value="1,1,1,0" />
-        <Setter Property="Margin" Value="-1,0,0,0" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
-        <Setter Property="Effect" Value="{DynamicResource ClosableTabItemShadow}" />
-      </Style>
-      <Style Selector="^:selected /template/ Button#PART_Close">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-      <Style Selector="^:selected /template/ Border#TabSeparatorBorder">
-        <Setter Property="IsVisible" Value="False" />
-      </Style>
-      <Style Selector="^:pointerover:not(:selected) /template/ Border#Bd">
-        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
-        <Setter Property="BorderThickness" Value="1,1,1,1" />
-        <Setter Property="Margin" Value="-1,0,0,0" />
-      </Style>
-      <Style Selector="^:disabled">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Border#Bd">
-        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Disabled.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Disabled.Border}" />
-      </Style>
-    </Style.Styles>
+    <!-- NOTE (Avalonia limitation): Original WPF MultiDataTrigger:
+         Conditions: TemplatedParent.IsMouseOver=true AND PART_Title.IsInEditMode=false
+         Setter: PART_Close IsVisible=True.
+         Cannot be expressed as an Avalonia selector (second condition is a data binding on a template element).
+         The :selected style below also shows PART_Close; for non-selected hover, needs code-behind or a binding. -->
+    <Style Selector="^:pointerover /template/ Border#Bd">
+      <Setter Property="Background" Value="{DynamicResource TabItemHotBackground}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Border#TabSeparatorBorder">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="ZIndex" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+      <Setter Property="BorderThickness" Value="1,1,1,0" />
+      <Setter Property="Margin" Value="-1,0,0,0" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+      <Setter Property="Effect" Value="{DynamicResource ClosableTabItemShadow}" />
+    </Style>
+    <Style Selector="^:selected /template/ Button#PART_Close">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#TabSeparatorBorder">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:pointerover:not(:selected) /template/ Border#Bd">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+      <Setter Property="BorderThickness" Value="1,1,1,1" />
+      <Setter Property="Margin" Value="-1,0,0,0" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Bd">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Disabled.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Disabled.Border}" />
+    </Style>
   </Style>
   <Style x:Key="ModernTabControlTabItemStyle" Selector="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
 <Setter Property="Height" Value="30" />
@@ -342,14 +334,12 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
-      </Style>
-      <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+    </Style>
   </Style>
   <Style x:Key="{x:Type controls:ModernTabControl}" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type TabControl}}">
     <Style.Resources>
@@ -386,11 +376,9 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Grid#templateRoot">
-        <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Grid#templateRoot">
+      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundColor}" />
+    </Style>
   </Style>
   <Style x:Key="RepositoryManagerTabControl" Selector="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
     <Style.Resources>

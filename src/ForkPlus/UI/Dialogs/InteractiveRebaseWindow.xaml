@@ -77,7 +77,6 @@
               <Setter Property="Padding" Value="0" />
               <Setter Property="Margin" Value="0" />
               <Setter Property="AllowDrop" Value="True" />
-              <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
             </Style>
           </dialogs:MultiselectionListView.ItemContainerStyle>
           <dialogs:MultiselectionListView.View>

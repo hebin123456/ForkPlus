@@ -9,7 +9,6 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="AllowDrop" Value="True" />
-        <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
         <!-- 阶段 4.5：原 Style.Triggers 中 DataTrigger (IsHead=True -> FontWeight=Bold) 用直接绑定实现。
              Avalonia FontWeight 是 FontWeight 枚举（不可空），需 BoolToFontWeightConverter 转换。 -->
         <Setter Property="FontWeight">

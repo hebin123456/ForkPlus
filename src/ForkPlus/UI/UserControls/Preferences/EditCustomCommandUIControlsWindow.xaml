@@ -36,7 +36,6 @@
           <local:DragAndDropListBox.ItemContainerStyle>
             <Style TargetType="{x:Type local:DragAndDropListBoxItem}" BasedOn="{StaticResource ListBoxItemWithBorderStyle}">
               <Setter Property="AllowDrop" Value="True" />
-              <EventSetter Event="Drop" Handler="ListBoxItem_Drop" />
             </Style>
           </local:DragAndDropListBox.ItemContainerStyle>
           <local:DragAndDropListBox.ItemTemplate>

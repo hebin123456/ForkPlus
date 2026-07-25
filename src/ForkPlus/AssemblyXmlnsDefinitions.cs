@@ -13,5 +13,17 @@ using Avalonia.Metadata;
 // PasswordBox 桥接类型（Avalonia 11.3 移除了 PasswordBox，本类继承 TextBox 提供兼容）
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls")]
 
+// GridViewHeaderRowPresenter / GridViewRowPresenter 桥接类型（WPF 兼容）
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Primitives")]
+
+// BooleanToVisibilityConverter 桥接类型（WPF System.Windows.Data.BooleanToVisibilityConverter 兼容）
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media")]
+
 // GridView / GridViewColumn / GridViewColumnHeader 桥接类型（WPF System.Windows.Controls.GridView 兼容）
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "ForkPlus.UI.Compatibility")]
+
+// TabPanel / ResizeGrip / RichTextBox / AdornerDecorator / WindowChrome 桥接类型已在 Avalonia.Controls /
+// Avalonia.Controls.Primitives / Avalonia.Media 命名空间下（Avalonia 核心命名空间，XAML 默认即可解析）。
+// SystemColors / SystemParameters 桥接类型（WPF System.Windows.SystemColors / SystemParameters 兼容）
+// 放在独立命名空间 Avalonia.SystemParams，需显式映射到默认 XAML 命名空间方可被 {x:Static} 解析。
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.SystemParams")]

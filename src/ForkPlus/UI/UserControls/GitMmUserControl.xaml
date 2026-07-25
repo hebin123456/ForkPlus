@@ -135,7 +135,7 @@
         </DockPanel>
       </Border>
       <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}">
-        <RichTextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource BackgroundBrush}" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+        <StackPanel BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource BackgroundBrush}" x:Name="OutputTextBox" />
       </Border>
       <TextBlock Grid.Row="4" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" x:Name="StatusTextBlock" />
     </Grid>

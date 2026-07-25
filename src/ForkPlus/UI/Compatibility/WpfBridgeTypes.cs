@@ -2,10 +2,15 @@
 // 集中提供 WPF System.Windows.* 命名空间下被代码引用但 Avalonia 无对应的类型。
 // 真正的迁移（阶段 6）会逐步替换为原生 Avalonia API，届时删除本文件。
 using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {
@@ -145,5 +150,151 @@ namespace ForkPlus.UI
 		public void OnCompleted() { }
 		public void OnError(Exception error) { }
 		public void OnNext(T value) => _onNext?.Invoke(value);
+	}
+}
+
+// ====================================================================
+// 阶段 5：WPF XAML 桥接类型（AVLN2000 修复）
+// 以下类型仅用于让 XAML 中引用的 WPF 控件/静态类通过编译。
+// 真正的迁移（阶段 6）会逐步替换为原生 Avalonia API 或删除引用。
+// 命名空间 Avalonia.Controls / Avalonia.Controls.Primitives / Avalonia.Media /
+// Avalonia.SystemParams 已在 AssemblyXmlnsDefinitions.cs 中映射到默认 XAML 命名空间，
+// 故 XAML 无需额外 xmlns 声明即可解析这些类型。
+// ====================================================================
+
+namespace Avalonia.Controls
+{
+	/// <summary>WPF TabPanel bridge. Avalonia uses TabControl's default panel.</summary>
+	public class TabPanel : Panel
+	{
+		// WPF TabPanel was a specialized layout panel; Avalonia uses default Panel.
+		// Empty subclass keeps XAML &lt;TabPanel&gt; tags compiling.
+	}
+
+	/// <summary>WPF ResizeGrip bridge (bottom-right window resize handle).
+	/// Avalonia handles resize natively; this is an empty Control placeholder.</summary>
+	public class ResizeGrip : Control
+	{
+	}
+
+	/// <summary>WPF RichTextBox bridge. Avalonia has no built-in RichTextBox.
+	/// Empty TextBox subclass keeps XAML compiling; rich text features lost.</summary>
+	public class RichTextBox : TextBox
+	{
+	}
+
+	/// <summary>WPF AdornerDecorator bridge. Avalonia has no adorners; empty Control placeholder.</summary>
+	public class AdornerDecorator : Decorator
+	{
+	}
+
+	/// <summary>WPF WindowChrome bridge. Avalonia uses different chrome APIs.
+	/// Empty class with no-op properties keeps XAML compiling.</summary>
+	public class WindowChrome
+	{
+		public static readonly AttachedProperty<bool> ResizeBorderThicknessProperty =
+			AvaloniaProperty.RegisterAttached<WindowChrome, Window, bool>("ResizeBorderThickness");
+		// Stub - no implementation
+	}
+}
+
+namespace Avalonia.Controls.Primitives
+{
+	/// <summary>WPF GridViewHeaderRowPresenter bridge.</summary>
+	public class GridViewHeaderRowPresenter : Control
+	{
+	}
+
+	/// <summary>WPF GridViewRowPresenter bridge.</summary>
+	public class GridViewRowPresenter : Control
+	{
+	}
+}
+
+namespace Avalonia.Media
+{
+	/// <summary>WPF BooleanToVisibilityConverter bridge for Avalonia XAML.
+	/// Converts bool → IsVisible (true=Visible, false=Collapsed).</summary>
+	public class BooleanToVisibilityConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			if (value is bool b)
+				return b;
+			return false;
+		}
+	}
+}
+
+namespace Avalonia.SystemParams
+{
+	/// <summary>WPF SystemColors bridge - static brush keys for theme resources.</summary>
+	public static class SystemColors
+	{
+		public static readonly object ControlTextBrushKey = "SystemControlTextBrush";
+		public static readonly object WindowBrushKey = "SystemWindowBrush";
+		public static readonly object ActiveCaptionBrushKey = "SystemActiveCaptionBrush";
+		public static readonly object InactiveCaptionBrushKey = "SystemInactiveCaptionBrush";
+		public static readonly object MenuBrushKey = "SystemMenuBrush";
+		public static readonly object MenuBarBrushKey = "SystemMenuBarBrush";
+		public static readonly object MenuTextBrushKey = "SystemMenuTextBrush";
+		public static readonly object WindowTextBrushKey = "SystemWindowTextBrush";
+		public static readonly object HighlightBrushKey = "SystemHighlightBrush";
+		public static readonly object HighlightTextBrushKey = "SystemHighlightTextBrush";
+		public static readonly object ControlBrushKey = "SystemControlBrush";
+		public static readonly object ControlDarkBrushKey = "SystemControlDarkBrush";
+		public static readonly object ControlLightBrushKey = "SystemControlLightBrush";
+		public static readonly object GrayTextBrushKey = "SystemGrayTextBrush";
+		public static readonly object InactiveSelectionHighlightBrushKey = "SystemInactiveSelectionHighlightBrush";
+		public static readonly object InactiveSelectionHighlightTextBrushKey = "SystemInactiveSelectionHighlightTextBrush";
+	}
+
+	/// <summary>WPF SystemParameters bridge - static values for system metrics.</summary>
+	public static class SystemParameters
+	{
+		public static double ScrollWidth => 17;
+		public static double ScrollHeight => 17;
+		public static double VerticalScrollBarWidth => 17;
+		public static double HorizontalScrollBarHeight => 17;
+		public static double ClientAreaWidth => 0;
+		public static double ClientAreaHeight => 0;
+		public static double FullPrimaryScreenWidth => 0;
+		public static double FullPrimaryScreenHeight => 0;
+		public static double WorkAreaWidth => 0;
+		public static double WorkAreaHeight => 0;
+		public static double MaximizedPrimaryScreenWidth => 0;
+		public static double MaximizedPrimaryScreenHeight => 0;
+		public static double CaptionHeight => 23;
+		public static double MenuHeight => 18;
+		public static double SmallIconWidth => 16;
+		public static double SmallIconHeight => 16;
+		public static double IconWidth => 32;
+		public static double IconHeight => 32;
+		public static double FixedFrameVerticalScrollBarWidth => 17;
+		public static double FixedFrameHorizontalScrollBarHeight => 17;
+		public static double WindowNonclientFrameThickness => 8;
+		public static double WindowResizeBorderThickness => 4;
+
+		// 以下成员兼容 Theme/Styles/*.xaml 中 {x:Static SystemParameters.*} 引用。
+		// 原 WPF SystemParameters 提供 *Key 资源键与弹窗动画键，Avalonia 无等价物，
+		// 此处返回常量占位值，确保 XAML 编译通过。
+		/// <summary>WPF SystemParameters.MenuPopupAnimationKey 占位：返回 None。</summary>
+		public static ForkPlus.UI.PopupAnimation MenuPopupAnimationKey => ForkPlus.UI.PopupAnimation.None;
+
+		/// <summary>WPF SystemParameters.ComboBoxPopupAnimationKey 占位：返回 None。</summary>
+		public static ForkPlus.UI.PopupAnimation ComboBoxPopupAnimationKey => ForkPlus.UI.PopupAnimation.None;
+
+		/// <summary>WPF SystemParameters.VerticalScrollBarButtonHeightKey 占位：返回 60。</summary>
+		public static double VerticalScrollBarButtonHeightKey => 60.0;
+
+		/// <summary>WPF SystemParameters.VerticalScrollBarButtonHeight 占位常量。</summary>
+		public const double VerticalScrollBarButtonHeight = 60.0;
+
+		/// <summary>WPF SystemParameters.WindowGlassBrush 占位：返回透明画刷。</summary>
+		public static IBrush WindowGlassBrush => Brushes.Transparent;
+
+		/// <summary>WPF SystemParameters.MinimumHorizontalDragDistance / MinimumVerticalDragDistance 占位常量。</summary>
+		public const double MinimumHorizontalDragDistance = 10.0;
+		public const double MinimumVerticalDragDistance = 10.0;
 	}
 }

@@ -75,22 +75,18 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
   </Style>
   <Style x:Key="BlueHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
 <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-    <Style.Styles>
-      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style>
   </Style>
   <Style x:Key="BlueUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
 <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
@@ -99,22 +95,18 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
   </Style>
   <Style x:Key="GrayHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
-    <Style.Styles>
-      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style>
   </Style>
   <Style x:Key="GrayUnderlineHyperlinkStyle" Selector="Hyperlink" BasedOn="{StaticResource GrayHyperlinkStyle}">
     <Setter Property="TextDecorations">
@@ -122,13 +114,11 @@
         <x:Null />
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from Style.Triggers: ContentElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+      <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
   </Style>
   <Style x:Key="HintTextBlock" Selector="TextBlock">
     <Setter Property="Text" Value="?" />

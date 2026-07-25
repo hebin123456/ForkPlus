@@ -49,50 +49,48 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- NOTE (Avalonia limitation): Original WPF Trigger ContentControl.HasContent=True set FocusVisualStyle={StaticResource OptionMarkFocusVisual} and Padding=6,-1,0,0.
-           No direct Avalonia pseudo-class for HasContent; apply Padding in code-behind or via data trigger if needed. -->
-      <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
-        <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Path#OptionMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-      </Style>
-      <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
-        <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Pressed.Border}" />
-        <Setter Property="Opacity" Value="0.7" />
-      </Style>
-      <Style Selector="^:pressed /template/ Path#OptionMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-      </Style>
-      <Style Selector="^:checked /template/ Path#OptionMark">
-        <Setter Property="Opacity" Value="1" />
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Static.Glyph}" />
-      </Style>
-      <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Opacity" Value="0" />
-      </Style>
-      <Style Selector="^:checked /template/ Border#CheckBoxBorder">
-        <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-      </Style>
-      <Style Selector="^:indeterminate /template/ Path#OptionMark">
-        <Setter Property="Opacity" Value="0" />
-      </Style>
-      <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Opacity" Value="1" />
-      </Style>
-    </Style.Styles>
+    <!-- NOTE (Avalonia limitation): Original WPF Trigger ContentControl.HasContent=True set FocusVisualStyle={StaticResource OptionMarkFocusVisual} and Padding=6,-1,0,0.
+         No direct Avalonia pseudo-class for HasContent; apply Padding in code-behind or via data trigger if needed. -->
+    <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
+      <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#OptionMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
+      <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Pressed.Border}" />
+      <Setter Property="Opacity" Value="0.7" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#OptionMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#OptionMark">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Static.Glyph}" />
+    </Style>
+    <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#CheckBoxBorder">
+      <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Path#OptionMark">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
   </Style>
   <Style x:Key="MergerSelectAllCheckBox" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
@@ -120,60 +118,58 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Border#ContentBorder">
-        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Disabled.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Disabled.Border}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
-        <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Path#OptionMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#ContentBorder">
-        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Pressed.Border}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
-        <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Pressed.Border}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Path#OptionMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
-      </Style>
-      <Style Selector="^:checked /template/ Border#ContentBorder">
-        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-      </Style>
-      <Style Selector="^:checked /template/ Border#CheckBoxBorder">
-        <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-      </Style>
-      <Style Selector="^:checked /template/ Path#OptionMark">
-        <Setter Property="Fill" Value="{DynamicResource ForegroundBrush.Light}" />
-        <Setter Property="Opacity" Value="1" />
-      </Style>
-      <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Opacity" Value="0" />
-      </Style>
-      <Style Selector="^:indeterminate /template/ Border#ContentBorder">
-        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.MouseOver.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.MouseOver.Border}" />
-      </Style>
-      <Style Selector="^:indeterminate /template/ Path#OptionMark">
-        <Setter Property="Opacity" Value="0" />
-      </Style>
-      <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
-        <Setter Property="Opacity" Value="1" />
-      </Style>
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Border#ContentBorder">
+      <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Disabled.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Disabled.Border}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
+      <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#OptionMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#ContentBorder">
+      <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Pressed.Border}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
+      <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Pressed.Border}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#OptionMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#ContentBorder">
+      <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Pressed.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#CheckBoxBorder">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#OptionMark">
+      <Setter Property="Fill" Value="{DynamicResource ForegroundBrush.Light}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Border#ContentBorder">
+      <Setter Property="Background" Value="{DynamicResource MergeCheckBox.MouseOver.Background}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.MouseOver.Border}" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Path#OptionMark">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
   </Style>
 </ResourceDictionary>

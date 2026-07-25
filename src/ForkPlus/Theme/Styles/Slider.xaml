@@ -68,23 +68,21 @@
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
     <Setter Property="Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
-    <Style.Styles>
-      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsMouseOver on Thumb).
-           Selector descends: Slider template -> Thumb#Thumb -> Thumb template -> Ellipse#grip. -->
-      <Style Selector="^ /template/ Thumb#Thumb:pointerover /template/ Ellipse#grip">
-        <Setter Property="Fill" Value="{DynamicResource SliderThumb.MouseOver.Background}" />
-        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.MouseOver.Border}" />
-      </Style>
-      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (Thumb.IsDragging). -->
-      <Style Selector="^ /template/ Thumb#Thumb:dragging /template/ Ellipse#grip">
-        <Setter Property="Fill" Value="{DynamicResource SliderThumb.Pressed.Background}" />
-        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Pressed.Border}" />
-      </Style>
-      <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsEnabled=False on Thumb). -->
-      <Style Selector="^ /template/ Thumb#Thumb:disabled /template/ Ellipse#grip">
-        <Setter Property="Fill" Value="{DynamicResource SliderThumb.Disabled.Background}" />
-        <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Disabled.Border}" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsMouseOver on Thumb).
+         Selector descends: Slider template -> Thumb#Thumb -> Thumb template -> Ellipse#grip. -->
+    <Style Selector="^ /template/ Thumb#Thumb:pointerover /template/ Ellipse#grip">
+      <Setter Property="Fill" Value="{DynamicResource SliderThumb.MouseOver.Background}" />
+      <Setter Property="Stroke" Value="{DynamicResource SliderThumb.MouseOver.Border}" />
+    </Style>
+    <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (Thumb.IsDragging). -->
+    <Style Selector="^ /template/ Thumb#Thumb:dragging /template/ Ellipse#grip">
+      <Setter Property="Fill" Value="{DynamicResource SliderThumb.Pressed.Background}" />
+      <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Pressed.Border}" />
+    </Style>
+    <!-- Converted from SliderThumbHorizontalDefault ControlTemplate.Triggers (IsEnabled=False on Thumb). -->
+    <Style Selector="^ /template/ Thumb#Thumb:disabled /template/ Ellipse#grip">
+      <Setter Property="Fill" Value="{DynamicResource SliderThumb.Disabled.Background}" />
+      <Setter Property="Stroke" Value="{DynamicResource SliderThumb.Disabled.Border}" />
+    </Style>
   </Style>
 </ResourceDictionary>

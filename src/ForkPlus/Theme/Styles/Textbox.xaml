@@ -35,19 +35,17 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Border#Border">
-        <Setter Property="Opacity" Value="0.56" />
-      </Style>
-      <Style Selector="^:focus /template/ Border#Border">
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-      </Style>
-      <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
-           Conditions: TextBoxBase.IsInactiveSelectionHighlightEnabled=true AND TextBoxBase.IsSelectionActive=false
-           Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
-           Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
-           Needs code-behind or a binding-based approach. -->
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Border#Border">
+      <Setter Property="Opacity" Value="0.56" />
+    </Style>
+    <Style Selector="^:focus /template/ Border#Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+    <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
+         Conditions: TextBoxBase.IsInactiveSelectionHighlightEnabled=true AND TextBoxBase.IsSelectionActive=false
+         Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+         Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
+         Needs code-behind or a binding-based approach. -->
   </Style>
   <Style x:Key="{x:Type PasswordBox}" Selector="PasswordBox">
     <Setter Property="PasswordChar" Value="●" />
@@ -70,18 +68,16 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <Style Selector="^:disabled /template/ Border#Border">
-        <Setter Property="Opacity" Value="0.56" />
-      </Style>
-      <Style Selector="^:focus /template/ Border#Border">
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-      </Style>
-      <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
-           Conditions: PasswordBox.IsInactiveSelectionHighlightEnabled=true AND PasswordBox.IsSelectionActive=false
-           Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
-           Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
-           Needs code-behind or a binding-based approach. -->
-    </Style.Styles>
+    <Style Selector="^:disabled /template/ Border#Border">
+      <Setter Property="Opacity" Value="0.56" />
+    </Style>
+    <Style Selector="^:focus /template/ Border#Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+    <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
+         Conditions: PasswordBox.IsInactiveSelectionHighlightEnabled=true AND PasswordBox.IsSelectionActive=false
+         Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+         Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
+         Needs code-behind or a binding-based approach. -->
   </Style>
 </ResourceDictionary>

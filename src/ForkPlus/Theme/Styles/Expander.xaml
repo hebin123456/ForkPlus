@@ -46,34 +46,32 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Converted from ControlTemplate.Triggers: ToggleButton.IsChecked=True -> :checked -->
-      <Style Selector="^:checked /template/ Border#SeparatorBorder">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-      <Style Selector="^:checked /template/ Path#Arrow">
-        <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
-      </Style>
-      <!-- Converted from ControlTemplate.Triggers: UIElement.IsMouseOver=True -> :pointerover -->
-      <Style Selector="^:pointerover /template/ ContentPresenter#ContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
-      </Style>
-      <Style Selector="^:pointerover /template/ Path#Arrow">
-        <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" />
-      </Style>
-      <!-- Cursor=Hand targets the templated parent (ToggleButton), no /template/ needed. -->
-      <Style Selector="^:pointerover">
-        <Setter Property="Cursor" Value="Hand" />
-      </Style>
-      <!-- Converted from ControlTemplate.Triggers: ButtonBase.IsPressed=True -> :pressed -->
-      <Style Selector="^:pressed /template/ Path#Arrow">
-        <Setter Property="Stroke" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}" />
-      </Style>
-      <!-- Converted from ControlTemplate.Triggers: UIElement.IsEnabled=False -> :disabled -->
-      <Style Selector="^:disabled /template/ Path#Arrow">
-        <Setter Property="Stroke" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from ControlTemplate.Triggers: ToggleButton.IsChecked=True -> :checked -->
+    <Style Selector="^:checked /template/ Border#SeparatorBorder">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#Arrow">
+      <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
+    </Style>
+    <!-- Converted from ControlTemplate.Triggers: UIElement.IsMouseOver=True -> :pointerover -->
+    <Style Selector="^:pointerover /template/ ContentPresenter#ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#Arrow">
+      <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" />
+    </Style>
+    <!-- Cursor=Hand targets the templated parent (ToggleButton), no /template/ needed. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <!-- Converted from ControlTemplate.Triggers: ButtonBase.IsPressed=True -> :pressed -->
+    <Style Selector="^:pressed /template/ Path#Arrow">
+      <Setter Property="Stroke" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}" />
+    </Style>
+    <!-- Converted from ControlTemplate.Triggers: UIElement.IsEnabled=False -> :disabled -->
+    <Style Selector="^:disabled /template/ Path#Arrow">
+      <Setter Property="Stroke" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}" />
+    </Style>
   </Style>
   <Style x:Key="DiffListExpanderStyle" Selector="Expander">
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -98,11 +96,9 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style.Styles>
-      <!-- Converted from ControlTemplate.Triggers: Expander.IsExpanded=True -> :expanded -->
-      <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-    </Style.Styles>
+    <!-- Converted from ControlTemplate.Triggers: Expander.IsExpanded=True -> :expanded -->
+    <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
   </Style>
 </ResourceDictionary>
