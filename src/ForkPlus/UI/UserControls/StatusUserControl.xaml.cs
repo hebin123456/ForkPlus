@@ -38,6 +38,11 @@ namespace ForkPlus.UI.UserControls
 	{
 		private static readonly TimeSpan AnimationDuration = TimeSpan.FromSeconds(0.4);
 
+		// 阶段 5：Avalonia XAML 编译器对非 Control 元素（TranslateTransform）的 x:Name
+		// 不生成 code-behind 字段；通过 TitleContainer.RenderTransform 获取。
+		private TranslateTransform TitleContainerTranslateTransform =>
+			TitleContainer?.RenderTransform as TranslateTransform;
+
 		private static readonly char[] DirtyWorkingDirectoryMark = new char[1] { '*' };
 
 		private static readonly string BranchFilterOnIconName = "BranchFilterOnIcon";
@@ -299,11 +304,12 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			// 阶段 4.5：先设置到起始位置，再在下一帧设置目标位置以触发过渡（参考 ModernTabControl）。
-			transform.Y = from;
-			_ = Dispatcher.UIThread.Post(() =>
-			{
-				transform.Y = to;
-			});
+		// 阶段 5：Avalonia Dispatcher.UIThread.Post 返回 void，不能用 _ = 赋值。
+		transform.Y = from;
+		Dispatcher.UIThread.Post(() =>
+		{
+			transform.Y = to;
+		});
 			// 阶段 4.5：WPF DoubleAnimation.Completed → DispatcherTimer.RunOnce 延迟执行完成回调。
 			DispatcherTimer.RunOnce(delegate
 			{
