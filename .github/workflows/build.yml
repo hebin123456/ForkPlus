@@ -106,7 +106,7 @@ jobs:
       # 467 个 trim warnings (IL2026 ReflectionBinding / IL3050 动态代码) 已知存在，AOT 仍能完成编译。
       #   ReflectionBinding 风险：运行时 UI 数据绑定可能失效，需要开启 CompiledBindings 修复（独立任务）。
       #   当前容忍 warnings 以先产出 AOT 产物，由用户实测验证 UI 是否正常。
-      - name: Publish AOT (subprocesses: AskPass + RI)
+      - name: "Publish AOT (subprocesses: AskPass + RI)"
         shell: bash
         run: |
           set -e
@@ -115,7 +115,7 @@ jobs:
               -p:PublishAot=true -p:EnableWindowsTargeting=true --self-contained -v minimal
           done
 
-      - name: Publish AOT (main: ForkPlus)
+      - name: "Publish AOT (main: ForkPlus)"
         shell: bash
         run: |
           set -e
