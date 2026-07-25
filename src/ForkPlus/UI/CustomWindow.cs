@@ -89,6 +89,22 @@ namespace ForkPlus.UI
 			set => SetValue(IsTitleVisibleProperty, value);
 		}
 
+		/// <summary>
+		/// WPF ResizeMode 兼容属性。Avalonia Window 仅有 bool CanResize，
+		/// 此 setter 将 NoResize 映射为 CanResize=false，其他值映射为 CanResize=true。
+		/// </summary>
+		public ResizeMode ResizeMode
+		{
+			get
+			{
+				return CanResize ? ResizeMode.CanResize : ResizeMode.NoResize;
+			}
+			set
+			{
+				CanResize = (value != ResizeMode.NoResize);
+			}
+		}
+
 		static CustomWindow()
 		{
 			// Avalonia: 通过 StyleKey 让控件查找对应 ControlTheme
