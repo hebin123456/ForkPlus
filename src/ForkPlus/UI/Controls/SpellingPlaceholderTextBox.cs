@@ -12,7 +12,9 @@ namespace ForkPlus.UI.Controls
 	{
 		public SpellingPlaceholderTextBox()
 		{
-			base.ContextMenuOpening += delegate
+			// 阶段 5：Avalonia Control 无 ContextMenuOpening 事件，用 ContextRequested 替代
+			// （WPF ContextMenuOpening → Avalonia ContextRequested，事件参数为 ContextRequestedEventArgs）。
+			base.ContextRequested += delegate
 			{
 				base.ContextMenu = GetContextMenu();
 				// 阶段 4.5：Avalonia TextBox 无 GetSpellingError；传 null 给 AddSpellingMenuItems（空实现）。

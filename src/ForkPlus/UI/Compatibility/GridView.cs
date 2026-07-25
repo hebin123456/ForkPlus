@@ -46,6 +46,13 @@ namespace Avalonia.Controls
 		/// <summary>WPF GridViewColumn.Width：列宽。</summary>
 		public double Width { get; set; } = double.NaN;
 
+		/// <summary>WPF GridViewColumn.ActualWidth：实际渲染宽度。Avalonia 桥接占位：默认与 Width 相同（NaN 时回退 0）。</summary>
+		public double ActualWidth
+		{
+			get => double.IsNaN(Width) ? 0.0 : Width;
+			set => Width = value;
+		}
+
 		/// <summary>WPF GridViewColumn.Header：列头内容。</summary>
 		public object Header { get; set; }
 

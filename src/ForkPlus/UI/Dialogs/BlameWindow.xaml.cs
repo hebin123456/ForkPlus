@@ -407,12 +407,15 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			base.OnPointerPressed(e);
-			if (e.ChangedButton == MouseButton.XButton1)
+			// 阶段 5：Avalonia PointerPressedEventArgs 无 ChangedButton 属性，用扩展方法 GetChangedButton() 返回 MouseButton 索引。
+			// 0=Left, 1=Middle, 2=Right, 3=XButton1, 4=XButton2。
+			int changedButton = e.GetChangedButton();
+			if (changedButton == 3) // XButton1
 			{
 				Undo();
 				e.Handled = true;
 			}
-			else if (e.ChangedButton == MouseButton.XButton2)
+			else if (changedButton == 4) // XButton2
 			{
 				Redo();
 				e.Handled = true;
@@ -421,7 +424,9 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevisionListScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
 		{
-			double verticalOffset = e.VerticalOffset;
+			// 阶段 5：Avalonia ScrollChangedEventArgs 无 VerticalOffset 属性，用扩展方法 GetVerticalOffset() 占位。
+			// 真正的滚动同步应改用 ScrollViewer.Offset.Y（阶段 6 修复）。
+			double verticalOffset = e.GetVerticalOffset();
 			TextDiffControl.ScrollToVerticalOffset(verticalOffset);
 		}
 

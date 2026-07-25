@@ -93,7 +93,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			try
 			{
-				_ = DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
+				// 阶段 5：WPF DragDrop.DoDragDrop(dragSource, data, effects) → DragDropBridge.DoDragDrop
+				// （桥接 PointerEventArgs 来源；GetDataObject 返回 IDataObject）。
+				_ = DragDropBridge.DoDragDrop(dragSource, GetDataObject(nodes), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
 			}
 			catch
 			{

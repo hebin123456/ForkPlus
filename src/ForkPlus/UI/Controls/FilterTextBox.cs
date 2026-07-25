@@ -123,7 +123,8 @@ namespace ForkPlus.UI.Controls
 			_dropdownButton = e.NameScope?.Find("PART_DropDownButton") as DropDownButton;
 			if (_dropdownButton?.ContextMenu != null)
 			{
-				_dropdownButton.ContextMenu.Opened += delegate(object s, EventArgs e)
+				// 阶段 5：Avalonia ContextMenu.Opened 是 EventHandler<RoutedEventArgs>，参数类型为 RoutedEventArgs（非 EventArgs）。
+				_dropdownButton.ContextMenu.Opened += delegate(object s, RoutedEventArgs e)
 				{
 					this.DropdownContextMenuOpened?.Invoke(s, e);
 				};

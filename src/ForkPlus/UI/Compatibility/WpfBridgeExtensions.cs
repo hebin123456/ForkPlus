@@ -126,17 +126,17 @@ namespace ForkPlus.UI
 
 		// ===== IDataObject 兼容 =====
 
-		/// <summary>WPF IDataObject.GetData(Type) 兼容：Avalonia IDataObject.Get(Type)。</summary>
-		public static object GetData(this IDataObject dataObject, Type format)
-		{
-			return dataObject.Get(format);
-		}
+	/// <summary>WPF IDataObject.GetData(Type) 兼容：Avalonia IDataObject.Get 仅接受 string，需将 Type 转 FullName。</summary>
+	public static object GetData(this IDataObject dataObject, Type format)
+	{
+		return dataObject.Get(format?.FullName ?? string.Empty);
+	}
 
-		/// <summary>WPF IDataObject.GetData(string) 兼容：Avalonia IDataObject.Get(string)。</summary>
-		public static object GetData(this IDataObject dataObject, string format)
-		{
-			return dataObject.Get(format);
-		}
+	/// <summary>WPF IDataObject.GetData(string) 兼容：Avalonia IDataObject.Get(string)。</summary>
+	public static object GetData(this IDataObject dataObject, string format)
+	{
+		return dataObject.Get(format);
+	}
 
 		// ===== KeyGesture 兼容 =====
 

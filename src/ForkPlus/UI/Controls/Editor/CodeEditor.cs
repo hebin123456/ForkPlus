@@ -1,3 +1,5 @@
+using System;
+using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using ForkPlus.UI.Controls.Commands;
@@ -22,14 +24,18 @@ namespace ForkPlus.UI.Controls.Editor
 
 		// 阶段 5：WPF ContextMenu.Opening/Closing 事件兼容。Avalonia 用 ContextRequested 事件替代。
 		// 为保持派生类（DiffCodeEditor/CommitCodeEditor）的事件订阅代码不变，此处提供同名事件。
-		public event EventHandler<CancelRoutedEventArgs> ContextMenuOpening;
+		// 阶段 5 修正：事件参数类型从 CancelRoutedEventArgs 改为 ContextRequestedEventArgs，
+		// 以匹配 ITextDiffControl.EditorContextMenuOpening 和 TextContentControl 的订阅签名（避免 CS0266）。
+		public event EventHandler<ContextRequestedEventArgs> ContextMenuOpening;
 		public event EventHandler<RoutedEventArgs> ContextMenuClosing;
 
 		// 阶段 5：WPF IsVisibleChanged 事件兼容。Avalonia 用 Layoutable.AttachedToVisualTree/
 		// DetachedFromVisualTree 或 IsVisible 属性变更订阅。此处桥接到 IsVisible 变更。
-		public event EventHandler<AvaloniaPropertyChangedEventArgs<bool>> IsVisibleChanged
+		// 阶段 5 修正：使用非泛型 AvaloniaPropertyChangedEventArgs（GetPropertyChangedObservable 返回类型）。
+		// 消费方 ChunkSelectionLayer.TextEditor_IsVisibleChanged 使用 EventArgs 基类（协变兼容）。
+		public event EventHandler<AvaloniaPropertyChangedEventArgs> IsVisibleChanged
 		{
-			add => this.GetObservable(IsVisibleProperty).Subscribe(new ActionObserver<bool>(args => value?.Invoke(this, args)));
+			add => this.GetPropertyChangedObservable(IsVisibleProperty).Subscribe(new ActionObserver<AvaloniaPropertyChangedEventArgs>(args => value?.Invoke(this, args)));
 			remove { /* 阶段 5：简化实现，移除订阅需更复杂的 token 管理 */ }
 		}
 
@@ -45,7 +51,7 @@ namespace ForkPlus.UI.Controls.Editor
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());
 			// 阶段 4 里程碑 4.7-a：移除 RenderOptions.SetClearTypeHint（WPF-only，Avalonia 无等价物，文本渲染由平台决定）。
 			// 阶段 5：桥接 ContextMenuOpening/Closing 到 Avalonia ContextRequested 事件。
-			ContextRequested += (s, e) => ContextMenuOpening?.Invoke(this, new CancelRoutedEventArgs());
+			ContextRequested += (s, e) => ContextMenuOpening?.Invoke(this, e);
 		}
 
 		// 阶段 5：辅助观察者，将 IObservable<T>.Subscribe 桥接到 EventHandler。

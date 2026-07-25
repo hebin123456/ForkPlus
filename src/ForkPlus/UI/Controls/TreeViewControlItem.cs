@@ -133,6 +133,8 @@ namespace ForkPlus.UI.Controls
 				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
 				_adorner.AttachTo(ParentTreeView);
 				MultiselectionTreeViewItem[] nodes = ParentTreeView.GetTopLevelSelection().ToArray();
+				// 阶段 5：缓存 PointerEventArgs 供 StartDrag 内部 DoDragDrop 桥接使用（WPF 第一参数是 dragSource，Avalonia 必须是 PointerEventArgs）。
+				DragDropBridge.CapturePointerEvent(e);
 				Node?.StartDrag(this, nodes);
 				_adorner.DetachFrom(ParentTreeView);
 			}
