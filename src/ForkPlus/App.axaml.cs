@@ -1052,17 +1052,37 @@ namespace ForkPlus
 
 		private static bool IsSystemAccentBrushEnabled()
 		{
-			using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\DWM");
-			object obj = registryKey?.GetValue("ColorPrevalence");
-			if (obj != null)
+			if (!OperatingSystem.IsWindows())
 			{
-				return (int)obj > 0;
+				// 非 Windows 平台无 DWM 注册表，关闭系统强调色画刷。
+				return false;
 			}
-			return false;
+
+			try
+			{
+				using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\DWM");
+				object obj = registryKey?.GetValue("ColorPrevalence");
+				if (obj != null)
+				{
+					return (int)obj > 0;
+				}
+				return false;
+			}
+			catch (Exception)
+			{
+				// 注册表读取失败（权限/策略）时降级为关闭。
+				return false;
+			}
 		}
 
 		private static SystemTheme GetSystemTheme()
 		{
+			if (!OperatingSystem.IsWindows())
+			{
+				// 非 Windows 平台无注册表主题信息，回退到用户设置的主题。
+				return (ForkPlusSettings.Default.Theme != 0) ? SystemTheme.Dark : SystemTheme.Light;
+			}
+
 			try
 			{
 				using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");

@@ -45,9 +45,8 @@ namespace ForkPlus
 		}
 
 		/// <summary>
-		/// Managed natural-order comparison: splits each string into alternating
-		/// non-numeric and numeric tokens, comparing token-by-token. Numeric tokens
-		/// are compared by their parsed integer value (no leading-zero significance).
+		/// 托管自然排序比较：将每个字符串拆分为非数字与数字交替的 token，逐 token 比较。
+		/// 数字 token 按其整数值比较（无前导零权重），值相等时前导零更多者排在前。
 		/// </summary>
 		private static int NaturalCompareManaged(string x, string y)
 		{
@@ -59,9 +58,6 @@ namespace ForkPlus
 
 				if (xIsDigit && yIsDigit)
 				{
-					// Compare numeric runs by value, but if equal, longer-with-leading-zero
-					// is preserved as "less than" (parity with StrCmpLogicalW's lexicographic
-					// tiebreak on the textual representation).
 					int xStart = i, yStart = j;
 					while (i < x.Length && char.IsDigit(x[i])) i++;
 					while (j < y.Length && char.IsDigit(y[j])) j++;
@@ -69,7 +65,7 @@ namespace ForkPlus
 					ReadOnlySpan<char> xNum = x.AsSpan(xStart, i - xStart);
 					ReadOnlySpan<char> yNum = y.AsSpan(yStart, j - yStart);
 
-					// Trim leading zeros for value comparison.
+					// 去除前导零用于值比较
 					int xValStart = 0;
 					while (xValStart < xNum.Length - 1 && xNum[xValStart] == '0') xValStart++;
 					int yValStart = 0;
@@ -84,8 +80,7 @@ namespace ForkPlus
 					int cmp = xNum.Slice(xValStart, xValLen).SequenceCompareTo(yNum.Slice(yValStart, yValLen));
 					if (cmp != 0) return cmp;
 
-					// Equal value: shorter textual form (more leading zeros) sorts first,
-					// matching StrCmpLogicalW behaviour for "01" &lt; "1".
+					// 值相等：文本更短者（前导零更多）排在前，与 StrCmpLogicalW "01" &lt; "1" 一致
 					if (xNum.Length != yNum.Length)
 						return xNum.Length < yNum.Length ? -1 : 1;
 				}
@@ -98,7 +93,6 @@ namespace ForkPlus
 				}
 			}
 
-			// Whichever string still has characters left is "greater".
 			int xRemaining = x.Length - i;
 			int yRemaining = y.Length - j;
 			return xRemaining.CompareTo(yRemaining);

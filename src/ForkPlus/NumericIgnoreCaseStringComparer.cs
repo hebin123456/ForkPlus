@@ -16,10 +16,6 @@ namespace ForkPlus
 
 		private static readonly NaturalStringComparer s_natural = NaturalStringComparer.Instance;
 
-		// Kept for binary/source compatibility with code that may still reference the import.
-		// The Windows path is dispatched through NaturalStringComparer, which performs the
-		// same P/Invoke (StrCmpLogicalW) on Windows and falls back to managed natural sort
-		// on non-Windows.
 		[DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
 		private static extern int StrCmpLogicalW(string psz1, string psz2);
 

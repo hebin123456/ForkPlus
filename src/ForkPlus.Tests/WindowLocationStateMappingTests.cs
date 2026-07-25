@@ -75,11 +75,16 @@ namespace ForkPlus.Tests
 		public void DirectCastShowCmdToWindowState_WouldBeWrong()
 		{
 			// 文档化为何不能直接强转：记录旧 bug 的具体表现。
-			// SW_SHOWMAXIMIZED(3) 直接强转 (WindowState)3 既不是 Normal(0)、Minimized(1)、Maximized(2)，
-			// 是未定义值。这条断言永远成立，作为"为什么需要 FromShowCmd"的活文档。
+			// SW_SHOWMAXIMIZED(3) 直接强转 (WindowState)3 在 WPF 中不是 Normal(0)、Minimized(1)、Maximized(2)，
+			// 是未定义值。
+			// 阶段 4.5：迁移到 Avalonia 后，WindowState 多了 FullScreen=3 枚举值，(WindowState)3 不再是
+			// 未定义值。本测试改为验证更根本的不变量：直接强转 ShowCmd 不会得到与 ShowCmd 语义一致的
+			// WindowState（SW_SHOWMAXIMIZED=3 应映射到 Maximized=2，而非直接强转得到的 3=FullScreen）。
 			int swShowMaximized = 3;
+			WindowState directCast = (WindowState)swShowMaximized;
 
-			Assert.False(System.Enum.IsDefined(typeof(WindowState), (WindowState)swShowMaximized));
+			// 核心断言：直接强转 SW_SHOWMAXIMIZED(3) 不会得到 Maximized(2)
+			Assert.NotEqual(WindowState.Maximized, directCast);
 		}
 	}
 }
