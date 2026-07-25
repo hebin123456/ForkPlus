@@ -22,6 +22,11 @@ namespace ForkPlus.UI.UserControls
 	{
 		private static readonly double SearchPanelHeight = 30.0;
 
+		// 阶段 5：Avalonia XAML 编译器对非 Control 元素（TranslateTransform）的 x:Name
+		// 不会自动生成字段（参考 StatusUserControl.xaml.cs 同样的迁移模式）。
+		// 通过所属 Border 的 RenderTransform 访问实例。
+		private TranslateTransform PanelTranslateTransform => SearchPanelBorder?.RenderTransform as TranslateTransform;
+
 		// 阶段 4.5：WPF DependencyProperty.Register + PropertyMetadata → Avalonia StyledProperty + AvaloniaProperty.Register<TOwner, TType>。
 		public static readonly StyledProperty<Grid> SearchPanelPlaceholderProperty = AvaloniaProperty.Register<RevisionSearchPanelUserControl, Grid>(nameof(SearchPanelPlaceholder));
 

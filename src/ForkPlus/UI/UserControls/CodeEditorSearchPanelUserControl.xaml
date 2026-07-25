@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CodeEditorSearchPanelUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
-  <Border Padding="6,4,4,4">
+  <Border Padding="6,4,4,4" x:Name="SearchPanelBorder">
     <Border.Background>
       <DynamicResource ResourceKey="ToolbarBackgroundBrush" />
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
-      <TranslateTransform x:Name="TranslateTransform" />
+      <TranslateTransform />
     </Border.RenderTransform>
     <Border.Child>
       <DockPanel>

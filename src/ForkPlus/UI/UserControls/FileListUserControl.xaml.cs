@@ -206,18 +206,19 @@ namespace ForkPlus.UI.UserControls
 			switch (Mode)
 			{
 			case FileListMode.List:
-				// 阶段 4.5：WPF (DataTemplate)base.Resources[key] → Avalonia (IDataTemplate)base.Resources[key]（ItemTemplate 为 IDataTemplate）。
-				TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
-				TreeView.Style = ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle;
-				break;
-			case FileListMode.Tree:
-				TreeView.ItemTemplate = (IDataTemplate)base.Resources["TreeViewTemplate"];
-				TreeView.Style = ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle;
-				break;
-			case FileListMode.CombinedList:
-				TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
-				TreeView.Style = ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle;
-				break;
+			// 阶段 4.5：WPF (DataTemplate)base.Resources[key] → Avalonia (IDataTemplate)base.Resources[key]（ItemTemplate 为 IDataTemplate）。
+			TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
+			// 阶段 5：Avalonia 11 Control.Style 是 internal，改用 Styles.Add（参考 AutoCompleteTextBox.cs:134）。
+			TreeView.Styles.Add(ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+			break;
+		case FileListMode.Tree:
+			TreeView.ItemTemplate = (IDataTemplate)base.Resources["TreeViewTemplate"];
+			TreeView.Styles.Add(ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+			break;
+		case FileListMode.CombinedList:
+			TreeView.ItemTemplate = (IDataTemplate)base.Resources["ListViewTemplate"];
+			TreeView.Styles.Add(ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
+			break;
 			}
 		}
 

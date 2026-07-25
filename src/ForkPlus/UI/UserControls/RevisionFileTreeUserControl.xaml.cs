@@ -92,7 +92,9 @@ namespace ForkPlus.UI.UserControls
 		private void FilesTreeView_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
 			ListBoxItem listBoxItem = (e.Source as AvaloniaObject)?.GetParent<ListBoxItem>();
-			if (listBoxItem != null && FilesTreeView.ItemContainerGenerator.ItemFromContainer(listBoxItem) is RevisionFileTreeViewItem revisionFileTreeViewItem)
+			// 阶段 5：Avalonia ItemContainerGenerator 无 ItemFromContainer 方法（WPF 才有）。
+			// Avalonia 的 ListBoxItem.DataContext 即数据项，直接取用。
+			if (listBoxItem != null && listBoxItem.DataContext is RevisionFileTreeViewItem revisionFileTreeViewItem)
 			{
 				revisionFileTreeViewItem.IsExpanded = !revisionFileTreeViewItem.IsExpanded;
 			}

@@ -128,7 +128,8 @@ namespace ForkPlus.UI.UserControls
 					Commands.RemoveRepository.Execute(this, SelectedItems);
 				}
 			}));
-			RepositoriesTreeView.ContextMenuOpening += RepositoriesListBox_ContextMenuOpening;
+			// 阶段 5：Avalonia 无 ContextMenuOpening 事件，用 ContextRequested 替代（参考 SidebarUserControl 迁移）。
+		RepositoriesTreeView.ContextRequested += RepositoriesListBox_ContextMenuOpening;
 			// 阶段 4.5：WPF WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
 			// → Avalonia NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）。
 			NotificationCenter.Current.RepositoryNameChanged += RepositoryNameChanged;
@@ -538,11 +539,14 @@ namespace ForkPlus.UI.UserControls
 
 		private static Control CreateRepositoryColorsMenuItem(RepositoryManager.Repository repository)
 		{
-			return new MenuItem
+			// 阶段 5：Avalonia 11 Control.Style 是 internal，对象初始化器不能设置，
+			// 改用 Styles.Add（参考 AutoCompleteTextBox.cs:134）。
+			var menuItem = new MenuItem
 			{
-				Header = new RepositoryColorsUserControl(repository),
-				Style = ForkPlus.UI.Theme.CustomContentMenuItemStyle
+				Header = new RepositoryColorsUserControl(repository)
 			};
+			menuItem.Styles.Add(ForkPlus.UI.Theme.CustomContentMenuItemStyle);
+			return menuItem;
 		}
 
 		private static bool SameType(RepositoryManagerTreeViewItem[] items)

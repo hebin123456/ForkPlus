@@ -538,7 +538,9 @@ namespace ForkPlus.UI.UserControls
 			};
 			// 阶段 4.5：设置起始位置后，在下一帧设置目标位置以触发过渡（参考 StatusUserControl）。
 			translateTransform.X = tabXCoordinate;
-			_ = Dispatcher.UIThread.Post(() =>
+			// 阶段 5：Avalonia Dispatcher.UIThread.Post 返回 void（非 WPF Dispatcher.BeginAnimation 返回 DispatcherOperation），
+			// 不能赋值给 _（CS8209）。直接调用即可。
+			Dispatcher.UIThread.Post(() =>
 			{
 				translateTransform.X = tabXCoordinate2;
 			});

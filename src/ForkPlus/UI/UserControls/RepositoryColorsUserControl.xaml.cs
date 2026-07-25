@@ -19,9 +19,11 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class RepositoryColorsUserControl : UserControl
 	{
+		// 阶段 5：Avalonia 11 Brushes.Transparent 返回 IImmutableSolidColorBrush（不可赋给 SolidColorBrush）。
+		// 改用 new SolidColorBrush(Colors.Transparent) 创建可变实例保持数组类型一致。
 		private static readonly SolidColorBrush[] _repositoryBrushes = new SolidColorBrush[7]
 		{
-			Brushes.Transparent,
+			new SolidColorBrush(Colors.Transparent),
 			new SolidColorBrush(Color.Parse("#FF3B30")),
 			new SolidColorBrush(Color.Parse("#FF9502")),
 			new SolidColorBrush(Color.Parse("#FFCC00")),

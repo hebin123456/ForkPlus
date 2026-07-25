@@ -1,12 +1,12 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; Border.Child/DockPanel.Children/Grid.Children property elements expanded into direct content; PlaceholderTextBox converted to controls: prefix. -->
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionSearchPanelUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
-  <Border Padding="6,4,4,4">
+  <Border Padding="6,4,4,4" x:Name="SearchPanelBorder">
     <Border.Background>
       <DynamicResource ResourceKey="ToolbarBackgroundBrush" />
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
-      <TranslateTransform x:Name="PanelTranslateTransform" />
+      <TranslateTransform />
     </Border.RenderTransform>
     <DockPanel>
       <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">

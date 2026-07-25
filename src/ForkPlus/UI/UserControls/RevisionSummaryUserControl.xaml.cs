@@ -312,14 +312,17 @@ namespace ForkPlus.UI.UserControls
 		// 阶段 4.5：WPF UIElement → Avalonia Control（参考 DiffEntryRowUserControl）。
 		private Control CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
 		{
-			return new AdvancedTooltipButton(repositoryUserControl, parent, action)
+			// 阶段 5：Avalonia 11 Control.Style 是 internal，对象初始化器不能设置，
+			// 改用 Styles.Add（参考 AutoCompleteTextBox.cs:134）。
+			var button = new AdvancedTooltipButton(repositoryUserControl, parent, action)
 			{
 				Content = parent.ToAbbreviatedString(),
 				Margin = new Thickness(0.0, 0.0, 3.0, 0.0),
 				Padding = new Thickness(0.0),
 				FontSize = 12.0,
-				Style = ParentButtonStyle
 			};
+			button.Styles.Add(ParentButtonStyle);
+			return button;
 		}
 
 		private void ApplySearch()

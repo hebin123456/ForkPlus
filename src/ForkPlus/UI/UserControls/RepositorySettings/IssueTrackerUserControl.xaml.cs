@@ -184,9 +184,10 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 
 		private void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
 		{
+			// 阶段 5：Avalonia WindowBase.Owner setter 是 internal，对象初始化器不能设置。
+			// WindowDialogExtensions.ShowDialog() 无参重载会自动选取活动窗口作为 owner。
 			if (BugTrackerRulesListBox.SelectedItem is BugtrackerRuleViewModel item && new MessageBoxWindow(Translate("Do you want to remove the selected issue tracker rule?"), Translate("You can't undo this action"), Translate("Remove"), Translate("Cancel"), showCancelButton: true, 580.0)
 			{
-				Owner = _parentWindow,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner
 			}.ShowDialog().GetValueOrDefault())
 			{

@@ -64,7 +64,9 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			FilterTextBox.DropdownContextMenuOpened += FilterTextBox_DropdownContextMenuOpened;
-			TreeView.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
+		// 阶段 5：Avalonia ItemContainerGenerator 无 StatusChanged 事件（WPF 才有）。
+		// 原语义：等容器生成完成后订阅 ScrollChanged。改用 TreeView.Loaded（参考 IssuesTabItem 同样迁移）。
+		TreeView.Loaded += ItemContainerGenerator_StatusChanged;
 		}
 
 		public void Initialize(RepositoryUserControl repositoryUserControl)
@@ -112,7 +114,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void ItemContainerGenerator_StatusChanged(object sender, EventArgs e)
 		{
-			TreeView.ItemContainerGenerator.StatusChanged -= ItemContainerGenerator_StatusChanged;
+			TreeView.Loaded -= ItemContainerGenerator_StatusChanged;
 			ScrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
 		}
 

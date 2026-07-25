@@ -39,19 +39,21 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private const string LanguagesDirectoryName = "Languages";
 
-		// 阶段 4.5：WPF DependencyProperty.RegisterAttached → Avalonia AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TOwner,TType>。
-		// 这些属性通过 GetValue/SetValue 在任意 AvaloniaObject 上存取（TextBlock/ContentControl/Window 等），故用 AttachedProperty。
-		private static readonly AttachedProperty<string> OriginalTextProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalText");
+		// 阶段 4.5：WPF DependencyProperty.RegisterAttached → Avalonia AttachedProperty<string> + AvaloniaProperty.RegisterAttached<TValue,THost>。
+	// 阶段 5：Avalonia 11 RegisterAttached 泛型顺序为 <TValue, THost>（值在前，宿主在后），
+	// 非 Register 的 <TOwner, TType> 顺序。原代码 <PreferencesLocalization, string> 会被解析到带 ownerType 的重载导致 CS7036。
+	// 这些属性通过 GetValue/SetValue 在任意 AvaloniaObject 上存取（TextBlock/ContentControl/Window 等），故用 AttachedProperty。
+	private static readonly AttachedProperty<string> OriginalTextProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalText");
 
-		private static readonly AttachedProperty<string> OriginalHeaderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalHeader");
+		private static readonly AttachedProperty<string> OriginalHeaderProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalHeader");
 
-		private static readonly AttachedProperty<string> OriginalContentProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalContent");
+		private static readonly AttachedProperty<string> OriginalContentProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalContent");
 
-		private static readonly AttachedProperty<string> OriginalPlaceholderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalPlaceholder");
+		private static readonly AttachedProperty<string> OriginalPlaceholderProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalPlaceholder");
 
-		private static readonly AttachedProperty<string> OriginalToolTipProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalToolTip");
+		private static readonly AttachedProperty<string> OriginalToolTipProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalToolTip");
 
-		private static readonly AttachedProperty<string> OriginalTitleProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, string>("OriginalTitle");
+		private static readonly AttachedProperty<string> OriginalTitleProperty = AvaloniaProperty.RegisterAttached<string, PreferencesLocalization>("OriginalTitle");
 
 		private static readonly Dictionary<string, string> BuiltInLanguageNames = new Dictionary<string, string>
 		{
@@ -326,12 +328,14 @@ namespace ForkPlus.UI.UserControls.Preferences
 					textBlock.Text = Translate(original, dictionary);
 				}
 			}
-			if (element is ContentControl headeredContentControl && headeredContentControl.Header is string header && !HasBinding(element, ContentControl.HeaderProperty))
+			// 阶段 5：Avalonia ContentControl/ItemsControl 无 Header 属性（WPF 才有），
+		// Header 仅在 HeaderedContentControl/HeaderedItemsControl 派生类上存在。
+		if (element is HeaderedContentControl headeredContentControl && headeredContentControl.Header is string header && !HasBinding(element, HeaderedContentControl.HeaderProperty))
 			{
 				string original = GetOriginal(element, OriginalHeaderProperty, header);
 				headeredContentControl.Header = Translate(original, dictionary);
 			}
-			if (element is ItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, ItemsControl.HeaderProperty))
+			if (element is HeaderedItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, HeaderedItemsControl.HeaderProperty))
 			{
 				string original = GetOriginal(element, OriginalHeaderProperty, itemsHeader);
 				headeredItemsControl.Header = Translate(original, dictionary);
