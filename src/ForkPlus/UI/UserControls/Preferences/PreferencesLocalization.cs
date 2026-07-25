@@ -41,21 +41,21 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		// 阶段 4.5：WPF DependencyProperty.RegisterAttached → Avalonia AttachedProperty<string>。
 	// 阶段 5：Avalonia 11.3 RegisterAttached 仅有两个泛型重载：
-	//   1) RegisterAttached<TOwner, THost, TValue>(string name, ...) — 3 泛型参数，TOwner 在前
-	//   2) RegisterAttached<THost, TValue>(string name, Type ownerType, ...) — 2 泛型 + ownerType 入参
-	// 原 RegisterAttached<PreferencesLocalization, string>("X") 被解析到重载 2 且缺少 ownerType（CS7036）。
-	// 改用重载 1：THost=AvaloniaObject 使属性可附加到任意 AvaloniaObject（TextBlock/ContentControl/Window）。
-	private static readonly AttachedProperty<string> OriginalTextProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalText");
+	//   1) RegisterAttached<TOwner, THost, TValue>(string name, TValue defaultValue, ...) — 3 泛型参数
+	//   2) RegisterAttached<THost, TValue>(string name, Type ownerType, TValue defaultValue, ...) — 2 泛型 + ownerType 入参
+	// PreferencesLocalization 是 static class，不能作为泛型类型参数（CS0718）。
+	// 改用重载 2：THost=AvaloniaObject 使属性可附加到任意 AvaloniaObject，ownerType 传 typeof(PreferencesLocalization)。
+	private static readonly AttachedProperty<string> OriginalTextProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalText", typeof(PreferencesLocalization), default(string));
 
-		private static readonly AttachedProperty<string> OriginalHeaderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalHeader");
+	private static readonly AttachedProperty<string> OriginalHeaderProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalHeader", typeof(PreferencesLocalization), default(string));
 
-		private static readonly AttachedProperty<string> OriginalContentProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalContent");
+	private static readonly AttachedProperty<string> OriginalContentProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalContent", typeof(PreferencesLocalization), default(string));
 
-		private static readonly AttachedProperty<string> OriginalPlaceholderProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalPlaceholder");
+	private static readonly AttachedProperty<string> OriginalPlaceholderProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalPlaceholder", typeof(PreferencesLocalization), default(string));
 
-		private static readonly AttachedProperty<string> OriginalToolTipProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalToolTip");
+	private static readonly AttachedProperty<string> OriginalToolTipProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalToolTip", typeof(PreferencesLocalization), default(string));
 
-		private static readonly AttachedProperty<string> OriginalTitleProperty = AvaloniaProperty.RegisterAttached<PreferencesLocalization, AvaloniaObject, string>("OriginalTitle");
+	private static readonly AttachedProperty<string> OriginalTitleProperty = AvaloniaProperty.RegisterAttached<AvaloniaObject, string>("OriginalTitle", typeof(PreferencesLocalization), default(string));
 
 		private static readonly Dictionary<string, string> BuiltInLanguageNames = new Dictionary<string, string>
 		{
