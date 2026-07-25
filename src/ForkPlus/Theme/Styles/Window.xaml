@@ -260,16 +260,16 @@
                 <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                      <Button Command="SystemCommands.MinimizeWindowCommand" x:Name="PART_MinimizeButton">
+                      <Button x:Name="PART_MinimizeButton">
                         <Path Data="{StaticResource MinimizeGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.RestoreWindowCommand" x:Name="PART_RestoreButton">
+                      <Button x:Name="PART_RestoreButton">
                         <Path Data="{StaticResource RestoreGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.MaximizeWindowCommand" x:Name="PART_MaximizeButton">
+                      <Button x:Name="PART_MaximizeButton">
                         <Path Data="{StaticResource MaximizeGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.CloseWindowCommand" x:Name="PART_CloseButton">
+                      <Button x:Name="PART_CloseButton">
                         <Path Data="{StaticResource CloseGeometry}" />
                       </Button>
                     </StackPanel>
@@ -327,16 +327,16 @@
                 <Border Grid.Row="0" Background="{DynamicResource Window.Dialog.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                      <Button Command="SystemCommands.MinimizeWindowCommand" x:Name="PART_MinimizeButton">
+                      <Button x:Name="PART_MinimizeButton">
                         <Path Data="{StaticResource MinimizeGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.RestoreWindowCommand" x:Name="PART_RestoreButton">
+                      <Button x:Name="PART_RestoreButton">
                         <Path Data="{StaticResource RestoreGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.MaximizeWindowCommand" x:Name="PART_MaximizeButton">
+                      <Button x:Name="PART_MaximizeButton">
                         <Path Data="{StaticResource MaximizeGeometry}" />
                       </Button>
-                      <Button Command="SystemCommands.CloseWindowCommand" x:Name="PART_CloseButton">
+                      <Button x:Name="PART_CloseButton">
                         <Path Data="{StaticResource CloseGeometry}" />
                       </Button>
                     </StackPanel>

@@ -42,7 +42,7 @@
     </Style>
     <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
          Conditions: TextBoxBase.IsInactiveSelectionHighlightEnabled=true AND TextBoxBase.IsSelectionActive=false
-         Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+         Setter: SelectionBrush = {DynamicResource {DynamicResource SystemInactiveSelectionHighlightBrush}}
          Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
          Needs code-behind or a binding-based approach. -->
   </Style>
@@ -74,7 +74,7 @@
     </Style>
     <!-- NOTE (Avalonia limitation): Original WPF MultiTrigger in Style.Triggers:
          Conditions: PasswordBox.IsInactiveSelectionHighlightEnabled=true AND PasswordBox.IsSelectionActive=false
-         Setter: SelectionBrush = {DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}
+         Setter: SelectionBrush = {DynamicResource {DynamicResource SystemInactiveSelectionHighlightBrush}}
          Cannot be expressed as an Avalonia selector (both conditions are non-pseudo-class properties).
          Needs code-behind or a binding-based approach. -->
   </Style>

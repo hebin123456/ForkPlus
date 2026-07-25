@@ -94,7 +94,7 @@
           <TextBlock Grid.Row="2" Grid.Column="0" Margin="18,4,0,0" FontSize="13" Text="Public Key:" />
           <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="14,4,0,0" FontSize="13" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" x:Name="SshKeyPublicKeyTextBox" />
           <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" FontSize="13" Margin="14,2,0,0">
-            <Hyperlink NavigateUri="dummy" RequestNavigate="CopyPublicKey_RequestNavigate">
+            <Hyperlink NavigateUri="dummy">
               <TextBlock HorizontalAlignment="Center" Text="Copy to clipboard" Margin="0" />
             </Hyperlink>
           </TextBlock>

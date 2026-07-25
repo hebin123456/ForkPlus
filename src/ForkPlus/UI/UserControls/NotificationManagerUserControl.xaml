@@ -5,9 +5,9 @@
      -->
 <UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.NotificationManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Border Width="350" Height="460" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ToolbarBackgroundBrush}" Margin="10,0,10,10">
     <Border.Effect>

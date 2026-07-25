@@ -42,7 +42,7 @@
       <Grid MinHeight="{TemplateBinding MinHeight}">
         <Border Grid.Row="1" Height="4.0" Margin="5,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SliderThumb.Track.Border}" Background="{DynamicResource SliderThumb.Track.Background}" x:Name="TrackBackground">
           <Canvas Margin="-6,-1">
-            <Rectangle Height="4.0" IsVisible="False" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" x:Name="PART_SelectionRange" />
+            <Rectangle Height="4.0" IsVisible="False" Fill="{DynamicResource {DynamicResource SystemHighlightBrush}}" x:Name="PART_SelectionRange" />
           </Canvas>
         </Border>
         <Track Grid.Row="1" x:Name="PART_Track">

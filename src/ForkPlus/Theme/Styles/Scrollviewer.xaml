@@ -106,9 +106,9 @@
             </RepeatButton>
             <Track IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
               <Track.Resources>
-                <ResourceDictionary>
+                
                   <sys:Double x:Key="{x:StaticExtension SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
-                </ResourceDictionary>
+                
               </Track.Resources>
               <Track.Thumb>
                 <Thumb />
@@ -218,9 +218,9 @@
             </RepeatButton>
             <Track IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
               <Track.Resources>
-                <ResourceDictionary>
+                
                   <sys:Double x:Key="{x:StaticExtension SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
-                </ResourceDictionary>
+                
               </Track.Resources>
               <Track.Thumb>
                 <Thumb />

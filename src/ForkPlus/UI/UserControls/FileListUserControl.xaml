@@ -8,7 +8,7 @@
      -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileListUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <DataTemplate x:Key="TreeViewTemplate">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -63,7 +63,7 @@
           </controls:AutoTooltipTextBlock>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <userControls:FileListTreeView SizeChanged="TreeView_SizeChanged" x:Name="TreeView">
     <userControls:FileListTreeView.View>

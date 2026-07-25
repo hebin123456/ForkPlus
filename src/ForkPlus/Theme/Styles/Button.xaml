@@ -84,11 +84,11 @@
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
               <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
                 <ContentPresenter.Resources>
-                  <ResourceDictionary>
+                  
                     <Style Selector="TextBlock">
                       <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                     </Style>
-                  </ResourceDictionary>
+                  
                 </ContentPresenter.Resources>
               </ContentPresenter>
             </DockPanel>
@@ -446,7 +446,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="20,0,0,0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="20,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -455,7 +455,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+          <Rectangle Margin="0,0,0,0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1 2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>

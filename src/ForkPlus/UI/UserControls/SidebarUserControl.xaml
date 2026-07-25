@@ -1,13 +1,13 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns and xmlns:x declarations removed. -->
 <UserControl xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SidebarUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <Style x:Key="SidebarFilterButton" Selector="Button" />
       <Style x:Key="SidebarHideButton" Selector="Button" />
       <Style x:Key="SidebarPinButton" Selector="Button" />
       <Style x:Key="SidebarTruncateHyperlink" Selector="Hyperlink" />
       <Style x:Key="SidebarTagTitleTextBlock" Selector="TextBlock" />
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid Background="{DynamicResource Sidebar.Static.Background}">
     <Grid.RowDefinitions>
@@ -23,7 +23,7 @@
           <Image Source="{DynamicResource SettingsIcon}" />
         </controls:DropDownButton>
         <TextBlock DockPanel.Dock="Left" Margin="0" FontWeight="Medium" VerticalAlignment="Center" FontSize="13.5">
-          <Hyperlink NavigateUri=" " RequestNavigate="RepositoryParentNameTextBlock_RequestNavigate">
+          <Hyperlink NavigateUri=" ">
             <TextBlock HorizontalAlignment="Center" Margin="0" x:Name="RepositoryParentNameTextBlock" />
           </Hyperlink>
         </TextBlock>
@@ -82,7 +82,7 @@
           <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" IsVisible="False" />
           <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
           <Grid Grid.Row="2">
-            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" x:Name="SidebarTreeView">
+            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple,Toggle" x:Name="SidebarTreeView">
               <controls:MultiselectionTreeView.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>

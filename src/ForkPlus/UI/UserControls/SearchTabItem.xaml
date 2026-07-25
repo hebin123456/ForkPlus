@@ -22,7 +22,7 @@
     </Style>
   </TabItem.Styles>
   <TabItem.Resources>
-    <ResourceDictionary>
+    
       <DataTemplate DataType="local:SidebarSearchItem">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
@@ -79,7 +79,7 @@
           </controls:HighlightableTextBlock>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
+    
   </TabItem.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -107,7 +107,7 @@
       </DockPanel>
     </Grid>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Margin="0" x:Name="TreeView">
+      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple,Toggle" Margin="0" x:Name="TreeView">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

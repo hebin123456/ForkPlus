@@ -7,7 +7,7 @@
      -->
 <UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <Style x:Key="RepositoryManagerEditableTextBlock" Selector="controls|RepositoryManagerEditableTextBlock" />
       <DataTemplate DataType="userControls:RepositoryManagerSectionItem">
         <Grid Height="22">
@@ -79,7 +79,7 @@
           </Ellipse>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid x:Name="RepositoryManagerGrid">
     <Grid.RowDefinitions>

@@ -41,7 +41,6 @@
                       BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                       HorizontalAlignment="Left"
                       Cursor="Hand"
-                      MouseLeftButtonUp="ColorPreview_Click"
                       Tag="{Binding}"
                       ToolTip.Tip="{Binding Key}">
                 <Rectangle Fill="{Binding PreviewBrush}" />
@@ -106,8 +105,6 @@
             <!-- 饱和度 x 明度 2D 方块 -->
             <Canvas Grid.Column="0" x:Name="HsvCanvas" Width="240" Height="160"
                     ClipToBounds="True"
-                    MouseLeftButtonDown="HsvCanvas_MouseDown"
-                    MouseLeftButtonUp="HsvCanvas_MouseUp"
                     MouseMove="HsvCanvas_MouseMove"
                     Cursor="Cross">
               <!-- 背景纯色（当前色相，动态替换） -->
@@ -138,8 +135,6 @@
             <!-- 色相条（垂直彩虹） -->
             <Canvas Grid.Column="1" x:Name="HueCanvas" Width="20" Height="160"
                     Margin="0,0,0,0" ClipToBounds="True"
-                    MouseLeftButtonDown="HueCanvas_MouseDown"
-                    MouseLeftButtonUp="HueCanvas_MouseUp"
                     MouseMove="HueCanvas_MouseMove"
                     Cursor="Cross">
               <Rectangle Width="20" Height="160">
@@ -155,8 +150,8 @@
                   </LinearGradientBrush>
                 </Rectangle.Fill>
               </Rectangle>
-              <Line x:Name="HueIndicator" X1="0" Y1="0" X2="20" Y2="0"
-                    Stroke="White" StrokeThickness="2" />
+              <Line x:Name="HueIndicator"
+                    Stroke="White" StrokeThickness="2"  StartPoint="0,0" EndPoint="20,0" />
             </Canvas>
           </Grid>
 

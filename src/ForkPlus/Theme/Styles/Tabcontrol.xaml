@@ -55,12 +55,12 @@
   </Style>
   <Style x:Key="TabControl" Selector="TabControl">
     <Style.Resources>
-      <ResourceDictionary>
+      
         <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}" />
         </Style>
         <Style x:Key="TabItem" Selector="TabItem" />
-      </ResourceDictionary>
+      
     </Style.Resources>
     <Setter Property="Padding" Value="2" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -205,7 +205,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" Direction="270" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
+  <DropShadowEffect x:Key="ClosableTabItemShadow" BlurRadius="10" Color="Black" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" />
   <Style x:Key="ClosableTabItem" Selector="controls|ClosableTabItem">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Static.Foreground}" />
     <Setter Property="Padding" Value="2,0,2,0" />
@@ -307,7 +307,7 @@
       <Setter Property="Margin" Value="-1,0,0,0" />
     </Style>
     <Style Selector="^:disabled">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
       <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Disabled.Background}" />
@@ -343,12 +343,12 @@
   </Style>
   <Style x:Key="ModernTabControl" Selector="controls|ModernTabControl">
     <Style.Resources>
-      <ResourceDictionary>
+      
         <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
         <Style x:Key="TabItem" Selector="TabItem" />
-      </ResourceDictionary>
+      
     </Style.Resources>
     <Setter Property="BorderThickness" Value="0,1,0,0" />
     <Setter Property="Template">
@@ -382,14 +382,14 @@
   </Style>
   <Style x:Key="RepositoryManagerTabControl" Selector="controls|ModernTabControl">
     <Style.Resources>
-      <ResourceDictionary>
+      
         <Style x:Key="TabPanel" Selector="TabPanel">
           <Setter Property="Background" Value="#00FFFFFF" />
         </Style>
         <Style x:Key="TabItem" Selector="TabItem">
           <Setter Property="FontSize" Value="14" />
         </Style>
-      </ResourceDictionary>
+      
     </Style.Resources>
   </Style>
 </ResourceDictionary>

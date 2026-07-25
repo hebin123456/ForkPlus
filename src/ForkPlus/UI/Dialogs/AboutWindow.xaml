@@ -20,7 +20,7 @@
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,10,0,8" Text="ForkPlus" FontSize="32" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" x:Name="VersionTextBlock" />
       <Label DockPanel.Dock="Top" HorizontalAlignment="Center" FontSize="13">
-        <Hyperlink NavigateUri="https://hebin.me" RequestNavigate="Hyperlink_RequestNavigate">
+        <Hyperlink NavigateUri="https://hebin.me">
           <TextBlock HorizontalAlignment="Center" Text="hebin.me" Margin="0" />
         </Hyperlink>
       </Label>

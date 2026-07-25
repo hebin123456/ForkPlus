@@ -86,7 +86,7 @@
           <Condition Property="TextBoxBase.IsInactiveSelectionHighlightEnabled" Value="true" />
           <Condition Property="TextBoxBase.IsSelectionActive" Value="false" />
         </MultiTrigger.Conditions>
-        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {DynamicResource SystemInactiveSelectionHighlightBrush}}" />
       </MultiTrigger>
     </Style.Triggers>
     -->
@@ -157,7 +157,7 @@
           <Condition Property="TextBoxBase.IsInactiveSelectionHighlightEnabled" Value="true" />
           <Condition Property="TextBoxBase.IsSelectionActive" Value="false" />
         </MultiTrigger.Conditions>
-        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {DynamicResource SystemInactiveSelectionHighlightBrush}}" />
       </MultiTrigger>
     </Style.Triggers>
     -->

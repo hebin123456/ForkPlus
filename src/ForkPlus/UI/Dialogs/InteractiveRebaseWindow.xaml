@@ -5,19 +5,19 @@
       <DataTemplate x:Key="NoneDataTemplate" DataType="dialogs:GraphItemType" />
       <DataTemplate x:Key="StartDataTemplate" DataType="dialogs:GraphItemType">
         <Canvas Height="22" Width="22">
-          <Line X1="11" Y1="11" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4"  StartPoint="11,11" EndPoint="11,22" />
           <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
         </Canvas>
       </DataTemplate>
       <DataTemplate x:Key="MiddleDataTemplate" DataType="dialogs:GraphItemType">
         <Canvas Height="22" Width="22">
-          <Line X1="11" Y1="0" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4"  StartPoint="11,0" EndPoint="11,22" />
           <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
         </Canvas>
       </DataTemplate>
       <DataTemplate x:Key="ThroughDataTemplate" DataType="dialogs:GraphItemType">
         <Canvas Height="22" Width="22">
-          <Line X1="11" Y1="0" X2="11" Y2="22" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" />
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4"  StartPoint="11,0" EndPoint="11,22" />
         </Canvas>
       </DataTemplate>
       <DataTemplate x:Key="TargetDataTemplate" DataType="dialogs:GraphItemType">
@@ -69,7 +69,7 @@
         <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Extended" x:Name="RevisionListView"><dialogs:MultiselectionListView.ItemContainerStyle>
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Multiple,Toggle" x:Name="RevisionListView"><dialogs:MultiselectionListView.ItemContainerStyle>
             <Style Selector="dialogs|MultiselectionListViewItem">
 <Setter Property="Height" Value="22" />
               <Setter Property="HorizontalContentAlignment" Value="Stretch" />

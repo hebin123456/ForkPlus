@@ -40,7 +40,7 @@
   </Style>
   <DataTemplate x:Key="ReferencesDataTemplates">
     <DataTemplate.Resources>
-      <ResourceDictionary>
+      
         <DataTemplate DataType="ui:TagViewModel">
           <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
             <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.TagBorder}" Background="{DynamicResource ListBox.Static.Background}">
@@ -202,7 +202,7 @@
             </DockPanel>
           </Border>
         </DataTemplate>
-      </ResourceDictionary>
+      
     </DataTemplate.Resources>
     <ContentPresenter>
       <ContentPresenter.Content>
@@ -258,7 +258,7 @@
                  Bd.BorderBrush = Item.SelectedInactive.Border -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
           <Style Selector="^:disabled /template/ Border#Bd">
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
           </Style>
 </Border.Styles>
 
@@ -277,7 +277,6 @@
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
 <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -295,7 +294,6 @@
          ItemContainerStyle via a binding/converter.
     <Style.Triggers>
       <Trigger Property="ListBox.SelectionMode" Value="Extended">
-        <Setter Property="ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
       </Trigger>
     </Style.Triggers>
     -->
@@ -391,9 +389,9 @@
   </Style>
   <Style x:Key="ListViewWithGridViewStyle" Selector="ListView">
     <Style.Resources>
-      <ResourceDictionary>
+      
         <Style x:Key="ListViewItem" Selector="ListViewItem" />
-      </ResourceDictionary>
+      
     </Style.Resources>
     <Setter Property="Template">
       <Setter.Value>
@@ -551,7 +549,6 @@
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -569,13 +566,11 @@
          ItemContainerStyle via a binding/converter.
     <Style.Triggers>
       <Trigger Property="ListBox.SelectionMode" Value="Extended">
-        <Setter Property="ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
       </Trigger>
     </Style.Triggers>
     -->
   </Style>
   <Style x:Key="NoSelectionListBoxStyle" Selector="ListBox">
-<Setter Property="ItemContainerStyle" Value="{DynamicResource NoSelectionListBoxItemStyle}" />
   </Style>
   <Style x:Key="AutoCompleteListBoxStyle" Selector="ListBox">
     <Setter Property="VerticalAlignment" Value="Top" />
@@ -586,7 +581,6 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <Setter Property="ItemContainerStyle" Value="{DynamicResource AutocompleteListBoxItemStyle}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
@@ -621,7 +615,7 @@
       <Setter.Value>
         <ControlTemplate>
           <ControlTemplate.Resources>
-            <ResourceDictionary>
+            
               <DataTemplate DataType="controls:AutoCompleteSuggestion">
                 <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
                   <TextBlock.Text>
@@ -662,7 +656,7 @@
                   </TextBlock>
                 </DockPanel>
               </DataTemplate>
-            </ResourceDictionary>
+            
           </ControlTemplate.Resources>
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -759,7 +753,7 @@
       <Setter.Value>
         <DataTemplate>
           <DataTemplate.Resources>
-            <ResourceDictionary>
+            
               <DataTemplate DataType="controls:ReferencePanelTagViewModel">
                 <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
                   <DockPanel>
@@ -810,7 +804,7 @@
                   </TextBlock>
                 </Border>
               </DataTemplate>
-            </ResourceDictionary>
+            
           </DataTemplate.Resources>
           <ContentPresenter>
             <ContentPresenter.Content>

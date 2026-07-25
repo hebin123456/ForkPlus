@@ -12,7 +12,7 @@
     </Style>
   </UserControl.Styles>
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <Style x:Key="QuestionmarkTextBlock" Selector="TextBlock">
         <Setter Property="ToolTip">
@@ -53,7 +53,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid Width="900" Height="360">
     <Grid.ColumnDefinitions>

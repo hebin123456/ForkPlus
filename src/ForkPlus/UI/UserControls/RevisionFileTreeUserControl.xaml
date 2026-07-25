@@ -1,7 +1,7 @@
 <!-- Migrated from WPF to Avalonia: root xmlns updated to https://github.com/avaloniaui; redundant child xmlns declarations removed; DataTemplate DataType simplified (x:Type removed); MouseDoubleClick binding removed (handler is subscribed via FilesTreeView.DoubleTapped in code-behind per Avalonia migration); RenderOptions.ClearTypeHint attribute removed. -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <DataTemplate DataType="userControls:RevisionFileTreeViewItem">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -20,7 +20,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid x:Name="ContainerGrid">
     <Grid.ColumnDefinitions>

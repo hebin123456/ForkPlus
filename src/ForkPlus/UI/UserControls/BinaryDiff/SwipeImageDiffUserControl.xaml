@@ -1,7 +1,7 @@
 <!-- 已从 WPF 迁移到 Avalonia：xmlns 替换为 https://github.com/avaloniaui；删除 ResourceDictionary / Style / 子控件上的重复 xmlns 与 xmlns:x 声明；Label 替换为 TextBlock（含 <Label.Style> → <TextBlock.Style>）。 -->
 <UserControl xmlns:binaryDiff="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.SwipeImageDiffUserControl" xmlns="https://github.com/avaloniaui">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <Style x:Key="SwipeGridSplitter" Selector="GridSplitter">
 <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -26,7 +26,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Top">
     <Grid.RowDefinitions>

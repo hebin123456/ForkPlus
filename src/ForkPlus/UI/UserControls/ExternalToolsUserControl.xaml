@@ -11,10 +11,10 @@
      -->
 <UserControl xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ExternalToolsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <controls:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <UserControl.Styles>
     <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中的 MultiDataTrigger。

@@ -53,7 +53,7 @@
     </Setter>
     <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
     <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
     </Style>
     <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected (show selection indicator) -->
     <Style Selector="^:selected /template/ Border#SelectionIndicator">
@@ -192,7 +192,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
     <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
@@ -353,7 +353,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
     <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers could not be converted (no pseudoclasses for these conditions):
          - ItemsControl.HasItems=false -> dropDownBorder.Height=95
@@ -368,10 +368,10 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Template" Value="{StaticResource InteractiveRebaseComboBoxTemplate}" />
     <Style.Resources>
-      <ResourceDictionary>
+      
         <Style x:Key="ComboBoxItem" Selector="ComboBoxItem">
 </Style>
-      </ResourceDictionary>
+      
     </Style.Resources>
   </Style>
 </ResourceDictionary>

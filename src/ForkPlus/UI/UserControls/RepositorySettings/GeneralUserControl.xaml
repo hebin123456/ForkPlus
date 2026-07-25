@@ -5,9 +5,9 @@
        MainBranchComboBoxItemStyle 保留空壳以兼容 ItemContainerStyle 引用。 -->
 <UserControl xmlns:RepositorySettings="clr-namespace:ForkPlus.UI.UserControls.RepositorySettings" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositorySettings.GeneralUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <Style x:Key="MainBranchComboBoxItemStyle" Selector="ComboBoxItem" />
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid Width="450">
     <Grid.ColumnDefinitions>
@@ -35,7 +35,7 @@
     <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4" Padding="4,2,4,2" Placeholder="Email" x:Name="EmailTextBox" />
     <TextBlock Grid.Row="4" Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center">
       <Span>
-        <Run>Change the avatar at</Run> <Hyperlink NavigateUri="https://gravatar.com" RequestNavigate="Hyperlink_RequestNavigate"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></Hyperlink></Span>
+        <Run>Change the avatar at</Run> <Hyperlink NavigateUri="https://gravatar.com"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></Hyperlink></Span>
     </TextBlock>
     <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
     <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Text="Lean Branching" />

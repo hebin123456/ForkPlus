@@ -541,7 +541,6 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="ItemContainerStyle" Value="{DynamicResource {x:Type MenuItem}}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>

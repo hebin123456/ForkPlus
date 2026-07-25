@@ -6,7 +6,7 @@
      -->
 <TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.PullRequestsTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <TabItem.Resources>
-    <ResourceDictionary>
+    
       <DataTemplate DataType="local:PullRequestItem">
         <Grid Height="50">
           <Grid.RowDefinitions>
@@ -60,7 +60,7 @@
           </Button>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
+    
   </TabItem.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -91,7 +91,7 @@
       <controls:FilterTextBox Margin="4,0,4,4" UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />
     </StackPanel>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView SelectionMode="Extended" Margin="0" x:Name="TreeView">
+      <controls:MultiselectionTreeView SelectionMode="Multiple,Toggle" Margin="0" x:Name="TreeView">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

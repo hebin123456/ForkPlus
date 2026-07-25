@@ -9,7 +9,7 @@
      -->
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.MergeConflictUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
-    <ResourceDictionary>
+    
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <Style x:Key="MergeConflictCheckBox" Selector="CheckBox">
 <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
@@ -242,7 +242,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-    </ResourceDictionary>
+    
   </UserControl.Resources>
   <Grid>
     <Grid x:Name="ConflictVersionsContainer">

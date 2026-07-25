@@ -94,7 +94,7 @@
       <Setter.Value>
         <ControlTemplate>
           <ControlTemplate.Resources>
-            <ResourceDictionary>
+            
               <DataTemplate x:Key="{x:StaticExtension CalendarItem.DayTitleTemplateResourceKey}">
                 <TextBlock FontWeight="Medium" FontSize="13" HorizontalAlignment="Center" Margin="0,6,0,6" VerticalAlignment="Center">
                   <TextBlock.Text>
@@ -102,7 +102,7 @@
                   </TextBlock.Text>
                 </TextBlock>
               </DataTemplate>
-            </ResourceDictionary>
+            
           </ControlTemplate.Resources>
           <Grid x:Name="PART_Root">
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="1">

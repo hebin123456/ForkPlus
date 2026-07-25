@@ -26,7 +26,7 @@
             <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
               <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
             </ProgressBar>
-            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="SecondaryTitleTextBlock">
+            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="SecondaryTitleTextBlock">
               <TextBlock.Foreground>
                 <DynamicResource ResourceKey="LabelBrush" />
               </TextBlock.Foreground>
@@ -36,7 +36,7 @@
             <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
               <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
             </ProgressBar>
-            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" MouseUp="TitleTextBlock_MouseUp" x:Name="TitleTextBlock">
+            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock">
               <TextBlock.Foreground>
                 <DynamicResource ResourceKey="LabelBrush" />
               </TextBlock.Foreground>
@@ -85,7 +85,7 @@
             <Image.VerticalAlignment>Center</Image.VerticalAlignment>
             <ToolTip.Tip>Cancel</ToolTip.Tip>
           </Image>
-          <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" MouseUp="DescriptionTextBlock_MouseUp" x:Name="DescriptionTextBlock">
+          <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" x:Name="DescriptionTextBlock">
             <TextBlock.Foreground>
               <DynamicResource ResourceKey="LabelBrush" />
             </TextBlock.Foreground>
