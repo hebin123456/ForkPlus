@@ -227,4 +227,24 @@
     <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
     <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
   </Target>
+
+  <!-- NativeAOT publish 模式下，子进程（AskPass / RI）和原生库（biturbo / tokei）拷贝到主工程 publish 目录。
+       AOT publish 后产物路径为 bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\，
+       子进程需在 CI 里先单独 publish AOT（同 RID），主工程 publish 时此 target 把它们的单文件可执行
+       产物拷贝过来。Exists 守卫保证子进程未 AOT publish 时不失败（fallback 到 framework-dependent build）。
+       Windows AOT 产物带 .exe 后缀，Linux/macOS 无后缀，两者都检查。.dbg 调试符号不拷贝（体积大，分发不需要）。-->
+  <Target Name="CopyAotDependencies" AfterTargets="Publish" Condition="'$(PublishAot)' == 'true' And '$(RuntimeIdentifier)' != '' And '$(PublishDir)' != ''">
+    <!-- AskPass AOT 产物 -->
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.AskPass.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.AskPass.exe')" />
+    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.AskPass" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.AskPass')" />
+    <!-- RI AOT 产物 -->
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.RI.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.RI.exe')" />
+    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.RI" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\ForkPlus.RI')" />
+    <!-- 原生库（biturbo / tokei） -->
+    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+    <Copy SourceFiles="..\..\third_party\tokei" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei')" />
+  </Target>
 </Project>

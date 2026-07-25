@@ -12,20 +12,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # NativeAOT 产物：每平台 1 个原生可执行文件（含 .NET runtime，无需用户装 .NET）+ 原生库（Skia/biturbo/tokei）。
+          # RID 必须匹配 runner 架构：Windows/Linux 用 x64，macOS runner 是 Apple Silicon (M1) 用 arm64。
+          # build_framework 仍按平台选 TFM：Windows 保留 net10.0-windows10.0.19041.0 以访问 WinRT/Toast，
+          #   Linux/macOS 用 net10.0 跨平台 TFM。AOT 编译对所有 TFM 均生效。
           - os: windows-latest
             artifact_suffix: windows
-            # Windows runner 生成 Windows 专属 TFM 产物（含 WinRT / Microsoft.Win32.Registry 等）。
+            rid: win-x64
             build_framework: net10.0-windows10.0.19041.0
-            build_artifact_path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/win-x64/publish
           - os: ubuntu-latest
             artifact_suffix: linux
-            # 非 Windows 仅构建跨平台 net10.0 目标（Linux ELF 可执行文件 + libbiturbo.so + tokei）。
+            rid: linux-x64
             build_framework: net10.0
-            build_artifact_path: src/ForkPlus/bin/Release/net10.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0/linux-x64/publish
           - os: macos-latest
             artifact_suffix: macos
+            rid: osx-arm64
             build_framework: net10.0
-            build_artifact_path: src/ForkPlus/bin/Release/net10.0
+            build_artifact_path: src/ForkPlus/bin/Release/net10.0/osx-arm64/publish
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -87,44 +92,51 @@ jobs:
           fi
           echo "✓ tokei fetched successfully on $RUNNER_OS"
 
-      # .NET 10 迁移：原 msbuild + setup-msbuild + setup-nuget 已替换为 dotnet CLI
-      # （SDK 风格工程自带 restore，无需 nuget.exe）。
-      # 所有平台都直接构建 .csproj（不构建 .sln）。原因：.sln 的 SolutionConfigurationPlatforms
-      # 用 "Any CPU"（带空格）作为平台名，会导致输出目录变成 bin/Any CPU/Release/...，
-      # 与 CI artifact 路径 bin/Release/... 不一致。直接构建 .csproj 时默认平台是 AnyCPU（无空格），
-      # 输出目录为 bin/Release/...，三平台一致。
-      # Windows 构建：主工程（含 AskPass / RI ProjectReference）+ 三个测试工程（ForkPlus.Tests /
-      #   AskPass.Tests / RI.Tests）的 net10.0-windows TFM。AutomationTests 暂不构建（ST 步骤已注释）。
-      # 非 Windows 构建：主工程 + ForkPlus.Tests 的 net10.0 TFM（AskPass.Tests / RI.Tests /
-      #   AutomationTests 仍为 net10.0-windows 单 TFM，无法在非 Windows 上构建）。
-      # 非 Windows 需 EnableWindowsTargeting=true：主工程 csproj 是双 TFM（net10.0;net10.0-windows），
-      # restore / build 评估时仍会读取 net10.0-windows 的 PackageReference，不设此属性会报 NETSDK1100。
-      # 该属性只允许评估 Windows TFM（cross-compile），不会改变 -f net10.0 仅构建跨平台目标的行为。
-      - name: Restore (Release)
+      # NativeAOT 编译流程：
+      # 1) 先 publish 两个子进程（AskPass / RI）为 AOT 单文件可执行，输出到
+      #    bin/Release/$(TFM)/$(RID)/publish/。
+      # 2) 再 publish 主工程（含 CopyAotDependencies target），把子进程 AOT 产物 + biturbo/tokei
+      #    原生库拷贝到主工程 publish 目录。
+      # 3) 测试工程不参与 AOT publish（测试用 framework-dependent build 单独跑，见后续 Test 步骤）。
+      #
+      # PublishAot=true 触发 NativeAOT 链路（ILC trim + clang 原生编译），需要 runner 预装 clang：
+      #   windows-latest 自带 MSVC，ubuntu-latest 自带 clang，macos-latest 自带 Xcode clang。
+      # EnableWindowsTargeting=true 让非 Windows runner 也能评估 net10.0-windows TFM 的 PackageReference
+      #   （主工程 csproj 是双 TFM，不设此属性 restore 报 NETSDK1100）。
+      # 467 个 trim warnings (IL2026 ReflectionBinding / IL3050 动态代码) 已知存在，AOT 仍能完成编译。
+      #   ReflectionBinding 风险：运行时 UI 数据绑定可能失效，需要开启 CompiledBindings 修复（独立任务）。
+      #   当前容忍 warnings 以先产出 AOT 产物，由用户实测验证 UI 是否正常。
+      - name: Publish AOT (subprocesses: AskPass + RI)
         shell: bash
         run: |
           set -e
-          projects="src/ForkPlus/ForkPlus.csproj src/ForkPlus.Tests/ForkPlus.Tests.csproj"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            projects="$projects src/ForkPlus.AskPass.Tests/ForkPlus.AskPass.Tests.csproj src/ForkPlus.RI.Tests/ForkPlus.RI.Tests.csproj"
-          fi
-          for proj in $projects; do
-            dotnet restore "$proj" --verbosity minimal ${{ runner.os != 'Windows' && '-p:EnableWindowsTargeting=true' || '' }}
+          for proj in src/ForkPlus.AskPass/ForkPlus.AskPass.csproj src/ForkPlus.RI/ForkPlus.RI.csproj; do
+            dotnet publish "$proj" -c Release -f ${{ matrix.build_framework }} -r ${{ matrix.rid }} \
+              -p:PublishAot=true -p:EnableWindowsTargeting=true --self-contained -v minimal
           done
 
-      - name: Build (Release)
+      - name: Publish AOT (main: ForkPlus)
+        shell: bash
+        run: |
+          set -e
+          # 主工程 publish：CopyAotDependencies target 会自动拷贝 AskPass/RI 的 AOT 产物 + 原生库。
+          dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -f ${{ matrix.build_framework }} -r ${{ matrix.rid }} \
+            -p:PublishAot=true -p:EnableWindowsTargeting=true --self-contained -v minimal
+          echo "=== AOT publish 产物 ==="
+          ls -lh "${{ matrix.build_artifact_path }}/"
+
+      # 测试工程用 framework-dependent build 跑（AOT 不支持测试工程）。
+      # 与之前一致：Windows 跑 net10.0-windows TFM，非 Windows 跑 net10.0 TFM。
+      - name: Build tests (framework-dependent)
         shell: bash
         run: |
           set -e
           if [ "$RUNNER_OS" = "Windows" ]; then
-            dotnet build src/ForkPlus/ForkPlus.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
-            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
-            dotnet build src/ForkPlus.AskPass.Tests/ForkPlus.AskPass.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
-            dotnet build src/ForkPlus.RI.Tests/ForkPlus.RI.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.AskPass.Tests/ForkPlus.AskPass.Tests.csproj -c Release -f ${{ matrix.build_framework }} -v minimal
+            dotnet build src/ForkPlus.RI.Tests/ForkPlus.RI.Tests.csproj -c Release -f ${{ matrix.build_framework }} -v minimal
           else
-            # 非 Windows：先构建主工程（含 AskPass / RI 子进程 ProjectReference），再构建测试工程。
-            dotnet build src/ForkPlus/ForkPlus.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -p:EnableWindowsTargeting=true -v minimal
-            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release --no-restore -f ${{ matrix.build_framework }} -p:EnableWindowsTargeting=true -v minimal
+            dotnet build src/ForkPlus.Tests/ForkPlus.Tests.csproj -c Release -f ${{ matrix.build_framework }} -p:EnableWindowsTargeting=true -v minimal
           fi
 
       - name: Run unit tests
@@ -288,18 +300,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ForkPlus-${{ matrix.artifact_suffix }}
-          path: ${{ matrix.build_artifact_path }}/
+          path: |
+            ${{ matrix.build_artifact_path }}/
+            !${{ matrix.build_artifact_path }}/*.dbg
+            !${{ matrix.build_artifact_path }}/*.runtimeconfig.json
           if-no-files-found: error
 
       - name: Package release zip
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
+          # 打包时排除 .dbg 调试符号（AOT 产物 88MB，分发不需要）和 .runtimeconfig.json
+          # （AOT 单文件可执行不需要运行时配置）。
           if [ "$RUNNER_OS" = "Windows" ]; then
             # Windows runner 默认无 zip 命令，用 7z（runner 预装）打包 .zip。
-            7z a -tzip "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip" "${{ matrix.build_artifact_path }}/"
+            7z a -tzip "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip" "${{ matrix.build_artifact_path }}/" -xr'!*.dbg' -xr'!*.runtimeconfig.json'
           else
-            tar -czf "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.tar.gz" -C "${{ matrix.build_artifact_path }}" .
+            # tar 默认会打包所有文件，用 --exclude 排除 .dbg 和 .runtimeconfig.json。
+            tar -czf "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.tar.gz" \
+              --exclude='*.dbg' --exclude='*.runtimeconfig.json' \
+              -C "${{ matrix.build_artifact_path }}" .
           fi
           ls -lh "ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}."*
 
