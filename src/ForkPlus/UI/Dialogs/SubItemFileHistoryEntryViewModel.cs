@@ -3,6 +3,7 @@ using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.UserControls;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs
 {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Windows.Controls;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.CustomCommands
 {

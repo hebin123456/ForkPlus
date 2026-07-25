@@ -5,6 +5,7 @@ using ForkPlus.Git;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Dialogs.RepositoryOverview
 {

@@ -12,6 +12,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Undo;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Dialogs
 {

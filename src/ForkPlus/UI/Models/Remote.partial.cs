@@ -1,6 +1,7 @@
 using ForkPlus.UI.Helpers;
 using System.Windows.Media;
 using ForkPlus.UI;
+using Avalonia.Media;
 
 // ══════════════════════════════════════════════════════�?//  UI 层对 Remote 的扩�?—�?提供 WPF 特定的图标属性�?//  这些属性通过 IconKey / IconGeometryKey �?Theme 资源中解析�?//  迁移�?Avalonia 时，将此类替换为相应的平台图标绑定�?// ══════════════════════════════════════════════════════�?
 namespace ForkPlus.Git

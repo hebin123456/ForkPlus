@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls
 {

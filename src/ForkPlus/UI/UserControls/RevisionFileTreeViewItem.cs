@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls;
@@ -10,7 +11,16 @@ namespace ForkPlus.UI.UserControls
 {
 	public class RevisionFileTreeViewItem : MultiselectionTreeViewItem
 	{
-		private static readonly BitmapImage FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
+		// 阶段 4.5：WPF BitmapImage + pack:// URI → Avalonia Bitmap + AssetLoader.Open（不可变，无需 Freeze）。
+		private static readonly Bitmap FolderIcon = LoadAsset(new Uri("avares://ForkPlus/assets/folder.png"));
+
+		private static Bitmap LoadAsset(Uri uri)
+		{
+			using (Stream stream = AssetLoader.Open(uri))
+			{
+				return new Bitmap(stream);
+			}
+		}
 
 		private GitModule _gitModule;
 

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media;
 using ForkPlus.UI.UserControls;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.QuickLaunch
 {

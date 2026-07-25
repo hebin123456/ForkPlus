@@ -4,6 +4,8 @@ using ForkPlus.Git;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Controls;
 using System.ComponentModel;
+using Avalonia.Input;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
