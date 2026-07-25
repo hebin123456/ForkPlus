@@ -14,6 +14,17 @@ namespace ForkPlus.UI.Controls
 		public static readonly StyledProperty<Thickness> IconMarginProperty =
 			AvaloniaProperty.Register<GitPointView, Thickness>(nameof(IconMargin), new Thickness(1.0, 3.0, 7.0, 1.0));
 
+		// 阶段 5：WPF Control.FontSize / FontWeight / Foreground 桥接。
+		// Grid（Avalonia Panel）不像 WPF Control 那样自动继承这些属性，需显式声明以兼容 XAML Setter。
+		public static readonly StyledProperty<double> FontSizeProperty =
+			AvaloniaProperty.Register<GitPointView, double>(nameof(FontSize), 13.0);
+
+		public static readonly StyledProperty<FontWeight> FontWeightProperty =
+			AvaloniaProperty.Register<GitPointView, FontWeight>(nameof(FontWeight), FontWeight.Normal);
+
+		public static readonly StyledProperty<IBrush> ForegroundProperty =
+			AvaloniaProperty.Register<GitPointView, IBrush>(nameof(Foreground));
+
 		private bool _customFontStyle;
 
 		private IGitPoint _value;
@@ -22,6 +33,27 @@ namespace ForkPlus.UI.Controls
 		{
 			get => GetValue(IconMarginProperty);
 			set => SetValue(IconMarginProperty, value);
+		}
+
+		/// <summary>WPF Control.FontSize 桥接。仅供 XAML 兼容；不影响内部 TextBlock 渲染。</summary>
+		public double FontSize
+		{
+			get => GetValue(FontSizeProperty);
+			set => SetValue(FontSizeProperty, value);
+		}
+
+		/// <summary>WPF Control.FontWeight 桥接。</summary>
+		public FontWeight FontWeight
+		{
+			get => GetValue(FontWeightProperty);
+			set => SetValue(FontWeightProperty, value);
+		}
+
+		/// <summary>WPF Control.Foreground 桥接。</summary>
+		public IBrush Foreground
+		{
+			get => GetValue(ForegroundProperty);
+			set => SetValue(ForegroundProperty, value);
 		}
 
 		public bool CustomFontStyle

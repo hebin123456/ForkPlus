@@ -158,7 +158,7 @@
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ClosableTabControl">
+        <ControlTemplate  TargetType="controls:ClosableTabControl">
           <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -180,7 +180,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="TabItemFocusVisual">
+  <Style x:Key="TabItemFocusVisual" Selector="TabControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TabControl">
@@ -198,10 +198,9 @@
     <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="AllowDrop" Value="True" />
-    <Setter Property="Template">
+<Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ClosableTabItem">
+        <ControlTemplate  TargetType="controls:ClosableTabItem">
           <Grid>
             <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" x:Name="TopBorder" />
             <Border BorderThickness="0,0,0,1" Margin="0,1,0,0" CornerRadius="4,4,0,0" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Bd" />

@@ -223,6 +223,16 @@ namespace Avalonia.Controls
 			get => GetValue(ViewProperty);
 			set => SetValue(ViewProperty, value);
 		}
+
+		// 阶段 5：WPF ListView.VerticalContentAlignment 桥接。Avalonia ListBox 仅暴露 HorizontalContentAlignment，
+		// 此处补充 VerticalContentAlignment 以兼容 WPF XAML 模板（实际仅占位，不影响渲染）。
+		public static readonly StyledProperty<Avalonia.Layout.VerticalAlignment> VerticalContentAlignmentProperty =
+			AvaloniaProperty.Register<ListView, Avalonia.Layout.VerticalAlignment>(nameof(VerticalContentAlignment), Avalonia.Layout.VerticalAlignment.Stretch);
+		public Avalonia.Layout.VerticalAlignment VerticalContentAlignment
+		{
+			get => GetValue(VerticalContentAlignmentProperty);
+			set => SetValue(VerticalContentAlignmentProperty, value);
+		}
 	}
 
 	/// <summary>WPF ListViewItem bridge. Avalonia uses ListBoxItem; this subclass keeps XAML &lt;ListViewItem&gt; tags and Selector="ListViewItem" compiling.</summary>
@@ -236,20 +246,91 @@ namespace Avalonia.Controls.Primitives
 	/// <summary>WPF GridViewHeaderRowPresenter bridge.</summary>
 	public class GridViewHeaderRowPresenter : Control
 	{
-		public System.Collections.IList Columns { get; } = new System.Collections.ArrayList();
-		public bool AllowsColumnReorder { get; set; }
-		public object ColumnHeaderContainerStyle { get; set; }
-		public object ColumnHeaderTemplate { get; set; }
-		public object ColumnHeaderTemplateSelector { get; set; }
-		public object ColumnHeaderStringFormat { get; set; }
-		public object ColumnHeaderContextMenu { get; set; }
-		public object ColumnHeaderToolTip { get; set; }
+		// 阶段 5：使用 StyledProperty 以支持 XAML 中 Columns="{Binding ...}" 绑定语法。
+		public static readonly StyledProperty<object> ColumnsProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(Columns));
+
+		public static readonly StyledProperty<bool> AllowsColumnReorderProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, bool>(nameof(AllowsColumnReorder));
+
+		public static readonly StyledProperty<object> ColumnHeaderContainerStyleProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderContainerStyle));
+
+		public static readonly StyledProperty<object> ColumnHeaderTemplateProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderTemplate));
+
+		public static readonly StyledProperty<object> ColumnHeaderTemplateSelectorProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderTemplateSelector));
+
+		public static readonly StyledProperty<object> ColumnHeaderStringFormatProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderStringFormat));
+
+		public static readonly StyledProperty<object> ColumnHeaderContextMenuProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderContextMenu));
+
+		public static readonly StyledProperty<object> ColumnHeaderToolTipProperty =
+			AvaloniaProperty.Register<GridViewHeaderRowPresenter, object>(nameof(ColumnHeaderToolTip));
+
+		public object Columns
+		{
+			get => GetValue(ColumnsProperty);
+			set => SetValue(ColumnsProperty, value);
+		}
+
+		public bool AllowsColumnReorder
+		{
+			get => GetValue(AllowsColumnReorderProperty);
+			set => SetValue(AllowsColumnReorderProperty, value);
+		}
+
+		public object ColumnHeaderContainerStyle
+		{
+			get => GetValue(ColumnHeaderContainerStyleProperty);
+			set => SetValue(ColumnHeaderContainerStyleProperty, value);
+		}
+
+		public object ColumnHeaderTemplate
+		{
+			get => GetValue(ColumnHeaderTemplateProperty);
+			set => SetValue(ColumnHeaderTemplateProperty, value);
+		}
+
+		public object ColumnHeaderTemplateSelector
+		{
+			get => GetValue(ColumnHeaderTemplateSelectorProperty);
+			set => SetValue(ColumnHeaderTemplateSelectorProperty, value);
+		}
+
+		public object ColumnHeaderStringFormat
+		{
+			get => GetValue(ColumnHeaderStringFormatProperty);
+			set => SetValue(ColumnHeaderStringFormatProperty, value);
+		}
+
+		public object ColumnHeaderContextMenu
+		{
+			get => GetValue(ColumnHeaderContextMenuProperty);
+			set => SetValue(ColumnHeaderContextMenuProperty, value);
+		}
+
+		public object ColumnHeaderToolTip
+		{
+			get => GetValue(ColumnHeaderToolTipProperty);
+			set => SetValue(ColumnHeaderToolTipProperty, value);
+		}
 	}
 
 	/// <summary>WPF GridViewRowPresenter bridge.</summary>
 	public class GridViewRowPresenter : Control
 	{
-		public System.Collections.IList Columns { get; } = new System.Collections.ArrayList();
+		public static readonly StyledProperty<object> ColumnsProperty =
+			AvaloniaProperty.Register<GridViewRowPresenter, object>(nameof(Columns));
+
+		public object Columns
+		{
+			get => GetValue(ColumnsProperty);
+			set => SetValue(ColumnsProperty, value);
+		}
 	}
 }
 

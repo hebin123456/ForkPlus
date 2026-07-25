@@ -30,11 +30,14 @@
       <!-- 阶段 4.5：替代原 DataTemplate.Triggers 中 ActionsComboBox 的 MultiDataTrigger
            (IsMouseOver AND IsSelected -> Foreground=ForegroundBrush)。简化为祖先 ListBoxItem
            选中+悬停时触发（:selected:pointerover 等价 WPF IsSelected AND IsMouseOver）。 -->
-      <Style Selector="ListBoxItem:selected:pointerover ComboBox#ActionsComboBox">
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-      </Style>
+      
     </ResourceDictionary>
   </dialogs:ForkPlusDialogWindow.Resources>
+  <dialogs:ForkPlusDialogWindow.Styles>
+    <Style Selector="ListBoxItem:selected:pointerover ComboBox#ActionsComboBox">
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+      </Style>
+  </dialogs:ForkPlusDialogWindow.Styles>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="*" />

@@ -37,7 +37,7 @@
     <Setter Property="IsReadOnly" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="CodeEditor">
+        <ControlTemplate  TargetType="editor:CodeEditor">
           <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -70,7 +70,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="FocusVisual">
+  <Style x:Key="FocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -79,7 +79,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="OptionMarkFocusVisual">
+  <Style x:Key="OptionMarkFocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -137,7 +137,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
 <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="EditableTextBlock">
+        <ControlTemplate  TargetType="controls:EditableTextBlock">
           <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis">
             <TextBlock.Text>
               <Binding Path="Value">
@@ -162,8 +162,9 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="CommandTextBox">
+        <ControlTemplate  TargetType="controls:CommandTextBox">
           <DockPanel>
+            <TextPresenter x:Name="PART_TextPresenter" />
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
             <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
               <controls:PlaceholderTextBox.Text>
@@ -183,8 +184,7 @@
     <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
   </Style>
   <Style x:Key="ToolTip" Selector="ToolTip">
-    <Setter Property="HasDropShadow" Value="True" />
-    <Setter Property="FontSize" Value="12" />
+<Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />

@@ -50,6 +50,11 @@ namespace ForkPlus.UI
 		public static readonly StyledProperty<bool> IsTitleVisibleProperty =
 			AvaloniaProperty.Register<CustomWindow, bool>(nameof(IsTitleVisible), false);
 
+		// 阶段 5：WPF SystemParameters.ResizeFrameVerticalBorderWidth 等通过自定义
+		// WindowResizeBorderThickness 属性暴露给 XAML 模板（TemplateBinding ui:CustomWindow.WindowResizeBorderThickness）。
+		public static readonly StyledProperty<Avalonia.Thickness> WindowResizeBorderThicknessProperty =
+			AvaloniaProperty.Register<CustomWindow, Avalonia.Thickness>(nameof(WindowResizeBorderThickness), new Avalonia.Thickness(0));
+
 		private Control _templatePartWindowHeader;
 
 		private Button _closeButton;
@@ -87,6 +92,13 @@ namespace ForkPlus.UI
 		{
 			get => GetValue(IsTitleVisibleProperty);
 			set => SetValue(IsTitleVisibleProperty, value);
+		}
+
+		/// <summary>WPF SystemParameters.*ResizeBorderThickness 桥接：暴露给 XAML 模板使用。</summary>
+		public Avalonia.Thickness WindowResizeBorderThickness
+		{
+			get => GetValue(WindowResizeBorderThicknessProperty);
+			set => SetValue(WindowResizeBorderThicknessProperty, value);
 		}
 
 		/// <summary>

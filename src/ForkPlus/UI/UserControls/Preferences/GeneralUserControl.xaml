@@ -98,9 +98,9 @@
     <TextBlock Grid.Row="4" Grid.Column="0" Text="Diff View" Margin="0,4,0,0">
     </TextBlock>
     <editor:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
-      <Control.BorderBrush>
+      <editor:DiffCodeEditor.BorderBrush>
         <DynamicResource ResourceKey="BorderBrush" />
-      </Control.BorderBrush>
+      </editor:DiffCodeEditor.BorderBrush>
       <ScrollViewer.VerticalScrollBarVisibility>Auto</ScrollViewer.VerticalScrollBarVisibility>
     </editor:DiffCodeEditor>
     <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">

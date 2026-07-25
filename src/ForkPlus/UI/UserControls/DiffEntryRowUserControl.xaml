@@ -15,7 +15,7 @@
           <ControlTemplate>
             <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
 <Border.Styles>
-<Style Selector="^:pointerover">
+<Style Selector="UserControl:pointerover">
               <Setter Property="Cursor" Value="Hand" />
             </Style>
 </Border.Styles>

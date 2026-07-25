@@ -151,7 +151,7 @@
              splitBorder.Background    = ComboBox.Pressed.Editable.Button.Background
              splitBorder.BorderBrush    = ComboBox.Pressed.Editable.Button.Border -->
   </Style>
-  <ControlTemplate x:Key="ComboBoxTemplate">
+  <ControlTemplate x:Key="ComboBoxTemplate" TargetType="ComboBox">
     <Grid x:Name="templateRoot">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
@@ -200,8 +200,7 @@
          - SourceName=DropDownScrollViewer ScrollViewer.CanContentScroll=false -> opaqueRect Canvas.Top/Left bindings -->
   </ControlTemplate>
   <Style x:Key="ComboBoxEditableTextBox" Selector="TextBox">
-    <Setter Property="AllowDrop" Value="true" />
-    <Setter Property="MinWidth" Value="0" />
+<Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
@@ -213,7 +212,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <ControlTemplate x:Key="ComboBoxEditableTemplate">
+  <ControlTemplate x:Key="ComboBoxEditableTemplate" TargetType="ComboBox">
     <Grid x:Name="templateRoot">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
@@ -312,7 +311,7 @@
       <Setter Property="Background" Value="{DynamicResource InteractiveRebase.ComboBoxButton.MouseOver}" />
     </Style>
   </Style>
-  <ControlTemplate x:Key="InteractiveRebaseComboBoxTemplate">
+  <ControlTemplate x:Key="InteractiveRebaseComboBoxTemplate" TargetType="ComboBox">
     <Grid x:Name="templateRoot">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />

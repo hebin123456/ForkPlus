@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -16,12 +17,21 @@ namespace Avalonia.Controls
 	/// WPF System.Windows.Controls.GridView 的 Avalonia 兼容占位。
 	/// 表示 ListView 的多列视图模式。本桥接类仅持有列集合，不实际渲染。
 	/// </summary>
-	public class GridView
+	public class GridView : AvaloniaObject
 	{
+		// 阶段 5：ColumnHeaderContainerStyle 改为 StyledProperty 以支持 {DynamicResource} 绑定。
+		public static readonly StyledProperty<Style> ColumnHeaderContainerStyleProperty =
+			AvaloniaProperty.Register<GridView, Style>(nameof(ColumnHeaderContainerStyle));
+
 		/// <summary>WPF GridView.ColumnHeaderContainerStyle：列头样式。</summary>
-		public Style ColumnHeaderContainerStyle { get; set; }
+		public Style ColumnHeaderContainerStyle
+		{
+			get => GetValue(ColumnHeaderContainerStyleProperty);
+			set => SetValue(ColumnHeaderContainerStyleProperty, value);
+		}
 
 		/// <summary>WPF GridView.Columns：列集合。</summary>
+		[Content]
 		public ObservableCollection<GridViewColumn> Columns { get; } = new ObservableCollection<GridViewColumn>();
 
 		/// <summary>WPF GridView.AllowsColumnReorder：是否允许拖拽重排序列。</summary>
@@ -41,7 +51,7 @@ namespace Avalonia.Controls
 	/// WPF System.Windows.Controls.GridViewColumn 的 Avalonia 兼容占位。
 	/// 表示 GridView 中的一列。
 	/// </summary>
-	public class GridViewColumn
+	public class GridViewColumn : AvaloniaObject
 	{
 		/// <summary>WPF GridViewColumn.Width：列宽。</summary>
 		public double Width { get; set; } = double.NaN;
@@ -53,7 +63,8 @@ namespace Avalonia.Controls
 			set => Width = value;
 		}
 
-		/// <summary>WPF GridViewColumn.Header：列头内容。</summary>
+		/// <summary>WPF GridViewColumn.Header：列头内容（ContentProperty，XAML 中作为隐式内容）。</summary>
+		[Content]
 		public object Header { get; set; }
 
 		/// <summary>WPF GridViewColumn.HeaderContainerStyle：列头容器样式。</summary>

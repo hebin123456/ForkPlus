@@ -114,13 +114,7 @@
         <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
-<Style Selector="^:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-          </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-          <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-          </Style>
 </Border.Styles>
 
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -128,6 +122,12 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+      <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+          </Style>
+      <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+          </Style>
   </Style>
   <Style x:Key="WindowRoundedButton" Selector="Button">
     <Setter Property="Margin" Value="0,2,6,0" />
@@ -316,7 +316,7 @@
     <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ForkPlusDialogWindow">
+        <ControlTemplate  TargetType="dialogs:ForkPlusDialogWindow">
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
             <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
               <Grid>

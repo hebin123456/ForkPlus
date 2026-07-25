@@ -96,17 +96,14 @@
             <DynamicResource ResourceKey="ForegroundBrush.Gray" />
           </TextBlock.Foreground>
         </TextBlock>
-        <controls:DropDownButton Margin="2,3,0,1" Padding="0,2,0,0" Height="14" Width="12" BorderThickness="0" x:Name="DropDownButton">
-          <DropDownButton.Background>
-            <SolidColorBrush>#00FFFFFF</SolidColorBrush>
-          </DropDownButton.Background>
-          <DropDownButton.Focusable>False</DropDownButton.Focusable><DropDownButton.ContextMenu>
+        <controls:DropDownButton Margin="2,3,0,1" Padding="0,2,0,0" Height="14" Width="12" BorderThickness="0" Background="#00FFFFFF" Focusable="False" x:Name="DropDownButton">
+          <controls:DropDownButton.ContextMenu>
             <ContextMenu>
               <ContextMenu.Items>
                 <MenuItem Header="Save As..." Click="SaveAsMenuItem_Click" x:Name="SaveAsMenuItem" />
               </ContextMenu.Items>
             </ContextMenu>
-          </DropDownButton.ContextMenu>
+          </controls:DropDownButton.ContextMenu>
           <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
             <Path.Fill>
               <DynamicResource ResourceKey="ComboBox.Static.Glyph" />

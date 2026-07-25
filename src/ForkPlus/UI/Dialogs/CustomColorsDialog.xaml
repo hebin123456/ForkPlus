@@ -87,7 +87,7 @@
     </Grid>
 
     <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
-    <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3" PlacementMode="Mouse" IsLightDismissEnabled="True">
+    <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3" PlacementMode="Pointer" IsLightDismissEnabled="True">
       <Border Background="{DynamicResource BackgroundBrush}"
               BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
               Padding="16" Width="340">

@@ -13,7 +13,7 @@
        ToggleButton.IsChecked=True -> :checked, ToggleButton.IsChecked=Null -> :indeterminate.
      - NOTE (Avalonia limitation): ContentControl.HasContent trigger has no direct Avalonia pseudo-class; left as comment below. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="OptionMarkFocusVisual">
+  <Style x:Key="OptionMarkFocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>

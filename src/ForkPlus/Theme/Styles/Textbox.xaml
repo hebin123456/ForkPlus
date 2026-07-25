@@ -23,8 +23,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-<Setter Property="AllowDrop" Value="true" />
-    <Setter Property="CornerRadius" Value="3" />
+<Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
@@ -55,8 +54,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-<Setter Property="AllowDrop" Value="true" />
-    <Setter Property="CornerRadius" Value="3" />
+<Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="PasswordBox">

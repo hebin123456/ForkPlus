@@ -46,7 +46,7 @@
       </ContentPresenter.Content>
     </ContentPresenter>
   </DataTemplate>
-  <Style x:Key="FocusVisual" Selector="Control">
+  <Style x:Key="FocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Control">
@@ -174,13 +174,13 @@
               </controls:TouchpadAwareScrollViewer>
               <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
             </DockPanel>
-            <ScrollBar Cursor="Arrow" Maximum="0" Minimum="0" Orientation="Horizontal" Grid.Row="1" IsVisible="{TemplateBinding ComputedHorizontalScrollBarVisibility}" ViewportSize="0" x:Name="PART_HorizontalScrollBar">
+            <ScrollBar Cursor="Arrow" Maximum="0" Minimum="0" Orientation="Horizontal" Grid.Row="1" ViewportSize="0" x:Name="PART_HorizontalScrollBar">
             </ScrollBar>
-            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="0" Minimum="0" Orientation="Vertical" IsVisible="{TemplateBinding ComputedVerticalScrollBarVisibility}" ViewportSize="0" x:Name="PART_VerticalScrollBar">
+            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="0" Minimum="0" Orientation="Vertical" ViewportSize="0" x:Name="PART_VerticalScrollBar">
             </ScrollBar>
             <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
-              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" IsVisible="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
-              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" IsVisible="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" />
+              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" />
             </DockPanel>
           </Grid>
         </ControlTemplate>
@@ -378,7 +378,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <!-- NOTE (Avalonia limitation): VerticalContentAlignment is not a property on Avalonia ListBox; removed. -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBox">
@@ -411,8 +411,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <!-- NOTE (Avalonia limitation): HorizontalContentAlignment/VerticalContentAlignment are not properties on Avalonia ListBox; removed. -->
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
     <Setter Property="Template">
       <Setter.Value>
@@ -446,13 +445,15 @@
         <ControlTemplate TargetType="ListBoxItem">
 
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+<Border.Styles>
+              <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
+              <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
+              </Style>
+</Border.Styles>
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
-          <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
-          <Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
-          </Style>
         </ControlTemplate>
       </Setter.Value>
     </Setter>

@@ -57,7 +57,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -113,7 +113,7 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="MultiselectionTreeView">
+        <ControlTemplate  TargetType="controls:MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter />
@@ -139,7 +139,7 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -235,7 +235,7 @@
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="TreeViewControlItem">
+        <ControlTemplate  TargetType="controls:TreeViewControlItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -262,7 +262,7 @@
     <Setter Property="Padding" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="MultiselectionTreeView">
+        <ControlTemplate  TargetType="controls:MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
               <ItemsPresenter Margin="0,4,0,0" />

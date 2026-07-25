@@ -51,14 +51,8 @@
         <ControlTemplate TargetType="RadioButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
 <Border.Styles>
-<Style Selector="^:checked /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource Sidebar.SelectionActive.Background}" />
-          </Style>
           <!-- IsChecked=false trigger is the default (unchecked) state; Background defaults to Sidebar.Static.Background -->
           <!-- Converted from ControlTemplate.Triggers: ButtonBase.IsPressed=true -> :pressed -->
-          <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-          </Style>
 </Border.Styles>
 
             <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
@@ -66,6 +60,12 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+      <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+          </Style>
+      <Style Selector="^:checked /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource Sidebar.SelectionActive.Background}" />
+          </Style>
   </Style>
   <Style x:Key="SidebarPathImageRadioButtonStyle" Selector="RadioButton">
     <Setter Property="Margin" Value="0,1,0,1" />
@@ -163,14 +163,14 @@
   <Style x:Key="controlsTreeViewControlItemselectedfocuswithinImageTagImage" Selector="controls|TreeViewControlItem:selected:focus-within Image#TagImage">
     <Setter Property="Source" Value="{DynamicResource TagSelectedIcon}" />
   </Style>
-  <DataTemplate DataType="ui:SidebarGroupItem">
+  <DataTemplate x:Key="SidebarGroupItemDataTemplate" DataType="ui:SidebarGroupItem">
     <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
       <TextBlock.Text>
         <Binding Path="Title" />
       </TextBlock.Text>
     </TextBlock>
   </DataTemplate>
-  <DataTemplate DataType="ui:RemoteSidebarItem">
+  <DataTemplate x:Key="RemoteSidebarItemDataTemplate" DataType="ui:RemoteSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -191,7 +191,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:FilterableRemoteSidebarItem">
+  <DataTemplate x:Key="FilterableRemoteSidebarItemDataTemplate" DataType="ui:FilterableRemoteSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -226,7 +226,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:FolderSidebarItem">
+  <DataTemplate x:Key="FolderSidebarItemDataTemplate" DataType="ui:FolderSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -240,7 +240,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:FilterableFolderSidebarItem">
+  <DataTemplate x:Key="FilterableFolderSidebarItemDataTemplate" DataType="ui:FilterableFolderSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="18" />
@@ -268,7 +268,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:TruncateSidebarItem">
+  <DataTemplate x:Key="TruncateSidebarItemDataTemplate" DataType="ui:TruncateSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -285,7 +285,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:TagSidebarItem">
+  <DataTemplate x:Key="TagSidebarItemDataTemplate" DataType="ui:TagSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -320,7 +320,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:RemoteBranchSidebarItem">
+  <DataTemplate x:Key="RemoteBranchSidebarItemDataTemplate" DataType="ui:RemoteBranchSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -358,7 +358,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:LocalBranchSidebarItem">
+  <DataTemplate x:Key="LocalBranchSidebarItemDataTemplate" DataType="ui:LocalBranchSidebarItem">
     <Grid HorizontalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -406,7 +406,7 @@
       </Button>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:StashSidebarItem">
+  <DataTemplate x:Key="StashSidebarItemDataTemplate" DataType="ui:StashSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -423,7 +423,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:SubmoduleSidebarItem">
+  <DataTemplate x:Key="SubmoduleSidebarItemDataTemplate" DataType="ui:SubmoduleSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -437,7 +437,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:WorktreeSidebarItem">
+  <DataTemplate x:Key="WorktreeSidebarItemDataTemplate" DataType="ui:WorktreeSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -454,7 +454,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate DataType="ui:MainWorktreeSidebarItem">
+  <DataTemplate x:Key="MainWorktreeSidebarItemDataTemplate" DataType="ui:MainWorktreeSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />

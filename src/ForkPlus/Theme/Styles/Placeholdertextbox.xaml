@@ -30,17 +30,13 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-<Setter Property="AllowDrop" Value="true" />
-    <Setter Property="FontSize" Value="13" />
+<Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="PlaceholderTextBox">
+        <ControlTemplate  TargetType="controls:PlaceholderTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
-<Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
-            <Setter Property="IsVisible" Value="True" />
-          </Style>
           <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on controls:PlaceholderTextBox.Icon=null could not be
                converted (no Avalonia pseudoclass for a custom property being null). Original logic:
                  IconElement.Visibility = Collapsed
@@ -54,13 +50,7 @@
           </Trigger>
           -->
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-          <Style Selector="^:disabled /template/ Border#Border">
-            <Setter Property="Opacity" Value="0.56" />
-          </Style>
           <!-- Converted from ControlTemplate.Triggers: IsKeyboardFocused=True -> :focus -->
-          <Style Selector="^:focus /template/ Border#Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-          </Style>
 </Border.Styles>
 
             <Grid Background="#00FFFFFF">
@@ -76,6 +66,15 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+      <Style Selector="^:focus /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+          </Style>
+      <Style Selector="^:disabled /template/ Border#Border">
+            <Setter Property="Opacity" Value="0.56" />
+          </Style>
+      <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
     <!-- NOTE (Avalonia limitation): Style.Triggers MultiTrigger on TextBoxBase.IsInactiveSelectionHighlightEnabled=true (bool
          property, no pseudoclass) + TextBoxBase.IsSelectionActive=false (no pseudoclass) could not be
          converted. Original logic: SelectionBrush = SystemColors.InactiveSelectionHighlightBrush.
@@ -100,12 +99,11 @@
     <Setter Property="MinHeight" Value="24" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-<Setter Property="AllowDrop" Value="true" />
-    <Setter Property="FontSize" Value="13" />
+<Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="AutoCompleteTextBox">
+        <ControlTemplate  TargetType="controls:AutoCompleteTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
@@ -168,7 +166,7 @@
     <Setter Property="CornerRadius" Value="3,3,0,0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="PlaceholderTextBox">
+        <ControlTemplate  TargetType="controls:PlaceholderTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:empty /template/ TextBlock#placeholderElement">
@@ -210,7 +208,7 @@
     <Setter Property="CornerRadius" Value="0,0,3,3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="CommitDescriptionTextBox">
+        <ControlTemplate  TargetType="controls:CommitDescriptionTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:empty /template/ TextBlock#placeholderElement">
@@ -242,7 +240,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="PlaceholderTextBox">
+        <ControlTemplate  TargetType="controls:PlaceholderTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
@@ -289,7 +287,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="FilterTextBox">
+        <ControlTemplate  TargetType="controls:FilterTextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:empty /template/ TextBlock#placeholderElement">

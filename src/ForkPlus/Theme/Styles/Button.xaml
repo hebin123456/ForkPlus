@@ -45,39 +45,10 @@
         <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
-<Style Selector="^:default /template/ Border#Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-          </Style>
-          <Style Selector="^:default /template/ Border#ShadowBorder">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>
           <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-          <Style Selector="^:pressed /template/ Border#Border">
-            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-          </Style>
-          <Style Selector="^:pressed /template/ Border#ShadowBorder">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>
-          <Style Selector="^:pressed /template/ ContentPresenter#ContentPresenter">
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Pressed.Foreground}" />
-          </Style>
           <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsDefault + IsPressed) -> :default:pressed
                (more specific than :pressed, restores accent BorderBrush) -->
-          <Style Selector="^:default:pressed /template/ Border#Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
-          </Style>
           <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-          <Style Selector="^:disabled /template/ Border#Border">
-            <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
-          </Style>
-          <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
-          </Style>
-          <Style Selector="^:disabled /template/ Border#ShadowBorder">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>
 </Border.Styles>
 
             <DockPanel>
@@ -94,6 +65,35 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+      <Style Selector="^:disabled /template/ Border#ShadowBorder">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
+          </Style>
+      <Style Selector="^:disabled /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+          </Style>
+      <Style Selector="^:default:pressed /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+          </Style>
+      <Style Selector="^:pressed /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Pressed.Foreground}" />
+          </Style>
+      <Style Selector="^:pressed /template/ Border#ShadowBorder">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+      <Style Selector="^:pressed /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+          </Style>
+      <Style Selector="^:default /template/ Border#ShadowBorder">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+      <Style Selector="^:default /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentBrush}" />
+          </Style>
   </Style>
   <Style x:Key="InlineButton" Selector="Button">
     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
@@ -216,7 +216,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ToolbarButton">
+        <ControlTemplate  TargetType="controls:ToolbarButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -316,7 +316,7 @@
     <Setter Property="ClickMode" Value="Press" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ToolbarDropDownButton">
+        <ControlTemplate  TargetType="controls:ToolbarDropDownButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#Border">
@@ -440,7 +440,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="RadioButton.FocusVisual" Selector="Control">
+  <Style x:Key="RadioButton.FocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Control">
@@ -449,7 +449,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="RadioButton.OptionMarkFocusVisual" Selector="Control">
+  <Style x:Key="RadioButton.OptionMarkFocusVisual" Selector="TemplatedControl">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Control">
@@ -559,7 +559,7 @@
   <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls|DropDownButton">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="DropDownButton">
+        <ControlTemplate  TargetType="controls:DropDownButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
 <Border.Styles>
 <Style Selector="^:pointerover /template/ Border#border">
@@ -819,7 +819,7 @@
     <Setter Property="Padding" Value="6,0,4,0" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="DateRangeButton">
+        <ControlTemplate  TargetType="controls:DateRangeButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
 <Border.Styles>
 <Style Selector="^:checked /template/ Border#Border">

@@ -11,24 +11,6 @@
           <ControlTemplate TargetType="TabItem">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
 <Grid.Styles>
-<Style Selector="^:pointerover /template/ Border#Bd">
-              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
-              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
-            </Style>
-            <Style Selector="^:selected">
-              <Setter Property="ZIndex" Value="1" />
-            </Style>
-            <Style Selector="^:selected /template/ Border#Bd">
-              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
-              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
-              <Setter Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
-            </Style>
-            <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
-              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
-            </Style>
-            <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
-            </Style>
 </Grid.Styles>
 
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
@@ -37,6 +19,24 @@
           </ControlTemplate>
         </Setter.Value>
       </Setter>
+      <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+            </Style>
+      <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
+              <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+            </Style>
+      <Style Selector="^:selected /template/ Border#Bd">
+              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+              <Setter Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
+            </Style>
+      <Style Selector="^:selected">
+              <Setter Property="ZIndex" Value="1" />
+            </Style>
+      <Style Selector="^:pointerover /template/ Border#Bd">
+              <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+            </Style>
     </Style>
     <Style x:Key="GitMmSubrepoTabControlStyle" Selector="controls|ModernTabControl">
       <Style.Resources>
@@ -127,7 +127,7 @@
         </DockPanel>
       </Border>
       <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}">
-        <StackPanel BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource BackgroundBrush}" x:Name="OutputTextBox" />
+        <StackPanel Background="{DynamicResource BackgroundBrush}" x:Name="OutputTextBox" />
       </Border>
       <TextBlock Grid.Row="4" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" x:Name="StatusTextBlock" />
     </Grid>

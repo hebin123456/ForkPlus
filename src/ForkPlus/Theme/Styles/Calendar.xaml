@@ -169,8 +169,8 @@
     <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CalendarDayButtonStyle" Value="{DynamicResource CalendarDayButtonStyle}" />
-    <Setter Property="CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />
+    <!-- NOTE (Avalonia limitation): CalendarDayButtonStyle/CalendarButtonStyle are WPF-only Calendar properties.
+         Avalonia's Calendar uses CalendarDayButtonStyle through CalendarItem's template. Removed. -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Calendar">
