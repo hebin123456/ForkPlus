@@ -93,6 +93,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
+			// 阶段 5：缓存 PointerEventArgs 供 DoDragDrop 桥接使用（Avalonia 第一参数必须是触发事件）。
 			DecoratedRevision[] array = ParentListView.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
 			if (array.Length != 1)
 			{
@@ -107,9 +108,11 @@ namespace ForkPlus.UI.Controls
 				_adorner = new DragAndDropListViewAdorner(this, listBoxItems, e.GetPosition(this));
 				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
 				_adorner.AttachTo(ParentListView);
-				// NOTE(4.5): WPF DragDrop.DoDragDrop(this, array, ...) — array 非 IDataObject。
-				// Avalonia DataObject 无 (object) 构造函数；参考 ClosableTabItem 直接传 object（框架内部包装）。
-				_ = DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+				// 阶段 5：WPF DragDrop.DoDragDrop(this, array, ...) → Avalonia DragDrop.DoDragDrop(e, IDataObject, effects)。
+				// array 非 IDataObject，需包装为 DataObject（WPF 自动用 Type.FullName 作为格式名）。
+				var dataObject = new DataObject();
+				dataObject.Set(array.GetType().FullName, array);
+				_ = DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move);
 				_adorner.DetachFrom(ParentListView);
 				ParentListView.StopDragAutoScroll();
 			}

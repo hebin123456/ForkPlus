@@ -31,7 +31,8 @@ namespace ForkPlus.UI
 
 		public override void StartDrag(AvaloniaObject dragSource, MultiselectionTreeViewItem[] nodes)
 		{
-			_ = DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
+			// 阶段 5：WPF DragDrop.DoDragDrop → DragDropBridge.DoDragDrop（桥接 PointerEventArgs 来源）。
+			_ = DragDropBridge.DoDragDrop(dragSource, GetDataObject(nodes), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
 		}
 
 		protected override IDataObject GetDataObject(MultiselectionTreeViewItem[] nodes)

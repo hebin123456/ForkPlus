@@ -89,7 +89,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			Button searchButton = new Button
 			{
 				Content = "🔍",
-				ToolTip = PreferencesLocalization.Current("Search (ASCII or hex bytes like 41 42)"),
+				// 阶段 5：Avalonia 无 Button.ToolTip 实例属性，改用 ToolTip.SetTip 附加属性（等价 WPF Button.ToolTip）。
+				[!ToolTip.TipProperty] = PreferencesLocalization.Current("Search (ASCII or hex bytes like 41 42)"),
 				Width = 28,
 				Height = 22,
 				Margin = new Thickness(0, 0, 4, 0),

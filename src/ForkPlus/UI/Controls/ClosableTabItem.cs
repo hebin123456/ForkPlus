@@ -36,8 +36,9 @@ namespace ForkPlus.UI.Controls
 		public static readonly SolidColorBrush IsDirtyDefaultBrush = new SolidColorBrush(Color.Parse("#8E8E91"));
 
 		// 阶段 4.5：WPF DependencyProperty.Register → Avalonia StyledProperty.Register。
+		// 阶段 5：Brushes.Transparent 返回 IImmutableSolidColorBrush，需显式 new SolidColorBrush 作为默认值。
 		public static readonly StyledProperty<SolidColorBrush> TagBrushProperty =
-			AvaloniaProperty.Register<ClosableTabItem, SolidColorBrush>(nameof(TagBrush), Brushes.Transparent);
+			AvaloniaProperty.Register<ClosableTabItem, SolidColorBrush>(nameof(TagBrush), new SolidColorBrush(Colors.Transparent));
 
 		public static readonly StyledProperty<bool> IsDirtyProperty =
 			AvaloniaProperty.Register<ClosableTabItem, bool>(nameof(IsDirty), false);
@@ -84,7 +85,8 @@ namespace ForkPlus.UI.Controls
 			base.PointerPressed += TabItem_PointerPressed;
 			// 阶段 4.5：WPF PreviewMouseMove → Avalonia PointerMoved。
 			base.PointerMoved += TabItem_PointerMoved;
-			base.Drop += TabItem_Drop;
+			// 阶段 5：Avalonia TabItem 无 Drop 事件（WPF UIElement.DragEnter/Drop），改用 DragDrop.DropEvent 路由事件注册。
+			base.AddHandler(DragDrop.DropEvent, TabItem_Drop);
 			// 阶段 4.5：WPF WeakEventManager<T,S>.AddHandler → 直接事件订阅。
 			// NOTE(4.6-a): 阶段 6 改用 Avalonia WeakEvent 避免内存泄漏。
 			NotificationCenter.Current.RepositoryUserControlTitleChanged += RepositoryUserControlTitleChanged;
@@ -202,14 +204,17 @@ namespace ForkPlus.UI.Controls
 			// 阶段 4.5：WPF e.Source → Avalonia e.Source。
 			if (_isLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
-				// 阶段 4.5：Avalonia DragDrop.DoDragDrop 签名与 WPF 兼容（返回 Task，丢弃即可）。
-				_ = DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
+				// 阶段 5：WPF DragDrop.DoDragDrop(dragSource, data, effects) → Avalonia DragDrop.DoDragDrop(PointerEventArgs, IDataObject, effects)。
+				// 此处可直接用 e 作为触发事件；data 包装为 DataObject（WPF WeakReference<T> → DataObject.Set(Type.FullName)）。
+				var dataObject = new DataObject();
+				dataObject.Set(typeof(WeakReference<ClosableTabItem>).FullName, new WeakReference<ClosableTabItem>(closableTabItem));
+				_ = DragDrop.DoDragDrop(e, dataObject, (DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link));
 			}
 		}
 
 		private void TabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (e.Data.Get(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			if (e.Data.Get(typeof(WeakReference<ClosableTabItem>).FullName) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
 			{
 				ClosableTabControl closableTabControl = closableTabItem.Parent as ClosableTabControl;
 				if (closableTabItem != target)

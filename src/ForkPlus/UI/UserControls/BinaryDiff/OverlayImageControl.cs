@@ -156,7 +156,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 			if (rectangleGeometry != null)
 			{
-				drawingContext.PushClip(rectangleGeometry);
+				// 阶段 5：Avalonia DrawingContext.PushClip 接受 RoundedRect/Rect（不接受 Geometry）。
+				// RectangleGeometry.Rect 即原始裁剪矩形，直接传 Rect。
+				drawingContext.PushClip(rectangleGeometry.Rect);
 			}
 			if (opacity.HasValue)
 			{

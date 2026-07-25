@@ -91,7 +91,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			OverlayImage.NewOpacity = Slider.Value;
 		}
 
-		private void RefreshLfsLabel(Label lfsLabel, Label notLfsLabel, ImageData imageData)
+		// 阶段 5：XAML 中 LfsLabel/NotLfsLabel 为 TextBlock（非 Label），方法签名改为 TextBlock。
+		private void RefreshLfsLabel(TextBlock lfsLabel, TextBlock notLfsLabel, ImageData imageData)
 		{
 			if (imageData.IsLfs)
 			{

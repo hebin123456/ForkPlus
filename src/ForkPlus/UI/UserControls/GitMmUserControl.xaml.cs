@@ -1631,7 +1631,11 @@ namespace ForkPlus.UI.UserControls
 			}
 			try
 			{
-				_ = DragDrop.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
+				// 阶段 5：WPF DragDrop.DoDragDrop(dragSource, data, effects) → Avalonia DragDrop.DoDragDrop(e, IDataObject, effects)。
+				// WeakReference<TabItem> 需包装为 DataObject（WPF 自动用 Type.FullName 作为格式名）。
+				var dataObject = new DataObject();
+				dataObject.Set(typeof(WeakReference<TabItem>).FullName, new WeakReference<TabItem>(tabItem));
+				_ = DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move);
 			}
 			finally
 			{

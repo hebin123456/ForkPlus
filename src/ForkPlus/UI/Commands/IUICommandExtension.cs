@@ -69,7 +69,9 @@ namespace ForkPlus.UI.Commands
 			menuItem.IsEnabled = isEnabled;
 			if (showShortcut)
 			{
-				menuItem.InputGestureText = command.InputGestureText();
+				// 阶段 5：Avalonia 11.3 MenuItem 无 InputGestureText 属性（WPF 用于显示快捷键文本）。
+				// 占位：将快捷键文本存入 Tag（运行时不渲染为独立列，阶段 6 迁移到自定义 MenuItem 模板）。
+				menuItem.Tag = command.InputGestureText();
 			}
 			if (clickHandler != null)
 			{

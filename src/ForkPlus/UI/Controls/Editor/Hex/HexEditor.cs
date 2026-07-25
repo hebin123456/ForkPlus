@@ -92,7 +92,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			if (_searchPanel == null)
 			{
-				_searchPanel = AvaloniaEdit.Search.SearchPanel.Install(base.TextArea);
+				// 阶段 5：AvaloniaEdit 11.4 SearchPanel.Install 只接受 TextEditor（不接受 TextArea）。
+				_searchPanel = AvaloniaEdit.Search.SearchPanel.Install(this);
 			}
 		}
 

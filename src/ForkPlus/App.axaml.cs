@@ -641,7 +641,9 @@ namespace ForkPlus
 			}
 		}
 
-		private void InitializeTheme()
+		// 阶段 5：从 private 实例方法改为 internal static，供 SwitchApplicationThemeCommand 通过 App.InitializeTheme() 静态调用
+		// （WPF 主题切换的入口点，Avalonia 迁移保留同方法名）。所有依赖均为静态成员。
+		internal static void InitializeTheme()
 		{
 			if (ForkPlusSettings.Default.FollowSystemTheme)
 			{
@@ -733,7 +735,7 @@ namespace ForkPlus
 		}
 	}
 
-		private void InitializeTextEditorContextMenuStyle()
+		private static void InitializeTextEditorContextMenuStyle()
 		{
 			// NOTE (Avalonia limitation): WPF TextEditorContextMenu internal type not available in Avalonia.
 		}

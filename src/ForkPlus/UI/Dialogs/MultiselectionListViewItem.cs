@@ -107,9 +107,11 @@ namespace ForkPlus.UI.Dialogs
 			{
 				// 阶段 4.5：WPF AdornerLayer.GetAdornerLayer(parent).Add/Remove → _adorner.AttachTo/DetachFrom(parent)。
 				_adorner.AttachTo(ParentListView);
-				// 阶段 4.5：WPF DragDrop.DoDragDrop(this, array, ...) — array 非 IDataObject。
-				// Avalonia DataObject 无 (object) 构造函数；参考 ClosableTabItem/DragAndDropListViewItem 直接传 object。
-				_ = DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+				// 阶段 5：WPF DragDrop.DoDragDrop(this, array, ...) → Avalonia DragDrop.DoDragDrop(e, IDataObject, effects)。
+				// array 非 IDataObject，需包装为 DataObject（WPF 自动用 Type.FullName 作为格式名）。
+				var dataObject = new DataObject();
+				dataObject.Set(array.GetType().FullName, array);
+				_ = DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move);
 				_adorner.DetachFrom(ParentListView);
 			}
 		}

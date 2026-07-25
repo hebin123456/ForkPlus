@@ -9,6 +9,7 @@ using AvaloniaEdit;
 using ForkPlus.UI.Helpers;
 using Avalonia.Media;
 using Avalonia.Interactivity;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -53,16 +54,6 @@ namespace ForkPlus.UI.Controls.Editor
 			// 阶段 5：桥接 ContextMenuOpening/Closing 到 Avalonia ContextRequested 事件。
 			ContextRequested += (s, e) => ContextMenuOpening?.Invoke(this, e);
 		}
-
-		// 阶段 5：辅助观察者，将 IObservable<T>.Subscribe 桥接到 EventHandler。
-	private sealed class ActionObserver<T> : System.IObserver<T>
-	{
-		private readonly Action<T> _onNext;
-		public ActionObserver(Action<T> onNext) { _onNext = onNext; }
-		public void OnCompleted() { }
-		public void OnError(System.Exception error) { }
-		public void OnNext(T value) => _onNext?.Invoke(value);
-	}
 
 	// 阶段 5：Avalonia 11.3 TemplatedControl.OnApplyTemplate 签名为 (TemplateAppliedEventArgs e)，
 	// 非无参。TemplateAppliedEventArgs 位于 Avalonia.Controls.Primitives 命名空间。

@@ -172,5 +172,59 @@ namespace ForkPlus.UI
 			if (brush == null) return null;
 			return new SolidColorBrush(brush.Color);
 		}
+
+		// ===== Visual.GetVisualAncestor<T> 兼容 =====
+		// Avalonia 11.3 仅提供 GetVisualAncestors()（返回 IEnumerable<Visual>），无单数 GetVisualAncestor<T>。
+		// WPF 常用 GetVisualAncestor<Panel>() 获取最近的指定类型祖先，此处补齐扩展方法。
+
+		/// <summary>WPF Visual.GetVisualAncestor&lt;T&gt; 兼容：返回最近的指定类型祖先。</summary>
+		public static T GetVisualAncestor<T>(this Visual visual) where T : class
+		{
+			if (visual == null) return null;
+			foreach (var ancestor in visual.GetVisualAncestors())
+			{
+				if (ancestor is T typed) return typed;
+			}
+			return null;
+		}
+
+		// ===== IControl.GetTemplateChildren 兼容 =====
+		// Avalonia 11.3 TemplatedControl 通过 OnApplyTemplate(TemplateAppliedEventArgs e) + e.NameScope.Find(name) 获取模板子元素，
+		// 无 WPF GetTemplateChildren() 方法（返回所有 PART_* 命名元素的枚举）。
+		// 阶段 5 占位：返回空 IEnumerable<Control>，调用方需重构为 OnApplyTemplate 中按名查找（阶段 6）。
+
+		/// <summary>WPF Control.GetTemplateChildren 兼容占位（Avalonia 用 OnApplyTemplate + NameScope.Find 替代）。</summary>
+		public static System.Collections.Generic.IEnumerable<Control> GetTemplateChildren(this TemplatedControl control)
+		{
+			// 阶段 5：Avalonia TemplatedControl 无 GetTemplateChildren API。
+			// 返回空集合以保持编译；运行时调用方应改用 OnApplyTemplate 中 e.NameScope.Find(name)。
+			yield break;
+		}
+
+		// ===== MenuItem.InputGestureText 兼容 =====
+		// Avalonia 11.3 MenuItem 无 InputGestureText 属性（WPF 用于显示快捷键文本）。
+		// 阶段 5 占位：InputGestureText 映射到 Avalonia 的 Header 末尾（不渲染为独立列），或仅存储在 Tag 中。
+		// 此处提供 InputGestureText 属性占位（运行时不渲染，仅用于编译兼容）。
+
+		// 注：MenuItem.InputGestureText 不能用扩展方法实现（C# 扩展方法不能定义属性），
+		// 已在 MenuItemBridge.cs 中通过继承 MenuItem 提供带 InputGestureText 属性的子类。
+		// 此处不实现，由 MenuItemBridge 承担。
+
+		// ===== Button.ToolTip 兼容 =====
+		// Avalonia 11.3 ToolTip 是附加属性 ToolTip.Tip，不是 Button 实例属性。
+		// Button.ToolTip 的写法在 XAML 中会通过 avalonia:ToolTip.Tip 解析，但 C# 代码访问 Button.ToolTip 会报 CS0117。
+		// 此处提供 Button.SetToolTip 扩展方法（运行时通过 ToolTip.SetTip 设置）。
+
+		/// <summary>WPF Button.ToolTip 兼容：设置 ToolTip（Avalonia 用 ToolTip.SetTip 附加属性）。</summary>
+		public static void SetToolTip(this Control control, object value)
+		{
+			Avalonia.Controls.ToolTip.SetTip(control, value);
+		}
+
+		/// <summary>WPF Button.ToolTip 兼容：获取 ToolTip（Avalonia 用 ToolTip.GetTip 附加属性）。</summary>
+		public static object GetToolTip(this Control control)
+		{
+			return Avalonia.Controls.ToolTip.GetTip(control);
+		}
 	}
 }

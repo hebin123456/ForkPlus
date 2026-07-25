@@ -120,4 +120,18 @@ namespace ForkPlus.UI
 			return 0.0;
 		}
 	}
+
+	/// <summary>
+	/// 将 Action&lt;T&gt; 适配为 IObserver&lt;T&gt;，用于 Subscribe(IObservable&lt;T&gt;)。
+	/// Avalonia 的 GetObservable/GetPropertyChangedObservable 返回 IObservable&lt;T&gt;，
+	/// 而 WPF 代码常以 EventHandler 订阅属性变更。本类提供 OnNext 桥接，OnCompleted/OnError 为空。
+	/// </summary>
+	public sealed class ActionObserver<T> : IObserver<T>
+	{
+		private readonly Action<T> _onNext;
+		public ActionObserver(Action<T> onNext) { _onNext = onNext; }
+		public void OnCompleted() { }
+		public void OnError(Exception error) { }
+		public void OnNext(T value) => _onNext?.Invoke(value);
+	}
 }

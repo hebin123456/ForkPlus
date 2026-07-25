@@ -106,8 +106,9 @@ namespace ForkPlus.UI.Controls
 			{
 				// 阶段 4.5：先设置到旧位置，再切换到新位置以触发过渡。
 				translateTransform.X = GetTabXCoordinate(_previousTabIndex);
+				// 阶段 5：Dispatcher.UIThread.Post 返回 void（不像 WPF BeginInvoke 返回 DispatcherOperation）。
 				// 在下一帧设置目标位置，确保过渡触发。
-				_ = Dispatcher.UIThread.Post(() => translateTransform.X = tabXCoordinate);
+				Dispatcher.UIThread.Post(() => translateTransform.X = tabXCoordinate);
 			}
 			else
 			{
