@@ -10,6 +10,7 @@ namespace ForkPlus.UI
 	{
 		CanResize = 0,
 		CanMinimize = 1,
-		NoResize = 2
+		NoResize = 2,
+		CanResizeWithGrip = 3
 	}
 }

@@ -105,6 +105,35 @@ namespace ForkPlus.UI
 			}
 		}
 
+		/// <summary>
+		/// WPF Window.Left 兼容属性。Avalonia Window 通过 Position 获取/设置窗口位置。
+		/// </summary>
+		public double Left
+		{
+			get => Position.X;
+			set => Position = new PixelPoint((int)value, Position.Y);
+		}
+
+		/// <summary>
+		/// WPF Window.Top 兼容属性。
+		/// </summary>
+		public double Top
+		{
+			get => Position.Y;
+			set => Position = new PixelPoint(Position.X, (int)value);
+		}
+
+		/// <summary>
+		/// WPF Window.PreviewKeyDown 兼容事件。
+		/// Avalonia 11 没有 PreviewKeyDown 事件；改用 KeyDown 事件作为近似（Avalonia 的 KeyDown
+		/// 在 TextBox 等控件之前触发，等价于 WPF 的 PreviewKeyDown 行为）。
+		/// </summary>
+		public event EventHandler<Avalonia.Input.KeyEventArgs> PreviewKeyDown
+		{
+			add => KeyDown += value;
+			remove => KeyDown -= value;
+		}
+
 		static CustomWindow()
 		{
 			// Avalonia: 通过 StyleKey 让控件查找对应 ControlTheme
