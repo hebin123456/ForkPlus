@@ -20,6 +20,7 @@ using Avalonia.Media;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Controls.Documents;
 
 namespace ForkPlus.UI.Dialogs
@@ -212,7 +213,7 @@ namespace ForkPlus.UI.Dialogs
 						StatusImage.Show();
 						if (!result.Succeeded)
 						{
-							StatusImage.Source = new Bitmap(ForkPlusDialogWindow.WarningIcon);
+							StatusImage.Source = new Bitmap(AssetLoader.Open(ForkPlusDialogWindow.WarningIcon));
 							if (result.Error is GitCommandError.CallbackUnknownError callbackUnknownError)
 							{
 								if (callbackUnknownError.FullOutput.Contains("Permission denied (publickey)"))
@@ -236,7 +237,7 @@ namespace ForkPlus.UI.Dialogs
 						}
 						else
 						{
-							StatusImage.Source = new Bitmap(ForkPlusDialogWindow.SuccessIcon);
+							StatusImage.Source = new Bitmap(AssetLoader.Open(ForkPlusDialogWindow.SuccessIcon));
 							StatusTextBlock.Show();
 							StatusTextBlock.Text = Translate("Connection succeeded");
 						}

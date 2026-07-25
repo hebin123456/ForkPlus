@@ -9,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 using ForkPlus.Git.Commands;
 using ForkPlus.Services;
@@ -260,13 +261,13 @@ namespace ForkPlus.UI.Dialogs
 			switch (status)
 			{
 			case ForkPlusDialogStatus.Success:
-				Footer.StatusImage.Source = new Bitmap(SuccessIcon);
+				Footer.StatusImage.Source = new Bitmap(AssetLoader.Open(SuccessIcon));
 				break;
 			case ForkPlusDialogStatus.Warning:
-				Footer.StatusImage.Source = new Bitmap(WarningIcon);
+				Footer.StatusImage.Source = new Bitmap(AssetLoader.Open(WarningIcon));
 				break;
 			case ForkPlusDialogStatus.Error:
-				Footer.StatusImage.Source = new Bitmap(ErrorIcon);
+				Footer.StatusImage.Source = new Bitmap(AssetLoader.Open(ErrorIcon));
 				break;
 			}
 		}
@@ -603,7 +604,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			Image image = new Image
 			{
-				Source = new Bitmap(ForkPlusLogo),
+				Source = new Bitmap(AssetLoader.Open(ForkPlusLogo)),
 				Width = 64.0,
 				Height = 64.0,
 				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
@@ -624,7 +625,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				_warningIcon = new Image
 				{
-					Source = new Bitmap(WarningIcon),
+					Source = new Bitmap(AssetLoader.Open(WarningIcon)),
 					Width = 24.0,
 					Height = 24.0,
 					HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
