@@ -7,6 +7,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {

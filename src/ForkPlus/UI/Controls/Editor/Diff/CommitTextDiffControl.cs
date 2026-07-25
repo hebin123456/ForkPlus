@@ -80,7 +80,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				this.Discard?.Invoke(this, e);
 			};
-			_child.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+			_child.EditorContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};

@@ -183,7 +183,7 @@ namespace ForkPlus.UI.Controls
 				return textContentControl2;
 			}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 			{
-				c.ContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+				c.ContextMenuOpening += delegate(object s, ContextRequestedEventArgs e)
 				{
 					if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 					{

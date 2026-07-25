@@ -11,7 +11,7 @@ namespace ForkPlus.UI
 	/// 阶段 4 里程碑 4.3：Theme 静态资源访问门面 WPF→Avalonia 迁移。
 	/// Application.Current.TryFindResource → Application.Current.FindResource。
 	/// WPF ResourceDictionary.MergedDictionaries.Add/Remove 强制刷新 → 转发到 IThemeService.Refresh。
-	/// Brush/ImageSource/Geometry/Style/ScaleTransform → Avalonia.Media/Styling 等价类型。
+	/// Brush/IImage/Geometry/Style/ScaleTransform → Avalonia.Media/Styling 等价类型。
 	/// </summary>
 	internal static class Theme
 	{

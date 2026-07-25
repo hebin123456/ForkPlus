@@ -24,7 +24,7 @@ namespace ForkPlus.UI.Controls.Editor
 	/// - VisualTreeHelper.HitTest → InputHitTest
 	/// - Mouse.GetPosition → 缓存 PointerMoved 事件位置
 	/// - Brush → IBrush, Freeze() 移除
-	/// - MouseEventArgs → PointerEventArgs, Mouse* 事件 → Pointer* 事件
+	/// - PointerEventArgs → PointerEventArgs, Mouse* 事件 → Pointer* 事件
 	/// </summary>
 	public abstract class ChunkSelectionLayer<TChunk> : Control where TChunk : class
 	{

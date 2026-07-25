@@ -1,8 +1,8 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
-// - Application.Current.TryFindResource(key) as ImageSource → Theme.FindImage(key)（4.3-b 门面）
+// - IImage → IImage（Avalonia.Media）
+// - Application.Current.TryFindResource(key) as IImage → Theme.FindImage(key)（4.3-b 门面）
 using Avalonia;
 using Avalonia.Media;
 using ForkPlus.Settings;

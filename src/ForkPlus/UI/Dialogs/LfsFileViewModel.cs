@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public string Path { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		[Null]
 		public string Owner

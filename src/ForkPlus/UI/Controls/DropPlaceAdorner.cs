@@ -16,11 +16,11 @@ namespace ForkPlus.UI.Controls
 
 		private readonly DropPosition _dropPosition;
 
-		private readonly ListViewItem _listViewItem;
+		private readonly ListBoxItem _listViewItem;
 
 		private readonly Size _adornedSize;
 
-		public DropPlaceAdorner(Control adornedElement, DropPosition position, ListViewItem listViewItem)
+		public DropPlaceAdorner(Control adornedElement, DropPosition position, ListBoxItem listViewItem)
 		{
 			IsHitTestVisible = false;
 			_dropPosition = position;

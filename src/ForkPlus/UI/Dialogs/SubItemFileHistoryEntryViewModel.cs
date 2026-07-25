@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class SubItemFileHistoryEntryViewModel : HistoryEntryViewModel
 	{
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public SubItemFileHistoryEntryViewModel(RevisionWithFiles revision, ChangedFile changedFile)
 			: base(revision, changedFile)

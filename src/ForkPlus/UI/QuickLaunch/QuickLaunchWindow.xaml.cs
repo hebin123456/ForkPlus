@@ -8,7 +8,7 @@
 //   （Application.Current.Dispatcher 在 Avalonia 不存在，改用 Dispatcher.UIThread，参考 SystemThemeHelper / RevisionsDataSource）
 // - base.Dispatcher.Async 保持（自定义扩展 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 // - OnPreviewKeyDown (tunneling) → OnKeyDown (bubbling)（Avalonia 无 Preview 前缀，参考 AutoCompleteTextBox / ReferenceTextBox）
-// - MouseButtonEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移 MouseUp→PointerReleased）
+// - PointerPressedEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移 MouseUp→PointerReleased）
 // - Keyboard.IsKeyDown(Key.LeftCtrl) 为无副作用死语句（结果未使用），迁移时移除
 using System;
 using System.ComponentModel;
@@ -124,7 +124,7 @@ namespace ForkPlus.UI.QuickLaunch
 			base.OnKeyDown(e);
 		}
 
-		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		// 阶段 4.5：WPF MouseUp + PointerPressedEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
 		private void RepositoriesListBox_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			SubmitSelectedItem();

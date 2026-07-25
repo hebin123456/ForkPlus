@@ -8,8 +8,8 @@ namespace ForkPlus.Git
 	public partial class Remote
 	{
 		/// <summary>
-		/// 远程�?WPF ImageSource 图标�?		/// 数据绑定友好（XAML �?<see cref="Binding.Path"/>="Remote.Icon" 仍可工作）�?		/// </summary>
-		public ImageSource Icon => Theme.FindImage(IconKey) ?? Theme.RemoteIcon;
+		/// 远程�?WPF IImage 图标�?		/// 数据绑定友好（XAML �?<see cref="Binding.Path"/>="Remote.Icon" 仍可工作）�?		/// </summary>
+		public IImage Icon => Theme.FindImage(IconKey) ?? Theme.RemoteIcon;
 
 		/// <summary>
 		/// 远程�?WPF Geometry 图标（用�?Path/Content 绑定）�?		/// </summary>

@@ -6,7 +6,7 @@ using Avalonia.Platform;
 using ForkPlus.UI.Helpers;
 
 // ⚠ 临时桥接线 ─ 这些扩展方法与原有命名空间相同，因此调用方无需修改 using。
-// 阶段 4.5：WPF ImageSource/BitmapImage/pack:// URI/Freeze → Avalonia IImage/Bitmap/avares:// URI。
+// 阶段 4.5：WPF IImage/BitmapImage/pack:// URI/Freeze → Avalonia IImage/Bitmap/avares:// URI。
 // 迁移完全结束后可删除此文件，改为 Avalonia 原生图标系统。
 
 namespace ForkPlus.Git

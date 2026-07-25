@@ -597,7 +597,7 @@ namespace ForkPlus.UI.Dialogs
 			RetryAiReview(_target, replaceAll: true);
 		}
 
-		private void FileReviewFileListUserControl_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void FileReviewFileListUserControl_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!(_target is AiCodeReviewTarget.Files filesTarget))
 			{

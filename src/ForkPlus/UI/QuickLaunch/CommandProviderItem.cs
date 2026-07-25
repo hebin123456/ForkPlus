@@ -1,7 +1,8 @@
+using ForkPlus.UI;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - Visibility → Avalonia.Visibility（命名空间迁移，枚举值兼容）
 // 注：本类无 TryFindResource 调用，Icon/SelectedIcon 仅声明为虚属性，由派生类（PaletteCommandItem 等）通过 Theme.FindImage 提供。
 using System.ComponentModel;

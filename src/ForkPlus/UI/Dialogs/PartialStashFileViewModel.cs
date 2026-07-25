@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public string FilePath { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public bool Selected { get; set; }
 

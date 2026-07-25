@@ -1,3 +1,4 @@
+using Avalonia.Styling;
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/Button/Image/Popup/Separator/MenuItem/ListBoxItem/Expander/ContextMenu）
@@ -473,7 +474,7 @@ namespace ForkPlus.UI.UserControls
 			});
 		}
 
-		private void ListBoxItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void ListBoxItem_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (sender is ListBoxItem { DataContext: DiffEntry diffEntry } listBoxItem)
 			{

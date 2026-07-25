@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {

@@ -10,7 +10,7 @@
 // - DispatcherTimer（命名空间差异，API 兼容）
 // - PopupAnimation.Fade/Slide → 移除（Avalonia 无等价，参考 GraphCellView）
 // - base.MouseEnter/MouseLeave → base.PointerEntered/PointerLeave（参考 CommandHyperlink）
-// - MouseButtonEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移）
+// - PointerPressedEventArgs → PointerReleasedEventArgs（MouseUp → PointerReleased；XAML 需同步迁移）
 // - Visibility.Collapsed/Visible → Avalonia.Layout.Visibility（需 using Avalonia.Layout）
 // - image.SetResourceReference(Image.SourceProperty, key) → image.Source = Theme.FindImage(key)
 // - DoubleAnimation + BeginAnimation + Completed → Transitions + DoubleTransition + DispatcherTimer.RunOnce（参考 ModernTabControl）
@@ -255,13 +255,13 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		// 阶段 4.5：WPF MouseUp + PointerPressedEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
 		private void DescriptionTextBlock_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			ShowJobManager();
 		}
 
-		// 阶段 4.5：WPF MouseUp + MouseButtonEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
+		// 阶段 4.5：WPF MouseUp + PointerPressedEventArgs → Avalonia PointerReleased + PointerReleasedEventArgs（XAML 需同步迁移）。
 		private void TitleTextBlock_MouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			ShowJobManager();

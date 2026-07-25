@@ -3,7 +3,7 @@
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Documents → 移除（AdornerLayer 由 AttachTo/DetachFrom 替代）
 // - using System.Windows.Input → using Avalonia.Input
-// - 基类 ListViewItem → Avalonia.Controls.ListViewItem
+// - 基类 ListBoxItem → Avalonia.Controls.ListBoxItem
 // - OnPropertyChanged(DependencyPropertyChangedEventArgs) → OnPropertyChanged(AvaloniaPropertyChangedEventArgs)
 // - FrameworkElement.DataContextProperty → Control.DataContextProperty
 // - OnMouseLeftButtonDown/Up/Move → OnPointerPressed/Released/Moved
@@ -22,7 +22,7 @@ using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
-	public class TreeViewControlItem : ListViewItem
+	public class TreeViewControlItem : ListBoxItem
 	{
 		private Point _startPoint;
 

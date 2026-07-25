@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 
-		event EventHandler<ContextMenuEventArgs> EditorContextMenuOpening;
+		event EventHandler<ContextRequestedEventArgs> EditorContextMenuOpening;
 
 		void SetDiff([Null] ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location);
 

@@ -16,7 +16,7 @@ namespace ForkPlus.UI.UserControls
 
 		public FileTreeItem FileTreeItem { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public IImage FileTypeIcon { get; }
 
 		public override bool ShowExpander
 		{

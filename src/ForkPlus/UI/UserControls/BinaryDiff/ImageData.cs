@@ -12,7 +12,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 	public class ImageData
 	{
 		[Null]
-		public Bitmap ImageSource { get; }
+		public Bitmap IImage { get; }
 
 		[Null]
 		public byte[] RawBytes { get; }
@@ -25,7 +25,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public ImageData([Null] Bitmap imageSource, long fileSize, bool isLfs, bool isTracked, [Null] byte[] rawBytes = null)
 		{
-			ImageSource = imageSource;
+			IImage = imageSource;
 			RawBytes = rawBytes;
 			FileSize = fileSize;
 			IsLfs = isLfs;

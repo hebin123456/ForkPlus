@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public StatusType Status => ChangedFile.Status;
 
-		public ImageSource StatusImage { get; }
+		public IImage StatusImage { get; }
 
 		public string OpenInSeparateWindowButtonToolTip => "Open '" + Revision.Sha.ToAbbreviatedString() + "' in separate window";
 

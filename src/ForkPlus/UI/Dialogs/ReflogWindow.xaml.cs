@@ -11,6 +11,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Undo;
+using Avalonia.Controls;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -61,7 +62,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>读取 reflog 并填充 ListView。</summary>
+		/// <summary>读取 reflog 并填充 ListBox。</summary>
 		private void LoadReflog()
 		{
 			if (_repositoryUserControl?.GitModule == null)
@@ -107,7 +108,7 @@ namespace ForkPlus.UI.Dialogs
 			JumpButton.IsEnabled = ReflogListView.SelectedItem is ReflogViewItem;
 		}
 
-		private void ReflogListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void ReflogListView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			JumpToSelected();
 		}
@@ -170,7 +171,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 	}
 
-	/// <summary>ReflogWindow 的 ListView 行视图模型。</summary>
+	/// <summary>ReflogWindow 的 ListBox 行视图模型。</summary>
 	public sealed class ReflogViewItem
 	{
 		private readonly ReflogEntry _entry;

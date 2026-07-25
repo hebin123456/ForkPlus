@@ -44,12 +44,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			{
 				return;
 			}
-			Bitmap imageSource = oldImageData.ImageSource;
+			Bitmap imageSource = oldImageData.IImage;
 			if (imageSource == null)
 			{
 				return;
 			}
-			Bitmap imageSource2 = newImageData.ImageSource;
+			Bitmap imageSource2 = newImageData.IImage;
 			if (imageSource2 != null)
 			{
 				OverlayImage.SetContent(imageSource, imageSource2, diffImageSource);

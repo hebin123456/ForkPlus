@@ -21,6 +21,7 @@ using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Newtonsoft.Json;
 using ForkPlus.UI.Helpers;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -290,7 +291,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.OnPreviewKeyDown(e);
 			RevisionEntry[] array = null;
-			if (e.OriginalSource is ListViewItem || e.OriginalSource is ListView)
+			if (e.OriginalSource is ListBoxItem || e.OriginalSource is ListBox)
 			{
 				array = RevisionListView.SelectedItems.CompactMap((object x) => x as RevisionEntry);
 			}
@@ -395,7 +396,7 @@ namespace ForkPlus.UI.Dialogs
 			gridView.Columns[2].Width = ((num2 > 0.0) ? num2 : 0.0);
 		}
 
-		private void RevisionListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void RevisionListView_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			if (!e.IsClickedOnScrollbar() && RevisionListView.SelectedItem is RevisionEntry { Action: not InteractiveRebaseAction.Drop, Action: not InteractiveRebaseAction.Fixup, Action: not InteractiveRebaseAction.Squash } revisionEntry)
 			{
@@ -708,7 +709,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					rewordUserControl.Refresh(revision.Subject, revision.Description);
 				}
-				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is ListViewItem listViewItem)
+				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is ListBoxItem listViewItem)
 				{
 					UpdateAdornerMargin(listViewItem);
 					return;
@@ -718,7 +719,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void UpdateAdornerMargin(ListViewItem listViewItem)
+		private void UpdateAdornerMargin(ListBoxItem listViewItem)
 		{
 			int num = 130;
 			int num2 = 22;

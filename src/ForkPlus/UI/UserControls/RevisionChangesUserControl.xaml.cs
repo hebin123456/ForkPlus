@@ -1,6 +1,6 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows → using Avalonia + using Avalonia.Interactivity（RoutedEventArgs）+ using Avalonia.Controls.ApplicationLifetimes（IClassicDesktopStyleApplicationLifetime）
-// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextMenuEventArgs/MenuItem/Separator/GridLength/GridUnitType/SelectionChangedEventArgs）
+// - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/ContextRequestedEventArgs/MenuItem/Separator/GridLength/GridUnitType/SelectionChangedEventArgs）
 // - using System.Windows.Input → using Avalonia.Input（Key/KeyEventArgs）
 // - using System.Windows.Markup → 移除
 // - 新增 using ForkPlus.UI.Helpers（KeyboardHelper）
@@ -218,7 +218,7 @@ namespace ForkPlus.UI.UserControls
 			UpdateFileList(fileToSelect);
 		}
 
-		private void FileListUserControl_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		private void FileListUserControl_ContextMenuOpening(object sender, ContextRequestedEventArgs e)
 		{
 			if (!HasSelectedItems(FileListUserControl))
 			{

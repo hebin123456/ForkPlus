@@ -6,9 +6,9 @@ namespace ForkPlus.UI.QuickLaunch
 {
 	public class RepositoryFileItem : CommandProviderItem
 	{
-		public override ImageSource Icon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
+		public override IImage Icon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
 
-		public override ImageSource SelectedIcon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
+		public override IImage SelectedIcon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
 
 		public string FilePath { get; }
 

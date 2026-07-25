@@ -2,12 +2,12 @@
 // - using System.Windows → using Avalonia（Thickness/Point/Visibility）+ using Avalonia.Interactivity（RoutedEventArgs）
 // - using System.Windows.Controls → using Avalonia.Controls（UserControl/ContextMenu/MenuItem/Separator/Border/TextBlock/Canvas/Image/ItemCollection）
 // - using System.Windows.Markup → 移除（IComponentConnector 不需要）
-// - using System.Windows.Media → using Avalonia.Media（IImage，替代 ImageSource）
+// - using System.Windows.Media → using Avalonia.Media（IImage，替代 IImage）
 // - 新增 using Avalonia.VisualTree（GetVisualRoot，替代 Window.GetWindow）
 // - WeakEventManager<NotificationCenter, EventArgs<T>>.AddHandler(NotificationCenter.Current, "Event", h)
 //   → NotificationCenter.Current.Event += h（直接订阅，参考 FileControlHeaderUserControl）
 // - control.ToolTip = value → ToolTip.SetTip(control, value)（参考 FileControlHeaderUserControl）
-// - ImageSource → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
+// - IImage → IImage（Theme.ConsoleIcon/OpenInIcon 已返回 IImage，参考 ImageToggleButton）
 // - Window.GetWindow(this) → (this.GetVisualRoot() as Window) ?? MainWindow.Instance（参考 RevisionSummaryUserControl）
 // - FrameworkElement → Control（Avalonia 无 FrameworkElement，参考 ExternalToolsUserControl）
 // - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）
@@ -834,7 +834,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			// 阶段 4.5：WPF ImageSource → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
+			// 阶段 4.5：WPF IImage → Avalonia IImage（Theme.ConsoleIcon 已返回 IImage，参考 ImageToggleButton）。
 		IImage consoleIcon = Theme.ConsoleIcon;
 			if (!(ForkPlusSettings.Default.ShellTool is ShellTool.Default))
 			{

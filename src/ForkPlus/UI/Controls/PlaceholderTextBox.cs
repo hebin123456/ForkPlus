@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Controls
 		public static readonly StyledProperty<string> PlaceholderProperty =
 			AvaloniaProperty.Register<PlaceholderTextBox, string>(nameof(Placeholder));
 
-		// 阶段 4.5：WPF ImageSource → Avalonia IImage。
+		// 阶段 4.5：WPF IImage → Avalonia IImage。
 		public static readonly StyledProperty<IImage> IconProperty =
 			AvaloniaProperty.Register<PlaceholderTextBox, IImage>(nameof(Icon));
 

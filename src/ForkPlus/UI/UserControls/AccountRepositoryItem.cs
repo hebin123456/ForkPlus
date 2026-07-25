@@ -1,17 +1,17 @@
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Accounts;
 
 namespace ForkPlus.UI.UserControls
 {
 	public class AccountRepositoryItem : AccountItem
 	{
-		public ImageSource Icon { get; }
+		public IImage Icon { get; }
 
 		public string Tooltip { get; }
 
 		public GitServiceRepository Repository { get; }
 
-		public AccountRepositoryItem(GitServiceRepository repository, ImageSource icon)
+		public AccountRepositoryItem(GitServiceRepository repository, IImage icon)
 			: base(repository.Name)
 		{
 			Repository = repository;

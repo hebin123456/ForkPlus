@@ -7,10 +7,10 @@
 // - using System.Windows.Media.Imaging → using Avalonia.Media.Imaging（Bitmap）+ using Avalonia.Platform（AssetLoader）
 // - 新增 using Avalonia.Controls.Templates（IDataTemplate，替代 DataTemplate）
 // - BitmapImage(pack:// URI) → AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）
-// - ImageSource → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
+// - IImage → IImage（IconTools.GetImageSourceForExtension 已返回 IImage）
 // - DependencyProperty.RegisterAttached + PropertyMetadata 回调 → StyledProperty + OnPropertyChanged override（EnableMultiSelection 仅作普通属性用于 XAML）
 // - DependencyPropertyChangedEventArgs → AvaloniaPropertyChangedEventArgs
-// - MouseDoubleClick + MouseButtonEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
+// - MouseDoubleClick + PointerPressedEventArgs → DoubleTapped + RoutedEventArgs（参考 MultiselectionTreeView.OnDoubleTapped）
 // - Delegate.Combine(field, handler) → field += handler
 // - ActualWidth(Control) → Bounds.Width（参考 ModernTabControl）；GridViewColumn.ActualWidth 保留（GridView 兼容层属性）
 // - (DataTemplate)base.Resources[key] → (IDataTemplate)base.Resources[key]（Avalonia ItemsControl.ItemTemplate 为 IDataTemplate）
@@ -73,7 +73,7 @@ namespace ForkPlus.UI.UserControls
 		// 阶段 4.5：WPF BitmapImage(pack://application URI) → Avalonia AssetLoader.Open(avares:// URI) + new Bitmap(stream)（参考 AvatarManager）。
 		private static readonly Bitmap FolderIcon = LoadFolderIcon();
 
-		// 阶段 4.5：WPF ImageSource → Avalonia IImage（IconTools.GetImageSourceForExtension 已返回 IImage）。
+		// 阶段 4.5：WPF IImage → Avalonia IImage（IconTools.GetImageSourceForExtension 已返回 IImage）。
 		private static readonly ChangedFileEqualityComparer _changedFileEqualityComparer = new ChangedFileEqualityComparer();
 
 		private readonly Dictionary<string, IImage> _fileIconCache = new Dictionary<string, IImage>(StringComparer.OrdinalIgnoreCase);

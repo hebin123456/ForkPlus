@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// 阶段 4.5：WPF ImageSource → Avalonia IImage。
+		// 阶段 4.5：WPF IImage → Avalonia IImage。
 		public IImage Image { get; set; }
 
 		public IImage AlternativeImage { get; set; }

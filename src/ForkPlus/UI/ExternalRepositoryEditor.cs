@@ -14,7 +14,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -35,7 +35,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -56,7 +56,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -77,7 +77,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -104,7 +104,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -125,7 +125,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -146,7 +146,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -167,7 +167,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -188,7 +188,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -209,7 +209,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override IImage Icon { get; }
 
 			[Null]
 			public static string TryFindInstance()
@@ -228,7 +228,7 @@ namespace ForkPlus.UI
 
 		public abstract string ApplicationPath { get; }
 
-		public abstract ImageSource Icon { get; }
+		public abstract IImage Icon { get; }
 
 		public static ExternalRepositoryEditor[] GetAvailableEditors()
 		{

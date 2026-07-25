@@ -1,4 +1,4 @@
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI
@@ -11,11 +11,11 @@ namespace ForkPlus.UI
 
 		public RemoteBranch RemoteBranch { get; }
 
-		public ImageSource RemoteIcon { get; }
+		public IImage RemoteIcon { get; }
 
 		public bool HasDownstream { get; set; }
 
-		public RemoteBranchViewModel(int graphColumn, RemoteBranch remoteBranch, ImageSource remoteIcon)
+		public RemoteBranchViewModel(int graphColumn, RemoteBranch remoteBranch, IImage remoteIcon)
 			: base(graphColumn)
 		{
 			RemoteBranch = remoteBranch;

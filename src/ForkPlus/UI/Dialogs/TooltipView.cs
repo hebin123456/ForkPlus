@@ -1,7 +1,7 @@
 // 阶段 4.5：WPF→Avalonia 迁移。
 // - using System.Windows.* → using Avalonia.*
 // - Border/StackPanel/Image/TextBlock → Avalonia.Controls 同名类型
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - BindingOperations.SetBinding(_stackPanel, WidthProperty, new Binding("Width"){Source=this})
 //   → Avalonia Bind(WidthProperty, new Binding("Width"){Source=this}) 扩展方法
 // - CornerRadius/Thickness（API 兼容）

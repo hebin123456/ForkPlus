@@ -7,7 +7,7 @@
 // - SetResourceReference(ForegroundProperty, "Key") → 直接设置 Foreground = Theme.FindBrush("Key")
 //   （Theme.FindResource 已在内部用 TryGetResource 解析；动态主题切换由 IThemeService.Refresh 处理）
 // - TextWrapping.Wrap（API 兼容）
-// - ImageSource 未使用
+// - IImage 未使用
 using System;
 using Avalonia;
 using Avalonia.Controls;

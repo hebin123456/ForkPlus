@@ -3,13 +3,13 @@
 // - using System.Windows.Controls → using Avalonia.Controls
 // - using System.Windows.Markup → 移除（Avalonia code-behind 不需 IComponentConnector using）
 // - using System.Windows.Media → using Avalonia.Media
-// - ImageSource → IImage（Avalonia.Media）
+// - IImage → IImage（Avalonia.Media）
 // - RoutedEventArgs → Avalonia.Interactivity.RoutedEventArgs（新增 using Avalonia.Interactivity）
 // - Dispatcher.Async 保持（自定义扩展方法 DispatcherExtension.Async，内部转发 Dispatcher.Post）
 // TODO(4.5): account.ServiceType.Icon()（RemoteTypeBridgeExtensions.Icon，定义于 BridgeExtensions.cs，尚未迁移）
-//            仍返回 WPF System.Windows.Media.ImageSource，赋值给 IImage _icon 类型不一致。
+//            仍返回 WPF System.Windows.Media.IImage，赋值给 IImage _icon 类型不一致。
 //            待 BridgeExtensions 迁移为返回 Avalonia.Media.IImage 后类型一致（参考 ReferencePanel 对 Remote.Icon 的处理）。
-// TODO(4.5): AccountRepositoryItem（AccountRepositoryItem.cs，尚未迁移）构造函数仍接收 WPF System.Windows.Media.ImageSource。
+// TODO(4.5): AccountRepositoryItem（AccountRepositoryItem.cs，尚未迁移）构造函数仍接收 WPF System.Windows.Media.IImage。
 //            待 AccountRepositoryItem 迁移为接收 Avalonia.Media.IImage 后，下方 new AccountRepositoryItem(x, icon) 类型一致。
 using System;
 using System.Collections.Generic;

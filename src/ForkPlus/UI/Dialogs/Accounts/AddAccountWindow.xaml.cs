@@ -2,6 +2,8 @@ using Avalonia.Controls.Selection;
 using System;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls;
+using System.ComponentModel;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
@@ -13,7 +15,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 			public string ServiceName => ServiceType.FriendlyName();
 
-			public ImageSource Icon => ServiceType.Icon();
+			public IImage Icon => ServiceType.Icon();
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
@@ -37,7 +39,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		private ServiceViewModel SelectedService => ServicesListBox.SelectedItem as ServiceViewModel;
 
 	// 阶段 3：承接"已选服务"校验（纯判断，SetStatus 副作用留 override）。
-	// ServiceViewModel（含 ImageSource Icon）留在 View，VM 只跟踪 RemoteType 枚举。
+	// ServiceViewModel（含 IImage Icon）留在 View，VM 只跟踪 RemoteType 枚举。
 	private readonly AddAccountWindowViewModel _viewModel = new AddAccountWindowViewModel();
 
 	protected override bool IsSubmitAllowed
@@ -68,7 +70,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			}
 		}
 
-		private void ServicesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void ServicesListBox_MouseDoubleClick(object sender, PointerPressedEventArgs e)
 		{
 			ForkPlusDialogWindow loginWindow = SelectedService.ServiceType.GetLoginWindow();
 			if (loginWindow != null && loginWindow.ShowDialog().GetValueOrDefault())

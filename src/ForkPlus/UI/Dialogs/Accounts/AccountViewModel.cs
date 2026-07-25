@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		public string UserName => Account.Username;
 
-		public ImageSource Icon => Account.ServiceType.Icon();
+		public IImage Icon => Account.ServiceType.Icon();
 
 		public string ServiceName
 		{

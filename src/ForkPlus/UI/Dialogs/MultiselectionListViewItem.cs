@@ -18,7 +18,7 @@ using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class MultiselectionListViewItem : ListViewItem
+	public class MultiselectionListViewItem : ListBoxItem
 	{
 		private bool _wasSelected;
 
@@ -90,7 +90,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			// 阶段 4.5：WPF ItemContainerGenerator.ContainerFromItem → Avalonia ContainerFromItem。
-			ListViewItem[] array2 = array.CompactMap((RevisionEntry x) => ParentListView.ContainerFromItem(x) as ListViewItem);
+			ListBoxItem[] array2 = array.CompactMap((RevisionEntry x) => ParentListView.ContainerFromItem(x) as ListBoxItem);
 			ListBoxItem[] listBoxItems = array2;
 			_adorner = new DragAndDropListBoxAdorner(this, listBoxItems, e.GetPosition(this));
 			if (_adorner != null)
