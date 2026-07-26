@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Controls
 	{
 		private static readonly string GravatarUrlFormat = "https://en.gravatar.com/avatar/{0}?d=404";
 
-		private static readonly Uri GitHubEmailLogo = new Uri("avares://ForkPlus/Assets/GitHubAvatar.png");
+		private static readonly Uri GitHubEmailLogo = new Uri("avares://ForkPlus/assets/githubavatar.png");
 
 		private static readonly string GitHubEmail = "noreply@github.com";
 

@@ -368,8 +368,24 @@ namespace ForkPlus
 			}
 			RegisterGlobalExceptionLogging();
 			LogHelper.LogWelcome();
-			_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
-			_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
+			// 阶段 6 修复：IpcServer 创建失败（权限/平台限制/命名冲突）不应导致整个应用崩溃。
+			// 单实例检测 + AskPass 凭据回调依赖 IPC，但失败后应用仍可运行（仅丢失这两个能力）。
+			try
+			{
+				_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to create AskPass IPC server", ex);
+			}
+			try
+			{
+				_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to create default IPC server", ex);
+			}
 			HandleCommandLineArguments();
 		}
 
@@ -938,8 +954,9 @@ namespace ForkPlus
 		private void OnExitLegacy()
 		{
 			ForkPlusSettings.Default.Save();
-			_askPassIpcServer.Dispose();
-			_defaultIpcServer.Dispose();
+			// IPC server 可能在 App 构造时创建失败（权限/平台限制），此处需 null 检查。
+			_askPassIpcServer?.Dispose();
+			_defaultIpcServer?.Dispose();
 		}
 
 		private void DoShutdown()

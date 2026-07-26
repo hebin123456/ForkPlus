@@ -9,43 +9,45 @@
        with BeginStoryboard Enter/Exit actions animating Border.Height (0 <-> 28). Avalonia has no pseudoclass
        for arbitrary VM properties and no WPF Storyboard support. Reimplement in phase 6 using <Animation>
        on a custom pseudoclass toggled from code-behind (or a BoolToClassConverter). -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="NotificationBarBorder" Selector="Border">
-    <!-- NOTE (phase 6, Avalonia limitation): Original WPF Style.Triggers DataTrigger bound to
-         ancestor UserControl.IsControlVisible with BeginStoryboard Enter/Exit
-         animating Border.Height (0 <-> 28 over 0.7s with accel/decel 0.4).
-         Avalonia has no pseudoclass for arbitrary VM properties and no WPF
-         Storyboard support. Reimplement using <Animation> on a custom
-         :visible-bar pseudoclass toggled from code-behind, or a
-         BoolToClassConverter bound to IsControlVisible. -->
-  </Style>
-  <Style x:Key="BinaryDiffShadowBorder" Selector="Border">
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="CornerRadius" Value="3" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="Effect">
-      <Setter.Value>
-        <DropShadowEffect BlurRadius="8" Color="Black" Opacity="0.25" />
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="TileBorder" Selector="Border">
-    <Setter Property="CornerRadius" Value="4" />
-    <Setter Property="Margin" Value="8,4,8,0" />
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TileBorderBrush}" />
-    <Setter Property="Background" Value="{DynamicResource TileBackgroundBrush}" />
-  </Style>
-  <Style x:Key="TileBorderDark" Selector="Border">
-    <Setter Property="Background" Value="{DynamicResource TileBackgroundBrushDark}" />
-  </Style>
-  <Style x:Key="PullPushBadge" Selector="Border">
-    <Setter Property="Height" Value="12" />
-    <Setter Property="MinWidth" Value="12" />
-    <Setter Property="Background" Value="{DynamicResource Toolbar.PullPushBadgeBrush}" />
-    <Setter Property="CornerRadius" Value="6" />
-    <Setter Property="Padding" Value="4,0,4,1" />
-  </Style>
-</ResourceDictionary>
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Style x:Key="NotificationBarBorder" Selector="Border">
+        <!-- NOTE (phase 6, Avalonia limitation): Original WPF Style.Triggers DataTrigger bound to
+             ancestor UserControl.IsControlVisible with BeginStoryboard Enter/Exit
+             animating Border.Height (0 <-> 28 over 0.7s with accel/decel 0.4).
+             Avalonia has no pseudoclass for arbitrary VM properties and no WPF
+             Storyboard support. Reimplement using <Animation> on a custom
+             :visible-bar pseudoclass toggled from code-behind, or a
+             BoolToClassConverter bound to IsControlVisible. -->
+      </Style>
+    <Style x:Key="BinaryDiffShadowBorder" Selector="Border">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Effect">
+          <Setter.Value>
+            <DropShadowEffect BlurRadius="8" Color="Black" Opacity="0.25" />
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="TileBorder" Selector="Border">
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Margin" Value="8,4,8,0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TileBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TileBackgroundBrush}" />
+      </Style>
+    <Style x:Key="TileBorderDark" Selector="Border">
+        <Setter Property="Background" Value="{DynamicResource TileBackgroundBrushDark}" />
+      </Style>
+    <Style x:Key="PullPushBadge" Selector="Border">
+        <Setter Property="Height" Value="12" />
+        <Setter Property="MinWidth" Value="12" />
+        <Setter Property="Background" Value="{DynamicResource Toolbar.PullPushBadgeBrush}" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="4,0,4,1" />
+      </Style>
+  </Styles.Resources>
+</Styles>

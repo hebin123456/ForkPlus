@@ -102,7 +102,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="avares://ForkPlus/Assets/Warning.png" x:Name="ForceSyncWarningImage" />
+          <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="avares://ForkPlus/assets/warning.png" x:Name="ForceSyncWarningImage" />
           <CheckBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force sync" ToolTip.Tip="--force-sync" x:Name="ForceSyncCheckBox" />
           <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Detach local branches" ToolTip.Tip="-d" x:Name="DetachCheckBox" />
           <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Update manifest" ToolTip.Tip="--update-manifest" x:Name="UpdateManifestCheckBox" />

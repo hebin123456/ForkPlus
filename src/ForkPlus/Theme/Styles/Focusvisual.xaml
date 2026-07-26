@@ -1,11 +1,13 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style x:Key="FocusVisual" Selector="TemplatedControl">
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-</ResourceDictionary>
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Style x:Key="FocusVisual" Selector="TemplatedControl">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+  </Styles.Resources>
+</Styles>

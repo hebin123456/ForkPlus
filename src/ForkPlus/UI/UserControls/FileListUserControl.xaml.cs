@@ -165,7 +165,7 @@ namespace ForkPlus.UI.UserControls
 		private static Bitmap LoadFolderIcon()
 		{
 			// 阶段 4.5：WPF pack://application URI + Bitmap → Avalonia avares:// URI + AssetLoader.Open + Bitmap（参考 AvatarManager）。
-			using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")))
+			using (Stream stream = AssetLoader.Open(new Uri("avares://ForkPlus/assets/folder.png")))
 			{
 				return new Bitmap(stream);
 			}

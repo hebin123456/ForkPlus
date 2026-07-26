@@ -22,7 +22,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-        <Image Width="24" Height="24" Source="avares://ForkPlus/Assets/GitHub.png" />
+        <Image Width="24" Height="24" Source="avares://ForkPlus/assets/github.png" />
         <TextBlock Text="Log in to GitHub Enterprise Server" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
       </StackPanel>
       <Separator Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,8" />

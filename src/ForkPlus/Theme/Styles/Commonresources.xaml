@@ -23,191 +23,201 @@
        has no Avalonia pseudoclass for WordWrap; left as NOTE comment.
      - ToolTip ControlTemplate.Triggers (ToolTip.HasDropShadow=True -> Margin=10 + Border Effect) has no
        Avalonia pseudoclass for HasDropShadow; left as NOTE comment. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
-  <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
-  <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
-  <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
-  <Style x:Key="CodeEditor" Selector="editor|CodeEditor">
-    <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource CodeEditorForeground}" />
-    <Setter Property="FontFamily" Value="Consolas" />
-    <Setter Property="FontSize" Value="13.0" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="IsReadOnly" Value="True" />
+<Styles xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+      <PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
+      <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+      <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+  
+        <Style x:Key="FocusVisual" Selector="TemplatedControl">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="OptionMarkFocusVisual" Selector="TemplatedControl">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Rectangle Margin="0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+        <Style x:Key="HorizontalGridSplitter" Selector="GridSplitter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+        <Setter Property="Margin" Value="0,-2,0,-2" />
+        <Setter Property="Height" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="GridSplitter">
+              <Grid Background="#00FFFFFF">
+                <Border BorderBrush="{TemplateBinding BorderBrush}" Height="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="VerticalGridSplitter" Selector="GridSplitter">
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+        <Setter Property="Margin" Value="-2,0,-2,0" />
+        <Setter Property="Width" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="GridSplitter">
+              <Grid Background="#00FFFFFF">
+                <Border BorderBrush="{TemplateBinding BorderBrush}" Width="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+                              
+
+<ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
+        <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource CodeEditorForeground}" />
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="13.0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="editor:CodeEditor">
+              <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
+                <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer" x:CompileBindings="False">
+                  <controls:TouchpadAwareScrollViewer.Content>
+                    <Binding Path="TextArea">
+                      <Binding.RelativeSource>
+                        <RelativeSource Mode="TemplatedParent" />
+                      </Binding.RelativeSource>
+                    </Binding>
+                  </controls:TouchpadAwareScrollViewer.Content>
+                </controls:TouchpadAwareScrollViewer>
+                <usercontrols:CodeEditorSearchPanelUserControl Grid.RowSpan="2" x:Name="PART_SearchPanelUserControl">
+                  <usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
+                    <Binding ElementName="SearchPanelPlaceholder" />
+                  </usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
+                </usercontrols:CodeEditorSearchPanelUserControl>
+                <Canvas Grid.Row="1" Width="10" HorizontalAlignment="Right" IsHitTestVisible="False">
+                  <Path Fill="#CCD18281" x:Name="SrcBlockPath" />
+                  <Path Fill="#CC90C494" x:Name="DstBlockPath" />
+                </Canvas>
+              </Grid>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled.
+                   Avalonia CodeEditor has no :wordwrap pseudoclass; reimplement using a custom pseudoclass toggled
+                   from code-behind when WordWrap changes, or apply the value directly via a binding. -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme>
+<ControlTheme x:Key="{x:Type controls:EditableTextBlock}" TargetType="controls:EditableTextBlock">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="editor:CodeEditor">
-          <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto" />
-              <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer" x:CompileBindings="False">
-              <controls:TouchpadAwareScrollViewer.Content>
-                <Binding Path="TextArea">
-                  <Binding.RelativeSource>
-                    <RelativeSource Mode="TemplatedParent" />
-                  </Binding.RelativeSource>
-                </Binding>
-              </controls:TouchpadAwareScrollViewer.Content>
-            </controls:TouchpadAwareScrollViewer>
-            <usercontrols:CodeEditorSearchPanelUserControl Grid.RowSpan="2" x:Name="PART_SearchPanelUserControl">
-              <usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
-                <Binding ElementName="SearchPanelPlaceholder" />
-              </usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
-            </usercontrols:CodeEditorSearchPanelUserControl>
-            <Canvas Grid.Row="1" Width="10" HorizontalAlignment="Right" IsHitTestVisible="False">
-              <Path Fill="#CCD18281" x:Name="SrcBlockPath" />
-              <Path Fill="#CC90C494" x:Name="DstBlockPath" />
-            </Canvas>
-          </Grid>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers WordWrap=True -> PART_ScrollViewer HorizontalScrollBarVisibility=Disabled.
-               Avalonia CodeEditor has no :wordwrap pseudoclass; reimplement using a custom pseudoclass toggled
-               from code-behind when WordWrap changes, or apply the value directly via a binding. -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="FocusVisual" Selector="TemplatedControl">
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="2" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="OptionMarkFocusVisual" Selector="TemplatedControl">
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="0" Stroke="{DynamicResource {DynamicResource SystemControlTextBrush}}" StrokeThickness="1" StrokeDashArray="1,2" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="GridSplitter" Selector="GridSplitter">
-    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
-  </Style>
-  <Style x:Key="HorizontalGridSplitter" Selector="GridSplitter">
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="VerticalAlignment" Value="Stretch" />
-    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
-    <Setter Property="Margin" Value="0,-2,0,-2" />
-    <Setter Property="Height" Value="5" />
-    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="GridSplitter">
-          <Grid Background="#00FFFFFF">
-            <Border BorderBrush="{TemplateBinding BorderBrush}" Height="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="VerticalGridSplitter" Selector="GridSplitter">
-    <Setter Property="VerticalAlignment" Value="Stretch" />
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
-    <Setter Property="Margin" Value="-2,0,-2,0" />
-    <Setter Property="Width" Value="5" />
-    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="GridSplitter">
-          <Grid Background="#00FFFFFF">
-            <Border BorderBrush="{TemplateBinding BorderBrush}" Width="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="Separator" Selector="Separator">
-    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
-  </Style>
-  <Style x:Key="CheckBox" Selector="CheckBox">
-    <Setter Property="FontSize" Value="13" />
-  </Style>
-  <Style x:Key="EditableTextBlock" Selector="controls|EditableTextBlock">
-    <Setter Property="Height" Value="22" />
-    <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-<Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:EditableTextBlock">
-          <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis" x:CompileBindings="False">
-            <TextBlock.Text>
-              <Binding Path="Value">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="TemplatedParent" />
-                </Binding.RelativeSource>
-              </Binding>
-            </TextBlock.Text>
-            <TextBlock.IsVisible>
-              <Binding Path="IsInEditMode" Converter="{StaticResource InverseBooleanToVisibility}">
-                <Binding.RelativeSource>
-                  <RelativeSource Mode="TemplatedParent" />
-                </Binding.RelativeSource>
-              </Binding>
-            </TextBlock.IsVisible>
-          </TextBlock>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="CommandTextBox" Selector="controls|CommandTextBox">
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:CommandTextBox">
-          <DockPanel>
-            <TextPresenter x:Name="PART_TextPresenter" />
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
-            <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox" x:CompileBindings="False">
-              <controls:PlaceholderTextBox.Text>
-                <Binding Path="Text">
-                  <Binding.RelativeSource>
-                    <RelativeSource Mode="TemplatedParent" />
-                  </Binding.RelativeSource>
-                </Binding>
-              </controls:PlaceholderTextBox.Text>
-            </controls:PlaceholderTextBox>
-          </DockPanel>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="BindableGitPointView" Selector="controls|BindableGitPointView">
-    <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
-  </Style>
-  <Style x:Key="ToolTip" Selector="ToolTip">
-<Setter Property="FontSize" Value="12" />
-    <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
-    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Popup.BorderBrush}" />
-    <Setter Property="Padding" Value="6,2,6,3" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ToolTip">
-          <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
-            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
-          </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers ToolTip.HasDropShadow=True -> Margin=10 on templated parent +
-               Border#Border Effect=DropShadowEffect. Avalonia ToolTip has no :dropshadow pseudoclass;
-               reimplement using a custom pseudoclass toggled from code-behind, or apply the drop shadow
-               unconditionally / via a binding on HasDropShadow. Original logic:
-                 <Setter Property="Margin" Value="10" />
-                 <Setter TargetName="Border" Property="Effect">
-                   <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
-                 </Setter> -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ContentControl" Selector="ContentControl">
-</Style>
-</ResourceDictionary>
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:EditableTextBlock">
+              <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis" x:CompileBindings="False">
+                <TextBlock.Text>
+                  <Binding Path="Value">
+                    <Binding.RelativeSource>
+                      <RelativeSource Mode="TemplatedParent" />
+                    </Binding.RelativeSource>
+                  </Binding>
+                </TextBlock.Text>
+                <TextBlock.IsVisible>
+                  <Binding Path="IsInEditMode" Converter="{StaticResource InverseBooleanToVisibility}">
+                    <Binding.RelativeSource>
+                      <RelativeSource Mode="TemplatedParent" />
+                    </Binding.RelativeSource>
+                  </Binding>
+                </TextBlock.IsVisible>
+              </TextBlock>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme>
+<ControlTheme x:Key="{x:Type controls:CommandTextBox}" TargetType="controls:CommandTextBox">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:CommandTextBox">
+              <DockPanel>
+                <TextPresenter x:Name="PART_TextPresenter" />
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
+                <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox" x:CompileBindings="False">
+                  <controls:PlaceholderTextBox.Text>
+                    <Binding Path="Text">
+                      <Binding.RelativeSource>
+                        <RelativeSource Mode="TemplatedParent" />
+                      </Binding.RelativeSource>
+                    </Binding>
+                  </controls:PlaceholderTextBox.Text>
+                </controls:PlaceholderTextBox>
+              </DockPanel>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme></Styles.Resources>
+
+<Style Selector="GridSplitter">
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+      </Style>
+
+<Style Selector="Separator">
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+      </Style>
+
+<Style Selector="CheckBox">
+        <Setter Property="FontSize" Value="13" />
+      </Style>
+
+<Style Selector="controls|BindableGitPointView">
+        <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
+      </Style>
+
+<Style Selector="ToolTip">
+    <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource LabelBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Popup.BorderBrush}" />
+        <Setter Property="Padding" Value="6,2,6,3" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ToolTip">
+              <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
+                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
+              </Border>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers ToolTip.HasDropShadow=True -> Margin=10 on templated parent +
+                   Border#Border Effect=DropShadowEffect. Avalonia ToolTip has no :dropshadow pseudoclass;
+                   reimplement using a custom pseudoclass toggled from code-behind, or apply the drop shadow
+                   unconditionally / via a binding on HasDropShadow. Original logic:
+                     <Setter Property="Margin" Value="10" />
+                     <Setter TargetName="Border" Property="Effect">
+                       <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
+                     </Setter> -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+
+<Style Selector="ContentControl">
+    </Style>
+</Styles>

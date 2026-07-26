@@ -13,142 +13,145 @@
        the animation must be reimplemented in phase 6 using <Animation> on the :indeterminate pseudoclass
        (or code-behind). The <Storyboard> resource is preserved verbatim for reference; the trigger actions
        are left as a NOTE comment below the ControlTemplate. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:circularProgressBar="clr-namespace:ForkPlus.UI.CircularProgressBar" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <circularProgressBar:StartPointConverter x:Key="StartPointConverter" />
-  <circularProgressBar:ArcSizeConverter x:Key="ArcSizeConverter" />
-  <circularProgressBar:ArcEndPointConverter x:Key="ArcEndPointConverter" />
-  <circularProgressBar:LargeArcConverter x:Key="LargeArcConverter" />
-  <circularProgressBar:RotateTransformConverter x:Key="RotateTransformConverter" />
-  <circularProgressBar:RotateTransformCentreConverter x:Key="RotateTransformCentreConverter" />
-  <Style x:Key="CircularProgressBar" Selector="ProgressBar">
-    <Setter Property="TextElement.Foreground" Value="#FF007ACC" />
-    <Setter Property="Background" Value="#00FFFFFF" />
-    <Setter Property="Width" Value="20" />
-    <Setter Property="Height" Value="20" />
-    <Setter Property="IsIndeterminate" Value="True" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ProgressBar">
-          <Grid Background="{TemplateBinding Background}" ClipToBounds="False" x:Name="TemplateRoot">
-            <Border x:Name="PART_Indicator" IsVisible="False" />
-            <Viewbox>
-              <Canvas Height="16" Width="16">
-                <Rectangle Height="4.198" Width="0.999" Canvas.Left="7.498" Canvas.Top="0.7" RadiusX="0.85" RadiusY="0.85" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle01" />
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.198" Width="1" Canvas.Left="6.376" Canvas.Top="0.398" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle02">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="30" />
-                      <TranslateTransform X="3.7499999999999996" Y="1.00480947161671" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-0.422" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle03">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="60" />
-                      <TranslateTransform X="6.49519052838329" Y="3.7500000271702154" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="5.244" Canvas.Top="-1.546" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle04">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="90" />
-                      <TranslateTransform X="7.5000000920390741" Y="7.5" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-2.678" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle05">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="120" />
-                      <TranslateTransform X="6.49519052838329" Y="11.25" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="6.376" Canvas.Top="-3.5" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle06">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="150" />
-                      <TranslateTransform X="3.7500000920390728" Y="13.995190528383292" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="0.999" Canvas.Left="7.498" Canvas.Top="11.2" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle07" />
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="8.62" Canvas.Top="11.502" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle08">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="30" />
-                      <TranslateTransform X="-3.7499999999999996" Y="-1.00480947161671" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="9.454" Canvas.Top="12.324" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle09">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="60" />
-                      <TranslateTransform X="-6.49519052838329" Y="-3.7500000271702154" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.744" Canvas.Top="13.448" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle10">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="90" />
-                      <TranslateTransform X="-7.5000000920390741" Y="-7.5" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.454" Canvas.Top="14.576" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle11">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="120" />
-                      <TranslateTransform X="-6.49519052838329" Y="-11.25" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="8.62" Canvas.Top="15.398" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle12">
-                  <Rectangle.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="150" />
-                      <TranslateTransform X="-3.7500000920390728" Y="-13.995190528383292" />
-                    </TransformGroup>
-                  </Rectangle.RenderTransform>
-                </Rectangle>
-              </Canvas>
-            </Viewbox>
-          </Grid>
-          <!-- NOTE (phase 6, Avalonia limitation): Original WPF ControlTemplate.Triggers MultiTrigger
-               (ProgressBar.IsIndeterminate=True AND UIElement.IsVisible=True) ran
-               BeginStoryboard(BusyIndicatorStoryboard) on enter and RemoveStoryboard on exit.
-               Avalonia does not support WPF Storyboard markup. Reimplement the 12-Rectangle
-               opacity key-frame loop using <Animation> on the :indeterminate pseudoclass
-               (or code-behind). The <Storyboard> resource below is preserved verbatim
-               for reference. Original trigger markup:
-                 <MultiTrigger>
-                   <MultiTrigger.Conditions>
-                     <Condition Property="IsIndeterminate" Value="True" />
-                     <Condition Property="IsVisible" Value="True" />
-                   </MultiTrigger.Conditions>
-                   <MultiTrigger.EnterActions>
-                     <BeginStoryboard Storyboard="{DynamicResource BusyIndicatorStoryboard}" x:Name="IsIndeterminateStoryboard" />
-                   </MultiTrigger.EnterActions>
-                   <MultiTrigger.ExitActions>
-                     <RemoveStoryboard BeginStoryboardName="IsIndeterminateStoryboard" />
-                   </MultiTrigger.ExitActions>
-                 </MultiTrigger> -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="LfsProgressBar" Selector="ProgressBar">
-    <Setter Property="Maximum" Value="100" />
-    <Setter Property="Height" Value="3" />
-    <Setter Property="MinWidth" Value="10" />
-    <Setter Property="MaxWidth" Value="100" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
-  </Style>
-</ResourceDictionary>
+<Styles xmlns="https://github.com/avaloniaui" xmlns:circularProgressBar="clr-namespace:ForkPlus.UI.CircularProgressBar" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+      <circularProgressBar:StartPointConverter x:Key="StartPointConverter" />
+      <circularProgressBar:ArcSizeConverter x:Key="ArcSizeConverter" />
+      <circularProgressBar:ArcEndPointConverter x:Key="ArcEndPointConverter" />
+      <circularProgressBar:LargeArcConverter x:Key="LargeArcConverter" />
+      <circularProgressBar:RotateTransformConverter x:Key="RotateTransformConverter" />
+      <circularProgressBar:RotateTransformCentreConverter x:Key="RotateTransformCentreConverter" />
+  
+    <Style x:Key="CircularProgressBar" Selector="ProgressBar">
+        <Setter Property="TextElement.Foreground" Value="#FF007ACC" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="IsIndeterminate" Value="True" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ProgressBar">
+              <Grid Background="{TemplateBinding Background}" ClipToBounds="False" x:Name="TemplateRoot">
+                <Border x:Name="PART_Indicator" IsVisible="False" />
+                <Viewbox>
+                  <Canvas Height="16" Width="16">
+                    <Rectangle Height="4.198" Width="0.999" Canvas.Left="7.498" Canvas.Top="0.7" RadiusX="0.85" RadiusY="0.85" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle01" />
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.198" Width="1" Canvas.Left="6.376" Canvas.Top="0.398" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle02">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="30" />
+                          <TranslateTransform X="3.7499999999999996" Y="1.00480947161671" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-0.422" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle03">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="60" />
+                          <TranslateTransform X="6.49519052838329" Y="3.7500000271702154" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="5.244" Canvas.Top="-1.546" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle04">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="90" />
+                          <TranslateTransform X="7.5000000920390741" Y="7.5" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-2.678" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle05">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="120" />
+                          <TranslateTransform X="6.49519052838329" Y="11.25" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="6.376" Canvas.Top="-3.5" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle06">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="150" />
+                          <TranslateTransform X="3.7500000920390728" Y="13.995190528383292" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="0.999" Canvas.Left="7.498" Canvas.Top="11.2" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle07" />
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="8.62" Canvas.Top="11.502" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle08">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="30" />
+                          <TranslateTransform X="-3.7499999999999996" Y="-1.00480947161671" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="9.454" Canvas.Top="12.324" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle09">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="60" />
+                          <TranslateTransform X="-6.49519052838329" Y="-3.7500000271702154" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.744" Canvas.Top="13.448" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle10">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="90" />
+                          <TranslateTransform X="-7.5000000920390741" Y="-7.5" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.454" Canvas.Top="14.576" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle11">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="120" />
+                          <TranslateTransform X="-6.49519052838329" Y="-11.25" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="8.62" Canvas.Top="15.398" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle12">
+                      <Rectangle.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="150" />
+                          <TranslateTransform X="-3.7500000920390728" Y="-13.995190528383292" />
+                        </TransformGroup>
+                      </Rectangle.RenderTransform>
+                    </Rectangle>
+                  </Canvas>
+                </Viewbox>
+              </Grid>
+              <!-- NOTE (phase 6, Avalonia limitation): Original WPF ControlTemplate.Triggers MultiTrigger
+                   (ProgressBar.IsIndeterminate=True AND UIElement.IsVisible=True) ran
+                   BeginStoryboard(BusyIndicatorStoryboard) on enter and RemoveStoryboard on exit.
+                   Avalonia does not support WPF Storyboard markup. Reimplement the 12-Rectangle
+                   opacity key-frame loop using <Animation> on the :indeterminate pseudoclass
+                   (or code-behind). The <Storyboard> resource below is preserved verbatim
+                   for reference. Original trigger markup:
+                     <MultiTrigger>
+                       <MultiTrigger.Conditions>
+                         <Condition Property="IsIndeterminate" Value="True" />
+                         <Condition Property="IsVisible" Value="True" />
+                       </MultiTrigger.Conditions>
+                       <MultiTrigger.EnterActions>
+                         <BeginStoryboard Storyboard="{DynamicResource BusyIndicatorStoryboard}" x:Name="IsIndeterminateStoryboard" />
+                       </MultiTrigger.EnterActions>
+                       <MultiTrigger.ExitActions>
+                         <RemoveStoryboard BeginStoryboardName="IsIndeterminateStoryboard" />
+                       </MultiTrigger.ExitActions>
+                     </MultiTrigger> -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="LfsProgressBar" Selector="ProgressBar">
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="Height" Value="3" />
+        <Setter Property="MinWidth" Value="10" />
+        <Setter Property="MaxWidth" Value="100" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
+      </Style>
+  </Styles.Resources>
+</Styles>

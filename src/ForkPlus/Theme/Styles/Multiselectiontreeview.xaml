@@ -20,262 +20,266 @@
      - NOTE (Avalonia limitation): DataTrigger on ShowBorder property cannot be expressed as a selector; original logic preserved as comment.
      - NOTE (Avalonia limitation): ToggleButton.Visibility binding with BooleanToVisibilityConverter needs Avalonia adaptation
        (IsVisible bool + bool converter); preserved as-is for structural compatibility. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
-  <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
-  <Style x:Key="ExpandCollapseToggleStyle" Selector="ToggleButton">
-    <Setter Property="Focusable" Value="False" />
-    <Setter Property="Width" Value="16" />
-    <Setter Property="Height" Value="16" />
-    <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ToggleButton">
-          <Border Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Background="#00FFFFFF">
-            <Path Data="M0,0L3.5,3.5 0,7" Margin="2,1,0,0" Stroke="{TemplateBinding Background}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ExpandPath" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <Style Selector="^:checked /template/ Path#ExpandPath">
-      <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
-      <Setter Property="Margin" Value="0,2,0,0" />
+<Styles xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+      <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
+  
+    <Style x:Key="ExpandCollapseToggleStyle" Selector="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ToggleButton">
+              <Border Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Background="#00FFFFFF">
+                <Path Data="M0,0L3.5,3.5 0,7" Margin="2,1,0,0" Stroke="{TemplateBinding Background}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ExpandPath" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style Selector="^:checked /template/ Path#ExpandPath">
+          <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
+          <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
+      </Style>
+    <Style x:Key="TreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Focusable" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="IsFocusable" />
+          </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Margin" Value="2,0,2,0" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+                <Border.CornerRadius>
+                  <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+                </Border.CornerRadius>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition>
+                      <ColumnDefinition.Width>
+                        <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
+                      </ColumnDefinition.Width>
+                    </ColumnDefinition>
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <ToggleButton Grid.Column="1" VerticalAlignment="Center" x:Name="ExpandCollapseToggleButton">
+                    <ToggleButton.IsChecked>
+                      <Binding Path="IsExpanded" />
+                    </ToggleButton.IsChecked>
+                    
+                  </ToggleButton>
+                  <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Grid>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- Active selection (parent selector has focus): IsSelectionActive=True AND IsSelected=True.
+             Approximated with :selected:focus-within (NOTE (Avalonia limitation): IsSelectionActive tracks parent focus, not item focus). -->
+        <Style Selector="^:selected:focus-within /template/ Border#Bd">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+        </Style>
+        <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
+        </Style>
+        <!-- Inactive selection (parent selector lost focus): IsSelectionActive=False AND IsSelected=True.
+             Approximated with :selected:not(:focus-within) (NOTE (Avalonia limitation): see note above). -->
+        <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
+        </Style>
+        <Style Selector="^:disabled /template/ Border#Bd">
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+      </Style>
+        <Style x:Key="ExpandButtonAutoWidthTreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Focusable" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="IsFocusable" />
+          </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+                <Border.CornerRadius>
+                  <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+                </Border.CornerRadius>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition>
+                      <ColumnDefinition.Width>
+                        <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
+                      </ColumnDefinition.Width>
+                    </ColumnDefinition>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <ToggleButton Grid.Column="1" VerticalAlignment="Center" Width="16" x:Name="ExpandCollapseToggleButton">
+                    <ToggleButton.IsChecked>
+                      <Binding Path="IsExpanded" />
+                    </ToggleButton.IsChecked>
+                    
+                  </ToggleButton>
+                  <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Grid>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- NOTE (Avalonia limitation): Original WPF DataTrigger ShowBorder=False:
+             Setter: Bd BorderBrush = #00FFFFFF.
+             Cannot be expressed as an Avalonia selector (data trigger on custom property);
+             needs a direct binding or code-behind. -->
+        <!-- Active selection: IsSelectionActive=True AND IsSelected=True (approximated with :selected:focus-within). -->
+        <Style Selector="^:selected:focus-within /template/ Border#Bd">
+          <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+        </Style>
+        <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
+        </Style>
+        <!-- Inactive selection: IsSelectionActive=False AND IsSelected=True (approximated with :selected:not(:focus-within)). -->
+        <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
+        </Style>
+        <Style Selector="^:disabled /template/ Border#Bd">
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
+        </Style>
+      </Style>
+    <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
+        <Setter Property="BorderThickness" Value="1,1,0,1" />
     </Style>
-  </Style>
-  <Style x:Key="TreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="IsFocusable" />
-      </Setter.Value>
-    </Setter>
+    <Style x:Key="SideBarSearchTreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+      </Style>
+    <Style x:Key="SideBarSearchMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+        <Setter Property="BorderThickness" Value="0" />
+      </Style>
+    <Style x:Key="SideBarIssuesTreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Height" Value="50" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+      </Style>
+    <Style x:Key="SideBarIssuesMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+      </Style>
+    <Style x:Key="SideBarTreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+      </Style>
+    <Style x:Key="SideBarMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+      </Style>
+    <Style x:Key="TreeViewItemGridViewStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Focusable" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="IsFocusable" />
+          </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+                <Border.CornerRadius>
+                  <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+                </Border.CornerRadius>
+                <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- Active selection: IsSelectionActive=True AND IsSelected=True (approximated with :selected:focus-within). -->
+        <Style Selector="^:selected:focus-within /template/ Border#Bd">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+        </Style>
+        <!-- Inactive selection: IsSelectionActive=False AND IsSelected=True (approximated with :selected:not(:focus-within)). -->
+        <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
+          <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
+        </Style>
+        <Style Selector="^:disabled /template/ Border#Bd">
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+      </Style>
+    <Style x:Key="FileListMultiselectionTreeViewWithGridViewStyle" Selector="controls|MultiselectionTreeView">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:MultiselectionTreeView">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+                <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
+                  <ItemsPresenter Margin="0,4,0,0" />
+                </controls:TouchpadAwareScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="FileListMultiselectionTreeViewDefaultStyle" Selector="controls|MultiselectionTreeView" />
+    <Style x:Key="RepositoryManagerTreeViewItemStyle" Selector="controls|TreeViewControlItem">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Padding" Value="2,0,2,0" />
+        <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+      </Style>
+  
+
+<ControlTheme x:Key="{x:Type controls:MultiselectionTreeView}" TargetType="controls:MultiselectionTreeView">
+        <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}" />
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Padding" Value="2" />
-    <Setter Property="Margin" Value="2,0,2,0" />
-    <Setter Property="Height" Value="20" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
-            <Border.CornerRadius>
-              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
-            </Border.CornerRadius>
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition>
-                  <ColumnDefinition.Width>
-                    <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
-                  </ColumnDefinition.Width>
-                </ColumnDefinition>
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <ToggleButton Grid.Column="1" VerticalAlignment="Center" x:Name="ExpandCollapseToggleButton">
-                <ToggleButton.IsChecked>
-                  <Binding Path="IsExpanded" />
-                </ToggleButton.IsChecked>
-                
-              </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Grid>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- Active selection (parent selector has focus): IsSelectionActive=True AND IsSelected=True.
-         Approximated with :selected:focus-within (NOTE (Avalonia limitation): IsSelectionActive tracks parent focus, not item focus). -->
-    <Style Selector="^:selected:focus-within /template/ Border#Bd">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-    </Style>
-    <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
-    </Style>
-    <!-- Inactive selection (parent selector lost focus): IsSelectionActive=False AND IsSelected=True.
-         Approximated with :selected:not(:focus-within) (NOTE (Avalonia limitation): see note above). -->
-    <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    </Style>
-  </Style>
-  <Style x:Key="MultiselectionTreeView" Selector="controls|MultiselectionTreeView">
-    <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}" />
-<Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="Margin" Value="0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:MultiselectionTreeView">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-              <ItemsPresenter />
-            </controls:TouchpadAwareScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ExpandButtonAutoWidthTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="IsFocusable" />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="BorderThickness" Value="0,1,0,0" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Padding" Value="2" />
-    <Setter Property="Margin" Value="2,0" />
-    <Setter Property="FontSize" Value="13" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
-            <Border.CornerRadius>
-              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
-            </Border.CornerRadius>
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition>
-                  <ColumnDefinition.Width>
-                    <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
-                  </ColumnDefinition.Width>
-                </ColumnDefinition>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <ToggleButton Grid.Column="1" VerticalAlignment="Center" Width="16" x:Name="ExpandCollapseToggleButton">
-                <ToggleButton.IsChecked>
-                  <Binding Path="IsExpanded" />
-                </ToggleButton.IsChecked>
-                
-              </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Grid>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- NOTE (Avalonia limitation): Original WPF DataTrigger ShowBorder=False:
-         Setter: Bd BorderBrush = #00FFFFFF.
-         Cannot be expressed as an Avalonia selector (data trigger on custom property);
-         needs a direct binding or code-behind. -->
-    <!-- Active selection: IsSelectionActive=True AND IsSelected=True (approximated with :selected:focus-within). -->
-    <Style Selector="^:selected:focus-within /template/ Border#Bd">
-      <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-    </Style>
-    <Style Selector="^:selected:focus-within /template/ ToggleButton#ExpandCollapseToggleButton">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" />
-    </Style>
-    <!-- Inactive selection: IsSelectionActive=False AND IsSelected=True (approximated with :selected:not(:focus-within)). -->
-    <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
-    </Style>
-  </Style>
-  <Style x:Key="FileHistoryMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
-    <Setter Property="BorderThickness" Value="1,1,0,1" />
-</Style>
-  <Style x:Key="SideBarSearchTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Height" Value="22" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="FontSize" Value="13" />
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-  </Style>
-  <Style x:Key="SideBarSearchMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="BorderThickness" Value="0" />
-  </Style>
-  <Style x:Key="SideBarIssuesTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Height" Value="50" />
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Margin" Value="0" />
-    <Setter Property="BorderThickness" Value="0,0,0,1" />
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-  </Style>
-  <Style x:Key="SideBarIssuesMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-    <Setter Property="Margin" Value="0" />
-    <Setter Property="BorderThickness" Value="0" />
-  </Style>
-  <Style x:Key="SideBarTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Height" Value="22" />
-    <Setter Property="FontSize" Value="13" />
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-  </Style>
-  <Style x:Key="SideBarMultiselectionTreeViewStyle" Selector="controls|MultiselectionTreeView">
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-  </Style>
-  <Style x:Key="TreeViewItemGridViewStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Focusable" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="IsFocusable" />
-      </Setter.Value>
-    </Setter>
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Padding" Value="2" />
-    <Setter Property="Margin" Value="2,0" />
-    <Setter Property="Height" Value="20" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:TreeViewControlItem" x:CompileBindings="False">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
-            <Border.CornerRadius>
-              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
-            </Border.CornerRadius>
-            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- Active selection: IsSelectionActive=True AND IsSelected=True (approximated with :selected:focus-within). -->
-    <Style Selector="^:selected:focus-within /template/ Border#Bd">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedActive.Background}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-    </Style>
-    <!-- Inactive selection: IsSelectionActive=False AND IsSelected=True (approximated with :selected:not(:focus-within)). -->
-    <Style Selector="^:selected:not(:focus-within) /template/ Border#Bd">
-      <Setter Property="Background" Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Border#Bd">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    </Style>
-  </Style>
-  <Style x:Key="FileListMultiselectionTreeViewWithGridViewStyle" Selector="controls|MultiselectionTreeView">
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate  TargetType="controls:MultiselectionTreeView">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-              <ItemsPresenter Margin="0,4,0,0" />
-            </controls:TouchpadAwareScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="FileListMultiselectionTreeViewDefaultStyle" Selector="controls|MultiselectionTreeView" />
-  <Style x:Key="RepositoryManagerTreeViewItemStyle" Selector="controls|TreeViewControlItem">
-    <Setter Property="Height" Value="22" />
-    <Setter Property="Padding" Value="2,0,2,0" />
-    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
-  </Style>
-</ResourceDictionary>
+        <Setter Property="Padding" Value="0,4,0,0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:MultiselectionTreeView">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+                <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
+                  <ItemsPresenter />
+                </controls:TouchpadAwareScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme></Styles.Resources>
+</Styles>

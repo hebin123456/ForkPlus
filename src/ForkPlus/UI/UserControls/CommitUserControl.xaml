@@ -60,7 +60,7 @@
           </StackPanel>
           <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" x:Name="WarningMessageContainer">
             <TextBlock Margin="4,2,4,2" VerticalAlignment="Center" x:Name="WarningTextBlock" />
-            <Image Grid.Column="0" Margin="0,4,4,4" Width="16" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" />
+            <Image Grid.Column="0" Margin="0,4,4,4" Width="16" VerticalAlignment="Center" Source="avares://ForkPlus/assets/warning.png" />
           </StackPanel>
         </DockPanel>
       </Grid>

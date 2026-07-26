@@ -22,13 +22,13 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class ForkPlusDialogWindow : CustomWindow
 	{
-		private static readonly Uri ForkPlusLogo = new Uri("avares://ForkPlus/Assets/ForkPlusIcon.png");
+		private static readonly Uri ForkPlusLogo = new Uri("avares://ForkPlus/assets/ForkPlusIcon.png");
 
-		public static readonly Uri WarningIcon = new Uri("avares://ForkPlus/Assets/Warning.png");
+		public static readonly Uri WarningIcon = new Uri("avares://ForkPlus/assets/warning.png");
 
-		public static readonly Uri ErrorIcon = new Uri("avares://ForkPlus/Assets/Error.png");
+		public static readonly Uri ErrorIcon = new Uri("avares://ForkPlus/assets/error.png");
 
-		public static readonly Uri SuccessIcon = new Uri("avares://ForkPlus/Assets/CheckMarkStroked.png");
+		public static readonly Uri SuccessIcon = new Uri("avares://ForkPlus/assets/checkmarkstroked.png");
 
 		private Image _warningIcon;
 

@@ -85,6 +85,9 @@ namespace ForkPlus.Accounts
 		public NotificationManager()
 		{
 			// 阶段 5：ToastNotificationManagerCompat 是 Windows-only，非 Windows 平台跳过注册。
+			// 阶段 6 修复：CommunityToolkit.WinUI.Notifications 7.1.2 在 NativeAOT 下可能因
+			// 类型被 trim 而抛 TypeLoadException / MissingMethodException。整段订阅用独立 try/catch
+			// 包裹，确保通知激活回调失败不影响应用启动（仅丢失 toast 点击回调能力）。
 #if WINDOWS
 			if (OperatingSystem.IsWindows())
 			{
@@ -92,17 +95,33 @@ namespace ForkPlus.Accounts
 				{
 					ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
 				}
+				catch (TypeInitializationException ex)
+				{
+					// ToastNotificationManagerCompat 静态构造失败（COM 注册 / 类型加载），
+					// 类型永久不可用，后续不再尝试访问。
+					Log.Error("ToastNotificationManagerCompat static initialization failed (type permanently unavailable)", ex);
+				}
 				catch (Exception ex)
 				{
 					Log.Error("Failed to subscribe ToastNotificationManagerCompat.OnActivated", ex);
 				}
 			}
 #endif
-			if (Services.ServiceLocator.Timer != null)
+			// Timer 设置独立 try/catch，避免 Timer 异常影响 NotificationManager 构造
+			// （NotificationManager.Current 是静态字段，构造失败会导致 TypeInitializationException
+			// 连锁崩溃整个应用）。
+			try
 			{
-				Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
-				Services.ServiceLocator.Timer.Tick += _timer_Tick;
-				Services.ServiceLocator.Timer.Start();
+				if (Services.ServiceLocator.Timer != null)
+				{
+					Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
+					Services.ServiceLocator.Timer.Tick += _timer_Tick;
+					Services.ServiceLocator.Timer.Start();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to initialize NotificationManager timer", ex);
 			}
 		}
 

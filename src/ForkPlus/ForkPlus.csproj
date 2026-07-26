@@ -63,7 +63,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="assets\**\*.*" />
+    <!-- Avalonia 资源：avares:// URI 只能解析 AvaloniaResource 项（WPF 的 <Resource> 在 Avalonia
+         工程中不会被打包进 !AvaloniaResources blob，运行时 AssetLoader.Open 抛 FileNotFoundException）。
+         assets/ 目录下全部为 PNG 图标资源，由 XAML/C# 通过 avares://ForkPlus/assets/<name>.png 加载。 -->
+    <AvaloniaResource Include="assets\**\*.*" />
     <Content Include="Languages\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -144,9 +147,13 @@
          - CommunityToolkit.WinUI.Notifications：仅 Windows TFM 引用（Toast 通知 Windows-only）；
            非Windows TFM 下 NotificationManager 用反射延迟加载 WinRT，运行时已加 IsWindows 守卫 -->
     <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'" />
-    <!-- 阶段 6：net10.0 目标下 Microsoft.Win32.Registry 不在 BCL，需显式引入。
-         net10.0-windows 目标下随 Windows Desktop SDK 隐式提供，无需重复引用。 -->
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <!-- 阶段 6 修复：Microsoft.Win32.Registry 在 net10.0 和 net10.0-windows 下都不在 BCL。
+         原注释称"net10.0-windows 下随 Windows Desktop SDK 隐式提供"是错误的——
+         UseWPF=false / UseWindowsForms=false 时 Windows Desktop SDK 不会被引入，
+         Microsoft.Win32.Registry 程序集必须通过 NuGet 包显式提供。
+         移除 Condition 让两个 TFM 都引用，避免 net10.0-windows 运行时 TypeLoadException
+         （App.IsSystemAccentBrushEnabled / App.GetSystemTheme / WpfSystemThemeService 均依赖 Registry）。 -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />

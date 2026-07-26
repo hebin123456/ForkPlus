@@ -9,12 +9,45 @@
     <FluentTheme />
     <!-- DataGrid 控件主题（Avalonia 11.x 起独立包，需显式引入） -->
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+    <!-- 阶段 4 里程碑 4.3：基础控件样式必须放入 Application.Styles（而非 Application.Resources）
+         才会按 Selector 自动应用。Generic.xaml 是 ResourceDictionary，仅提供 brush/geometry 等
+         资源；控件 Style / ControlTemplate 必须通过 StyleInclude 加载才能生效。
+         Window.xaml 含 CustomWindow / ForkPlusDialogWindow 的 ControlTemplate（PART_WindowHeader /
+         PART_CloseButton 等模板部件），缺失会导致 CustomWindow.OnApplyTemplate 抛 KeyNotFoundException。
+
+         注意文件名大小写：Linux/macOS 文件系统区分大小写，avares:// URI 必须与磁盘上
+         的实际文件名完全一致（Checkbox.xaml 而非 CheckBox.xaml）。Windows 文件系统
+         不区分大小写，所以之前混合大小写在 Windows 上能跑但 Linux/macOS 会失败。 -->
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Window.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Button.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Border.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Calendar.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Checkbox.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Combobox.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Commonresources.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Expander.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Focusvisual.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Textblock.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Textbox.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Placeholdertextbox.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Listview.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Multiselectiontreeview.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Tabcontrol.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Progressbar.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Scrollviewer.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Slider.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Sidebar.xaml" />
+    <StyleInclude Source="avares://ForkPlus/Theme/Styles/Menu.xaml" />
   </Application.Styles>
   <Application.Resources>
     <ResourceDictionary>
-      <!-- 阶段 4 里程碑 4.3 待办：22 套主题字典 (Generic.*.xaml) 重写为 Avalonia Styles 后在此引入。
-           原 WPF: <ResourceDictionary Source="pack://application:,,,/ForkPlus;component/Theme/Generic.Light.xaml" />
-           Avalonia: <StyleInclude Source="avares://ForkPlus/Theme/Generic.Light.axaml" /> -->
+      <ResourceDictionary.MergedDictionaries>
+        <!-- 资源字典（brush / geometry / color）通过 Application.Resources 加载，
+             供各 Style / ControlTemplate 中的 DynamicResource 引用解析。
+             只保留纯资源文件（ResourceDictionary 根），Style 文件已转为 <Styles> 根
+             并通过上方 StyleInclude 加载，不能再作为 ResourceInclude 引入。 -->
+        <ResourceInclude Source="avares://ForkPlus/Theme/Generic.xaml" />
+      </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 </Application>

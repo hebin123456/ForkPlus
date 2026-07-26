@@ -28,13 +28,13 @@ namespace ForkPlus.Git
 	/// </summary>
 	public static class ChangeTypeBridgeExtensions
 	{
-		private static readonly Uri AddIconUrl = new Uri("avares://ForkPlus/Assets/Status_Add.png");
-		private static readonly Uri EditIconUrl = new Uri("avares://ForkPlus/Assets/Status_Edit.png");
-		private static readonly Uri CopyIconUrl = new Uri("avares://ForkPlus/Assets/Status_Copy.png");
-		private static readonly Uri DeletedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Remove.png");
-		private static readonly Uri RenamedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Rename.png");
-		private static readonly Uri TypeChangedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Edit.png");
-		private static readonly Uri UnmergedIconUrl = new Uri("avares://ForkPlus/Assets/Warning.png");
+		private static readonly Uri AddIconUrl = new Uri("avares://ForkPlus/assets/status_add.png");
+		private static readonly Uri EditIconUrl = new Uri("avares://ForkPlus/assets/status_edit.png");
+		private static readonly Uri CopyIconUrl = new Uri("avares://ForkPlus/assets/status_copy.png");
+		private static readonly Uri DeletedIconUrl = new Uri("avares://ForkPlus/assets/status_remove.png");
+		private static readonly Uri RenamedIconUrl = new Uri("avares://ForkPlus/assets/status_rename.png");
+		private static readonly Uri TypeChangedIconUrl = new Uri("avares://ForkPlus/assets/status_edit.png");
+		private static readonly Uri UnmergedIconUrl = new Uri("avares://ForkPlus/assets/warning.png");
 
 		private static readonly IImage AddIcon = LoadBitmap(AddIconUrl);
 		private static readonly IImage EditIcon = LoadBitmap(EditIconUrl);

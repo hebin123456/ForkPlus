@@ -23,7 +23,13 @@ namespace ForkPlus
 			_messageHandler = messageHandler;
 			CurrentProcessPipeName = NamedPipeHelper.CreatePipeName(name, App.ProcessId.ToString());
 			int maxNumberOfServerInstances = 10;
-			_pipeServer = new NamedPipeServerStream(CurrentProcessPipeName, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+			// PipeTransmissionMode.Message 仅 Windows 支持，Linux/macOS 抛 PlatformNotSupportedException。
+			// ReadString/WriteString 已用 4 字节长度前缀做帧定界，Byte 模式下同样能正确收发消息，
+			// 故非 Windows 平台回退到 Byte 模式即可。
+			PipeTransmissionMode transmissionMode = OperatingSystem.IsWindows()
+				? PipeTransmissionMode.Message
+				: PipeTransmissionMode.Byte;
+			_pipeServer = new NamedPipeServerStream(CurrentProcessPipeName, PipeDirection.InOut, maxNumberOfServerInstances, transmissionMode, PipeOptions.Asynchronous);
 			_cancellationToken = new CancellationTokenSource();
 			_thread = new Thread((ThreadStart)delegate
 			{
@@ -77,13 +83,18 @@ namespace ForkPlus
 				}
 				finally
 				{
-					try
+					// WaitForPipeDrain 仅 Windows 支持（Message 模式下刷管道缓冲），
+					// Linux/macOS 的 Byte 模式下 Flush 已同步写出，无需 drain。
+					if (OperatingSystem.IsWindows())
 					{
-						pipeServer.WaitForPipeDrain();
-					}
-					catch (IOException)
-					{
-						// Pipe already broken — nothing to drain
+						try
+						{
+							pipeServer.WaitForPipeDrain();
+						}
+						catch (IOException)
+						{
+							// Pipe already broken — nothing to drain
+						}
 					}
 					if (pipeServer.IsConnected)
 					{

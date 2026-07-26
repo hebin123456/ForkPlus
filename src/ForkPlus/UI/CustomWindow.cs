@@ -172,11 +172,14 @@ namespace ForkPlus.UI
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_templatePartWindowHeader = e.NameScope.Get<Control>("PART_WindowHeader");
-			_closeButton = e.NameScope.Get<Button>("PART_CloseButton");
-			_minimizeButton = e.NameScope.Get<Button>("PART_MinimizeButton");
-			_maximizeButton = e.NameScope.Get<Button>("PART_MaximizeButton");
-			_restoreButton = e.NameScope.Get<Button>("PART_RestoreButton");
+			// 阶段 6 修复：用 Find<T>（返回 null/default 缺失时不抛）代替 Get<T>（抛 KeyNotFoundException）。
+			// 当 ControlTheme 未正确加载或模板被替换为不含 PART_* 的版本时，应用仍可启动，
+			// 仅丢失对应按钮功能，避免“程序根本运行不起来”。
+			_templatePartWindowHeader = e.NameScope.Find<Control>("PART_WindowHeader");
+			_closeButton = e.NameScope.Find<Button>("PART_CloseButton");
+			_minimizeButton = e.NameScope.Find<Button>("PART_MinimizeButton");
+			_maximizeButton = e.NameScope.Find<Button>("PART_MaximizeButton");
+			_restoreButton = e.NameScope.Find<Button>("PART_RestoreButton");
 
 			// 绑定标题栏按钮点击
 			if (_closeButton != null)

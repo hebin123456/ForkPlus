@@ -12,325 +12,330 @@
      - UIElement.Visibility in Setters -> IsVisible (bool: Visible->True, Collapsed/Hidden->False).
      - TemplateBinding paths stripped of class prefixes.
      - ControlTemplate internal control tree and layout preserved. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-  <Geometry x:Key="ArrowTop">M5.551,1.229L8.818,6.791C9.234,7.831 8.956,8.44 7.788,8.5L4.5,8.5L1.212,8.5C0.044,8.44 -0.234,7.831 0.182,6.791L3.449,1.229C3.8,0.759 4.15,0.512 4.5,0.5L4.5,0.5C4.85,0.512 5.2,0.758 5.551,1.229Z</Geometry>
-  <Geometry x:Key="ArrowBottom">M0.182,2.209L3.449,7.771C3.8,8.242 4.15,8.488 4.5,8.5L4.5,8.5C4.85,8.488 5.2,8.242 5.551,7.771L8.818,2.209C9.234,1.169 8.956,0.56 7.788,0.5L1.212,0.5C0.044,0.56 -0.234,1.169 0.182,2.209Z</Geometry>
-  <Geometry x:Key="ArrowRight">M7.771,3.449L2.209,0.182C1.169,-0.234 0.56,0.044 0.5,1.212L0.5,7.788C0.56,8.956 1.169,9.234 2.209,8.818L7.771,5.551C8.242,5.201 8.488,4.85 8.5,4.5L8.5,4.5C8.488,4.15 8.242,3.8 7.771,3.449Z</Geometry>
-  <Geometry x:Key="ArrowLeft">M1.229,3.449L6.791,0.182C7.831,-0.234 8.44,0.044 8.5,1.212L8.5,7.788C8.44,8.956 7.831,9.234 6.791,8.818L1.229,5.551C0.758,5.201 0.512,4.85 0.5,4.5L0.5,4.5C0.512,4.15 0.758,3.8 1.229,3.449Z</Geometry>
-  <Style x:Key="ScrollBarButton" Selector="RepeatButton">
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Padding" Value="1" />
-    <Setter Property="Focusable" Value="false" />
-    <Setter Property="IsTabStop" Value="false" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="RepeatButton">
-          <Border BorderBrush="#00FFFFFF" Background="#00FFFFFF" BorderThickness="0" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="RepeatButtonTransparent" Selector="RepeatButton">
-    <Setter Property="Background" Value="#00FFFFFF" />
-    <Setter Property="Focusable" Value="false" />
-    <Setter Property="IsTabStop" Value="false" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="RepeatButton">
-          <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ScrollBarThumbVertical" Selector="Thumb">
-    <Setter Property="IsTabStop" Value="false" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Thumb">
-          <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <Style Selector="^:pointerover /template/ Border#rectangle">
-      <Setter Property="Background" Value="{DynamicResource ScrollBar.MouseOver.Thumb}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" />
-    </Style>
-    <Style Selector="^:dragging /template/ Border#rectangle">
-      <Setter Property="Background" Value="{DynamicResource ScrollBar.Pressed.Thumb}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" />
-    </Style>
-  </Style>
-  <Style x:Key="ScrollBarThumbHorizontal" Selector="Thumb">
-    <Setter Property="IsTabStop" Value="false" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Thumb">
-          <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <Style Selector="^:pointerover /template/ Border#rectangle">
-      <Setter Property="Background" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Horizontal}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" />
-    </Style>
-    <Style Selector="^:dragging /template/ Border#rectangle">
-      <Setter Property="Background" Value="{DynamicResource ScrollBar.Pressed.Thumb.Horizontal}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" />
-    </Style>
-  </Style>
-  <Style x:Key="VerticalScrollBarStyle" Selector="ScrollBar">
-    <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Width" Value="13" />
-    <Setter Property="MinWidth" Value="13" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ScrollBar">
-          <Grid x:Name="Bg">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="10" />
-              <RowDefinition Height="0.00001*" />
-              <RowDefinition Height="10" />
-            </Grid.RowDefinitions>
-            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
-            <RepeatButton x:Name="PART_LineUpButton">
-              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
-            </RepeatButton>
-            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
-              <Track.Resources>
-                
-                  <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
-                
-              </Track.Resources>
-              <Track.Thumb>
-                <Thumb />
-              </Track.Thumb>
-            </Track>
-            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton">
-              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
-            </RepeatButton>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover (not pressed) -->
-    <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
-    </Style>
-    <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover+pressed (more specific wins) -->
-    <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover:pressed Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-    </Style>
-    <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover:pressed Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers (vertical): disabled -->
-    <Style Selector="^:disabled /template/ Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-    </Style>
-    <!-- Converted from Style.Triggers: ScrollBar.Orientation=Horizontal -> :horizontal pseudoclass -->
-    <Style Selector="^:horizontal">
-      <Setter Property="MinWidth" Value="0" />
-      <Setter Property="Height" Value="13" />
-      <Setter Property="MinHeight" Value="13" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate>
-            <Grid x:Name="Bg">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="0.00001*" />
-                <ColumnDefinition Width="10" />
-              </Grid.ColumnDefinitions>
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-              <RepeatButton x:Name="PART_LineLeftButton">
-                <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
-              </RepeatButton>
-              <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
-                <Track.Thumb>
-                  <Thumb />
-                </Track.Thumb>
-              </Track>
-              <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton">
-                <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
-              </RepeatButton>
-            </Grid>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-      <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover (not pressed) -->
-      <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+<Styles xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Styles.Resources>
+      <Geometry x:Key="ArrowTop">M5.551,1.229L8.818,6.791C9.234,7.831 8.956,8.44 7.788,8.5L4.5,8.5L1.212,8.5C0.044,8.44 -0.234,7.831 0.182,6.791L3.449,1.229C3.8,0.759 4.15,0.512 4.5,0.5L4.5,0.5C4.85,0.512 5.2,0.758 5.551,1.229Z</Geometry>
+      <Geometry x:Key="ArrowBottom">M0.182,2.209L3.449,7.771C3.8,8.242 4.15,8.488 4.5,8.5L4.5,8.5C4.85,8.488 5.2,8.242 5.551,7.771L8.818,2.209C9.234,1.169 8.956,0.56 7.788,0.5L1.212,0.5C0.044,0.56 -0.234,1.169 0.182,2.209Z</Geometry>
+      <Geometry x:Key="ArrowRight">M7.771,3.449L2.209,0.182C1.169,-0.234 0.56,0.044 0.5,1.212L0.5,7.788C0.56,8.956 1.169,9.234 2.209,8.818L7.771,5.551C8.242,5.201 8.488,4.85 8.5,4.5L8.5,4.5C8.488,4.15 8.242,3.8 7.771,3.449Z</Geometry>
+      <Geometry x:Key="ArrowLeft">M1.229,3.449L6.791,0.182C7.831,-0.234 8.44,0.044 8.5,1.212L8.5,7.788C8.44,8.956 7.831,9.234 6.791,8.818L1.229,5.551C0.758,5.201 0.512,4.85 0.5,4.5L0.5,4.5C0.512,4.15 0.758,3.8 1.229,3.449Z</Geometry>
+  
+    <Style x:Key="ScrollBarButton" Selector="RepeatButton">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="1" />
+        <Setter Property="Focusable" Value="false" />
+        <Setter Property="IsTabStop" Value="false" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="RepeatButton">
+              <Border BorderBrush="#00FFFFFF" Background="#00FFFFFF" BorderThickness="0" x:Name="border">
+                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
       </Style>
-      <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+    <Style x:Key="RepeatButtonTransparent" Selector="RepeatButton">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Focusable" Value="false" />
+        <Setter Property="IsTabStop" Value="false" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="RepeatButton">
+              <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
       </Style>
-      <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover+pressed -->
-      <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover:pressed Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+    <Style x:Key="ScrollBarThumbVertical" Selector="Thumb">
+        <Setter Property="IsTabStop" Value="false" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Thumb">
+              <Grid Background="#00FFFFFF">
+                <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#rectangle">
+          <Setter Property="Background" Value="{DynamicResource ScrollBar.MouseOver.Thumb}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" />
+        </Style>
+        <Style Selector="^:dragging /template/ Border#rectangle">
+          <Setter Property="Background" Value="{DynamicResource ScrollBar.Pressed.Thumb}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" />
+        </Style>
       </Style>
-      <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover:pressed Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+    <Style x:Key="ScrollBarThumbHorizontal" Selector="Thumb">
+        <Setter Property="IsTabStop" Value="false" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Thumb">
+              <Grid Background="#00FFFFFF">
+                <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#rectangle">
+          <Setter Property="Background" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Horizontal}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" />
+        </Style>
+        <Style Selector="^:dragging /template/ Border#rectangle">
+          <Setter Property="Background" Value="{DynamicResource ScrollBar.Pressed.Thumb.Horizontal}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" />
+        </Style>
       </Style>
-      <!-- Converted from horizontal ControlTemplate.Triggers: disabled -->
-      <Style Selector="^:disabled /template/ Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+    <Style x:Key="VerticalScrollBarStyle" Selector="ScrollBar">
+        <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Width" Value="13" />
+        <Setter Property="MinWidth" Value="13" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollBar">
+              <Grid x:Name="Bg">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="10" />
+                  <RowDefinition Height="0.00001*" />
+                  <RowDefinition Height="10" />
+                </Grid.RowDefinitions>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
+                <RepeatButton x:Name="PART_LineUpButton">
+                  <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+                </RepeatButton>
+                <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+                  <Track.Resources>
+                    
+                      <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
+                    
+                  </Track.Resources>
+                  <Track.Thumb>
+                    <Thumb />
+                  </Track.Thumb>
+                </Track>
+                <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton">
+                  <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+                </RepeatButton>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover (not pressed) -->
+        <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+        </Style>
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+        </Style>
+        <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover+pressed (more specific wins) -->
+        <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover:pressed Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+        </Style>
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover:pressed Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+        </Style>
+        <!-- Converted from ControlTemplate.Triggers (vertical): disabled -->
+        <Style Selector="^:disabled /template/ Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+        </Style>
+        <Style Selector="^:disabled /template/ Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+        </Style>
+        <!-- Converted from Style.Triggers: ScrollBar.Orientation=Horizontal -> :horizontal pseudoclass -->
+        <Style Selector="^:horizontal">
+          <Setter Property="MinWidth" Value="0" />
+          <Setter Property="Height" Value="13" />
+          <Setter Property="MinHeight" Value="13" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Grid x:Name="Bg">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="0.00001*" />
+                    <ColumnDefinition Width="10" />
+                  </Grid.ColumnDefinitions>
+                  <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
+                  <RepeatButton x:Name="PART_LineLeftButton">
+                    <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                  </RepeatButton>
+                  <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
+                    <Track.Thumb>
+                      <Thumb />
+                    </Track.Thumb>
+                  </Track>
+                  <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton">
+                    <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                  </RepeatButton>
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+          <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover (not pressed) -->
+          <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+          </Style>
+          <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+          </Style>
+          <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover+pressed -->
+          <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover:pressed Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+          </Style>
+          <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover:pressed Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+          </Style>
+          <!-- Converted from horizontal ControlTemplate.Triggers: disabled -->
+          <Style Selector="^:disabled /template/ Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+          </Style>
+          <Style Selector="^:disabled /template/ Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+          </Style>
+        </Style>
       </Style>
-      <Style Selector="^:disabled /template/ Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+    <Style x:Key="HorizontalScrollBarStyle" Selector="ScrollBar">
+        <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Width" Value="13" />
+        <Setter Property="MinWidth" Value="13" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollBar">
+              <Grid x:Name="Bg">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="10" />
+                  <RowDefinition Height="0.00001*" />
+                  <RowDefinition Height="10" />
+                </Grid.RowDefinitions>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
+                <RepeatButton x:Name="PART_LineUpButton">
+                  <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+                </RepeatButton>
+                <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+                  <Track.Resources>
+                    
+                      <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
+                    
+                  </Track.Resources>
+                  <Track.Thumb>
+                    <Thumb />
+                  </Track.Thumb>
+                </Track>
+                <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton">
+                  <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+                </RepeatButton>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover (not pressed) -->
+        <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+        </Style>
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+        </Style>
+        <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover+pressed -->
+        <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover:pressed Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+        </Style>
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover:pressed Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+        </Style>
+        <!-- Converted from ControlTemplate.Triggers (vertical): disabled -->
+        <Style Selector="^:disabled /template/ Path#ArrowTop">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+        </Style>
+        <Style Selector="^:disabled /template/ Path#ArrowBottom">
+          <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+        </Style>
+        <!-- Converted from Style.Triggers: ScrollBar.Orientation=Horizontal -> :horizontal pseudoclass -->
+        <Style Selector="^:horizontal">
+          <Setter Property="MinWidth" Value="0" />
+          <Setter Property="Height" Value="13" />
+          <Setter Property="MinHeight" Value="13" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Grid x:Name="Bg">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="0.00001*" />
+                    <ColumnDefinition Width="10" />
+                  </Grid.ColumnDefinitions>
+                  <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
+                  <RepeatButton x:Name="PART_LineLeftButton">
+                    <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                  </RepeatButton>
+                  <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
+                    <Track.Thumb>
+                      <Thumb />
+                    </Track.Thumb>
+                  </Track>
+                  <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton">
+                    <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                  </RepeatButton>
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+          <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover (not pressed) -->
+          <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+          </Style>
+          <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+          </Style>
+          <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover+pressed -->
+          <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover:pressed Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+          </Style>
+          <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover:pressed Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
+          </Style>
+          <!-- Converted from horizontal ControlTemplate.Triggers: disabled -->
+          <Style Selector="^:disabled /template/ Path#ArrowLeft">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+          </Style>
+          <Style Selector="^:disabled /template/ Path#ArrowRight">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
+          </Style>
+        </Style>
       </Style>
-    </Style>
-  </Style>
-  <Style x:Key="HorizontalScrollBarStyle" Selector="ScrollBar">
-    <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Width" Value="13" />
-    <Setter Property="MinWidth" Value="13" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ScrollBar">
-          <Grid x:Name="Bg">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="10" />
-              <RowDefinition Height="0.00001*" />
-              <RowDefinition Height="10" />
-            </Grid.RowDefinitions>
-            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
-            <RepeatButton x:Name="PART_LineUpButton">
-              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
-            </RepeatButton>
-            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
-              <Track.Resources>
-                
-                  <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
-                
-              </Track.Resources>
-              <Track.Thumb>
-                <Thumb />
-              </Track.Thumb>
-            </Track>
-            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton">
-              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
-            </RepeatButton>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover (not pressed) -->
-    <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
-    </Style>
-    <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers (vertical): line-button pointerover+pressed -->
-    <Style Selector="^ /template/ RepeatButton#PART_LineDownButton:pointerover:pressed Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-    </Style>
-    <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover:pressed Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-    </Style>
-    <!-- Converted from ControlTemplate.Triggers (vertical): disabled -->
-    <Style Selector="^:disabled /template/ Path#ArrowTop">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Path#ArrowBottom">
-      <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-    </Style>
-    <!-- Converted from Style.Triggers: ScrollBar.Orientation=Horizontal -> :horizontal pseudoclass -->
-    <Style Selector="^:horizontal">
-      <Setter Property="MinWidth" Value="0" />
-      <Setter Property="Height" Value="13" />
-      <Setter Property="MinHeight" Value="13" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate>
-            <Grid x:Name="Bg">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="0.00001*" />
-                <ColumnDefinition Width="10" />
-              </Grid.ColumnDefinitions>
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-              <RepeatButton x:Name="PART_LineLeftButton">
-                <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
-              </RepeatButton>
-              <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
-                <Track.Thumb>
-                  <Thumb />
-                </Track.Thumb>
-              </Track>
-              <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton">
-                <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
-              </RepeatButton>
-            </Grid>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-      <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover (not pressed) -->
-      <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
+          </Styles.Resources>
+
+<Style Selector="ScrollViewer">
+        <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollViewer">
+              <Grid Background="{TemplateBinding Background}" x:Name="Grid">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
+                <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" x:Name="PART_ScrollContentPresenter" />
+                <ScrollBar ViewportSize="0" Visibility="Visible" Grid.Row="0" Minimum="0" Maximum="0" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar">
+                </ScrollBar>
+                <ScrollBar ViewportSize="0" Visibility="Visible" Grid.Row="1" Orientation="Horizontal" Minimum="0" Maximum="0" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" x:Name="PART_HorizontalScrollBar">
+                </ScrollBar>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
       </Style>
-      <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" />
-      </Style>
-      <!-- Converted from horizontal ControlTemplate.Triggers: line-button pointerover+pressed -->
-      <Style Selector="^ /template/ RepeatButton#PART_LineRightButton:pointerover:pressed Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-      </Style>
-      <Style Selector="^ /template/ RepeatButton#PART_LineLeftButton:pointerover:pressed Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}" />
-      </Style>
-      <!-- Converted from horizontal ControlTemplate.Triggers: disabled -->
-      <Style Selector="^:disabled /template/ Path#ArrowLeft">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Path#ArrowRight">
-        <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}" />
-      </Style>
-    </Style>
-  </Style>
-  <Style x:Key="ScrollViewer" Selector="ScrollViewer">
-    <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ScrollViewer">
-          <Grid Background="{TemplateBinding Background}" x:Name="Grid">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="*" />
-              <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
-            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" x:Name="PART_ScrollContentPresenter" />
-            <ScrollBar ViewportSize="0" Visibility="Visible" Grid.Row="0" Minimum="0" Maximum="0" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar">
-            </ScrollBar>
-            <ScrollBar ViewportSize="0" Visibility="Visible" Grid.Row="1" Orientation="Horizontal" Minimum="0" Maximum="0" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" x:Name="PART_HorizontalScrollBar">
-            </ScrollBar>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="TouchpadAwareScrollViewer" Selector="controls|TouchpadAwareScrollViewer" />
-</ResourceDictionary>
+
+<Style Selector="controls|TouchpadAwareScrollViewer" />
+</Styles>

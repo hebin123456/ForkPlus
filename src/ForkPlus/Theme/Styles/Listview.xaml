@@ -28,542 +28,543 @@
        ComputedVerticalScrollBarVisibility -> IsVisible (Avalonia returns bool).
      - TemplateBinding paths stripped of class prefixes for direct properties; attached properties kept.
      - ControlTemplate internal control tree and layout preserved. -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:avaloniaConverters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-  <Style x:Key="ListItemRoundedBorderStyle" Selector="Border">
-    <Setter Property="Margin" Value="4,0,4,0" />
-    <Setter Property="CornerRadius" Value="4" />
-  </Style>
-  <Style x:Key="ListItemNotRoundedBorderStyle" Selector="Border">
-    <Setter Property="Margin" Value="4,0,4,0" />
-    <Setter Property="CornerRadius" Value="0" />
-  </Style>
-  <DataTemplate x:Key="ReferencesDataTemplates">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:avaloniaConverters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+      <DataTemplate x:Key="ReferencesDataTemplates">
 
-    <ContentPresenter>
-      <ContentPresenter.Content>
-        <Binding />
-      </ContentPresenter.Content>
-    </ContentPresenter>
-  </DataTemplate>
-  <Style x:Key="FocusVisual" Selector="TemplatedControl">
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Control">
-          <Rectangle Margin="2" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1,2" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
-    <Setter Property="Padding" Value="4,1" />
-    <Setter Property="HorizontalContentAlignment" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
-      </Setter.Value>
-    </Setter>
-    <Setter Property="VerticalContentAlignment" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="BorderBrush" Value="#00FFFFFF" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-<Border.Styles>
-<Style Selector="^:pointerover /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
-          </Style>
-          <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-          <Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-               inactive-selection styling preserved below for reference; reimplement using a custom
-               pseudoclass toggled from code-behind (e.g. :selection-inactive).
-               Original logic:
-                 Bd.Background = Item.SelectedInactive.Background
-                 Bd.BorderBrush = Item.SelectedInactive.Border -->
-          <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
-          <Style Selector="^:disabled /template/ Border#Bd">
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
-          </Style>
-</Border.Styles>
-
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListView" Selector="ListView">
-    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
-<Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListView">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
-            <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
-              <ItemsPresenter />
-            </ScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
-         pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
-         reimplement using a custom pseudoclass toggled from code-behind, or by setting
-         ItemContainerStyle via a binding/converter.
-    <Style.Triggers>
-      <Trigger Property="ListBox.SelectionMode" Value="Extended">
-      </Trigger>
-    </Style.Triggers>
-    -->
-  </Style>
-  <Style x:Key="GridViewColumnHeaderStyle" Selector="GridViewColumnHeader">
-    <Setter Property="IsVisible" Value="False" />
-  </Style>
-  <Style x:Key="ListViewWithGridViewScrollViewerStyle" Selector="ScrollViewer">
-    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="Focusable" Value="False" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ScrollViewer">
-          <Grid Background="{TemplateBinding Background}">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-              <RowDefinition Height="*" />
-              <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <DockPanel Margin="{TemplateBinding Padding}">
-              <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False">
-                <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}" x:CompileBindings="False">
-                  <GridViewHeaderRowPresenter.AllowsColumnReorder>
-                    <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                  </GridViewHeaderRowPresenter.AllowsColumnReorder>
-                  <GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
-                    <Binding Path="TemplatedParent.View.ColumnHeaderContainerStyle"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                  </GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
-                  <GridViewHeaderRowPresenter.ColumnHeaderToolTip>
-                    <Binding Path="TemplatedParent.View.ColumnHeaderToolTip"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                  </GridViewHeaderRowPresenter.ColumnHeaderToolTip>
-                  <GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
-                    <Binding Path="TemplatedParent.View.ColumnHeaderContextMenu"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                  </GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
-                  <GridViewHeaderRowPresenter.ColumnHeaderTemplate>
-                    <Binding Path="TemplatedParent.View.ColumnHeaderTemplate"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                  </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
-                </GridViewHeaderRowPresenter>
-              </controls:TouchpadAwareScrollViewer>
-              <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
-            </DockPanel>
-            <ScrollBar Cursor="Arrow" Maximum="0" Minimum="0" Orientation="Horizontal" Grid.Row="1" ViewportSize="0" x:Name="PART_HorizontalScrollBar">
-            </ScrollBar>
-            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="0" Minimum="0" Orientation="Vertical" ViewportSize="0" x:Name="PART_VerticalScrollBar">
-            </ScrollBar>
-            <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
-              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" />
-              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" />
-            </DockPanel>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListViewItemGridViewStyle" Selector="ListViewItem">
-    <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
-<Border.Styles>
-<Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
-</Border.Styles>
-
-            <Border.CornerRadius>
-              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
-            </Border.CornerRadius>
-            <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-               inactive-selection styling preserved below for reference; reimplement using a custom
-               pseudoclass toggled from code-behind.
-               Original logic:
-                 Bd.Background = Item.SelectedInactive.Background
-                 Bd.BorderBrush = Item.SelectedInactive.Border -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListViewWithGridViewStyle" Selector="ListView">
-    <Style.Resources>
-      
-        <Style x:Key="ListViewItem" Selector="ListViewItem" />
-      
-    </Style.Resources>
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
-              <ItemsPresenter />
-            </controls:TouchpadAwareScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="NoSelectionRevisionListViewItemStyle" Selector="ListViewItem">
-    <Setter Property="Focusable" Value="False" />
-<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Margin" Value="0" />
-    <!-- 阶段 4.5：原 Style.Triggers DataTriggers (IsHead=True -> FontWeight=Bold;
-         IsReachable=False -> Foreground=UnreachableBrush) 用 Style Setter + 转换器实现
-         (与 RevisionListViewUserControl ItemContainerStyle 同一模式)。
-         - IsHead: BoolToFontWeightConverter (TrueWeight=Bold, false->Normal)
-         - IsReachable: BoolToBrushConverter (FalseBrush=Unreachable; TrueBrush=null->UnsetValue 保持继承) -->
-    <Setter Property="FontWeight" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="IsHead">
-          <Binding.Converter>
-            <controls:BoolToFontWeightConverter TrueWeight="Bold" />
-          </Binding.Converter>
-        </Binding>
-      </Setter.Value>
-    </Setter>
-    <Setter Property="TextElement.Foreground" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="IsReachable">
-          <Binding.Converter>
-            <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
-          </Binding.Converter>
-        </Binding>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListBoxItemStyle" Selector="ListBoxItem">
-<Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-<Border.Styles>
-<Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
-</Border.Styles>
-
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-               inactive-selection styling preserved below for reference; reimplement using a custom
-               pseudoclass toggled from code-behind.
-               Original logic:
-                 Bd.Background = Item.SelectedInactive.Background
-                 Bd.BorderBrush = Item.SelectedInactive.Border -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="MultiselectListBoxItemStyle" Selector="ListBoxItem">
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
-<Border.Styles>
-<Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
-</Border.Styles>
-
-            <Border.CornerRadius>
-              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
-            </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-               inactive-selection styling preserved below for reference; reimplement using a custom
-               pseudoclass toggled from code-behind.
-               Original logic:
-                 Bd.Background = Item.SelectedInactive.Background
-                 Bd.BorderBrush = Item.SelectedInactive.Border -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="NoSelectionListBoxItemStyle" Selector="ListBoxItem">
-    <Setter Property="Focusable" Value="False" />
-<Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="NoVisibleSelectionListBoxItemStyle" Selector="ListBoxItem">
-    <Setter Property="Focusable" Value="True" />
-  </Style>
-  <Style x:Key="ListBoxItemWithBorderStyle" Selector="ListBoxItem">
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="BorderThickness" Value="0,0,0,1" />
-    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-<Border.Styles>
-<Style Selector="^:selected /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-          </Style>
-</Border.Styles>
-
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-               could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-               inactive-selection styling also set Bd.Style = ListItemRoundedBorderStyle (cannot set Style
-               from a selector Setter). Original logic preserved below for reference; reimplement using a
-               custom pseudoclass toggled from code-behind.
-               Original logic:
-                 Bd.Style = ListItemRoundedBorderStyle
-                 Bd.Background = Item.SelectedInactive.Background
-                 Bd.BorderBrush = Item.SelectedInactive.Border -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ListBox" Selector="ListBox">
-    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    <!-- NOTE (Avalonia limitation): VerticalContentAlignment is not a property on Avalonia ListBox; removed. -->
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBox">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-              <ItemsPresenter />
-            </controls:TouchpadAwareScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
-         pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
-         reimplement using a custom pseudoclass toggled from code-behind, or by setting
-         ItemContainerStyle via a binding/converter.
-    <Style.Triggers>
-      <Trigger Property="ListBox.SelectionMode" Value="Extended">
-      </Trigger>
-    </Style.Triggers>
-    -->
-  </Style>
-  <Style x:Key="NoSelectionListBoxStyle" Selector="ListBox">
-  </Style>
-  <Style x:Key="AutoCompleteListBoxStyle" Selector="ListBox">
-    <Setter Property="VerticalAlignment" Value="Top" />
-    <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="MinWidth" Value="196" />
-    <Setter Property="Height" Value="78" />
-    <Setter Property="Padding" Value="0,2,0,0" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
-    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <!-- NOTE (Avalonia limitation): HorizontalContentAlignment/VerticalContentAlignment are not properties on Avalonia ListBox; removed. -->
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBox">
-          <Grid>
-            <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
-              <Border.Effect>
-                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
-              </Border.Effect>
-            </Border>
-            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
-              <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-                <ItemsPresenter />
-              </ScrollViewer>
-            </Border>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="AutocompleteListBoxItemStyle" Selector="ListBoxItem">
-    <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-<Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="4,2,4,2" />
-    <Setter Property="Height" Value="21" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-<Border.Styles>
-              <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
-              <Style Selector="^:selected /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
+        <ContentPresenter>
+          <ContentPresenter.Content>
+            <Binding />
+          </ContentPresenter.Content>
+        </ContentPresenter>
+      </DataTemplate>
+  
+    <Style x:Key="ListItemRoundedBorderStyle" Selector="Border">
+        <Setter Property="Margin" Value="4,0,4,0" />
+        <Setter Property="CornerRadius" Value="4" />
+      </Style>
+    <Style x:Key="ListItemNotRoundedBorderStyle" Selector="Border">
+        <Setter Property="Margin" Value="4,0,4,0" />
+        <Setter Property="CornerRadius" Value="0" />
+      </Style>
+    <Style x:Key="FocusVisual" Selector="TemplatedControl">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Control">
+              <Rectangle Margin="2" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1,2" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
+        <Setter Property="Padding" Value="4,1" />
+        <Setter Property="HorizontalContentAlignment" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="VerticalContentAlignment" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListViewItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+    <Border.Styles>
+    <Style Selector="^:pointerover /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
               </Style>
-</Border.Styles>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="DiffListListBoxItemStyle" Selector="ListBoxItem">
-<Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="GridViewColumnHeaderGripper" Selector="Thumb">
-    <Setter Property="Canvas.Right" Value="-9" />
-    <Setter Property="Width" Value="18" />
-    <Setter Property="Height" x:CompileBindings="False">
-      <Setter.Value>
-        <Binding Path="Bounds.Height"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-      </Setter.Value>
-    </Setter>
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Thumb">
-          <Border Background="#00FFFFFF" Padding="{TemplateBinding Padding}">
-            <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="GridViewColumnHeader" Selector="GridViewColumnHeader">
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="Padding" Value="4,0,4,0" />
-    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
-    <Setter Property="BorderThickness" Value="0,0,0,1" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="GridViewColumnHeader">
-          <Grid>
-<Grid.Styles>
-<Style Selector="^:pointerover /template/ Border#HeaderBorder">
-            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
-          </Style>
-          <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-          <Style Selector="^:pressed /template/ Border#HeaderBorder">
-            <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
-          </Style>
-</Grid.Styles>
-
-            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
-              <Grid>
+              <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
+              <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+                   inactive-selection styling preserved below for reference; reimplement using a custom
+                   pseudoclass toggled from code-behind (e.g. :selection-inactive).
+                   Original logic:
+                     Bd.Background = Item.SelectedInactive.Background
+                     Bd.BorderBrush = Item.SelectedInactive.Border -->
+              <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
+              <Style Selector="^:disabled /template/ Border#Bd">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
+              </Style>
+    </Border.Styles>
+    
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+        <Style x:Key="GridViewColumnHeaderStyle" Selector="GridViewColumnHeader">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    <Style x:Key="ListViewWithGridViewScrollViewerStyle" Selector="ScrollViewer">
+        <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollViewer">
+              <Grid Background="{TemplateBinding Background}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                  <RowDefinition MaxHeight="7" />
-                  <RowDefinition />
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
-                  <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
+                <DockPanel Margin="{TemplateBinding Padding}">
+                  <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False">
+                    <GridViewHeaderRowPresenter Margin="0" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}" x:CompileBindings="False">
+                      <GridViewHeaderRowPresenter.AllowsColumnReorder>
+                        <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                      </GridViewHeaderRowPresenter.AllowsColumnReorder>
+                      <GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
+                        <Binding Path="TemplatedParent.View.ColumnHeaderContainerStyle"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                      </GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
+                      <GridViewHeaderRowPresenter.ColumnHeaderToolTip>
+                        <Binding Path="TemplatedParent.View.ColumnHeaderToolTip"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                      </GridViewHeaderRowPresenter.ColumnHeaderToolTip>
+                      <GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
+                        <Binding Path="TemplatedParent.View.ColumnHeaderContextMenu"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                      </GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
+                      <GridViewHeaderRowPresenter.ColumnHeaderTemplate>
+                        <Binding Path="TemplatedParent.View.ColumnHeaderTemplate"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                      </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
+                    </GridViewHeaderRowPresenter>
+                  </controls:TouchpadAwareScrollViewer>
+                  <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
+                </DockPanel>
+                <ScrollBar Cursor="Arrow" Maximum="0" Minimum="0" Orientation="Horizontal" Grid.Row="1" ViewportSize="0" x:Name="PART_HorizontalScrollBar">
+                </ScrollBar>
+                <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="0" Minimum="0" Orientation="Vertical" ViewportSize="0" x:Name="PART_VerticalScrollBar">
+                </ScrollBar>
+                <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
+                  <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" />
+                  <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" />
+                </DockPanel>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="ListViewItemGridViewStyle" Selector="ListViewItem">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListViewItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
+    <Border.Styles>
+    <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+    </Border.Styles>
+    
+                <Border.CornerRadius>
+                  <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+                </Border.CornerRadius>
+                <GridViewRowPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+                   inactive-selection styling preserved below for reference; reimplement using a custom
+                   pseudoclass toggled from code-behind.
+                   Original logic:
+                     Bd.Background = Item.SelectedInactive.Background
+                     Bd.BorderBrush = Item.SelectedInactive.Border -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="ListViewWithGridViewStyle" Selector="ListView">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListViewItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+                <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
+                  <ItemsPresenter />
+                </controls:TouchpadAwareScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="NoSelectionRevisionListViewItemStyle" Selector="ListViewItem">
+        <Setter Property="Focusable" Value="False" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <!-- 阶段 4.5：原 Style.Triggers DataTriggers (IsHead=True -> FontWeight=Bold;
+             IsReachable=False -> Foreground=UnreachableBrush) 用 Style Setter + 转换器实现
+             (与 RevisionListViewUserControl ItemContainerStyle 同一模式)。
+             - IsHead: BoolToFontWeightConverter (TrueWeight=Bold, false->Normal)
+             - IsReachable: BoolToBrushConverter (FalseBrush=Unreachable; TrueBrush=null->UnsetValue 保持继承) -->
+        <Setter Property="FontWeight" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="IsHead">
+              <Binding.Converter>
+                <controls:BoolToFontWeightConverter TrueWeight="Bold" />
+              </Binding.Converter>
+            </Binding>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="TextElement.Foreground" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="IsReachable">
+              <Binding.Converter>
+                <controls:BoolToBrushConverter FalseBrush="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+              </Binding.Converter>
+            </Binding>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="ListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+    <Border.Styles>
+    <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+    </Border.Styles>
+    
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+                   inactive-selection styling preserved below for reference; reimplement using a custom
+                   pseudoclass toggled from code-behind.
+                   Original logic:
+                     Bd.Background = Item.SelectedInactive.Background
+                     Bd.BorderBrush = Item.SelectedInactive.Border -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="MultiselectListBoxItemStyle" Selector="ListBoxItem">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
+    <Border.Styles>
+    <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+    </Border.Styles>
+    
+                <Border.CornerRadius>
+                  <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+                </Border.CornerRadius>
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+                   inactive-selection styling preserved below for reference; reimplement using a custom
+                   pseudoclass toggled from code-behind.
+                   Original logic:
+                     Bd.Background = Item.SelectedInactive.Background
+                     Bd.BorderBrush = Item.SelectedInactive.Border -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="NoSelectionListBoxItemStyle" Selector="ListBoxItem">
+        <Setter Property="Focusable" Value="False" />
+    <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="NoVisibleSelectionListBoxItemStyle" Selector="ListBoxItem">
+        <Setter Property="Focusable" Value="True" />
+      </Style>
+    <Style x:Key="ListBoxItemWithBorderStyle" Selector="ListBoxItem">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+    <Border.Styles>
+    <Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+    </Border.Styles>
+    
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
+                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
+                   inactive-selection styling also set Bd.Style = ListItemRoundedBorderStyle (cannot set Style
+                   from a selector Setter). Original logic preserved below for reference; reimplement using a
+                   custom pseudoclass toggled from code-behind.
+                   Original logic:
+                     Bd.Style = ListItemRoundedBorderStyle
+                     Bd.Background = Item.SelectedInactive.Background
+                     Bd.BorderBrush = Item.SelectedInactive.Border -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+        <Style x:Key="NoSelectionListBoxStyle" Selector="ListBox">
+      </Style>
+    <Style x:Key="AutoCompleteListBoxStyle" Selector="ListBox">
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="MinWidth" Value="196" />
+        <Setter Property="Height" Value="78" />
+        <Setter Property="Padding" Value="0,2,0,0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+        <!-- NOTE (Avalonia limitation): HorizontalContentAlignment/VerticalContentAlignment are not properties on Avalonia ListBox; removed. -->
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBox">
+              <Grid>
+                <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
+                  <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" />
+                  </Border.Effect>
+                </Border>
+                <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
+                  <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
+                    <ItemsPresenter />
+                  </ScrollViewer>
                 </Border>
               </Grid>
-            </Border>
-            <Canvas>
-              <Thumb x:Name="PART_HeaderGripper" />
-            </Canvas>
-          </Grid>
-          <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
-               (no Avalonia pseudoclass for Height=Auto). Original logic preserved below for reference;
-               reimplement using a custom pseudoclass or a binding/converter.
-          Original logic:
-            MinHeight = 20 (when Height=Auto) -->
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="ReferencePanelStyle" Selector="controls|ReferencePanel">
-<Setter Property="ItemTemplate">
-      <Setter.Value>
-        <DataTemplate>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="AutocompleteListBoxItemStyle" Selector="ListBoxItem">
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="4,2,4,2" />
+        <Setter Property="Height" Value="21" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+    
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+    <Border.Styles>
+                  <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
+                  <Style Selector="^:selected /template/ Border#Bd">
+                    <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
+                  </Style>
+    </Border.Styles>
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="DiffListListBoxItemStyle" Selector="ListBoxItem">
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="GridViewColumnHeaderGripper" Selector="Thumb">
+        <Setter Property="Canvas.Right" Value="-9" />
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" x:CompileBindings="False">
+          <Setter.Value>
+            <Binding Path="Bounds.Height"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Thumb">
+              <Border Background="#00FFFFFF" Padding="{TemplateBinding Padding}">
+                <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+        <Style x:Key="ReferencePanelStyle" Selector="controls|ReferencePanel">
+    <Setter Property="ItemTemplate">
+          <Setter.Value>
+            <DataTemplate>
+    
+              <ContentPresenter>
+                <ContentPresenter.Content>
+                  <Binding />
+                </ContentPresenter.Content>
+              </ContentPresenter>
+            </DataTemplate>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="ItemsPanel">
+          <Setter.Value>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    <Style x:Key="MultilineReferencePanelStyle" Selector="controls|ReferencePanel">
+        <Setter Property="ItemsPanel">
+          <Setter.Value>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+  </Styles.Resources>
 
-          <ContentPresenter>
-            <ContentPresenter.Content>
-              <Binding />
-            </ContentPresenter.Content>
-          </ContentPresenter>
-        </DataTemplate>
-      </Setter.Value>
-    </Setter>
-    <Setter Property="ItemsPanel">
-      <Setter.Value>
-        <ItemsPanelTemplate>
-          <StackPanel Orientation="Horizontal" />
-        </ItemsPanelTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="MultilineReferencePanelStyle" Selector="controls|ReferencePanel">
-    <Setter Property="ItemsPanel">
-      <Setter.Value>
-        <ItemsPanelTemplate>
-          <WrapPanel Orientation="Horizontal" />
-        </ItemsPanelTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-</ResourceDictionary>
+<Style Selector="ListView">
+        <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0,4,0,0" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListView">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
+                <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+             pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
+             reimplement using a custom pseudoclass toggled from code-behind, or by setting
+             ItemContainerStyle via a binding/converter.
+        <Style.Triggers>
+          <Trigger Property="ListBox.SelectionMode" Value="Extended">
+          </Trigger>
+        </Style.Triggers>
+        -->
+      </Style>
+
+<Style Selector="ListBox">
+        <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0,4,0,0" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <!-- NOTE (Avalonia limitation): VerticalContentAlignment is not a property on Avalonia ListBox; removed. -->
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBox">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+                <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                  <ItemsPresenter />
+                </controls:TouchpadAwareScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <!-- NOTE (Avalonia limitation): Style.Triggers Trigger on ListBox.SelectionMode=Extended could not be converted (no Avalonia
+             pseudoclass for SelectionMode enum value). Original logic preserved below for reference;
+             reimplement using a custom pseudoclass toggled from code-behind, or by setting
+             ItemContainerStyle via a binding/converter.
+        <Style.Triggers>
+          <Trigger Property="ListBox.SelectionMode" Value="Extended">
+          </Trigger>
+        </Style.Triggers>
+        -->
+      </Style>
+
+<Style Selector="GridViewColumnHeader">
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="4,0,4,0" />
+        <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="GridViewColumnHeader">
+              <Grid>
+    <Grid.Styles>
+    <Style Selector="^:pointerover /template/ Border#HeaderBorder">
+                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
+              </Style>
+              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
+              <Style Selector="^:pressed /template/ Border#HeaderBorder">
+                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
+              </Style>
+    </Grid.Styles>
+    
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
+                  <Grid>
+                    <Grid.RowDefinitions>
+                      <RowDefinition MaxHeight="7" />
+                      <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
+                      <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
+                    </Border>
+                  </Grid>
+                </Border>
+                <Canvas>
+                  <Thumb x:Name="PART_HeaderGripper" />
+                </Canvas>
+              </Grid>
+              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers Trigger on FrameworkElement.Height=Auto could not be converted
+                   (no Avalonia pseudoclass for Height=Auto). Original logic preserved below for reference;
+                   reimplement using a custom pseudoclass or a binding/converter.
+              Original logic:
+                MinHeight = 20 (when Height=Auto) -->
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+</Styles>

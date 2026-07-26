@@ -17,7 +17,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <StackPanel Orientation="Horizontal">
-        <Image Width="24" Height="24" Source="avares://ForkPlus/Assets/GitHub.png" />
+        <Image Width="24" Height="24" Source="avares://ForkPlus/assets/github.png" />
         <TextBlock Text="Log in to GitHub" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,4,0" />
       </StackPanel>
       <Separator Grid.Row="1" Margin="0,8,0,8" />

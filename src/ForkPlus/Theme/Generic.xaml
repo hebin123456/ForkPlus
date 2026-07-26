@@ -1,25 +1,17 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui">
   <ResourceDictionary.MergedDictionaries>
+    <!-- Pure resource files (brushes / geometries / colors). These stay as
+         <ResourceDictionary> root and are merged into Application.Resources
+         so DynamicResource lookups across the app can resolve them.
+
+         The Style / ControlTemplate files (Button.xaml, Window.xaml, etc.) used
+         to live here too, but they have been converted to <Styles> root and are
+         now loaded via <StyleInclude> in App.axaml so the styles auto-apply to
+         controls via their Selector. ResourceInclude cannot load <Styles>-root
+         files (AVLN2000), and StyleInclude cannot load <ResourceDictionary>-
+         root files, so the two categories must be split between App.Resources
+         and App.Styles accordingly. -->
     <ResourceInclude Source="Styles/Brushes/Brushes.xaml" />
     <ResourceInclude Source="Styles/Geometries.xaml" />
-    <ResourceInclude Source="Styles/Button.xaml" />
-    <ResourceInclude Source="Styles/Border.xaml" />
-    <ResourceInclude Source="Styles/CommonResources.xaml" />
-    <ResourceInclude Source="Styles/Calendar.xaml" />
-    <ResourceInclude Source="Styles/CheckBox.xaml" />
-    <ResourceInclude Source="Styles/ComboBox.xaml" />
-    <ResourceInclude Source="Styles/Expander.xaml" />
-    <ResourceInclude Source="Styles/TextBlock.xaml" />
-    <ResourceInclude Source="Styles/TextBox.xaml" />
-    <ResourceInclude Source="Styles/PlaceholderTextBox.xaml" />
-    <ResourceInclude Source="Styles/ListView.xaml" />
-    <ResourceInclude Source="Styles/MultiselectionTreeView.xaml" />
-    <ResourceInclude Source="Styles/TabControl.xaml" />
-    <ResourceInclude Source="Styles/ProgressBar.xaml" />
-    <ResourceInclude Source="Styles/ScrollViewer.xaml" />
-    <ResourceInclude Source="Styles/Slider.xaml" />
-    <ResourceInclude Source="Styles/Sidebar.xaml" />
-    <ResourceInclude Source="Styles/Menu.xaml" />
-    <ResourceInclude Source="Styles/Window.xaml" />
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
