@@ -1,9 +1,13 @@
-// ⚠ 临时桥接类型 ─ 阶段 5 编译过渡用。
 // WPF System.Windows.Controls.GridView / GridViewColumn / GridViewColumnHeader 在 Avalonia 中无直接对应。
 // WPF ListView.View = new GridView() 提供多列布局；Avalonia 推荐用 DataGrid 或 ItemsControl 自定义布局。
 //
-// 本组桥接类仅用于让 XAML 中 <GridView> / <GridViewColumn> / <GridViewColumnHeader> 引用通过编译，
-// 运行时不渲染列视图（ListView 将退化为简单列表）。阶段 6 需迁移到 DataGrid 或自定义 Grid 布局。
+// 本组桥接类用于让 XAML 中 <GridView> / <GridViewColumn> / <GridViewColumnHeader> 引用通过编译，
+// 运行时通过 GridViewRenderer.BuildItemTemplate 从 GridView.Columns 构建合并的 ItemTemplate
+// （见 WpfBridgeTypes.cs 中 ListView.ViewProperty.Changed class handler）。
+// - 单列 GridView：直接用该列的 CellTemplate 作为 ItemTemplate（RevisionListView 场景）
+// - 多列 GridView：用水平 Grid 排列各列 CellTemplate（InteractiveRebaseWindow 场景）
+// 列头（GridViewColumnHeader）暂不渲染：RevisionListView 中列头被隐藏，
+// InteractiveRebaseWindow 等场景无交互需求。后续如需列头可扩展为 Grid + ContentPresenter。
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;

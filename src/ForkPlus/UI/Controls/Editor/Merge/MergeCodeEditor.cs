@@ -57,7 +57,14 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private MergeConflictView _mergeConflictView;
 
-		public ThemeType Theme { get; }
+	// 阶段 6：缓存模板内的 SrcBlockPath / DstBlockPath（替代 GetTemplateChildren 占位）。
+	// 在 OnApplyTemplate 中通过 e.NameScope.Find 查找，RefreshScrollbarMap 直接使用缓存。
+	[Null]
+	private Path _srcBlockPath;
+	[Null]
+	private Path _dstBlockPath;
+
+	public ThemeType Theme { get; }
 
 		public MergeConflictPart ViewMode { get; set; }
 
@@ -95,6 +102,16 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);
 			_lineNumberMargin = new MergeLineNumberMargin(this);
 			base.TextArea.LeftMargins.Add(_lineNumberMargin);
+		}
+
+		// 阶段 6：override OnApplyTemplate 缓存模板内的 SrcBlockPath / DstBlockPath。
+		// 替代阶段 5 的 GetTemplateChildren() 占位（该方法返回空集合，导致 scrollbar map 永不刷新）。
+		// Avalonia 标准做法：在 OnApplyTemplate 中用 e.NameScope.Find(name) 查找 PART_* 元素。
+		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+		{
+			base.OnApplyTemplate(e);
+			_srcBlockPath = e.NameScope?.Find(SrcBlockPathName) as Path;
+			_dstBlockPath = e.NameScope?.Find(DstBlockPathName) as Path;
 		}
 
 		public void SetMergeConflictView(MergeConflictView mergeConflictView, bool refreshUI, bool showScrollbarMap = false)
@@ -152,24 +169,23 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private void RefreshScrollbarMap()
 		{
-			// TODO(5): Migrate TryFindName to INameScope.Find in OnApplyTemplate.
-			// 阶段 4.5：WPF ControlTemplate.TryFindName → Avalonia 无 TryFindName；
-			// 改用 GetTemplateChildren().OfType<Path>() 查找模板内 Path 元素。
-			Path match = this.GetTemplateChildren().OfType<Path>().FirstOrDefault((Path p) => p.Name == "SrcBlockPath");
-			Path match2 = this.GetTemplateChildren().OfType<Path>().FirstOrDefault((Path p) => p.Name == "DstBlockPath");
+			// 阶段 6：使用 OnApplyTemplate 中缓存的 SrcBlockPath / DstBlockPath（替代阶段 5 的 GetTemplateChildren 占位）。
+			// 模板未应用或缺失时直接返回（与原 match == null / match2 == null 检查等价）。
+			Path match = _srcBlockPath;
+			Path match2 = _dstBlockPath;
 			if (_blocks == null || base.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden || match == null || match2 == null)
 			{
 				return;
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			// TODO(5): Set FillRule on Path control instead of geometry (Avalonia StreamGeometry 不直接暴露 FillRule)。
-			// streamGeometry.FillRule = FillRule.NonZero;
+			// NOTE(4.5): Avalonia StreamGeometry 不直接暴露 FillRule。
+			// 原 WPF streamGeometry.FillRule = FillRule.NonZero 已注释，路径填充规则退化为默认 EvenOdd。
+			// 当前 scrollbar map 用 BeginFigure + LineTo + EndFigure(isClosed:true) 构造矩形，
+			// 矩形无自相交，EvenOdd 与 NonZero 渲染一致，无视觉差异。
 			// 阶段 4 里程碑 4.7-a：WPF StreamGeometryContext.Close() → Avalonia using 声明（IDisposable）。
 			// WPF StreamGeometry.Freeze() → 移除（Avalonia 几何体在 context dispose 后即不可变）。
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			StreamGeometry streamGeometry2 = new StreamGeometry();
-			// TODO(5): Set FillRule on Path control instead of geometry (Avalonia StreamGeometry 不直接暴露 FillRule)。
-			// streamGeometry2.FillRule = FillRule.NonZero;
 			using StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 			int num = 6;
 			int num2 = 1;

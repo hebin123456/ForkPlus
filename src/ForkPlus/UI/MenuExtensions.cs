@@ -16,7 +16,11 @@ namespace ForkPlus.UI
 	// WPF ApplicationCommands.Cut/Copy/Paste (RoutedCommand + CommandTarget)
 	// → 自定义 ICommand 实现，目标 TextBox 通过 CommandParameter 传入（Avalonia MenuItem 无 CommandTarget）。
 	// WPF EditingCommands + SpellingError 在 Avalonia 中无内置等价物；
-	// AddSpellingMenuItems 改为空实现并标记 NOTE，等阶段 6 引入第三方拼写检查库后再恢复。
+	// AddSpellingMenuItems 当前为空实现。说明：
+	// - 调用方 SpellingPlaceholderTextBox 始终传入 spellingError=null（无拼写错误），
+	//   此时 WPF 原生行为也是不添加菜单项，故空实现等价于 WPF "无拼写错误" 分支。
+	// - 真正的功能缺失是"检测拼写错误"本身，需引入第三方库（如 WeCantSpell.Hunspell）
+	//   + 字典文件 + AOT 资源打包，属产品级决策，不在迁移修复范围内。
 	public static class MenuExtensions
 	{
 		private class CutCommand : ICommand
@@ -211,11 +215,14 @@ namespace ForkPlus.UI
 		}
 
 		// NOTE(4.5-h): WPF SpellingError + EditingCommands.CorrectSpellingError/IgnoreSpellingError
-		// 在 Avalonia 中无内置等价物。当前为空实现；阶段 6 引入第三方拼写检查库后恢复。
-		// SpellingPlaceholderTextBox 调用方迁移后此签名可清理。
+		// 在 Avalonia 中无内置等价物。当前为空实现。
+		// 调用方 SpellingPlaceholderTextBox 始终传入 spellingError=null，此时 WPF 原生行为
+		// 也是不添加菜单项（无拼写错误可建议），故空实现等价于 WPF "无拼写错误" 分支，非 bug。
+		// 真正的功能缺失是"检测拼写错误"本身，需引入第三方库（如 WeCantSpell.Hunspell）
+		// + 字典文件 + AOT 资源打包，属产品级决策，不在迁移修复范围内。
 		public static void AddSpellingMenuItems(this ContextMenu contextMenu, object spellingError, object commandTarget)
 		{
-			// Avalonia TextBox 无内置拼写检查；保留方法签名以兼容现有调用方，但实际不添加菜单项。
+			// spellingError 始终为 null（见上方注释），无菜单项可添加。
 		}
 	}
 }
