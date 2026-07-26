@@ -22,7 +22,7 @@
       <local:RevisionListStatusBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" IsVisible="False" x:Name="RevisionListStatusBarUserControl" />
       <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListViewUserControl" />
       <local:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" x:Name="RevisionDetails" />
-      <GridSplitter Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" x:Name="FirstColumnHorizontalGridSplitter">
+      <GridSplitter Grid.Row="2" Grid.Column="0" Height="5" VerticalAlignment="Top" ResizeDirection="Rows" x:Name="FirstColumnHorizontalGridSplitter">
       </GridSplitter>
       <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Height="32" Margin="260,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="SecondColumnHorizontalGridSplitter">
         <GridSplitter.Background>
@@ -32,9 +32,9 @@
           <DynamicResource ResourceKey="BorderBrush" />
         </GridSplitter.BorderBrush>
         <GridSplitter.BorderThickness>0,1,0,0</GridSplitter.BorderThickness></GridSplitter>
-      <GridSplitter Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" x:Name="ThirdColumnHorizontalGridSplitter">
+      <GridSplitter Grid.Row="2" Grid.Column="2" Height="5" VerticalAlignment="Top" ResizeDirection="Rows" x:Name="ThirdColumnHorizontalGridSplitter">
       </GridSplitter>
-      <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" HorizontalAlignment="Right" x:Name="VerticalGridSplitter">
+      <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="5" HorizontalAlignment="Right" ResizeDirection="Columns" x:Name="VerticalGridSplitter">
       </GridSplitter>
     </Grid>
   </Grid>

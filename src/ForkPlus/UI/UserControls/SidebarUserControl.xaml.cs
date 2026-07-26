@@ -34,6 +34,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -130,6 +131,18 @@ namespace ForkPlus.UI.UserControls
 		public SidebarUserControl()
 		{
 			InitializeComponent();
+			// 阶段 6 修复：隐藏 TabControl 顶部 tab strip。sidebar 通过 RadioButton 切换 TabItem，
+			// tab strip 多余且影响视觉。Avalonia Fluent 主题 TabControl 模板中 tab strip 是
+			// ItemsPresenter x:Name="PART_ItemsPresenter"（注意：WPF 用 "HeaderPanel"，Avalonia 不同），
+			// 在控件 Loaded 后（模板已应用）通过 GetTemplateChildren 查找并设 IsVisible=False 隐藏。
+			SidebarTabControl.Loaded += delegate
+			{
+				var headerPanel = SidebarTabControl.GetTemplateChildren().OfType<ItemsPresenter>().FirstOrDefault(p => p.Name == "PART_ItemsPresenter");
+				if (headerPanel != null)
+				{
+					headerPanel.IsVisible = false;
+				}
+			};
 			SidebarTreeView.AllowDragDrop = true;
 			SidebarTreeView.RememberExpandedItems = true;
 			_root = new FolderSidebarItem("", null, this);

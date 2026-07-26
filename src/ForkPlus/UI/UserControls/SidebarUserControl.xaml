@@ -71,7 +71,7 @@
         </StackPanel>
       </Border>
     </StackPanel>
-    <TabControl Grid.Row="1" Background="{DynamicResource Sidebar.Static.Background}" Padding="0" SelectionChanged="TabControl_SelectionChanged">
+    <TabControl Grid.Row="1" Background="{DynamicResource Sidebar.Static.Background}" Padding="0" SelectionChanged="TabControl_SelectionChanged" x:Name="SidebarTabControl">
       <TabItem x:Name="BranchesTabItem">
         <Grid>
           <Grid.RowDefinitions>
@@ -81,22 +81,20 @@
           </Grid.RowDefinitions>
           <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" IsVisible="False" />
           <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
-          <Grid Grid.Row="2">
-            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple,Toggle" x:Name="SidebarTreeView">
-              <controls:MultiselectionTreeView.ItemTemplate>
-                <DataTemplate>
-                  <ContentControl>
-                    <ContentControl.Content>
-                      <Binding />
-                    </ContentControl.Content>
-                  </ContentControl>
-                </DataTemplate>
-              </controls:MultiselectionTreeView.ItemTemplate>
-              <controls:MultiselectionTreeView.ContextMenu>
-                <ContextMenu />
-              </controls:MultiselectionTreeView.ContextMenu>
-            </controls:MultiselectionTreeView>
-          </Grid>
+          <controls:MultiselectionTreeView Grid.Row="2" SelectionMode="Multiple,Toggle" x:Name="SidebarTreeView">
+            <controls:MultiselectionTreeView.ItemTemplate>
+              <DataTemplate>
+                <ContentControl>
+                  <ContentControl.Content>
+                    <Binding />
+                  </ContentControl.Content>
+                </ContentControl>
+              </DataTemplate>
+            </controls:MultiselectionTreeView.ItemTemplate>
+            <controls:MultiselectionTreeView.ContextMenu>
+              <ContextMenu />
+            </controls:MultiselectionTreeView.ContextMenu>
+          </controls:MultiselectionTreeView>
         </Grid>
       </TabItem>
       <local:SearchTabItem x:Name="SearchTabItem" />

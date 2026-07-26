@@ -6,7 +6,7 @@
   <Grid Background="{DynamicResource BackgroundBrush}" x:Name="CommitGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="280" MinWidth="220" MaxWidth="850" />
-      <ColumnDefinition Width="1" />
+      <ColumnDefinition Width="5" />
       <ColumnDefinition Width="*" MinWidth="200" />
     </Grid.ColumnDefinitions>
     <local:StageFileUserControl TabIndex="1" x:Name="StageFileUserControl" />
@@ -65,6 +65,6 @@
         </DockPanel>
       </Grid>
     </Grid>
-    <GridSplitter Grid.Column="1" Background="{DynamicResource VerticalGridSplitter}" x:Name="gridSplitter" />
+    <GridSplitter Grid.Column="1" Background="{DynamicResource VerticalGridSplitter}" ResizeDirection="Columns" x:Name="gridSplitter" />
   </Grid>
 </UserControl>

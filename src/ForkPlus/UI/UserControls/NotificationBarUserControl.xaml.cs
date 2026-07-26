@@ -44,6 +44,15 @@ namespace ForkPlus.UI.UserControls
 				if (value != _isControlVisible)
 				{
 					_isControlVisible = value;
+					// 阶段 6 修复 NotificationBar 永远不可见：原 WPF 用 Style.Triggers + DataTrigger
+					// 绑定 IsControlVisible 动画切换 Border.Height（0↔28），Avalonia 迁移后该 Style
+					// 被清空且未重新实现，导致 Border.Height 永远为 0，所有合并/变基/拣选/撤销等
+					// 状态提示和 Resolve/Abort/Good/Bad 按钮全部不可见。
+					// 改为直接控制 RootBorder.IsVisible（XAML 中已加 x:Name="RootBorder"）。
+					if (RootBorder != null)
+					{
+						RootBorder.IsVisible = value;
+					}
 					NotifyPropertyChanged("IsControlVisible");
 				}
 			}

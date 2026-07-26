@@ -47,18 +47,16 @@
         <TextBlock DockPanel.Dock="Right" Margin="0,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="FoundCommitsTextBlock" />
       </DockPanel>
     </Grid>
-    <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple,Toggle" Margin="0" x:Name="TreeView">
-        <controls:MultiselectionTreeView.ItemTemplate>
-          <DataTemplate>
-            <ContentControl>
-              <ContentControl.Content>
-                <Binding />
-              </ContentControl.Content>
-            </ContentControl>
-          </DataTemplate>
-        </controls:MultiselectionTreeView.ItemTemplate>
-      </controls:MultiselectionTreeView>
-    </Grid>
+    <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple,Toggle" Margin="0" x:Name="TreeView">
+      <controls:MultiselectionTreeView.ItemTemplate>
+        <DataTemplate>
+          <ContentControl>
+            <ContentControl.Content>
+              <Binding />
+            </ContentControl.Content>
+          </ContentControl>
+        </DataTemplate>
+      </controls:MultiselectionTreeView.ItemTemplate>
+    </controls:MultiselectionTreeView>
   </Grid>
 </TabItem>

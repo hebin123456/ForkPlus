@@ -4,7 +4,7 @@
      - <Border.Child>/<Grid.Children>/<StackPanel.Children> 展开为直接子元素
      -->
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.NotificationBarUserControl">
-  <Border>
+  <Border x:Name="RootBorder" IsVisible="False">
     <Border.BorderBrush>
       <DynamicResource ResourceKey="BorderBrush" />
     </Border.BorderBrush>
@@ -12,7 +12,7 @@
       <DynamicResource ResourceKey="BackgroundBrush" />
     </Border.Background>
     <Border.BorderThickness>0,0,0,1</Border.BorderThickness>
-    <Border.Height>0</Border.Height>
+    <Border.Height>28</Border.Height>
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
