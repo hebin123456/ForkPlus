@@ -372,16 +372,29 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ForkPlusDialogWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			InitializeDialogChrome();
-			if (IsDesignMode)
+			// 阶段 6 诊断：记录 Loaded 各阶段日志，定位"窗口出现就崩"在 Loaded 中的具体步骤。
+			Log.Info($"ForkPlusDialogWindow_Loaded: start (type={GetType().Name})");
+			try
 			{
-				return;
+				InitializeDialogChrome();
+				Log.Info("ForkPlusDialogWindow_Loaded: InitializeDialogChrome done");
+				if (IsDesignMode)
+				{
+					return;
+				}
+				if (ApplyAutomaticLocalization)
+				{
+					PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+					Log.Info("ForkPlusDialogWindow_Loaded: ApplyAutomaticLocalization done");
+				}
+				(base.Content as Grid)?.Focus();
+				Log.Info("ForkPlusDialogWindow_Loaded: done");
 			}
-			if (ApplyAutomaticLocalization)
+			catch (Exception ex)
 			{
-				PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+				Log.Error($"ForkPlusDialogWindow_Loaded 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
+				throw;
 			}
-			(base.Content as Grid)?.Focus();
 		}
 
 		private void InitializeDialogChrome()
@@ -390,28 +403,46 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
+			// 阶段 6 诊断"选 git 路径窗口出现就崩"：记录 InitializeDialogChrome 各阶段进度。
+			Log.Info($"InitializeDialogChrome: start (type={GetType().Name}, ShowHeader={ShowHeader}, ShowLogo={ShowLogo}, ShowFooter={ShowFooter})");
 			Grid obj = base.Content as Grid;
 			if (obj == null)
 			{
+				Log.Error($"InitializeDialogChrome: base.Content is not a Grid (actual={base.Content?.GetType().FullName ?? "<null>"})");
 				return;
 			}
 			_dialogChromeInitialized = true;
-			RefreshWindowSize();
-			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
-			obj.Background = ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
-			if (ShowHeader)
+			try
 			{
-				AddDialogHeader();
+				RefreshWindowSize();
+				Log.Info("InitializeDialogChrome: RefreshWindowSize done");
+				obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
+				obj.Background = ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
+				if (ShowHeader)
+				{
+					AddDialogHeader();
+					Log.Info("InitializeDialogChrome: AddDialogHeader done");
+				}
+				if (ShowLogo)
+				{
+					AddForkPlusLogo();
+					Log.Info("InitializeDialogChrome: AddForkPlusLogo done");
+				}
+				if (ShowFooter)
+				{
+					AddCommandPreview();
+					Log.Info("InitializeDialogChrome: AddCommandPreview done");
+					AddFooter();
+					Log.Info("InitializeDialogChrome: AddFooter done");
+					UpdateSubmitButton();
+					Log.Info("InitializeDialogChrome: UpdateSubmitButton done");
+				}
+				Log.Info("InitializeDialogChrome: done");
 			}
-			if (ShowLogo)
+			catch (Exception ex)
 			{
-				AddForkPlusLogo();
-			}
-			if (ShowFooter)
-			{
-				AddCommandPreview();
-				AddFooter();
-				UpdateSubmitButton();
+				Log.Error($"InitializeDialogChrome 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
+				throw;
 			}
 		}
 

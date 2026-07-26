@@ -391,11 +391,22 @@ namespace ForkPlus
 
 		private void RegisterGlobalExceptionLogging()
 		{
-			// NOTE (阶段 4 后续): Avalonia 无 DispatcherUnhandledException 等价，改用 Avalonia.Logging 或 AppDomain 异常捕获
-			// DispatcherUnhandledException += App_DispatcherUnhandledException;
+			// 阶段 6 修复：Avalonia 的 UI 线程未处理异常通过 Dispatcher.UIThread.UnhandledException 捕获。
+			// 原代码注释"Avalonia 无 DispatcherUnhandledException 等价"是错误的——Avalonia 确实有这个事件。
+			// 不注册此事件会导致 UI 线程的渲染异常、绑定异常等不被记录到日志，"选 git 路径后闪退"无诊断信息。
+			Dispatcher.UIThread.UnhandledException += Dispatcher_UnhandledException;
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 			AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 			TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+		}
+
+		private void Dispatcher_UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+		{
+			// 阶段 6：捕获 UI 线程未处理异常（渲染/绑定/控件初始化等）。
+			// e.Exception 包含完整异常堆栈，记录到日志后可定位"选 git 路径后闪退"等崩溃根因。
+			Log.Error($"UI 线程未处理异常 (sender={sender?.GetType().FullName ?? "<null>"}): {e.Exception?.GetType().FullName ?? "<null>"}: {e.Exception?.Message}{(e.Exception?.StackTrace != null ? Environment.NewLine + e.Exception.StackTrace : "")}");
+			// 标记已处理，防止进程被 Avalonia 运行时直接终止（默认行为是终止进程）。
+			e.Handled = true;
 		}
 
 		private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
