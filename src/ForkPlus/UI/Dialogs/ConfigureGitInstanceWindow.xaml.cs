@@ -48,50 +48,23 @@ namespace ForkPlus.UI.Dialogs
 
 		public ConfigureGitInstanceWindow()
 		{
-			// 阶段 6 诊断"选 git 路径窗口出现就崩"：逐步记录构造阶段日志，定位崩溃点。
-			Log.Info("ConfigureGitInstanceWindow: ctor start");
 			_viewModel = new ConfigureGitInstanceWindowViewModel();
-			Log.Info("ConfigureGitInstanceWindow: ViewModel created");
 			InitializeComponent();
-			Log.Info("ConfigureGitInstanceWindow: InitializeComponent done");
 			base.DialogTitle = Translate("Configure Git");
 			base.DialogDescription = Translate("ForkPlus requires a valid Git executable to continue.");
 			base.SubmitButtonTitle = Translate("Continue");
 			base.CancelButtonTitle = Translate("Exit");
-			Log.Info("ConfigureGitInstanceWindow: pending titles set");
-			// 阶段 6：ShowWarningIcon=true 会立即调用 AddWarningIcon()，加载 warning.png。
-			// 若 AssetLoader.Open 失败（资源未打包/路径错误），此处会抛 FileNotFoundException。
-			try
-			{
-				base.ShowWarningIcon = true;
-				Log.Info("ConfigureGitInstanceWindow: ShowWarningIcon set");
-			}
-			catch (Exception ex)
-			{
-				Log.Error($"ConfigureGitInstanceWindow: ShowWarningIcon 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
-				throw;
-			}
-			try
-			{
-				PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
-				Log.Info("ConfigureGitInstanceWindow: PreferencesLocalization applied");
-			}
-			catch (Exception ex)
-			{
-				Log.Error($"ConfigureGitInstanceWindow: PreferencesLocalization 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
-			}
+			base.ShowWarningIcon = true;
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			List<GitCandidate> candidates = GetGitCandidates();
-			Log.Info($"ConfigureGitInstanceWindow: GetGitCandidates returned {candidates.Count} candidates");
 			GitCandidatesListBox.ItemsSource = candidates;
 			GitPathTextBox.Text = candidates.FirstOrDefault()?.Path ?? ExistingGitPath();
-			Log.Info("ConfigureGitInstanceWindow: ListBox/TextBox populated");
 			base.Loaded += delegate
 			{
 				SelectCurrentCandidate();
 				GitPathTextBox.Focus();
 				UpdateSubmitButton();
 			};
-			Log.Info("ConfigureGitInstanceWindow: ctor done");
 		}
 
 		protected override void OnSubmit()

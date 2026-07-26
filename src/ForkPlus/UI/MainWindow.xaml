@@ -11,9 +11,11 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <userControls:ToolbarUserControl Grid.Row="0" x:Name="Toolbar" />
-    <controls:ClosableTabControl Grid.Row="1" x:Name="TabControl" />
+    <Menu Grid.Row="0" x:Name="PART_MainMenu" />
+    <userControls:ToolbarUserControl Grid.Row="1" x:Name="Toolbar" />
+    <controls:ClosableTabControl Grid.Row="2" x:Name="TabControl" />
   </Grid>
 </ui:CustomWindow>

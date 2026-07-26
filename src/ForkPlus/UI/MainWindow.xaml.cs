@@ -94,6 +94,15 @@ namespace ForkPlus.UI
 				base.Title = App.AppName ?? "Fork";
 				return;
 			}
+			// 阶段 6 修复菜单栏缺失：Avalonia 迁移时移除了 ControlTemplate 中的 PART_MainMenu，
+			// 但 MainWindowMenuManager 仍按 TemplatePart 模式等待它 → 永远不被实例化 → 菜单栏消失。
+			// 现在 MainWindow.xaml 显式声明了 <Menu x:Name="PART_MainMenu">，在 InitializeComponent 后
+			// 通过 FindControl 找到它并实例化 _menuManager。OnApplyTemplate 中的查找保留作兼容兜底。
+			_templatePartMainMenu = this.FindControl<Menu>(PartNameMainMenu);
+			if (_templatePartMainMenu != null && _menuManager == null)
+			{
+				_menuManager = new MainWindowMenuManager(_templatePartMainMenu);
+			}
 			JobQueue = new JobQueue();
 			Toolbar.Initialize(this);
 			RefreshTitle();
