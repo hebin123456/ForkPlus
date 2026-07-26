@@ -147,14 +147,21 @@ namespace ForkPlus.UI.Dialogs
 			_untrackedFiles = untrackedFiles;
 			base.DialogTitle = PreferencesLocalization.Current("Add .gitignore Template");
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Add");
-			base.DescriptionTextBlock.Inlines.Clear();
-			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
-			Hyperlink hyperlink = new Hyperlink(new Run(".gitignore"));
-			hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
-			hyperlink.Styles.Add((Style)Application.Current.FindResource("BlueUnderlineHyperlinkStyle"));
-			hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
-			base.DescriptionTextBlock.Inlines.Add(hyperlink);
-			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
+			// 阶段 6 修复 NRE：DescriptionTextBlock 在 Loaded → AddDialogHeader 才创建，构造时为 null。
+			// 原 base.DescriptionTextBlock.Inlines.Clear()/Add() 直接访问会抛 NullReferenceException。
+			// 改用 ConfigureDescriptionTextBlock(Action<TextBlock>) 回调，由基类在创建
+			// DescriptionTextBlock 后调用（在 ApplyPendingDescriptionStyles 之后，可安全操作 Inlines）。
+			ConfigureDescriptionTextBlock(description =>
+			{
+				description.Inlines.Clear();
+				description.Inlines.Add(new Run("Choose "));
+				Hyperlink hyperlink = new Hyperlink(new Run(".gitignore"));
+				hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
+				hyperlink.Styles.Add((Style)Application.Current.FindResource("BlueUnderlineHyperlinkStyle"));
+				hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
+				description.Inlines.Add(hyperlink);
+				description.Inlines.Add(new Run(" template for your project"));
+			});
 			LoadTemplates();
 			BuildTemplateList();
 			PreselectTemplates();

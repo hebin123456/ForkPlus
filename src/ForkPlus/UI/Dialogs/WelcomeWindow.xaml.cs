@@ -34,9 +34,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
-			base.TitleTextBlock.FontSize = 18.0;
-			// 阶段 5：Avalonia 11 无 Application.TryFindResource(key) 单参重载，改用 Theme.FindBrush 门面。
-			base.TitleTextBlock.Foreground = ForkPlus.UI.Theme.FindBrush("ForegroundBrush.WindowsInfo");
+			// 阶段 6 修复 NRE：TitleTextBlock 在 Loaded → AddDialogHeader 才创建，构造时为 null。
+			// 改用 ConfigureTitleTextBlock 缓存为 pending，由基类 AddDialogHeader 在创建后统一应用。
+			ConfigureTitleTextBlock(fontSize: 18.0, foreground: ForkPlus.UI.Theme.FindBrush("ForegroundBrush.WindowsInfo"));
 			base.DialogTitle = Translate("User information");
 			base.DialogDescription = Translate("Set up your user name and email address. This information will be associated with your Git commits.");
 			base.SubmitButtonTitle = Translate("Finish");

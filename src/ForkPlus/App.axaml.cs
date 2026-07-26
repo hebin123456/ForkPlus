@@ -916,26 +916,64 @@ namespace ForkPlus
 
 		private bool InitializeForkInstance()
 		{
+			// 阶段 6 诊断"选 git 路径后闪退"：逐步记录日志 + try/catch 兜底，定位崩溃点。
 			ForkPlusSettings @default = ForkPlusSettings.Default;
+			Log.Info($"InitializeForkInstance: start (GitInstanceAvailable={IsGitInstanceAvailable()}, Guid={(string.IsNullOrEmpty(@default.Guid) ? "<empty>" : "<set>")})");
 			if (!IsGitInstanceAvailable())
 			{
+				Log.Info("InitializeForkInstance: showing ConfigureGitInstanceWindow");
 				// 阶段 5：使用 WindowDialogExtensions.ShowDialog() 同步扩展（自动选取 owner + DispatcherFrame 嵌套泵）。
-				if (!new ConfigureGitInstanceWindow().ShowDialog().GetValueOrDefault())
+				bool? cfgResult;
+				try
+				{
+					cfgResult = new ConfigureGitInstanceWindow().ShowDialog();
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"InitializeForkInstance: ConfigureGitInstanceWindow 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
+					DoShutdown();
+					return false;
+				}
+				Log.Info($"InitializeForkInstance: ConfigureGitInstanceWindow result={cfgResult}");
+				if (!cfgResult.GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;
 				}
 			}
-			WarnIfGitVersionUnsupported(GitPath);
+			Log.Info($"InitializeForkInstance: WarnIfGitVersionUnsupported (GitPath={GitPath})");
+			try
+			{
+				WarnIfGitVersionUnsupported(GitPath);
+			}
+			catch (Exception ex)
+			{
+				Log.Error($"InitializeForkInstance: WarnIfGitVersionUnsupported 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
+			}
+			Log.Info($"InitializeForkInstance: Guid check (empty={string.IsNullOrEmpty(@default.Guid)})");
 			if (string.IsNullOrEmpty(@default.Guid))
 			{
-				if (!new WelcomeWindow().ShowDialog().GetValueOrDefault())
+				Log.Info("InitializeForkInstance: showing WelcomeWindow");
+				bool? welcomeResult;
+				try
+				{
+					welcomeResult = new WelcomeWindow().ShowDialog();
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"InitializeForkInstance: WelcomeWindow 抛异常: {ex.GetType().FullName}: {ex.Message}{(ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "")}");
+					DoShutdown();
+					return false;
+				}
+				Log.Info($"InitializeForkInstance: WelcomeWindow result={welcomeResult}");
+				if (!welcomeResult.GetValueOrDefault())
 				{
 					DoShutdown();
 					return false;
 				}
 			}
 			@default.MigratedToFork2_10_3 = true;
+			Log.Info("InitializeForkInstance: done (success)");
 			return true;
 		}
 

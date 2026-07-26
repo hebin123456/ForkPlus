@@ -212,6 +212,11 @@ namespace ForkPlus.Git.Interaction
 						}
 						string text = process.StandardOutput.ReadToEnd();
 						task.Wait();
+						// 阶段 6 修复 race condition：StandardOutput.ReadToEnd() 在流关闭后返回，
+						// 但进程可能尚未完全退出（ExitCode 未设置），直接访问 process.ExitCode 会抛
+						// InvalidOperationException: Process must exit before requested information can be determined.
+						// WaitForExit() 确保进程完全终止后再读取 ExitCode。
+						process.WaitForExit();
 						if (process.ExitCode != 0 && !silent)
 						{
 							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
@@ -264,6 +269,8 @@ namespace ForkPlus.Git.Interaction
 						});
 						string text = process.StandardOutput.ReadToEnd();
 						task.Wait();
+						// 阶段 6 修复 race condition：同 Execute(bool)，确保进程退出后再读 ExitCode。
+						process.WaitForExit();
 						if (appendOutput)
 						{
 							monitor.AppendOutputLine(text);
@@ -349,6 +356,8 @@ namespace ForkPlus.Git.Interaction
 						task2.Start();
 						task.Wait();
 						task2.Wait();
+						// 阶段 6 修复 race condition：同 Execute(bool)，确保进程退出后再读 ExitCode。
+						process.WaitForExit();
 						string stdout = outputSb.ToString();
 						string text = errorSb.ToString();
 						if (process.ExitCode != 0)
@@ -426,6 +435,8 @@ namespace ForkPlus.Git.Interaction
 						task2.Start();
 						task.Wait();
 						task2.Wait();
+						// 阶段 6 修复 race condition：同 Execute(bool)，确保进程退出后再读 ExitCode。
+						process.WaitForExit();
 						if (process.ExitCode != 0)
 						{
 							Log.Warn("Git request failed '" + _command?.ArgumentsString + "'");
@@ -484,6 +495,8 @@ namespace ForkPlus.Git.Interaction
 						}
 						process.StandardOutput.BaseStream.CopyTo(memoryStream);
 						task.Wait();
+						// 阶段 6 修复 race condition：同 Execute(bool)，确保进程退出后再读 ExitCode。
+						process.WaitForExit();
 						if (process.ExitCode != 0 && !silent)
 						{
 							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);

@@ -22,7 +22,10 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class ForkPlusDialogWindow : CustomWindow
 	{
-		private static readonly Uri ForkPlusLogo = new Uri("avares://ForkPlus/assets/ForkPlusIcon.png");
+		// 阶段 6 修复：assets/ 目录下文件名全小写（forkplusicon.png），Avalonia 资源加载器大小写敏感，
+		// 原 ForkPlusIcon.png 会在 AddForkPlusLogo → AssetLoader.Open 抛 FileNotFoundException，
+		// 导致 ConfigureGitInstanceWindow 等 ShowLogo=true 的对话框 Loaded 即崩溃（"选 git 路径后闪退"根因）。
+		private static readonly Uri ForkPlusLogo = new Uri("avares://ForkPlus/assets/forkplusicon.png");
 
 		public static readonly Uri WarningIcon = new Uri("avares://ForkPlus/assets/warning.png");
 
@@ -59,7 +62,23 @@ namespace ForkPlus.UI.Dialogs
 
 	private bool _commandPreviewInitialized;
 
-		public bool IsOperationInProgress { get; private set; }
+	// 阶段 6 修复 NRE：子类构造时 TitleTextBlock/DescriptionTextBlock 尚未创建（在 Loaded →
+	// AddDialogHeader 才赋值），直接访问 base.TitleTextBlock.XXX 会抛 NullReferenceException。
+	// 这些 pending 字段缓存子类构造器中对 TextBlock 样式的设置，由 AddDialogHeader 在创建
+	// TextBlock 后统一应用。同样适用于已初始化后再调用的情况（直接套用）。
+	// 注意：Avalonia 中 TextTrimming 是 class（引用类型），用 null 表示未设置；
+	// TextWrapping 是 enum（值类型），用 Nullable<TextWrapping> 表示未设置。
+	private TextTrimming _pendingTitleTextTrimming;
+	private TextWrapping? _pendingTitleTextWrapping;
+	private double? _pendingTitleMaxHeight;
+	private double? _pendingTitleFontSize;
+	private IBrush _pendingTitleForeground;
+	private TextTrimming _pendingDescriptionTextTrimming;
+	private TextWrapping? _pendingDescriptionTextWrapping;
+	private double? _pendingDescriptionMaxHeight;
+	private Action<TextBlock> _pendingDescriptionConfigure;
+
+	public bool IsOperationInProgress { get; private set; }
 
 		protected new bool ShowHeader { get; set; } = true;
 
@@ -97,7 +116,61 @@ namespace ForkPlus.UI.Dialogs
 
 		protected TextBlock TitleTextBlock { get; private set; }
 
-		protected TextBlock DescriptionTextBlock { get; private set; }
+	protected TextBlock DescriptionTextBlock { get; private set; }
+
+	/// <summary>
+	/// 阶段 6 修复 NRE：配置标题 TextBlock 样式。子类构造器中调用，若 TitleTextBlock 已创建则
+	/// 立即套用，否则缓存为 pending，由 AddDialogHeader 在创建 TextBlock 后统一应用。
+	/// </summary>
+	protected void ConfigureTitleTextBlock(TextTrimming textTrimming = null, TextWrapping? textWrapping = null, double? maxHeight = null, double? fontSize = null, IBrush foreground = null)
+	{
+		if (textTrimming != null) _pendingTitleTextTrimming = textTrimming;
+		if (textWrapping.HasValue) _pendingTitleTextWrapping = textWrapping;
+		if (maxHeight.HasValue) _pendingTitleMaxHeight = maxHeight;
+		if (fontSize.HasValue) _pendingTitleFontSize = fontSize;
+		if (foreground != null) _pendingTitleForeground = foreground;
+		if (TitleTextBlock != null) ApplyPendingTitleStyles(TitleTextBlock);
+	}
+
+	/// <summary>
+	/// 阶段 6 修复 NRE：配置描述 TextBlock 样式。子类构造器中调用，若 DescriptionTextBlock 已创建则
+	/// 立即套用，否则缓存为 pending，由 AddDialogHeader 在创建 TextBlock 后统一应用。
+	/// </summary>
+	protected void ConfigureDescriptionTextBlock(TextTrimming textTrimming = null, TextWrapping? textWrapping = null, double? maxHeight = null)
+	{
+		if (textTrimming != null) _pendingDescriptionTextTrimming = textTrimming;
+		if (textWrapping.HasValue) _pendingDescriptionTextWrapping = textWrapping;
+		if (maxHeight.HasValue) _pendingDescriptionMaxHeight = maxHeight;
+		if (DescriptionTextBlock != null) ApplyPendingDescriptionStyles(DescriptionTextBlock);
+	}
+
+	/// <summary>
+	/// 阶段 6 修复 NRE：注册 DescriptionTextBlock 的自定义配置回调（用于 Inlines 等无法用简单属性
+	/// 表达的复杂设置）。回调在 AddDialogHeader 创建 DescriptionTextBlock 后调用。
+	/// </summary>
+	protected void ConfigureDescriptionTextBlock(Action<TextBlock> configure)
+	{
+		_pendingDescriptionConfigure = configure;
+		if (DescriptionTextBlock != null) configure(DescriptionTextBlock);
+	}
+
+	private void ApplyPendingTitleStyles(TextBlock textBlock)
+	{
+		if (textBlock == null) return;
+		if (_pendingTitleTextTrimming != null) textBlock.TextTrimming = _pendingTitleTextTrimming;
+		if (_pendingTitleTextWrapping.HasValue) textBlock.TextWrapping = _pendingTitleTextWrapping.Value;
+		if (_pendingTitleMaxHeight.HasValue) textBlock.MaxHeight = _pendingTitleMaxHeight.Value;
+		if (_pendingTitleFontSize.HasValue) textBlock.FontSize = _pendingTitleFontSize.Value;
+		if (_pendingTitleForeground != null) textBlock.Foreground = _pendingTitleForeground;
+	}
+
+	private void ApplyPendingDescriptionStyles(TextBlock textBlock)
+	{
+		if (textBlock == null) return;
+		if (_pendingDescriptionTextTrimming != null) textBlock.TextTrimming = _pendingDescriptionTextTrimming;
+		if (_pendingDescriptionTextWrapping.HasValue) textBlock.TextWrapping = _pendingDescriptionTextWrapping.Value;
+		if (_pendingDescriptionMaxHeight.HasValue) textBlock.MaxHeight = _pendingDescriptionMaxHeight.Value;
+	}
 
 		public GitCommandResult GitResult { get; protected set; }
 
@@ -386,6 +459,11 @@ namespace ForkPlus.UI.Dialogs
 			{
 				DialogDescription = _pendingDialogDescription;
 			}
+			// 阶段 6：应用子类构造器中通过 ConfigureTitleTextBlock/ConfigureDescriptionTextBlock
+			// 缓存的 pending 样式（TextTrimming/TextWrapping/MaxHeight/FontSize/Foreground/Inlines）。
+			ApplyPendingTitleStyles(TitleTextBlock);
+			ApplyPendingDescriptionStyles(DescriptionTextBlock);
+			_pendingDescriptionConfigure?.Invoke(DescriptionTextBlock);
 		}
 
 		/// <summary>

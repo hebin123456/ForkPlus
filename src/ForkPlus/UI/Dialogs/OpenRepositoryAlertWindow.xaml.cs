@@ -12,8 +12,8 @@ namespace ForkPlus.UI.Dialogs
 		public OpenRepositoryAlertWindow(string repositoryDirectory)
 		{
 			InitializeComponent();
-			base.DescriptionTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.DescriptionTextBlock.MaxHeight = 80.0;
+			// 阶段 6 修复 NRE：DescriptionTextBlock 在 Loaded → AddDialogHeader 才创建，构造时为 null。
+			ConfigureDescriptionTextBlock(textTrimming: TextTrimming.CharacterEllipsis, maxHeight: 80.0);
 			base.DialogTitle = PreferencesLocalization.Current("The directory is not under git source control");
 			base.DialogDescription = PreferencesLocalization.FormatCurrent("The '{0}' directory is not a git repository", repositoryDirectory);
 			base.ShowSubmitButton = false;
