@@ -59,6 +59,7 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Accounts;
+using ForkPlus.Services;
 using ForkPlus.UI.Helpers;
 using Theme = ForkPlus.UI.Theme;
 using Avalonia.Controls.Documents;
@@ -772,8 +773,8 @@ namespace ForkPlus.UI.UserControls
 					string body = result.Success
 						? PreferencesLocalization.Current("Command succeeded")
 						: PreferencesLocalization.Current("Command failed");
-					NotificationManager.SendWindowsNotification(
-						$"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{System.Net.WebUtility.HtmlEncode(title)}</text>\n        <text>{System.Net.WebUtility.HtmlEncode(body)}</text>\n    </binding>\n</visual>\n</toast>\n");
+					// 阶段 6：用 ToastPayload 替代手写 Windows Toast XML（HTML 编码由 WpfToastNotificationService 内部处理）。
+					NotificationManager.SendNotification(new ToastPayload(title, body, silent: true));
 				});
 				if (!monitor.IsCanceled)
 				{

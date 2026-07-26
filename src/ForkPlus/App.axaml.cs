@@ -620,7 +620,11 @@ namespace ForkPlus
 				appContext: new WpfAppContext(),
 				clipboard: new WpfClipboardService(),
 				timer: new WpfTimerService(),
-				toast: new WpfToastNotificationService(),
+				// 阶段 6：按平台注册 Toast 通知服务。
+				// - Windows：WpfToastNotificationService（WinRT Toast）
+				// - Linux：LinuxToastNotificationService（notify-send）
+				// - macOS：MacOsToastNotificationService（osascript）
+				toast: CreateToastService(),
 				windowManager: new WpfWindowManagerService()
 			);
 			// 阶段 0：注册新增平台抽象服务（不替换现有调用点，仅供阶段 2/3 迁移使用）
@@ -648,6 +652,33 @@ namespace ForkPlus
 				ConfigureThreadPool();
 				new MainWindow().Show();
 			}
+		}
+
+		/// <summary>
+		/// 阶段 6：按当前运行平台创建 Toast 通知服务实例。
+		/// - Windows：WpfToastNotificationService（封装 WinRT ToastNotificationManager）
+		/// - Linux：LinuxToastNotificationService（封装 notify-send）
+		/// - macOS：MacOsToastNotificationService（封装 osascript display notification）
+		/// 单一职责：仅做平台分派，不含业务逻辑。
+		/// </summary>
+		[Null]
+		private static IToastNotificationService CreateToastService()
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return new WpfToastNotificationService();
+			}
+			if (OperatingSystem.IsLinux())
+			{
+				return new Services.Avalonia.LinuxToastNotificationService();
+			}
+			if (OperatingSystem.IsMacOS())
+			{
+				return new Services.Avalonia.MacOsToastNotificationService();
+			}
+			// 未识别平台（如 FreeBSD）：返回 null，ServiceLocator.Toast 为 null 时调用方静默降级。
+			Log.Warn("No ToastNotificationService available for current platform: " + Environment.OSVersion);
+			return null;
 		}
 
 		// 阶段 5：从 private 实例方法改为 internal static，供 SwitchApplicationThemeCommand 通过 App.InitializeTheme() 静态调用

@@ -283,6 +283,10 @@ namespace ForkPlus.UI.Controls
 		protected override void OnPointerMoved(PointerEventArgs e)
 		{
 			Point position = e.GetPosition(this);
+			// 阶段 6：缓存屏幕坐标到 MouseHelper，供 UpdateTooltipPosition 跨平台获取鼠标位置。
+			// e.GetPosition(null) 返回屏幕坐标（Avalonia 标准），覆盖 Windows/Linux/macOS/Wayland。
+			// 替代原 MouseHelper 在非 Windows 返回 Origin(0,0) 导致 tooltip 显示在 Canvas 左上角的 bug。
+			MouseHelper.SetLastPointerPosition(e.GetPosition(null));
 			UpdateHoverIndexPath(position);
 			UpdateTooltipPosition();
 			base.OnPointerMoved(e);

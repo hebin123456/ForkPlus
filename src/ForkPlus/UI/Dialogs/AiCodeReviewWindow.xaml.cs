@@ -1600,7 +1600,9 @@ namespace ForkPlus.UI.Dialogs
 			string text = RepositoryName(gitModule);
 			if (text != null && !base.IsActive)
 			{
-				string arg = WebUtility.HtmlEncode("ai-review:" + base.Title);
+				// 阶段 6：launch 参数不预编码（HTML 编码是 Windows XML 专属，由 WpfToastNotificationService 内部处理）。
+				// "ai-review:" 前缀让 NotificationManager.ToastNotificationManagerCompat_OnActivated 路由到 AI 窗口激活逻辑。
+				string launchArg = "ai-review:" + base.Title;
 				string arg2 = PreferencesLocalization.Current(success ? "AI Code Review Completed" : "AI Code Review Failed");
 				string text2 = null;
 				if (_target is AiCodeReviewTarget.Branch branch)
@@ -1615,8 +1617,12 @@ namespace ForkPlus.UI.Dialogs
 				{
 					text2 = PreferencesLocalization.FormatCurrent("{0} files", files.ChangedFiles.Length);
 				}
-				string arg3 = WebUtility.HtmlEncode(text + ": " + text2);
-				NotificationManager.SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast launch=\"{arg}\" >\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{arg2}</text>\n        <text>{arg3}</text>\n    </binding>\n</visual>\n</toast>\n");
+				string body = text + ": " + text2;
+				NotificationManager.SendNotification(new ToastPayload(
+					title: arg2,
+					body: body,
+					launchArgument: launchArg,
+					silent: true));
 			}
 		}
 

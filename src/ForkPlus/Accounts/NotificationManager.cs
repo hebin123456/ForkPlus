@@ -237,66 +237,55 @@ namespace ForkPlus.Accounts
 	{
 		string title = ServiceLocator.Localization.Current("New Notifications");
 		string body = ServiceLocator.Localization.FormatCurrent("You've got {0} new notifications", newNotificationsCount);
-		SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast>\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\">{WebUtility.HtmlEncode(title)}</text>\n        <text>{WebUtility.HtmlEncode(body)}</text>\n    </binding>\n</visual>\n</toast>\n");
+		// 阶段 6：用 ToastPayload 替代手写 Windows Toast XML，由 IToastNotificationService 实现按平台转换。
+		// 无 launch 参数（多条通知汇总，点击仅打开通知中心，不需要跳转特定 URL）。
+		SendNotification(new ToastPayload(title, body, silent: true));
 	}
 
 		private void SendToastNotification(GitServiceNotification notification)
 		{
-			string text = WebUtility.HtmlEncode(ToastNotification.Coder.EncodeString(new ToastNotification(notification.Id, notification.TargetUrl)));
-			string text2 = WebUtility.HtmlEncode(notification.RepositoryFullName + " #" + notification.TargetId);
-			string text3 = WebUtility.HtmlEncode(notification.Title ?? "");
-			string text4 = WebUtility.HtmlEncode(notification.RepositoryAvatarUrl ?? "");
-			SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast launch=\"{text}\" >\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{text2}</text>\n        <text>{text3}</text>\n        <image placement=\"hero\" src =\"{text4}\" />\n    </binding>\n</visual>\n</toast>\n");
+			// launch 参数编码 ToastNotification（threadId + url），点击通知时由
+			// NotificationManager.ToastNotificationManagerCompat_OnActivated 回调解码并打开浏览器。
+			string launchArg = ToastNotification.Coder.EncodeString(new ToastNotification(notification.Id, notification.TargetUrl));
+			string title = notification.RepositoryFullName + " #" + notification.TargetId;
+			string body = notification.Title ?? "";
+			SendNotification(new ToastPayload(
+				title: title,
+				body: body,
+				launchArgument: launchArg,
+				imageUrl: notification.RepositoryAvatarUrl,
+				silent: true));
 		}
 
-		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
-			Justification = "WinRT Toast 反射调用仅 Windows 平台运行（OperatingSystem.IsWindows 守卫）。WinRT 类型由 Windows 运行时加载，不受 trim/AOT 影响。非 Windows 平台不会执行到此分支。")]
-		public static void SendWindowsNotification(string xmlString)
+		/// <summary>
+		/// 阶段 6：统一发送 Toast 通知入口。
+		/// 替代原 SendWindowsNotification(string xmlString)（XML 是 Windows 专属格式）。
+		/// 通过 ServiceLocator.Toast 投递 ToastPayload，由各平台 IToastNotificationService 实现转换：
+		/// - Windows：WpfToastNotificationService → Toast XML → WinRT
+		/// - Linux：LinuxToastNotificationService → notify-send
+		/// - macOS：MacOsToastNotificationService → osascript
+		/// ServiceLocator.Toast 为 null 时（启动早期 / 未注册）静默降级。
+		/// </summary>
+		public static void SendNotification(ToastPayload payload)
 		{
+			if (payload == null)
+			{
+				return;
+			}
 			if (Services.ServiceLocator.Toast != null)
 			{
-				Services.ServiceLocator.Toast.Show(xmlString);
+				try
+				{
+					Services.ServiceLocator.Toast.Show(payload);
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to show toast notification via IToastNotificationService", ex);
+				}
 				return;
 			}
-			// 阶段 5：WinRT Toast 仅 Windows 平台可用，非 Windows 平台静默降级（仅记日志）。
-			if (!OperatingSystem.IsWindows())
-			{
-				Log.Info("Toast notification skipped on non-Windows platform");
-				return;
-			}
-			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）。
-			// 用反射延迟加载 WinRT 类型，避免在非 Windows 平台编译/加载时引发 TypeLoadException。
-			try
-			{
-				Type xmlDocType = Type.GetType("Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType=WindowsRuntime", throwOnError: false);
-				if (xmlDocType == null)
-				{
-					Log.Info("WinRT XmlDocument unavailable, toast notification skipped");
-					return;
-				}
-				object document = Activator.CreateInstance(xmlDocType);
-				xmlDocType.GetMethod("LoadXml")?.Invoke(document, new object[] { xmlString });
-
-				Type managerType = Type.GetType("Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType=WindowsRuntime", throwOnError: false);
-				if (managerType == null)
-				{
-					return;
-				}
-				object defaultObj = managerType.GetProperty("Default")?.GetValue(null);
-				object notifier = managerType.GetMethod("CreateToastNotifier", new[] { typeof(string) })?.Invoke(defaultObj, new object[] { "com.squirrel.ForkPlus.ForkPlus" });
-
-				Type toastType = Type.GetType("Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType=WindowsRuntime", throwOnError: false);
-				if (toastType == null)
-				{
-					return;
-				}
-				object notification = Activator.CreateInstance(toastType, document);
-				notifier.GetType().GetMethod("Show")?.Invoke(notifier, new[] { notification });
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to show toast notification", ex);
-			}
+			// ServiceLocator 未初始化时的兜底（启动早期 / 设计期）。
+			Log.Info("Toast notification skipped (ServiceLocator.Toast not registered): " + payload.Title);
 		}
 
 		private void FindAiCodeReviewWindowAndActivate(string windowTitle)
