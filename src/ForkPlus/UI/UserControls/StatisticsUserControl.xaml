@@ -1,8 +1,8 @@
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:oxy="http://oxyplot.org/avalonia">
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:oxy="http://oxyplot.org/avalonia" xmlns:oxyplot="clr-namespace:OxyPlot;assembly=OxyPlot">
   <UserControl.Resources>
-    
+
       <ControlTemplate x:Key="TrackerControlDataTemplate">
-        <oxy:TrackerControl Background="#FFF1F2F7" BorderBrush="#FF767676" x:CompileBindings="False">
+        <oxy:TrackerControl Background="#FFF1F2F7" BorderBrush="#FF767676" x:DataType="oxyplot:TrackerHitResult">
           <oxy:TrackerControl.Position>
             <Binding Path="Position" />
           </oxy:TrackerControl.Position>
@@ -12,13 +12,13 @@
           <oxy:TrackerControl.Content>
             <TextBlock Margin="7" Foreground="#FF575757">
               <TextBlock.Text>
-                <Binding />
+                <Binding Path="Text" />
               </TextBlock.Text>
             </TextBlock>
           </oxy:TrackerControl.Content>
         </oxy:TrackerControl>
       </ControlTemplate>
-    
+
   </UserControl.Resources>
   <Grid>
     <Grid MinWidth="900" Margin="30,15,20,15" x:Name="StatsContainer">

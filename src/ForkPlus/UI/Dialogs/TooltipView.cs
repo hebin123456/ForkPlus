@@ -6,6 +6,7 @@
 //   → Avalonia Bind(WidthProperty, new Binding("Width"){Source=this}) 扩展方法
 // - CornerRadius/Thickness（API 兼容）
 // - TextTrimming.CharacterEllipsis（API 兼容）
+using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -31,6 +32,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private TextBlock _descriptionTextBlock;
 
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "手动构造 Avalonia.Data.Binding 绑定 Width 到 this（Source 已知），运行时不会反射失败。Source=this 是 TooltipView 自身，属性编译期已知。")]
 		public TooltipView()
 		{
 			base.BorderThickness = new Thickness(1.0);

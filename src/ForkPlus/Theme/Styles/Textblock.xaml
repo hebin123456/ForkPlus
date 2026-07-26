@@ -129,16 +129,9 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="ToolTip.Tip">
       <Setter.Value>
-        <ToolTip x:CompileBindings="False">
-          <ToolTip.DataContext>
-            <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
-          </ToolTip.DataContext>
+        <ToolTip>
           <StackPanel>
-            <TextBlock>
-              <TextBlock.Text>
-                <Binding Path="Tag" />
-              </TextBlock.Text>
-            </TextBlock>
+            <TextBlock Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Control}}" />
           </StackPanel>
         </ToolTip>
       </Setter.Value>

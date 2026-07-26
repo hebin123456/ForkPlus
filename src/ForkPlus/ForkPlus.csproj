@@ -39,6 +39,14 @@
     <!-- Avalonia 11.3 + net10.0 跨平台目标下，部分第三方包 API 仍标注 [SupportedOSPlatform("Windows")]。
          CA1416 在 net10.0 目标下会触发警告（已用 [SupportedOSPlatform] 守卫），暂时静默以推进构建。 -->
     <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
+    <!-- 阶段 7：NativeAOT 第三方库 trim/AOT 警告静默。
+         IL2104：引用的程序集（Avalonia.Controls.DataGrid / Newtonsoft.Json / OxyPlot / Markdown.Avalonia）
+                 内部产生 trim 警告，无法在本项目代码中修复，需等待上游版本更新。
+         IL3053：同上，AOT 分析警告（Newtonsoft.Json / Avalonia.Controls.DataGrid）。
+         这些是程序集级别的聚合警告，[UnconditionalSuppressMessage] 无法抑制（仅适用于本程序集代码）。
+         已对实际使用点加 [UnconditionalSuppressMessage] 抑制具体方法警告（见 NotificationManager / Connection 等），
+         此处仅静默聚合警告以保持 AOT publish 输出干净。 -->
+    <NoWarn Condition="'$(PublishAot)' == 'true'">$(NoWarn);IL2104;IL3053</NoWarn>
   </PropertyGroup>
 
   <!-- 阶段 6：定义 WINDOWS 编译符号，仅 net10.0-windows 目标启用。

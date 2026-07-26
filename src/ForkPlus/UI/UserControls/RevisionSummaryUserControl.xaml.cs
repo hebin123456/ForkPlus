@@ -20,6 +20,7 @@ using Theme = ForkPlus.UI.Theme;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -270,6 +271,8 @@ namespace ForkPlus.UI.UserControls
 			return button;
 		}
 
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "手动构造 Avalonia.Data.Binding 绑定 IsChecked 到 parentButton（Source 已知），运行时不会反射失败。Source=ToggleButton，IsChecked 属性编译期已知。")]
 		private void CreateColorsPopup(ToggleButton parentButton, string email, byte userBrushIndex)
 		{
 			GitModule gitModule = RevisionDetailsUserControl.GitModule;
