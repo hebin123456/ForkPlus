@@ -32,11 +32,33 @@ namespace ForkPlus.Services.Avalonia
 			}
 			try
 			{
+				// 阶段 6：点击回调等价实现。
+				// Windows 用 toast@launch 属性 + OnActivated 回调实现点击跳转；
+				// macOS osascript display notification 不支持应用内点击回调
+				// （需 NSUserNotificationCenterDelegate + userInfo，架构改造大）。
+				// 等价方案：若 LaunchArgument 是 URL，追加到正文末尾。
+				// macOS 通知中心会自动识别 http(s) URL 为可点击链接，用户点击 URL 会打开默认浏览器。
+				// 这实现了"从通知打开 URL"的核心功能，交互方式与 Windows 略有不同（点击 URL vs 点击通知）。
+				string bodyText = payload.Body ?? string.Empty;
+				if (!string.IsNullOrEmpty(payload.LaunchArgument) &&
+					(payload.LaunchArgument.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+					 payload.LaunchArgument.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
+				{
+					bodyText = bodyText + "\n" + payload.LaunchArgument;
+				}
+				else
+				{
+					// 非 URL 的 LaunchArgument（如 ai-review: 前缀）记录到日志
+					if (!string.IsNullOrEmpty(payload.LaunchArgument))
+					{
+						Log.Debug("macOS toast LaunchArgument (non-URL, no click action): " + payload.LaunchArgument);
+					}
+				}
 				// display notification "body" with title "title" [sound name "..."]
 				// Silent=true 时不带 sound（与 Windows <audio silent="true"/> 等价）。
 				// Silent=false 时带 sound name "default"（macOS 默认提示音 "Funk"）。
 				string title = EscapeAppleString(payload.Title);
-				string body = EscapeAppleString(payload.Body);
+				string body = EscapeAppleString(bodyText);
 				string script = "display notification \"" + body + "\" with title \"" + title + "\"";
 				if (!payload.Silent)
 				{

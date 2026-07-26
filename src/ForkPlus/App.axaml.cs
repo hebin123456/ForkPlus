@@ -627,13 +627,17 @@ namespace ForkPlus
 				toast: CreateToastService(),
 				windowManager: new WpfWindowManagerService()
 			);
-			// 阶段 0：注册新增平台抽象服务（不替换现有调用点，仅供阶段 2/3 迁移使用）
+			// 阶段 6：按平台注册平台抽象服务。
+		// - messageBox/process/fileSystemDialog/systemTheme/localization：跨平台用 Wpf* 实现
+		//   （这些是 Avalonia 上的等价适配器，命名沿用 Wpf 前缀仅因历史原因）
+		// - credential/fileAssociation：按平台分派（Windows/Linux/macOS 各有原生实现）
+		// - themeService：AvaloniaThemeService（跨平台，读 PlatformSettings）
 		ServiceLocator.RegisterPlatformServices(
 			messageBox: new WpfMessageBoxService(),
 			process: new WpfProcessService(),
 			fileSystemDialog: new WpfFileSystemDialogService(),
-			credential: new WindowsCredentialService(),
-			fileAssociation: new WindowsFileAssociationService(),
+			credential: CreateCredentialService(),
+			fileAssociation: CreateFileAssociationService(),
 			systemTheme: new WpfSystemThemeService(),
 			localization: new WpfLocalizationService(),
 			themeService: new AvaloniaThemeService()
@@ -678,6 +682,56 @@ namespace ForkPlus
 			}
 			// 未识别平台（如 FreeBSD）：返回 null，ServiceLocator.Toast 为 null 时调用方静默降级。
 			Log.Warn("No ToastNotificationService available for current platform: " + Environment.OSVersion);
+			return null;
+		}
+
+		/// <summary>
+		/// 阶段 6：按当前运行平台创建凭据存储服务实例。
+		/// - Windows：WindowsCredentialService（advapi32 CredManager）
+		/// - Linux：LinuxCredentialService（libsecret / secret-tool，fallback ~/.forkplus-credentials）
+		/// - macOS：MacOsCredentialService（Security framework Keychain / security CLI）
+		/// </summary>
+		[Null]
+		private static ICredentialService CreateCredentialService()
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return new WindowsCredentialService();
+			}
+			if (OperatingSystem.IsLinux())
+			{
+				return new Services.Avalonia.LinuxCredentialService();
+			}
+			if (OperatingSystem.IsMacOS())
+			{
+				return new Services.Avalonia.MacOsCredentialService();
+			}
+			Log.Warn("No CredentialService available for current platform: " + Environment.OSVersion);
+			return null;
+		}
+
+		/// <summary>
+		/// 阶段 6：按当前运行平台创建文件关联查询服务实例。
+		/// - Windows：WindowsFileAssociationService（Shlwapi AssocQueryString）
+		/// - Linux：LinuxFileAssociationService（xdg-mime + mimeapps.list + .desktop 解析）
+		/// - macOS：MacOsFileAssociationService（lsregister + UTI 映射）
+		/// </summary>
+		[Null]
+		private static IFileAssociationService CreateFileAssociationService()
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return new WindowsFileAssociationService();
+			}
+			if (OperatingSystem.IsLinux())
+			{
+				return new Services.Avalonia.LinuxFileAssociationService();
+			}
+			if (OperatingSystem.IsMacOS())
+			{
+				return new Services.Avalonia.MacOsFileAssociationService();
+			}
+			Log.Warn("No FileAssociationService available for current platform: " + Environment.OSVersion);
 			return null;
 		}
 
