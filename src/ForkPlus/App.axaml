@@ -45,7 +45,20 @@
         <!-- 资源字典（brush / geometry / color）通过 Application.Resources 加载，
              供各 Style / ControlTemplate 中的 DynamicResource 引用解析。
              只保留纯资源文件（ResourceDictionary 根），Style 文件已转为 <Styles> 根
-             并通过上方 StyleInclude 加载，不能再作为 ResourceInclude 引入。 -->
+             并通过上方 StyleInclude 加载，不能再作为 ResourceInclude 引入。
+
+             关键修复（"啥都没有"根因）：必须先加载 Colors.*.xaml（定义 LabelColor、
+             ForegroundColor、BackgroundColor 等 Color 值），Brushes.xaml 中的
+             SolidColorBrush 才能通过 {DynamicResource XXXColor} 解析到颜色。
+             原实现只加载 Generic.xaml（含 Brushes.xaml + Geometries.xaml）但未加载
+             Colors.*.xaml，导致所有 Brush 的 Color 绑定失败，UI 全部透明——
+             表现为窗口打开但完全空白，菜单栏/按钮/对话框都看不见。
+
+             此处加载默认 Light 主题颜色 + Light 图标。Dark 主题切换由
+             App.InitializeTheme() 在运行时根据 ForkPlusSettings.Default.Theme 动态替换
+             Colors/Images 字典（Avalonia IResourceDictionary 索引赋值覆盖同 key）。 -->
+        <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Brushes/Colors.Light.xaml" />
+        <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Images.Light.xaml" />
         <ResourceInclude Source="avares://ForkPlus/Theme/Generic.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>

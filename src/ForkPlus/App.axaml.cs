@@ -792,24 +792,24 @@ namespace ForkPlus
 		}
 
 		// 阶段 5：从 private 实例方法改为 internal static，供 SwitchApplicationThemeCommand 通过 App.InitializeTheme() 静态调用
-		// （WPF 主题切换的入口点，Avalonia 迁移保留同方法名）。所有依赖均为静态成员。
-		internal static void InitializeTheme()
+	// （WPF 主题切换的入口点，Avalonia 迁移保留同方法名）。所有依赖均为静态成员。
+	internal static void InitializeTheme()
+	{
+		if (ForkPlusSettings.Default.FollowSystemTheme)
 		{
-			if (ForkPlusSettings.Default.FollowSystemTheme)
-			{
-				_systemTheme = GetSystemTheme();
-				// 跟随系统时只映射到基底 Light/Dark（系统只有明暗二元）
-				ForkPlusSettings.Default.Theme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
-			}
-			// Avalonia: 主题通过 RequestedThemeVariant 切换（替代 WPF MergedDictionaries 加载 Generic.{Skin}.xaml）
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
-				Application.Current.RequestedThemeVariant = ThemeVariant.Dark;
-			else
-				Application.Current.RequestedThemeVariant = ThemeVariant.Light;
-			Theme.SubscribeToSystemEvents();
-			InitializeTextEditorContextMenuStyle();
-			ApplyCustomColors();
+			_systemTheme = GetSystemTheme();
+			// 跟随系统时只映射到基底 Light/Dark（系统只有明暗二元）
+			ForkPlusSettings.Default.Theme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
 		}
+		// Avalonia: 主题通过 RequestedThemeVariant 切换（替代 WPF MergedDictionaries 加载 Generic.{Skin}.xaml）
+		if (ForkPlusSettings.Default.Theme.IsDarkBase())
+			Application.Current.RequestedThemeVariant = ThemeVariant.Dark;
+		else
+			Application.Current.RequestedThemeVariant = ThemeVariant.Light;
+		Theme.SubscribeToSystemEvents();
+		InitializeTextEditorContextMenuStyle();
+		ApplyCustomColors();
+	}
 
 		/// <summary>根据 ForkPlusSettings.Default.CustomColors 构建动态 ResourceDictionary 并 merge 到
 	/// MergedDictionaries 末尾。仅当 UseCustomColors=true 且 CustomColors 非空时才应用覆盖。
