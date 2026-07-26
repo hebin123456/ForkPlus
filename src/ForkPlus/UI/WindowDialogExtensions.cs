@@ -47,6 +47,8 @@ namespace ForkPlus.UI
 			{
 				// 启动早期或无可见宿主窗口：退化为非模态显示，立即返回 null。
 				// 调用方若依赖 bool? 结果会得到 null，GetValueOrDefault() 转 false，符合"未提交"语义。
+				NLog.LogManager.GetLogger("WindowDialogExtensions").Warn(
+					"ShowDialog 退化为非模态：无可用 owner（dialog={0}）", window?.GetType().FullName ?? "<null>");
 				window.Show();
 				return null;
 			}
@@ -62,8 +64,19 @@ namespace ForkPlus.UI
 				{
 					result = await window.ShowDialog<bool?>(owner);
 				}
-				catch
+				catch (Exception ex)
 				{
+					// 阶段 6 修复"一闪而过"诊断：原 catch 静默吞掉异常，导致 DoShutdown 触发但根因不可见。
+					// 记录异常详情（owner 是否可见 / dispatcher 状态等），便于定位 ShowDialog 失败根因。
+					// NLog ProductionLoggingConfiguration 的 layout 仅 ${message}，需把异常信息拼进 message。
+					NLog.LogManager.GetLogger("WindowDialogExtensions").Error(
+						"ShowDialog<{0}> with owner={1}(IsVisible={2}) 失败: {3}: {4}{5}",
+						window?.GetType().FullName ?? "<null>",
+						owner?.GetType().FullName ?? "<null>",
+						owner?.IsVisible ?? false,
+						ex.GetType().FullName,
+						ex.Message,
+						ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "");
 					result = null;
 				}
 				finally
@@ -76,7 +89,23 @@ namespace ForkPlus.UI
 
 			// 推入嵌套 Dispatcher 帧：阻塞当前调用直到 frame.Continue=false，
 			// 同时持续泵送平台消息队列，UI 事件正常派发（与 WPF Dispatcher.PushFrame 等价）。
-			Dispatcher.UIThread.PushFrame(frame);
+			try
+			{
+				Dispatcher.UIThread.PushFrame(frame);
+			}
+			catch (Exception ex)
+			{
+				// 启动早期 dispatcher 主循环尚未启动时 PushFrame 可能失败，
+				// 记录日志后返回 null，避免"一闪而过"无诊断信息。
+				// NLog ProductionLoggingConfiguration 的 layout 仅 ${message}，需把异常信息拼进 message。
+				NLog.LogManager.GetLogger("WindowDialogExtensions").Error(
+					"PushFrame 失败（dialog={0}）: {1}: {2}{3}",
+					window?.GetType().FullName ?? "<null>",
+					ex.GetType().FullName,
+					ex.Message,
+					ex.StackTrace != null ? Environment.NewLine + ex.StackTrace : "");
+				return null;
+			}
 			return result;
 		}
 
@@ -95,6 +124,14 @@ namespace ForkPlus.UI
 				}
 				// 2. MainWindow（若可见）
 				if (desktop.MainWindow != null && desktop.MainWindow != exclude && desktop.MainWindow.IsVisible)
+				{
+					return desktop.MainWindow;
+				}
+				// 2.5 启动早期 fallback：MainWindow 已构造但尚未 Show（IsVisible=false）。
+				// 此时仍可用作 owner 让 Avalonia 走模态对话框路径，避免 ShowDialog 退化成非模态 Show
+				// 后立即返回 null 触发 DoShutdown（"一闪而过"根因）。Avalonia 11 的 ShowDialog 不要求
+				// owner 可见，只要 owner 已注册到 desktop.Windows 即可。
+				if (desktop.MainWindow != null && desktop.MainWindow != exclude)
 				{
 					return desktop.MainWindow;
 				}

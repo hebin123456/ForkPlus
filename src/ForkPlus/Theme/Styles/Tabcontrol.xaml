@@ -138,7 +138,19 @@
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="24" />
                 </Grid.ColumnDefinitions>
-                <UniformGrid Grid.Row="0" Grid.Column="0" IsItemsHost="True" Rows="1" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="HeaderPanel" />
+                <!-- Migration note: WPF <UniformGrid IsItemsHost="True" /> 在 Avalonia 11 不可用——
+                     Panel.IsItemsHost 是 protected internal 普通 CLR 属性（非 AvaloniaProperty），
+                     XAML 编译器生成直接 setter 调用，运行时抛 MethodAccessException。
+                     Avalonia 等价方案：用 <ItemsPresenter> + ItemsPanel 模板指定自定义 Panel。
+                     Background 移到内层 UniformGrid（ItemsPresenter 无 Background 属性）。
+                     x:Name="HeaderPanel" 保留以兼容 code-behind（若有）。 -->
+                <ItemsPresenter Grid.Row="0" Grid.Column="0" x:Name="HeaderPanel">
+                  <ItemsPresenter.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Rows="1" Background="{DynamicResource ClosableTabItem.Static.Background}" />
+                    </ItemsPanelTemplate>
+                  </ItemsPresenter.ItemsPanel>
+                </ItemsPresenter>
                 <Border Grid.Column="1" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" />
                 <Button Grid.Row="0" Grid.Column="1" x:Name="PART_Add" />
                 <Border Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" />
@@ -272,7 +284,16 @@
                   <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid Grid.Column="0" Grid.Row="0">
-                  <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
+                  <!-- Migration note: WPF <TabPanel IsItemsHost="true" /> 在 Avalonia 11 不可用——
+                       Panel.IsItemsHost 为 protected internal，运行时抛 MethodAccessException。
+                       改用 <ItemsPresenter> + ItemsPanel=TabPanel 模板。 -->
+                  <ItemsPresenter Margin="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel">
+                    <ItemsPresenter.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <TabPanel />
+                      </ItemsPanelTemplate>
+                    </ItemsPresenter.ItemsPanel>
+                  </ItemsPresenter>
                 </Grid>
                 <Canvas Grid.Column="0" Grid.Row="0">
                   <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
@@ -336,7 +357,13 @@
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TabPanel Grid.Column="0" IsItemsHost="true" Margin="0" Grid.Row="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel" />
+                <ItemsPresenter Grid.Column="0" Margin="0" Grid.Row="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel">
+                  <ItemsPresenter.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <TabPanel />
+                    </ItemsPanelTemplate>
+                  </ItemsPresenter.ItemsPanel>
+                </ItemsPresenter>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel">
                   <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
                 </Border>

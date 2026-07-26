@@ -58,6 +58,17 @@
         </Setter>
       </Style>
     <Style x:Key="ListViewItemStyle" Selector="ListViewItem">
+<Style Selector="^:pointerover /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+
         <Setter Property="Padding" Value="4,1" />
         <Setter Property="HorizontalContentAlignment" x:CompileBindings="False">
           <Setter.Value>
@@ -76,29 +87,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ListViewItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsSelectionActive=True + IsSelected=True -> :selected (active) -->
-              <Style Selector="^:selected /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-              </Style>
-              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger (Selector.IsSelectionActive=False + IsSelected=True)
-                   could not be converted (no Avalonia pseudoclass for Selector.IsSelectionActive). Original
-                   inactive-selection styling preserved below for reference; reimplement using a custom
-                   pseudoclass toggled from code-behind (e.g. :selection-inactive).
-                   Original logic:
-                     Bd.Background = Item.SelectedInactive.Background
-                     Bd.BorderBrush = Item.SelectedInactive.Border -->
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Bd">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource {DynamicResource SystemGrayTextBrush}}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
@@ -160,18 +149,18 @@
         </Setter>
       </Style>
     <Style x:Key="ListViewItemGridViewStyle" Selector="ListViewItem">
+<Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="ListViewItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
-    <Border.Styles>
-    <Style Selector="^:selected /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <Border.CornerRadius>
                   <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -233,19 +222,19 @@
         </Setter>
       </Style>
     <Style x:Key="ListBoxItemStyle" Selector="ListBoxItem">
+<Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+
     <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="ListBoxItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-    <Border.Styles>
-    <Style Selector="^:selected /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
@@ -261,17 +250,17 @@
         </Setter>
       </Style>
     <Style x:Key="MultiselectListBoxItemStyle" Selector="ListBoxItem">
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="ListBoxItem">
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
-    <Border.Styles>
-    <Style Selector="^:selected /template/ Border#Bd">
+<Style Selector="^:selected /template/ Border#Bd">
                 <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
                 <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
               </Style>
-    </Border.Styles>
+
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd" x:CompileBindings="False">
+    
     
                 <Border.CornerRadius>
                   <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -307,6 +296,12 @@
         <Setter Property="Focusable" Value="True" />
       </Style>
     <Style x:Key="ListBoxItemWithBorderStyle" Selector="ListBoxItem">
+<Style Selector="^:selected /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
+              </Style>
+
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
@@ -314,13 +309,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ListBoxItem">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-    <Border.Styles>
-    <Style Selector="^:selected /template/ Border#Bd">
-                <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush.Light}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
@@ -370,6 +359,11 @@
         </Setter>
       </Style>
     <Style x:Key="AutocompleteListBoxItemStyle" Selector="ListBoxItem">
+<Style Selector="^:selected /template/ Border#Bd">
+                    <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
+                  </Style>
+
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
@@ -382,13 +376,7 @@
             <ControlTemplate TargetType="ListBoxItem">
     
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-    <Border.Styles>
-                  <!-- Converted from ControlTemplate.Triggers: IsSelected=True -> :selected -->
-                  <Style Selector="^:selected /template/ Border#Bd">
-                    <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}" />
-                  </Style>
-    </Border.Styles>
+    
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
             </ControlTemplate>
@@ -522,6 +510,14 @@
       </Style>
 
 <Style Selector="GridViewColumnHeader">
+<Style Selector="^:pointerover /template/ Border#HeaderBorder">
+                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#HeaderBorder">
+                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
+              </Style>
+
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Padding" Value="4,0,4,0" />
@@ -533,15 +529,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="GridViewColumnHeader">
               <Grid>
-    <Grid.Styles>
-    <Style Selector="^:pointerover /template/ Border#HeaderBorder">
-                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#HeaderBorder">
-                <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderPressBackground}" />
-              </Style>
-    </Grid.Styles>
+    
     
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
                   <Grid>

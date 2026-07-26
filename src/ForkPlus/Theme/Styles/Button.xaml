@@ -30,6 +30,22 @@
       <Geometry x:Key="ArrowGeometry">M6,0.919L3,3.919L0,0.919L0.841,0.081L3,2.24T5.159,0.081L6,0.919Z</Geometry>
   
         <Style x:Key="InlineButton" Selector="Button">
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Opacity" Value="1" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Opacity" Value="0.4" />
+              </Style>
+
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Height" Value="24" />
@@ -38,21 +54,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-              </Style>
-              <Style Selector="^:pressed /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="Opacity" Value="1" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-              </Style>
-              <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="Opacity" Value="0.4" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </Border>
@@ -61,6 +63,16 @@
         </Setter>
       </Style>
         <Style x:Key="InlineToggleButton" Selector="ToggleButton">
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+              </Style>
+
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Height" Value="24" />
@@ -69,17 +81,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </Border>
@@ -112,6 +114,26 @@
         </Style>
       </Style>
     <Style x:Key="ToolbarToggleButton" Selector="ToggleButton">
+<Style Selector="^:pointerover /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+                <Setter Property="Opacity" Value="0.9" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Opacity" Value="0.6" />
+              </Style>
+
         <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Padding" Value="8,0,8,0" />
@@ -127,27 +149,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-                <Setter Property="Opacity" Value="0.9" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=False -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Opacity" Value="0.6" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </Border>
@@ -156,32 +158,32 @@
         </Setter>
       </Style>
     <Style x:Key="ToolbarDropdownButton" Selector="controls|ToolbarDropDownButton">
+<Style Selector="^:pointerover /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+                <Setter Property="Opacity" Value="0.9" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Opacity" Value="0.6" />
+              </Style>
+
         <Setter Property="ClickMode" Value="Press" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate  TargetType="controls:ToolbarDropDownButton">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-                <Setter Property="Opacity" Value="0.9" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Opacity" Value="0.6" />
-              </Style>
-    </Border.Styles>
+    
     
                 <StackPanel>
                   <Grid Width="42">
@@ -218,6 +220,19 @@
         </Style>
       </Style>
     <Style x:Key="ImageRadioButtonStyle" Selector="RadioButton">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Opacity" Value="0.4" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+              </Style>
+
         <Setter Property="Margin" Value="0,1,0,1" />
         <Setter Property="Width" Value="40" />
         <Setter Property="Height" Value="24" />
@@ -230,20 +245,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="RadioButton">
               <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
               </Border>
@@ -252,6 +254,14 @@
         </Setter>
       </Style>
     <Style x:Key="RevisionDetailsBarButton" Selector="RadioButton">
+<Style Selector="^:checked /template/ ContentPresenter#contentPresenter">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+              </Style>
+
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Margin" Value="0" />
@@ -264,15 +274,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="RadioButton">
               <Grid Background="#00FFFFFF">
-    <Grid.Styles>
-    <Style Selector="^:checked /template/ ContentPresenter#contentPresenter">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
-              </Style>
-    </Grid.Styles>
+    
     
                 <Grid.RowDefinitions>
                   <RowDefinition Height="*" />
@@ -302,6 +304,22 @@
         </Setter>
       </Style>
         <Style x:Key="CodeEditorHeaderToggleButtonStyle" Selector="ToggleButton">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Opacity" Value="0.4" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+                <Setter Property="BorderBrush" Value="#00FFFFFF" />
+              </Style>
+
     <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
@@ -315,23 +333,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-                <Setter Property="BorderBrush" Value="#00FFFFFF" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
               </Border>
@@ -340,32 +342,32 @@
         </Setter>
       </Style>
     <Style x:Key="CodeEditorHeaderDropDownButtonStyle" Selector="controls|DropDownButton">
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate  TargetType="controls:DropDownButton">
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
+<Style Selector="^:pointerover /template/ Border#border">
                 <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
               </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
+
+<Style Selector="^:pressed /template/ Border#border">
                 <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
               </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#border">
+
+<Style Selector="^:checked /template/ Border#border">
                 <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
               </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
+
+<Style Selector="^:disabled /template/ Border#border">
                 <Setter Property="Opacity" Value="0.4" />
                 <Setter Property="Background" Value="#00FFFFFF" />
                 <Setter Property="BorderBrush" Value="#00FFFFFF" />
               </Style>
-    </Border.Styles>
+
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate  TargetType="controls:DropDownButton">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
               </Border>
@@ -374,6 +376,22 @@
         </Setter>
       </Style>
     <Style x:Key="CodeEditorHeaderButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Opacity" Value="0.4" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+                <Setter Property="BorderBrush" Value="#00FFFFFF" />
+              </Style>
+
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
         <Setter Property="Height" Value="16" />
         <Setter Property="Width" Value="16" />
@@ -385,23 +403,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-                <Setter Property="BorderBrush" Value="#00FFFFFF" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
               </Border>
@@ -410,6 +412,20 @@
         </Setter>
       </Style>
     <Style x:Key="TransparentButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
     <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
         <Setter Property="BorderThickness" Value="1" />
@@ -425,21 +441,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
               </Border>
@@ -454,46 +456,48 @@
         </Style>
       </Style>
     <Style x:Key="TextButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ TextBlock#textBlock">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
+                <Setter Property="TextDecorations" Value="Underline" />
+              </Style>
+
+<Style Selector="^:pointerover">
+                <Setter Property="Cursor" Value="Hand" />
+              </Style>
+
+<Style Selector="^:disabled /template/ TextBlock#textBlock">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
         <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Button">
-              <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextTrimming="CharacterEllipsis" x:Name="textBlock" ><TextBlock.Styles>
-    <Style Selector="^:pointerover /template/ TextBlock#textBlock">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
-                <Setter Property="TextDecorations" Value="Underline" />
-              </Style>
-              <Style Selector="^:pointerover">
-                <Setter Property="Cursor" Value="Hand" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ TextBlock#textBlock">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </TextBlock.Styles></TextBlock>
+              <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextTrimming="CharacterEllipsis" x:Name="textBlock" ></TextBlock>
             </ControlTemplate>
           </Setter.Value>
         </Setter>
       </Style>
     <Style x:Key="MultilineTextButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ TextBlock#textBlock">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
+                <Setter Property="TextDecorations" Value="Underline" />
+              </Style>
+
+<Style Selector="^:pointerover">
+                <Setter Property="Cursor" Value="Hand" />
+              </Style>
+
+<Style Selector="^:disabled /template/ TextBlock#textBlock">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
         <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Grid>
-    <Grid.Styles>
-    <Style Selector="^:pointerover /template/ TextBlock#textBlock">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
-                <Setter Property="TextDecorations" Value="Underline" />
-              </Style>
-              <Style Selector="^:pointerover">
-                <Setter Property="Cursor" Value="Hand" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ TextBlock#textBlock">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </Grid.Styles>
+    
     
                 <TextBlock Focusable="False" Margin="{TemplateBinding Margin}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Text="{TemplateBinding Content}" TextWrapping="Wrap" x:Name="textBlock" />
               </Grid>
@@ -505,28 +509,29 @@
         <Setter Property="FontSize" Value="13" />
       </Style>
     <Style x:Key="LfsImageButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pointerover">
+                <Setter Property="Cursor" Value="Hand" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource ShowButton.Pressed.Background}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+              </Style>
+
         <Setter Property="Width" Value="44" />
         <Setter Property="Height" Value="44" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border CornerRadius="8" Background="{DynamicResource ShowButton.Static.Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-              </Style>
-              <Style Selector="^:pointerover">
-                <Setter Property="Cursor" Value="Hand" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource ShowButton.Pressed.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
               </Border>
@@ -541,6 +546,33 @@
         <Setter Property="CornerRadius" Value="3,3,3,3" />
       </Style>
     <Style x:Key="ArrowDropDownButtonStyle" Selector="ToggleButton">
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource ComboBox.Pressed.Glyph}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource ComboBox.Pressed.Glyph}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Foreground}" />
@@ -554,31 +586,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <Style Selector="^:pressed /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource ComboBox.Pressed.Glyph}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <Style Selector="^:checked /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource ComboBox.Pressed.Glyph}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <StackPanel Orientation="Horizontal">
                   <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
@@ -590,6 +598,41 @@
         </Setter>
       </Style>
         <Style x:Key="CommitDropDownButtonStyle" Selector="ToggleButton">
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#ShadowBorder">
+                <Setter Property="IsVisible" Value="False" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource Button.Pressed.Foreground}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource Button.Pressed.Foreground}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#ShadowBorder">
+                <Setter Property="IsVisible" Value="False" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Path#Arrow">
+                <Setter Property="Fill" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
     <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Foreground}" />
@@ -603,37 +646,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <Style Selector="^:pressed /template/ Border#ShadowBorder">
-                <Setter Property="IsVisible" Value="False" />
-              </Style>
-              <Style Selector="^:pressed /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource Button.Pressed.Foreground}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <Style Selector="^:checked /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource Button.Pressed.Foreground}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Border#ShadowBorder">
-                <Setter Property="IsVisible" Value="False" />
-              </Style>
-              <Style Selector="^:disabled /template/ Path#Arrow">
-                <Setter Property="Fill" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <DockPanel>
                   <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
@@ -679,6 +692,19 @@
         </Setter>
       </Style>
     <Style x:Key="IconButtonStyle" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="Opacity" Value="0.9" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Opacity" Value="0.6" />
+              </Style>
+
         <Setter Property="Padding" Value="0" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="#00FFFFFF" />
@@ -691,20 +717,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="Opacity" Value="0.9" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Opacity" Value="0.6" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </Border>
@@ -713,6 +726,10 @@
         </Setter>
       </Style>
     <Style x:Key="RepositoryColorRadioButton" Selector="RadioButton">
+<Style Selector="^:checked /template/ Ellipse#Ellipse">
+                <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+
     <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -723,11 +740,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="RadioButton">
               <Border Padding="0,2,2,2" Background="#00FFFFFF">
-    <Border.Styles>
-    <Style Selector="^:checked /template/ Ellipse#Ellipse">
-                <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <Grid>
                   <Ellipse Height="13" Width="13" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1" x:Name="Ellipse" />
@@ -739,6 +752,14 @@
         </Setter>
       </Style>
     <Style x:Key="UserColorToggleButton" Selector="ToggleButton">
+<Style Selector="^:checked /template/ Rectangle#Rectangle">
+                <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
+              </Style>
+
+<Style Selector="^:checked:pointerover /template/ Path#ClearIcon">
+                <Setter Property="IsVisible" Value="True" />
+              </Style>
+
     <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -748,15 +769,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border>
-    <Border.Styles>
-    <Style Selector="^:checked /template/ Rectangle#Rectangle">
-                <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers MultiTrigger (IsChecked + IsMouseOver) -> :checked:pointerover -->
-              <Style Selector="^:checked:pointerover /template/ Path#ClearIcon">
-                <Setter Property="IsVisible" Value="True" />
-              </Style>
-    </Border.Styles>
+    
     
                 <Grid>
                   <Rectangle RadiusX="3" RadiusY="3" Height="18" Width="20" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2.5" x:Name="Rectangle" />
@@ -770,6 +783,21 @@
   
 
 <ControlTheme x:Key="{x:Type controls:ToolbarButton}" TargetType="controls:ToolbarButton">
+<Style Selector="^:pointerover /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
+                <Setter Property="Opacity" Value="0.9" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Opacity" Value="0.6" />
+              </Style>
+
         <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
         <Setter Property="Padding" Value="10,0,10,0" />
         <Setter Property="Margin" Value="0" />
@@ -785,22 +813,7 @@
           <Setter.Value>
             <ControlTemplate  TargetType="controls:ToolbarButton">
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.MouseOver.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.MouseOver.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource ToolbarButton.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButton.Pressed.Border}" />
-                <Setter Property="Opacity" Value="0.9" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Opacity" Value="0.6" />
-              </Style>
-    </Border.Styles>
+    
     
                 <StackPanel>
                   <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
@@ -812,6 +825,16 @@
         </Setter>
       </ControlTheme>
 <ControlTheme x:Key="{x:Type controls:DateRangeButton}" TargetType="controls:DateRangeButton">
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
     <Setter Property="BorderThickness" Value="0" />
         <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="Background" Value="#00FFFFFF" />
@@ -826,17 +849,7 @@
           <Setter.Value>
             <ControlTemplate  TargetType="controls:DateRangeButton">
               <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <StackPanel Orientation="Horizontal">
                   <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
@@ -849,6 +862,14 @@
       </ControlTheme></Styles.Resources>
 
 <Style Selector="Button">
+<!-- Migration note: 原 WPF <Style.Resources><Style TargetType="TextBlock"> 定义 Button 内所有
+     TextBlock 后代隐式应用 TextTrimming=CharacterEllipsis。Avalonia 等价写法是嵌套 Style 使用
+     "^ TextBlock" 后代选择器（^ 引用父 Style 的目标 = Button）。不带 ^ 的子 Style 会触发
+     "Child styles must have a nesting selector" 编译错误。 -->
+<Style Selector="^ TextBlock">
+                          <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        </Style>
+
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Foreground}" />
@@ -875,11 +896,7 @@
                 <DockPanel>
                   <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
                   <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
-                    <ContentPresenter.Styles>
-    <Style Selector="TextBlock">
-                          <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                        </Style>
-    </ContentPresenter.Styles>
+                    
                   </ContentPresenter>
                 </DockPanel>
               </Border>
@@ -918,6 +935,25 @@
       </Style>
 
 <Style Selector="ToggleButton">
+<Style Selector="^:pressed /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
+              </Style>
+
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -930,25 +966,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-    <Border.Styles>
-    <Style Selector="^:pressed /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#Border">
-                <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource Button.Disabled.Foreground}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
               </Border>
@@ -970,6 +988,43 @@
       </Style>
 
 <Style Selector="RadioButton">
+<Style Selector="^:disabled /template/ Border#RadioButtonBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Ellipse#OptionMark">
+                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Disabled.Glyph}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#RadioButtonBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Pressed.Border}" />
+                <Setter Property="Opacity" Value="0.7" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Ellipse#OptionMark">
+                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Pressed.Glyph}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Ellipse#OptionMark">
+                <Setter Property="Opacity" Value="1" />
+                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Static.Glyph}" />
+              </Style>
+
+<Style Selector="^:checked /template/ Border#RadioButtonBorder">
+                <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+              </Style>
+
+<Style Selector="^:indeterminate /template/ Ellipse#OptionMark">
+                <Setter Property="Opacity" Value="0.56" />
+              </Style>
+
         <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -979,40 +1034,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="RadioButton">
               <Grid Background="#00FFFFFF" Height="17" x:Name="TemplateRoot">
-    <Grid.Styles>
-    <Style Selector="^:disabled /template/ Border#RadioButtonBorder">
-                <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}" />
-              </Style>
-              <Style Selector="^:disabled /template/ Ellipse#OptionMark">
-                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Disabled.Glyph}" />
-              </Style>
-              <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource Disabled.ForegroundBrush}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#RadioButtonBorder">
-                <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Pressed.Border}" />
-                <Setter Property="Opacity" Value="0.7" />
-              </Style>
-              <Style Selector="^:pressed /template/ Ellipse#OptionMark">
-                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Pressed.Glyph}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=true -> :checked -->
-              <Style Selector="^:checked /template/ Ellipse#OptionMark">
-                <Setter Property="Opacity" Value="1" />
-                <Setter Property="Fill" Value="{DynamicResource RadioButton.OptionMark.Static.Glyph}" />
-              </Style>
-              <Style Selector="^:checked /template/ Border#RadioButtonBorder">
-                <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}" />
-                <Setter Property="BorderThickness" Value="0" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsChecked=null -> :indeterminate -->
-              <Style Selector="^:indeterminate /template/ Ellipse#OptionMark">
-                <Setter Property="Opacity" Value="0.56" />
-              </Style>
-    </Grid.Styles>
+    
     
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />

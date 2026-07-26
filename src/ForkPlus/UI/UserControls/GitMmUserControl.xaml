@@ -54,7 +54,13 @@
               </Grid.RowDefinitions>
               <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.VerticalScrollBarVisibility="Disabled" PointerWheelChanged="SubreposTabControl_PointerWheelChanged">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
-                  <TabPanel IsItemsHost="true" Margin="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" x:Name="headerPanel" />
+                  <ItemsPresenter Margin="0" KeyboardNavigation.TabIndex="1" ZIndex="1" x:Name="headerPanel">
+                    <ItemsPresenter.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <TabPanel />
+                      </ItemsPanelTemplate>
+                    </ItemsPresenter.ItemsPanel>
+                  </ItemsPresenter>
                   <Canvas>
                     <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
                   </Canvas>

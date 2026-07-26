@@ -667,10 +667,39 @@ namespace ForkPlus
 			{
 				ServiceLocator.MessageBox.Show(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Currently Fork doesn't support 32-bit Windows"));
 			}
-			else if (IsDebug || InitializeForkInstance())
+			else
 			{
-				ConfigureThreadPool();
-				new MainWindow().Show();
+				// 阶段 6 修复"程序一闪而过"根因：Avalonia 11 的主循环（Dispatcher.MainLoop）在
+				// OnFrameworkInitializationCompleted 返回后才启动，Startup 期间不能 PushFrame；
+				// 同时 Window.ShowDialog(owner) 要求 owner 已可见（IsVisible=true）。
+				// 原 WPF 顺序（IsGitInstanceAvailable → ShowDialog → MainWindow.Show）在 WPF 可行
+				// 是因为 WPF 的 Dispatcher 在 Application.Startup 之前已运行消息泵。
+				// 修复：MainWindow 构造时已设置 desktop.MainWindow=this（参见 MainWindow.xaml.cs），
+				// 由 ClassicDesktopStyleApplicationLifetime.StartCore 自动 Show。InitializeForkInstance
+				// 中可能弹出 ConfigureGitInstanceWindow / WelcomeWindow 模态对话框，必须延迟到主循环
+				// 启动后执行——Dispatcher.UIThread.Post 把回调放到主循环队首，此时 MainWindow 已可见、
+				// dispatcher 已就绪，ShowDialog 可正常 PushFrame。失败仍走 DoShutdown()。
+				var mainWindow = new MainWindow();
+				if (IsDebug)
+				{
+					ConfigureThreadPool();
+				}
+				else
+				{
+					// Post 到 UIThread 队列：OnFrameworkInitializationCompleted 返回后，lifetime.StartCore
+					// 调 ShowMainWindow() 显示 MainWindow 并启动 MainLoop，随后 Post 回调执行。
+					Dispatcher.UIThread.Post(() =>
+					{
+						if (InitializeForkInstance())
+						{
+							ConfigureThreadPool();
+						}
+						else
+						{
+							// InitializeForkInstance 内部已调 DoShutdown，此处仅 return 兜底。
+						}
+					});
+				}
 			}
 		}
 

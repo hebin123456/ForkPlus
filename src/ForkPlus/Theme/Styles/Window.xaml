@@ -132,21 +132,21 @@
               </Style>
       </Style>
     <Style x:Key="WindowRoundedButton" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+              </Style>
+
         <Setter Property="Margin" Value="0,2,6,0" />
         <Setter Property="Height" Value="24" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -155,6 +155,19 @@
         </Setter>
       </Style>
     <Style x:Key="WindowToggleButton" Selector="ToggleButton">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Opacity" Value="0.4" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+              </Style>
+
         <Setter Property="Height" Value="26" />
         <Setter Property="Width" Value="30" />
         <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
@@ -164,20 +177,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -186,26 +186,26 @@
         </Setter>
       </Style>
     <Style x:Key="WindowRoundedToggleButton" Selector="ToggleButton">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+              </Style>
+
+<Style Selector="^:disabled /template/ Border#border">
+                <Setter Property="Opacity" Value="0.4" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+              </Style>
+
         <Setter Property="Margin" Value="0,2,6,0" />
         <Setter Property="Height" Value="24" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="ToggleButton">
               <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsEnabled=false -> :disabled -->
-              <Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -214,6 +214,14 @@
         </Setter>
       </Style>
     <Style x:Key="WindowCloseButton" Selector="Button">
+<Style Selector="^:pointerover /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
+              </Style>
+
+<Style Selector="^:pressed /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
+              </Style>
+
         <Setter Property="Height" Value="26" />
         <Setter Property="Width" Value="46" />
         <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Static.Background}" />
@@ -223,15 +231,7 @@
           <Setter.Value>
             <ControlTemplate TargetType="Button">
               <Border Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-    <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
-              </Style>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-              <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
-              </Style>
-    </Border.Styles>
+    
     
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>

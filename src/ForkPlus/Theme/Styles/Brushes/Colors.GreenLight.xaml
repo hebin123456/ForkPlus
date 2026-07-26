@@ -1,5 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
-  <Image x:Key="TransparentPatternImage" Source="/Assets/TransparentPatternLight.png" />
+  <Image x:Key="TransparentPatternImage" Source="avares://ForkPlus/assets/transparentpatternlight.png" />
   <Color x:Key="LabelColor">#1B3A1B</Color>
   <Color x:Key="SecondaryLabelColor">#808080</Color>
   <Color x:Key="AccentColor">#2E8B57</Color>

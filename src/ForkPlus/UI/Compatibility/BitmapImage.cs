@@ -2,7 +2,7 @@
 // Avalonia 使用 Bitmap（从 Stream/文件路径加载），但 Bitmap 无参数化构造函数，XAML 无法直接实例化。
 //
 // 本桥接类实现 IImage 接口，提供 UriSource 属性（string），在 XAML 中可像 WPF BitmapImage 一样使用：
-//   <BitmapImage x:Key="MyIcon" UriSource="/Assets/icon.png" />
+//   <BitmapImage x:Key="MyIcon" UriSource="avares://ForkPlus/assets/icon.png" />
 // 通过 XmlnsDefinition 映射到默认 XAML 命名空间，XAML 无需额外 xmlns 声明。
 using System;
 using Avalonia.Media;
