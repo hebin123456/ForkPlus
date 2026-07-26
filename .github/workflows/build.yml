@@ -103,9 +103,11 @@ jobs:
       #   windows-latest 自带 MSVC，ubuntu-latest 自带 clang，macos-latest 自带 Xcode clang。
       # EnableWindowsTargeting=true 让非 Windows runner 也能评估 net10.0-windows TFM 的 PackageReference
       #   （主工程 csproj 是双 TFM，不设此属性 restore 报 NETSDK1100）。
-      # 467 个 trim warnings (IL2026 ReflectionBinding / IL3050 动态代码) 已知存在，AOT 仍能完成编译。
-      #   ReflectionBinding 风险：运行时 UI 数据绑定可能失效，需要开启 CompiledBindings 修复（独立任务）。
-      #   当前容忍 warnings 以先产出 AOT 产物，由用户实测验证 UI 是否正常。
+      # AOT trim warnings 状态：已从 467 → 0（commit b65fdc0 + 4d20ab6）。
+      #   - CompiledBindings 全面启用（AvaloniaUseCompiledBindingsByDefault=true）
+      #   - 本项目代码方法级反射已用 [UnconditionalSuppressMessage] 精确抑制
+      #   - 第三方库聚合警告（IL2104/IL3053）在 csproj 中 NoWarn（仅 PublishAot=true 时生效）
+      # AOT 编译成功 ≠ 运行时 UI 正常，仍需实测验证 OxyPlot Tracker / ToolTip / ToggleButton 模板等。
       - name: "Publish AOT (subprocesses: AskPass + RI)"
         shell: bash
         run: |
