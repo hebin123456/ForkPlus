@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 using ForkPlus.Settings;
@@ -184,6 +185,10 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>构建导出 JSON 字符串。仅含 workingCopy 中实际自定义项。
 		/// 格式：{ schema, theme, exportedAt, customColors: {key:hex,...} }。
 		/// themeName: 导出时的主题名（仅参考，导入时不强制匹配）。文件写入由 View 负责。</summary>
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		public static string BuildExportJson(Dictionary<string, string> workingCopy, string themeName)
 		{
 			Dictionary<string, string> exportColors = new Dictionary<string, string>(workingCopy);

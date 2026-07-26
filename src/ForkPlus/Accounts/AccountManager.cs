@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using ForkPlus.Git;
 using ForkPlus.Utils.Http;
@@ -282,6 +283,10 @@ namespace ForkPlus.Accounts
 			}
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private Account[] Load()
 		{
 			string path = Path.Combine(App.ForkDirectoryPath, "accounts.json");

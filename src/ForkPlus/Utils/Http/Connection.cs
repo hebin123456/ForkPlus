@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -375,6 +376,10 @@ namespace ForkPlus.Utils.Http
 			cancellationTokenSource?.Dispose();
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private static HttpRequestResult DeserializeJsonError(string result, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			if (!(JsonConvert.DeserializeObject(result) is JContainer json))
@@ -414,6 +419,10 @@ namespace ForkPlus.Utils.Http
 			return JsonRequest(apiRequest, null);
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		public ServiceResult<object> JsonRequest(ApiRequest apiRequest, JobMonitor monitor)
 		{
 			HttpRequestResult httpRequestResult = Request(apiRequest, jsonRequest: true, monitor);

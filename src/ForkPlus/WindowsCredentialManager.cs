@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -59,6 +60,8 @@ namespace ForkPlus
 				SetHandle(preexistingHandle);
 			}
 
+			[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+				Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 			public CREDENTIAL GetCredential()
 			{
 				if (!IsInvalid)
@@ -267,6 +270,8 @@ namespace ForkPlus
 		}
 
 		[SupportedOSPlatform("windows")]
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 		private static IReadOnlyList<Credential> EnumerateCredentialsWindows()
 		{
 			List<Credential> list = new List<Credential>();

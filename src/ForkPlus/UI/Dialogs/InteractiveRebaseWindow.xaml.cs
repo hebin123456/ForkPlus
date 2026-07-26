@@ -6,6 +6,7 @@ using Avalonia;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -252,6 +253,10 @@ namespace ForkPlus.UI.Dialogs
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private void SaveMessageArchiveForTodoList(string todoListPath)
 		{
 			Dictionary<string, string> dictionary = new Dictionary<string, string>();

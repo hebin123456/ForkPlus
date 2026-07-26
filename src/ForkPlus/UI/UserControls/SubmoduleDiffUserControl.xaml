@@ -7,11 +7,11 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <Grid Grid.Row="0" Margin="4,10,4,0" HorizontalAlignment="Center" x:CompileBindings="False">
+    <Grid Grid.Row="0" Margin="4,10,4,0" HorizontalAlignment="Center">
       <Grid.ColumnDefinitions>
         <ColumnDefinition MinWidth="20">
           <ColumnDefinition.Width>
-            <Binding Path="Bounds.Width" />
+            <Binding Path="Bounds.Width" RelativeSource="{RelativeSource AncestorType={x:Type Grid}}" />
           </ColumnDefinition.Width>
         </ColumnDefinition>
         <ColumnDefinition Width="*" />
@@ -109,7 +109,7 @@
           <GridViewColumn Width="70">
             <GridViewColumn.CellTemplate>
               <DataTemplate DataType="ui:DecoratedRevision">
-                <Border Margin="0,2,0,2" BorderThickness="0" x:CompileBindings="False">
+                <Border Margin="0,2,0,2" BorderThickness="0">
                   <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="5,0,0,0">
                     <controls:HighlightableTextBlock.Text>
                       <Binding Path="AbbreviatedSha" />
@@ -124,16 +124,8 @@
                         <usercontrols:SubmoduleDiffShaToBackgroundConverter />
                       </MultiBinding.Converter>
                       <Binding Path="Sha" />
-                      <Binding Path="SrcSha">
-                        <Binding.RelativeSource>
-                          <RelativeSource AncestorType="{x:Type usercontrols:SubmoduleDiffUserControl}" />
-                        </Binding.RelativeSource>
-                      </Binding>
-                      <Binding Path="DstSha">
-                        <Binding.RelativeSource>
-                          <RelativeSource AncestorType="{x:Type usercontrols:SubmoduleDiffUserControl}" />
-                        </Binding.RelativeSource>
-                      </Binding>
+                      <Binding Path="SrcSha" RelativeSource="{RelativeSource AncestorType={x:Type usercontrols:SubmoduleDiffUserControl}}" />
+                      <Binding Path="DstSha" RelativeSource="{RelativeSource AncestorType={x:Type usercontrols:SubmoduleDiffUserControl}}" />
                     </MultiBinding>
                   </Border.Background>
                 </Border>

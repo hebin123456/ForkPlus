@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 #if WINDOWS
 using CommunityToolkit.WinUI.Notifications;
@@ -248,6 +249,8 @@ namespace ForkPlus.Accounts
 			SendWindowsNotification($"<?xml version=\"1.0\" encoding =\"utf-8\" ?>\n<toast launch=\"{text}\" >\n<audio silent=\"true\"/>\n<visual>\n    <binding template=\"ToastGeneric\">\n        <text hint-maxLines=\"1\" >{text2}</text>\n        <text>{text3}</text>\n        <image placement=\"hero\" src =\"{text4}\" />\n    </binding>\n</visual>\n</toast>\n");
 		}
 
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
+			Justification = "WinRT Toast 反射调用仅 Windows 平台运行（OperatingSystem.IsWindows 守卫）。WinRT 类型由 Windows 运行时加载，不受 trim/AOT 影响。非 Windows 平台不会执行到此分支。")]
 		public static void SendWindowsNotification(string xmlString)
 		{
 			if (Services.ServiceLocator.Toast != null)

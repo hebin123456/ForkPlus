@@ -78,7 +78,7 @@
               <GridViewColumn Width="100">
                 <GridViewColumn.CellTemplate>
                   <DataTemplate DataType="dialogs:RevisionEntry">
-                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" BorderThickness="0" Background="#00FFFFFF" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox" x:CompileBindings="False">
+                    <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" BorderThickness="0" Background="#00FFFFFF" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox">
                       <ComboBox.Foreground>
                         <Binding Path="Foreground"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
                       </ComboBox.Foreground>
@@ -86,7 +86,7 @@
                         <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter /></Binding.Converter></Binding>
                       </ComboBox.SelectedItem>
                       <ComboBox.ItemsSource>
-                        <Binding Path="DataContext.InteractiveRebaseComboBoxItemsSource"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListView}" /></Binding.RelativeSource></Binding>
+                        <Binding Path="InteractiveRebaseComboBoxItemsSource"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type dialogs:InteractiveRebaseWindow}" /></Binding.RelativeSource></Binding>
                       </ComboBox.ItemsSource>
                       <ComboBox.ItemTemplate>
                         <DataTemplate DataType="dialogs:InteractiveRebaseComboBoxItem">

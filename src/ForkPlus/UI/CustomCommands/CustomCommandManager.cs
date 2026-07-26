@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -770,6 +771,10 @@ namespace ForkPlus.UI.CustomCommands
 			return repositoryData.CustomCommands.Filter((CustomCommand x) => x.Target == target);
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private CustomCommand[] Load()
 		{
 			string text = Path.Combine(App.ForkDirectoryPath, "custom-commands.json");
@@ -802,6 +807,10 @@ namespace ForkPlus.UI.CustomCommands
 			return Path.Combine(gitModule.Path, ".fork", "custom-commands.json");
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		public static CustomCommand[] Load(string path, bool shared = false)
 		{
 			try
@@ -843,6 +852,10 @@ namespace ForkPlus.UI.CustomCommands
 			}
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private static string BeautifyJson(string jsonString)
 		{
 			string input = jsonString.Replace("\r\n", "\n");

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -21,6 +22,10 @@ namespace ForkPlus.Accounts
 				};
 			}
 
+			[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+				Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+				Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 			public static ToastNotification DecodeString(string jsonString)
 			{
 				if (JsonConvert.DeserializeObject(jsonString) is JObject json)

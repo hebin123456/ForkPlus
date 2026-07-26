@@ -17,6 +17,7 @@
 //
 // NOTE(4.5): macOS/Linux 平台多显示器工作区（含 Dock 遮挡）尚需原生 API 实现；当前仅 Windows 走 AutoHideEnabled/GetMinMaxInfo 路径。
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -199,6 +200,8 @@ namespace ForkPlus.UI.Helpers
 		return false;
 	}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 		public static void SetWindowLocationState(this Window window, WindowLocationState state)
 		{
 			if (DesignTimeHelper.IsInDesignMode() || window == null || state == null)
@@ -262,6 +265,8 @@ namespace ForkPlus.UI.Helpers
 			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
 		{
 			if (DesignTimeHelper.IsInDesignMode() || !IsWindows)
@@ -285,6 +290,8 @@ namespace ForkPlus.UI.Helpers
 			Marshal.StructureToPtr(minMaxInfo, lParam, fDeleteOld: true);
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 		public static bool AutoHideEnabled()
 		{
 			if (DesignTimeHelper.IsInDesignMode() || !IsWindows)
@@ -432,6 +439,8 @@ namespace ForkPlus.UI.Helpers
 			return windowRect;
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Marshal 目标类型为编译期已知的固定布局 struct，非泛型 SizeOf/PtrToStructure 重载在此场景 AOT 安全。")]
 		private static WindowPlacement GetPlacement(IntPtr windowHandle)
 		{
 			WindowPlacement result = default(WindowPlacement);

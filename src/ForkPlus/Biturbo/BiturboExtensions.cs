@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using ForkPlus.Git;
@@ -144,7 +145,7 @@ namespace ForkPlus.Biturbo
 			return array;
 		}
 
-		public static TResult[] GetStructArray<TSource, TResult>(this IntPtr ptr, long length, Func<TSource, TResult> selector)
+		public static TResult[] GetStructArray<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] TSource, TResult>(this IntPtr ptr, long length, Func<TSource, TResult> selector)
 		{
 			if (length <= 0L || ptr == IntPtr.Zero)
 			{
@@ -160,7 +161,7 @@ namespace ForkPlus.Biturbo
 			return array;
 		}
 
-		public static TResult[] GetStructArray<TSource, TResult>(this IntPtr ptr, long length, Func<int, TSource, TResult> selector)
+		public static TResult[] GetStructArray<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] TSource, TResult>(this IntPtr ptr, long length, Func<int, TSource, TResult> selector)
 		{
 			if (length <= 0L || ptr == IntPtr.Zero)
 			{

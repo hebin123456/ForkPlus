@@ -113,7 +113,7 @@
         </StackPanel>
       </Border>
     </Grid>
-    <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}" x:CompileBindings="False">
+    <Border Grid.Column="1" CornerRadius="4" Margin="10,0,2,0" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}" DataContext="{Binding ElementName=CustomCommandsListBox, Path=SelectedItem}" x:DataType="local:CustomCommandViewModel">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
@@ -195,17 +195,17 @@
           <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="6,2,0,4" x:Name="ReferenceTargetsContainer">
             <CheckBox Margin="4,2,2,2" Content="Local Branch">
               <CheckBox.IsChecked>
-                <Binding Path="SelectedItem.LocalBranchReferenceTarget" />
+                <Binding Path="LocalBranchReferenceTarget" />
               </CheckBox.IsChecked>
             </CheckBox>
             <CheckBox Margin="4,2,2,2" Content="Remote Branch">
               <CheckBox.IsChecked>
-                <Binding Path="SelectedItem.RemoteBranchReferenceTarget" />
+                <Binding Path="RemoteBranchReferenceTarget" />
               </CheckBox.IsChecked>
             </CheckBox>
             <CheckBox Margin="4,2,2,2" Content="Tag">
               <CheckBox.IsChecked>
-                <Binding Path="SelectedItem.TagReferenceTarget" />
+                <Binding Path="TagReferenceTarget" />
               </CheckBox.IsChecked>
             </CheckBox>
           </StackPanel>
@@ -213,12 +213,12 @@
           <Grid Grid.Row="3" Grid.Column="1" Margin="10,4,0,4">
             <controls:PlaceholderTextBox Padding="4,2,14,2" Placeholder="e.g. '${repo:name}' status" FontSize="13">
               <controls:PlaceholderTextBox.Text>
-                <Binding Path="SelectedItem.Name" />
+                <Binding Path="Name" />
               </controls:PlaceholderTextBox.Text>
             </controls:PlaceholderTextBox>
             <TextBlock>
               <TextBlock.Tag>
-                <Binding Path="SelectedItem.VariablesString" />
+                <Binding Path="VariablesString" />
               </TextBlock.Tag>
             </TextBlock>
           </Grid>
@@ -229,18 +229,18 @@
           <TextBlock Grid.Row="5" Grid.Column="0" Text="Action:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ProcessActionTypeTextBlock" />
           <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,3" HorizontalAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
             <ToolTip.Tip>
-              <Binding Path="SelectedItem.ActionViewModel.ToolTip" />
+              <Binding Path="ActionViewModel.ToolTip" />
             </ToolTip.Tip>
             <DockPanel>
               <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
               <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium" x:Name="ProcessActionButtonTitleTextBlock">
                 <TextBlock.Text>
-                  <Binding Path="SelectedItem.ActionViewModel.Title" />
+                  <Binding Path="ActionViewModel.Title" />
                 </TextBlock.Text>
               </TextBlock>
               <TextBlock Margin="4,0,4,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ProcessActionButtonDetailsTextBlock">
                 <TextBlock.Text>
-                  <Binding Path="SelectedItem.ActionViewModel.Details" />
+                  <Binding Path="ActionViewModel.Details" />
                 </TextBlock.Text>
               </TextBlock>
             </DockPanel>
@@ -262,12 +262,12 @@
             <Grid Grid.Row="0" Grid.Column="1" Margin="10,4,0,4">
               <controls:PlaceholderTextBox Padding="4,2,14,2" FontSize="13" Placeholder="Dialog title" x:Name="DialogTitleTextBox">
                 <controls:PlaceholderTextBox.Text>
-                  <Binding Path="SelectedItem.UIViewModel.DialogTitle" />
+                  <Binding Path="UIViewModel.DialogTitle" />
                 </controls:PlaceholderTextBox.Text>
               </controls:PlaceholderTextBox>
               <TextBlock>
                 <TextBlock.Tag>
-                  <Binding Path="SelectedItem.VariablesString" />
+                  <Binding Path="VariablesString" />
                 </TextBlock.Tag>
               </TextBlock>
             </Grid>
@@ -275,12 +275,12 @@
             <Grid Grid.Row="1" Grid.Column="1" Margin="10,4,0,4">
               <controls:PlaceholderTextBox Padding="4,2,14,2" FontSize="13" Placeholder="Dialog description">
                 <controls:PlaceholderTextBox.Text>
-                  <Binding Path="SelectedItem.UIViewModel.DialogDescription" />
+                  <Binding Path="UIViewModel.DialogDescription" />
                 </controls:PlaceholderTextBox.Text>
               </controls:PlaceholderTextBox>
               <TextBlock>
                 <TextBlock.Tag>
-                  <Binding Path="SelectedItem.VariablesString" />
+                  <Binding Path="VariablesString" />
                 </TextBlock.Tag>
               </TextBlock>
             </Grid>
@@ -290,7 +290,7 @@
                 <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                 <controls:AutoTooltipTextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
                   <controls:AutoTooltipTextBlock.Text>
-                    <Binding Path="SelectedItem.UIViewModel.ControlsButtonTitle" />
+                    <Binding Path="UIViewModel.ControlsButtonTitle" />
                   </controls:AutoTooltipTextBlock.Text>
                 </controls:AutoTooltipTextBlock>
               </DockPanel>
@@ -299,41 +299,41 @@
             <DockPanel Grid.Row="3" Grid.Column="1" Margin="10,0,0,0">
               <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,4,0" x:Name="UiActionButton1CheckBox">
                 <CheckBox.IsChecked>
-                  <Binding Path="SelectedItem.UIViewModel.Button1Enabled" />
+                  <Binding Path="UIViewModel.Button1Enabled" />
                 </CheckBox.IsChecked>
               </CheckBox>
               <Grid DockPanel.Dock="Left" Margin="0,4,0,4">
                 <controls:PlaceholderTextBox Padding="4,2,14,2" Width="100" FontSize="13" Placeholder="Button Title">
                   <controls:PlaceholderTextBox.IsEnabled>
-                    <Binding Path="IsChecked" />
+                    <Binding Path="IsChecked" ElementName="UiActionButton1CheckBox" />
                   </controls:PlaceholderTextBox.IsEnabled>
                   <controls:PlaceholderTextBox.Text>
-                    <Binding Path="SelectedItem.UIViewModel.Button1Title" />
+                    <Binding Path="UIViewModel.Button1Title" />
                   </controls:PlaceholderTextBox.Text>
                 </controls:PlaceholderTextBox>
                 <TextBlock>
                   <TextBlock.Tag>
-                    <Binding Path="SelectedItem.VariablesString" />
+                    <Binding Path="VariablesString" />
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
               <Button HorizontalAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton1_Click" x:Name="UiActionButton1">
                 <Button.IsEnabled>
-                  <Binding Path="IsChecked" />
+                  <Binding Path="IsChecked" ElementName="UiActionButton1CheckBox" />
                 </Button.IsEnabled>
                 <ToolTip.Tip>
-                  <Binding Path="SelectedItem.UIViewModel.Button1ActionViewModel.ToolTip" />
+                  <Binding Path="UIViewModel.Button1ActionViewModel.ToolTip" />
                 </ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
                     <TextBlock.Text>
-                      <Binding Path="SelectedItem.UIViewModel.Button1ActionViewModel.Title" />
+                      <Binding Path="UIViewModel.Button1ActionViewModel.Title" />
                     </TextBlock.Text>
                   </TextBlock>
                   <TextBlock Margin="4,0,4,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}">
                     <TextBlock.Text>
-                      <Binding Path="SelectedItem.UIViewModel.Button1ActionViewModel.Details" />
+                      <Binding Path="UIViewModel.Button1ActionViewModel.Details" />
                     </TextBlock.Text>
                   </TextBlock>
                 </DockPanel>
@@ -342,41 +342,41 @@
             <DockPanel Grid.Row="4" Grid.Column="1" Margin="10,0,0,0">
               <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,4,0" x:Name="UiActionButton2CheckBox">
                 <CheckBox.IsChecked>
-                  <Binding Path="SelectedItem.UIViewModel.Button2Enabled" />
+                  <Binding Path="UIViewModel.Button2Enabled" />
                 </CheckBox.IsChecked>
               </CheckBox>
               <Grid DockPanel.Dock="Left" Margin="0,4,0,4">
                 <controls:PlaceholderTextBox Padding="4,2,14,2" Width="100" FontSize="13" Placeholder="Button Title" x:Name="UiActionButton2TitleTextBox">
                   <controls:PlaceholderTextBox.IsEnabled>
-                    <Binding Path="IsChecked" />
+                    <Binding Path="IsChecked" ElementName="UiActionButton2CheckBox" />
                   </controls:PlaceholderTextBox.IsEnabled>
                   <controls:PlaceholderTextBox.Text>
-                    <Binding Path="SelectedItem.UIViewModel.Button2Title" />
+                    <Binding Path="UIViewModel.Button2Title" />
                   </controls:PlaceholderTextBox.Text>
                 </controls:PlaceholderTextBox>
                 <TextBlock>
                   <TextBlock.Tag>
-                    <Binding Path="SelectedItem.VariablesString" />
+                    <Binding Path="VariablesString" />
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
               <Button HorizontalAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,3" Click="UiActionButton2_Click" x:Name="UiActionButton2">
                 <Button.IsEnabled>
-                  <Binding Path="IsChecked" />
+                  <Binding Path="IsChecked" ElementName="UiActionButton2CheckBox" />
                 </Button.IsEnabled>
                 <ToolTip.Tip>
-                  <Binding Path="SelectedItem.UIViewModel.Button2ActionViewModel.ToolTip" />
+                  <Binding Path="UIViewModel.Button2ActionViewModel.ToolTip" />
                 </ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
                     <TextBlock.Text>
-                      <Binding Path="SelectedItem.UIViewModel.Button2ActionViewModel.Title" />
+                      <Binding Path="UIViewModel.Button2ActionViewModel.Title" />
                     </TextBlock.Text>
                   </TextBlock>
                   <TextBlock Margin="4,0,4,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}">
                     <TextBlock.Text>
-                      <Binding Path="SelectedItem.UIViewModel.Button2ActionViewModel.Details" />
+                      <Binding Path="UIViewModel.Button2ActionViewModel.Details" />
                     </TextBlock.Text>
                   </TextBlock>
                 </DockPanel>

@@ -264,7 +264,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			yield return Path.Combine(AppContext.BaseDirectory, LanguagesDirectoryName);
 			yield return Path.Combine(App.ForkDataDirectoryPath, LanguagesDirectoryName);
-			yield return Path.Combine(PathHelper.GetParent(typeof(PreferencesLocalization).Assembly.Location), LanguagesDirectoryName);
+			// NativeAOT/单文件应用下 Assembly.Location 返回空字符串，改用 AppContext.BaseDirectory。
+			yield return Path.Combine(PathHelper.GetParent(AppContext.BaseDirectory), LanguagesDirectoryName);
 		}
 
 		private static Dictionary<string, string> DecodeTranslations(JObject json)

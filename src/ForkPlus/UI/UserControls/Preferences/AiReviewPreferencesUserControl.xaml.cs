@@ -15,6 +15,7 @@ using Avalonia.Threading;
 // - Dispatcher.Async（Dispatcher.UIThread.Async 扩展，参考 DispatcherExtension）保持不变
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -321,11 +322,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 		 return string.Join("\n", lines.Select((line, idx) => (idx + 1).ToString().PadLeft(pad) + " | " + line));
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private void SaveSkills()
 		{
 		 ForkPlusSettings.Default.AiDevSkillList = JsonConvert.SerializeObject(_skills);
 		}
 
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private void LoadSkills()
 		{
 		 try

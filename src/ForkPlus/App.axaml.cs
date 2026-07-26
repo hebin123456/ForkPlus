@@ -310,7 +310,9 @@ namespace ForkPlus
 			ForkDataDirectoryPath = Path.Combine(localApplicationData, "ForkPlusData");
 			MigrateLegacyAppData();
 			RepositoriesFilePath = Path.Combine(ForkDataDirectoryPath, "repositories.toml");
-			InstanceDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			// NativeAOT/单文件应用下 Assembly.Location 返回空字符串，改用 AppContext.BaseDirectory
+			// 获取应用目录（与下一行 ForkCredentialHelperPath 路径一致）。
+			InstanceDirectory = AppContext.BaseDirectory;
 			ForkCredentialHelperPath = Path.Combine(AppContext.BaseDirectory, Consts.ForkPlus.AskPassFilename);
 			_defaultCredentialHelper = new string[0];
 			_overrideCredentialHelper = new string[6]

@@ -5,6 +5,7 @@
 // 注：WinRT API 仅在 Windows 平台可用，运行时按 OperatingSystem.IsWindows() 分支调用，
 //     非 Windows 平台不加载 WinRT 类型，避免 TypeLoadException。
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Media;
@@ -114,6 +115,8 @@ namespace ForkPlus.UI
 		}
 
 		[Null]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
+			Justification = "WinRT 反射调用仅 Windows 平台运行（OperatingSystem.IsWindows 守卫）。WinRT 类型由 Windows 运行时加载，不受 trim/AOT 影响。非 Windows 平台不会执行到此方法。")]
 		private static IBrush GetSystemBrushWindows(SystemColorType colorType)
 		{
 			Type uiSettingsType = _uiSettings.GetType();

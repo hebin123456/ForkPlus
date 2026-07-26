@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using ForkPlus.Git;
 using Newtonsoft.Json;
@@ -55,6 +56,10 @@ namespace ForkPlus.Undo
 		}
 
 		/// <summary>读取索引。文件不存在或损坏时返回空字典（不抛异常）。</summary>
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		public Dictionary<string, UndoIndexEntry> Load()
 		{
 			if (_cache != null)
@@ -120,6 +125,10 @@ namespace ForkPlus.Undo
 		}
 
 		/// <summary>持久化索引到磁盘。原子写入：先写临时文件再 rename。</summary>
+		[UnconditionalSuppressMessage("AotAnalysis", "IL3050",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+			Justification = "Newtonsoft.Json 13.0+ 对 POCO 类型 AOT 友好，反序列化类型编译期已知。")]
 		private void Save(Dictionary<string, UndoIndexEntry> index)
 		{
 			string path = GetIndexPath();
