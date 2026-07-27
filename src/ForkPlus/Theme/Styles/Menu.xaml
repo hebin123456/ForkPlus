@@ -446,6 +446,63 @@
     <Style x:Key="SearchableSubmenuMenuItem" Selector="MenuItem">
         <Setter Property="Template" Value="{DynamicResource SearchableSubmenuHeaderTemplateKey}" />
       </Style>
+
+      <!-- 阶段 6 关键修复"菜单选项竖着排列"：
+           Avalonia 11 中 Style 的 Template setter 不会替换 ControlTheme 的 Template
+           （Style 只能覆盖 ControlTheme 已设置的属性值，不能让一个没有 Template 的 ControlTheme
+           突然拥有模板）。原迁移用 <Style Selector="Menu"><Setter Property="Template"> 是无效的，
+           Menu 实际用 FluentTheme 默认模板（默认 ItemsPanel 是 vertical StackPanel），所以顶层
+           菜单项竖着排列。
+           解决方案：用 ControlTheme（x:Key="{x:Type Menu}"）定义 Menu 的默认主题。
+
+           关键点 1：ItemsPanel 必须作为 Menu 的 StyledProperty 设置（<Setter Property="ItemsPanel">），
+           而不是放在 <ItemsPresenter> 的内容里。ItemsPresenter 是 Control 不是 ContentControl，
+           没有内容属性；把 <ItemsPanelTemplate> 当作 ItemsPresenter 的子元素会被忽略，
+           Menu 会退回默认 vertical StackPanel。正确做法是在 ControlTheme 中
+           <Setter Property="ItemsPanel"><ItemsPanelTemplate><StackPanel Horizontal/></ItemsPanelTemplate></Setter>，
+           然后 ControlTemplate 内只用 <ItemsPresenter />。
+
+           关键点 2：ControlTheme 必须放在 Styles.Resources 内（不能放在 Styles 集合中），
+           控件按类型查找 ControlTheme 时才能命中。 -->
+      <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
+        <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
+        <Setter Property="FontSize" Value="12" />
+        <!-- WPF Menu 默认 ItemsPanel 是 horizontal WrapPanel；Avalonia ItemsControl
+             默认是 vertical StackPanel。显式指定 horizontal StackPanel 让顶层菜单项横向排列。 -->
+        <Setter Property="ItemsPanel">
+          <Setter.Value>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Menu">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                <ItemsPresenter />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme>
+
+      <!-- 阶段 6 修复：原 WPF 通过 MenuItem.Role (TopLevelHeader/TopLevelItem/SubmenuHeader/SubmenuItem)
+           在 Style.Triggers 中切换 ControlTemplate。Avalonia 11 中 MenuItem 没有 Role 属性也没有对应
+           pseudoclass。
+           解决方案：用 ControlTheme 定义 MenuItem 的默认主题，默认 Template = SubmenuItemTemplateKey
+           （适用于 ContextMenu 项和嵌套子菜单项——叶子节点无 Popup 也无箭头）。
+           顶层菜单项（直接父级是 Menu）通过下方 <Style Selector="Menu > MenuItem"> 覆盖为
+           TopLevelHeaderTemplateKey（含 PART_Popup 向下展开）。该 Style 比 ControlTheme 更具体
+           （带父级限定），Selector 求值时优先级更高，能正确覆盖 ControlTheme 的 Template setter。 -->
+      <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="Template" Value="{DynamicResource SubmenuItemTemplateKey}" />
+      </ControlTheme>
           </Styles.Resources>
 
 <Style Selector="ContextMenu">
@@ -476,54 +533,31 @@
         </Setter>
       </Style>
 
+<!-- 阶段 6 修复：原 <Style Selector="MenuItem"> 的 Template setter 会覆盖 ControlTheme
+     的 Template（Style 优先级高于 ControlTheme），导致所有 MenuItem（包括顶层菜单项）
+     都用 SubmenuItemTemplateKey（无 PART_Popup），顶层菜单无法展开子菜单。
+     现已删除该 Style 的 Template setter，让 ControlTheme 的 SubmenuItemTemplateKey
+     作为默认模板（适用于 ContextMenu 项和嵌套子菜单项）。
+     顶层菜单项通过下方 Selector="Menu > MenuItem" 单独覆盖为 TopLevelHeaderTemplateKey。
+     保留 Background/BorderBrush/BorderThickness setter 作为所有 MenuItem 的通用样式。 -->
 <Style Selector="MenuItem">
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
         <Setter Property="BorderThickness" Value="1" />
-        <!-- NOTE (Avalonia limitation): HorizontalContentAlignment/VerticalContentAlignment are not properties on Avalonia MenuItem; removed. -->
-        <Setter Property="Template" Value="{DynamicResource SubmenuItemTemplateKey}" />
-        <!-- NOTE (Avalonia limitation): Style.Triggers on MenuItem.Role (TopLevelHeader/TopLevelItem/SubmenuHeader) could not be
-             converted to Avalonia selectors (Role is an enum computed at runtime from parent type and
-             whether the item has children; no matching pseudoclass exists). Original triggers preserved
-             below for reference; reimplement Role-based ControlTemplate selection using parent-type-based
-             styles (e.g. Style Selector="Menu > MenuItem" for top-level items) or a single adaptive
-             ControlTemplate that conditionally shows the submenu arrow/popup via bindings.
-        <Style.Triggers>
-          <Trigger Property="MenuItem.Role" Value="TopLevelHeader">
-            <Setter Property="Height" Value="26" />
-            <Setter Property="Background" Value="#00FFFFFF" />
-            <Setter Property="BorderBrush" Value="#00FFFFFF" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-            <Setter Property="Template" Value="{DynamicResource TopLevelHeaderTemplateKey}" />
-            <Setter Property="Padding" Value="5,0" />
-          </Trigger>
-          <Trigger Property="MenuItem.Role" Value="TopLevelItem">
-            <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-            <Setter Property="Template" Value="{DynamicResource TopLevelItemTemplateKey}" />
-            <Setter Property="Padding" Value="6,0" />
-          </Trigger>
-          <Trigger Property="MenuItem.Role" Value="SubmenuHeader">
-            <Setter Property="Template" Value="{DynamicResource SubmenuHeaderTemplateKey}" />
-          </Trigger>
-        </Style.Triggers>
-        -->
       </Style>
 
-<Style Selector="Menu">
-        <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
-        <Setter Property="FontSize" Value="12" />
-        <!-- NOTE (Avalonia limitation): VerticalContentAlignment is not a property on Avalonia Menu; removed. -->
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="Menu">
-              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                <ItemsPresenter />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
+<!-- 顶层菜单项（Menu 的直接子项）：覆盖 ControlTheme 的 Template，改用 TopLevelHeaderTemplateKey。
+     该 Selector 比 ControlTheme 更具体（带父级限定），优先级更高，能正确覆盖 Template。
+     Height=26 / Padding=5,0 还原 WPF 顶层菜单项的尺寸。 -->
+<Style Selector="Menu > MenuItem">
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+        <Setter Property="Template" Value="{DynamicResource TopLevelHeaderTemplateKey}" />
+        <Setter Property="Padding" Value="5,0" />
       </Style>
+
+<!-- Menu 的 Background/Foreground/FontSize 已由 ControlTheme 提供，此处不再重复 Style。
+     原 <Style Selector="Menu"> 已删除（与 ControlTheme 重复，且无 Template setter 不会生效）。 -->
 </Styles>

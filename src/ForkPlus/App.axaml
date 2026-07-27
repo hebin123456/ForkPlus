@@ -42,7 +42,7 @@
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <!-- 资源字典（brush / geometry / color）通过 Application.Resources 加载，
+        <!-- 资源字典（brush / geometry / color / image）通过 Application.Resources 加载，
              供各 Style / ControlTemplate 中的 DynamicResource 引用解析。
              只保留纯资源文件（ResourceDictionary 根），Style 文件已转为 <Styles> 根
              并通过上方 StyleInclude 加载，不能再作为 ResourceInclude 引入。
@@ -56,7 +56,13 @@
 
              此处加载默认 Light 主题颜色 + Light 图标。Dark 主题切换由
              App.InitializeTheme() 在运行时根据 ForkPlusSettings.Default.Theme 动态替换
-             Colors/Images 字典（Avalonia IResourceDictionary 索引赋值覆盖同 key）。 -->
+             Colors/Images 字典（Avalonia IResourceDictionary 索引赋值覆盖同 key）。
+
+             注意：不能改用 Generic.Light.xaml（它通过嵌套 MergedDictionaries 合并
+             Colors + Images + Generic）。Avalonia 11 在嵌套 MergedDictionaries 场景下
+             对 SolidColorBrush.Color = {DynamicResource XXXColor} 的延迟解析不稳定，
+             实测会出现部分 Brush 解析不到 Color → UI 仍透明。必须把三个字典平铺到
+             Application.Resources.MergedDictionaries 顶层才能保证解析顺序可靠。 -->
         <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Brushes/Colors.Light.xaml" />
         <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Images.Light.xaml" />
         <ResourceInclude Source="avares://ForkPlus/Theme/Generic.xaml" />
