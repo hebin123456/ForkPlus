@@ -2,14 +2,18 @@
 // 验证 Menu ControlTheme 是否被应用（ItemsPanel 横向）、Window 按钮样式是否被 Classes 应用、
 // ToolbarButton ControlTheme 是否被应用（Template 非 null）。
 using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Avalonia.VisualTree;
 using ForkPlus.UI.Controls;
 using Xunit;
 
@@ -41,6 +45,8 @@ namespace ForkPlus.Tests
 			window.Show();
 			try
 			{
+				// Avalonia 11 在 headless 模式下样式应用是异步的，需要让 dispatcher 处理挂起的任务。
+				Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 				Assert.Equal(46.0, btn.Width);
 				Assert.Equal(26.0, btn.Height);
 			}
@@ -51,7 +57,7 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void ToolbarButton_ControlTheme_Template_IsSet()
+		public void ToolbarButton_Template_Contains_Title_TextBlock()
 		{
 			BuildApp();
 			var btn = new ToolbarButton();
@@ -61,10 +67,14 @@ namespace ForkPlus.Tests
 			window.Show();
 			try
 			{
-				// ControlTheme 被应用后，Template 属性应被设置（非 null）。
-				// 这证明 Button.xaml 中 controls:ToolbarButton 的 ControlTheme 被正确查找并应用。
-				// 删除冗余的非键值 Style 后，ControlTheme 的 Template（含 Title TextBlock）不再被覆盖。
+				Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 				Assert.NotNull(btn.Template);
+				// ApplyTemplate 会真正构建可视化树并应用 TemplateBinding（Template.Build 不会应用绑定）。
+				btn.ApplyTemplate();
+				// 模板内的元素是 btn 的视觉后代（不是逻辑后代），用 GetVisualDescendants 枚举。
+				var textBlocks = btn.GetVisualDescendants()
+					.OfType<TextBlock>().ToList();
+				Assert.Contains(textBlocks, t => t.Text == "Fetch");
 			}
 			finally
 			{
@@ -73,7 +83,7 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void DropDownButton_Style_Template_IsSet()
+		public void DropDownButton_Template_IsDropDownButton_NotToggleButton()
 		{
 			BuildApp();
 			var btn = new ForkPlus.UI.Controls.DropDownButton();
@@ -82,8 +92,13 @@ namespace ForkPlus.Tests
 			window.Show();
 			try
 			{
-				// DropDownButton 没有独立 ControlTheme，依赖非键值 Style 设置 Template。
+				Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 				Assert.NotNull(btn.Template);
+				btn.ApplyTemplate();
+				// DropDownButton 的模板根元素是 Border#Border，作为 btn 的视觉后代存在。
+				var borders = btn.GetVisualDescendants()
+					.OfType<Border>().ToList();
+				Assert.Contains(borders, b => b.Name == "Border");
 			}
 			finally
 			{
@@ -92,7 +107,7 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void ToolbarDropDownButton_Style_Template_IsSet()
+		public void ToolbarDropDownButton_Template_Contains_Title_TextBlock()
 		{
 			BuildApp();
 			var btn = new ToolbarDropDownButton();
@@ -102,8 +117,12 @@ namespace ForkPlus.Tests
 			window.Show();
 			try
 			{
-				// ToolbarDropDownButton 同样依赖非键值 Style 设置 Template（含 Title TextBlock）。
+				Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 				Assert.NotNull(btn.Template);
+				btn.ApplyTemplate();
+				var textBlocks = btn.GetVisualDescendants()
+					.OfType<TextBlock>().ToList();
+				Assert.Contains(textBlocks, t => t.Text == "Workspaces");
 			}
 			finally
 			{

@@ -748,6 +748,39 @@
         </Setter.Value>
       </Setter>
     </ControlTheme>
+
+    <!-- 阶段 6 关键修复：在 Avalonia 11 中，<Style Selector="Button"> 的类型选择器会匹配所有
+         Button 派生类（包括 ToolbarButton）。如果 Style 包含 Template setter，会覆盖派生类
+         ControlTheme 的 Template，导致 ToolbarButton 丢失 Title TextBlock、DropDownButton
+         丢失自定义模板等。修复：将 Template 移到 ControlTheme 中（ControlTheme 按 StyleKey
+         精确匹配类型，不会影响派生类），Style 仅保留属性 setter 和伪类样式。 -->
+    <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+              <DockPanel>
+                <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
+                <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
+                </ContentPresenter>
+              </DockPanel>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type ToggleButton}" TargetType="ToggleButton">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
   </Styles.Resources>
 
   <!-- 阶段 6 关键修复：ToolbarButton 的模板由上方 ControlTheme（x:Key="{x:Type controls:ToolbarButton}"）
@@ -777,6 +810,7 @@
     </Style>
     <Setter Property="Background" Value="{DynamicResource ToolbarButton.Static.Background}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="ClickMode" Value="Press" />
     <Setter Property="Padding" Value="8,0,8,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="Height" Value="34" />
@@ -870,19 +904,6 @@
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="3" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Button">
-          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <DockPanel>
-              <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" IsVisible="True" x:Name="ShadowBorder" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
-              </ContentPresenter>
-            </DockPanel>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
     <Style Selector="^:disabled /template/ Border#ShadowBorder">
       <Setter Property="IsVisible" Value="False" />
     </Style>
@@ -938,19 +959,6 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Padding" Value="1" />
     <Setter Property="CornerRadius" Value="3" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ToggleButton">
-          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-
-  <Style Selector="controls|DropDownButton">
-    <Setter Property="ClickMode" Value="Press" />
   </Style>
 
   <Style Selector="editorControl|FloatingButton">

@@ -1,22 +1,26 @@
 #!/bin/bash
 set +e
-pkill -f "Xvfb" 2>/dev/null
+pkill -9 -f Xvfb 2>/dev/null
 sleep 1
-Xvfb :99 -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+rm -f /tmp/xvfb.log /tmp/fp-stdout.log /tmp/fp-stderr.log
+# Use display :77 to avoid conflicts with any leftover X servers
+/usr/bin/Xvfb :77 -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
 XVFB_PID=$!
 sleep 2
-export DISPLAY=:99
-export DOTNET_ROOT=$(mise where dotnet@10.0.302 2>/dev/null || echo /root/.local/share/mise/installs/dotnet/10.0.302)
-export PATH=$DOTNET_ROOT:$PATH
+if ! kill -0 $XVFB_PID 2>/dev/null; then
+  echo "Xvfb failed to start:"
+  cat /tmp/xvfb.log
+  exit 1
+fi
 cd /workspace/src/ForkPlus/bin/Debug/net10.0
 echo "=== Running ForkPlus (PID $$) ==="
-timeout 25 ./ForkPlus > /tmp/fp-stdout.log 2> /tmp/fp-stderr.log
+DISPLAY=:77 DOTNET_ROOT=/root/.dotnet timeout 15 /root/.dotnet/dotnet exec ./ForkPlus.dll > /tmp/fp-stdout.log 2> /tmp/fp-stderr.log
 EC=$?
-echo "=== EXIT CODE: $EC ==="
-kill $XVFB_PID 2>/dev/null
+kill -9 $XVFB_PID 2>/dev/null
+echo "=== EXIT CODE: $EC (124 = timeout, expected for GUI app) ==="
 echo "=== STDOUT ==="
 cat /tmp/fp-stdout.log
-echo "=== STDERR (first 200 lines) ==="
-head -200 /tmp/fp-stderr.log
-echo "=== ForkPlus data dir ==="
-find /root/.local/share -maxdepth 3 -path '*ForkPlus*' 2>/dev/null | head -30
+echo "=== STDERR (last 60 lines) ==="
+tail -60 /tmp/fp-stderr.log
+echo "=== App log (last 30 lines) ==="
+tail -30 /root/.local/share/ForkPlus/logs/fork.log 2>/dev/null
