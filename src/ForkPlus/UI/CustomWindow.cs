@@ -199,7 +199,44 @@ namespace ForkPlus.UI
 				_restoreButton.Click += (s, ev) => WindowState = WindowState.Normal;
 			}
 
+			// 阶段 6 修复"无法拖动窗口"：ExtendClientAreaToDecorationsHint=true 隐藏了系统标题栏，
+			// Avalonia 不会自动处理自定义标题栏的拖动。需在 PART_WindowHeader 上订阅 PointerPressed，
+			// 调用 BeginMoveDrag 启动窗口拖动（等价 WPF 中 WindowChrome 的标题栏拖动行为）。
+			// 双击标题栏切换最大化/还原（等价 WPF WindowChrome 的标准行为）。
+			if (_templatePartWindowHeader != null)
+			{
+				_templatePartWindowHeader.PointerPressed -= WindowHeader_PointerPressed;
+				_templatePartWindowHeader.PointerPressed += WindowHeader_PointerPressed;
+				_templatePartWindowHeader.DoubleTapped -= WindowHeader_DoubleTapped;
+				_templatePartWindowHeader.DoubleTapped += WindowHeader_DoubleTapped;
+			}
+
 			AdjustButtonsVisibilityToWindowState();
+		}
+
+		private void WindowHeader_PointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			// 仅左键按下时启动窗口拖动；点击按钮区域（按钮会捕获 PointerPressed）不触发。
+			// e.Pointer.Captured 为 null 表示未被子元素（按钮）捕获，此时是标题栏空白区域。
+			if (e.Pointer.Captured != null) return;
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			{
+				BeginMoveDrag(e);
+			}
+		}
+
+		private void WindowHeader_DoubleTapped(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			// 双击标题栏切换最大化/还原（仅 CanResize 窗口）
+			if (!CanResize) return;
+			if (WindowState == WindowState.Maximized)
+			{
+				WindowState = WindowState.Normal;
+			}
+			else if (WindowState == WindowState.Normal)
+			{
+				WindowState = WindowState.Maximized;
+			}
 		}
 
 		private void Window_WindowStateChanged(object sender, EventArgs e)

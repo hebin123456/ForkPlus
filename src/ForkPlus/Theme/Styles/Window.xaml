@@ -267,16 +267,16 @@
                     <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                       <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                          <Button x:Name="PART_MinimizeButton">
+                          <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
                             <Path Data="{StaticResource MinimizeGeometry}" />
                           </Button>
-                          <Button x:Name="PART_RestoreButton">
+                          <Button x:Name="PART_RestoreButton" Classes="WindowButton">
                             <Path Data="{StaticResource RestoreGeometry}" />
                           </Button>
-                          <Button x:Name="PART_MaximizeButton">
+                          <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
                             <Path Data="{StaticResource MaximizeGeometry}" />
                           </Button>
-                          <Button x:Name="PART_CloseButton">
+                          <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
                             <Path Data="{StaticResource CloseGeometry}" />
                           </Button>
                         </StackPanel>
@@ -292,28 +292,10 @@
                         </Border>
                       </DockPanel>
                     </Border>
-                    <AdornerDecorator Grid.Row="1">
-                      <ContentPresenter ClipToBounds="True" />
-                    </AdornerDecorator>
-                    <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" IsVisible="False" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
+                    <ContentPresenter Grid.Row="1" ClipToBounds="True" />
                   </Grid>
                 </Border>
               </Border>
-              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
-                   Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
-                   Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
-                   ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or
-                   code-behind.
-              <ControlTemplate.Triggers>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition Property="Window.ResizeMode" Value="CanResizeWithGrip" />
-                    <Condition Property="Window.WindowState" Value="Normal" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ResizeGrip" Property="IsVisible" Value="True" />
-                </MultiTrigger>
-              </ControlTemplate.Triggers>
-              -->
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -335,16 +317,16 @@
                     <Border Grid.Row="0" Background="{DynamicResource Window.Dialog.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                       <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                          <Button x:Name="PART_MinimizeButton">
+                          <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
                             <Path Data="{StaticResource MinimizeGeometry}" />
                           </Button>
-                          <Button x:Name="PART_RestoreButton">
+                          <Button x:Name="PART_RestoreButton" Classes="WindowButton">
                             <Path Data="{StaticResource RestoreGeometry}" />
                           </Button>
-                          <Button x:Name="PART_MaximizeButton">
+                          <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
                             <Path Data="{StaticResource MaximizeGeometry}" />
                           </Button>
-                          <Button x:Name="PART_CloseButton">
+                          <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
                             <Path Data="{StaticResource CloseGeometry}" />
                           </Button>
                         </StackPanel>
@@ -360,28 +342,10 @@
                         </Border>
                       </DockPanel>
                     </Border>
-                    <AdornerDecorator Grid.Row="1">
-                      <ContentPresenter ClipToBounds="True" />
-                    </AdornerDecorator>
-                    <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" IsVisible="False" WindowChrome.ResizeGripDirection="BottomRight" x:Name="ResizeGrip" />
+                    <ContentPresenter Grid.Row="1" ClipToBounds="True" />
                   </Grid>
                 </Border>
               </Border>
-              <!-- NOTE (Avalonia limitation): ControlTemplate.Triggers MultiTrigger on Window.ResizeMode=CanResizeWithGrip (enum, no
-                   Avalonia pseudoclass) + Window.WindowState=Normal (enum, no pseudoclass) could not be converted.
-                   Original logic: ResizeGrip.Visibility = Visible. Reimplement using a direct binding on
-                   ResizeGrip.IsVisible (e.g. MultiBinding with converter on ResizeMode and WindowState) or
-                   code-behind.
-              <ControlTemplate.Triggers>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition Property="Window.ResizeMode" Value="CanResizeWithGrip" />
-                    <Condition Property="Window.WindowState" Value="Normal" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ResizeGrip" Property="IsVisible" Value="True" />
-                </MultiTrigger>
-              </ControlTemplate.Triggers>
-              -->
             </ControlTemplate>
           </Setter.Value>
         </Setter>
