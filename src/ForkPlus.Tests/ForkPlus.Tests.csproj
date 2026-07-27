@@ -32,6 +32,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- 阶段 6：Avalonia.Headless 用于在无 GUI 环境下加载 App 并验证 XAML 资源/样式解析。
+         版本与主工程 Avalonia 11.3.18 对齐。Avalonia.Markup.Xaml 类型由主工程传递引用提供。-->
+    <PackageReference Include="Avalonia.Headless" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
   </ItemGroup>
 
   <ItemGroup>

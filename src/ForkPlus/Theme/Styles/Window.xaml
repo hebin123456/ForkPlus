@@ -17,338 +17,283 @@
        pseudoclasses, not ancestors') -> preserved as NOTE comments.
      - ControlTemplate.Triggers MultiTrigger on Window.ResizeMode (enum, no pseudoclass) + Window.WindowState
        (enum, no pseudoclass) could not be converted -> preserved as NOTE comments.
-     - ControlTemplate internal control tree and layout preserved. -->
+     - ControlTemplate internal control tree and layout preserved.
+     - AVLN3000 fix: <Styles.Resources> only accepts keyed resources (IResourceDictionary). Non-keyed
+       <Style Selector="..."> elements must be direct children of <Styles>, not inside Resources.
+       ControlTheme (keyed via x:Key="{x:Type T}") and keyed resources (Geometry, Converters) stay inside. -->
 <Styles xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
-      <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
-      <controls:ResizeModeToVisibilityConverter x:Key="ResizeModeToVisibilityConverter" />
-      <Geometry x:Key="MinimizeGeometry">M0,0 L10,0 10,1.0 10,1.0 1,1.0 0,1.0 z</Geometry>
-      <Geometry x:Key="MaximizeGeometry">M1,1 L1,11 11,11 11,1 z M0,0 L12,0 12,12 0,12 z</Geometry>
-      <Geometry x:Key="RestoreGeometry">M1,4.56 L1,14.56 11,14.56 11,4.56z M4.0,1 L4.0,3.56 12,3.56 12,11 14.0,11 14.0,1 z M3.0,0 L15.0,0 15.0,12 12,12 12,15.56 0,15.56 0,3.56 3.0,3.56 z</Geometry>
-      <Geometry x:Key="CloseGeometry">M0.71,0 L4.6,3.8 8.5,0 9.2,0.71 5.3,4.6 9.2,8.48 8.48,9.2 4.6,5.3 0.71,9.2 0,8.48 3.89,4.6 4.77E-07,0.71 z</Geometry>
-  
-    <Style x:Key="WindowPathStyle" Selector="Path">
-        <Setter Property="Height" Value="10" />
-        <Setter Property="Width" Value="10" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Stretch" Value="Uniform" />
-        <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
-        <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
-             (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
-             match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
-               Shape.Fill = {DynamicResource Window.Button.MouseOver.Foreground}
-             Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
-             or by moving the Path fill logic into the Button ControlTemplate styles.
-        <Style.Triggers>
-          <MultiDataTrigger>
-            <MultiDataTrigger.Conditions>
-              <Condition Value="true">
-                <Condition.Binding>
-                  <Binding Path="IsMouseOver">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Button}" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </Condition.Binding>
-              </Condition>
-              <Condition Value="false">
-                <Condition.Binding>
-                  <Binding Path="IsPressed">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Button}" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </Condition.Binding>
-              </Condition>
-            </MultiDataTrigger.Conditions>
-            <Setter Property="Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
-          </MultiDataTrigger>
-        </Style.Triggers>
-        -->
-      </Style>
-    <Style x:Key="WindowCloseButtonPathStyle" Selector="Path">
-        <Setter Property="Height" Value="10" />
-        <Setter Property="Width" Value="10" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Stretch" Value="Uniform" />
-        <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
-        <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
-             (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
-             match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
-               Shape.Fill = #FFFFFFFF
-             Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
-             or by moving the Path fill logic into the Button ControlTemplate styles.
-        <Style.Triggers>
-          <MultiDataTrigger>
-            <MultiDataTrigger.Conditions>
-              <Condition Value="true">
-                <Condition.Binding>
-                  <Binding Path="IsMouseOver">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Button}" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </Condition.Binding>
-              </Condition>
-              <Condition Value="false">
-                <Condition.Binding>
-                  <Binding Path="IsPressed">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Button}" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </Condition.Binding>
-              </Condition>
-            </MultiDataTrigger.Conditions>
-            <Setter Property="Fill" Value="#FFFFFFFF" />
-          </MultiDataTrigger>
-        </Style.Triggers>
-        -->
-      </Style>
-    <Style x:Key="WindowButton" Selector="Button">
-        <Setter Property="Height" Value="26" />
-        <Setter Property="Width" Value="46" />
-        <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}" x:Name="border">
-    <Border.Styles>
-              <!-- Converted from ControlTemplate.Triggers: IsPressed=true -> :pressed -->
-    </Border.Styles>
-    
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-          <Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-          <Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-      </Style>
-    <Style x:Key="WindowRoundedButton" Selector="Button">
-<Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+    <controls:ResizeModeToVisibilityConverter x:Key="ResizeModeToVisibilityConverter" />
+    <Geometry x:Key="MinimizeGeometry">M0,0 L10,0 10,1.0 10,1.0 1,1.0 0,1.0 z</Geometry>
+    <Geometry x:Key="MaximizeGeometry">M1,1 L1,11 11,11 11,1 z M0,0 L12,0 12,12 0,12 z</Geometry>
+    <Geometry x:Key="RestoreGeometry">M1,4.56 L1,14.56 11,14.56 11,4.56z M4.0,1 L4.0,3.56 12,3.56 12,11 14.0,11 14.0,1 z M3.0,0 L15.0,0 15.0,12 12,12 12,15.56 0,15.56 0,3.56 3.0,3.56 z</Geometry>
+    <Geometry x:Key="CloseGeometry">M0.71,0 L4.6,3.8 8.5,0 9.2,0.71 5.3,4.6 9.2,8.48 8.48,9.2 4.6,5.3 0.71,9.2 0,8.48 3.89,4.6 4.77E-07,0.71 z</Geometry>
 
-<Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-
-        <Setter Property="Margin" Value="0,2,6,0" />
-        <Setter Property="Height" Value="24" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-    
-    
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-    <Style x:Key="WindowToggleButton" Selector="ToggleButton">
-<Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-
-<Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-
-<Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-              </Style>
-
-        <Setter Property="Height" Value="26" />
-        <Setter Property="Width" Value="30" />
-        <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="ToggleButton">
-              <Border Background="{TemplateBinding Background}" x:Name="border">
-    
-    
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-    <Style x:Key="WindowRoundedToggleButton" Selector="ToggleButton">
-<Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
-              </Style>
-
-<Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
-              </Style>
-
-<Style Selector="^:disabled /template/ Border#border">
-                <Setter Property="Opacity" Value="0.4" />
-                <Setter Property="Background" Value="#00FFFFFF" />
-              </Style>
-
-        <Setter Property="Margin" Value="0,2,6,0" />
-        <Setter Property="Height" Value="24" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="ToggleButton">
-              <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-    
-    
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-    <Style x:Key="WindowCloseButton" Selector="Button">
-<Style Selector="^:pointerover /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
-              </Style>
-
-<Style Selector="^:pressed /template/ Border#border">
-                <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
-              </Style>
-
-        <Setter Property="Height" Value="26" />
-        <Setter Property="Width" Value="46" />
-        <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Static.Background}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}" x:Name="border">
-    
-    
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-<!-- Avalonia 11: 控件的 Template 必须通过 ControlTheme 设置（Style 的 Template setter 不会覆盖
-     基类 ControlTheme 的模板）。x:Key="{x:Type ui:CustomWindow}" 使其成为 CustomWindow 的默认主题。
-     修复"windows程序根本运行不起来"——CustomWindow.OnApplyTemplate 找不到 PART_WindowHeader，
-     因为 Style 的 Template setter 未生效，实际用的是 FluentTheme 中 Window 的模板（无 PART_*）。
-     ControlTheme 必须放在 ResourceDictionary（Styles.Resources）内，不能直接放在 Styles 集合中。 -->
-<ControlTheme x:Key="{x:Type ui:CustomWindow}" TargetType="ui:CustomWindow">
-        <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource Window.Foreground}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="MinWidth" Value="240" />
-        <Setter Property="MinHeight" Value="80" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="ui:CustomWindow">
-              <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-                <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
-                  <Grid>
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
-                      <DockPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                          <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
-                            <Path Data="{StaticResource MinimizeGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_RestoreButton" Classes="WindowButton">
-                            <Path Data="{StaticResource RestoreGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
-                            <Path Data="{StaticResource MaximizeGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
-                            <Path Data="{StaticResource CloseGeometry}" />
-                          </Button>
+    <!-- Avalonia 11: 控件的 Template 必须通过 ControlTheme 设置（Style 的 Template setter 不会覆盖
+         基类 ControlTheme 的模板）。x:Key="{x:Type ui:CustomWindow}" 使其成为 CustomWindow 的默认主题。
+         ControlTheme 必须放在 ResourceDictionary（Styles.Resources）内，不能直接放在 Styles 集合中。 -->
+    <ControlTheme x:Key="{x:Type ui:CustomWindow}" TargetType="ui:CustomWindow">
+      <Setter Property="Background" Value="{DynamicResource Window.BackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource Window.Foreground}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinWidth" Value="240" />
+      <Setter Property="MinHeight" Value="80" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ui:CustomWindow">
+            <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
+              <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
+                    <DockPanel>
+                      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
+                          <Path Data="{StaticResource MinimizeGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_RestoreButton" Classes="WindowButton">
+                          <Path Data="{StaticResource RestoreGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
+                          <Path Data="{StaticResource MaximizeGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
+                          <Path Data="{StaticResource CloseGeometry}" />
+                        </Button>
+                      </StackPanel>
+                      <Border Background="{DynamicResource Window.TitleBar.Background}">
+                        <StackPanel Orientation="Horizontal">
+                          <Image Source="{TemplateBinding Icon}" />
+                          <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
+                            <Label.IsVisible>
+                              <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
+                            </Label.IsVisible>
+                          </Label>
                         </StackPanel>
-                        <Border Background="{DynamicResource Window.TitleBar.Background}">
-                          <StackPanel Orientation="Horizontal">
-                            <Image Source="{TemplateBinding Icon}" />
-                            <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
-                              <Label.IsVisible>
-                                <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
-                              </Label.IsVisible>
-                            </Label>
-                          </StackPanel>
-                        </Border>
-                      </DockPanel>
-                    </Border>
-                    <ContentPresenter Grid.Row="1" ClipToBounds="True" />
-                  </Grid>
-                </Border>
+                      </Border>
+                    </DockPanel>
+                  </Border>
+                  <ContentPresenter Grid.Row="1" ClipToBounds="True" />
+                </Grid>
               </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </ControlTheme>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
 
-<ControlTheme x:Key="{x:Type dialogs:ForkPlusDialogWindow}" TargetType="dialogs:ForkPlusDialogWindow">
-        <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
-        <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="dialogs:ForkPlusDialogWindow">
-              <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
-                <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
-                  <Grid>
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="{DynamicResource Window.Dialog.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
-                      <DockPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                          <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
-                            <Path Data="{StaticResource MinimizeGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_RestoreButton" Classes="WindowButton">
-                            <Path Data="{StaticResource RestoreGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
-                            <Path Data="{StaticResource MaximizeGeometry}" />
-                          </Button>
-                          <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
-                            <Path Data="{StaticResource CloseGeometry}" />
-                          </Button>
+    <ControlTheme x:Key="{x:Type dialogs:ForkPlusDialogWindow}" TargetType="dialogs:ForkPlusDialogWindow">
+      <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
+      <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="dialogs:ForkPlusDialogWindow">
+            <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
+              <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <Border Grid.Row="0" Background="{DynamicResource Window.Dialog.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
+                    <DockPanel>
+                      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button x:Name="PART_MinimizeButton" Classes="WindowButton">
+                          <Path Data="{StaticResource MinimizeGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_RestoreButton" Classes="WindowButton">
+                          <Path Data="{StaticResource RestoreGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_MaximizeButton" Classes="WindowButton">
+                          <Path Data="{StaticResource MaximizeGeometry}" />
+                        </Button>
+                        <Button x:Name="PART_CloseButton" Classes="WindowCloseButton">
+                          <Path Data="{StaticResource CloseGeometry}" />
+                        </Button>
+                      </StackPanel>
+                      <Border>
+                        <StackPanel Orientation="Horizontal">
+                          <Image Source="{TemplateBinding Icon}" />
+                          <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
+                            <Label.IsVisible>
+                              <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
+                            </Label.IsVisible>
+                          </Label>
                         </StackPanel>
-                        <Border>
-                          <StackPanel Orientation="Horizontal">
-                            <Image Source="{TemplateBinding Icon}" />
-                            <Label Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
-                              <Label.IsVisible>
-                                <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
-                              </Label.IsVisible>
-                            </Label>
-                          </StackPanel>
-                        </Border>
-                      </DockPanel>
-                    </Border>
-                    <ContentPresenter Grid.Row="1" ClipToBounds="True" />
-                  </Grid>
-                </Border>
+                      </Border>
+                    </DockPanel>
+                  </Border>
+                  <ContentPresenter Grid.Row="1" ClipToBounds="True" />
+                </Grid>
               </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </ControlTheme>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
   </Styles.Resources>
+
+  <!-- 阶段 6 关键修复：Avalonia 11 中 <Style x:Key="Foo" Selector="T"> 是命名样式，
+       不会自动应用，必须通过 Style="{StaticResource Foo}" 显式引用。Classes="Foo" 只是
+       添加 CSS 类，不会应用命名样式。
+       原迁移把 WPF <Style x:Key="WindowButton" TargetType="Button"> 直接转成
+       <Style x:Key="WindowButton" Selector="Button">，但 ControlTemplate 里的按钮用
+       Classes="WindowButton"（而非 Style="{StaticResource WindowButton}"）→ 样式不生效
+       → 标题栏按钮无 Width/Height/Template/Background → 不可见、不可点击。
+       修复：把所有命名样式改成类选择器（Selector="Button.WindowButton"），让
+       Classes="WindowButton" 能正确匹配。Path 样式用后代选择器（Button.WindowButton Path）
+       自动作用于按钮内的 Path，无需在模板里给 Path 加 Classes。
+       AVLN3000 修复：非键值 <Style> 必须放在 <Styles.Resources> 之外，作为 <Styles> 的直接子元素。 -->
+  <Style Selector="Button.WindowButton Path, Button.WindowRoundedButton Path">
+    <Setter Property="Height" Value="10" />
+    <Setter Property="Width" Value="10" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+         (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
+         match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
+           Shape.Fill = {DynamicResource Window.Button.MouseOver.Foreground}
+         Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
+         or by moving the Path fill logic into the Button ControlTemplate styles. -->
+  </Style>
+
+  <Style Selector="Button.WindowCloseButton Path">
+    <Setter Property="Height" Value="10" />
+    <Setter Property="Width" Value="10" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
+    <!-- NOTE (Avalonia limitation): Style.Triggers MultiDataTrigger binding to ancestor Button's IsMouseOver (true) and IsPressed
+         (false) via FindAncestor could not be converted to an Avalonia nested selector (^ selectors only
+         match the Path's own pseudoclasses, not the ancestor Button's). Original logic:
+           Shape.Fill = #FFFFFFFF
+         Reimplement using a separate top-level Style (e.g. Selector="Button:pointerover:not(:pressed) Path")
+         or by moving the Path fill logic into the Button ControlTemplate styles. -->
+  </Style>
+
+  <Style Selector="Button.WindowButton">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pressed /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+    </Style>
+  </Style>
+
+  <Style Selector="Button.WindowRoundedButton">
+    <Setter Property="Margin" Value="0,2,6,0" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+    </Style>
+  </Style>
+
+  <Style Selector="ToggleButton.WindowToggleButton">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="30" />
+    <Setter Property="Background" Value="{DynamicResource Window.Button.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#border">
+      <Setter Property="Opacity" Value="0.4" />
+      <Setter Property="Background" Value="#00FFFFFF" />
+    </Style>
+  </Style>
+
+  <Style Selector="ToggleButton.WindowRoundedToggleButton">
+    <Setter Property="Margin" Value="0,2,6,0" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.MouseOver.Background}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.Button.Pressed.Background}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#border">
+      <Setter Property="Opacity" Value="0.4" />
+      <Setter Property="Background" Value="#00FFFFFF" />
+    </Style>
+  </Style>
+
+  <Style Selector="Button.WindowCloseButton">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="{TemplateBinding Background}" x:Name="border">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.CloseButton.MouseOver.Background}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+      <Setter Property="Background" Value="{DynamicResource Window.CloseButton.Pressed.Background}" />
+    </Style>
+  </Style>
 </Styles>
