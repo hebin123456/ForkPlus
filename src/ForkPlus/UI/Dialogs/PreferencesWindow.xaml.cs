@@ -58,6 +58,7 @@ namespace ForkPlus.UI.Dialogs
 			IntegrationUserControl.Initialize(this);
 			GitUserControl.Initialize(this);
 			CustomCommandsUserControl.InitializeGlobal(this);
+			ImportExportUserControl.Initialize(this);
 			ApplyLocalization();
 			_initialised = true;
 		}
@@ -80,6 +81,7 @@ namespace ForkPlus.UI.Dialogs
 			GitTabItem.Header = PreferencesLocalization.Translate("Git", language);
 			IntegrationTabItem.Header = PreferencesLocalization.Translate("Integration", language);
 			CustomCommandsTab.Header = PreferencesLocalization.Translate("Custom Commands", language);
+			ImportExportTab.Header = PreferencesLocalization.Translate("Import/Export", language);
 			ApplySelectedTabLocalization(language);
 		}
 

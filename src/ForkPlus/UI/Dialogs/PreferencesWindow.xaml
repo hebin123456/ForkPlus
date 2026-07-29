@@ -24,6 +24,9 @@
       <TabItem Header="Custom Commands" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="CustomCommandsTab">
         <preferences:CustomCommandsUserControl Margin="0,10,0,0" x:Name="CustomCommandsUserControl" />
       </TabItem>
+      <TabItem Header="Import/Export" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ImportExportTab">
+        <preferences:ImportExportUserControl Margin="0,10,0,0" x:Name="ImportExportUserControl" />
+      </TabItem>
     </controls:ModernTabControl>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
