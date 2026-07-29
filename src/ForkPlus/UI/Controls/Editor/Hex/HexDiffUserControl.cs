@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -47,9 +49,14 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	private HexEditor _lastScrolledEditor;
 	private bool _isSyncingScroll;
 
+	// v3.6.5：MD5 行 — 左侧 src（修改前）MD5，右侧 dst（修改后）MD5，与列头两列对齐
+	private readonly TextBlock _srcMd5TextBlock;
+	private readonly TextBlock _dstMd5TextBlock;
+
 		public HexDiffUserControl()
 		{
-			// v3.4.1：三行布局 — Row 0 工具栏，Row 1 列头（对齐编辑器），Row 2 编辑器
+			// v3.6.5：四行布局 — Row 0 工具栏，Row 1 MD5 行，Row 2 列头（对齐编辑器），Row 3 编辑器
+			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -119,6 +126,41 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			Children.Add(toolbar);
 			SetRow(toolbar, 0);
 
+			// v3.6.5：MD5 行 — 与列头同构的两列布局，左侧 src（修改前）MD5，右侧 dst（修改后）MD5。
+			// 实际 Text 在 SetContent 时填充。用等宽字体避免 hash 串错位。
+			Grid md5Grid = new Grid();
+			md5Grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+			md5Grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+			_srcMd5TextBlock = new TextBlock
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = HorizontalAlignment.Left,
+				Margin = new Thickness(4, 1, 0, 1),
+				FontFamily = new FontFamily("Consolas, Courier New, monospace"),
+				FontSize = 12,
+				TextTrimming = CharacterEllipsis,
+				Text = "MD5: -"
+			};
+			md5Grid.Children.Add(_srcMd5TextBlock);
+			SetColumn(_srcMd5TextBlock, 0);
+
+			_dstMd5TextBlock = new TextBlock
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = HorizontalAlignment.Left,
+				Margin = new Thickness(4, 1, 0, 1),
+				FontFamily = new FontFamily("Consolas, Courier New, monospace"),
+				FontSize = 12,
+				TextTrimming = CharacterEllipsis,
+				Text = "MD5: -"
+			};
+			md5Grid.Children.Add(_dstMd5TextBlock);
+			SetColumn(_dstMd5TextBlock, 1);
+
+			Children.Add(md5Grid);
+			SetRow(md5Grid, 1);
+
 			// v3.4.1：列头行 — "修改前" / "修改后"，与下方编辑器左右对齐
 			Grid headerGrid = new Grid();
 			headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -147,7 +189,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			SetColumn(dstLabel, 1);
 
 			Children.Add(headerGrid);
-			SetRow(headerGrid, 1);
+			SetRow(headerGrid, 2);
 
 			// 两个 HexEditor 并排放在 Grid 里
 			Grid editorsGrid = new Grid();
@@ -169,7 +211,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		SetColumn(_dstEditor, 1);
 
 			Children.Add(editorsGrid);
-			SetRow(editorsGrid, 2);
+			SetRow(editorsGrid, 3);
 		}
 
 		public void SetContent(HexDiffContent content)
@@ -180,6 +222,25 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			_srcEditor.LoadBytes(srcBytes);
 			_dstEditor.LoadBytes(dstBytes);
 			ApplyDiffHighlight(srcBytes, dstBytes);
+			// v3.6.5：更新 MD5 行（左右两侧各一，与列头"修改前/修改后"对齐）
+			_srcMd5TextBlock.Text = "MD5: " + (srcBytes == null ? "-" : ComputeMd5Hex(srcBytes));
+			_dstMd5TextBlock.Text = "MD5: " + (dstBytes == null ? "-" : ComputeMd5Hex(dstBytes));
+		}
+
+		/// <summary>v3.6.5：计算字节数组的 MD5 并返回小写十六进制字符串。</summary>
+		private static string ComputeMd5Hex(byte[] bytes)
+		{
+			if (bytes == null || bytes.Length == 0) return "-";
+			using (MD5 md5 = MD5.Create())
+			{
+				byte[] hash = md5.ComputeHash(bytes);
+				StringBuilder sb = new StringBuilder(hash.Length * 2);
+				foreach (byte b in hash)
+				{
+					sb.Append(b.ToString("x2"));
+				}
+				return sb.ToString();
+			}
 		}
 
 		/// <summary>逐字节比较两侧，在差异字节位置叠加背景色。
