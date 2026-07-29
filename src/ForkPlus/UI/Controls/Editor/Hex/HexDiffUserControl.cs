@@ -139,7 +139,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Margin = new Thickness(4, 1, 0, 1),
 				FontFamily = new FontFamily("Consolas, Courier New, monospace"),
 				FontSize = 12,
-				TextTrimming = CharacterEllipsis,
+				TextTrimming = TextTrimming.CharacterEllipsis,
 				Text = "MD5: -"
 			};
 			md5Grid.Children.Add(_srcMd5TextBlock);
@@ -152,7 +152,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Margin = new Thickness(4, 1, 0, 1),
 				FontFamily = new FontFamily("Consolas, Courier New, monospace"),
 				FontSize = 12,
-				TextTrimming = CharacterEllipsis,
+				TextTrimming = TextTrimming.CharacterEllipsis,
 				Text = "MD5: -"
 			};
 			md5Grid.Children.Add(_dstMd5TextBlock);
