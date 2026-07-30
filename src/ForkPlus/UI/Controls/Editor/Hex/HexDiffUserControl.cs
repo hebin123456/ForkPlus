@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Helpers;
@@ -24,6 +25,11 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	public class HexDiffUserControl : Grid, FileContentControl.IFileContentControlSubControl
 	{
 		private const int MaxBytesForDiffHighlight = 2 * 1024 * 1024; // 2MB：超过此阈值跳过逐字节比较（避免大文件卡顿）
+
+		// v3.7.1：单边渲染截断阈值。超过此字节数只格式化并渲染前 MaxBytesForFullRender 字节，
+		// 避免 AvalonEdit 同步重建超长行树（1.7MB → ~8MB 文本 ×2 editor）卡死 UI 线程。
+		// MD5 仍对完整字节计算（后台线程），hash 完整性不受截断影响。
+		private const int MaxBytesForFullRender = 256 * 1024; // 256KB
 
 		// 差异字节背景色（橙黄）
 		private static readonly Brush DiffByteBackgroundBrush;
@@ -245,37 +251,53 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			Task.Run(() =>
 			{
 				token.ThrowIfCancellationRequested();
-				byte[] srcBytes = content?.SrcData?.ToArray();
-				byte[] dstBytes = content?.DstData?.ToArray();
+				byte[] srcBytesFull = content?.SrcData?.ToArray();
+				byte[] dstBytesFull = content?.DstData?.ToArray();
 
-				// 后台：格式化 hex 文本（纯 StringBuilder，无 UI 依赖）
+				// v3.7.1：渲染截断 — 超过阈值的文件只取前 MaxBytesForFullRender 字节用于格式化与渲染，
+				// 避免 AvalonEdit 同步行树重建卡死 UI。MD5 仍对完整字节计算，hash 完整性不受影响。
+				bool srcTruncated = srcBytesFull != null && srcBytesFull.Length > MaxBytesForFullRender;
+				bool dstTruncated = dstBytesFull != null && dstBytesFull.Length > MaxBytesForFullRender;
+				byte[] srcBytes = srcTruncated ? SubArray(srcBytesFull, 0, MaxBytesForFullRender) : srcBytesFull;
+				byte[] dstBytes = dstTruncated ? SubArray(dstBytesFull, 0, MaxBytesForFullRender) : dstBytesFull;
+
+				// 后台：格式化 hex 文本（用截断后的字节，截断时追加提示行）
 				token.ThrowIfCancellationRequested();
 				string srcText = srcBytes == null ? "" : HexFormatter.Format(srcBytes, bytesPerRow, showOffset, showAscii);
+				if (srcTruncated) srcText += "\n... (文件过大，仅显示前 " + FormatByteSize(MaxBytesForFullRender) + " / 共 " + FormatByteSize(srcBytesFull.Length) + ") ...";
 				token.ThrowIfCancellationRequested();
 				string dstText = dstBytes == null ? "" : HexFormatter.Format(dstBytes, bytesPerRow, showOffset, showAscii);
+				if (dstTruncated) dstText += "\n... (文件过大，仅显示前 " + FormatByteSize(MaxBytesForFullRender) + " / 共 " + FormatByteSize(dstBytesFull.Length) + ") ...";
 
-				// 后台：逐字节比较生成差异索引集合
+				// 后台：逐字节比较生成差异索引集合（仅在截断后的范围内比较，避免巨大 HashSet）
 				token.ThrowIfCancellationRequested();
 				HashSet<int> srcDiff = null;
 				HashSet<int> dstDiff = null;
 				ComputeDiffIndices(srcBytes, dstBytes, out srcDiff, out dstDiff);
 
-				// 后台：MD5 计算
+				// 后台：MD5 计算（对完整字节，保证 hash 正确）
 				token.ThrowIfCancellationRequested();
-				string srcMd5 = srcBytes == null ? "-" : ComputeMd5Hex(srcBytes);
+				string srcMd5 = srcBytesFull == null ? "-" : ComputeMd5Hex(srcBytesFull);
 				token.ThrowIfCancellationRequested();
-				string dstMd5 = dstBytes == null ? "-" : ComputeMd5Hex(dstBytes);
+				string dstMd5 = dstBytesFull == null ? "-" : ComputeMd5Hex(dstBytesFull);
 
-				// 切回 UI 线程：只做 base.Text 赋值 + 高亮重绘（DispatcherObject 必须在 UI 线程访问）
-				Dispatcher.BeginInvoke(new Action(() =>
+				// 切回 UI 线程：分帧执行 base.Text 赋值 + 高亮重绘。
+				// 用 Dispatcher.Yield 在每步之间让出 UI 线程处理一次消息泵，避免长时间无响应。
+				Dispatcher.BeginInvoke(new Action(async () =>
 				{
 					if (token.IsCancellationRequested) return;
 					_srcEditor.LoadBytesWithText(srcBytes, srcText);
-					_dstEditor.LoadBytesWithText(dstBytes, dstText);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
 					_srcEditor.HighlightBytes(srcDiff);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
+					_dstEditor.LoadBytesWithText(dstBytes, dstText);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
 					_dstEditor.HighlightBytes(dstDiff);
-					_srcMd5TextBlock.Text = "MD5: " + srcMd5;
-					_dstMd5TextBlock.Text = "MD5: " + dstMd5;
+					_srcMd5TextBlock.Text = "MD5: " + srcMd5 + (srcTruncated ? "  (已截断显示)" : "");
+					_dstMd5TextBlock.Text = "MD5: " + dstMd5 + (dstTruncated ? "  (已截断显示)" : "");
 				}));
 			}, token).ContinueWith(t =>
 			{
@@ -341,6 +363,23 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				}
 				return sb.ToString();
 			}
+		}
+
+		/// <summary>v3.7.1：字节数格式化为人类可读大小（如 "1.7 MB"）。</summary>
+		private static string FormatByteSize(long bytes)
+		{
+			if (bytes < 1024) return bytes + " B";
+			if (bytes < 1024 * 1024) return (bytes / 1024.0).ToString("0.#") + " KB";
+			if (bytes < 1024L * 1024 * 1024) return (bytes / (1024.0 * 1024)).ToString("0.#") + " MB";
+			return (bytes / (1024.0 * 1024 * 1024)).ToString("0.#") + " GB";
+		}
+
+		/// <summary>v3.7.1：取字节数组的一段。</summary>
+		private static byte[] SubArray(byte[] source, int offset, int length)
+		{
+			byte[] result = new byte[length];
+			Array.Copy(source, offset, result, 0, length);
+			return result;
 		}
 
 		public void ControlWillBeRemovedFromFileContentControl()
