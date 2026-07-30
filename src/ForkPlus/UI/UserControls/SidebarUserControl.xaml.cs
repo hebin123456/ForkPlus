@@ -1258,6 +1258,16 @@ namespace ForkPlus.UI.UserControls
 			return menuItem;
 		}
 
+		/// <summary>v3.7.2：转义 MenuItem.Header 中的 "_" 为 "__"。
+		/// WPF 的 MenuItem.Header 当为 string 时，"_" 是助记符（mnemonic）前缀：第一个 "_" 会被吞掉，
+		/// 其后的字符带下划线作为 Alt 快捷键。分支名/远端名含 "_" 时会因此显示丢失。
+		/// 转义为 "__" 后 WPF 渲染为单个 "_"，显示正确。</summary>
+		private static string EscapeMenuHeader(string text)
+		{
+			if (string.IsNullOrEmpty(text)) return text;
+			return text.Replace("_", "__");
+		}
+
 		/// <summary>
 		/// 创建一个可搜索的远端分组子菜单：Popup 顶部置顶搜索框（不随列表滚动），下方是该远端的分支列表。
 		/// 用于"跟踪"和"检查远端同步状态"二级菜单的远端分组项。
@@ -1274,7 +1284,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			MenuItem groupItem = new MenuItem
 			{
-				Header = remoteName
+				// v3.7.2：转义 "_" — WPF MenuItem.Header 为 string 时，"_" 是助记符前缀，
+				// 第一个 "_" 会被吞掉（其后字符作 Alt 快捷键）。远端名含 "_" 也会丢失，故转义为 "__"。
+				Header = EscapeMenuHeader(remoteName)
 			};
 			// 应用可搜索子菜单模板（置顶搜索框 + 可滚动分支列表）
 			Style searchableStyle = (Style)Application.Current.TryFindResource("SearchableSubmenuMenuItem");
@@ -1286,9 +1298,12 @@ namespace ForkPlus.UI.UserControls
 			{
 				RemoteBranch currentRemoteBranch = rb;
 				MenuItem branchItem = new MenuItem
-				{
-					Header = currentRemoteBranch.ShortName
-				};
+			{
+				// v3.7.2：转义 "_" — 分支名含多个 "_" 时，第一个 "_" 会被 WPF 当作助记符吞掉，显示丢失。
+				Header = EscapeMenuHeader(currentRemoteBranch.ShortName),
+				// v3.7.2：搜索过滤用原始名（未转义），避免转义后的 "__" 干扰用户输入的 "_" 匹配。
+				Tag = currentRemoteBranch.ShortName
+			};
 				if (isCheckedPredicate != null && isCheckedPredicate(currentRemoteBranch))
 				{
 					branchItem.IsChecked = true;
@@ -1324,7 +1339,7 @@ namespace ForkPlus.UI.UserControls
 			return groupItem;
 		}
 
-		/// <summary>搜索框文本变化：隐藏不匹配的分支项（MenuItem.Header 含搜索文本即匹配，不区分大小写）。</summary>
+		/// <summary>搜索框文本变化：隐藏不匹配的分支项（MenuItem.Tag 存原始分支名，含搜索文本即匹配，不区分大小写）。</summary>
 		private static void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			PlaceholderTextBox searchBox = sender as PlaceholderTextBox;
@@ -1345,8 +1360,9 @@ namespace ForkPlus.UI.UserControls
 				{
 					continue;
 				}
-				string header = branchItem.Header as string;
-				if (string.IsNullOrEmpty(filter) || (header != null && header.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0))
+				// v3.7.2：用 Tag（原始未转义名）过滤，而非 Header（已转义为 __）。
+				string name = branchItem.Tag as string;
+				if (string.IsNullOrEmpty(filter) || (name != null && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0))
 				{
 					branchItem.Visibility = Visibility.Visible;
 				}
