@@ -11,6 +11,8 @@ namespace ForkPlus.Git
 		Unmerged,
 		Untracked,
 		Unknown,
-		Ignored
+		Ignored,
+		// v3.8.0：未变更文件（用于"显示完整工作目录"模式，与变更文件区分，不显示状态图标）
+		Unchanged
 	}
 }

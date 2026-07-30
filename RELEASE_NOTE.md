@@ -2,6 +2,12 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.8.0
+
+### 新功能
+
+- Commit 视图新增"显示完整工作目录文件树"选项。在文件列表的视图设置下拉菜单（View as Tree/List/CombinedList 同一处）追加一项 "Show Full Working Directory"，勾选后未变更的已跟踪文件也会出现在未暂存列表中，按目录树结构展示完整工作目录，未变更文件不显示状态图标（与变更文件的 M/A/D 等图标区分）。该选项与视图模式正交，默认关闭，关闭时行为与旧版完全一致。开启后未变更文件不参与 Stage/Discard/SaveAsPatch/StageAll 操作（菜单项在仅选中未变更文件时自动禁用），避免误操作。数据源通过 `git ls-files --cached -z` 获取全部已跟踪文件，与变更文件做差集后合并，git 调用在后台线程执行不阻塞 UI。新增 `ChangeType.Unchanged` 枚举值表示未变更文件。设置持久化到 `ShowFullWorkingDirectory` 配置项。Amend 模式下不启用此功能（staged 数据源不同，避免混淆）。
+
 ## v3.7.2
 
 ### Bug 修复

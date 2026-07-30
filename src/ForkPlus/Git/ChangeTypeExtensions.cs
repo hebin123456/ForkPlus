@@ -19,6 +19,8 @@ namespace ForkPlus.Git
     ChangeType.TypeChanged => IconKeys.StatusEdit,
     ChangeType.Unknown => IconKeys.StatusEdit,
     ChangeType.Ignored => IconKeys.StatusAdd,
+    // v3.8.0：未变更文件不显示状态图标（XAML DataTrigger 会折叠 Image 列）
+    ChangeType.Unchanged => null,
     _ => null,
    };
   }

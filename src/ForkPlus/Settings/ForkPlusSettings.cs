@@ -1035,6 +1035,9 @@ namespace ForkPlus.Settings
 
 		private bool _showWorktrees;
 
+		// v3.8.0：Commit 视图是否显示完整工作目录文件树（含未变更文件）
+		private bool _showFullWorkingDirectory;
+
 		private bool _updateSubmodulesOnCheckout;
 
 		private WindowLocationState _mainWindowLocationState;
@@ -2115,6 +2118,19 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>v3.8.0：Commit 视图是否显示完整工作目录文件树（含未变更文件，未变更文件无状态图标）。</summary>
+		public bool ShowFullWorkingDirectory
+		{
+			get
+			{
+				return _showFullWorkingDirectory;
+			}
+			set
+			{
+				_showFullWorkingDirectory = value;
+			}
+		}
+
 		public bool UpdateSubmodulesOnCheckout
 		{
 			get
@@ -2727,6 +2743,8 @@ namespace ForkPlus.Settings
 			double aiReviewFileTreeColumnWidth = json["AiReviewFileTreeColumnWidth"]?.Value<double>() ?? 320.0;
 			double verticalLayoutRevisionListViewWidth = json["VerticalLayoutRevisionListViewWidth"]?.Value<double>() ?? 350.0;
 			bool showWorktrees = json["ShowWorktrees"]?.Value<bool>() ?? false;
+			// v3.8.0：默认关闭，保持现有"仅显示变更文件"行为
+			bool showFullWorkingDirectory = json["ShowFullWorkingDirectory"]?.Value<bool>() ?? false;
 			bool updateSubmodulesOnCheckout = json["UpdateSubmodulesOnCheckout"]?.Value<bool>() ?? true;
 			WindowLocationState mainWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["MainWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
 			WindowLocationState revisionWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["RevisionWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
@@ -2860,6 +2878,7 @@ namespace ForkPlus.Settings
 				AiReviewFileTreeColumnWidth = aiReviewFileTreeColumnWidth,
 				VerticalLayoutRevisionListViewWidth = verticalLayoutRevisionListViewWidth,
 				ShowWorktrees = showWorktrees,
+				ShowFullWorkingDirectory = showFullWorkingDirectory,
 				UpdateSubmodulesOnCheckout = updateSubmodulesOnCheckout,
 				MainWindowLocationState = mainWindowLocationState,
 				RevisionWindowLocationState = revisionWindowLocationState,
@@ -3325,6 +3344,10 @@ namespace ForkPlus.Settings
 				{
 					"ShowWorktrees",
 					new JValue(target.ShowWorktrees)
+				},
+				{
+					"ShowFullWorkingDirectory",
+					new JValue(target.ShowFullWorkingDirectory)
 				},
 				{
 					"UpdateSubmodulesOnCheckout",

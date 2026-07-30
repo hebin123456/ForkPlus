@@ -522,11 +522,25 @@ namespace ForkPlus.UI.UserControls
 			StageFileUserControl.RefreshUnstagedStatusLabel(GitModule.Settings.HideUntrackedFiles, ShowIgnoredFiles);
 		}
 
+		/// <summary>v3.8.0：切换"显示完整工作目录文件树"。开启后未变更文件也会出现在列表中（无状态图标）。
+		/// 走 InvalidateAndRefresh 触发 RefreshRepositoryStatusUiAsync 重新装配数据，而非 RaiseFileListModeChanged（那个只切视图模板不重拉数据）。</summary>
+		public void ToggleShowFullWorkingDirectory()
+		{
+			ForkPlusSettings.Default.ShowFullWorkingDirectory = !ForkPlusSettings.Default.ShowFullWorkingDirectory;
+			ForkPlusSettings.Default.Save();
+			RepositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
+		}
+
 		private void StageAllFiles()
 		{
 			if (StageJob == null)
 			{
-				ChangedFile[] changedFiles = (StageFileUserControl.IsFiltered ? StageFileUserControl.ExpandedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory).ToArray() : StageFileUserControl.ExpandedUnstagedFiles);
+				// v3.8.0：未变更文件不参与 Stage All
+				ChangedFile[] changedFiles = StageFileUserControl.ExpandedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged).ToArray();
+				if (changedFiles.Length == 0)
+				{
+					return;
+				}
 				if (!TestMergeConflictsResolved(changedFiles))
 				{
 					SystemSounds.Beep.Play();
@@ -551,7 +565,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (StageJob == null && StageFileUserControl.IsUnstagedListSelected)
 			{
-				ChangedFile[] changedFiles = (StageFileUserControl.IsFiltered ? StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory).ToArray() : StageFileUserControl.ExpandedSelectedUnstagedFiles);
+				// v3.8.0：未变更文件不参与 Stage
+				ChangedFile[] changedFiles = StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged).ToArray();
+				if (changedFiles.Length == 0)
+				{
+					return;
+				}
 				if (!TestMergeConflictsResolved(changedFiles))
 				{
 					SystemSounds.Beep.Play();
@@ -588,7 +607,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (StageJob == null && StageFileUserControl.IsUnstagedListSelected)
 			{
-				Commands.DiscardChangedFilesCommand.Execute(this, RepositoryUserControl, StageFileUserControl.ExpandedSelectedUnstagedFiles);
+				// v3.8.0：未变更文件不参与 Discard
+				ChangedFile[] files = StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged).ToArray();
+				if (files.Length > 0)
+				{
+					Commands.DiscardChangedFilesCommand.Execute(this, RepositoryUserControl, files);
+				}
 			}
 		}
 
@@ -596,7 +620,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (StageFileUserControl.IsUnstagedListSelected)
 			{
-				Commands.ShowSaveAsPatchDialogCommand.Execute(RepositoryUserControl, GitModule, StageFileUserControl.ExpandedSelectedUnstagedFiles, AmendMode);
+				// v3.8.0：未变更文件不参与 SaveAsPatch
+				ChangedFile[] files = StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged).ToArray();
+				Commands.ShowSaveAsPatchDialogCommand.Execute(RepositoryUserControl, GitModule, files, AmendMode);
 			}
 			else
 			{
@@ -638,6 +664,20 @@ namespace ForkPlus.UI.UserControls
 				NotificationCenter.Current.RaiseFileListModeChanged(this, FileListMode.CombinedList);
 			};
 			menu.Items.Add(menuItem3);
+
+			menu.Items.Add(new Separator());
+
+			// v3.8.0：显示完整工作目录文件树（含未变更文件）。与视图模式正交，默认关闭。
+			// 开启后未变更文件出现在 unstaged 侧，无状态图标，且不参与 Stage/Discard/SaveAsPatch。
+			MenuItem menuItem6 = new MenuItem();
+			menuItem6.Header = PreferencesLocalization.MenuHeader("Show Full Working Directory");
+			menuItem6.IsChecked = ForkPlusSettings.Default.ShowFullWorkingDirectory;
+			menuItem6.Click += delegate
+			{
+				ToggleShowFullWorkingDirectory();
+			};
+			menu.Items.Add(menuItem6);
+
 			menu.Items.Add(new Separator());
 			MenuItem menuItem4 = new MenuItem();
 			menuItem4.Header = PreferencesLocalization.MenuHeader("Hide Untracked Files");
@@ -741,15 +781,25 @@ namespace ForkPlus.UI.UserControls
 				});
 			}
 			yield return new Separator();
-			yield return Commands.ToggleFileStage.CreateMenuItem("Stage", delegate
+		// v3.8.0：选中文件全是未变更文件时，Stage/Discard 菜单禁用（未变更文件不可 stage/discard）
+		bool allSelectedUnchanged = selectedFiles.Length > 0;
+		for (int i = 0; i < selectedFiles.Length; i++)
+		{
+			if (selectedFiles[i].ChangeType != ChangeType.Unchanged)
 			{
-				StageSelectedFiles();
-			});
-			string header = isSubmodule ? "Discard submodule changes..." : "Discard changes...";
-			yield return Commands.DiscardChangedFilesCommand.CreateMenuItem(header, delegate
-			{
-				DiscardSelectedFiles();
-			});
+				allSelectedUnchanged = false;
+				break;
+			}
+		}
+		yield return Commands.ToggleFileStage.CreateMenuItem("Stage", delegate
+		{
+			StageSelectedFiles();
+		}, !allSelectedUnchanged);
+		string header = isSubmodule ? "Discard submodule changes..." : "Discard changes...";
+		yield return Commands.DiscardChangedFilesCommand.CreateMenuItem(header, delegate
+		{
+			DiscardSelectedFiles();
+		}, !allSelectedUnchanged);
 			if (!multipleFilesSelected)
 			{
 				yield return new Separator();
@@ -1222,12 +1272,19 @@ namespace ForkPlus.UI.UserControls
 				_rebaseAmendSha = null;
 			}
 			ChangedFile[] changedFiles = FilterGitMmManagedSubmoduleChanges(RepositoryUserControl.RepositoryStatus.ChangedFiles);
+			// v3.8.0：开启"显示完整工作目录"时，把未变更的已跟踪文件合并进 unstaged 侧，ChangeType=Unchanged（无状态图标）。
+			// Amend 模式下 staged 来自不同数据源，不启用此功能以避免混淆。
+			bool showFullWorkingDirectory = ForkPlusSettings.Default.ShowFullWorkingDirectory && !AmendMode;
 			ChangedFile[] unstagedFiles;
 			ChangedFile[] stagedFiles;
 			SplitByStaged(changedFiles, out unstagedFiles, out stagedFiles);
 			if (AmendMode)
 			{
 				stagedFiles = FilterGitMmManagedSubmoduleChanges(new GetWorkingDirectoryChangedFilesGitCommand().ExecuteForAmend(GitModule, RepositoryUserControl.RepositoryData?.Submodules.Items).Result);
+			}
+			if (showFullWorkingDirectory)
+			{
+				unstagedFiles = MergeWithUnchangedFiles(unstagedFiles);
 			}
 			_updateDiffAction.Cancel();
 			FileDiffControl.Content = null;
@@ -1258,6 +1315,53 @@ namespace ForkPlus.UI.UserControls
 		private ChangedFile[] FilterGitMmManagedSubmoduleChanges(ChangedFile[] changedFiles)
 		{
 			return RepositoryUserControl.NormalizeChangedFilesForDisplay(changedFiles);
+		}
+
+		/// <summary>v3.8.0：把未变更的已跟踪文件合并进 unstaged 列表。
+		/// 调 git ls-files --cached -z 取全部已跟踪文件，与已有变更文件做差集，
+		/// 把"未出现在变更列表中"的路径构造成 ChangeType.Unchanged 的 ChangedFile（无状态图标，不参与 Stage/Discard）。
+		/// git 调用放后台线程避免阻塞 UI。</summary>
+		private ChangedFile[] MergeWithUnchangedFiles(ChangedFile[] unstagedFiles)
+		{
+			GitCommandResult<string[]> allFilesResult = Task.Run(() => new GetAllRepositoryFilesGitCommand().Execute(GitModule)).Result;
+			if (!allFilesResult.Succeeded || allFilesResult.Result == null)
+			{
+				return unstagedFiles;
+			}
+			string[] allTrackedFiles = allFilesResult.Result;
+			// 已有变更文件路径集合（用 Ordinal 忽略大小写，与 git 路径一致）
+			HashSet<string> changedPaths = new HashSet<string>(StringComparer.Ordinal);
+			if (unstagedFiles != null)
+			{
+				foreach (ChangedFile cf in unstagedFiles)
+				{
+					if (!cf.IsDirectory && cf.Path != null)
+					{
+						changedPaths.Add(cf.Path);
+					}
+				}
+			}
+			// 构造未变更文件列表
+			List<ChangedFile> unchanged = new List<ChangedFile>(allTrackedFiles.Length);
+			foreach (string path in allTrackedFiles)
+			{
+				if (!changedPaths.Contains(path))
+				{
+					unchanged.Add(new ChangedFile(path, StatusType.None, StatusType.None, ChangeType.Unchanged, staged: false, isNew: false, tracked: true));
+				}
+			}
+			if (unchanged.Count == 0)
+			{
+				return unstagedFiles;
+			}
+			// 合并：变更文件在前（用户更关心），未变更在后
+			ChangedFile[] merged = new ChangedFile[(unstagedFiles?.Length ?? 0) + unchanged.Count];
+			if (unstagedFiles != null && unstagedFiles.Length > 0)
+			{
+				Array.Copy(unstagedFiles, merged, unstagedFiles.Length);
+			}
+			unchanged.CopyTo(merged, unstagedFiles?.Length ?? 0);
+			return merged;
 		}
 
 		private static void SplitByStaged(ChangedFile[] changedFiles, out ChangedFile[] unstagedFiles, out ChangedFile[] stagedFiles)
