@@ -118,6 +118,29 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			base.Text = preformattedText ?? "";
 		}
 
+		/// <summary>v3.7.1：增量追加 — 把新增字节拼到已有 _bytes 末尾，并把已格式化好的新段文本追加到文档末尾。
+		/// 用于"加载更多"：避免每次追加都整串 base.Text= 重建行树，改用 TextDocument.Insert 在末尾增量插入。</summary>
+		public void AppendBytesWithText(byte[] additionalBytes, string additionalFormattedText, int totalByteLength)
+		{
+			if (additionalBytes == null || additionalBytes.Length == 0) return;
+			byte[] combined = new byte[totalByteLength];
+			if (_bytes != null && _bytes.Length > 0)
+			{
+				Array.Copy(_bytes, 0, combined, 0, Math.Min(_bytes.Length, totalByteLength));
+			}
+			Array.Copy(additionalBytes, 0, combined, _bytes == null ? 0 : _bytes.Length, additionalBytes.Length);
+			_bytes = combined;
+			// 末尾追加文本（第一段已有内容时先补换行）
+			if (base.Document.TextLength > 0)
+			{
+				base.Document.Insert(base.Document.TextLength, "\n" + (additionalFormattedText ?? ""));
+			}
+			else
+			{
+				base.Document.Text = additionalFormattedText ?? "";
+			}
+		}
+
 		/// <summary>当前已加载的字节（可能为 null）。</summary>
 		public byte[] GetBytes()
 		{

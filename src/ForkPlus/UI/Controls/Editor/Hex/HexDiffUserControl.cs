@@ -26,10 +26,12 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	{
 		private const int MaxBytesForDiffHighlight = 2 * 1024 * 1024; // 2MB：超过此阈值跳过逐字节比较（避免大文件卡顿）
 
-		// v3.7.1：单边渲染截断阈值。超过此字节数只格式化并渲染前 MaxBytesForFullRender 字节，
-		// 避免 AvalonEdit 同步重建超长行树（1.7MB → ~8MB 文本 ×2 editor）卡死 UI 线程。
+		// v3.7.1：单边渲染截断阈值。超过此字节数只格式化并渲染前 InitialChunkBytes 字节，
+		// 并显示"加载更多"按钮供用户手动增量加载，避免 AvalonEdit 同步重建超长行树卡死 UI 线程。
 		// MD5 仍对完整字节计算（后台线程），hash 完整性不受截断影响。
-		private const int MaxBytesForFullRender = 64 * 1024; // 64KB
+		// 首屏 16KB（~80KB 文本，AvalonEdit <30ms，绝不卡）；每次"加载更多"追加 16KB。
+		private const int InitialChunkBytes = 16 * 1024; // 16KB
+		private const int LoadMoreChunkBytes = 16 * 1024; // 16KB
 
 		// 差异字节背景色（橙黄）
 		private static readonly Brush DiffByteBackgroundBrush;
@@ -66,13 +68,22 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	// 避免快速切换文件时旧任务回填到 UI 造成内容错乱。
 	private CancellationTokenSource _loadCts;
 
+	// v3.7.1：增量加载状态。完整字节保留在内存供"加载更多"使用，但只渲染 [0, _renderedLen) 段。
+	// _renderedLen = min(完整长度, 已加载到的偏移)。两侧各自跟踪。
+	private byte[] _srcFull;
+	private byte[] _dstFull;
+	private int _srcRenderedLen;
+	private int _dstRenderedLen;
+	private Button _loadMoreButton;
+
 		public HexDiffUserControl()
 		{
-			// v3.6.5：四行布局 — Row 0 工具栏，Row 1 MD5 行，Row 2 列头（对齐编辑器），Row 3 编辑器
+			// v3.6.5：五行布局 — Row 0 工具栏，Row 1 MD5 行，Row 2 列头（对齐编辑器），Row 3 编辑器，Row 4 加载更多按钮
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
 			// 共享工具栏
 			DockPanel toolbar = new DockPanel { Margin = new Thickness(4, 2, 4, 2), LastChildFill = false };
@@ -225,6 +236,20 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 
 			Children.Add(editorsGrid);
 			SetRow(editorsGrid, 3);
+
+			// v3.7.1：Row 4 — "加载更多"按钮。大文件首屏只渲染 16KB，用户点击此处增量加载下一段 16KB。
+			// 初始 Collapsed，SetContent 完成后若任一侧被截断则显示。
+			_loadMoreButton = new Button
+			{
+				Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(LoadMoreChunkBytes) + ")",
+				HorizontalAlignment = HorizontalAlignment.Center,
+				Margin = new Thickness(0, 4, 0, 4),
+				Padding = new Thickness(12, 2, 12, 2),
+				Visibility = Visibility.Collapsed
+			};
+			_loadMoreButton.Click += LoadMoreButton_Click;
+			Children.Add(_loadMoreButton);
+			SetRow(_loadMoreButton, 4);
 		}
 
 		public void SetContent(HexDiffContent content)
@@ -254,22 +279,22 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				byte[] srcBytesFull = content?.SrcData?.ToArray();
 				byte[] dstBytesFull = content?.DstData?.ToArray();
 
-				// v3.7.1：渲染截断 — 超过阈值的文件只取前 MaxBytesForFullRender 字节用于格式化与渲染，
-				// 避免 AvalonEdit 同步行树重建卡死 UI。MD5 仍对完整字节计算，hash 完整性不受影响。
-				bool srcTruncated = srcBytesFull != null && srcBytesFull.Length > MaxBytesForFullRender;
-				bool dstTruncated = dstBytesFull != null && dstBytesFull.Length > MaxBytesForFullRender;
-				byte[] srcBytes = srcTruncated ? SubArray(srcBytesFull, 0, MaxBytesForFullRender) : srcBytesFull;
-				byte[] dstBytes = dstTruncated ? SubArray(dstBytesFull, 0, MaxBytesForFullRender) : dstBytesFull;
+				// v3.7.1：增量渲染 — 首屏只格式化并渲染前 InitialChunkBytes 字节，避免 AvalonEdit 同步重建
+				// 超长行树卡死 UI。完整字节保留在内存，用户点"加载更多"再追加下一段。MD5 仍对完整字节计算。
+				bool srcTruncated = srcBytesFull != null && srcBytesFull.Length > InitialChunkBytes;
+				bool dstTruncated = dstBytesFull != null && dstBytesFull.Length > InitialChunkBytes;
+				int srcRenderLen = srcBytesFull == null ? 0 : Math.Min(srcBytesFull.Length, InitialChunkBytes);
+				int dstRenderLen = dstBytesFull == null ? 0 : Math.Min(dstBytesFull.Length, InitialChunkBytes);
+				byte[] srcBytes = srcBytesFull == null ? null : SubArray(srcBytesFull, 0, srcRenderLen);
+				byte[] dstBytes = dstBytesFull == null ? null : SubArray(dstBytesFull, 0, dstRenderLen);
 
-				// 后台：格式化 hex 文本（用截断后的字节，截断时追加提示行）
+				// 后台：格式化 hex 文本（首屏段，不追加截断提示行 — 截断提示改由"加载更多"按钮承载）
 				token.ThrowIfCancellationRequested();
 				string srcText = srcBytes == null ? "" : HexFormatter.Format(srcBytes, bytesPerRow, showOffset, showAscii);
-				if (srcTruncated) srcText += "\n... (文件过大，仅显示前 " + FormatByteSize(MaxBytesForFullRender) + " / 共 " + FormatByteSize(srcBytesFull.Length) + ") ...";
 				token.ThrowIfCancellationRequested();
 				string dstText = dstBytes == null ? "" : HexFormatter.Format(dstBytes, bytesPerRow, showOffset, showAscii);
-				if (dstTruncated) dstText += "\n... (文件过大，仅显示前 " + FormatByteSize(MaxBytesForFullRender) + " / 共 " + FormatByteSize(dstBytesFull.Length) + ") ...";
 
-				// 后台：逐字节比较生成差异索引集合（仅在截断后的范围内比较，避免巨大 HashSet）
+				// 后台：逐字节比较生成差异索引集合（仅首屏范围内比较）
 				token.ThrowIfCancellationRequested();
 				HashSet<int> srcDiff = null;
 				HashSet<int> dstDiff = null;
@@ -281,11 +306,14 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				token.ThrowIfCancellationRequested();
 				string dstMd5 = dstBytesFull == null ? "-" : ComputeMd5Hex(dstBytesFull);
 
-				// 切回 UI 线程：分帧执行 base.Text 赋值 + 高亮重绘。
-				// 用 Dispatcher.Yield 在每步之间让出 UI 线程处理一次消息泵，避免长时间无响应。
+				// 切回 UI 线程：分帧执行 base.Text 赋值 + 高亮重绘 + 保存增量加载状态。
 				Dispatcher.BeginInvoke(new Action(async () =>
 				{
 					if (token.IsCancellationRequested) return;
+					_srcFull = srcBytesFull;
+					_dstFull = dstBytesFull;
+					_srcRenderedLen = srcRenderLen;
+					_dstRenderedLen = dstRenderLen;
 					_srcEditor.LoadBytesWithText(srcBytes, srcText);
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
@@ -296,8 +324,9 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
 					_dstEditor.HighlightBytes(dstDiff);
-					_srcMd5TextBlock.Text = "MD5: " + srcMd5 + (srcTruncated ? "  (已截断显示)" : "");
-					_dstMd5TextBlock.Text = "MD5: " + dstMd5 + (dstTruncated ? "  (已截断显示)" : "");
+					_srcMd5TextBlock.Text = "MD5: " + srcMd5 + (srcTruncated ? "  (部分显示)" : "");
+					_dstMd5TextBlock.Text = "MD5: " + dstMd5 + (dstTruncated ? "  (部分显示)" : "");
+					UpdateLoadMoreButton();
 				}));
 			}, token).ContinueWith(t =>
 			{
@@ -305,6 +334,88 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				if (t.IsFaulted && !(t.Exception?.InnerException is OperationCanceledException))
 				{
 					Log.Error("Hex diff async load failed", t.Exception);
+				}
+			}, TaskScheduler.Default);
+		}
+
+		/// <summary>v3.7.1：根据两侧剩余未渲染字节数更新"加载更多"按钮的显示与文案。</summary>
+		private void UpdateLoadMoreButton()
+		{
+			if (_loadMoreButton == null) return;
+			int srcRemaining = (_srcFull?.Length ?? 0) - _srcRenderedLen;
+			int dstRemaining = (_dstFull?.Length ?? 0) - _dstRenderedLen;
+			int maxRemaining = Math.Max(srcRemaining, dstRemaining);
+			if (maxRemaining <= 0)
+			{
+				_loadMoreButton.Visibility = Visibility.Collapsed;
+				return;
+			}
+			int nextChunk = Math.Min(LoadMoreChunkBytes, maxRemaining);
+			_loadMoreButton.Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(nextChunk) + " / 剩余 " + FormatByteSize(maxRemaining) + ")";
+			_loadMoreButton.Visibility = Visibility.Visible;
+		}
+
+		/// <summary>v3.7.1：点击"加载更多" — 后台格式化两侧下一段字节，增量追加到 editor 末尾并刷新高亮。</summary>
+		private void LoadMoreButton_Click(object sender, RoutedEventArgs e)
+		{
+			if ((_srcFull == null || _srcRenderedLen >= _srcFull.Length) &&
+				(_dstFull == null || _dstRenderedLen >= _dstFull.Length)) return;
+
+			// 复用主加载的取消令牌机制：防止旧的加载更多与新 SetContent 竞争
+			CancelPendingLoad();
+			CancellationTokenSource cts = new CancellationTokenSource();
+			_loadCts = cts;
+			CancellationToken token = cts.Token;
+
+			int bytesPerRow = _srcEditor.BytesPerRow;
+			bool showOffset = _srcEditor.ShowOffset;
+			bool showAscii = _srcEditor.ShowAscii;
+
+			int srcOldLen = _srcRenderedLen;
+			int dstOldLen = _dstRenderedLen;
+			int srcNewLen = _srcFull == null ? 0 : Math.Min(_srcFull.Length, srcOldLen + LoadMoreChunkBytes);
+			int dstNewLen = _dstFull == null ? 0 : Math.Min(_dstFull.Length, dstOldLen + LoadMoreChunkBytes);
+
+			byte[] srcAdd = (srcNewLen > srcOldLen) ? SubArray(_srcFull, srcOldLen, srcNewLen - srcOldLen) : null;
+			byte[] dstAdd = (dstNewLen > dstOldLen) ? SubArray(_dstFull, dstOldLen, dstNewLen - dstOldLen) : null;
+
+			Task.Run(() =>
+			{
+				token.ThrowIfCancellationRequested();
+				string srcAddText = srcAdd == null ? "" : HexFormatter.Format(srcAdd, bytesPerRow, showOffset, showAscii);
+				token.ThrowIfCancellationRequested();
+				string dstAddText = dstAdd == null ? "" : HexFormatter.Format(dstAdd, bytesPerRow, showOffset, showAscii);
+
+				// 重新计算 [0, newLen) 范围的 diff（覆盖已加载全部，保证高亮连续）
+				token.ThrowIfCancellationRequested();
+				byte[] srcRendered = srcNewLen > 0 ? SubArray(_srcFull, 0, srcNewLen) : null;
+				byte[] dstRendered = dstNewLen > 0 ? SubArray(_dstFull, 0, dstNewLen) : null;
+				HashSet<int> srcDiff = null;
+				HashSet<int> dstDiff = null;
+				ComputeDiffIndices(srcRendered, dstRendered, out srcDiff, out dstDiff);
+
+				Dispatcher.BeginInvoke(new Action(async () =>
+				{
+					if (token.IsCancellationRequested) return;
+					if (srcAdd != null) _srcEditor.AppendBytesWithText(srcAdd, srcAddText, srcNewLen);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
+					_srcEditor.HighlightBytes(srcDiff);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
+					if (dstAdd != null) _dstEditor.AppendBytesWithText(dstAdd, dstAddText, dstNewLen);
+					await Dispatcher.Yield(DispatcherPriority.Background);
+					if (token.IsCancellationRequested) return;
+					_dstEditor.HighlightBytes(dstDiff);
+					_srcRenderedLen = srcNewLen;
+					_dstRenderedLen = dstNewLen;
+					UpdateLoadMoreButton();
+				}));
+			}, token).ContinueWith(t =>
+			{
+				if (t.IsFaulted && !(t.Exception?.InnerException is OperationCanceledException))
+				{
+					Log.Error("Hex diff load-more failed", t.Exception);
 				}
 			}, TaskScheduler.Default);
 		}
@@ -391,6 +502,10 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		public void ControlWillBeRemovedFromFileDiffControl()
 		{
 			CancelPendingLoad();
+			_srcFull = null;
+			_dstFull = null;
+			_srcRenderedLen = 0;
+			_dstRenderedLen = 0;
 			_content?.DisposeData();
 			_content = null;
 		}
