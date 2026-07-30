@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -52,6 +55,10 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	// v3.6.5：MD5 行 — 左侧 src（修改前）MD5，右侧 dst（修改后）MD5，与列头两列对齐
 	private readonly TextBlock _srcMd5TextBlock;
 	private readonly TextBlock _dstMd5TextBlock;
+
+	// v3.7.1：异步加载取消控制。每次 SetContent 取消上一次未完成的异步加载，
+	// 避免快速切换文件时旧任务回填到 UI 造成内容错乱。
+	private CancellationTokenSource _loadCts;
 
 		public HexDiffUserControl()
 		{
@@ -217,14 +224,107 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		public void SetContent(HexDiffContent content)
 		{
 			_content = content;
-			byte[] srcBytes = content?.SrcData?.ToArray();
-			byte[] dstBytes = content?.DstData?.ToArray();
-			_srcEditor.LoadBytes(srcBytes);
-			_dstEditor.LoadBytes(dstBytes);
-			ApplyDiffHighlight(srcBytes, dstBytes);
-			// v3.6.5：更新 MD5 行（左右两侧各一，与列头"修改前/修改后"对齐）
-			_srcMd5TextBlock.Text = "MD5: " + (srcBytes == null ? "-" : ComputeMd5Hex(srcBytes));
-			_dstMd5TextBlock.Text = "MD5: " + (dstBytes == null ? "-" : ComputeMd5Hex(dstBytes));
+			// 取消上一次未完成的异步加载
+			CancelPendingLoad();
+			CancellationTokenSource cts = new CancellationTokenSource();
+			_loadCts = cts;
+			CancellationToken token = cts.Token;
+
+			// 立即清空并显示 loading 占位，避免用户看到旧内容残留
+			_srcEditor.LoadBytes(null);
+			_dstEditor.LoadBytes(null);
+			_srcMd5TextBlock.Text = "MD5: ...";
+			_dstMd5TextBlock.Text = "MD5: ...";
+
+			// UI 线程快照 HexEditor 的格式化参数（后台线程不能访问 DispatcherObject 属性）
+			int bytesPerRow = _srcEditor.BytesPerRow;
+			bool showOffset = _srcEditor.ShowOffset;
+			bool showAscii = _srcEditor.ShowAscii;
+
+			// 提取原始字节（ToArray 是内存拷贝，放后台避免占用 UI 线程）
+			Task.Run(() =>
+			{
+				token.ThrowIfCancellationRequested();
+				byte[] srcBytes = content?.SrcData?.ToArray();
+				byte[] dstBytes = content?.DstData?.ToArray();
+
+				// 后台：格式化 hex 文本（纯 StringBuilder，无 UI 依赖）
+				token.ThrowIfCancellationRequested();
+				string srcText = srcBytes == null ? "" : HexFormatter.Format(srcBytes, bytesPerRow, showOffset, showAscii);
+				token.ThrowIfCancellationRequested();
+				string dstText = dstBytes == null ? "" : HexFormatter.Format(dstBytes, bytesPerRow, showOffset, showAscii);
+
+				// 后台：逐字节比较生成差异索引集合
+				token.ThrowIfCancellationRequested();
+				HashSet<int> srcDiff = null;
+				HashSet<int> dstDiff = null;
+				ComputeDiffIndices(srcBytes, dstBytes, out srcDiff, out dstDiff);
+
+				// 后台：MD5 计算
+				token.ThrowIfCancellationRequested();
+				string srcMd5 = srcBytes == null ? "-" : ComputeMd5Hex(srcBytes);
+				token.ThrowIfCancellationRequested();
+				string dstMd5 = dstBytes == null ? "-" : ComputeMd5Hex(dstBytes);
+
+				// 切回 UI 线程：只做 base.Text 赋值 + 高亮重绘（DispatcherObject 必须在 UI 线程访问）
+				Dispatcher.BeginInvoke(new Action(() =>
+				{
+					if (token.IsCancellationRequested) return;
+					_srcEditor.LoadBytesWithText(srcBytes, srcText);
+					_dstEditor.LoadBytesWithText(dstBytes, dstText);
+					_srcEditor.HighlightBytes(srcDiff);
+					_dstEditor.HighlightBytes(dstDiff);
+					_srcMd5TextBlock.Text = "MD5: " + srcMd5;
+					_dstMd5TextBlock.Text = "MD5: " + dstMd5;
+				}));
+			}, token).ContinueWith(t =>
+			{
+				// 后台异常静默记录（取消导致的异常不算错误）
+				if (t.IsFaulted && !(t.Exception?.InnerException is OperationCanceledException))
+				{
+					Log.Error("Hex diff async load failed", t.Exception);
+				}
+			}, TaskScheduler.Default);
+		}
+
+		/// <summary>v3.7.1：取消正在进行的异步加载。</summary>
+		private void CancelPendingLoad()
+		{
+			if (_loadCts != null)
+			{
+				try { _loadCts.Cancel(); } catch { }
+				_loadCts = null;
+			}
+		}
+
+		/// <summary>v3.7.1：后台计算 src/dst 的差异字节索引（从 ApplyDiffHighlight 抽出，纯 CPU 无 UI 依赖）。</summary>
+		private void ComputeDiffIndices(byte[] srcBytes, byte[] dstBytes, out HashSet<int> srcDiff, out HashSet<int> dstDiff)
+		{
+			srcDiff = null;
+			dstDiff = null;
+			if (srcBytes == null || dstBytes == null) return;
+			int len = Math.Min(srcBytes.Length, dstBytes.Length);
+			if (len > MaxBytesForDiffHighlight) return; // 大文件跳过逐字节比较
+
+			srcDiff = new HashSet<int>();
+			dstDiff = new HashSet<int>();
+			for (int i = 0; i < len; i++)
+			{
+				if (srcBytes[i] != dstBytes[i])
+				{
+					srcDiff.Add(i);
+					dstDiff.Add(i);
+				}
+			}
+			// 超出对侧长度的部分也视为差异
+			if (srcBytes.Length > dstBytes.Length)
+			{
+				for (int i = dstBytes.Length; i < srcBytes.Length; i++) srcDiff.Add(i);
+			}
+			if (dstBytes.Length > srcBytes.Length)
+			{
+				for (int i = srcBytes.Length; i < dstBytes.Length; i++) dstDiff.Add(i);
+			}
 		}
 
 		/// <summary>v3.6.5：计算字节数组的 MD5 并返回小写十六进制字符串。</summary>
@@ -243,42 +343,10 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			}
 		}
 
-		/// <summary>逐字节比较两侧，在差异字节位置叠加背景色。
-		/// 实现：直接修改 HexEditor 内的 AvalonEdit 文本 — 这里改用一种轻量方式：
-		/// 通过给两侧 HexEditor 安装一个 DiffHighlightTransformer 来高亮差异字节。</summary>
-		private void ApplyDiffHighlight(byte[] srcBytes, byte[] dstBytes)
-		{
-			if (srcBytes == null || dstBytes == null) return;
-			int len = Math.Min(srcBytes.Length, dstBytes.Length);
-			if (len > MaxBytesForDiffHighlight) return; // 大文件跳过
-
-			// 收集 src 侧差异字节索引
-			System.Collections.Generic.HashSet<int> srcDiff = new System.Collections.Generic.HashSet<int>();
-			System.Collections.Generic.HashSet<int> dstDiff = new System.Collections.Generic.HashSet<int>();
-			for (int i = 0; i < len; i++)
-			{
-				if (srcBytes[i] != dstBytes[i])
-				{
-					srcDiff.Add(i);
-					dstDiff.Add(i);
-				}
-			}
-			// 超出对侧长度的部分也视为差异
-			if (srcBytes.Length > dstBytes.Length)
-			{
-				for (int i = dstBytes.Length; i < srcBytes.Length; i++) srcDiff.Add(i);
-			}
-			if (dstBytes.Length > srcBytes.Length)
-			{
-				for (int i = srcBytes.Length; i < dstBytes.Length; i++) dstDiff.Add(i);
-			}
-
-			_srcEditor.HighlightBytes(srcDiff);
-			_dstEditor.HighlightBytes(dstDiff);
-		}
-
 		public void ControlWillBeRemovedFromFileContentControl()
 		{
+			// v3.7.1：控件移除时取消未完成的异步加载，避免回填到已失效的 UI
+			CancelPendingLoad();
 			_content?.DisposeData();
 			_content = null;
 		}

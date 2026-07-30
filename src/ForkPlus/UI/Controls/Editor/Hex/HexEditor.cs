@@ -110,6 +110,14 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			Rebuild();
 		}
 
+		/// <summary>v3.7.1：加载字节，并使用调用方在后台线程预先格式化好的文本，跳过 Format。
+		/// 用于 Hex Diff 异步化：Format 在后台线程算完，UI 线程只做 base.Text 赋值。</summary>
+		public void LoadBytesWithText(byte[] bytes, string preformattedText)
+		{
+			_bytes = bytes ?? Array.Empty<byte>();
+			base.Text = preformattedText ?? "";
+		}
+
 		/// <summary>当前已加载的字节（可能为 null）。</summary>
 		public byte[] GetBytes()
 		{
