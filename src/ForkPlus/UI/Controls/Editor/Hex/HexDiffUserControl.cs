@@ -20,16 +20,16 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	/// v3.1.0：side-by-side Hex Diff 视图。
 	/// 左侧显示 src（旧版本）字节，右侧显示 dst（新版本）字节。
 	/// 共享字节宽度 / ASCII / Offset 设置，差异字节用背景色高亮（橙黄）。
-	/// 实现 FileContentControl.IFileContentControlSubControl 以便在 SubView 切换时释放 MemoryStream。
+	/// 实现 DiffControlContainer.IFileDiffControlSubControl 以便在 SubView 切换时取消异步加载并释放 MemoryStream。
 	/// </summary>
-	public class HexDiffUserControl : Grid, FileContentControl.IFileContentControlSubControl
+	public class HexDiffUserControl : Grid, DiffControlContainer.IFileDiffControlSubControl
 	{
 		private const int MaxBytesForDiffHighlight = 2 * 1024 * 1024; // 2MB：超过此阈值跳过逐字节比较（避免大文件卡顿）
 
 		// v3.7.1：单边渲染截断阈值。超过此字节数只格式化并渲染前 MaxBytesForFullRender 字节，
 		// 避免 AvalonEdit 同步重建超长行树（1.7MB → ~8MB 文本 ×2 editor）卡死 UI 线程。
 		// MD5 仍对完整字节计算（后台线程），hash 完整性不受截断影响。
-		private const int MaxBytesForFullRender = 256 * 1024; // 256KB
+		private const int MaxBytesForFullRender = 64 * 1024; // 64KB
 
 		// 差异字节背景色（橙黄）
 		private static readonly Brush DiffByteBackgroundBrush;
@@ -382,9 +382,14 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			return result;
 		}
 
-		public void ControlWillBeRemovedFromFileContentControl()
+		/// <summary>v3.7.1：从 FileDiffControl（DiffControlContainer）移除时取消未完成的异步加载并释放数据。
+		/// 关键：HexDiffUserControl 宿主在 FileDiffControl 下，必须实现 IFileDiffControlSubControl
+		/// （而非 IFileContentControlSubControl）。此前误实现成 IFileContentControlSubControl，导致
+		/// DiffControlContainer.ShowSubView 切换子控件时（第 55 行 is-check）不识别本控件、不调用本方法，
+		/// _loadCts 不被取消，旧后台 Task.Run 继续往 UI 线程投递 base.Text=大文本 的重活，多次切换后
+		/// 重活排队累积成卡死。修正接口后切换文件即取消旧加载。</summary>
+		public void ControlWillBeRemovedFromFileDiffControl()
 		{
-			// v3.7.1：控件移除时取消未完成的异步加载，避免回填到已失效的 UI
 			CancelPendingLoad();
 			_content?.DisposeData();
 			_content = null;

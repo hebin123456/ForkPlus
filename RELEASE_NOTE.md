@@ -8,6 +8,7 @@
 
 - 修复二进制文件（约 2MB）在变更视图展开时界面卡死的问题。根因是 Hex Diff 视图的 SetContent 在 UI 线程同步执行了字节拷贝、hex 文本格式化、逐字节差异比较、MD5 计算等重活。现已将数据准备阶段移至后台线程，UI 线程只保留 AvalonEdit 文档赋值与高亮重绘（DispatcherObject 必须在 UI 线程访问）。同时加入 CancellationToken：快速切换文件或控件移除时取消未完成的加载，避免旧内容回填。
 - 继续修复 1.7MB 量级二进制文件（如 mp4）展开后界面仍卡死的问题。异步化后真正的卡点是 UI 线程上 AvalonEdit 对超长 hex 文本（1.7MB 字节 → 约 8MB 文本 ×2 editor）同步重建 DocumentLine 行树。新增 256KB 单边渲染截断阈值：超过则只格式化并渲染前 256KB，末尾追加截断提示，逐字节 diff 高亮也限定在截断范围内；MD5 仍对完整字节计算（后台线程），hash 完整性不受影响。同时 UI 回调用 Dispatcher.Yield 分帧执行两侧 editor 的赋值与高亮，避免单次回调长时间占用 UI 线程。
+- 再次修复 256KB 截断阈值下 1.7MB mp4 仍卡死的问题。根因有二：其一，单边渲染阈值 256KB 偏高，格式化后约 1.2MB 文本 ×2 editor 串行赋值 + WPF 首帧布局仍可达秒级阻塞；其二，HexDiffUserControl 误实现为 FileContentControl.IFileContentControlSubControl，而它实际宿主在 FileDiffControl（DiffControlContainer）下，DiffControlContainer.ShowSubView 切换子控件时只识别 IFileDiffControlSubControl，导致旧控件的取消回调永不触发、_loadCts 不被取消，旧后台 Task.Run 继续往 UI 线程投递大文本赋值，多次切换后重活排队累积成卡死。现已将单边渲染阈值降至 64KB（格式化后约 315KB 文本，AvalonEdit 处理 <80ms，绝不卡顿），并将接口修正为 DiffControlContainer.IFileDiffControlSubControl，使切换文件时正确取消未完成的异步加载。
 
 ## v3.7.0
 
