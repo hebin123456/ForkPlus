@@ -1611,6 +1611,7 @@
     "Show Annotated Tag Details...": "Afficher détails étiquette annotée...",
     "Show Changes view (second press will focus commit field)": "Afficher la vue des modifications (second appui met le focus sur le champ de commit)",
     "Show HEAD": "Afficher le HEAD",
+    "Show Full Working Directory": "Afficher le répertoire de travail complet",
     "Show Ignored Files": "Afficher les fichiers ignorés",
     "Show In File Tree": "Afficher dans l'arborescence de fichiers",
     "Show Lost Commits (Reflog)": "Afficher les commits perdus (Reflog)",

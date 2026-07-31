@@ -267,9 +267,10 @@ namespace ForkPlus.UI.UserControls
 			else
 			{
 				StageButton.Content = Preferences.PreferencesLocalization.Translate("Stage", ForkPlusSettings.Default.UiLanguage);
-				UnstageButton.Content = Preferences.PreferencesLocalization.Translate("Unstage", ForkPlusSettings.Default.UiLanguage);
-				StageButton.IsEnabled = Enabled && UnstagedFilesFileListUserControl.SelectedItems.Length != 0;
-				UnstageButton.IsEnabled = Enabled && StagedFilesFileListUserControl.SelectedItems.Length != 0;
+			UnstageButton.Content = Preferences.PreferencesLocalization.Translate("Unstage", ForkPlusSettings.Default.UiLanguage);
+			// v3.8.1：开启"显示完整工作目录"时，选中全是未变更文件则 Stage 按钮置灰（只读）
+			StageButton.IsEnabled = Enabled && UnstagedFilesFileListUserControl.SelectedItems.Any((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged);
+			UnstageButton.IsEnabled = Enabled && StagedFilesFileListUserControl.SelectedItems.Length != 0;
 			}
 		}
 

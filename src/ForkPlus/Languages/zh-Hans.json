@@ -1614,6 +1614,7 @@
     "Show Annotated Tag Details...": "显示附注标签详情...",
     "Show Changes view (second press will focus commit field)": "显示变更视图（再次按下会聚焦提交输入框）",
     "Show HEAD": "显示 HEAD",
+    "Show Full Working Directory": "显示完整工作目录",
     "Show Ignored Files": "显示忽略的文件",
     "Show In File Tree": "在文件树中显示",
     "Show Lost Commits (Reflog)": "显示丢失的提交（Reflog）",

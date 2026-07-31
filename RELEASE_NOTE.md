@@ -2,6 +2,15 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.8.1
+
+### Bug 修复
+
+- 修复 v3.8.0 新增的"显示完整工作目录"功能存在的三个问题：
+  1. 菜单项 "Show Full Working Directory" 未做国际化，非英文界面下显示英文原文。现已为 zh-Hans、zh-Hant、ja-JP、ko-KR、fr-FR、de-DE、es-ES 共 7 个语言文件补充翻译。
+  2. 该视图为只读，但选中未变更文件时 Stage 按钮仍可点击。现已将 Stage 按钮在选中项全部为未变更文件（`ChangeType.Unchanged`）时置灰，避免对只读文件误触发暂存操作。
+  3. 点击未变更文件时右侧视图仅显示 "File has no changes"，未展示文件内容。现已在 `FileDiffControl` 中对未变更文件特殊处理：通过 `git rev-parse HEAD` 取当前 HEAD sha，用 `GetFileContentGitCommand` 从仓库读取完整文件内容（文本走 `TextContentControl`、二进制走 `HexContentControl`/`BinaryFileContentControl`，与文件树浏览视图一致），后台线程加载避免阻塞 UI，加载期间可被切换文件取消。
+
 ## v3.8.0
 
 ### 新功能

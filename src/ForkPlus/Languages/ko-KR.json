@@ -1611,6 +1611,7 @@
     "Show Annotated Tag Details...": "주석 태그 세부정보 표시...",
     "Show Changes view (second press will focus commit field)": "변경사항 보기 표시 (두 번째 누르면 커밋 입력란에 포커스)",
     "Show HEAD": "HEAD 표시",
+    "Show Full Working Directory": "전체 작업 디렉토리 표시",
     "Show Ignored Files": "무시된 파일 표시",
     "Show In File Tree": "파일 트리에서 표시",
     "Show Lost Commits (Reflog)": "잃어버린 커밋 표시 (Reflog)",

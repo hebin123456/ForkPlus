@@ -1611,6 +1611,7 @@
     "Show Annotated Tag Details...": "注釈付きタグの詳細を表示...",
     "Show Changes view (second press will focus commit field)": "変更ビューを表示 (2回目の押下でコミット欄にフォーカス)",
     "Show HEAD": "HEAD を表示",
+    "Show Full Working Directory": "完全な作業ディレクトリを表示",
     "Show Ignored Files": "無視されたファイルを表示",
     "Show In File Tree": "ファイルツリーで表示",
     "Show Lost Commits (Reflog)": "失われたコミットを表示 (Reflog)",

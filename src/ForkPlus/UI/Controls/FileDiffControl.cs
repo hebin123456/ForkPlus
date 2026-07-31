@@ -10,6 +10,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Parsing;
 using ForkPlus.Git.Diff.Presentation;
+using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
@@ -180,14 +181,20 @@ namespace ForkPlus.UI.Controls
 			if (parsedDiffContent != null)
 			{
 				Diff diff2 = parsedDiffContent.Diff;
-				if (diff2 == null)
+			if (diff2 == null)
+			{
+				// v3.8.1：开启"显示完整工作目录"时，未变更文件无 diff，改为显示从 HEAD 读取的完整文件内容（只读）
+				if (changedFile.ChangeType == ChangeType.Unchanged)
 				{
-					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
-					{
-						h.Collapse();
-						c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
-					});
+					LoadUnchangedFileContent(repositoryUserControl, changedFile);
+					return;
 				}
+				ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
+				{
+					h.Collapse();
+					c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
+				});
+			}
 				else if (diff2.Type == Diff.FileType.Text)
 				{
 					SubmoduleChangedFile submoduleChangedFile2 = changedFile as SubmoduleChangedFile;
@@ -521,6 +528,132 @@ namespace ForkPlus.UI.Controls
 				c.FallbackMessage = error.FriendlyDescription;
 				h.Collapse();
 			});
+		}
+
+		/// <summary>v3.8.1：未变更文件（"显示完整工作目录"开启时）从 HEAD 读取并显示完整文件内容（只读）。</summary>
+		private void LoadUnchangedFileContent(RepositoryUserControl repositoryUserControl, ChangedFile changedFile)
+		{
+			GitModule gitModule = repositoryUserControl.GitModule;
+			if (gitModule == null)
+			{
+				ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
+				{
+					h.Collapse();
+					c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
+				});
+				return;
+			}
+			_activeRefreshJob?.Monitor.Cancel();
+			_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading file content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
+			{
+				// 优先用已加载的 RepositoryData.HeadSha；空仓库/未加载时回退 git rev-parse HEAD
+				Sha? headShaNullable = repositoryUserControl.RepositoryData?.References?.HeadSha;
+				if (!headShaNullable.HasValue)
+				{
+					string headShaStr = ReadHeadSha(gitModule);
+					if (headShaStr != null)
+					{
+						headShaNullable = Sha.Parse(headShaStr);
+					}
+				}
+				GitCommandResult<Content> fileContentResult;
+				if (!headShaNullable.HasValue)
+				{
+					fileContentResult = GitCommandResult<Content>.Failure(new GitCommandError.Bug("Cannot resolve HEAD"));
+				}
+				else
+				{
+					fileContentResult = new GetFileContentGitCommand().Execute(gitModule, headShaNullable.GetValueOrDefault(), changedFile.Path);
+				}
+				GitCommandResult<Content> result = fileContentResult;
+				base.Dispatcher.Async(delegate
+				{
+					if (!monitor.IsCanceled)
+					{
+						_activeRefreshJob = null;
+						if (!result.Succeeded)
+						{
+							ShowErrorView(result.Error);
+							return;
+						}
+						ShowUnchangedFileContentView(result.Result, gitModule, changedFile);
+					}
+				});
+			}, JobFlags.Hidden);
+		}
+
+		/// <summary>v3.8.1：渲染未变更文件的完整内容。顺序与 FileContentControl.UpdateView 保持一致：Hex → Binary(含 Image/Lfs) → Text。</summary>
+		private void ShowUnchangedFileContentView(Content content, GitModule gitModule, ChangedFile changedFile)
+		{
+			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
+			HexContent hexContent = content as HexContent;
+			if (hexContent != null)
+			{
+				ShowSubView(() => new HexContentControl(), delegate(HexContentControl c, FileControlHeaderUserControl h)
+				{
+					c.SetContent(hexContent);
+					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Hex);
+				});
+				return;
+			}
+			BinaryContent binaryContent = content as BinaryContent;
+			if (binaryContent != null)
+			{
+				ShowSubView(() => new BinaryFileContentControl(), delegate(BinaryFileContentControl c, FileControlHeaderUserControl h)
+				{
+					c.SetContent(gitModule, binaryContent);
+					ShowHeaderIfAllowed(h, changedFile);
+				});
+				return;
+			}
+			TextContent textContent = content as TextContent;
+			if (textContent != null)
+			{
+				ShowSubView(delegate
+				{
+					TextContentControl textContentControl = new TextContentControl();
+					textContentControl.PositionCache = _positionCache;
+					textContentControl.ContextMenu = new ContextMenu();
+					textContentControl.ContextMenuClosing += delegate
+					{
+						textContentControl.ContextMenu.Items.Clear();
+					};
+					return textContentControl;
+				}, delegate(TextContentControl c, FileControlHeaderUserControl h)
+				{
+					c.ContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+					{
+						if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
+						{
+							contextMenu.Items.Clear();
+							FileContentControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, textContentControl, contextMenu, textContent.Path);
+							contextMenu.Items.Add(new Separator());
+							FileContentControl.Commands.Copy.AddMenuItems(textContentControl, contextMenu);
+						}
+					};
+					c.SetContent(textContent);
+					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
+				});
+			}
+		}
+
+		/// <summary>读取当前 HEAD 的 commit sha（40 字符），失败返回 null。</summary>
+		private static string ReadHeadSha(GitModule gitModule)
+		{
+			try
+			{
+				GitRequestResult r = new GitRequest(gitModule).Command("rev-parse", "--verify", "HEAD^{commit}").Execute(silent: true);
+				if (!r.Success)
+				{
+					return null;
+				}
+				string s = r.Stdout?.Trim() ?? "";
+				return s.Length == 40 ? s : null;
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		private static GitCommandResult<BinaryDiffContent> LoadBinaryDiffContent(Diff diff, GitModule gitModule, ChangedFile changedFile, JobMonitor monitor)
