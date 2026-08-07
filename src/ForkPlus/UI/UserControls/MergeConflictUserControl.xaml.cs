@@ -156,14 +156,16 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
-			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
-				return;
-			}
+		{
+			// v3.8.2：用 ForkPlus 自定义弹窗替换原生 MessageBox
+			new MessageBoxWindow(
+				"AI Resolve",
+				"AI is not configured. Please configure AI review settings in Preferences first.",
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
+		}
 			GitModule gitModule = _repositoryUserControl.GitModule;
 			string filePath;
 			try
@@ -183,22 +185,23 @@ namespace ForkPlus.UI.UserControls
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to read conflict file: " + ex.Message);
-				MessageBox.Show(
-					PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Error);
-				return;
+			new MessageBoxWindow(
+				"AI Resolve",
+				PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
 			}
 			if (string.IsNullOrEmpty(conflictedContent)
 				|| !conflictedContent.Contains("<<<<<<<") || !conflictedContent.Contains(">>>>>>>"))
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("No conflict markers found in the file."),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Information);
-				return;
+				new MessageBoxWindow(
+				"AI Resolve",
+				"No conflict markers found in the file.",
+				"OK",
+				showCancelButton: false).ShowDialog();
+			return;
 			}
 
 			_aiResolving = true;
@@ -260,12 +263,13 @@ namespace ForkPlus.UI.UserControls
 			if (requestError != null)
 			{
 				Log.Error("AI Resolve failed: " + requestError.Message);
-				MessageBox.Show(
-					PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Error);
-				return;
+			new MessageBoxWindow(
+				"AI Resolve",
+				PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
 			}
 
 			string resolved;
@@ -276,29 +280,32 @@ namespace ForkPlus.UI.UserControls
 			resolved = OpenAiService.StripCodeFences(resolved);
 			if (string.IsNullOrWhiteSpace(resolved))
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("AI returned empty content. Aborting."),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
-				return;
+				new MessageBoxWindow(
+				"AI Resolve",
+				"AI returned empty content. Aborting.",
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
 			}
 			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("AI output still contains conflict markers. Please review and try again, or resolve manually."),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
-				return;
+				new MessageBoxWindow(
+				"AI Resolve",
+				"AI output still contains conflict markers. Please review and try again, or resolve manually.",
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
 			}
 
-			MessageBoxResult confirm = MessageBox.Show(
-				PreferencesLocalization.Current("AI resolved all conflicts. Apply the resolved content?"),
-				PreferencesLocalization.Current("AI Resolve"),
-				MessageBoxButton.YesNo,
-				MessageBoxImage.Question);
-			if (confirm != MessageBoxResult.Yes)
+			if (!new MessageBoxWindow(
+				"AI Resolve",
+				"AI resolved all conflicts. Apply the resolved content?",
+				"Apply",
+				"Cancel",
+				showCancelButton: true,
+				550.0).ShowDialog().GetValueOrDefault())
 			{
 				return;
 			}
@@ -318,11 +325,12 @@ namespace ForkPlus.UI.UserControls
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to write back: " + ex.Message);
-				MessageBox.Show(
-					PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
-					PreferencesLocalization.Current("AI Resolve"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Error);
+			new MessageBoxWindow(
+				"AI Resolve",
+				PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			}
 		}
 
