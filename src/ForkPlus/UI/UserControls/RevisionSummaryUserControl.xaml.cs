@@ -50,17 +50,9 @@ namespace ForkPlus.UI.UserControls
 			_sha = sha;
 			_bugtrackers = bugtrackers;
 			_userColors = userColors;
-			// AI Explain 按钮：仅在 AI 配置完毕时显示
-		if (OpenAiService.IsAiReviewConfigured())
-		{
-			AiExplainCommitButton.Show();
-			AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
-			AiExplainCommitButtonText.Text = Preferences.PreferencesLocalization.Translate("AI Explain", ForkPlusSettings.Default.UiLanguage);
-		}
-		else
-		{
-			AiExplainCommitButton.Collapse();
-		}
+			// AI Explain 按钮：仅在 AI 配置完毕时显示（v3.9.0：统一用 AiActionButton.RefreshVisibility）
+		AiExplainCommitButton.RefreshVisibility();
+		AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
 			FullRevisionDetails fullRevisionDetails = RevisionDetailsUserControl.FullRevisionDetails;
 			RevisionDetails revisionDetails = fullRevisionDetails.RevisionDetails;
 			AuthorAvatarImage.UserIdentity = revisionDetails.Author;
@@ -371,12 +363,14 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
-					Preferences.PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
-					Preferences.PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
-				return;
+				// v3.9.0：统一用 MessageBoxWindow 替换原生 MessageBox
+			new ForkPlus.UI.Dialogs.MessageBoxWindow(
+				"AI Explain Commit",
+				"AI is not configured. Please configure AI review settings in Preferences first.",
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
+			return;
 			}
 			if (!_sha.HasValue)
 			{

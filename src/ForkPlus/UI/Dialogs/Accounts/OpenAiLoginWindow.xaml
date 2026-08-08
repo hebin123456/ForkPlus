@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow Title="Login to GitLab" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.OpenAiLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<dialogs:ForkPlusDialogWindow Title="Login to OpenAI" Width="450" SizeToContent="Height" xmlns:Accounts="clr-namespace:ForkPlus.UI.Dialogs.Accounts" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.Accounts.OpenAiLoginWindow" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0" />

@@ -53,15 +53,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				PartialStashListBox.ScrollIntoView(firstSelectedFile);
 			}
-			// AI 生成 stash 名称按钮：仅在 AI 配置完毕时显示
-			if (!OpenAiService.IsAiReviewConfigured())
-			{
-				AiGenerateStashNameButton.Collapse();
-			}
-			else
-			{
-				AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
-			}
+			AiGenerateStashNameButton.RefreshVisibility();
+			AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
 			UpdateSubmitButton();
 			base.Dispatcher.Async(delegate
 			{
@@ -105,9 +98,7 @@ namespace ForkPlus.UI.Dialogs
 			return;
 		}
 		_aiGenerating = true;
-		AiGenerateStashNameButton.IsEnabled = false;
-		string originalToolTip = AiGenerateStashNameButton.ToolTip?.ToString();
-		AiGenerateStashNameButton.ToolTip = Translate("AI is generating...");
+		AiGenerateStashNameButton.SetBusy(true, Translate("AI is generating..."));
 		StashMessageTextBox.Text = "";
 		StringBuilder liveMsg = new StringBuilder();
 		MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("AI Generate Stash Name"), delegate(JobMonitor monitor)
@@ -186,8 +177,7 @@ namespace ForkPlus.UI.Dialogs
 				base.Dispatcher.Async(delegate
 				{
 					_aiGenerating = false;
-					AiGenerateStashNameButton.IsEnabled = true;
-					AiGenerateStashNameButton.ToolTip = originalToolTip ?? Translate("Use AI to generate a stash message");
+				AiGenerateStashNameButton.SetBusy(false);
 				});
 			}
 		}, JobFlags.SaveToLog);

@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,7 +13,6 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using ForkPlus.Accounts;
 using ForkPlus.Accounts.AiServices;
-using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Commands.LeanBranching;
@@ -32,7 +30,7 @@ using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public partial class AiCodeReviewWindow : CustomWindow, ILocalizableControl
+	public partial class AiCodeReviewWindow : AiResultWindowBase, ILocalizableControl
 	{
 		private class AiReviewSuggestion
 		{
@@ -79,34 +77,14 @@ namespace ForkPlus.UI.Dialogs
 
 		private const int FileReviewTreeColumn = 0;
 
-		private static string _cachedCss;
+		// v3.9.0：流式渲染字段已移至 AiStreamingWebView 控件，本窗口不再直接管理
 
-		// 模型列表是否已后台加载完成
-		private bool _modelListLoaded;
-
-		// 流式输出的实时 Markdown 缓冲（边收边渲染到 WebView）
-		private StringBuilder _streamingMarkdown;
-
-		// 保护 _streamingMarkdown 的并发追加（chunk 来自后台 job 线程，渲染来自 UI 线程）
-		private readonly object _streamingLock = new object();
-
-		// 流式预览渲染节流：避免每个 chunk 都触发一次 markdown→html→NavigateToString 造成卡顿
-		private DateTime _lastStreamingRenderUtc = DateTime.MinValue;
-		private const int StreamingRenderIntervalMs = 400;
-
-		// 流式是否处于活动状态（完成/取消/出错后置 false，阻止已排队的渲染任务再写入 WebView）
-		private bool _streamingActive;
-
-		// 流式渲染时是否需要在 NavigateToString 完成后把 WebView 滚到底部。
-		// 用户反馈：流式输出时如果手动滚到最下面看新内容，下一个 chunk 来了 NavigateToString
-		// 会重置滚动位置到顶部，造成"弹回去"的体验。修复：渲染前检测用户是否在底部附近，
-		// 是的话渲染后自动滚到底部，保持"跟随最新内容"的体验；用户主动上滚浏览历史时不打断。
-		private bool _pendingStreamingScrollToEnd;
-
-		// 用户当前是否在 WebView 底部附近（由 HTML scroll 事件通过 postMessage 上报维护）。
-		// NavigateToString 会重置 DOM，无法从旧 DOM 查询滚动位置，所以用消息推送方式
-		// 让 C# 端持续维护这个状态。渲染前快照这个值决定是否滚到底部。
-		private bool _streamingUserAtBottom = true; // 初始为 true：首次渲染时内容很少，自动滚到底部
+		// v3.9.0：基类 AiResultWindowBase 要求的 UI 元素（XAML 生成的字段）
+		protected override ComboBox AiModelComboBox => ModelComboBox;
+		protected override Button AiStopButton => StopButton;
+		protected override Button AiRetryButton => RetryButton;
+		protected override TextBlock AiStatusTextBlock => StatusTextBlock;
+		protected override ProgressBar AiStatusProgressBar => StatusProgressBar;
 
 		public AiCodeReviewWindow()
 		{
@@ -136,7 +114,7 @@ namespace ForkPlus.UI.Dialogs
 			ApplyLocalization();
 			base.Loaded += async delegate
 			{
-				await aiCodeReviewWindow.InitializeWebView();
+				await aiCodeReviewWindow.InitializeStreamingView();
 			};
 			base.SizeChanged += Window_SizeChanged;
 			base.Activated += Window_Activated;
@@ -195,7 +173,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				localizableDiffControl.ApplyLocalization();
 			}
-			if (AiResponseWebView?.CoreWebView2 != null && !string.IsNullOrWhiteSpace(_aiReviewHtml))
+			if (AiStreamingView.WebView?.CoreWebView2 != null && !string.IsNullOrWhiteSpace(_aiReviewHtml))
 			{
 				_fileReviewHtmlCache.Clear();
 				RenderAiReviewOutput();
@@ -228,48 +206,36 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private async Task InitializeWebView()
+		/// <summary>v3.9.0：初始化 AiStreamingWebView 控件 + 订阅 web 消息（suggestion 按钮回调）。</summary>
+		private async Task InitializeStreamingView()
 		{
-			await AiResponseWebView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
-			UpdateWebViewTheme();
-			AiResponseWebView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
+			await AiStreamingView.InitializeAsync();
+			// v3.9.0：非 scroll-at-bottom 的消息转发到这里处理（suggestion 按钮）
+			AiStreamingView.WebMessageReceived += delegate(string message)
 			{
-				e.Handled = true;
-			};
-			AiResponseWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-			// 流式渲染时 NavigateToString 会重置滚动位置。这里监听导航完成事件，
-			// 如果渲染前用户在底部附近（_pendingStreamingScrollToEnd），就自动滚到底部，
-			// 保持"跟随最新内容"的体验。
-			AiResponseWebView.CoreWebView2.NavigationCompleted += delegate(object s, CoreWebView2NavigationCompletedEventArgs e)
-			{
-				if (!e.IsSuccess || !_pendingStreamingScrollToEnd)
+				if (message.StartsWith("preview-suggestion:", StringComparison.Ordinal))
 				{
-					return;
+					if (int.TryParse(message.Substring("preview-suggestion:".Length), out int index))
+					{
+						Dispatcher.BeginInvoke(new Action(delegate
+						{
+							PreviewSuggestion(index);
+						}));
+					}
 				}
-				_pendingStreamingScrollToEnd = false;
-				try
+				else if (message.StartsWith("apply-suggestion:", StringComparison.Ordinal))
 				{
-					// scrollHeight 在 NavigationCompleted 时已就绪，直接 scrollTo 到底部
-					AiResponseWebView.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)");
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Streaming scroll-to-end failed: " + ex.Message);
+					if (int.TryParse(message.Substring("apply-suggestion:".Length), out int index))
+					{
+						ApplySuggestion(index);
+					}
 				}
 			};
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
 		{
-			UpdateWebViewTheme();
-		}
-
-		private void UpdateWebViewTheme()
-		{
-			if (base.IsLoaded && AiResponseWebView.CoreWebView2 != null)
-			{
-				AiResponseWebView.CoreWebView2.Profile.PreferredColorScheme = (ForkPlusSettings.Default.Theme.IsDarkBase() ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light);
-			}
+			AiStreamingView.UpdateTheme();
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -317,7 +283,7 @@ namespace ForkPlus.UI.Dialogs
 			_isClosed = true;
 			_aiReviewJob?.Monitor.Cancel();
 			_fileReviewDiffJob?.Monitor.Cancel();
-			AiResponseWebView?.Dispose();
+			AiStreamingView.WebView?.Dispose();
 			ActivateMainWindow();
 		}
 
@@ -416,31 +382,31 @@ namespace ForkPlus.UI.Dialogs
 
 		private void PrepareAiReviewUi(bool replaceAll, AiCodeReviewTarget target)
 		{
-			BusyIndicator.Show();
+			// v3.9.0：流式渲染状态委托给 AiStreamingWebView
+			AiStreamingView.ShowBusy();
 			RetryButton.IsEnabled = false;
-			AiResponseFallback.Collapse();
+			AiStreamingView.Fallback.Collapse();
 			StopButton.Visibility = Visibility.Visible;
 			StatusProgressBar.Visibility = Visibility.Visible;
 			if (replaceAll)
 			{
-				AiResponseWebView.Collapse();
+				AiStreamingView.WebView.Collapse();
 				_suggestions.Clear();
 				_aiReviewMarkdown = "";
 				_aiReviewHtml = "";
 				_aiReviewStatusMessage = null;
 				_fileReviewHtmlCache.Clear();
-				lock (_streamingLock)
-				{
-					_streamingMarkdown = new StringBuilder();
-				}
+				AiStreamingView.StartStreaming();
 			}
 			else if (target is AiCodeReviewTarget.Files files)
 			{
 				_aiReviewStatusMessage = PreferencesLocalization.FormatCurrent("Retrying AI review for {0} files...", ReviewableFiles(files.ChangedFiles).Length);
+				AiStreamingView.ResumeStreaming();
 			}
-			// 重置节流计时，使首个 chunk 立即渲染；初始状态提示“排队中”
-			_lastStreamingRenderUtc = DateTime.MinValue;
-			_streamingActive = true;
+			else
+			{
+				AiStreamingView.ResumeStreaming();
+			}
 			StatusTextBlock.Text = PreferencesLocalization.Current("Queued...");
 			StatusProgressBar.Visibility = Visibility.Visible;
 			StopButton.Visibility = Visibility.Visible;
@@ -490,16 +456,15 @@ namespace ForkPlus.UI.Dialogs
 						{
 							return;
 						}
-						StopStreamingRender();
-						BusyIndicator.Collapse();
+						AiStreamingView.StopStreaming();
+						AiStreamingView.HideBusy();
 						StatusProgressBar.Visibility = Visibility.Collapsed;
 						StopButton.Visibility = Visibility.Collapsed;
 						StatusTextBlock.Text = "";
 						RetryButton.IsEnabled = true;
-						AiResponseWebView.Collapse();
-						AiResponseFallback.Show();
-						AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
-						AiResponseFallback.FallbackMessage = PreferencesLocalization.Current("Cannot get diff:\n") + patchResult.Error.FriendlyDescription;
+						AiStreamingView.ShowFallback(
+							PreferencesLocalization.Current("Error"),
+							PreferencesLocalization.Current("Cannot get diff:\n") + patchResult.Error.FriendlyDescription);
 						SendAiReviewCompletedNotification(gitModule, success: false);
 					});
 				}
@@ -955,20 +920,6 @@ namespace ForkPlus.UI.Dialogs
 			return Regex.Replace(markdown, "```forkplus-ai-suggestions\\s*[\\s\\S]*?```", "", RegexOptions.IgnoreCase).Trim();
 		}
 
-		private static GitCommandResult<string> ConvertMarkdownToHtml(string markdown)
-		{
-			return BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
-			{
-				return Bt.bt_md_to_html(markdown, ref x);
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				return GitCommandResult<string>.Success(x.html.GetUtf8String());
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				Bt.bt_release_md_to_html(ref x);
-			});
-		}
-
 		private void ApplyAiReviewResult(AiCodeReviewTarget target, string displayMarkdown, string rawMarkdown, string html, bool replaceAll)
 		{
 			// 检视成功完成：停止流式预览并清除状态栏（进度条/Stop 按钮/状态文字）
@@ -1080,16 +1031,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					string aiReviewMarkdown = codeReviewResult.Result;
 					string aiReviewDisplayMarkdown = RemoveSuggestionBlocks(aiReviewMarkdown);
-					GitCommandResult<string> btResult = BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
-					{
-						return Bt.bt_md_to_html(aiReviewDisplayMarkdown, ref x);
-					}, delegate(ref BtMdToHtmlResult x)
-					{
-						return GitCommandResult<string>.Success(x.html.GetUtf8String());
-					}, delegate(ref BtMdToHtmlResult x)
-					{
-						Bt.bt_release_md_to_html(ref x);
-					});
+					GitCommandResult<string> btResult = ConvertMarkdownToHtml(aiReviewDisplayMarkdown);
 					base.Dispatcher.Async(delegate
 					{
 						if (_isClosed || monitor.IsCanceled)
@@ -1113,16 +1055,13 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ShowError(string error)
 		{
-			StopStreamingRender();
-			BusyIndicator.Collapse();
+			AiStreamingView.StopStreaming();
+			AiStreamingView.HideBusy();
 			StatusProgressBar.Visibility = Visibility.Collapsed;
 			StopButton.Visibility = Visibility.Collapsed;
 			StatusTextBlock.Text = "";
 			RetryButton.IsEnabled = true;
-			AiResponseWebView.Collapse();
-			AiResponseFallback.Show();
-			AiResponseFallback.FallbackTitle = PreferencesLocalization.Current("Error");
-			AiResponseFallback.FallbackMessage = error;
+			AiStreamingView.ShowFallback(PreferencesLocalization.Current("Error"), error);
 		}
 
 		/// <summary>更新状态栏文字 + 显示进度条（用于排队/请求中/收集 diff/生成中等阶段提示）。</summary>
@@ -1136,7 +1075,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				StatusTextBlock.Text = message ?? "";
 				StatusProgressBar.Visibility = Visibility.Visible;
-				BusyIndicator.Show();
+				AiStreamingView.ShowBusy();
 				StopButton.Visibility = Visibility.Visible;
 			});
 		}
@@ -1144,7 +1083,7 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>清除状态栏 + 隐藏进度条（用于完成/取消/出错）。</summary>
 		private void ClearStatus()
 		{
-			StopStreamingRender();
+			AiStreamingView.StopStreaming();
 			base.Dispatcher.Async(delegate
 			{
 				if (_isClosed)
@@ -1153,7 +1092,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				StatusTextBlock.Text = "";
 				StatusProgressBar.Visibility = Visibility.Collapsed;
-				BusyIndicator.Collapse();
+				AiStreamingView.HideBusy();
 				StopButton.Visibility = Visibility.Collapsed;
 			});
 		}
@@ -1169,7 +1108,7 @@ namespace ForkPlus.UI.Dialogs
 
 		/// <summary>
 		/// 流式 chunk 回调（由后台 job 线程在 SSE 解析时调用）：
-		/// 追加到 _streamingMarkdown，并在 UI 线程节流触发实时预览渲染。
+		/// v3.9.0：委托给 AiStreamingWebView.AppendChunk，节流渲染/滚动跟随均由控件内部处理。
 		/// </summary>
 		private void OnStreamingChunk(string chunk)
 		{
@@ -1177,252 +1116,18 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			lock (_streamingLock)
-			{
-				if (_streamingMarkdown == null)
-				{
-					_streamingMarkdown = new StringBuilder();
-				}
-				_streamingMarkdown.Append(chunk);
-			}
-			int lengthSoFar;
-			lock (_streamingLock)
-			{
-				lengthSoFar = _streamingMarkdown.Length;
-			}
+			AiStreamingView.AppendChunk(chunk);
+			// 在状态栏展示已接收字数，让用户感知进度
+			int lengthSoFar = AiStreamingView.GetMarkdown().Length;
 			base.Dispatcher.Async(delegate
 			{
-				TryRenderStreamingPreview(lengthSoFar);
-			});
-		}
-
-		/// <summary>节流后的实时预览渲染：把当前已收到的 Markdown 转为 HTML 并写入 WebView。</summary>
-		private void TryRenderStreamingPreview(int lengthSoFar)
-		{
-			if (_isClosed || !_streamingActive)
-			{
-				return;
-			}
-			if (AiResponseWebView?.CoreWebView2 == null)
-			{
-				return;
-			}
-			// 节流：首个 chunk 立即渲染；之后每隔 StreamingRenderIntervalMs 渲染一次
-			DateTime now = DateTime.UtcNow;
-			if (now - _lastStreamingRenderUtc < TimeSpan.FromMilliseconds(StreamingRenderIntervalMs))
-			{
-				return;
-			}
-			_lastStreamingRenderUtc = now;
-			// 在状态栏展示已接收字数，让用户感知进度（替代一直转圈圈）
-			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
-			StatusProgressBar.Visibility = Visibility.Visible;
-			string md;
-			lock (_streamingLock)
-			{
-				md = _streamingMarkdown?.ToString() ?? "";
-			}
-			if (string.IsNullOrEmpty(md))
-			{
-				return;
-			}
-			// markdown→html 在 UI 线程完成（与最终 ApplyAiReviewResult 的转换串行，避免 native Bt 库并发问题；
-			// 检视响应体量有限，转换很快，节流后不会造成可感知卡顿）
-			string body;
-			try
-			{
-				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(md);
-				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(md);
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Streaming markdown render failed: " + ex.Message);
-				body = WebUtility.HtmlEncode(md);
-			}
-			if (_isClosed || !_streamingActive)
-			{
-				return;
-			}
-			string css = GetCss();
-			// 注入滚动位置上报脚本：scroll 事件触发时通过 postMessage 把"是否在底部"上报给 C# 端。
-			// C# 端在 CoreWebView2_WebMessageReceived 中维护 _streamingUserAtBottom 状态。
-			// 这样在任何 NavigateToString 之前，C# 端都有最新的用户滚动状态，无竞态。
-			// 阈值 80px 容忍鼠标滚轮抖动、底部 padding 等。
-			string scrollScript = "<script>"
-				+ "(function(){"
-				+ "function sendAtBottom(){"
-				+ "var st=document.documentElement.scrollTop||document.body.scrollTop;"
-				+ "var sh=document.documentElement.scrollHeight||document.body.scrollHeight;"
-				+ "var ch=document.documentElement.clientHeight;"
-				+ "var atBottom=ch<=0||(st+ch>=sh-80);"
-				+ "window.chrome.webview.postMessage('scroll-at-bottom:'+(atBottom?'1':'0'));"
-				+ "}"
-				+ "window.addEventListener('scroll',sendAtBottom,{passive:true});"
-				+ "window.addEventListener('load',sendAtBottom);"
-				+ "if(document.readyState==='complete'||document.readyState==='interactive'){sendAtBottom();}"
-				+ "})();"
-				+ "</script>";
-			// 渲染前快照用户是否在底部。如果在底部，标记 _pendingStreamingScrollToEnd，
-			// NavigationCompleted 事件中执行 scrollTo 滚到底部（跟随最新内容）。
-			// 用户主动上滚时 _streamingUserAtBottom 为 false，不滚动，保持阅读位置。
-			bool shouldScrollToEnd = _streamingUserAtBottom;
-			if (shouldScrollToEnd)
-			{
-				_pendingStreamingScrollToEnd = true;
-			}
-			string html = "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + body + "\n" + scrollScript + "\n</body>\n</html>";
-			try
-			{
-				AiResponseWebView.NavigateToString(html);
-				AiResponseWebView.Show();
-				BusyIndicator.Collapse();
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Streaming WebView navigate failed: " + ex.Message);
-			}
-		}
-
-		/// <summary>停止流式预览渲染（完成/取消/出错时调用，阻止已排队的渲染任务写入 WebView）。</summary>
-		private void StopStreamingRender()
-		{
-			_streamingActive = false;
-		}
-
-		/// <summary>初始化模型下拉选择：先用当前选中模型占位，后台拉取完整列表。</summary>
-		private void InitializeModelComboBox()
-		{
-			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
-			if (!string.IsNullOrWhiteSpace(currentModel))
-			{
-				ModelComboBox.Items.Add(currentModel);
-				ModelComboBox.SelectedIndex = 0;
-			}
-			else
-			{
-				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
-				ModelComboBox.SelectedIndex = 0;
-			}
-			// 后台拉取模型列表（不阻塞 UI 线程）
-			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
-			{
-				List<string> models = null;
-				try
-				{
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<string[]> result = aiService.ListModels();
-						if (result.Succeeded && result.Result != null)
-						{
-							models = new List<string>(result.Result);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Failed to load AI model list: " + ex.Message);
-				}
-				if (models == null || models.Count == 0)
+				if (_isClosed)
 				{
 					return;
 				}
-				base.Dispatcher.Async(delegate
-				{
-					try
-					{
-						if (_modelListLoaded)
-						{
-							return;
-						}
-						_modelListLoaded = true;
-						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
-						ModelComboBox.Items.Clear();
-						foreach (string m in models)
-						{
-							if (!string.IsNullOrWhiteSpace(m))
-							{
-								ModelComboBox.Items.Add(m);
-							}
-						}
-						int idx = -1;
-						for (int i = 0; i < ModelComboBox.Items.Count; i++)
-						{
-							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
-							{
-								idx = i;
-								break;
-							}
-						}
-						if (idx >= 0)
-						{
-							ModelComboBox.SelectedIndex = idx;
-						}
-						else if (!string.IsNullOrWhiteSpace(selected))
-						{
-							ModelComboBox.Items.Insert(0, selected);
-							ModelComboBox.SelectedIndex = 0;
-						}
-						else if (ModelComboBox.Items.Count > 0)
-						{
-							ModelComboBox.SelectedIndex = 0;
-						}
-					}
-					catch (Exception ex)
-					{
-						Log.Warn("Failed to populate model combo box: " + ex.Message);
-					}
-				});
+				StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
+				StatusProgressBar.Visibility = Visibility.Visible;
 			});
-		}
-
-		/// <summary>切换模型时保存到设置。</summary>
-		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (ModelComboBox.SelectedItem == null)
-			{
-				return;
-			}
-			string selected = (string)ModelComboBox.SelectedItem;
-			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
-			{
-				return;
-			}
-			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
-			ForkPlusSettings.Default.Save();
-		}
-
-		private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-		{
-			string message = e.TryGetWebMessageAsString();
-			if (message != null && message.StartsWith("preview-suggestion:", StringComparison.Ordinal))
-			{
-				if (int.TryParse(message.Substring("preview-suggestion:".Length), out int index))
-				{
-					Dispatcher.BeginInvoke(new Action(delegate
-					{
-						PreviewSuggestion(index);
-					}));
-				}
-			}
-			else if (message != null && message.StartsWith("apply-suggestion:", StringComparison.Ordinal))
-			{
-				if (int.TryParse(message.Substring("apply-suggestion:".Length), out int index))
-				{
-					ApplySuggestion(index);
-				}
-			}
-			else if (message != null && message.StartsWith("scroll-at-bottom:", StringComparison.Ordinal))
-			{
-				// HTML scroll 事件上报的用户滚动状态：'1'=在底部附近，'0'=不在底部
-				// 用于流式渲染时决定渲染后是否自动滚到底部（跟随最新内容 vs 保持阅读位置）
-				string value = message.Substring("scroll-at-bottom:".Length);
-				_streamingUserAtBottom = value == "1";
-			}
 		}
 
 		private void ShowMarkdownOutput(string markdown, string html, bool preserveStatusMessage = false)
@@ -1439,16 +1144,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RenderAiReviewOutput()
 		{
-			BusyIndicator.Collapse();
+			AiStreamingView.HideBusy();
 			RetryButton.IsEnabled = true;
-			AiResponseFallback.Collapse();
-			AiResponseWebView.Show();
+			AiStreamingView.Fallback.Collapse();
+			AiStreamingView.WebView.Show();
 			string css = GetCss();
 			try
 			{
 				string selectedFile = SelectedFileReviewPath();
 				string htmlContent = "<!DOCTYPE html>\n<html>\n    <head>\n        <meta charset='utf-8'>\n        <style>\n            " + css + "\n            .ai-current-file{border:1px solid #8883;border-radius:4px;padding:8px;margin:0 0 12px;background:#8881;font-size:12px;}\n            .ai-status{border:1px solid #2e7d3233;border-radius:4px;padding:8px;margin:0 0 12px;background:#2e7d3218;}\n            .ai-suggestion{border:1px solid #8883;border-radius:4px;padding:8px;margin:10px 0;background:#8881;}\n            .ai-suggestion button{margin-top:8px;margin-right:6px;}\n            .ai-empty{color:#888;margin:8px 0 14px;}\n            .ai-all-results{margin-top:18px;padding-top:10px;border-top:1px solid #8883;}\n        </style>\n    </head>\n    <body>\n        " + CreateStatusHtml() + "\n        " + CreateReviewBodyHtml(selectedFile) + "\n        " + CreateSuggestionsHtml(selectedFile) + "\n        " + CreateAllReviewResultsHtml(selectedFile) + "\n        <script>function previewSuggestion(i){window.chrome.webview.postMessage('preview-suggestion:' + i);}function applySuggestion(i){window.chrome.webview.postMessage('apply-suggestion:' + i);}</script>\n    </body>\n</html>";
-				AiResponseWebView.NavigateToString(htmlContent);
+				AiStreamingView.WebView.NavigateToString(htmlContent);
 			}
 			catch (Exception ex)
 			{
@@ -1693,28 +1398,6 @@ namespace ForkPlus.UI.Dialogs
 		private static string NormalizeLineEndings(string value)
 		{
 			return (value ?? "").Replace("\r\n", "\n").Replace('\r', '\n');
-		}
-
-		private static string GetCss()
-		{
-			if (_cachedCss != null)
-			{
-				return _cachedCss;
-			}
-			try
-			{
-				Assembly executingAssembly = Assembly.GetExecutingAssembly();
-				string name = "ForkPlus.Assets.md-ai-output.css";
-				using Stream stream = executingAssembly.GetManifestResourceStream(name);
-				using StreamReader streamReader = new StreamReader(stream);
-				_cachedCss = streamReader.ReadToEnd();
-				return _cachedCss;
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to read CSS resource", ex);
-				return string.Empty;
-			}
 		}
 
 		private void SendAiReviewCompletedNotification(GitModule gitModule, bool success)

@@ -2,6 +2,19 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.9.0
+
+### 优化
+
+- 统一所有 AI 辅助界面（AI 解决冲突、AI 辅助开发、AI 解释代码、AI 代码检视、AI Commit Composer、AI PR 描述生成）的设计与实现，消除此前各窗口"各写一套"的重复代码与不一致体验：
+  1. **统一 AI 操作按钮**：新增 `AiActionButton` 自定义控件，封装一致的样式（统一 padding、高度、字号、emoji 前缀）、加载状态管理（`SetBusy` 方法）及根据 AI 配置状态自动控制可见性。将 5 处原生 `Button` 替换为 `AiActionButton`。
+  2. **抽取结果窗口基类**：新增 `AiResultWindowBase` 抽象基类，封装 ModelComboBox 初始化/切换、CSS 资源读取、Markdown→HTML 转换等共享逻辑。`AiTextResultWindow`、`AiCodeReviewWindow`、`AiCommitComposerWindow` 均继承此类，消除三份几乎相同的模型下拉初始化代码。CSS 读取和 Markdown 转换委托给 `AiStreamingWebView` 静态方法，与 `AiDevelopmentWindow` 共用同一份实现。
+  3. **统一流式 Markdown 渲染控件**：新增 `AiStreamingWebView` 控件，封装 WebView2 初始化、节流渲染（避免每个 chunk 都触发 markdown→html→NavigateToString 卡顿）、滚动位置跟随（用户在底部附近时自动跟随新内容，主动上滚时不打断阅读）、错误处理与加载动画。`AiTextResultWindow` 和 `AiCodeReviewWindow` 用此控件替换各自约 250 行重复的流式渲染代码。`AiDevelopmentWindow` 的聊天气泡复用控件的静态 CSS/markdown 转换方法。`AiStreamingWebView` 还支持 `ResumeStreaming()` 用于部分重试时保留已有内容继续渲染。
+  4. **统一窗口基类**：所有 AI 窗口统一继承 `CustomWindow`（`AiSuggestionPreviewWindow` 经 `ForkPlusDialogWindow` 间接继承），与程序其余界面视觉风格一致。
+- 统一加载状态指示：所有 AI 界面使用一致的进度条 + 状态文字 + 取消按钮组合，替代此前各窗口手动管理 `IsEnabled`/`ToolTip` 的方式。
+- `AiDevelopmentWindow` 中文硬编码字符串收口为英文资源键，并为 zh-Hans、zh-Hant、ja-JP、ko-KR、fr-FR、de-DE、es-ES 共 7 个语言文件补充翻译。
+- 修复 `OpenAiLoginWindow` 标题错误显示为 "Login to GitLab" 的问题，改为 "Login to OpenAI"。
+
 ## v3.8.3
 
 ### Bug 修复

@@ -47,15 +47,8 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			StageNewFilesCheckBox.IsChecked = ForkPlusSettings.Default.SaveStash_StageNewFiles;
-			// AI 生成 stash 名称按钮：仅在 AI 配置完毕时显示
-			if (!OpenAiService.IsAiReviewConfigured())
-			{
-				AiGenerateStashNameButton.Collapse();
-			}
-			else
-			{
-				AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
-			}
+			AiGenerateStashNameButton.RefreshVisibility();
+			AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
 		}
 
 		/// <summary>AI 生成 stash message：读取工作区 diff，发送给 AI，流式写入 StashMessageTextBox。</summary>
@@ -75,9 +68,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			_aiGenerating = true;
-			AiGenerateStashNameButton.IsEnabled = false;
-			string originalToolTip = AiGenerateStashNameButton.ToolTip?.ToString();
-			AiGenerateStashNameButton.ToolTip = Translate("AI is generating...");
+			AiGenerateStashNameButton.SetBusy(true, Translate("AI is generating..."));
 			StashMessageTextBox.Text = "";
 			StringBuilder liveMsg = new StringBuilder();
 			MainWindow.ActiveRepositoryUserControl.JobQueue.Add(Translate("AI Generate Stash Name"), delegate(JobMonitor monitor)
@@ -151,8 +142,7 @@ namespace ForkPlus.UI.Dialogs
 					base.Dispatcher.Async(delegate
 					{
 						_aiGenerating = false;
-						AiGenerateStashNameButton.IsEnabled = true;
-						AiGenerateStashNameButton.ToolTip = originalToolTip ?? Translate("Use AI to generate a stash message");
+					AiGenerateStashNameButton.SetBusy(false);
 					});
 				}
 			}, JobFlags.SaveToLog);

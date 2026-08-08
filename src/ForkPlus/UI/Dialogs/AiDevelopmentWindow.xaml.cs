@@ -1,10 +1,10 @@
 using ForkPlus;
 using ForkPlus.Accounts.AiServices;
-using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
+using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -73,9 +72,6 @@ namespace ForkPlus.UI.Dialogs
 
 		// 当前流式响应的 WebView2（onChunk 追加到 _streamingMarkdown 后节流渲染到这里）
 		private WebView2 _streamingWebView;
-
-		// CSS 缓存（从嵌入资源 md-ai-output.css 读取，与 AiCodeReviewWindow 共用样式）
-		private static string _cachedCss;
 
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
@@ -351,7 +347,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (_activeJob.Status == JobStatus.Running)
 				{
-					UpdateProcessingStatus(PreferencesLocalization.Current("AI 正在生成代码..."));
+					UpdateProcessingStatus(PreferencesLocalization.Current("Generating code with AI..."));
 					_statusTimer.Stop();
 				}
 				else if (_activeJob.Status == JobStatus.Finished || _activeJob.Monitor.IsCanceled)
@@ -390,7 +386,7 @@ namespace ForkPlus.UI.Dialogs
 				_pendingRequests.Enqueue(requirement);
 				UpdateQueueIndicator();
 				AddStatusMessage(
-					PreferencesLocalization.FormatCurrent("⏳ 已加入队列 (队列中有 {0} 个待处理请求)", _pendingRequests.Count),
+					PreferencesLocalization.FormatCurrent("⏳ Queued ({0} pending request(s))", _pendingRequests.Count),
 					Brushes.Gray);
 				return;
 			}
@@ -406,7 +402,7 @@ namespace ForkPlus.UI.Dialogs
 			ProgressBar.Visibility = Visibility.Visible;
 			StopButton.Visibility = Visibility.Visible;
 			UpdateQueueIndicator();
-			AddStatusMessage(PreferencesLocalization.Current("排队中..."), Brushes.Gray);
+			AddStatusMessage(PreferencesLocalization.Current("Queued..."), Brushes.Gray);
 
 			// Start timer to track job status (Pending → Running)
 			_statusTimer.Start();
@@ -422,7 +418,7 @@ namespace ForkPlus.UI.Dialogs
 			});
 
 			_activeJob = _repositoryUserControl.JobQueue.Add(
-				PreferencesLocalization.Current("AI 开发"),
+				PreferencesLocalization.Current("AI Development"),
 				delegate (JobMonitor monitor)
 				{
 					try
@@ -435,7 +431,7 @@ namespace ForkPlus.UI.Dialogs
 					List<JObject> historySnapshot = new List<JObject>(_conversationHistory);
 					base.Dispatcher.Async(delegate
 					{
-						AddStatusMessage(PreferencesLocalization.FormatCurrent("正在请求 AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
+						AddStatusMessage(PreferencesLocalization.FormatCurrent("Requesting AI ({0})...", ForkPlusSettings.Default.AiReviewSelectedModel), Brushes.Gray);
 					});
 
 					// 流式输出：onChunk 回调实时追加到 _streamingMarkdown，节流渲染到 WebView2
@@ -512,7 +508,7 @@ namespace ForkPlus.UI.Dialogs
 						{
 							base.Dispatcher.Async(delegate
 							{
-								AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求失败: {0}", result.Error.FriendlyMessage), Brushes.Red);
+								AddStatusMessage(PreferencesLocalization.FormatCurrent("AI request failed: {0}", result.Error.FriendlyMessage), Brushes.Red);
 								FinishRequest();
 							});
 							return;
@@ -570,7 +566,7 @@ namespace ForkPlus.UI.Dialogs
 							}
 							catch (Exception ex)
 							{
-								AddStatusMessage(PreferencesLocalization.FormatCurrent("应用变更时出错: {0}", ex.Message), Brushes.Red);
+								AddStatusMessage(PreferencesLocalization.FormatCurrent("Error applying changes: {0}", ex.Message), Brushes.Red);
 							}
 							finally
 							{
@@ -582,7 +578,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						base.Dispatcher.Async(delegate
 						{
-							AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求出错: {0}", ex.Message), Brushes.Red);
+							AddStatusMessage(PreferencesLocalization.FormatCurrent("AI request error: {0}", ex.Message), Brushes.Red);
 							FinishRequest();
 						});
 					}
@@ -605,7 +601,7 @@ namespace ForkPlus.UI.Dialogs
 				if (_pendingRequests.Count > 0)
 				{
 					AddStatusMessage(
-						PreferencesLocalization.FormatCurrent("🔄 开始处理下一个请求 (剩余 {0} 个)", _pendingRequests.Count),
+						PreferencesLocalization.FormatCurrent("🔄 Processing next request ({0} remaining)", _pendingRequests.Count),
 						Brushes.Gray);
 				}
 				ProcessRequest(next);
@@ -637,13 +633,13 @@ namespace ForkPlus.UI.Dialogs
 			{
 				activeJob.Monitor.Cancel();
 				AddStatusMessage(
-					PreferencesLocalization.FormatCurrent("⏹ 已停止当前任务" + (cleared > 0 ? "（同时清除 {0} 个排队请求）" : ""), cleared),
-					Brushes.OrangeRed);
+				PreferencesLocalization.FormatCurrent(cleared > 0 ? "⏹ Stopped current task (also cleared {0} queued request(s))" : "⏹ Stopped current task", cleared),
+				Brushes.OrangeRed);
 			}
 			else if (cleared > 0)
 			{
 				AddStatusMessage(
-					PreferencesLocalization.FormatCurrent("⏹ 已清除 {0} 个排队请求", cleared),
+					PreferencesLocalization.FormatCurrent("⏹ Cleared {0} queued request(s)", cleared),
 					Brushes.OrangeRed);
 				_isProcessing = false;
 				StopButton.Visibility = Visibility.Collapsed;
@@ -690,52 +686,8 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>读取嵌入资源 md-ai-output.css（与 AiCodeReviewWindow 共用样式），带缓存。</summary>
-		private static string GetCss()
-		{
-			if (_cachedCss != null)
-			{
-				return _cachedCss;
-			}
-			try
-			{
-				Assembly executingAssembly = Assembly.GetExecutingAssembly();
-				string name = "ForkPlus.Assets.md-ai-output.css";
-				using Stream stream = executingAssembly.GetManifestResourceStream(name);
-				using StreamReader streamReader = new StreamReader(stream);
-				_cachedCss = streamReader.ReadToEnd();
-				return _cachedCss;
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to read CSS resource", ex);
-				return string.Empty;
-			}
-		}
-
-		/// <summary>调 native Biturbo 库把 Markdown 转为 HTML（与 AiCodeReviewWindow 共用底层 bt_md_to_html）。</summary>
-		private static GitCommandResult<string> ConvertMarkdownToHtml(string markdown)
-		{
-			return BtRequest.Run(() => default(BtMdToHtmlResult), delegate(ref BtMdToHtmlResult x)
-			{
-				return Bt.bt_md_to_html(markdown, ref x);
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				return GitCommandResult<string>.Success(x.html.GetUtf8String());
-			}, delegate(ref BtMdToHtmlResult x)
-			{
-				Bt.bt_release_md_to_html(ref x);
-			});
-		}
-
-		/// <summary>把 Markdown 文本转为完整 HTML 文档（含 CSS），用于 NavigateToString。</summary>
-		private static string BuildHtmlDocument(string bodyHtml)
-		{
-			string css = GetCss();
-			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + css + "\n</style></head>\n<body>" + bodyHtml + "\n</body>\n</html>";
-		}
-
-		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。</summary>
+		/// <summary>把 Markdown 渲染到 WebView2（转 HTML + NavigateToString），失败时回退为 HTML 转义纯文本。
+		/// v3.9.0：CSS 读取和 Markdown→HTML 转换委托给 AiStreamingWebView 静态方法，与其他 AI 窗口统一收口。</summary>
 		private void RenderMarkdownToWebView(WebView2 webView, string markdown)
 		{
 			if (webView?.CoreWebView2 == null || string.IsNullOrEmpty(markdown))
@@ -745,7 +697,7 @@ namespace ForkPlus.UI.Dialogs
 			string body;
 			try
 			{
-				GitCommandResult<string> htmlResult = ConvertMarkdownToHtml(markdown);
+				GitCommandResult<string> htmlResult = AiStreamingWebView.ConvertMarkdownToHtml(markdown);
 				body = htmlResult.Succeeded ? htmlResult.Result : WebUtility.HtmlEncode(markdown);
 			}
 			catch (Exception ex)
@@ -755,7 +707,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				webView.NavigateToString(BuildHtmlDocument(body));
+				webView.NavigateToString(AiStreamingWebView.BuildHtmlDocument(body, includeScrollScript: false));
 			}
 			catch (Exception ex)
 			{
@@ -856,7 +808,7 @@ namespace ForkPlus.UI.Dialogs
 
 			TextBlock header = new TextBlock
 			{
-				Text = PreferencesLocalization.Current("🧑 我的需求"),
+				Text = PreferencesLocalization.Current("🧑 My Request"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
@@ -904,7 +856,7 @@ namespace ForkPlus.UI.Dialogs
 
 			TextBlock header = new TextBlock
 			{
-				Text = PreferencesLocalization.Current("🤖 AI 响应"),
+				Text = PreferencesLocalization.Current("🤖 AI Response"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
@@ -1025,7 +977,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			catch (Exception ex)
 			{
-				AddStatusMessage(PreferencesLocalization.FormatCurrent("AI 请求出错: {0}", ex.Message), Brushes.Red);
+				AddStatusMessage(PreferencesLocalization.FormatCurrent("AI request error: {0}", ex.Message), Brushes.Red);
 			}
 		}
 
@@ -1132,7 +1084,7 @@ namespace ForkPlus.UI.Dialogs
 				base.Dispatcher.Async(delegate
 				{
 					AddStatusMessage(
-						PreferencesLocalization.FormatCurrent("📦 上下文较长 ({0} tokens)，正在自动压缩早期对话...", estimatedTokens),
+						PreferencesLocalization.FormatCurrent("📦 Context is long ({0} tokens), compressing early conversation...", estimatedTokens),
 						Brushes.Gray);
 				});
 
@@ -1155,7 +1107,7 @@ namespace ForkPlus.UI.Dialogs
 					base.Dispatcher.Async(delegate
 					{
 						AddStatusMessage(
-							PreferencesLocalization.FormatCurrent("✅ 上下文已压缩（{0} 条早期对话 → 摘要 + 最近 {1} 条）", toSummarize.Count, toKeep.Count),
+							PreferencesLocalization.FormatCurrent("✅ Context compressed ({0} early messages → summary + recent {1})", toSummarize.Count, toKeep.Count),
 							Brushes.Gray);
 					});
 				}
@@ -1169,7 +1121,7 @@ namespace ForkPlus.UI.Dialogs
 					base.Dispatcher.Async(delegate
 					{
 						AddStatusMessage(
-							PreferencesLocalization.Current("⚠️ 上下文过长，已截断早期对话（摘要生成失败）"),
+							PreferencesLocalization.Current("⚠️ Context too long, truncated early conversation (summary generation failed)"),
 							Brushes.OrangeRed);
 					});
 				}
@@ -1197,7 +1149,7 @@ namespace ForkPlus.UI.Dialogs
 
 			TextBlock header = new TextBlock
 			{
-				Text = PreferencesLocalization.Current("🤖 AI 响应"),
+				Text = PreferencesLocalization.Current("🤖 AI Response"),
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
@@ -1360,8 +1312,8 @@ namespace ForkPlus.UI.Dialogs
 		base.Dispatcher.Async(delegate
 		{
 			AddStatusMessage(PreferencesLocalization.FormatCurrent(
-				request.Kind == FileToolKind.ReadFile ? "读取文件: {0}" : "列出目录: {0}",
-				request.Path), Brushes.Gray);
+			request.Kind == FileToolKind.ReadFile ? "Reading file: {0}" : "Listing directory: {0}",
+			request.Path), Brushes.Gray);
 		});
 
 		try
@@ -1966,7 +1918,7 @@ Additionally, the user has defined the following coding standards / skills that 
 			headerRow.Children.Add(undoButton);
 			TextBlock diffHeader = new TextBlock
 			{
-				Text = PreferencesLocalization.FormatCurrent("📝 文件变更 ({0} 个文件)", changes.Count),
+				Text = PreferencesLocalization.FormatCurrent("📝 File Changes ({0} files)", changes.Count),
 				FontSize = 13,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
@@ -1981,10 +1933,10 @@ Additionally, the user has defined the following coding standards / skills that 
 				TextBlock headerBlock = new TextBlock
 				{
 					Text = change.IsNewFile
-						? PreferencesLocalization.FormatCurrent("📄 新建: {0}", change.FilePath)
-						: change.IsDelete
-							? PreferencesLocalization.FormatCurrent("🗑️ 删除: {0}", change.FilePath)
-							: PreferencesLocalization.FormatCurrent("✏️ 修改: {0}", change.FilePath),
+						? PreferencesLocalization.FormatCurrent("📄 New: {0}", change.FilePath)
+					: change.IsDelete
+						? PreferencesLocalization.FormatCurrent("🗑️ Delete: {0}", change.FilePath)
+						: PreferencesLocalization.FormatCurrent("✏️ Modify: {0}", change.FilePath),
 					FontSize = 13,
 					FontWeight = FontWeights.Medium,
 					FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),

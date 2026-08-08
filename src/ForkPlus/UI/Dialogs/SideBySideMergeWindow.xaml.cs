@@ -318,9 +318,8 @@ namespace ForkPlus.UI.Dialogs
 			}
 
 			_aiResolving = true;
-			AiResolveButton.IsEnabled = false;
-			string originalToolTip = AiResolveButton.ToolTip?.ToString();
-			AiResolveButton.ToolTip = PreferencesLocalization.Current("AI is resolving conflicts...");
+			// v3.9.0：统一用 AiActionButton.SetBusy 管理 Loading 态
+			AiResolveButton.SetBusy(true, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
 			string fileName = Path.GetFileName(_changedFile.Path);
 			string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
@@ -371,8 +370,7 @@ namespace ForkPlus.UI.Dialogs
 				_aiResolving = false;
 				return;
 			}
-			AiResolveButton.IsEnabled = true;
-			AiResolveButton.ToolTip = originalToolTip ?? "Use AI to resolve all conflicts";
+			AiResolveButton.SetBusy(false);
 			_aiResolving = false;
 
 			if (canceled)

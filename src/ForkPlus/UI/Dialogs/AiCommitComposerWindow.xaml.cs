@@ -23,8 +23,9 @@ namespace ForkPlus.UI.Dialogs
 	/// 2. 用 OpenAiService.ParseWipCommitPlan 解析为 WipCommitPlan。
 	/// 3. 左侧 ListBox 展示分组、中间展示文件、右侧可编辑 subject/body。
 	/// 4. 用户点 Apply All 后用 ComposeWipCommitsGitCommand 按顺序 stage + commit。
-	/// 5. 完成后关闭窗口，触发主界面 Refresh 让 commit 列表更新。</summary>
-	public partial class AiCommitComposerWindow : CustomWindow, ILocalizableControl
+	/// 5. 完成后关闭窗口，触发主界面 Refresh 让 commit 列表更新。
+	/// v3.9.0：继承 AiResultWindowBase，复用 ModelComboBox 初始化逻辑。</summary>
+	public partial class AiCommitComposerWindow : AiResultWindowBase, ILocalizableControl
 	{
 		private readonly GitModule _gitModule;
 		private readonly bool _amend;
@@ -34,11 +35,17 @@ namespace ForkPlus.UI.Dialogs
 		private bool _aiRunning;
 		private bool _applying;
 		private JobMonitor _currentMonitor;
-		private bool _modelListLoaded;
 
 		// 用户在 SubjectTextBox/BodyTextBox 中编辑时，回写到当前选中的 WipCommitGroup。
 		// 切换分组时把新选中分组的 subject/body 写回 TextBox，期间用 _suppressTextBoxSync 抑制 TextChanged。
 		private bool _suppressTextBoxSync;
+
+		// v3.9.0：基类 AiResultWindowBase 要求的 UI 元素（XAML 生成的字段）
+		protected override ComboBox AiModelComboBox => ModelComboBox;
+		protected override Button AiStopButton => StopButton;
+		protected override Button AiRetryButton => RetryButton;
+		protected override TextBlock AiStatusTextBlock => StatusTextBlock;
+		protected override ProgressBar AiStatusProgressBar => StatusProgressBar;
 
 		public AiCommitComposerWindow(GitModule gitModule, ChangedFile[] stagedFiles, bool amend)
 		{
@@ -79,112 +86,9 @@ namespace ForkPlus.UI.Dialogs
 			CancelButton.Content = PreferencesLocalization.Current("Cancel");
 		}
 
-		/// <summary>初始化模型下拉框。先用当前选中模型占位，再后台拉取完整列表（参考 AiTextResultWindow）。</summary>
-		private void InitializeModelComboBox()
+		/// <summary>v3.9.0：模型切换后更新状态栏文字。</summary>
+		protected override void OnModelChanged(string selected)
 		{
-			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
-			if (!string.IsNullOrWhiteSpace(currentModel))
-			{
-				ModelComboBox.Items.Add(currentModel);
-				ModelComboBox.SelectedIndex = 0;
-			}
-			else
-			{
-				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
-				ModelComboBox.SelectedIndex = 0;
-			}
-
-			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
-			{
-				List<string> models = null;
-				try
-				{
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<string[]> result = aiService.ListModels();
-						if (result.Succeeded && result.Result != null)
-						{
-							models = new List<string>(result.Result);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("AiCommitComposerWindow failed to load AI model list: " + ex.Message);
-				}
-
-				if (models == null || models.Count == 0)
-				{
-					return;
-				}
-
-				Dispatcher.Async(delegate
-				{
-					try
-					{
-						if (_modelListLoaded)
-						{
-							return;
-						}
-						_modelListLoaded = true;
-						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
-						ModelComboBox.Items.Clear();
-						foreach (string m in models)
-						{
-							if (!string.IsNullOrWhiteSpace(m))
-							{
-								ModelComboBox.Items.Add(m);
-							}
-						}
-						int idx = -1;
-						for (int i = 0; i < ModelComboBox.Items.Count; i++)
-						{
-							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
-							{
-								idx = i;
-								break;
-							}
-						}
-						if (idx >= 0)
-						{
-							ModelComboBox.SelectedIndex = idx;
-						}
-						else if (!string.IsNullOrWhiteSpace(selected))
-						{
-							ModelComboBox.Items.Insert(0, selected);
-							ModelComboBox.SelectedIndex = 0;
-						}
-						else if (ModelComboBox.Items.Count > 0)
-						{
-							ModelComboBox.SelectedIndex = 0;
-						}
-					}
-					catch (Exception ex)
-					{
-						Log.Warn("AiCommitComposerWindow failed to populate model combo box: " + ex.Message);
-					}
-				});
-			});
-		}
-
-		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (ModelComboBox.SelectedItem == null)
-			{
-				return;
-			}
-			string selected = (string)ModelComboBox.SelectedItem;
-			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
-			{
-				return;
-			}
-			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
-			ForkPlusSettings.Default.Save();
 			StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected);
 		}
 
@@ -197,20 +101,22 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
+				// v3.9.0：统一用 ForkPlus 自定义弹窗 MessageBoxWindow 替换原生 MessageBox
+				new MessageBoxWindow(
 					PreferencesLocalization.Current("AI Commit Composer"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
+					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 				return;
 			}
 			if (_stagedFiles.Length == 0)
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Current("No staged files to compose. Stage some files first."),
+				new MessageBoxWindow(
 					PreferencesLocalization.Current("AI Commit Composer"),
-					MessageBoxButton.OK,
-					MessageBoxImage.Information);
+					PreferencesLocalization.Current("No staged files to compose. Stage some files first."),
+					"OK",
+					showCancelButton: false).ShowDialog();
 				return;
 			}
 
@@ -476,11 +382,12 @@ namespace ForkPlus.UI.Dialogs
 				}
 				if (string.IsNullOrWhiteSpace(g.Subject))
 				{
-					MessageBox.Show(
-						PreferencesLocalization.FormatCurrent("Group {0} has an empty subject. Please fill in a commit subject or skip the group.", i + 1),
+					new MessageBoxWindow(
 						PreferencesLocalization.Current("AI Commit Composer"),
-						MessageBoxButton.OK,
-						MessageBoxImage.Warning);
+						PreferencesLocalization.FormatCurrent("Group {0} has an empty subject. Please fill in a commit subject or skip the group.", i + 1),
+						"OK",
+						showCancelButton: false,
+						showWarningIcon: true).ShowDialog();
 					return;
 				}
 			}

@@ -1,4 +1,4 @@
-<ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="640" Width="820" MinHeight="360" MinWidth="480" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiTextResultWindow">
+<ui:CustomWindow ResizeMode="CanResizeWithGrip" Height="640" Width="820" MinHeight="360" MinWidth="480" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiTextResultWindow">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -26,22 +26,7 @@
       <ProgressBar DockPanel.Dock="Left" Width="120" Height="3" IsIndeterminate="True" Visibility="Collapsed" Foreground="{DynamicResource AccentColorBrush}" x:Name="StatusProgressBar" />
       <TextBlock FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="StatusTextBlock" />
     </DockPanel>
-    <!-- 内容区：WebView2 + BusyIndicator + Fallback -->
-    <Grid Grid.Row="2">
-      <wv2:WebView2 x:Name="AiResponseWebView" />
-      <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
-        <ProgressBar.Foreground>
-          <DynamicResource ResourceKey="ForegroundBrush.Gray" />
-        </ProgressBar.Foreground>
-        <ProgressBar.Style>
-          <DynamicResource ResourceKey="CircularProgressBar" />
-        </ProgressBar.Style>
-      </ProgressBar>
-      <userControls:FallbackUserControl x:Name="AiResponseFallback">
-        <UserControl.Background>
-          <SolidColorBrush>#00FFFFFF</SolidColorBrush>
-        </UserControl.Background>
-      </userControls:FallbackUserControl>
-    </Grid>
+    <!-- 内容区：v3.9.0 统一用 AiStreamingWebView 替换 WebView2 + BusyIndicator + Fallback -->
+    <controls:AiStreamingWebView Grid.Row="2" x:Name="AiStreamingView" />
   </Grid>
 </ui:CustomWindow>

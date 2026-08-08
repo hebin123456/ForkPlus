@@ -45,24 +45,7 @@
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{DynamicResource VerticalGridSplitter}" x:Name="FileReviewGridSplitter" />
         <controls:CommitFileDiffControl Grid.Column="2" x:Name="FileReviewDiffControl" />
       </Grid>
-      <Grid Grid.Row="2" Grid.Column="2">
-        <Grid.Children>
-          <wv2:WebView2 x:Name="AiResponseWebView" />
-          <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="BusyIndicator">
-            <ProgressBar.Foreground>
-              <DynamicResource ResourceKey="ForegroundBrush.Gray" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-            </ProgressBar.Foreground>
-            <ProgressBar.Style>
-              <DynamicResource ResourceKey="CircularProgressBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
-            </ProgressBar.Style>
-          </ProgressBar>
-          <userControls:FallbackUserControl x:Name="AiResponseFallback">
-            <UserControl.Background>
-              <SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">#00FFFFFF</SolidColorBrush>
-            </UserControl.Background>
-          </userControls:FallbackUserControl>
-        </Grid.Children>
-      </Grid>
+      <controls:AiStreamingWebView Grid.Row="2" Grid.Column="2" x:Name="AiStreamingView" />
       <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="GridSplitter">
         <GridSplitter.Style>
           <DynamicResource ResourceKey="VerticalGridSplitter" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
