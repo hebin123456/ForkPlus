@@ -157,7 +157,12 @@ namespace ForkPlus.UI.Dialogs
 				description.Inlines.Add(new Run("Choose "));
 				Hyperlink hyperlink = new Hyperlink(new Run(".gitignore"));
 				hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
-				hyperlink.Styles.Add((Style)Application.Current.FindResource("BlueUnderlineHyperlinkStyle"));
+				// 阶段 5：Application.Current.FindResource 在资源缺失时抛异常，改用 Theme.FindStyle 安全门面。
+				Style blueUnderlineStyle = ForkPlus.UI.Theme.FindStyle("BlueUnderlineHyperlinkStyle");
+				if (blueUnderlineStyle != null)
+				{
+					hyperlink.Styles.Add(blueUnderlineStyle);
+				}
 				hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
 				description.Inlines.Add(hyperlink);
 				description.Inlines.Add(new Run(" template for your project"));
