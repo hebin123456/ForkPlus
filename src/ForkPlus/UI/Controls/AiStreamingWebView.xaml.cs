@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
+using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.Utils.Http;
 using Microsoft.Web.WebView2.Core;
