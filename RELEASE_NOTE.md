@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.8.3
+
+### Bug 修复
+
+- 全面排查并修复多处可能导致应用闪退的 Bug：
+  1. **[高] AI 解决冲突按钮闪退**：`MergeConflictUserControl` 和 `SideBySideMergeWindow` 中的 `AiResolveButton_Click` 是 `async void` 事件处理器，`await Task.Run` 之后直接访问 UI 元素（`AiResolveButton`、`_repositoryUserControl` 等），若用户在 AI 请求期间切换 Tab 或关闭窗口，会抛出未捕获异常导致应用闪退。修复方案：将 `async void` 拆分为 try-catch 包装器 + `async Task` 核心方法，确保所有异常被捕获并记录日志；await 后增加 `IsLoaded` 检查，控件/窗口已卸载时安全退出。
+  2. **[高] 未变更文件视图空引用闪退**：`FileDiffControl.LoadUnchangedFileContent` 中 `repositoryUserControl` 来自 DependencyProperty（默认值 null），未做 null 检查直接访问 `.GitModule` 导致 NullReferenceException。`ShowUnchangedFileContentView` 同样存在 `RepositoryUserControl` 属性在异步回调期间被清空的空引用风险。均已补充 null 检查。
+  3. **[中] 合并冲突面板多处空引用**：`UpdateResolveButton`（CheckBox 在 `SetConflict` 完成前被操作时 `_changedFile` 为 null）、`StageButton_Click`（链式访问 `_repositoryUserControl.Content.CommitUserControl` 未做 null 检查）、`ShaButton_Click`（`_repositoryUserControl` 和 `_changedFile` 未做 null 检查）均已补充防护。
+- 顺带将 `SideBySideMergeWindow` 中 AI 解决冲突流程的 7 处原生 `MessageBox` 也替换为 ForkPlus 自定义弹窗 `MessageBoxWindow`，与 v3.8.2 保持一致。
+
 ## v3.8.2
 
 ### 优化

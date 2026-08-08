@@ -137,7 +137,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void StageButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (_changedFile != null)
+			// v3.8.3：链式访问可能 NRE
+			if (_changedFile != null && _repositoryUserControl?.Content?.CommitUserControl != null)
 			{
 				_repositoryUserControl.Content.CommitUserControl.StageSelectedFiles();
 			}
@@ -155,6 +156,20 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			// v3.8.3：async void 方法必须捕获所有异常，否则未处理异常会导致应用闪退
+			try
+			{
+			await AiResolveButton_ClickCore();
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AI Resolve crashed: " + ex);
+				_aiResolving = false;
+			}
+		}
+
+		private async Task AiResolveButton_ClickCore()
+		{
 			if (!OpenAiService.IsAiReviewConfigured())
 		{
 			// v3.8.2：用 ForkPlus 自定义弹窗替换原生 MessageBox
@@ -252,6 +267,12 @@ namespace ForkPlus.UI.UserControls
 				}
 			}).ConfigureAwait(true);
 
+			// v3.8.3：await 后控件可能已卸载（用户切换了 Tab/文件），async void 未捕获异常会闪退
+			if (!IsLoaded)
+			{
+				_aiResolving = false;
+				return;
+			}
 			AiResolveButton.IsEnabled = true;
 			AiResolveButton.ToolTip = originalToolTip ?? PreferencesLocalization.Current("Use AI to resolve all conflicts in this file");
 			_aiResolving = false;
@@ -263,13 +284,13 @@ namespace ForkPlus.UI.UserControls
 			if (requestError != null)
 			{
 				Log.Error("AI Resolve failed: " + requestError.Message);
-			new MessageBoxWindow(
-				"AI Resolve",
-				PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
-				"OK",
-				showCancelButton: false,
-				showWarningIcon: true).ShowDialog();
-			return;
+				new MessageBoxWindow(
+					"AI Resolve",
+					PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
+				return;
 			}
 
 			string resolved;
@@ -281,22 +302,22 @@ namespace ForkPlus.UI.UserControls
 			if (string.IsNullOrWhiteSpace(resolved))
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"AI returned empty content. Aborting.",
-				"OK",
-				showCancelButton: false,
-				showWarningIcon: true).ShowDialog();
-			return;
+					"AI Resolve",
+					"AI returned empty content. Aborting.",
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
+				return;
 			}
 			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"AI output still contains conflict markers. Please review and try again, or resolve manually.",
-				"OK",
-				showCancelButton: false,
-				showWarningIcon: true).ShowDialog();
-			return;
+					"AI Resolve",
+					"AI output still contains conflict markers. Please review and try again, or resolve manually.",
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
+				return;
 			}
 
 			if (!new MessageBoxWindow(
@@ -325,12 +346,12 @@ namespace ForkPlus.UI.UserControls
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to write back: " + ex.Message);
-			new MessageBoxWindow(
-				"AI Resolve",
-				PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
-				"OK",
-				showCancelButton: false,
-				showWarningIcon: true).ShowDialog();
+				new MessageBoxWindow(
+					"AI Resolve",
+					PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 			}
 		}
 
@@ -400,6 +421,11 @@ namespace ForkPlus.UI.UserControls
 
 		private void UpdateResolveButton()
 		{
+			// v3.8.3：CheckBox 可能在 SetConflict 完成前被操作，_changedFile 可能为 null
+			if (_changedFile == null)
+			{
+				return;
+			}
 			ResolveInExternalMergerButton.Hide();
 			ResolveInExternalMergerDropdownButton.Collapse();
 			if (LocalCheckBox.IsChecked.GetValueOrDefault() && RemoteCheckBox.IsChecked.GetValueOrDefault())
@@ -460,7 +486,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShaButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (sender is Button { DataContext: MergeRevisionViewModel dataContext })
+			// v3.8.3：_repositoryUserControl 和 _changedFile 可能为 null
+			if (sender is Button { DataContext: MergeRevisionViewModel dataContext }
+				&& _repositoryUserControl != null && _changedFile != null)
 			{
 				_repositoryUserControl.ActivateRevisionView();
 				_repositoryUserControl.SelectRevision(dataContext.Sha, _changedFile.Path);

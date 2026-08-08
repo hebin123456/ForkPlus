@@ -533,6 +533,16 @@ namespace ForkPlus.UI.Controls
 		/// <summary>v3.8.1：未变更文件（"显示完整工作目录"开启时）从 HEAD 读取并显示完整文件内容（只读）。</summary>
 		private void LoadUnchangedFileContent(RepositoryUserControl repositoryUserControl, ChangedFile changedFile)
 		{
+			// v3.8.3：repositoryUserControl 来自 DependencyProperty，可能为 null
+			if (repositoryUserControl == null)
+			{
+				ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
+				{
+					h.Collapse();
+					c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
+				});
+				return;
+			}
 			GitModule gitModule = repositoryUserControl.GitModule;
 			if (gitModule == null)
 			{
@@ -585,7 +595,12 @@ namespace ForkPlus.UI.Controls
 		/// <summary>v3.8.1：渲染未变更文件的完整内容。顺序与 FileContentControl.UpdateView 保持一致：Hex → Binary(含 Image/Lfs) → Text。</summary>
 		private void ShowUnchangedFileContentView(Content content, GitModule gitModule, ChangedFile changedFile)
 		{
+			// v3.8.3：RepositoryUserControl 可能在异步加载期间被清空
 			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
+			if (repositoryUserControl == null)
+			{
+				return;
+			}
 			HexContent hexContent = content as HexContent;
 			if (hexContent != null)
 			{
