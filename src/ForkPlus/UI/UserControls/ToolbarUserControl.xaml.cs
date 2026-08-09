@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -831,12 +832,23 @@ namespace ForkPlus.UI.UserControls
 			{
 				MainWindow.Commands.OpenRepositoryInFileExplorer.Execute(gitModule);
 			}));
+			// v3.9.1：检测当前仓库项目类型，用于智能过滤 IDE 菜单项
+			ProjectType projectType = ProjectTypeDetector.Detect(gitModule.Path);
 			ExternalProjectEditor[] availableEditors = ExternalProjectEditor.GetAvailableEditors();
-			if (availableEditors.Length != 0)
+			// v3.9.1：只显示"已安装 ∧ (匹配项目类型 ∨ 通用编辑器)"的 IDE
+			List<ExternalProjectEditor> filteredProjectEditors = new List<ExternalProjectEditor>();
+			for (int i = 0; i < availableEditors.Length; i++)
+			{
+				ProjectType rec = availableEditors[i].RecommendedProjectTypes;
+				if (rec == ProjectType.Unknown || (rec & projectType) != ProjectType.Unknown)
+				{
+					filteredProjectEditors.Add(availableEditors[i]);
+				}
+			}
+			if (filteredProjectEditors.Count != 0)
 			{
 				contextMenu.Items.Add(new Separator());
-				ExternalProjectEditor[] array = availableEditors;
-				foreach (ExternalProjectEditor editor2 in array)
+				foreach (ExternalProjectEditor editor2 in filteredProjectEditors)
 				{
 					string[] projectFilePaths = editor2.GetProjectFilePaths(gitModule.Path);
 					foreach (string absoluteProjectFilePath in projectFilePaths)
@@ -854,10 +866,19 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			ExternalRepositoryEditor[] availableEditors2 = ExternalRepositoryEditor.GetAvailableEditors();
-			if (availableEditors2.Length != 0)
+			// v3.9.1：同样按项目类型过滤仓库级编辑器（VSCode/Cursor 等通用编辑器 RecommendedProjectTypes=Unknown 保留）
+			List<ExternalRepositoryEditor> filteredRepositoryEditors = new List<ExternalRepositoryEditor>();
+			for (int i = 0; i < availableEditors2.Length; i++)
 			{
-				ExternalRepositoryEditor[] array2 = availableEditors2;
-				foreach (ExternalRepositoryEditor editor in array2)
+				ProjectType rec = availableEditors2[i].RecommendedProjectTypes;
+				if (rec == ProjectType.Unknown || (rec & projectType) != ProjectType.Unknown)
+				{
+					filteredRepositoryEditors.Add(availableEditors2[i]);
+				}
+			}
+			if (filteredRepositoryEditors.Count != 0)
+			{
+				foreach (ExternalRepositoryEditor editor in filteredRepositoryEditors)
 				{
 					Image icon3 = new Image
 					{

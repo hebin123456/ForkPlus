@@ -17,6 +17,9 @@ namespace ForkPlus.UI
 
 			public override ImageSource Icon { get; }
 
+			// v3.9.1：IDEA 适合 Java 系（Maven/Gradle）项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Maven | ProjectType.Gradle;
+
 			[Null]
 			public static string TryFindInstance()
 			{
@@ -51,6 +54,9 @@ namespace ForkPlus.UI
 		{
 			public override string Name => "GoLand";
 
+			// v3.9.1：GoLand 适合 Go 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Go;
+
 			[Null]
 			public new static string TryFindInstance()
 			{
@@ -67,6 +73,9 @@ namespace ForkPlus.UI
 		{
 			public override string Name => "PhpStorm";
 
+			// v3.9.1：PhpStorm 适合 PHP 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Php;
+
 			[Null]
 			public new static string TryFindInstance()
 			{
@@ -82,6 +91,9 @@ namespace ForkPlus.UI
 		public class PyCharm : IntelliJIdea
 		{
 			public override string Name => "PyCharm";
+
+			// v3.9.1：PyCharm 适合 Python 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Python;
 
 			[Null]
 			public new static string TryFindInstance()
@@ -104,6 +116,9 @@ namespace ForkPlus.UI
 			public override ImageSource Icon { get; }
 
 			protected override string[] ProjectExtensions => new string[5] { "*.sln", "*.slnf", "*.slnx", "*.csproj", "*.uproject" };
+
+			// v3.9.1：Rider 适合 .NET 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.DotNet;
 
 			[Null]
 			public static string TryFindInstance()
@@ -138,6 +153,9 @@ namespace ForkPlus.UI
 
 			protected override string[] ProjectExtensions => new string[3] { "*.sln", "*.slnf", "*.slnx" };
 
+			// v3.9.1：VS 适合 .NET 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.DotNet;
+
 			[Null]
 			public static string TryFindInstance()
 			{
@@ -166,6 +184,42 @@ namespace ForkPlus.UI
 			}
 		}
 
+		/// <summary>v3.9.1：Android Studio。Android 项目的推荐 IDE。</summary>
+		public class AndroidStudio : ExternalProjectEditor
+		{
+			public override string Name => "Android Studio";
+
+			public override string ApplicationPath { get; }
+
+			public override ImageSource Icon { get; }
+
+			// v3.9.1：Android Studio 适合 Android 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Android;
+
+			[Null]
+			public static string TryFindInstance()
+			{
+				return FindExistingInstance(new string[3]
+				{
+					"%programfiles%\\Android\\Android Studio\\bin\\studio64.exe",
+					"%localappdata%\\Programs\\Android Studio\\bin\\studio64.exe",
+					"%programfiles%\\Android\\*\\bin\\studio64.exe"
+				});
+			}
+
+			public AndroidStudio(string applicationPath)
+			{
+				ApplicationPath = applicationPath;
+				Icon = IconTools.GetImageSourceForFile(applicationPath);
+			}
+
+			// Android Studio 直接打开仓库根目录即可自动识别 gradle 配置
+			public override string[] GetProjectFilePaths(string gitDirectory)
+			{
+				return new string[1] { gitDirectory };
+			}
+		}
+
 		public abstract string Name { get; }
 
 		public abstract string ApplicationPath { get; }
@@ -174,9 +228,19 @@ namespace ForkPlus.UI
 
 		protected virtual string[] ProjectExtensions => new string[0];
 
+		/// <summary>v3.9.1：该 IDE 适合的项目类型。基类默认 Unknown 表示"通用"（不过滤）。
+		/// 子类覆盖以声明适合的项目类型，用于"Open in"菜单智能过滤。</summary>
+		public virtual ProjectType RecommendedProjectTypes => ProjectType.Unknown;
+
 		public static ExternalProjectEditor[] GetAvailableEditors()
 		{
 			List<ExternalProjectEditor> list = new List<ExternalProjectEditor>(2);
+			// v3.9.1：新增 AndroidStudio
+			string androidStudio = AndroidStudio.TryFindInstance();
+			if (androidStudio != null)
+			{
+				list.Add(new AndroidStudio(androidStudio));
+			}
 			string text = GoLand.TryFindInstance();
 			if (text != null)
 			{

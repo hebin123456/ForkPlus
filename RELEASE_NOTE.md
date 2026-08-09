@@ -2,6 +2,21 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.9.1
+
+### 新功能
+
+- **"Open in" 菜单智能推荐 IDE**：工具栏的 "Open in" 下拉菜单现在会根据当前仓库的项目类型，只显示匹配的 JetBrains IDE，不再无差别列出所有已安装的 IDE：
+  - Node 仓库（有 `package.json`）→ 仅显示 WebStorm
+  - Maven 仓库（有 `pom.xml`）→ 仅显示 IntelliJ IDEA
+  - Android 仓库（`build.gradle` + `AndroidManifest.xml`）→ 仅显示 Android Studio（新增检测）
+  - Python 仓库（`requirements.txt`/`pyproject.toml`/`setup.py`）→ 仅显示 PyCharm
+  - Go 仓库（`go.mod`）→ 仅显示 GoLand
+  - PHP 仓库（`composer.json`）→ 仅显示 PhpStorm
+  - .NET 仓库（`*.sln`/`*.csproj`）→ 仅显示 Rider / Visual Studio
+  - 识别不到项目类型 → 仅保留通用编辑器（VSCode/Cursor/Sublime 等）和终端/文件管理器
+- 不匹配项目类型的 IDE（例如 Node 仓库里已装的 PyCharm）不再出现在菜单，保持菜单简洁。
+
 ## v3.9.0
 
 ### 优化

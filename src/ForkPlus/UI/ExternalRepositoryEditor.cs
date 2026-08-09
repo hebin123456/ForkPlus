@@ -190,6 +190,9 @@ namespace ForkPlus.UI
 
 			public override ImageSource Icon { get; }
 
+			// v3.9.1：WebStorm 适合 Node/前端 项目
+			public override ProjectType RecommendedProjectTypes => ProjectType.Node;
+
 			[Null]
 			public static string TryFindInstance()
 			{
@@ -229,6 +232,10 @@ namespace ForkPlus.UI
 		public abstract string ApplicationPath { get; }
 
 		public abstract ImageSource Icon { get; }
+
+		/// <summary>v3.9.1：该编辑器适合的项目类型。基类默认 Unknown 表示"通用"（不过滤）。
+		/// 子类覆盖以声明适合的项目类型，用于"Open in"菜单智能过滤。</summary>
+		public virtual ProjectType RecommendedProjectTypes => ProjectType.Unknown;
 
 		public static ExternalRepositoryEditor[] GetAvailableEditors()
 		{
