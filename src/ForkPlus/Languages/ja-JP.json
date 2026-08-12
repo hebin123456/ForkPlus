@@ -2239,6 +2239,10 @@
     "{0} entries loaded.": "{0} 件のエントリを読み込みました。",
     "Jump to Reflog Entry": "Reflog エントリにジャンプ",
     "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "HEAD を {0}（{1}）にジャンプしますか？\n\nこれにより、現在のブランチと作業ツリーがその状態にリセットされます。後で元に戻すことができます。",
-    "Jump to HEAD@{{{0}}}": "HEAD@{{{0}}} にジャンプ"
+    "Jump to HEAD@{{{0}}}": "HEAD@{{{0}}} にジャンプ",
+    "Unknown error": "不明なエラー",
+    "AI is still resolving conflicts. Please wait for the current task to finish.": "AIが競合を解決中です。現在のタスクが完了するまでお待ちください。",
+    "Cannot resolve conflicts: file or repository is not ready.": "競合を解決できません：ファイルまたはリポジトリの準備ができていません。",
+    "Failed to resolve file path: {0}": "ファイルパスの解決に失敗しました：{0}"
   }
 }

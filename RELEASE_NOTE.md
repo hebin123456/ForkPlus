@@ -2,6 +2,17 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.9.2
+
+### 修复
+
+- **AI 解决冲突按钮无反应**：修复按钮点击后完全没反应的问题。此前 `_aiResolving` 标志若卡在 true（如上次请求异常退出未重置），按钮会永远静默 return。现在：
+  - 正在处理中再次点击 → 弹窗提示"AI 正在解决冲突，请等待当前任务完成"，不再没反应
+  - 文件/仓库未就绪 → 弹窗提示，不再静默
+  - 文件路径解析失败 → 弹窗提示错误，不再静默
+  - 异常退出时自动重置 `_aiResolving` 和按钮 loading 态
+- **AI 解决冲突文案国际化**：修复解决冲突后显示的文字只有英文、未走国际化的问题。此前所有面向用户的文案（"AI Resolve"、"AI is not configured..."、"No conflict markers found..."、"AI returned empty content..."、"AI output still contains conflict markers..."、"AI resolved all conflicts. Apply..."、"Apply"/"Cancel" 等）都是硬编码英文字符串。现已全部改为 `PreferencesLocalization.Current` 调用，并为 8 种语言（en/zh-Hans/zh-Hant/ja-JP/ko-KR/fr-FR/de-DE/es-ES）补充翻译。
+
 ## v3.9.1
 
 ### 新功能

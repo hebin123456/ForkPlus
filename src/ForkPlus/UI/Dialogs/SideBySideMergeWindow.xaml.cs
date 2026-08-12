@@ -245,12 +245,26 @@ namespace ForkPlus.UI.Dialogs
 		/// </summary>
 		private async void AiResolveButton_Click(object sender, RoutedEventArgs e)
 		{
+			// v3.9.2：修复按钮无反应——之前 _aiResolving 卡在 true 会导致永远静默 return
 			if (_aiResolving)
 			{
+				// v3.9.2：排队时给用户明确反馈，不再完全没反应
+				new MessageBoxWindow(
+					PreferencesLocalization.Current("AI Resolve"),
+					PreferencesLocalization.Current("AI is still resolving conflicts. Please wait for the current task to finish."),
+					PreferencesLocalization.Current("OK"),
+					showCancelButton: false).ShowDialog();
 				return;
 			}
 			if (_mergeMode != MergeMode.Text || _mergeConflict == null)
 			{
+				// v3.9.2：状态未就绪也给反馈
+				new MessageBoxWindow(
+					PreferencesLocalization.Current("AI Resolve"),
+					PreferencesLocalization.Current("Cannot resolve conflicts: file or repository is not ready."),
+					PreferencesLocalization.Current("OK"),
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 				return;
 			}
 			// v3.8.3：async void 方法必须捕获所有异常，否则未处理异常会导致应用闪退
@@ -262,6 +276,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Log.Error("AI Resolve crashed: " + ex);
 				_aiResolving = false;
+				AiResolveButton.SetBusy(false);
 			}
 		}
 
@@ -270,9 +285,9 @@ namespace ForkPlus.UI.Dialogs
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"AI is not configured. Please configure AI review settings in Preferences first.",
-				"OK",
+				PreferencesLocalization.Current("AI Resolve"),
+				PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			return;
@@ -286,6 +301,13 @@ namespace ForkPlus.UI.Dialogs
 			catch (Exception ex)
 			{
 				Log.Error("AI Resolve: failed to resolve file path: " + ex.Message);
+				// v3.9.2：路径解析失败不再静默，给用户反馈
+				new MessageBoxWindow(
+					PreferencesLocalization.Current("AI Resolve"),
+					PreferencesLocalization.FormatCurrent("Failed to resolve file path: {0}", ex.Message),
+					PreferencesLocalization.Current("OK"),
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 				return;
 			}
 
@@ -298,9 +320,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Log.Error("AI Resolve: failed to read conflict file: " + ex.Message);
 				new MessageBoxWindow(
-				"AI Resolve",
+				PreferencesLocalization.Current("AI Resolve"),
 				PreferencesLocalization.FormatCurrent("Failed to read conflict file: {0}", ex.Message),
-				"OK",
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			return;
@@ -310,9 +332,9 @@ namespace ForkPlus.UI.Dialogs
 				|| !conflictedContent.Contains("<<<<<<<") || !conflictedContent.Contains(">>>>>>>"))
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"No conflict markers found in the file.",
-				"OK",
+				PreferencesLocalization.Current("AI Resolve"),
+				PreferencesLocalization.Current("No conflict markers found in the file."),
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false).ShowDialog();
 			return;
 			}
@@ -355,7 +377,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					if (!result.Succeeded)
 					{
-						requestError = new Exception(result.Error?.FriendlyMessage ?? "Unknown error");
+						requestError = new Exception(result.Error?.FriendlyMessage ?? PreferencesLocalization.Current("Unknown error"));
 					}
 				}
 				catch (Exception ex)
@@ -381,9 +403,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Log.Error("AI Resolve failed: " + requestError.Message);
 				new MessageBoxWindow(
-				"AI Resolve",
+				PreferencesLocalization.Current("AI Resolve"),
 				PreferencesLocalization.FormatCurrent("AI resolve failed: {0}", requestError.Message),
-				"OK",
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			return;
@@ -398,9 +420,9 @@ namespace ForkPlus.UI.Dialogs
 			if (string.IsNullOrWhiteSpace(resolved))
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"AI returned empty content. Aborting.",
-				"OK",
+				PreferencesLocalization.Current("AI Resolve"),
+				PreferencesLocalization.Current("AI returned empty content. Aborting."),
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			return;
@@ -410,19 +432,19 @@ namespace ForkPlus.UI.Dialogs
 			if (resolved.Contains("<<<<<<<") || resolved.Contains(">>>>>>>") || resolved.Contains("======="))
 			{
 				new MessageBoxWindow(
-				"AI Resolve",
-				"AI output still contains conflict markers. Please review and try again, or resolve manually.",
-				"OK",
+				PreferencesLocalization.Current("AI Resolve"),
+				PreferencesLocalization.Current("AI output still contains conflict markers. Please review and try again, or resolve manually."),
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			return;
 			}
 
 			if (!new MessageBoxWindow(
-				"AI Resolve",
-				"AI resolved all conflicts. Apply the resolved content and close?",
-				"Apply",
-				"Cancel",
+				PreferencesLocalization.Current("AI Resolve"),
+				PreferencesLocalization.Current("AI resolved all conflicts. Apply the resolved content and close?"),
+				PreferencesLocalization.Current("Apply"),
+				PreferencesLocalization.Current("Cancel"),
 				showCancelButton: true,
 				550.0).ShowDialog().GetValueOrDefault())
 			{
@@ -438,9 +460,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				Log.Error("AI Resolve: failed to write back: " + ex.Message);
 			new MessageBoxWindow(
-				"AI Resolve",
+				PreferencesLocalization.Current("AI Resolve"),
 				PreferencesLocalization.FormatCurrent("Failed to apply resolved content: {0}", ex.Message),
-				"OK",
+				PreferencesLocalization.Current("OK"),
 				showCancelButton: false,
 				showWarningIcon: true).ShowDialog();
 			}

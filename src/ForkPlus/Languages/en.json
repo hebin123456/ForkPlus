@@ -69,6 +69,24 @@
     "{0} staged file(s) not assigned to any group.": "{0} staged file(s) not assigned to any group.",
     "{0}  (not staged)": "{0}  (not staged)",
     "{0}. {1}  ({2} files)": "{0}. {1}  ({2} files)",
-    "composed": "composed"
+    "composed": "composed",
+    "AI Resolve": "AI Resolve",
+    "AI is not configured. Please configure AI review settings in Preferences first.": "AI is not configured. Please configure AI review settings in Preferences first.",
+    "No conflict markers found in the file.": "No conflict markers found in the file.",
+    "AI returned empty content. Aborting.": "AI returned empty content. Aborting.",
+    "AI output still contains conflict markers. Please review and try again, or resolve manually.": "AI output still contains conflict markers. Please review and try again, or resolve manually.",
+    "AI resolved all conflicts. Apply the resolved content?": "AI resolved all conflicts. Apply the resolved content?",
+    "AI resolved all conflicts. Apply the resolved content and close?": "AI resolved all conflicts. Apply the resolved content and close?",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+    "OK": "OK",
+    "Failed to read conflict file: {0}": "Failed to read conflict file: {0}",
+    "AI resolve failed: {0}": "AI resolve failed: {0}",
+    "Failed to apply resolved content: {0}": "Failed to apply resolved content: {0}",
+    "AI is resolving conflicts...": "AI is resolving conflicts...",
+    "Unknown error": "Unknown error",
+    "AI is still resolving conflicts. Please wait for the current task to finish.": "AI is still resolving conflicts. Please wait for the current task to finish.",
+    "Cannot resolve conflicts: file or repository is not ready.": "Cannot resolve conflicts: file or repository is not ready.",
+    "Failed to resolve file path: {0}": "Failed to resolve file path: {0}"
   }
 }

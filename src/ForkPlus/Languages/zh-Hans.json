@@ -2245,6 +2245,10 @@
     "{0} entries loaded.": "已加载 {0} 条记录。",
     "Jump to Reflog Entry": "跳转到 Reflog 条目",
     "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "跳转 HEAD 到 {0}（{1}）？\n\n这将把当前分支和工作区重置到该状态。之后可以撤销此操作。",
-    "Jump to HEAD@{{{0}}}": "跳转到 HEAD@{{{0}}}"
+    "Jump to HEAD@{{{0}}}": "跳转到 HEAD@{{{0}}}",
+    "Unknown error": "未知错误",
+    "AI is still resolving conflicts. Please wait for the current task to finish.": "AI 正在解决冲突，请等待当前任务完成。",
+    "Cannot resolve conflicts: file or repository is not ready.": "无法解决冲突：文件或仓库未就绪。",
+    "Failed to resolve file path: {0}": "解析文件路径失败：{0}"
   }
 }

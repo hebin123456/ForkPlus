@@ -2239,6 +2239,10 @@
     "{0} entries loaded.": "{0} entradas cargadas.",
     "Jump to Reflog Entry": "Ir a entrada de Reflog",
     "Jump to HEAD to {0} ({1})?\n\nThis will reset your current branch and working tree to that state. You can undo this afterwards.": "¿Saltar HEAD a {0} ({1})?\n\nEsto restablecerá su rama actual y árbol de trabajo a ese estado. Puede deshacer esto después.",
-    "Jump to HEAD@{{{0}}}": "Ir a HEAD@{{{0}}}"
+    "Jump to HEAD@{{{0}}}": "Ir a HEAD@{{{0}}}",
+    "Unknown error": "Error desconocido",
+    "AI is still resolving conflicts. Please wait for the current task to finish.": "La IA todavía está resolviendo conflictos. Espere a que termine la tarea actual.",
+    "Cannot resolve conflicts: file or repository is not ready.": "No se pueden resolver conflictos: el archivo o repositorio no está listo.",
+    "Failed to resolve file path: {0}": "Error al resolver la ruta del archivo: {0}"
   }
 }
