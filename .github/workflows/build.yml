@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [master-update]
+    branches: [master]
     tags: ["v*"]
   workflow_dispatch:
 
@@ -193,19 +193,49 @@ jobs:
             exit 1
           }
 
+      # v3.10.0：自包含发布——把 .NET 10 运行时打进包里，用户无需另装运行时。
+      # 3 个 exe（ForkPlus / AskPass / RI）各自 self-contained publish 到同一目录，
+      # 共享同一份运行时文件（coreclr.dll / System.*.dll 等），每个 exe 的 apphost
+      # 读各自 runtimeconfig（standalone）从同目录加载运行时，用户机器零依赖。
+      # 不做 trimming（WPF 反射重，易运行时崩）、不做 single-file（现有 MSBuild target
+      # 依赖目录结构加载原生 dll）。
+      - name: Publish self-contained
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $stage = "publish-stage"
+          dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
+          dotnet publish src/ForkPlus.AskPass/ForkPlus.AskPass.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
+          dotnet publish src/ForkPlus.RI/ForkPlus.RI.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
+          # 保险：确保原生依赖落在发布目录根（RestoreBiturbo/RestoreTokei/CopyHelperExecutables
+          # 理论上已拷贝，这里双保险，缺失才拷）
+          if (Test-Path "third_party\biturbo.dll") { Copy-Item "third_party\biturbo.dll" "$stage\biturbo.dll" -Force }
+          if (Test-Path "third_party\tokei.exe") { Copy-Item "third_party\tokei.exe" "$stage\tokei.exe" -Force }
+          # WebView2Loader.dll 拷到根（self-contained publish 放在 runtimes\win-x64\native\，
+          # 根目录加载更稳；与 CopyWebView2LoaderToRoot target 同逻辑，双保险）
+          $wv = "$stage\runtimes\win-x64\native\WebView2Loader.dll"
+          if (Test-Path $wv) {
+            Copy-Item $w "$stage\WebView2Loader.dll" -Force
+            Remove-Item "$stage\runtimes" -Recurse -Force -ErrorAction SilentlyContinue
+          }
+          Write-Host "=== Publish stage contents (top-level) ==="
+          Get-ChildItem $stage -File | Select-Object Name, @{N='MB';E={[math]::Round($_.Length/1MB,2)}} | Format-Table -AutoSize
+          $totalMB = [math]::Round((Get-ChildItem $stage -Recurse | Measure-Object Length -Sum).Sum/1MB,1)
+          Write-Host "Total publish size: $totalMB MB"
+
       - name: Upload artifact
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: ForkPlus-${{ matrix.artifact_suffix }}
-          path: src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/
+          path: publish-stage/
           if-no-files-found: error
 
       - name: Package release zip
         if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path src/ForkPlus/bin/Release/net10.0-windows10.0.19041.0/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
+          Compress-Archive -Path publish-stage/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
 
       - name: Release on tag
         if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'

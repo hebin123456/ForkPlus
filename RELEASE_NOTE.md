@@ -2,6 +2,20 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.10.0
+
+### 新功能
+
+- **自带 .NET 10 运行时，用户无需另装运行时**：发布包改为 **self-contained 自包含**模式，把 .NET 10 运行时（coreclr、基础类库等）直接打进发行包里。用户下载解压即可运行，不再需要先去微软官网下载安装 ".NET 10 Desktop Runtime"。
+  - ForkPlus / ForkPlus.AskPass / ForkPlus.RI 三个 exe 共用同一份运行时文件（同目录加载），不重复占用空间。
+  - 取舍：发行包体积由原来约 20MB 增至约 70–85MB（zip），这是打包运行时的必然代价，换来零安装依赖的体验。
+  - 不做 trimming（WPF 大量使用反射，裁剪后运行时易崩）、不做 single-file（现有原生库加载逻辑依赖目录结构）。
+  - 说明：仅打包了 .NET 运行时；WebView2 运行时仍依赖系统随 Edge 预装（Win10/11 默认都有），不在本次打包范围。
+
+### 修复
+
+- **CI 触发分支修正**：`build.yml` 的 push 触发分支由已删除的 `master-update` 改回 `master`。此前推送到 `master` 不会触发 CI 构建，只有打 tag 时才构建；现在推送 `master` 也会正常跑 CI。
+
 ## v3.9.2
 
 ### 修复
