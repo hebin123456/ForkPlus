@@ -1495,7 +1495,7 @@
     "Reveal Line in": "라인 표시:",
     "Reveal Line in ": "다음 도구에서 라인 표시: ",
     "Reveal Line in {0}": "{0}에서 라인 표시",
-    "Reveal in Fork": "Fork에서 표시",
+    "Reveal in ForkPlus": "ForkPlus에서 표시",
     "Revert": "되돌리기",
     "Revert '{0}'": "'{0}' 되돌리기",
     "Revert Commit...": "커밋 되돌리기...",

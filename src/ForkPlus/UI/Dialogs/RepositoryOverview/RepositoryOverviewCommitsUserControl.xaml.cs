@@ -69,7 +69,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 				}, isEnabled: true, showShortcut: false);
 				list.Add(item2);
 				MenuItem menuItem = new MenuItem();
-				menuItem.Header = PreferencesLocalization.MenuHeader("Reveal in Fork");
+				menuItem.Header = PreferencesLocalization.MenuHeader("Reveal in ForkPlus");
 				menuItem.Click += delegate
 				{
 					RevealRevision(gitModule, item.Sha, _filepath);

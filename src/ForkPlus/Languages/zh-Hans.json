@@ -1498,7 +1498,7 @@
     "Reveal Line in": "在以下工具中显示此行",
     "Reveal Line in ": "在以下工具中显示行：",
     "Reveal Line in {0}": "在 {0} 中显示此行",
-    "Reveal in Fork": "在 Fork 中显示",
+    "Reveal in ForkPlus": "在 ForkPlus 中显示",
     "Revert": "还原",
     "Revert '{0}'": "还原 '{0}'",
     "Revert Commit...": "还原提交...",

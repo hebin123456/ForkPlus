@@ -508,7 +508,7 @@ namespace ForkPlus.UI.Dialogs
 				}, isEnabled: true, showShortcut: false);
 				list.Add(item);
 				MenuItem menuItem = new MenuItem();
-				menuItem.Header = Translate("Reveal in Fork");
+				menuItem.Header = Translate("Reveal in ForkPlus");
 				menuItem.Click += delegate
 				{
 					string filePath = _selectedRevision?.ChangedFile?.Path;

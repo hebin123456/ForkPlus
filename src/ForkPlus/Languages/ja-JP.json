@@ -1495,7 +1495,7 @@
     "Reveal Line in": "行を表示",
     "Reveal Line in ": "行を表示: ",
     "Reveal Line in {0}": "{0} に行を表示",
-    "Reveal in Fork": "Fork で表示",
+    "Reveal in ForkPlus": "ForkPlus で表示",
     "Revert": "取り消し",
     "Revert '{0}'": "'{0}' をリバート",
     "Revert Commit...": "コミットをリバート...",

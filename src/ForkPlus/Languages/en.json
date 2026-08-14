@@ -87,6 +87,7 @@
     "Unknown error": "Unknown error",
     "AI is still resolving conflicts. Please wait for the current task to finish.": "AI is still resolving conflicts. Please wait for the current task to finish.",
     "Cannot resolve conflicts: file or repository is not ready.": "Cannot resolve conflicts: file or repository is not ready.",
-    "Failed to resolve file path: {0}": "Failed to resolve file path: {0}"
+    "Failed to resolve file path: {0}": "Failed to resolve file path: {0}",
+    "Reveal in ForkPlus": "Reveal in ForkPlus"
   }
 }
