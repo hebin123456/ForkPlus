@@ -48,9 +48,10 @@ namespace ForkPlus.UI.UserControls
 
 		private const int BulkRebuildChangeThreshold = 256;
 
-		// 变更文件数达到此阈值时，重建走后台线程构建（Task.Run）并跳过选中项恢复，
-		// 避免 UI 冻结。注意：不再据此把 Tree 降级为 List——变更多时也应保持树状显示。
-		private const int LargeFileListBackgroundBuildThreshold = 5000;
+		// v3.10.2：移除 5000 文件数阈值（LargeFileListBackgroundBuildThreshold）——有多少加载多少。
+		// 全量重建统一走后台线程构建（Task.Run）避免 UI 冻结，选中项恢复也不再被跳过。
+		// 后台构建存在并发完成乱序的可能，用该版本号丢弃过期结果（旧请求后完成时不覆盖新树）。
+		private int _rebuildVersion;
 
 		// 大列表后台构建（Task.Run）会跨线程传递/读取该图标，必须 Freeze 才能免于
 		// Dispatcher 线程亲和限制（否则静态初始化若发生在后台线程，UI 线程绑定读取会抛
@@ -266,7 +267,6 @@ namespace ForkPlus.UI.UserControls
 				ChangedFile[] item2 = tuple.Item2;
 				_rawChangedFiles = source;
 				bool shouldRebuild = forceRefresh || item.Length + item2.Length > BulkRebuildChangeThreshold;
-				bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListBackgroundBuildThreshold;
 				if (!shouldRebuild)
 				{
 					ApplyAddedEntries(Mode, item2);
@@ -281,7 +281,7 @@ namespace ForkPlus.UI.UserControls
 					RebuildItems(source);
 					_stopSelectionChangedEvents = false;
 				}
-				if (restoreSelection && !isLargeRebuild)
+				if (restoreSelection)
 				{
 					Select(selectedItemsToRestore);
 				}
@@ -297,7 +297,6 @@ namespace ForkPlus.UI.UserControls
 			ChangedFile[] item2 = tuple.Item2;
 			_rawChangedFiles = source;
 			bool shouldRebuild = forceRefresh || item.Length + item2.Length > BulkRebuildChangeThreshold;
-			bool isLargeRebuild = shouldRebuild && source.Length >= LargeFileListBackgroundBuildThreshold;
 			if (!shouldRebuild)
 			{
 				using (TreeView.LockUpdates())
@@ -312,19 +311,16 @@ namespace ForkPlus.UI.UserControls
 				}
 				return;
 			}
-			FileListItem rootItem;
-			if (isLargeRebuild)
+			// v3.10.2：全量重建统一后台线程构建（不再有 5000 阈值，有多少加载多少）。
+			// 必须把 FolderIcon 一并传入，否则后台构建出的文件夹节点图标为 null，
+			// 表现为"文件多的时候文件夹图标没绘制出来"。
+			// 版本号守卫：并发重建时旧请求后完成则直接丢弃，不覆盖新树。
+			int buildVersion = ++_rebuildVersion;
+			Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
+			FileListItem rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons, FolderIcon));
+			if (buildVersion != _rebuildVersion)
 			{
-				// 大列表仍走后台线程构建以避免 UI 冻结，但不再把 Tree 降级为 List——
-				// 变更多时也应保持树状显示（用户明确要求“改回树状”）。
-				// 注意：必须把 FolderIcon 一并传入，否则后台构建出的文件夹节点图标为 null，
-				// 表现为“文件多的时候文件夹图标没绘制出来”。
-				Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
-				rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons, FolderIcon));
-			}
-			else
-			{
-				rootItem = BuildRootItem(source, Mode, CreateFileIconCache(source), FolderIcon);
+				return;
 			}
 			using (TreeView.LockUpdates())
 			{
@@ -334,7 +330,7 @@ namespace ForkPlus.UI.UserControls
 				}
 				TreeView.RootItem = rootItem;
 				_stopSelectionChangedEvents = false;
-				if (restoreSelection && !isLargeRebuild)
+				if (restoreSelection)
 				{
 					Select(selectedItemsToRestore);
 				}

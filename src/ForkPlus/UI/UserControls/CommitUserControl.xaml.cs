@@ -37,8 +37,6 @@ namespace ForkPlus.UI.UserControls
 
 		private static readonly CommitUserControlCommands Commands;
 
-		private const int LongFileListOperationThreshold = 5000;
-
 		private readonly CommitMessageAutocompleteProvider _commitMessageAutocompleteProvider = new CommitMessageAutocompleteProvider();
 
 		// Gitmoji 自动补全：commit subject 输入 ":" 触发 emoji 选择器
@@ -1299,8 +1297,9 @@ namespace ForkPlus.UI.UserControls
 				_refreshing = false;
 			}
 			ChangedFile selectedFile = (StageFileUserControl.IsStagedListSelected ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles).FirstItem();
-			if (selectedFile != null && changedFiles.Length < LongFileListOperationThreshold)
+			if (selectedFile != null)
 			{
+				// v3.10.2：移除 5000 文件数阈值，大列表同样自动加载选中文件的 diff。
 				_updateDiffAction.InvokeWithDelay(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
 			}
 			UpdateCommitSection();

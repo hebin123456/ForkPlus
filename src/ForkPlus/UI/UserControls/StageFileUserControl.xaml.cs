@@ -29,8 +29,6 @@ namespace ForkPlus.UI.UserControls
 
 		private readonly DelayedAction<string> _refreshFilterAction;
 
-		private const int LargeFileListAutoSelectionThreshold = 5000;
-
 		public ChangedFile[] AllUnstagedFiles => UnstagedFilesFileListUserControl.Items;
 
 		public ChangedFile[] AllStagedFiles => StagedFilesFileListUserControl.Items;
@@ -175,7 +173,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void SetData(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles, bool selectFirstAvailableFile = true)
 		{
-			selectFirstAvailableFile = selectFirstAvailableFile && unstagedFiles.Length + stagedFiles.Length < LargeFileListAutoSelectionThreshold;
+			// v3.10.2：移除 5000 文件数阈值，有多少加载多少，大列表同样自动选中首个文件。
 			UnstagedFilesFileListUserControl.SetItemSource(unstagedFiles, forceRefresh: false, unstagedFiles.Length != 0);
 			StagedFilesFileListUserControl.SetItemSource(stagedFiles, forceRefresh: false, stagedFiles.Length != 0);
 			ContainsUnmergedItems = unstagedFiles.Any((ChangedFile x) => x.ChangeType == ChangeType.Unmerged);
@@ -191,7 +189,6 @@ namespace ForkPlus.UI.UserControls
 
 		public async Task SetDataAsync(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles, bool selectFirstAvailableFile = true)
 		{
-			selectFirstAvailableFile = selectFirstAvailableFile && unstagedFiles.Length + stagedFiles.Length < LargeFileListAutoSelectionThreshold;
 			await UnstagedFilesFileListUserControl.SetItemSourceAsync(unstagedFiles, forceRefresh: false, unstagedFiles.Length != 0);
 			await StagedFilesFileListUserControl.SetItemSourceAsync(stagedFiles, forceRefresh: false, stagedFiles.Length != 0);
 			ContainsUnmergedItems = unstagedFiles.Any((ChangedFile x) => x.ChangeType == ChangeType.Unmerged);
