@@ -1662,17 +1662,24 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			GitModule gitModule = GitModule;
-			Task<GitCommandResult<DiffContent>> task = new Task<GitCommandResult<DiffContent>>(() => LoadWorkingDirectoryDiff(gitModule, args));
-			task.ContinueWith(delegate(Task<GitCommandResult<DiffContent>> getFileChangesTask)
+		Task<GitCommandResult<DiffContent>> task = new Task<GitCommandResult<DiffContent>>(() => LoadWorkingDirectoryDiff(gitModule, args));
+		task.ContinueWith(delegate(Task<GitCommandResult<DiffContent>> getFileChangesTask)
+		{
+			// Bug 修复：原先用引用相等（x == args.ChangedFile）判断"diff 加载完成后选中项是否仍是该文件"。
+			// git mm 下状态刷新频繁（切子仓/刷新 runtime state/命令完成都会触发 RefreshRepositoryStatusUi），
+			// SetDataAsync 重建列表后即使选中的还是同一个文件，ChangedFile 也是新实例，
+			// 引用相等判定失败 → 刚算好的 diff 被丢弃 → "文件变化了但 diff 内容显示不出来"。
+			// 改为按 Path+Staged 语义比较（同一文件在 staged/unstaged 两侧各有一条记录，需区分），
+			// 文件确实从列表消失时依然会正确丢弃过期结果。
+			ChangedFile target = args.ChangedFile;
+			if ((StageFileUserControl.IsStagedListSelected ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles).ContainsItem((ChangedFile x) => x.Path == target.Path && x.Staged == target.Staged))
 			{
-				if ((StageFileUserControl.IsStagedListSelected ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles).ContainsItem((ChangedFile x) => x == args.ChangedFile))
-				{
-					FileDiffControl.RepositoryUserControl = RepositoryUserControl;
-					FileDiffControl.Content = getFileChangesTask.Result;
-					_diffPopupWindow?.UpdateDiff(getFileChangesTask.Result);
-				}
-			}, TaskScheduler.FromCurrentSynchronizationContext());
-			task.Start();
+				FileDiffControl.RepositoryUserControl = RepositoryUserControl;
+				FileDiffControl.Content = getFileChangesTask.Result;
+				_diffPopupWindow?.UpdateDiff(getFileChangesTask.Result);
+			}
+		}, TaskScheduler.FromCurrentSynchronizationContext());
+		task.Start();
 		}
 
 		private GitCommandResult<DiffContent> LoadWorkingDirectoryDiff(GitModule gitModule, ChangedFileArgs args)

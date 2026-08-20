@@ -1486,6 +1486,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void EnsureSubrepoContent(TabItem tabItem, GitMmSubrepoItem subrepo)
 		{
+			// 记录调用前控件是否已加载：首次创建走 CreateRepositoryContent（内部自带一次完整刷新），
+			// 切回"已加载过"的子仓则需要补一次状态刷新，见下方注释。
+			bool alreadyLoaded = subrepo.RepositoryControl is RepositoryUserControl;
 			if (subrepo.RepositoryControl == null)
 			{
 				subrepo.RepositoryControl = CreateRepositoryContent(subrepo.Path);
@@ -1494,7 +1497,35 @@ namespace ForkPlus.UI.UserControls
 			{
 				tabItem.Content = subrepo.RepositoryControl;
 			}
+			if (alreadyLoaded)
+			{
+				// Bug 修复：切回已加载的子仓时必须刷新其 Status。
+				// 之前这里只把旧控件重新挂回 Tab，子仓的 RepositoryStatus 停留在它上次
+				// 作为活动仓时的旧数据，表现为"git mm 子仓感知不到文件变化"——
+				// 单仓没有此问题，因为 TabManager.TabControl_SelectedTabItemChanged 会在
+				// 切换标签后调用 value.Refresh()（ClosableTabItem.Refresh → InvalidateAndRefresh），
+				// 而 git mm 内部切换子仓不经过该路径。用户切去外部工具（如小乌龟）再切回来时
+				// Window_Activated → RefreshActiveCommitViewStatus 刷新了 Status，变化才显示出来。
+				// 这里对齐单仓行为：切回即刷新（只刷 Status，优先 CommitViewMode，轻量且够用）。
+				RefreshSubrepoRepositoryStatus(subrepo);
+			}
 			RefreshSubrepoSummary();
+		}
+
+		private static void RefreshSubrepoRepositoryStatus(GitMmSubrepoItem subrepo)
+		{
+			if (!(subrepo.RepositoryControl is RepositoryUserControl repositoryUserControl))
+			{
+				return;
+			}
+			if (repositoryUserControl.ViewMode == RepositoryViewMode.CommitViewMode)
+			{
+				repositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
+			}
+			else
+			{
+				repositoryUserControl.InvalidateAndRefresh(SubDomain.Status);
+			}
 		}
 
 		private static FrameworkElement CreateSubrepoPlaceholder(GitMmSubrepoItem subrepo)

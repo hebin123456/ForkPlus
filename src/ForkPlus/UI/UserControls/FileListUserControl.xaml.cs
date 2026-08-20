@@ -52,7 +52,17 @@ namespace ForkPlus.UI.UserControls
 		// 避免 UI 冻结。注意：不再据此把 Tree 降级为 List——变更多时也应保持树状显示。
 		private const int LargeFileListBackgroundBuildThreshold = 5000;
 
-		private static readonly BitmapImage FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
+		// 大列表后台构建（Task.Run）会跨线程传递/读取该图标，必须 Freeze 才能免于
+		// Dispatcher 线程亲和限制（否则静态初始化若发生在后台线程，UI 线程绑定读取会抛
+		// "The calling thread cannot access this object"，图标同样渲染不出来）。
+		private static readonly BitmapImage FolderIcon = CreateFrozenFolderIcon();
+
+		private static BitmapImage CreateFrozenFolderIcon()
+		{
+			BitmapImage icon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
+			icon.Freeze();
+			return icon;
+		}
 
 		private static readonly ChangedFileEqualityComparer _changedFileEqualityComparer = new ChangedFileEqualityComparer();
 
@@ -307,8 +317,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				// 大列表仍走后台线程构建以避免 UI 冻结，但不再把 Tree 降级为 List——
 				// 变更多时也应保持树状显示（用户明确要求“改回树状”）。
+				// 注意：必须把 FolderIcon 一并传入，否则后台构建出的文件夹节点图标为 null，
+				// 表现为“文件多的时候文件夹图标没绘制出来”。
 				Dictionary<string, ImageSource> fileIcons = CreateFileIconCache(source);
-				rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons));
+				rootItem = await Task.Run(() => BuildRootItem(source, Mode, fileIcons, FolderIcon));
 			}
 			else
 			{
