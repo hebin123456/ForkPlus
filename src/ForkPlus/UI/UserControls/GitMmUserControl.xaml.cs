@@ -114,8 +114,8 @@ namespace ForkPlus.UI.UserControls
 	/// <summary>v3.11.0：是否有可显示的上传链接。</summary>
 	public bool HasUploadLinks => _latestUploadLinks != null && _latestUploadLinks.Length > 0;
 
-	/// <summary>v3.11.0：输出覆盖层是否可见。</summary>
-	public bool IsOutputOverlayVisible => OutputOverlayPanel.Visibility == Visibility.Visible;
+	/// <summary>v3.11.0：输出 Popup 是否打开。</summary>
+	public bool IsOutputOverlayVisible => OutputPopup.IsOpen;
 
 	/// <summary>v3.11.0：切换输出覆盖层显隐（供主 StatusUserControl 调用）。</summary>
 	public void ToggleOutputOverlay()
@@ -217,18 +217,7 @@ namespace ForkPlus.UI.UserControls
 			RefreshCommandButtonTooltips();
 		SetBusy(isBusy: false);
 		RestoreSettings();
-		// v3.11.0：覆盖层高度可拖拽调整
-		OverlayResizeThumb.DragDelta += OverlayResizeThumb_DragDelta;
 		WarnIfGitMmUnavailable();
-	}
-
-	/// <summary>v3.11.0：拖拽调整输出覆盖层高度。</summary>
-	private void OverlayResizeThumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-	{
-		double newHeight = OutputOverlayPanel.Height - e.VerticalChange;
-		newHeight = Math.Max(OutputOverlayPanel.MinHeight, Math.Min(OutputOverlayPanel.MaxHeight, newHeight));
-		OutputOverlayPanel.Height = newHeight;
-		_outputOverlayHeight = newHeight;
 	}
 
 		/// <summary>
@@ -972,28 +961,13 @@ namespace ForkPlus.UI.UserControls
 
 	private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
 	{
-		SetOutputOverlayVisible(OutputOverlayPanel.Visibility != Visibility.Visible, save: true);
+		SetOutputOverlayVisible(!OutputPopup.IsOpen, save: true);
 	}
 
-	/// <summary>v3.11.0：控制输出覆盖层的显示/隐藏（替代原 SetCommandOutputCollapsed）。</summary>
+	/// <summary>v3.11.0：控制输出 Popup 的显示/隐藏。</summary>
 	private void SetOutputOverlayVisible(bool visible, bool save)
 	{
-		if (visible)
-		{
-			OutputOverlayPanel.Visibility = Visibility.Visible;
-			if (_outputOverlayHeight > 0)
-			{
-				OutputOverlayPanel.Height = _outputOverlayHeight;
-			}
-		}
-		else
-		{
-			if (OutputOverlayPanel.ActualHeight > 0)
-			{
-				_outputOverlayHeight = OutputOverlayPanel.ActualHeight;
-			}
-			OutputOverlayPanel.Visibility = Visibility.Collapsed;
-		}
+		OutputPopup.IsOpen = visible;
 		if (save)
 		{
 			SaveSettings();
@@ -1002,16 +976,12 @@ namespace ForkPlus.UI.UserControls
 
 	private bool IsCommandOutputCollapsed()
 	{
-		return OutputOverlayPanel.Visibility != Visibility.Visible;
+		return !OutputPopup.IsOpen;
 	}
 
 	private double CommandOutputHeight()
 	{
-		if (OutputOverlayPanel.Visibility == Visibility.Visible && OutputOverlayPanel.ActualHeight > 0)
-		{
-			return OutputOverlayPanel.ActualHeight;
-		}
-		return _outputOverlayHeight > 0 ? _outputOverlayHeight : 200.0;
+		return _outputOverlayHeight > 0 ? _outputOverlayHeight : 360.0;
 	}
 
 		private void RestoreSettings()
@@ -1033,12 +1003,10 @@ namespace ForkPlus.UI.UserControls
 					_knownSubrepoPaths = new HashSet<string>(_visibleSubrepoPaths, StringComparer.OrdinalIgnoreCase);
 					_hasPersistedVisibleSubrepoFilter = true;
 				}
-				_outputOverlayHeight = settings.CommandOutputHeight > 0 ? settings.CommandOutputHeight : 200.0;
-			_autoHideOutputAfterCommand = settings.CommandOutputCollapsed;
-			// v3.11.0：恢复设置时不自动弹出覆盖层，仅在命令执行时弹出。
-			// 覆盖层高度从持久化值恢复。
-			OutputOverlayPanel.Height = _outputOverlayHeight;
-				RefreshUploadLinksPanel(settings.GetUploadLinks(_workspace.Path), autoHide: false);
+				_outputOverlayHeight = settings.CommandOutputHeight > 0 ? settings.CommandOutputHeight : 360.0;
+		_autoHideOutputAfterCommand = settings.CommandOutputCollapsed;
+		// v3.11.0：Popup 不需要预设 Height，仅在打开时使用固定尺寸。
+			RefreshUploadLinksPanel(settings.GetUploadLinks(_workspace.Path), autoHide: false);
 				if (UploadLinksCollapsed())
 				{
 					HideUploadLinksPanel(save: false);

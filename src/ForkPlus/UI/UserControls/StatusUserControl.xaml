@@ -93,18 +93,19 @@
             <Popup StaysOpen="False" AllowsTransparency="true" HorizontalOffset="-370" UseLayoutRounding="False" PopupAnimation="Slide" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="ActivityManagerPopup">
               <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
             </Popup>
-            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Click="FilterButton_Click" x:Name="FilterButton">
+            <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->
+            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Toggle Output" Click="GitMmOutputButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmOutputButton">
               <Button.Style>
                 <DynamicResource ResourceKey="BranchOptionButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
               </Button.Style>
-              <Image x:Name="FilterButtonImage">
+              <Image x:Name="GitMmOutputButtonImage">
                 <Image.Source>
-                  <DynamicResource ResourceKey="BranchFilterOffIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  <DynamicResource ResourceKey="ConsoleIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
                 </Image.Source>
               </Image>
             </Button>
-            <!-- v3.11.0：git mm History 按钮（仅 git mm 激活时可见） -->
-            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Command History" Click="GitMmHistoryButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmHistoryButton">
+            <!-- v3.11.0：git mm History 按钮（仅 git mm 激活时可见，紧邻 Output 按钮右侧） -->
+            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Command History" Click="GitMmHistoryButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmHistoryButton">
               <Button.Style>
                 <DynamicResource ResourceKey="BranchOptionButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
               </Button.Style>
@@ -114,14 +115,13 @@
                 </Image.Source>
               </Image>
             </Button>
-            <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见） -->
-            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Toggle Output" Click="GitMmOutputButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmOutputButton">
+            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Click="FilterButton_Click" x:Name="FilterButton">
               <Button.Style>
                 <DynamicResource ResourceKey="BranchOptionButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
               </Button.Style>
-              <Image x:Name="GitMmOutputButtonImage">
+              <Image x:Name="FilterButtonImage">
                 <Image.Source>
-                  <DynamicResource ResourceKey="ConsoleIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+                  <DynamicResource ResourceKey="BranchFilterOffIcon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
                 </Image.Source>
               </Image>
             </Button>

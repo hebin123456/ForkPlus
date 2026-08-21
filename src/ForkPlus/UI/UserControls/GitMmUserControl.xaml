@@ -108,43 +108,46 @@
       </DockPanel>
     </Border>
 
-    <!-- 输出覆盖层：默认隐藏，命令执行时弹出，覆盖在子仓区域底部 -->
-    <Border Grid.Row="0" VerticalAlignment="Bottom" Margin="10,0,10,0" Height="200" MinHeight="100" MaxHeight="400" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" CornerRadius="4,4,0,0" Visibility="Collapsed" Panel.ZIndex="10" x:Name="OutputOverlayPanel">
-      <Border.Effect>
-        <DropShadowEffect BlurRadius="12" Color="Black" ShadowDepth="-4" Direction="90" Opacity="0.25" />
-      </Border.Effect>
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <!-- v3.11.0：命令输出 Popup——与活动管理器相同的浮层风格
+         (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)
+         替代原底部覆盖层，不再突兀地贴在底部 -->
+    <Popup StaysOpen="False" AllowsTransparency="true" UseLayoutRounding="False" PopupAnimation="Slide" Placement="Mouse" VerticalOffset="-4" HorizontalOffset="4" x:Name="OutputPopup">
+      <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6">
+        <Border.Effect>
+          <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" ShadowDepth="2" />
+        </Border.Effect>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
 
-        <!-- 覆盖层头部 -->
-        <DockPanel Grid.Row="0" Margin="8,4,8,4">
-          <Button DockPanel.Dock="Right" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Collapse" Click="ToggleCommandOutputButton_Click" x:Name="OverlayCollapseButton" />
-          <TextBlock Text="Command Output" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
-        </DockPanel>
+          <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线） -->
+          <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+            <DockPanel Margin="10,4,8,4">
+              <Button DockPanel.Dock="Right" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Close" Click="ToggleCommandOutputButton_Click" x:Name="OverlayCollapseButton" />
+              <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
+            </DockPanel>
+          </Border>
 
-        <!-- Upload links 容器（可折叠） -->
-        <Border Grid.Row="1" Margin="8,0,8,4" Padding="8,4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" Visibility="Collapsed" x:Name="UploadLinksContainer">
-          <DockPanel LastChildFill="True">
-            <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
-            <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <WrapPanel x:Name="UploadLinksPanel" />
-            </ScrollViewer>
-          </DockPanel>
-        </Border>
+          <!-- Upload links 容器（可折叠） -->
+          <Border Grid.Row="1" Margin="8,4,8,4" Padding="8,4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" Visibility="Collapsed" x:Name="UploadLinksContainer">
+            <DockPanel LastChildFill="True">
+              <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" />
+              <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
+              <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <WrapPanel x:Name="UploadLinksPanel" />
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
 
-        <!-- RichTextBox 输出区 -->
-        <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" Background="{DynamicResource BackgroundBrush}">
-          <RichTextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource BackgroundBrush}" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
-        </Border>
-
-        <!-- 覆盖层底部调整高度的 Thumb -->
-        <Thumb Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="4" Cursor="SizeNS" x:Name="OverlayResizeThumb" />
-      </Grid>
-    </Border>
+          <!-- RichTextBox 输出区 -->
+          <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
+            <RichTextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+          </Border>
+        </Grid>
+      </Border>
+    </Popup>
   </Grid>
 </UserControl>
