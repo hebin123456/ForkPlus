@@ -51,7 +51,11 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusy;
 
-		private GridLength _expandedCommandOutputHeight = new GridLength(150.0);
+		/// <summary>v3.11.0：覆盖层高度记忆值（替代原 _expandedCommandOutputHeight）。</summary>
+	private double _outputOverlayHeight = 200.0;
+
+	/// <summary>v3.11.0：命令结束后是否自动隐藏覆盖层（替代原 CommandOutputCollapsed 语义）。</summary>
+	private bool _autoHideOutputAfterCommand;
 
 		private Point _tabDragStartPoint;
 
@@ -137,10 +141,21 @@ namespace ForkPlus.UI.UserControls
 			};
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RefreshCommandButtonTooltips();
-			SetBusy(isBusy: false);
-			RestoreSettings();
-			WarnIfGitMmUnavailable();
-		}
+		SetBusy(isBusy: false);
+		RestoreSettings();
+		// v3.11.0：覆盖层高度可拖拽调整
+		OverlayResizeThumb.DragDelta += OverlayResizeThumb_DragDelta;
+		WarnIfGitMmUnavailable();
+	}
+
+	/// <summary>v3.11.0：拖拽调整输出覆盖层高度。</summary>
+	private void OverlayResizeThumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+	{
+		double newHeight = OutputOverlayPanel.Height - e.VerticalChange;
+		newHeight = Math.Max(OutputOverlayPanel.MinHeight, Math.Min(OutputOverlayPanel.MaxHeight, newHeight));
+		OutputOverlayPanel.Height = newHeight;
+		_outputOverlayHeight = newHeight;
+	}
 
 		/// <summary>
 		/// 打开 git mm 仓库时检测 git-mm 是否可用；缺失或版本过低才提示，其他场景不打扰。
@@ -707,16 +722,21 @@ namespace ForkPlus.UI.UserControls
 							monitor);
 				}
 				Dispatcher.Async(delegate
+			{
+				AppendOutput("");
+				AppendOutput(string.Format(Translate("Exit code: {0}"), result.ExitCode));
+				if (args.FirstItem() == "upload")
 				{
-					AppendOutput("");
-					AppendOutput(string.Format(Translate("Exit code: {0}"), result.ExitCode));
-					if (args.FirstItem() == "upload")
-					{
-						SaveUploadLinks(ExtractUrls(result.FullReadableOutput()));
-					}
-					SetCommandStateForVisibleSubrepos(result.Success ? GitMmSubrepoCommandState.Success : GitMmSubrepoCommandState.Failed);
-					SetStatus(result.Success ? Translate("git mm command finished") : Translate("git mm command finished with errors"));
-					string commandName = args.FirstItem();
+					SaveUploadLinks(ExtractUrls(result.FullReadableOutput()));
+				}
+				SetCommandStateForVisibleSubrepos(result.Success ? GitMmSubrepoCommandState.Success : GitMmSubrepoCommandState.Failed);
+				SetStatus(result.Success ? Translate("git mm command finished") : Translate("git mm command finished with errors"));
+				// v3.11.0：命令结束后根据设置自动隐藏覆盖层。
+				if (_autoHideOutputAfterCommand)
+				{
+					SetOutputOverlayVisible(false, save: false);
+				}
+				string commandName = args.FirstItem();
 					string title = PreferencesLocalization.FormatCurrent("git mm {0}", commandName);
 					string body = result.Success
 						? PreferencesLocalization.Current("Command succeeded")
@@ -889,16 +909,22 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void SetBusy(bool isBusy)
+	{
+		_isBusy = isBusy;
+		BusyProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+		StartButton.IsEnabled = !isBusy;
+		SyncButton.IsEnabled = !isBusy;
+		UploadButton.IsEnabled = !isBusy;
+		CancelCommandButton.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+		SubreposTabControl.IsEnabled = !isBusy;
+		SubrepoFilterButton.IsEnabled = !isBusy;
+		// v3.11.0：命令开始时自动弹出输出覆盖层，确保用户能看到实时输出。
+		// 修复旧版缺陷：原来折叠后执行命令不会自动展开，导致看不到输出。
+		if (isBusy)
 		{
-			_isBusy = isBusy;
-			BusyProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
-			StartButton.IsEnabled = !isBusy;
-			SyncButton.IsEnabled = !isBusy;
-			UploadButton.IsEnabled = !isBusy;
-			CancelCommandButton.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
-			SubreposTabControl.IsEnabled = !isBusy;
-			SubrepoFilterButton.IsEnabled = !isBusy;
+			SetOutputOverlayVisible(true, save: false);
 		}
+	}
 
 		private void SetStatus(string text)
 		{
@@ -912,51 +938,48 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
-		{
-			SetCommandOutputCollapsed(CommandOutputPanel.Visibility == Visibility.Visible, save: true);
-		}
+	{
+		SetOutputOverlayVisible(OutputOverlayPanel.Visibility != Visibility.Visible, save: true);
+	}
 
-		private void SetCommandOutputCollapsed(bool isCollapsed, bool save)
+	/// <summary>v3.11.0：控制输出覆盖层的显示/隐藏（替代原 SetCommandOutputCollapsed）。</summary>
+	private void SetOutputOverlayVisible(bool visible, bool save)
+	{
+		if (visible)
 		{
-			if (isCollapsed)
+			OutputOverlayPanel.Visibility = Visibility.Visible;
+			if (_outputOverlayHeight > 0)
 			{
-				if (RootGrid.RowDefinitions[2].ActualHeight > 0.0)
-				{
-					_expandedCommandOutputHeight = new GridLength(RootGrid.RowDefinitions[2].ActualHeight);
-				}
-				CommandOutputPanel.Collapse();
-				CommandOutputGridSplitter.Collapse();
-				ExpandCommandOutputButton.Show();
-				RootGrid.RowDefinitions[1].Height = GridLength.Auto;
-				RootGrid.RowDefinitions[2].Height = new GridLength(0.0);
-			}
-			else
-			{
-				CommandOutputPanel.Show();
-				CommandOutputGridSplitter.Show();
-				ExpandCommandOutputButton.Collapse();
-				RootGrid.RowDefinitions[1].Height = GridLength.Auto;
-				RootGrid.RowDefinitions[2].Height = _expandedCommandOutputHeight.Value > 0.0 ? _expandedCommandOutputHeight : new GridLength(150.0);
-			}
-			if (save)
-			{
-				SaveSettings();
+				OutputOverlayPanel.Height = _outputOverlayHeight;
 			}
 		}
+		else
+		{
+			if (OutputOverlayPanel.ActualHeight > 0)
+			{
+				_outputOverlayHeight = OutputOverlayPanel.ActualHeight;
+			}
+			OutputOverlayPanel.Visibility = Visibility.Collapsed;
+		}
+		if (save)
+		{
+			SaveSettings();
+		}
+	}
 
-		private bool IsCommandOutputCollapsed()
-		{
-			return CommandOutputPanel.Visibility != Visibility.Visible;
-		}
+	private bool IsCommandOutputCollapsed()
+	{
+		return OutputOverlayPanel.Visibility != Visibility.Visible;
+	}
 
-		private double CommandOutputHeight()
+	private double CommandOutputHeight()
+	{
+		if (OutputOverlayPanel.Visibility == Visibility.Visible && OutputOverlayPanel.ActualHeight > 0)
 		{
-			if (!IsCommandOutputCollapsed() && RootGrid.RowDefinitions[2].ActualHeight > 0.0)
-			{
-				return RootGrid.RowDefinitions[2].ActualHeight;
-			}
-			return _expandedCommandOutputHeight.Value > 0.0 ? _expandedCommandOutputHeight.Value : 150.0;
+			return OutputOverlayPanel.ActualHeight;
 		}
+		return _outputOverlayHeight > 0 ? _outputOverlayHeight : 200.0;
+	}
 
 		private void RestoreSettings()
 		{
@@ -977,8 +1000,11 @@ namespace ForkPlus.UI.UserControls
 					_knownSubrepoPaths = new HashSet<string>(_visibleSubrepoPaths, StringComparer.OrdinalIgnoreCase);
 					_hasPersistedVisibleSubrepoFilter = true;
 				}
-				_expandedCommandOutputHeight = new GridLength(settings.CommandOutputHeight);
-				SetCommandOutputCollapsed(settings.CommandOutputCollapsed, save: false);
+				_outputOverlayHeight = settings.CommandOutputHeight > 0 ? settings.CommandOutputHeight : 200.0;
+			_autoHideOutputAfterCommand = settings.CommandOutputCollapsed;
+			// v3.11.0：恢复设置时不自动弹出覆盖层，仅在命令执行时弹出。
+			// 覆盖层高度从持久化值恢复。
+			OutputOverlayPanel.Height = _outputOverlayHeight;
 				RefreshUploadLinksPanel(settings.GetUploadLinks(_workspace.Path), autoHide: false);
 				if (UploadLinksCollapsed())
 				{
@@ -1037,8 +1063,8 @@ namespace ForkPlus.UI.UserControls
 				activeSubrepos,
 				subrepoOrders,
 				visibleSubrepos,
-				IsCommandOutputCollapsed(),
-				CommandOutputHeight(),
+				_autoHideOutputAfterCommand,
+			CommandOutputHeight(),
 				ForkPlusSettings.Default.GitMm.CommandHistory,
 				ForkPlusSettings.Default.GitMm.UploadLinks,
 				ForkPlusSettings.Default.GitMm.UploadLinksByWorkspace,
