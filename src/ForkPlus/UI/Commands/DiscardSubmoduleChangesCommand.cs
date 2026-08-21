@@ -54,25 +54,31 @@ namespace ForkPlus.UI.Commands
 					}
 				}
 				commitUserControl.Dispatcher.Async(delegate
+			{
+				// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
+				commitUserControl.StageJob = null;
+				commitUserControl.RefreshStageControls();
+				commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+				string[] array2 = submodules.Map((Submodule x) => x.Path);
+				if (monitor.IsCanceled)
 				{
-					if (!monitor.IsCanceled)
+					SubDomain subdomains = SubDomain.Status;
+					repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+				}
+				else
+				{
+					GitCommandResult gitCommandResult = discardResult;
+					if ((gitCommandResult != null && !gitCommandResult.Succeeded) || ExceedLength(array2))
 					{
-						commitUserControl.StageJob = null;
-						commitUserControl.RefreshStageControls();
-						commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-						string[] array2 = submodules.Map((Submodule x) => x.Path);
-						GitCommandResult gitCommandResult = discardResult;
-						if ((gitCommandResult != null && !gitCommandResult.Succeeded) || ExceedLength(array2))
-						{
-							SubDomain subdomains = SubDomain.Status;
-							repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
-						}
-						else
-						{
-							new RefreshFileStatusCommand().Execute(commitUserControl, repositoryUserControl, array2);
-						}
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
 					}
-				});
+					else
+					{
+						new RefreshFileStatusCommand().Execute(commitUserControl, repositoryUserControl, array2);
+					}
+				}
+			});
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);

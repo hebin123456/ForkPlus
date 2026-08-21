@@ -133,6 +133,21 @@ namespace ForkPlus.UI.UserControls
 
 		public Job StageJob { get; set; }
 
+		/// <summary>v3.10.2 修复：清理"卡死"的 StageJob。
+		/// Stage/Unstage/Discard 各命令的完成回调里 StageJob=null 都包在 if (!monitor.IsCanceled) 内，
+		/// job 一旦被取消（刷新/切 tab 等取消了在跑的 stage job），回调跳过重置 → StageJob 永远非 null
+		/// → 之后所有暂存/取消暂存/丢弃在入口处被 StageJob != null 静默拦截，表现为"双击无法暂存"。
+		/// 这里兜底：job 已处于 Finished 状态却仍挂着引用，说明回调没重置，直接清掉放行后续操作。
+		/// （新 job 只能在 StageJob==null 时启动，Finished 的 job 不可能还在跑，清掉是安全的。）</summary>
+		private void ClearStaleStageJob()
+		{
+			Job stageJob = StageJob;
+			if (stageJob != null && stageJob.Status == JobStatus.Finished)
+			{
+				StageJob = null;
+			}
+		}
+
 		private GitModule GitModule => RepositoryUserControl.GitModule;
 
 		public bool ShowIgnoredFiles { get; set; }
@@ -531,6 +546,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void StageAllFiles()
 		{
+			ClearStaleStageJob();
 			if (StageJob == null)
 			{
 				// v3.8.0：未变更文件不参与 Stage All
@@ -560,25 +576,37 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		public void StageSelectedFiles()
+	{
+		ClearStaleStageJob();
+		if (StageJob == null && StageFileUserControl.IsUnstagedListSelected)
 		{
-			if (StageJob == null && StageFileUserControl.IsUnstagedListSelected)
+			// v3.8.0：未变更文件不参与 Stage
+			ChangedFile[] selectedNonDirectoryFiles = StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory).ToArray();
+			ChangedFile[] changedFiles = selectedNonDirectoryFiles.Filter((ChangedFile x) => x.ChangeType != ChangeType.Unchanged).ToArray();
+			if (changedFiles.Length == 0)
 			{
-				// v3.8.0：未变更文件不参与 Stage
-				ChangedFile[] changedFiles = StageFileUserControl.ExpandedSelectedUnstagedFiles.Filter((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged).ToArray();
-				if (changedFiles.Length == 0)
+				// v3.10.2 自愈：选中的全是 Unchanged 条目（含"显示完整工作目录"树里的未变更节点）时不再静默返回。
+				// 状态快照可能过期：文件实际已修改但列表还停留在旧的"未变更"条目上（点击无 diff、双击被过滤）。
+				// 这里对选中的未变更文件按路径做一次后台状态刷新（git status -- <paths>）：
+				//   - 若文件确已修改 → 刷新后列表恢复真实状态，用户再双击即可正常暂存；
+				//   - 若确实未变更 → 无任何影响（Unchanged 条目本就不在 RepositoryStatus 里，不会误删）。
+				ChangedFile[] staleCandidates = selectedNonDirectoryFiles.Filter((ChangedFile x) => x.Tracked && x.ChangeType == ChangeType.Unchanged).ToArray();
+				if (staleCandidates.Length > 0)
 				{
-					return;
+					new RefreshFileStatusCommand().Execute(this, RepositoryUserControl, staleCandidates.Map((ChangedFile x) => x.Path));
 				}
-				if (!TestMergeConflictsResolved(changedFiles))
-				{
-					SystemSounds.Beep.Play();
-				}
-				else
-				{
-					Commands.ToggleFileStage.Execute(this, RepositoryUserControl, changedFiles, AmendMode);
-				}
+				return;
+			}
+			if (!TestMergeConflictsResolved(changedFiles))
+			{
+				SystemSounds.Beep.Play();
+			}
+			else
+			{
+				Commands.ToggleFileStage.Execute(this, RepositoryUserControl, changedFiles, AmendMode);
 			}
 		}
+	}
 
 		private void UnstageSelectedFiles()
 		{
@@ -603,6 +631,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void DiscardSelectedFiles()
 		{
+			ClearStaleStageJob();
 			if (StageJob == null && StageFileUserControl.IsUnstagedListSelected)
 			{
 				// v3.8.0：未变更文件不参与 Discard
@@ -1282,7 +1311,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (showFullWorkingDirectory)
 			{
-				unstagedFiles = MergeWithUnchangedFiles(unstagedFiles);
+				unstagedFiles = MergeWithUnchangedFiles(unstagedFiles, stagedFiles);
 			}
 			_updateDiffAction.Cancel();
 			FileDiffControl.Content = null;
@@ -1320,7 +1349,7 @@ namespace ForkPlus.UI.UserControls
 		/// 调 git ls-files --cached -z 取全部已跟踪文件，与已有变更文件做差集，
 		/// 把"未出现在变更列表中"的路径构造成 ChangeType.Unchanged 的 ChangedFile（无状态图标，不参与 Stage/Discard）。
 		/// git 调用放后台线程避免阻塞 UI。</summary>
-		private ChangedFile[] MergeWithUnchangedFiles(ChangedFile[] unstagedFiles)
+		private ChangedFile[] MergeWithUnchangedFiles(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles)
 		{
 			GitCommandResult<string[]> allFilesResult = Task.Run(() => new GetAllRepositoryFilesGitCommand().Execute(GitModule)).Result;
 			if (!allFilesResult.Succeeded || allFilesResult.Result == null)
@@ -1329,10 +1358,20 @@ namespace ForkPlus.UI.UserControls
 			}
 			string[] allTrackedFiles = allFilesResult.Result;
 			// 已有变更文件路径集合（用 Ordinal 忽略大小写，与 git 路径一致）
+			// v3.10.2 修复：必须同时收集 unstaged 和 staged 两侧的路径。
+			// 此前只收集 unstaged 侧，导致"仅已暂存"（如 "M " 状态）的文件不进差集排除名单，
+			// 被当作"未变更文件"以 ChangeType.Unchanged 混入未暂存树：
+			//   - 点击它 → staged=false → git diff（index vs 工作区）→ 文件已暂存且工作区干净 → 输出空 →"看不到修改内容"
+			//   - 双击它 → StageSelectedFiles 过滤 Unchanged → 静默无反应 →"无法暂存"
+			// 这正是"文件明明暂存成功了，却好像没暂存上"的根因。
 			HashSet<string> changedPaths = new HashSet<string>(StringComparer.Ordinal);
-			if (unstagedFiles != null)
+			foreach (ChangedFile[] side in new ChangedFile[2][] { unstagedFiles, stagedFiles })
 			{
-				foreach (ChangedFile cf in unstagedFiles)
+				if (side == null)
+				{
+					continue;
+				}
+				foreach (ChangedFile cf in side)
 				{
 					if (!cf.IsDirectory && cf.Path != null)
 					{
@@ -1517,7 +1556,9 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private (int added, int deleted)? GetStagedDiffStats(string repositoryPath, bool amendMode)
 		{
-			GitCommand command = new GitCommand("diff", "--cached", "--numstat");
+			// v3.10.2：与 status/其余 diff 命令统一 core.checkStat=default 口径，
+			// 避免已暂存统计 +N/-N 与实际 diff 内容不一致。
+			GitCommand command = new GitCommand("-c", "core.checkStat=default", "diff", "--cached", "--numstat");
 			if (amendMode)
 			{
 				command.Add("HEAD^");
@@ -1530,7 +1571,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				result = default(GitRequest)
 					.CurrentDir(repositoryPath)
-					.Command(new GitCommand("diff", "--cached", "--numstat"))
+					.Command(new GitCommand("-c", "core.checkStat=default", "diff", "--cached", "--numstat"))
 					.Execute(silent: true);
 			}
 			if (!result.Success)

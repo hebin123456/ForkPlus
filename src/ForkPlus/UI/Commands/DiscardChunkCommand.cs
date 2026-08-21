@@ -58,55 +58,58 @@ namespace ForkPlus.UI.Commands
 			commitUserControl.StageJob = repositoryUserControl.JobQueue.Add(Translate("Discard"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult discardResult = new ApplyWorkingTreeGitCommand().Execute(gitModule, patchData, monitor);
-				if (!discardResult.Succeeded)
+			if (!discardResult.Succeeded)
+			{
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
-						}
-					});
-				}
-				else
-				{
-					if (editorIsNewOrUntracked)
-					{
-						commitUserControl.Dispatcher.Async(delegate
-						{
-							if (!monitor.IsCanceled)
-							{
-								commitUserControl.StageJob = null;
-								commitUserControl.RefreshStageControls();
-								commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-								repositoryUserControl.InvalidateAndRefresh(SubDomain.ChangedFiles | SubDomain.UntrackedChangedFiles, null, RepositoryViewMode.CommitViewMode);
-							}
-						});
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
 					}
-					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, paths, showIgnoredFiles, monitor);
+					else
+					{
+						new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
+					}
+				});
+			}
+			else
+			{
+				if (editorIsNewOrUntracked)
+				{
 					commitUserControl.Dispatcher.Async(delegate
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							if (!refreshFileResponse.Succeeded)
-							{
-								new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
-								SubDomain subdomains = SubDomain.Status;
-								repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
-							}
-							else
-							{
-								repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
-							}
-						}
+						commitUserControl.StageJob = null;
+						commitUserControl.RefreshStageControls();
+						commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+						repositoryUserControl.InvalidateAndRefresh(SubDomain.ChangedFiles | SubDomain.UntrackedChangedFiles, null, RepositoryViewMode.CommitViewMode);
 					});
 				}
+				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, paths, showIgnoredFiles, monitor);
+				commitUserControl.Dispatcher.Async(delegate
+				{
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled || !refreshFileResponse.Succeeded)
+					{
+						if (!monitor.IsCanceled && !refreshFileResponse.Succeeded)
+						{
+							new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
+						}
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
+					}
+				});
+			}
 			}, JobFlags.Hidden);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);

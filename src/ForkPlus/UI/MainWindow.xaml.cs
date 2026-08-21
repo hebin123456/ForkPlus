@@ -534,10 +534,17 @@ namespace ForkPlus.UI
 			}
 		}
 
-		private bool ShouldSkipActivationRefresh(string repositoryPath)
+		// v3.10.2 修复：同仓库激活刷新节流。
+		// 此前固定 10 秒：编辑器 ↔ ForkPlus 快速切换（<10s）时激活刷新被跳过，而 ForkPlus 没有
+		// 文件监听/定时器等其他主动刷新手段 → 变更视图停留在旧快照上：
+		// 文件明明改了却显示为"未变更"（点击无 diff、双击被过滤无法暂存），直到某次间隔 >10s 的
+		// 激活才恢复——这也是"开一圈小乌龟回来就好了"的真正原因（往返耗时超过了节流窗口）。
+		// 提交视图只刷 SubDomain.Status（一条 git status），代价小，节流降到 3 秒；
+		// 完整仓库刷新（revision 视图）保持 10 秒防抖。
+		private bool ShouldSkipActivationRefresh(string repositoryPath, double throttleSeconds = 10.0)
 		{
 			DateTime now = DateTime.UtcNow;
-			if (string.Equals(repositoryPath, _lastActivationStatusRefreshRepositoryPath, StringComparison.OrdinalIgnoreCase) && now - _lastActivationStatusRefreshTime < TimeSpan.FromSeconds(10.0))
+			if (string.Equals(repositoryPath, _lastActivationStatusRefreshRepositoryPath, StringComparison.OrdinalIgnoreCase) && now - _lastActivationStatusRefreshTime < TimeSpan.FromSeconds(throttleSeconds))
 			{
 				return true;
 			}
@@ -554,7 +561,7 @@ namespace ForkPlus.UI
 				return false;
 			}
 			string repositoryPath = activeRepositoryUserControl.GitModule?.Path ?? "";
-			if (ShouldSkipActivationRefresh(repositoryPath))
+			if (ShouldSkipActivationRefresh(repositoryPath, 3.0))
 			{
 				return true;
 			}

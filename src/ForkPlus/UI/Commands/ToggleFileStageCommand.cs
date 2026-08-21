@@ -73,72 +73,83 @@ namespace ForkPlus.UI.Commands
 			commitUserControl.StageJob = repositoryUserControl.AddUndoable(stageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, changedFiles, monitor);
-				if (!stageResult.Succeeded)
+			if (!stageResult.Succeeded)
+			{
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行。
+					// 此前整段包在 if (!monitor.IsCanceled) 内，job 一旦被取消（工具栏取消按钮/刷新竞争等），
+					// StageJob 永远停在非 null → 之后所有暂存/取消暂存在入口被静默拦截，且列表停留旧状态。
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							new ErrorWindow(repositoryUserControl, stageResult.Error).ShowDialog();
-						}
-					});
-				}
-				else if (TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: true, out var optimisticRepositoryStatus))
+						// 已取消：增量数据不可信，全量刷新状态让 UI 自愈。
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						new ErrorWindow(repositoryUserControl, stageResult.Error).ShowDialog();
+					}
+				});
+			}
+			else if (TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: true, out var optimisticRepositoryStatus))
+			{
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							repositoryUserControl.UpdateRepositoryStatus(optimisticRepositoryStatus);
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							RefreshStatusInBackground(repositoryUserControl);
-						}
-					});
-				}
-				else if (ExceedLength(changedFiles) || changedFiles.ContainsItem((ChangedFile x) => x.ChangeType == ChangeType.Added || x.ChangeType == ChangeType.Deleted || x.ChangeType == ChangeType.Unmerged))
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						repositoryUserControl.UpdateRepositoryStatus(optimisticRepositoryStatus);
+						RefreshStatusInBackground(repositoryUserControl);
+					}
+				});
+			}
+			else if (ExceedLength(changedFiles) || changedFiles.ContainsItem((ChangedFile x) => x.ChangeType == ChangeType.Added || x.ChangeType == ChangeType.Deleted || x.ChangeType == ChangeType.Unmerged))
+			{
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					commitUserControl.Dispatcher.Async(delegate
-					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							SubDomain subdomains2 = SubDomain.Status;
-							repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
-						}
-					});
-				}
-				else
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					SubDomain subdomains2 = SubDomain.Status;
+					repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
+				});
+			}
+			else
+			{
+				string[] pathsToRefresh = changedFiles.Map((ChangedFile x) => x.Path);
+				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, pathsToRefresh, showIgnoredFiles, monitor);
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					string[] pathsToRefresh = changedFiles.Map((ChangedFile x) => x.Path);
-					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, pathsToRefresh, showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled || !refreshFileResponse.Succeeded)
 					{
-						if (!monitor.IsCanceled)
+						if (!monitor.IsCanceled && !refreshFileResponse.Succeeded)
 						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							if (!refreshFileResponse.Succeeded)
-							{
-								new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
-								SubDomain subdomains = SubDomain.Status;
-								repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
-							}
-							else
-							{
-								repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
-							}
+							new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
 						}
-					});
-				}
-				return stageResult;
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
+					}
+				});
+			}
+			return stageResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);
@@ -172,81 +183,89 @@ namespace ForkPlus.UI.Commands
 			commitUserControl.StageJob = repositoryUserControl.AddUndoable(unstageName, delegate(JobMonitor monitor)
 			{
 				GitCommandResult unstageResult = (amendMode ? new UnstageForAmendGitCommand().Execute(gitModule, changedFiles, monitor) : new UnstageGitCommand().Execute(gitModule, changedFiles, monitor));
-				if (!unstageResult.Succeeded)
+			if (!unstageResult.Succeeded)
+			{
+				commitUserControl.Dispatcher.Async(delegate
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 Stage 路径同因）。
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							new ErrorWindow(repositoryUserControl, unstageResult.Error).ShowDialog();
-						}
-					});
-				}
-				else if (!amendMode && TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: false, out var optimisticRepositoryStatus))
-				{
-					commitUserControl.Dispatcher.Async(delegate
-					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							repositoryUserControl.UpdateRepositoryStatus(optimisticRepositoryStatus);
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							RefreshStatusInBackground(repositoryUserControl);
-						}
-					});
-				}
-				else if (ExceedLength(changedFiles))
-				{
-					commitUserControl.Dispatcher.Async(delegate
-					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							SubDomain subdomains2 = SubDomain.Status;
-							repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
-						}
-					});
-				}
-				else
-				{
-					List<string> list = new List<string>(changedFiles.Length);
-					ChangedFile[] array = changedFiles;
-					foreach (ChangedFile changedFile in array)
-					{
-						if (changedFile.ChangeType == ChangeType.Renamed)
-						{
-							list.Add(changedFile.OldPath);
-						}
-						list.Add(changedFile.Path);
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
 					}
-					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, list.ToArray(), showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					else
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							if (!refreshFileResponse.Succeeded)
-							{
-								new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
-								SubDomain subdomains = SubDomain.Status;
-								repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
-							}
-							else
-							{
-								repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
-							}
-						}
-					});
+						new ErrorWindow(repositoryUserControl, unstageResult.Error).ShowDialog();
+					}
+				});
+			}
+			else if (!amendMode && TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: false, out var optimisticRepositoryStatus))
+			{
+				commitUserControl.Dispatcher.Async(delegate
+				{
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
+					{
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						repositoryUserControl.UpdateRepositoryStatus(optimisticRepositoryStatus);
+						RefreshStatusInBackground(repositoryUserControl);
+					}
+				});
+			}
+			else if (ExceedLength(changedFiles))
+			{
+				commitUserControl.Dispatcher.Async(delegate
+				{
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					SubDomain subdomains2 = SubDomain.Status;
+					repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
+				});
+			}
+			else
+			{
+				List<string> list = new List<string>(changedFiles.Length);
+				ChangedFile[] array = changedFiles;
+				foreach (ChangedFile changedFile in array)
+				{
+					if (changedFile.ChangeType == ChangeType.Renamed)
+					{
+						list.Add(changedFile.OldPath);
+					}
+					list.Add(changedFile.Path);
 				}
-				return unstageResult;
+				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, list.ToArray(), showIgnoredFiles, monitor);
+				commitUserControl.Dispatcher.Async(delegate
+				{
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled || !refreshFileResponse.Succeeded)
+					{
+						if (!monitor.IsCanceled && !refreshFileResponse.Succeeded)
+						{
+							new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
+						}
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
+					}
+				});
+			}
+			return unstageResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
 			commitUserControl.UpdateCommitSection(updateWarningMessage: false);

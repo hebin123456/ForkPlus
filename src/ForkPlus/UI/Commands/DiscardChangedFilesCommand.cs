@@ -105,58 +105,68 @@ namespace ForkPlus.UI.Commands
 			commitUserControl.StageJob = repositoryUserControl.AddUndoable(Translate("Discard Changes"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult discardResult = new DiscardFileChangesGitCommand().Execute(gitModule, changedFiles.ToArray(), monitor);
-				if (!discardResult.Succeeded)
+			if (!discardResult.Succeeded)
+			{
+				commitUserControl.Dispatcher.Async(delegate
+				{
+					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
+					commitUserControl.StageJob = null;
+					commitUserControl.RefreshStageControls();
+					commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+					if (monitor.IsCanceled)
+					{
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
+					}
+					else
+					{
+						new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
+					}
+				});
+			}
+			else
+			{
+				string[] array = changedFiles.Map((ChangedFile x) => x.Path);
+				if (ExceedLength(array))
 				{
 					commitUserControl.Dispatcher.Async(delegate
 					{
-						if (!monitor.IsCanceled)
-						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
-						}
+						commitUserControl.StageJob = null;
+						commitUserControl.RefreshStageControls();
+						commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+						SubDomain subdomains = SubDomain.Status;
+						repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
 					});
 				}
 				else
 				{
-					string[] array = changedFiles.Map((ChangedFile x) => x.Path);
-					if (ExceedLength(array))
+					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, array, showIgnoredFiles, monitor);
+					commitUserControl.Dispatcher.Async(delegate
 					{
-						if (!monitor.IsCanceled)
+						commitUserControl.StageJob = null;
+						commitUserControl.RefreshStageControls();
+						commitUserControl.UpdateCommitSection(updateWarningMessage: false);
+						if (monitor.IsCanceled || !refreshFileResponse.Succeeded)
 						{
-							commitUserControl.StageJob = null;
-							commitUserControl.RefreshStageControls();
-							commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-							SubDomain subdomains = SubDomain.Status;
-							repositoryUserControl.InvalidateAndRefresh(subdomains, null, RepositoryViewMode.CommitViewMode);
-						}
-					}
-					else
-					{
-						GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, array, showIgnoredFiles, monitor);
-						commitUserControl.Dispatcher.Async(delegate
-						{
+							if (!monitor.IsCanceled && !refreshFileResponse.Succeeded)
+							{
+								new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
+							}
+							SubDomain subdomains2 = SubDomain.Status;
+							repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
 							if (!monitor.IsCanceled)
 							{
-								commitUserControl.StageJob = null;
-								commitUserControl.RefreshStageControls();
-								commitUserControl.UpdateCommitSection(updateWarningMessage: false);
-								if (!refreshFileResponse.Succeeded)
-								{
-									new ErrorWindow(repositoryUserControl, refreshFileResponse.Error).ShowDialog();
-									SubDomain subdomains2 = SubDomain.Status;
-									repositoryUserControl.InvalidateAndRefresh(subdomains2, null, RepositoryViewMode.CommitViewMode);
-								}
-								else
-								{
-									repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
-								}
 								new DiscardSubmoduleChangesCommand().Execute(commitUserControl, repositoryUserControl, submodules);
 							}
-						});
-					}
+						}
+						else
+						{
+							repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
+							new DiscardSubmoduleChangesCommand().Execute(commitUserControl, repositoryUserControl, submodules);
+						}
+					});
 				}
+			}
 				return discardResult;
 			}, JobFlags.SaveToLog | JobFlags.ShowOnToolbar);
 			commitUserControl.RefreshStageControls();
