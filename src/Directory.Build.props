@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!-- v3.10.2：过滤 NuGet 包和 .NET 运行时的卫星程序集（satellite assemblies）。
+
+         问题：self-contained publish 会把所有 NuGet 包自带的各语言 .resources.dll
+         复制到发布目录的 culture 子文件夹（de/、fr/、ja/、ko/、zh-Hans/、zh-Hant/、es/ 等），
+         每个 DLL 看起来一样（都是 <PackageName>.resources.dll），但内容只是库内部
+         UI 字符串的翻译。ForkPlus 有自己的 JSON 本地化系统（Languages/*.json），
+         这些卫星 DLL 全是死重量——每个 culture 文件夹占几百 KB 到几 MB，
+         8 种语言加起来白白膨胀交付包 10-20 MB。
+
+         解决：SatelliteResourceLanguages 只保留 en（不变文化），其余 culture 的
+         卫星程序集在 build/publish 阶段直接跳过，不会输出到产物目录。
+         ForkPlus 自身的 JSON 本地化不受影响（那是 Content 文件复制，不是卫星程序集）。 -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

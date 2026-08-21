@@ -219,8 +219,24 @@ jobs:
           }
           Write-Host "=== Publish stage contents (top-level) ==="
           Get-ChildItem $stage -File | Select-Object Name, @{N='MB';E={[math]::Round($_.Length/1MB,2)}} | Format-Table -AutoSize
+
+          # v3.10.2：清理卫星程序集 culture 文件夹（belt-and-suspenders）。
+          # Directory.Build.props 的 SatelliteResourceLanguages=en 已在 build/publish 阶段
+          # 跳过非 en 卫星程序集，这里再删一次兜底——某些包可能通过不同机制注入 culture 文件夹。
+          # 只删 .resources.dll 所在的 culture 子目录（如 de/、fr/、ja/、zh-Hans/ 等），
+          # 保留 ForkPlus 自己的 Languages/ 文件夹（JSON 本地化文件）和 Docs/ 文件夹。
+          $culturePattern = '^(af|am|ar|az|be|bg|bn|bs|ca|cs|cy|da|de|el|en|es|et|eu|fa|fi|fil|fo|fr|ga|gl|gsw|he|hi|hr|hu|hy|id|is|it|ja|ka|kk|kl|km|kn|ko|ky|lb|lo|lt|lv|mk|ml|mn|mr|ms|mt|nb|ne|nl|nn|no|or|pa|pl|pt|ro|ru|sk|sl|sq|sr|sv|ta|te|th|tr|uk|ur|vi|zh-Hans|zh-Hant|zh-CHS|zh-CHT)$'
+          $removedCultures = @()
+          Get-ChildItem $stage -Directory | Where-Object { $_.Name -match $culturePattern } | ForEach-Object {
+            $removedCultures += $_.Name
+            Remove-Item $_.FullName -Recurse -Force
+          }
+          if ($removedCultures.Count -gt 0) {
+            Write-Host "Removed $($removedCultures.Count) culture satellite folders: $($removedCultures -join ', ')"
+          }
+          # 统计清理后的体积
           $totalMB = [math]::Round((Get-ChildItem $stage -Recurse | Measure-Object Length -Sum).Sum/1MB,1)
-          Write-Host "Total publish size: $totalMB MB"
+          Write-Host "Total publish size after culture cleanup: $totalMB MB"
 
       - name: Upload artifact
         if: runner.os == 'Windows'
