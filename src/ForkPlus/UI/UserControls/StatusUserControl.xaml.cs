@@ -71,27 +71,44 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void Refresh()
+	{
+		GitMmUserControl activeGitMmUserControl = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+		RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
+
+		// v3.11.0：git mm 激活时显示 History / Output 按钮
+		bool isGitMmActive = activeGitMmUserControl != null;
+		GitMmHistoryButton.Visibility = isGitMmActive ? Visibility.Visible : Visibility.Collapsed;
+		GitMmOutputButton.Visibility = isGitMmActive ? Visibility.Visible : Visibility.Collapsed;
+
+		// v3.11.0：git mm 命令执行中——优先显示 busy 状态
+		if (isGitMmActive && activeGitMmUserControl.IsGitMmBusy)
 		{
-			GitMmUserControl activeGitMmUserControl = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
-			RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
-			if (activeRepositoryUserControl == null)
+			string gitMmTitle = activeRepositoryUserControl?.RepositoryTitle
+				?? activeGitMmUserControl.SelectedSubrepoTitle
+				?? activeGitMmUserControl.WorkspaceTitle;
+			TitleTextBlock.Text = !string.IsNullOrWhiteSpace(gitMmTitle) ? gitMmTitle : activeGitMmUserControl.WorkspaceTitle;
+			SecondaryTitleTextBlock.Text = "";
+			DescriptionTextBlock.Text = activeGitMmUserControl.GitMmStatusText;
+			DescriptionIcon.Hide();
+			FilterButton.Collapse();
+			BusyIndicator.Show();
+			CancelButton.Show();
+			StatusProgressBar.IsIndeterminate = true;
+			StatusProgressBar.Visibility = Visibility.Visible;
+			_oldRepositoryUserControl = null;
+			return;
+		}
+		// 退出 git mm busy 后恢复正常进度条模式
+		StatusProgressBar.IsIndeterminate = false;
+
+		if (activeRepositoryUserControl == null)
+		{
+			if (activeGitMmUserControl != null)
 			{
-				if (activeGitMmUserControl != null)
-				{
-					string gitMmTitle = activeGitMmUserControl.ActiveRepositoryUserControl?.RepositoryTitle;
-					TitleTextBlock.Text = !string.IsNullOrWhiteSpace(gitMmTitle) ? gitMmTitle : (activeGitMmUserControl.SelectedSubrepoTitle ?? activeGitMmUserControl.WorkspaceTitle);
-					SecondaryTitleTextBlock.Text = "";
-					DescriptionTextBlock.Text = GitMmDescription(activeGitMmUserControl, activeGitMmUserControl.ActiveRepositoryUserControl?.GitModule?.Path ?? activeGitMmUserControl.WorkspacePath ?? "");
-					CancelButton.Collapse();
-					DescriptionIcon.Hide();
-					BusyIndicator.Hide();
-					StatusProgressBar.Hide();
-					FilterButton.Collapse();
-					_oldRepositoryUserControl = null;
-					return;
-				}
-				TitleTextBlock.Text = Translate("Welcome to ForkPlus!");
-				DescriptionTextBlock.Text = Translate("Open a repository to start");
+				string gitMmTitle = activeGitMmUserControl.ActiveRepositoryUserControl?.RepositoryTitle;
+				TitleTextBlock.Text = !string.IsNullOrWhiteSpace(gitMmTitle) ? gitMmTitle : (activeGitMmUserControl.SelectedSubrepoTitle ?? activeGitMmUserControl.WorkspaceTitle);
+				SecondaryTitleTextBlock.Text = "";
+				DescriptionTextBlock.Text = GitMmDescription(activeGitMmUserControl, activeGitMmUserControl.ActiveRepositoryUserControl?.GitModule?.Path ?? activeGitMmUserControl.WorkspacePath ?? "");
 				CancelButton.Collapse();
 				DescriptionIcon.Hide();
 				BusyIndicator.Hide();
@@ -100,6 +117,16 @@ namespace ForkPlus.UI.UserControls
 				_oldRepositoryUserControl = null;
 				return;
 			}
+			TitleTextBlock.Text = Translate("Welcome to ForkPlus!");
+			DescriptionTextBlock.Text = Translate("Open a repository to start");
+			CancelButton.Collapse();
+			DescriptionIcon.Hide();
+			BusyIndicator.Hide();
+			StatusProgressBar.Hide();
+			FilterButton.Collapse();
+			_oldRepositoryUserControl = null;
+			return;
+		}
 			BusyIndicator.Hide(activeRepositoryUserControl.JobQueue.IsIdle);
 			SecondaryBusyIndicator.Hide(activeRepositoryUserControl.JobQueue.IsIdle);
 			Job primaryJob = activeRepositoryUserControl.JobQueue.PrimaryJob;
@@ -182,10 +209,12 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		public void ApplyLocalization()
-		{
-			ShowActivityManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage);
-			ActivityManagerUserControl.ApplyLocalization();
-		}
+	{
+		ShowActivityManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage);
+		GitMmHistoryButton.ToolTip = PreferencesLocalization.Translate("Command History", ForkPlusSettings.Default.UiLanguage);
+		GitMmOutputButton.ToolTip = PreferencesLocalization.Translate("Toggle Output", ForkPlusSettings.Default.UiLanguage);
+		ActivityManagerUserControl.ApplyLocalization();
+	}
 
 		private void UpdateTitle(RepositoryUserControl repositoryUserControl, string newValue)
 	{
@@ -220,18 +249,45 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void CancelButton_Click(object sender, RoutedEventArgs e)
+	{
+		// v3.11.0：git mm 命令执行中时优先取消 git mm job
+		GitMmUserControl gitMm = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+		if (gitMm != null && gitMm.IsGitMmBusy)
 		{
-			MainWindow.ActiveRepositoryUserControl?.JobQueue.PrimaryJob?.Monitor.Cancel();
+			gitMm.CancelGitMmActiveJob();
+			return;
 		}
+		MainWindow.ActiveRepositoryUserControl?.JobQueue.PrimaryJob?.Monitor.Cancel();
+	}
 
-		private void FilterButton_Click(object sender, RoutedEventArgs e)
+	private void FilterButton_Click(object sender, RoutedEventArgs e)
+	{
+		RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
+		if (activeRepositoryUserControl != null)
 		{
-			RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
-			if (activeRepositoryUserControl != null)
-			{
-				RepositoryUserControl.Commands.UpdateReferenceFilter.ToggleActiveBranchFilter(activeRepositoryUserControl);
-			}
+			RepositoryUserControl.Commands.UpdateReferenceFilter.ToggleActiveBranchFilter(activeRepositoryUserControl);
 		}
+	}
+
+	/// <summary>v3.11.0：git mm History 按钮——弹出命令历史菜单。</summary>
+	private void GitMmHistoryButton_Click(object sender, RoutedEventArgs e)
+	{
+		GitMmUserControl gitMm = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+		if (gitMm != null)
+		{
+			gitMm.ShowGitMmCommandHistory(GitMmHistoryButton);
+		}
+	}
+
+	/// <summary>v3.11.0：git mm Output 按钮——切换命令输出覆盖层。</summary>
+	private void GitMmOutputButton_Click(object sender, RoutedEventArgs e)
+	{
+		GitMmUserControl gitMm = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+		if (gitMm != null)
+		{
+			gitMm.ToggleOutputOverlay();
+		}
+	}
 
 		private void DescriptionTextBlock_MouseUp(object sender, MouseButtonEventArgs e)
 		{
@@ -244,12 +300,14 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void ShowJobManager()
+	{
+		// v3.11.0：git mm 激活时也允许打开活动管理器
+		if (!_isJobManagerPopopOpen && (MainWindow.ActiveRepositoryUserControl != null
+			|| MainWindow.Instance?.TabManager.ActiveGitMmUserControl != null))
 		{
-			if (!_isJobManagerPopopOpen && MainWindow.ActiveRepositoryUserControl != null)
-			{
-				ShowActivityManagerToggleButton.IsChecked = !ShowActivityManagerToggleButton.IsChecked;
-			}
+			ShowActivityManagerToggleButton.IsChecked = !ShowActivityManagerToggleButton.IsChecked;
 		}
+	}
 
 		private static string Translate(string text)
 		{

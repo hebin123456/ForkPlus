@@ -51,7 +51,10 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusy;
 
-		/// <summary>v3.11.0：覆盖层高度记忆值（替代原 _expandedCommandOutputHeight）。</summary>
+	/// <summary>v3.11.0：状态文本后备字段（原 StatusTextBlock 已移除，文本由主 StatusUserControl 显示）。</summary>
+	private string _statusText = "";
+
+	/// <summary>v3.11.0：覆盖层高度记忆值（替代原 _expandedCommandOutputHeight）。</summary>
 	private double _outputOverlayHeight = 200.0;
 
 	/// <summary>v3.11.0：命令结束后是否自动隐藏覆盖层（替代原 CommandOutputCollapsed 语义）。</summary>
@@ -96,9 +99,80 @@ namespace ForkPlus.UI.UserControls
 		public RepositoryUserControl ActiveRepositoryUserControl => _workspace.SelectedSubrepo?.RepositoryControl as RepositoryUserControl;
 
 		[Null]
-		public string SelectedSubrepoTitle => _workspace.SelectedSubrepo?.DisplayName;
+	public string SelectedSubrepoTitle => _workspace.SelectedSubrepo?.DisplayName;
 
-		public bool ContainsSubrepoPath(string path)
+	/// <summary>v3.11.0：git mm 状态栏融入主 StatusUserControl 后，暴露 busy 状态供外部读取。</summary>
+	public bool IsGitMmBusy => _isBusy;
+
+	/// <summary>v3.11.0：暴露当前状态文本（替代原 StatusTextBlock.Text）。</summary>
+	public string GitMmStatusText => _statusText;
+
+	/// <summary>v3.11.0：暴露当前活动 Job 供主状态栏 Cancel 按钮使用。</summary>
+	[Null]
+	public Job GitMmActiveJob => _activeJob;
+
+	/// <summary>v3.11.0：是否有可显示的上传链接。</summary>
+	public bool HasUploadLinks => _latestUploadLinks != null && _latestUploadLinks.Length > 0;
+
+	/// <summary>v3.11.0：输出覆盖层是否可见。</summary>
+	public bool IsOutputOverlayVisible => OutputOverlayPanel.Visibility == Visibility.Visible;
+
+	/// <summary>v3.11.0：切换输出覆盖层显隐（供主 StatusUserControl 调用）。</summary>
+	public void ToggleOutputOverlay()
+	{
+		SetOutputOverlayVisible(!IsOutputOverlayVisible, save: true);
+	}
+
+	/// <summary>v3.11.0：取消当前 git mm 命令（供主 StatusUserControl Cancel 调用）。</summary>
+	public void CancelGitMmActiveJob()
+	{
+		_activeJob?.Monitor.Cancel();
+		SetStatus(Translate("Canceling..."));
+	}
+
+	/// <summary>v3.11.0：显示命令历史菜单（供主 StatusUserControl History 按钮调用）。</summary>
+	public void ShowGitMmCommandHistory(UIElement placementTarget)
+	{
+		ContextMenu contextMenu = new ContextMenu();
+		string[] history = ForkPlusSettings.Default.GitMm.CommandHistory ?? new string[0];
+		if (history.Length == 0)
+		{
+			MenuItem emptyItem = new MenuItem
+			{
+				Header = Translate("No command history"),
+				IsEnabled = false
+			};
+			contextMenu.Items.Add(emptyItem);
+		}
+		foreach (string command in history)
+		{
+			MenuItem item = new MenuItem
+			{
+				Header = command
+			};
+			item.Click += delegate
+			{
+				string[] args = ParseCommandHistory(command);
+				if (args.Length > 0)
+				{
+					RunGitMm(args);
+				}
+			};
+			contextMenu.Items.Add(item);
+		}
+		contextMenu.PlacementTarget = placementTarget;
+		contextMenu.IsOpen = true;
+	}
+
+	/// <summary>v3.11.0：显示上传链接面板（供主 StatusUserControl Uploads 按钮调用）。</summary>
+	public void ShowGitMmUploadLinks()
+	{
+		SaveUploadLinksCollapsed(isCollapsed: false);
+		RefreshUploadLinksPanel(_latestUploadLinks, autoHide: true);
+		SetOutputOverlayVisible(true, save: false);
+	}
+
+	public bool ContainsSubrepoPath(string path)
 		{
 			string normalizedPath = NormalizePath(path);
 			if (normalizedPath == null)
@@ -613,41 +687,7 @@ namespace ForkPlus.UI.UserControls
 			SubrepoFilterButton.Content = PreferencesLocalization.FormatCurrent("{0}/{1} shown", visibleCount, totalCount);
 		}
 
-		private void CommandHistoryButton_Click(object sender, RoutedEventArgs e)
-		{
-			ContextMenu contextMenu = new ContextMenu();
-			string[] history = ForkPlusSettings.Default.GitMm.CommandHistory ?? new string[0];
-			if (history.Length == 0)
-			{
-				MenuItem emptyItem = new MenuItem
-				{
-					Header = Translate("No command history"),
-					IsEnabled = false
-				};
-				contextMenu.Items.Add(emptyItem);
-			}
-			foreach (string command in history)
-			{
-				MenuItem item = new MenuItem
-				{
-					Header = command
-				};
-				item.Click += delegate
-				{
-					string[] args = ParseCommandHistory(command);
-					if (args.Length > 0)
-					{
-						RunGitMm(args);
-					}
-				};
-				contextMenu.Items.Add(item);
-			}
-			CommandHistoryButton.ContextMenu = contextMenu;
-			contextMenu.PlacementTarget = CommandHistoryButton;
-			contextMenu.IsOpen = true;
-		}
-
-		private static string[] ParseCommandHistory(string command)
+	private static string[] ParseCommandHistory(string command)
 		{
 			if (string.IsNullOrWhiteSpace(command))
 			{
@@ -911,33 +951,26 @@ namespace ForkPlus.UI.UserControls
 		private void SetBusy(bool isBusy)
 	{
 		_isBusy = isBusy;
-		BusyProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+		// v3.11.0：BusyProgressBar / CancelCommandButton 已移除，
+		// busy 状态由主 StatusUserControl 的 BusyIndicator / CancelButton 显示。
 		StartButton.IsEnabled = !isBusy;
 		SyncButton.IsEnabled = !isBusy;
 		UploadButton.IsEnabled = !isBusy;
-		CancelCommandButton.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
 		SubreposTabControl.IsEnabled = !isBusy;
 		SubrepoFilterButton.IsEnabled = !isBusy;
 		// v3.11.0：命令开始时自动弹出输出覆盖层，确保用户能看到实时输出。
-		// 修复旧版缺陷：原来折叠后执行命令不会自动展开，导致看不到输出。
 		if (isBusy)
 		{
 			SetOutputOverlayVisible(true, save: false);
 		}
 	}
 
-		private void SetStatus(string text)
-		{
-			StatusTextBlock.Text = text ?? "";
-		}
+	private void SetStatus(string text)
+	{
+		_statusText = text ?? "";
+	}
 
-		private void CancelCommandButton_Click(object sender, RoutedEventArgs e)
-		{
-			_activeJob?.Monitor.Cancel();
-			SetStatus(Translate("Canceling..."));
-		}
-
-		private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
+	private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
 	{
 		SetOutputOverlayVisible(OutputOverlayPanel.Visibility != Visibility.Visible, save: true);
 	}

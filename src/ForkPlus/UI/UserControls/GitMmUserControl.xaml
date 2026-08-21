@@ -64,8 +64,8 @@
     </Style>
   </UserControl.Resources>
   <!-- v3.11.0：RootGrid 简化为单行，子仓区域获得全部高度。
-       原底部命令输出面板（Row 2）已删除，改为覆盖层（OutputOverlayPanel）按需弹出。
-       状态信息（StatusTextBlock / ProgressBar / Cancel / History / Output开关）融入工具栏右侧。 -->
+       原底部命令输出面板已删除，改为覆盖层（OutputOverlayPanel）按需弹出。
+       原独立状态栏已移除，状态信息融入主 StatusUserControl 活动状态栏。 -->
   <Grid Margin="10" x:Name="RootGrid">
     <Grid.RowDefinitions>
       <RowDefinition Height="*" MinHeight="160" />
@@ -102,29 +102,6 @@
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
           </controls:ToolbarButton>
         </WrapPanel>
-
-        <!-- 状态栏：与单仓 NotificationBar 完全相同的视觉风格
-             BorderBrush=BorderBrush, Background=BackgroundBrush, BorderThickness=0,0,0,1, Height=28, FontSize=14 -->
-        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="0,0,0,1" Height="28" x:Name="StatusBarContainer">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <!-- 进度条（左侧，嵌入状态栏内，和 RebaseProgressBar 位置类似） -->
-            <ProgressBar Grid.Column="0" Height="5" Margin="8,0,8,0" Width="100" IsIndeterminate="True" Visibility="Collapsed" VerticalAlignment="Center" x:Name="BusyProgressBar" />
-            <!-- 状态文本 -->
-            <TextBlock Grid.Column="1" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="14" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" x:Name="StatusTextBlock" />
-            <!-- 右侧按钮组 -->
-            <StackPanel Grid.Column="2" Margin="0,0,6,0" Orientation="Horizontal" VerticalAlignment="Center">
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Visibility="Collapsed" Click="ShowUploadLinksButton_Click" Content="Uploads" x:Name="ShowUploadLinksButton" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Click="CommandHistoryButton_Click" Content="History" x:Name="CommandHistoryButton" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Click="ToggleCommandOutputButton_Click" Content="Output" x:Name="ToggleCommandOutputButton" />
-              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Visibility="Collapsed" Foreground="#DC2626" Click="CancelCommandButton_Click" Content="Cancel" x:Name="CancelCommandButton" />
-            </StackPanel>
-          </Grid>
-        </Border>
 
         <!-- 子仓 tab（获得全部剩余高度） -->
         <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource GitMmSubrepoTabControlStyle}" x:Name="SubreposTabControl" />

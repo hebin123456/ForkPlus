@@ -386,14 +386,12 @@ namespace ForkPlus.UI.UserControls
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.ToArray();
 			UploadLinksPanel.Children.Clear();
-			if (_latestUploadLinks.Length == 0)
-			{
-				UploadLinksContainer.Collapse();
-				ShowUploadLinksButton.Collapse();
-				return;
-			}
-			UploadLinksContainer.Show();
-			ShowUploadLinksButton.Collapse();
+		if (_latestUploadLinks.Length == 0)
+		{
+			UploadLinksContainer.Collapse();
+			return;
+		}
+		UploadLinksContainer.Show();
 			foreach (string link in _latestUploadLinks.Subsequence(0, 5))
 			{
 				Button button = new Button
@@ -442,12 +440,6 @@ namespace ForkPlus.UI.UserControls
 			return link;
 		}
 
-		private void ShowUploadLinksButton_Click(object sender, RoutedEventArgs e)
-		{
-			SaveUploadLinksCollapsed(isCollapsed: false);
-			RefreshUploadLinksPanel(_latestUploadLinks, autoHide: true);
-		}
-
 		private void UploadLinksAutoHideTimer_Tick(object sender, EventArgs e)
 		{
 			HideUploadLinksPanel();
@@ -459,14 +451,13 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void HideUploadLinksPanel(bool save)
+	{
+		_uploadLinksAutoHideTimer.Stop();
+		UploadLinksContainer.Collapse();
+		if (save && _latestUploadLinks.Length > 0)
 		{
-			_uploadLinksAutoHideTimer.Stop();
-			UploadLinksContainer.Collapse();
-			ShowUploadLinksButton.Hide(_latestUploadLinks.Length == 0);
-			if (save && _latestUploadLinks.Length > 0)
-			{
-				SaveUploadLinksCollapsed(isCollapsed: true);
-			}
+			SaveUploadLinksCollapsed(isCollapsed: true);
 		}
+	}
 	}
 }
