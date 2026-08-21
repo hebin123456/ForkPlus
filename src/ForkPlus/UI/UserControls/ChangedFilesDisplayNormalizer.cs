@@ -13,6 +13,78 @@ namespace ForkPlus.UI.UserControls
 {
 	internal static class ChangedFilesDisplayNormalizer
 	{
+		/// <summary>v3.11.1：Windows 保留设备名集合（不区分大小写）。</summary>
+		private static readonly HashSet<string> WindowsReservedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+		{
+			"NUL", "CON", "PRN", "AUX",
+			"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+			"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+		};
+
+		/// <summary>v3.11.1：过滤 Windows 保留设备名文件（NUL/CON/PRN 等）。
+		/// 对所有仓库生效，这类文件无法 stage/discard，出现在未暂存区会导致操作死锁。</summary>
+		public static ChangedFile[] FilterWindowsReservedNames(ChangedFile[] changedFiles)
+		{
+			if (changedFiles == null || changedFiles.Length == 0)
+			{
+				return changedFiles ?? new ChangedFile[0];
+			}
+			return changedFiles.Filter((ChangedFile f) => !IsWindowsReservedName(f.Path)).ToArray();
+		}
+
+		/// <summary>v3.11.1：判断文件名（不含路径部分）是否为 Windows 保留设备名。</summary>
+		private static bool IsWindowsReservedName(string relativePath)
+		{
+			if (string.IsNullOrWhiteSpace(relativePath))
+			{
+				return false;
+			}
+			string fileName = System.IO.Path.GetFileName(relativePath);
+			if (string.IsNullOrEmpty(fileName))
+			{
+				fileName = relativePath.TrimEnd('\\', '/');
+			}
+			// 去掉扩展名后比较（NUL.txt 也应过滤，因为核心名是 NUL）
+			string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(fileName);
+			if (string.IsNullOrEmpty(nameWithoutExtension))
+			{
+				nameWithoutExtension = fileName;
+			}
+			return WindowsReservedNames.Contains(nameWithoutExtension);
+		}
+
+		/// <summary>v3.11.1：子仓场景过滤——仅过滤 untracked 且本身是 git worktree 且在 mm 子仓列表中的条目。
+		/// 不走 ContainsSubrepoPath 前缀匹配（会误删子仓自身所有文件）。</summary>
+		public static ChangedFile[] NormalizeForSubrepoDisplay(GitModule gitModule, ChangedFile[] changedFiles, GitMmUserControl gitMmUserControl)
+		{
+			if (gitModule == null || gitMmUserControl == null || changedFiles == null || changedFiles.Length == 0)
+			{
+				return changedFiles ?? new ChangedFile[0];
+			}
+			return changedFiles.Filter((ChangedFile changedFile) =>
+				!IsNestedSubrepoEntry(gitModule, gitMmUserControl, changedFile)).ToArray();
+		}
+
+		/// <summary>v3.11.1：判断一个 untracked 条目是否是嵌套子仓入口。
+		/// 条件：ChangeType == Untracked AND 路径本身是 git worktree AND 路径在 mm 子仓列表中。</summary>
+		private static bool IsNestedSubrepoEntry(GitModule gitModule, GitMmUserControl gitMmUserControl, ChangedFile changedFile)
+		{
+			if (changedFile == null || changedFile.ChangeType != ChangeType.Untracked)
+			{
+				return false;
+			}
+			if (string.IsNullOrWhiteSpace(changedFile.Path))
+			{
+				return false;
+			}
+			string fullPath = gitModule.MakePath(changedFile.Path);
+			if (!IsGitWorkTreePath(gitModule, changedFile.Path))
+			{
+				return false;
+			}
+			return gitMmUserControl.ContainsSubrepoPath(fullPath);
+		}
+
 		public static ChangedFile[] NormalizeForDisplay(GitModule gitModule, ChangedFile[] changedFiles, GitMmUserControl gitMmUserControl)
 		{
 			if (gitModule == null || gitMmUserControl == null || changedFiles == null || changedFiles.Length == 0)
