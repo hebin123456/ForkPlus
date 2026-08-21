@@ -90,6 +90,6 @@
     "Failed to resolve file path: {0}": "Failed to resolve file path: {0}",
     "Reveal in ForkPlus": "Reveal in ForkPlus",
     "Command History": "Command History",
-    "Toggle Output": "Toggle Output"
+    "Command Output": "Command Output"
   }
 }

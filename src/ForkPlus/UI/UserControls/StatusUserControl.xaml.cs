@@ -212,7 +212,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		ShowActivityManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage);
 		GitMmHistoryButton.ToolTip = PreferencesLocalization.Translate("Command History", ForkPlusSettings.Default.UiLanguage);
-		GitMmOutputButton.ToolTip = PreferencesLocalization.Translate("Toggle Output", ForkPlusSettings.Default.UiLanguage);
+		GitMmOutputButton.ToolTip = PreferencesLocalization.Translate("Command Output", ForkPlusSettings.Default.UiLanguage);
 		ActivityManagerUserControl.ApplyLocalization();
 	}
 

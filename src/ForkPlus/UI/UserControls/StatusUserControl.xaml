@@ -94,7 +94,7 @@
               <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
             </Popup>
             <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->
-            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Toggle Output" Click="GitMmOutputButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmOutputButton">
+            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Visibility="Collapsed" ToolTipService.ToolTip="Command Output" Click="GitMmOutputButton_Click" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="GitMmOutputButton">
               <Button.Style>
                 <DynamicResource ResourceKey="BranchOptionButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
               </Button.Style>

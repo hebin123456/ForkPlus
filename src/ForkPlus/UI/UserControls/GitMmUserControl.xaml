@@ -123,12 +123,9 @@
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
 
-          <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线） -->
+          <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线，无关闭按钮） -->
           <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
-            <DockPanel Margin="10,4,8,4">
-              <Button DockPanel.Dock="Right" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Close" Click="ToggleCommandOutputButton_Click" x:Name="OverlayCollapseButton" />
-              <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
-            </DockPanel>
+            <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
           </Border>
 
           <!-- Upload links 容器（可折叠） -->

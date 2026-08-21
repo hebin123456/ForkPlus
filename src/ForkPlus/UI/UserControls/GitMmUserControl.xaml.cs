@@ -940,18 +940,11 @@ namespace ForkPlus.UI.UserControls
 		private void SetBusy(bool isBusy)
 	{
 		_isBusy = isBusy;
-		// v3.11.0：BusyProgressBar / CancelCommandButton 已移除，
-		// busy 状态由主 StatusUserControl 的 BusyIndicator / CancelButton 显示。
 		StartButton.IsEnabled = !isBusy;
 		SyncButton.IsEnabled = !isBusy;
 		UploadButton.IsEnabled = !isBusy;
 		SubreposTabControl.IsEnabled = !isBusy;
 		SubrepoFilterButton.IsEnabled = !isBusy;
-		// v3.11.0：命令开始时自动弹出输出覆盖层，确保用户能看到实时输出。
-		if (isBusy)
-		{
-			SetOutputOverlayVisible(true, save: false);
-		}
 	}
 
 	private void SetStatus(string text)
