@@ -81,49 +81,50 @@
           <WrapPanel Margin="10,0,0,0" VerticalAlignment="Center" x:Name="SubrepoSummaryPanel" />
         </DockPanel>
 
-        <!-- 工具栏 + 融合状态栏 -->
-        <DockPanel DockPanel.Dock="Top" Margin="8,0,8,6" LastChildFill="True">
-          <!-- 左侧工具按钮 -->
-          <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal">
-            <controls:ToolbarButton Margin="0,3,0,3" Title="Start" Click="StartButton_Click" x:Name="StartButton">
-              <controls:ToolbarButton.Style>
-                <DynamicResource ResourceKey="ToolbarButton" />
-              </controls:ToolbarButton.Style>
-              <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource BranchIcon}" />
-            </controls:ToolbarButton>
-            <controls:ToolbarButton Margin="0,3,0,3" Title="Sync" Click="SyncButton_Click" x:Name="SyncButton">
-              <controls:ToolbarButton.Style>
-                <DynamicResource ResourceKey="ToolbarButton" />
-              </controls:ToolbarButton.Style>
-              <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PullIcon}" />
-            </controls:ToolbarButton>
-            <controls:ToolbarButton Margin="0,3,0,3" Title="Upload" Click="UploadButton_Click" x:Name="UploadButton">
-              <controls:ToolbarButton.Style>
-                <DynamicResource ResourceKey="ToolbarButton" />
-              </controls:ToolbarButton.Style>
-              <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
-            </controls:ToolbarButton>
-          </WrapPanel>
+        <!-- 工具栏 -->
+        <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,0" Orientation="Horizontal">
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Start" Click="StartButton_Click" x:Name="StartButton">
+            <controls:ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Style>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource BranchIcon}" />
+          </controls:ToolbarButton>
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Sync" Click="SyncButton_Click" x:Name="SyncButton">
+            <controls:ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Style>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PullIcon}" />
+          </controls:ToolbarButton>
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Upload" Click="UploadButton_Click" x:Name="UploadButton">
+            <controls:ToolbarButton.Style>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Style>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
+          </controls:ToolbarButton>
+        </WrapPanel>
 
-          <!-- 右侧状态融合区 -->
-          <Border Margin="12,3,0,3" Padding="8,2" Background="{DynamicResource Item.SelectedInactive.Background}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" x:Name="StatusBarContainer">
-            <DockPanel VerticalAlignment="Center">
-              <!-- Cancel 按钮（仅命令执行时可见） -->
-              <Button DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,1" Foreground="#DC2626" Style="{DynamicResource TextButtonStyle}" Content="Cancel" Visibility="Collapsed" Click="CancelCommandButton_Click" x:Name="CancelCommandButton" />
-              <!-- History 按钮 -->
-              <Button DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="History" Click="CommandHistoryButton_Click" x:Name="CommandHistoryButton" />
-              <!-- Output 开关按钮 -->
-              <Button DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Output" Click="ToggleCommandOutputButton_Click" x:Name="ToggleCommandOutputButton" />
-              <!-- Uploads 按钮（有上传链接时可见） -->
-              <Button DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Style="{DynamicResource TextButtonStyle}" Content="Uploads" Visibility="Collapsed" Click="ShowUploadLinksButton_Click" x:Name="ShowUploadLinksButton" />
-              <!-- 状态文本 -->
-              <TextBlock TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" x:Name="StatusTextBlock" />
-            </DockPanel>
-          </Border>
-        </DockPanel>
-
-        <!-- 进度条细线（底部边缘） -->
-        <ProgressBar DockPanel.Dock="Bottom" Height="2" IsIndeterminate="True" Visibility="Collapsed" x:Name="BusyProgressBar" />
+        <!-- 状态栏：与单仓 NotificationBar 完全相同的视觉风格
+             BorderBrush=BorderBrush, Background=BackgroundBrush, BorderThickness=0,0,0,1, Height=28, FontSize=14 -->
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="0,0,0,1" Height="28" x:Name="StatusBarContainer">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <!-- 进度条（左侧，嵌入状态栏内，和 RebaseProgressBar 位置类似） -->
+            <ProgressBar Grid.Column="0" Height="5" Margin="8,0,8,0" Width="100" IsIndeterminate="True" Visibility="Collapsed" VerticalAlignment="Center" x:Name="BusyProgressBar" />
+            <!-- 状态文本 -->
+            <TextBlock Grid.Column="1" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="14" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" x:Name="StatusTextBlock" />
+            <!-- 右侧按钮组 -->
+            <StackPanel Grid.Column="2" Margin="0,0,6,0" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Visibility="Collapsed" Click="ShowUploadLinksButton_Click" Content="Uploads" x:Name="ShowUploadLinksButton" />
+              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Click="CommandHistoryButton_Click" Content="History" x:Name="CommandHistoryButton" />
+              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Click="ToggleCommandOutputButton_Click" Content="Output" x:Name="ToggleCommandOutputButton" />
+              <Button VerticalAlignment="Center" Margin="2,0,2,0" Height="22" Visibility="Collapsed" Foreground="#DC2626" Click="CancelCommandButton_Click" Content="Cancel" x:Name="CancelCommandButton" />
+            </StackPanel>
+          </Grid>
+        </Border>
 
         <!-- 子仓 tab（获得全部剩余高度） -->
         <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource GitMmSubrepoTabControlStyle}" x:Name="SubreposTabControl" />
