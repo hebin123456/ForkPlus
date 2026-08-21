@@ -76,8 +76,8 @@ namespace ForkPlus.UI.Dialogs
 				try
 				{
 					// 获取工作区全量 diff（staged + unstaged，相对 HEAD）
-				// v3.10.2：统一 checkStat=default 口径，避免 stat 恰好匹配时 diff 误判 clean 漏掉变更。
-				GitCommand gitCommand = new GitCommand("-c", "core.checkStat=default", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--submodule=short", "--unified=50", "HEAD");
+				// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+			GitCommand gitCommand = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--submodule=short", "--unified=50", "HEAD");
 					GitRequestResult gitRequestResult = new GitRequest(_gitModule).Command(gitCommand).Execute();
 					if (gitRequestResult.ExitCode >= 2)
 					{

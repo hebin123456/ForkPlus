@@ -116,8 +116,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			// v3.10.2：工作区 diff 依赖 stat 比较，统一 checkStat=default 口径（见 GetWorkingDirectoryFileChangesGitCommand 注释）。
-		GitCommand command = new GitCommand("-c", "core.checkStat=default", "diff", "--no-ext-diff", "--no-color");
+			// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+		GitCommand command = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "diff", "--no-ext-diff", "--no-color");
 			if (staged)
 			{
 				command.Add("--cached");

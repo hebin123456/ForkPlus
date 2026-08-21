@@ -41,15 +41,28 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		// v3.10.2 修复：status 类命令（CreateReliableStatusCommand）显式带 core.checkStat=default（比较 ctime 等细粒度字段），
-		// 而 diff 命令此前未带 → 用仓库默认（Git for Windows 默认 minimal，只比 mtime+size）。
-		// 当文件内容已变但 mtime+size 恰好未变（同秒保存/时间戳精度/编辑器恢复 mtime）时：
-		// status 报 Modified（列表显示修改），diff 却误判 clean（修改详情空白）——两者口径不一致。
-		// 统一所有 diff 命令与 status 相同的 checkStat 口径，消除"看得见变化、看不见内容"的分裂。
-		// 已用真实 git 实验验证：stat 匹配+内容已变时，minimal diff 输出空，default diff 输出正常。
+		// v3.10.2 修复（根因）：diff 命令必须与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+		//
+		// 此前 diff 只带了 core.checkStat=default，缺少 core.fsmonitor=false。
+		// 启用了 core.fsmonitor=true 的仓库（部分 git mm 子仓会开），git diff 内部会先问 fsmonitor daemon
+		// "这个文件脏不脏"——daemon 的脏文件列表可能过期漏报（daemon 未收到 inotify/被挂起/时序竞争），
+		// git diff 信了就跳过该文件直接判 clean → 输出空 diff。这就是"列表里显示 Modified，点开修改详情却是空白"
+		// 的真正根因：status 绕过了 daemon（带 fsmonitor=false），diff 没有，两者口径分裂。
+		// 用 TortoiseGit 打开 commit 界面后 ForkPlus 恢复正常，是因为 TortoiseGit 触碰了工作区/刷新了 daemon，
+		// 让 daemon 的脏文件列表追上了真实状态——但这是巧合，不是机制保证。
+		//
+		// 统一四件套：
+		//   - core.fsmonitor=false：绕过 fsmonitor daemon，强制 git diff 逐文件做真正的 stat+content 比较
+		//   - core.untrackedCache=false：绕过 untracked cache，避免缓存过期导致的漏报
+		//   - core.checkStat=default：比较 ctime 等细粒度字段（而非默认 minimal 只比 mtime+size）
+		//   - --no-optional-locks：不抢 optional lock，避免与并发的 status/fetch 等操作互相阻塞
 		private static GitCommand CreateReliableDiffCommand(params string[] args)
 		{
-			GitCommand command = new GitCommand("-c", "core.checkStat=default");
+			GitCommand command = new GitCommand(
+				"-c", "core.fsmonitor=false",
+				"-c", "core.untrackedCache=false",
+				"-c", "core.checkStat=default",
+				"--no-optional-locks");
 			command.AddRange(args);
 			return command;
 		}

@@ -9,8 +9,8 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<string[]> Execute(GitModule gitModule, string[] patterns)
 		{
-			// v3.10.2：-m（modified）依赖 stat 比较，统一 checkStat=default 口径。
-		GitCommand gitCommand = new GitCommand("-c", "core.checkStat=default", "ls-files", "-o", "-m", "-c", "-i");
+			// v3.10.2：ls-files -m（modified）同样会问 fsmonitor daemon，与 status/diff 命令完全对齐四件套。
+		GitCommand gitCommand = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "ls-files", "-o", "-m", "-c", "-i");
 			foreach (string input in patterns)
 			{
 				gitCommand.Add("--exclude=" + input.Quotify());

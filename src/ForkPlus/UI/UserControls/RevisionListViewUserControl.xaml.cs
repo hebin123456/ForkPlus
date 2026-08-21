@@ -1377,7 +1377,8 @@ namespace ForkPlus.UI.UserControls
 						}
 					}
 					// 拉取聚合 diff
-					GitCommand diffCmd = new GitCommand("--no-pager", "diff", "--no-color", "--find-renames", "--no-ext-diff", "--submodule=short", "--unified=10", srcStr + ".." + dstStr);
+					// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+				GitCommand diffCmd = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "--no-pager", "diff", "--no-color", "--find-renames", "--no-ext-diff", "--submodule=short", "--unified=10", srcStr + ".." + dstStr);
 					GitRequestResult diffResult = new GitRequest(gitModule).Command(diffCmd).Execute();
 					string aggregatedDiff = "";
 					if (diffResult.ExitCode < 2)

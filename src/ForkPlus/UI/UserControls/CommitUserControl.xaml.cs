@@ -1556,9 +1556,9 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private (int added, int deleted)? GetStagedDiffStats(string repositoryPath, bool amendMode)
 		{
-			// v3.10.2：与 status/其余 diff 命令统一 core.checkStat=default 口径，
-			// 避免已暂存统计 +N/-N 与实际 diff 内容不一致。
-			GitCommand command = new GitCommand("-c", "core.checkStat=default", "diff", "--cached", "--numstat");
+			// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+			// diff --cached 同样会问 fsmonitor daemon，daemon 漏报会导致统计为 0/+0 与实际 diff 内容不一致。
+			GitCommand command = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "diff", "--cached", "--numstat");
 			if (amendMode)
 			{
 				command.Add("HEAD^");
@@ -1571,7 +1571,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				result = default(GitRequest)
 					.CurrentDir(repositoryPath)
-					.Command(new GitCommand("-c", "core.checkStat=default", "diff", "--cached", "--numstat"))
+					.Command(new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "diff", "--cached", "--numstat"))
 					.Execute(silent: true);
 			}
 			if (!result.Success)
@@ -1749,14 +1749,15 @@ namespace ForkPlus.UI.UserControls
 
 		private GitRequestResult LoadRawWorkingDirectoryDiff(GitModule gitModule, ChangedFile changedFile, bool staged, bool amend, bool includeNoIndex)
 		{
+			// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
 			GitCommand command;
 			if (staged && amend)
 			{
-				command = new GitCommand("-c", "core.checkStat=default", "-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", "HEAD^", "--cached");
+				command = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", "HEAD^", "--cached");
 			}
 			else
 			{
-				command = new GitCommand("-c", "core.checkStat=default", "-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index");
+				command = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index");
 				if (staged)
 				{
 					command.Add("--staged");

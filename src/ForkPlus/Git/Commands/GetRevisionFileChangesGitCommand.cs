@@ -76,7 +76,8 @@ namespace ForkPlus.Git.Commands
 		private GitCommandResult<DiffContent> ExecuteInternal(GitModule gitModule, string sha, string otherSha, ChangedFile changedFile, int contextSize, int tabWidth, bool ignoreWhitespaces, bool showEntireFile)
 		{
 			string text = (string.IsNullOrEmpty(otherSha) ? (sha + "~1") : otherSha);
-			GitCommand gitCommand = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short", text, sha);
+			// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+			GitCommand gitCommand = new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "-c", "core.quotepath=false", "--no-pager", "diff", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short", text, sha);
 			if (changedFile.OldPath != null)
 			{
 				gitCommand.Add("--find-renames");

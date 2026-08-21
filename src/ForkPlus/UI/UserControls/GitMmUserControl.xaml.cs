@@ -2139,7 +2139,8 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		private static (int added, int deleted)? GetStagedDiffStats(string path, JobMonitor monitor = null)
 		{
-			GitRequestResult result = RunGit(path, new GitCommand("diff", "--cached", "--numstat"), monitor);
+			// v3.10.2：与 status 命令完全对齐 fsmonitor/untrackedCache/checkStat/--no-optional-locks 四件套。
+		GitRequestResult result = RunGit(path, new GitCommand("-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.checkStat=default", "--no-optional-locks", "diff", "--cached", "--numstat"), monitor);
 			if (!result.Success)
 			{
 				return null;
