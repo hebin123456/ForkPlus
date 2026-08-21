@@ -262,7 +262,10 @@ namespace ForkPlus.UI.UserControls
 		GitMmUserControl gitMmUserControl = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
 		if (gitMmUserControl == null || GitModule == null)
 		{
-			return ChangedFilesDisplayNormalizer.FilterWindowsReservedNames(changedFiles);
+			// v3.11.1：单仓打开时也过滤 untracked 的 git worktree 目录条目
+			// （目录本身是另一个 git 仓库，在未暂存区无法操作）
+			return ChangedFilesDisplayNormalizer.FilterWindowsReservedNames(
+				ChangedFilesDisplayNormalizer.FilterUntrackedGitWorkTrees(GitModule, changedFiles));
 		}
 		bool isWorkspaceRoot = GitMmUserControl.IsSamePath(GitModule.Path, gitMmUserControl.WorkspacePath);
 		if (isWorkspaceRoot)

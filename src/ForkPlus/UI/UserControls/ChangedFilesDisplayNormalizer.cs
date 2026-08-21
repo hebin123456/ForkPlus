@@ -53,6 +53,38 @@ namespace ForkPlus.UI.UserControls
 			return WindowsReservedNames.Contains(nameWithoutExtension);
 		}
 
+		/// <summary>v3.11.1：单仓场景过滤——过滤 untracked 且本身是 git worktree 的目录条目。
+		/// 不依赖 git mm 子仓列表，任何 untracked 的 .git 目录都应过滤（无法 stage/discard）。</summary>
+		public static ChangedFile[] FilterUntrackedGitWorkTrees(GitModule gitModule, ChangedFile[] changedFiles)
+		{
+			if (gitModule == null || changedFiles == null || changedFiles.Length == 0)
+			{
+				return changedFiles ?? new ChangedFile[0];
+			}
+			return changedFiles.Filter((ChangedFile changedFile) =>
+				!IsUntrackedGitWorkTree(gitModule, changedFile)).ToArray();
+		}
+
+		/// <summary>v3.11.1：判断一个 untracked 条目本身是否是 git worktree（含 .git 目录或文件）。</summary>
+		private static bool IsUntrackedGitWorkTree(GitModule gitModule, ChangedFile changedFile)
+		{
+			if (changedFile == null || changedFile.Status != StatusType.Untracked)
+			{
+				return false;
+			}
+			if (string.IsNullOrWhiteSpace(changedFile.Path))
+			{
+				return false;
+			}
+			// git status 对嵌套 git 仓库的 untracked 路径带尾部 /，清理后才能正确匹配
+			string cleanRelativePath = changedFile.Path.TrimEnd('\\', '/');
+			if (string.IsNullOrEmpty(cleanRelativePath))
+			{
+				return false;
+			}
+			return IsGitWorkTreePath(gitModule, cleanRelativePath);
+		}
+
 		/// <summary>v3.11.1：子仓场景过滤——仅过滤 untracked 且本身是 git worktree 且在 mm 子仓列表中的条目。
 		/// 不走 ContainsSubrepoPath 前缀匹配（会误删子仓自身所有文件）。</summary>
 		public static ChangedFile[] NormalizeForSubrepoDisplay(GitModule gitModule, ChangedFile[] changedFiles, GitMmUserControl gitMmUserControl)
