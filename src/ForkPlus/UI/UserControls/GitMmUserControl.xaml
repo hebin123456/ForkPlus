@@ -126,7 +126,7 @@
         <ProgressBar DockPanel.Dock="Bottom" Height="2" IsIndeterminate="True" Visibility="Collapsed" x:Name="BusyProgressBar" />
 
         <!-- 子仓 tab（获得全部剩余高度） -->
-        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource GitMmSubrepoTabControlStyle" x:Name="SubreposTabControl" />
+        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource GitMmSubrepoTabControlStyle}" x:Name="SubreposTabControl" />
       </DockPanel>
     </Border>
 
