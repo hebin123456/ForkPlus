@@ -66,10 +66,12 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		/// <summary>v3.11.1：判断一个 untracked 条目是否是嵌套子仓入口。
-		/// 条件：ChangeType == Untracked AND 路径本身是 git worktree AND 路径在 mm 子仓列表中。</summary>
+		/// 条件：Status == Untracked AND 路径本身是 git worktree AND 路径在 mm 子仓列表中。
+		/// 注意：ChangedFile.NewChangeType 把 untracked (??) 映射为 ChangeType.Added，
+		/// 所以不能用 ChangeType == Untracked 判断，必须用 Status == Untracked。</summary>
 		private static bool IsNestedSubrepoEntry(GitModule gitModule, GitMmUserControl gitMmUserControl, ChangedFile changedFile)
 		{
-			if (changedFile == null || changedFile.ChangeType != ChangeType.Untracked)
+			if (changedFile == null || changedFile.Status != StatusType.Untracked)
 			{
 				return false;
 			}
@@ -77,8 +79,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				return false;
 			}
-			string fullPath = gitModule.MakePath(changedFile.Path);
-			if (!IsGitWorkTreePath(gitModule, changedFile.Path))
+			// git status 对嵌套 git 仓库的 untracked 路径带尾部 /，清理后才能正确匹配
+			string cleanRelativePath = changedFile.Path.TrimEnd('\\', '/');
+			if (string.IsNullOrEmpty(cleanRelativePath))
+			{
+				return false;
+			}
+			string fullPath = gitModule.MakePath(cleanRelativePath);
+			if (!IsGitWorkTreePath(gitModule, cleanRelativePath))
 			{
 				return false;
 			}
