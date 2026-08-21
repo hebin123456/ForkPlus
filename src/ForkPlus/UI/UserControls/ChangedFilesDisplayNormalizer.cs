@@ -116,7 +116,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			GitCommand command = new GitCommand("diff", "--no-ext-diff", "--no-color");
+			// v3.10.2：工作区 diff 依赖 stat 比较，统一 checkStat=default 口径（见 GetWorkingDirectoryFileChangesGitCommand 注释）。
+		GitCommand command = new GitCommand("-c", "core.checkStat=default", "diff", "--no-ext-diff", "--no-color");
 			if (staged)
 			{
 				command.Add("--cached");

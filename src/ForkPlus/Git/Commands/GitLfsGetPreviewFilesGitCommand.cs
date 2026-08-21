@@ -9,7 +9,8 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<string[]> Execute(GitModule gitModule, string[] patterns)
 		{
-			GitCommand gitCommand = new GitCommand("ls-files", "-o", "-m", "-c", "-i");
+			// v3.10.2：-m（modified）依赖 stat 比较，统一 checkStat=default 口径。
+		GitCommand gitCommand = new GitCommand("-c", "core.checkStat=default", "ls-files", "-o", "-m", "-c", "-i");
 			foreach (string input in patterns)
 			{
 				gitCommand.Add("--exclude=" + input.Quotify());

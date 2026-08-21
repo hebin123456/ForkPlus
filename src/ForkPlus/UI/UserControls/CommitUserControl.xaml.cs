@@ -1711,11 +1711,11 @@ namespace ForkPlus.UI.UserControls
 			GitCommand command;
 			if (staged && amend)
 			{
-				command = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", "HEAD^", "--cached");
+				command = new GitCommand("-c", "core.checkStat=default", "-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", "HEAD^", "--cached");
 			}
 			else
 			{
-				command = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index");
+				command = new GitCommand("-c", "core.checkStat=default", "-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index");
 				if (staged)
 				{
 					command.Add("--staged");

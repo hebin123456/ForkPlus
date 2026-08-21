@@ -41,9 +41,22 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
+		// v3.10.2 修复：status 类命令（CreateReliableStatusCommand）显式带 core.checkStat=default（比较 ctime 等细粒度字段），
+		// 而 diff 命令此前未带 → 用仓库默认（Git for Windows 默认 minimal，只比 mtime+size）。
+		// 当文件内容已变但 mtime+size 恰好未变（同秒保存/时间戳精度/编辑器恢复 mtime）时：
+		// status 报 Modified（列表显示修改），diff 却误判 clean（修改详情空白）——两者口径不一致。
+		// 统一所有 diff 命令与 status 相同的 checkStat 口径，消除"看得见变化、看不见内容"的分裂。
+		// 已用真实 git 实验验证：stat 匹配+内容已变时，minimal diff 输出空，default diff 输出正常。
+		private static GitCommand CreateReliableDiffCommand(params string[] args)
+		{
+			GitCommand command = new GitCommand("-c", "core.checkStat=default");
+			command.AddRange(args);
+			return command;
+		}
+
 		public GitCommandResult<string> GetStagedPatch(GitModule gitModule, bool amend)
 		{
-			GitCommand gitCommand = new GitCommand("diff", "--find-renames", "--staged", "--no-ext-diff", "--no-color", "--submodule=short", "--unified=50");
+			GitCommand gitCommand = CreateReliableDiffCommand("diff", "--find-renames", "--staged", "--no-ext-diff", "--no-color", "--submodule=short", "--unified=50");
 			if (amend)
 			{
 				gitCommand.Add("HEAD^");
@@ -70,14 +83,14 @@ namespace ForkPlus.Git.Commands
 
 		private GitCommandResult<string> GetChangesAsBinaryPatchInternal(GitModule gitModule, ChangedFile changedFile, bool amend, [Null] string srcRevision)
 		{
-			GitCommand gitCommand = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--binary", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short");
+			GitCommand gitCommand = CreateReliableDiffCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--binary", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short");
 			if (changedFile.Staged)
 			{
 				gitCommand.Add("--staged");
 			}
 			if (changedFile.Staged && amend)
 			{
-				gitCommand = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", srcRevision, "--cached");
+				gitCommand = CreateReliableDiffCommand("-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", srcRevision, "--cached");
 			}
 			if (!changedFile.Tracked)
 			{
@@ -94,13 +107,13 @@ namespace ForkPlus.Git.Commands
 				gitCommand.Add(changedFile.OldPath.Quotify());
 			}
 			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute(silent: true);
-		// git diff 退出码 1 表示有差异，是正常的。
-		if (gitRequestResult.ExitCode >= 2)
-		{
-			return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
+			// git diff 退出码 1 表示有差异，是正常的。
+			if (gitRequestResult.ExitCode >= 2)
+			{
+				return GitCommandResult<string>.Failure(gitRequestResult.ToGitCommandError());
+			}
+			return GitCommandResult<string>.Success(gitRequestResult.Stdout);
 		}
-		return GitCommandResult<string>.Success(gitRequestResult.Stdout);
-	}
 
 		public GitCommandResult<DiffContent> Execute(GitModule gitModule, ChangedFile changedFile, [Null] WorkingDirectoryRevisionDiffTarget revisionTarget, int contextSize, int tabWidth, bool ignoreWhitespaces, bool showEntireFile, bool loadLargeUntrackedFiles, bool resolvedConflict)
 		{
@@ -127,14 +140,14 @@ namespace ForkPlus.Git.Commands
 					}
 				}
 			}
-			GitCommand gitCommand = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short");
+			GitCommand gitCommand = CreateReliableDiffCommand("-c", "core.quotepath=false", "--no-pager", "diff", "--find-renames", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--submodule=short");
 			if (changedFile.Staged)
 			{
 				gitCommand.Add("--staged");
 			}
 			if (revisionTarget != null)
 			{
-				gitCommand = new GitCommand("-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", revisionTarget.Sha);
+				gitCommand = CreateReliableDiffCommand("-c", "core.quotepath=false", "--no-pager", "diff-index", "--no-ext-diff", "--no-color", "--src-prefix=forkSrcPrefix/", "--dst-prefix=forkDstPrefix/", "--full-index", "--patch", revisionTarget.Sha);
 				if (revisionTarget is WorkingDirectoryRevisionDiffTarget.Amend)
 				{
 					gitCommand.Add("--cached");

@@ -9,7 +9,8 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult<string[]> Execute(GitModule gitModule, string[] patterns, bool untracked = true)
 		{
-			GitCommand gitCommand = new GitCommand("ls-files", "--modified", "--cached", "--ignored");
+			// v3.10.2：--modified 依赖 stat 比较，统一 checkStat=default 口径（见 GetWorkingDirectoryFileChangesGitCommand 注释）。
+		GitCommand gitCommand = new GitCommand("-c", "core.checkStat=default", "ls-files", "--modified", "--cached", "--ignored");
 			if (untracked)
 			{
 				gitCommand.Add("--others");
