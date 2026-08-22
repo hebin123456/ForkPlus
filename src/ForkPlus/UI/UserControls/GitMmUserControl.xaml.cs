@@ -390,6 +390,12 @@ namespace ForkPlus.UI.UserControls
 				RunGitMm(CreateQuickSyncArgs());
 				return;
 			}
+			OpenSyncWindow();
+		}
+
+		/// <summary>v3.11.2：打开 git mm 同步窗口（标准模式）。供同步按钮与 mm 子仓 pull 引导流程复用。</summary>
+		public void OpenSyncWindow()
+		{
 			GitMmSyncWindow window = new GitMmSyncWindow(_workspace.Path);
 			if (window.ShowDialog().GetValueOrDefault())
 			{

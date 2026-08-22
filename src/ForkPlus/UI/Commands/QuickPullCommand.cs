@@ -20,6 +20,11 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl)
 		{
+			// v3.11.2：mm 子仓 pull 防呆——检测 + 引导 + 逃生口
+			if (!MmSubrepoPullGuard.ConfirmSingleRepoPull(repositoryUserControl))
+			{
+				return;
+			}
 			if (!TryQuickPull(repositoryUserControl) && repositoryUserControl.RepositoryData != null)
 			{
 				new PullWindow(repositoryUserControl, null).ShowDialog();

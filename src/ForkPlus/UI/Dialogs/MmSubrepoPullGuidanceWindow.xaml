@@ -1,0 +1,26 @@
+<dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.MmSubrepoPullGuidanceWindow">
+  <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <!-- v3.11.2：mm 子仓 pull 引导窗口。检测到当前仓库隶属 git mm 工作区时展示：
+           引导默认走 git mm sync（保持子仓版本一致），逃生口允许仅拉取当前仓库。 -->
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Text="Workspace:" FontSize="13" VerticalAlignment="Center" />
+        <TextBlock Margin="8,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="WorkspacePathTextBlock" />
+      </StackPanel>
+      <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Pulling only this repository may leave the other subrepos in the git mm workspace out of sync." />
+      <RadioButton Margin="0,14,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" IsChecked="True" Content="Sync the git mm workspace (recommended)" ToolTip="Switch to the git mm workspace and run git mm sync" Checked="Option_Changed" x:Name="MmSyncRadioButton" />
+      <TextBlock Margin="24,4,0,0" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Switch to the git mm workspace and keep all subrepos consistent with git mm sync." />
+      <RadioButton Margin="0,10,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" Content="Pull this repository only" ToolTip="Skip git mm sync and pull this repository as a standalone repository" Checked="Option_Changed" x:Name="SinglePullRadioButton" />
+      <TextBlock Margin="24,4,0,0" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Skip git mm sync and pull this repository as a standalone repository." />
+    </StackPanel>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>
