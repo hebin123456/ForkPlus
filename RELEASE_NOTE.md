@@ -12,6 +12,10 @@
   - **逃生口**：用户明确选择"仅拉取当前仓库"时，按普通单仓 pull 继续，不阻断有意的单仓操作。
   - 引导窗口文案已国际化（en/zh-Hans/zh-Hant/ja-JP/ko-KR/fr-FR/de-DE/es-ES 8 种语言）。
 
+### 修复
+
+- **移除误提交的 libbiturbo.so**：`third_party/libbiturbo.so`（Linux 平台原生库）被误提交进了仓库。biturbo 原生库本就由构建期 `RestoreBiturbo` target 按编译平台从 Biturbo 仓库最新 release 直接拉取，不应纳入版本管理；且仓库中残留的 `.so` 会让 macOS 本地构建误判"已存在"而跳过拉取正确的 `.dylib`。现已删除，并在 `.gitignore` 中补齐三个平台产物（biturbo.dll / libbiturbo.so / libbiturbo.dylib）的忽略规则，防止再次误提交。
+
 ## v3.11.1
 
 ### 修复
