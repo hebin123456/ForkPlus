@@ -83,6 +83,8 @@ namespace ForkPlus.UI.Dialogs
 			InputTextBox.TextChanged += InputTextBox_TextChanged;
 			InputTextBox.PreviewKeyDown += InputTextBox_PreviewKeyDown;
 			Loaded += AiDevelopmentWindow_Loaded;
+			// AI 气泡宽度随消息面板自适应（窗口缩放时同步更新）
+			MessagePanel.SizeChanged += MessagePanel_SizeChanged;
 			_statusTimer = new DispatcherTimer
 			{
 				Interval = TimeSpan.FromMilliseconds(500)
@@ -878,6 +880,9 @@ namespace ForkPlus.UI.Dialogs
 			innerPanel.Children.Add(webView);
 			aiBorder.Child = innerPanel;
 
+			// WebView2 期望宽度极小，靠左对齐后 Border 会收缩塌陷，需显式指定宽度
+			AttachAiBubbleSizing(aiBorder);
+
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
 
@@ -1173,6 +1178,9 @@ namespace ForkPlus.UI.Dialogs
 			innerPanel.Children.Add(webView);
 			aiBorder.Child = innerPanel;
 
+			// 与流式气泡一致：显式指定宽度，避免 Left 对齐后按内容收缩塌陷
+			AttachAiBubbleSizing(aiBorder);
+
 			MessagePanel.Children.Add(aiBorder);
 			ScrollToEnd();
 
@@ -1197,6 +1205,43 @@ namespace ForkPlus.UI.Dialogs
 			};
 			MessagePanel.Children.Add(statusBlock);
 			ScrollToEnd();
+		}
+
+		/// <summary>AI 气泡标记，用于 SizeChanged 时识别需要同步宽度的气泡。</summary>
+		private const string AiBubbleTag = "AiBubble";
+
+		/// <summary>
+		/// AI 气泡宽度自适应：WebView2 是 HwndHost 系控件，期望宽度极小，
+		/// 气泡靠左对齐后无法再靠 Stretch 撑满，会收缩到仅剩内边距的窄条，
+		/// 因此按消息面板实际宽度显式指定气泡宽度（上限 MaxWidth=700），
+		/// 窗口缩放时由 MessagePanel_SizeChanged 同步更新。
+		/// </summary>
+		private void AttachAiBubbleSizing(Border aiBorder)
+		{
+			aiBorder.Tag = AiBubbleTag;
+			UpdateAiBubbleWidth(aiBorder);
+		}
+
+		private void MessagePanel_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			foreach (object child in MessagePanel.Children)
+			{
+				if (child is Border border && (border.Tag as string) == AiBubbleTag)
+				{
+					UpdateAiBubbleWidth(border);
+				}
+			}
+		}
+
+		private void UpdateAiBubbleWidth(Border aiBorder)
+		{
+			double panelWidth = MessagePanel.ActualWidth;
+			if (double.IsNaN(panelWidth) || panelWidth <= 0.0)
+			{
+				// 面板尚未布局（如窗口未显示），首次布局触发 SizeChanged 时会补上
+				return;
+			}
+			aiBorder.Width = Math.Min(aiBorder.MaxWidth, Math.Max(panelWidth, 120.0));
 		}
 
 		private void ScrollToEnd()
