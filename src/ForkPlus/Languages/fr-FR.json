@@ -1666,6 +1666,7 @@
     "Skip": "Ignorer",
     "Skip and push later": "Ignorer et pousser plus tard",
     "Skip git mm sync and pull this repository as a standalone repository": "Ignorer git mm sync et puller ce dépôt comme dépôt autonome",
+    "Skip git mm sync and pull this repository as a standalone repository.": "Ignorer git mm sync et puller ce dépôt comme dépôt autonome.",
     "Skip pre-commit hooks and commit": "Ignorer les hooks pre-commit et valider",
     "Slug in '{0}'": "Slug dans '{0}'",
     "Smudge LFS image": "Restaurer l'image LFS",

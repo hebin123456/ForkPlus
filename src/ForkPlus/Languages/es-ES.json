@@ -1666,6 +1666,7 @@
     "Skip": "Omitir",
     "Skip and push later": "Omitir y hacer push más tarde",
     "Skip git mm sync and pull this repository as a standalone repository": "Omitir git mm sync y hacer pull de este repositorio como repositorio independiente",
+    "Skip git mm sync and pull this repository as a standalone repository.": "Omitir git mm sync y hacer pull de este repositorio como repositorio independiente.",
     "Skip pre-commit hooks and commit": "Omitir hooks pre-commit y confirmar",
     "Slug in '{0}'": "Slug en '{0}'",
     "Smudge LFS image": "Restaurar imagen LFS",

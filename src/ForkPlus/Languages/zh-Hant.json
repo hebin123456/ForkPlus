@@ -1666,6 +1666,7 @@
     "Skip": "跳過",
     "Skip and push later": "跳過，稍後推送",
     "Skip git mm sync and pull this repository as a standalone repository": "跳過 git mm sync，將當前倉庫作為獨立倉庫拉取",
+    "Skip git mm sync and pull this repository as a standalone repository.": "跳過 git mm sync，將當前倉庫作為獨立倉庫拉取。",
     "Skip pre-commit hooks and commit": "略過 pre-commit hook 並提交",
     "Slug in '{0}'": "'{0}' 中的 Slug",
     "Smudge LFS image": "還原 LFS 圖片",

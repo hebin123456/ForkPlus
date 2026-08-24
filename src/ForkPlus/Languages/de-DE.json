@@ -1666,6 +1666,7 @@
     "Skip": "Überspringen",
     "Skip and push later": "Überspringen und später pushen",
     "Skip git mm sync and pull this repository as a standalone repository": "git mm sync überspringen und dieses Repository als eigenständiges Repository pullen",
+    "Skip git mm sync and pull this repository as a standalone repository.": "git mm sync überspringen und dieses Repository als eigenständiges Repository pullen.",
     "Skip pre-commit hooks and commit": "Pre-commit-Hooks überspringen und committen",
     "Slug in '{0}'": "Slug in '{0}'",
     "Smudge LFS image": "LFS-Bild wiederherstellen",

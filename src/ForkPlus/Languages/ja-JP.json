@@ -1666,6 +1666,7 @@
     "Skip": "スキップ",
     "Skip and push later": "スキップして後でプッシュ",
     "Skip git mm sync and pull this repository as a standalone repository": "git mm sync をスキップし、このリポジトリを単独リポジトリとしてプル",
+    "Skip git mm sync and pull this repository as a standalone repository.": "git mm sync をスキップし、このリポジトリを単独リポジトリとしてプルします。",
     "Skip pre-commit hooks and commit": "pre-commit フックをスキップしてコミット",
     "Slug in '{0}'": "'{0}' のスラッグ",
     "Smudge LFS image": "LFS 画像をスマッジ",

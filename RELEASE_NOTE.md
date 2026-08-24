@@ -14,6 +14,7 @@
 
 ### 修复
 
+- **补漏引导窗口描述文案的国际化**：mm 子仓 pull 引导窗口中"仅拉取当前仓库"单选框下方的描述文本（带句号版本 "Skip git mm sync and pull this repository as a standalone repository."）此前只添加了 ToolTip 用的无句号 key，导致该描述在非英文界面一直显示英文。现已在 7 个非英语语言文件中补齐该 key。
 - **移除误提交的 libbiturbo.so**：`third_party/libbiturbo.so`（Linux 平台原生库）被误提交进了仓库。biturbo 原生库本就由构建期 `RestoreBiturbo` target 按编译平台从 Biturbo 仓库最新 release 直接拉取，不应纳入版本管理；且仓库中残留的 `.so` 会让 macOS 本地构建误判"已存在"而跳过拉取正确的 `.dylib`。现已删除，并在 `.gitignore` 中补齐三个平台产物（biturbo.dll / libbiturbo.so / libbiturbo.dylib）的忽略规则，防止再次误提交。
 
 ## v3.11.1
