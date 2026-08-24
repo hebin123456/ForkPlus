@@ -104,13 +104,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 				}
 				string zipPath = dialog.FileName;
 
-				// 二次确认：导入会覆盖当前配置
-				var confirm = MessageBox.Show(
-					"Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?",
+				// 二次确认：导入会覆盖当前配置（提交 = 继续导入，取消 = 中止）
+				var confirm = new MessageBoxWindow(
 					"Confirm Import",
-					MessageBoxButton.YesNo,
-					MessageBoxImage.Warning);
-				if (confirm != MessageBoxResult.Yes)
+					"Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?",
+					"Import",
+					"Cancel",
+					showCancelButton: true,
+					showWarningIcon: true).ShowDialog();
+				if (confirm != true)
 				{
 					return;
 				}
@@ -159,11 +161,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 				SetStatus(true, "Imported " + importedCount + " file(s). ForkPlus will restart to apply changes.");
 
 				// 提示重启
-				MessageBox.Show(
-					"Configuration imported successfully.\nForkPlus will now restart to apply the new settings.",
+				new MessageBoxWindow(
 					"Import Complete",
-					MessageBoxButton.OK,
-					MessageBoxImage.Information);
+					"Configuration imported successfully.\nForkPlus will now restart to apply the new settings.",
+					"OK",
+					showCancelButton: false).ShowDialog();
 
 				// 重启应用以加载新配置
 				System.Diagnostics.Process.Start(System.Windows.Application.ResourceAssembly.Location);

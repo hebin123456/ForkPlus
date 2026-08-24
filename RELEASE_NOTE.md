@@ -2,6 +2,18 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.12.2
+
+### 修复
+
+- **清理原生 MessageBox 残留，统一使用自定义 MessageBoxWindow**：全仓库 29 处 `System.Windows.MessageBox.Show` 残留全部替换为 ForkPlus 自定义弹窗 `MessageBoxWindow`，弹窗样式与主题（明暗皮肤、自定义配色）保持一致，不再出现系统原生灰框：
+  - 覆盖 9 个文件：CustomColorsDialog（12 处，配色导入/导出提示与校验错误）、CheckForkSyncCommand（4 处，远端同步预检警告）、CreatePartialStashWindow（3 处）、App.xaml.cs（3 处，32 位系统警告与 git 版本检测）、RepositoryUserControl（2 处，Undo/Redo 前确认）、SaveStashWindow（2 处）、ImportExportUserControl（2 处，配置导入确认与完成提示）、RevisionListViewUserControl（1 处，AI 解释 commit 未配置提示）、AiReviewPreferencesUserControl（1 处，技能文件加载失败）。
+  - 图标语义映射：原 `Warning`/`Error` → 警告图标；`Information` → 无图标；纯通知单按钮 OK。
+  - 原 `YesNo` 场景（stash 前确认）：提交键 = 先 stash 并继续，取消键 = 中止，语义不变。
+  - 原 `YesNoCancel` 场景（已推送提交的 Undo 确认）：拆为两步弹窗——第一步确认是否继续（取消即中止），第二步选择"强制推送远端"或"仅本地撤销"，三条路径全部保留。
+  - 文案继续走 `PreferencesLocalization` 国际化查表，语言包中已有键的翻译不丢失，无键文案回退英文（与替换前行为一致）。
+  - 清理后全仓库不再残留 `MessageBox.Show` / `MessageBoxButton` / `MessageBoxImage` / `MessageBoxResult` 引用。
+
 ## v3.12.1
 
 ### 新功能

@@ -1282,8 +1282,9 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"Working directory has uncommitted changes. {0} will discard them. Stash changes first?",
 				opLabel);
-			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNo, MessageBoxImage.Question);
-			if (r != MessageBoxResult.Yes)
+			// 自定义 MessageBoxWindow 只有两键：提交 = 先 stash 并继续（原 Yes），取消 = 中止操作（原 No）
+			bool stash = new MessageBoxWindow(opLabel, message, "Stash changes", "Cancel", showCancelButton: true).ShowDialog().GetValueOrDefault();
+			if (!stash)
 			{
 				return false;
 			}
@@ -1342,9 +1343,9 @@ namespace ForkPlus.UI.UserControls
 
 		/// <summary>
 		/// P3.2：弹窗询问用户如何处理已 push 的 commit。
-		/// Yes = 本地 Undo + 强制推送（force-with-lease）
-		/// No = 仅本地 Undo（远端保持不变）
-		/// Cancel = 中止
+		/// 提交 = 本地 Undo + 强制推送（force-with-lease），即原 Yes 路径；
+		/// 取消 = 仅本地 Undo（远端保持不变），即原 No 路径；
+		/// 第一步选 Cancel = 中止。
 		/// 返回 false 表示用户取消，true 表示继续。
 		/// </summary>
 		private bool ConfirmPushedUndo(string opLabel, out bool forcePushAfterRestore)
@@ -1353,12 +1354,15 @@ namespace ForkPlus.UI.UserControls
 			string message = PreferencesLocalization.FormatCurrent(
 				"{0} will undo commit(s) that have been pushed to remote. Force push to remote too?",
 				opLabel);
-			MessageBoxResult r = MessageBox.Show(message, opLabel, MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-			if (r == MessageBoxResult.Cancel)
+			// 自定义 MessageBoxWindow 只有两键，YesNoCancel 拆成两步：
+			// 第一步确认是否继续 Undo（原 Cancel = 中止）；
+			bool proceed = new MessageBoxWindow(opLabel, message, "Continue", "Cancel", showCancelButton: true, showWarningIcon: true).ShowDialog().GetValueOrDefault();
+			if (!proceed)
 			{
 				return false;
 			}
-			forcePushAfterRestore = (r == MessageBoxResult.Yes);
+			// 第二步选择是否连远端一起强制推送（原 No = 仅本地 Undo）。
+			forcePushAfterRestore = new MessageBoxWindow(opLabel, message, "Force push", "Local only", showCancelButton: true, showWarningIcon: true).ShowDialog().GetValueOrDefault();
 			return true;
 		}
 

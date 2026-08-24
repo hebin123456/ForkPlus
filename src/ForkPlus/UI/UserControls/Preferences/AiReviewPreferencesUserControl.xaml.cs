@@ -184,7 +184,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		   }
 		   catch (Exception ex)
 		   {
-		    MessageBox.Show(PreferencesLocalization.FormatCurrent("Failed to load file '{0}': {1}", fileName, ex.Message));
+		    new MessageBoxWindow("Failed to load file", PreferencesLocalization.FormatCurrent("Failed to load file '{0}': {1}", fileName, ex.Message), "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 		   }
 		  }
 			if (loadedCount > 0)

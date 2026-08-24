@@ -42,11 +42,7 @@ namespace ForkPlus.UI.Commands
 			RepositoryData repositoryData = repositoryUserControl?.RepositoryData;
 			if (repositoryData?.Remotes?.Items == null || repositoryData.Remotes.Items.Length == 0)
 			{
-				System.Windows.MessageBox.Show(
-					PreferencesLocalization.Current("No remotes configured. Please add an upstream remote first."),
-					PreferencesLocalization.Current("Remote Sync Status"),
-					System.Windows.MessageBoxButton.OK,
-					System.Windows.MessageBoxImage.Warning);
+				new MessageBoxWindow("Remote Sync Status", "No remotes configured. Please add an upstream remote first.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 				return;
 			}
 
@@ -59,11 +55,7 @@ namespace ForkPlus.UI.Commands
 				upstreamBranchName = remoteBranch.ShortName;
 				if (upstreamRemote == null)
 				{
-					System.Windows.MessageBox.Show(
-						PreferencesLocalization.Current("No remotes configured. Please add an upstream remote first."),
-						PreferencesLocalization.Current("Remote Sync Status"),
-						System.Windows.MessageBoxButton.OK,
-						System.Windows.MessageBoxImage.Warning);
+					new MessageBoxWindow("Remote Sync Status", "No remotes configured. Please add an upstream remote first.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 					return;
 				}
 			}
@@ -72,11 +64,7 @@ namespace ForkPlus.UI.Commands
 				upstreamRemote = FindUpstreamRemote(repositoryData.Remotes.Items);
 				if (upstreamRemote == null)
 				{
-					System.Windows.MessageBox.Show(
-						PreferencesLocalization.Current("No 'upstream' remote found. Please add a remote named 'upstream' pointing to the main repository."),
-						PreferencesLocalization.Current("Remote Sync Status"),
-						System.Windows.MessageBoxButton.OK,
-						System.Windows.MessageBoxImage.Warning);
+					new MessageBoxWindow("Remote Sync Status", "No 'upstream' remote found. Please add a remote named 'upstream' pointing to the main repository.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 					return;
 				}
 				upstreamBranchName = localBranch?.Name;
@@ -88,11 +76,7 @@ namespace ForkPlus.UI.Commands
 			}
 			if (localBranch == null)
 			{
-				System.Windows.MessageBox.Show(
-					PreferencesLocalization.Current("No active branch to check."),
-					PreferencesLocalization.Current("Remote Sync Status"),
-					System.Windows.MessageBoxButton.OK,
-					System.Windows.MessageBoxImage.Warning);
+				new MessageBoxWindow("Remote Sync Status", "No active branch to check.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 				return;
 			}
 

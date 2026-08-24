@@ -72,11 +72,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 		if (!OpenAiService.IsAiReviewConfigured())
 		{
-			MessageBox.Show(
-				Translate("AI is not configured. Please configure AI review settings in Preferences first."),
-				Translate("AI Generate Stash Name"),
-				MessageBoxButton.OK,
-				MessageBoxImage.Warning);
+				new MessageBoxWindow("AI Generate Stash Name", "AI is not configured. Please configure AI review settings in Preferences first.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 			return;
 		}
 		// 收集当前选中的文件路径
@@ -90,11 +86,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 		if (selectedPaths.Count == 0)
 		{
-			MessageBox.Show(
-				Translate("No files selected. Nothing to generate a stash message for."),
-				Translate("AI Generate Stash Name"),
-				MessageBoxButton.OK,
-				MessageBoxImage.Information);
+			new MessageBoxWindow("AI Generate Stash Name", "No files selected. Nothing to generate a stash message for.", "OK", showCancelButton: false).ShowDialog();
 			return;
 		}
 		_aiGenerating = true;
@@ -126,14 +118,10 @@ namespace ForkPlus.UI.Dialogs
 				{
 					base.Dispatcher.Async(delegate
 					{
-						MessageBox.Show(
-							Translate("No working directory changes detected for selected files. Nothing to generate a stash message for."),
-							Translate("AI Generate Stash Name"),
-							MessageBoxButton.OK,
-							MessageBoxImage.Information);
+						new MessageBoxWindow("AI Generate Stash Name", "No working directory changes detected for selected files. Nothing to generate a stash message for.", "OK", showCancelButton: false).ShowDialog();
 					});
 					return;
-				}
+					}
 				OpenAiService openAiService = OpenAiService.CreateFromAiReviewSettings();
 				ServiceResult<OpenAiResponse> response = openAiService.GenerateStashName(patch, monitor, delegate(string chunk)
 				{

@@ -497,10 +497,11 @@ namespace ForkPlus.UI.Dialogs
 
 		if (_workingCopy == null || _workingCopy.Count == 0)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("No custom colors to export. Customize some colors first.", lang),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Export Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Information);
+				PreferencesLocalization.Translate("No custom colors to export. Customize some colors first.", lang),
+				"OK",
+				showCancelButton: false).ShowDialog();
 			return;
 		}
 
@@ -528,18 +529,21 @@ namespace ForkPlus.UI.Dialogs
 			string json = root.ToString(Formatting.Indented);
 			File.WriteAllText(dlg.FileName, json);
 
-			MessageBox.Show(this,
-				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
-					exportColors.Count, dlg.FileName),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Export Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Information);
+				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
+				exportColors.Count, dlg.FileName),
+				"OK",
+				showCancelButton: false).ShowDialog();
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Export failed: ", lang) + ex.Message,
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Export Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
+				PreferencesLocalization.Translate("Export failed: ", lang) + ex.Message,
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 		}
 	}
 
@@ -573,10 +577,12 @@ namespace ForkPlus.UI.Dialogs
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Cannot read file: ", lang) + ex.Message,
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
+				PreferencesLocalization.Translate("Cannot read file: ", lang) + ex.Message,
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 
@@ -587,20 +593,24 @@ namespace ForkPlus.UI.Dialogs
 			JToken parsed = JToken.Parse(jsonText);
 			if (parsed.Type != JTokenType.Object)
 			{
-				MessageBox.Show(this,
-					PreferencesLocalization.Translate("Invalid format: JSON root must be an object.", lang),
+				new MessageBoxWindow(
 					PreferencesLocalization.Translate("Import Colors", lang),
-					MessageBoxButton.OK, MessageBoxImage.Error);
+					PreferencesLocalization.Translate("Invalid format: JSON root must be an object.", lang),
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 				return;
 			}
 			root = (JObject)parsed;
 		}
 		catch (JsonReaderException ex)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid JSON: ", lang) + ex.Message,
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
+				PreferencesLocalization.Translate("Invalid JSON: ", lang) + ex.Message,
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 
@@ -610,10 +620,12 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (schemaToken.Type != JTokenType.String || (string)schemaToken != CustomColorsSchema)
 			{
-				MessageBox.Show(this,
-					string.Format(PreferencesLocalization.Translate("Unsupported schema. Expected '{0}'.", lang), CustomColorsSchema),
+				new MessageBoxWindow(
 					PreferencesLocalization.Translate("Import Colors", lang),
-					MessageBoxButton.OK, MessageBoxImage.Error);
+					string.Format(PreferencesLocalization.Translate("Unsupported schema. Expected '{0}'.", lang), CustomColorsSchema),
+					"OK",
+					showCancelButton: false,
+					showWarningIcon: true).ShowDialog();
 				return;
 			}
 		}
@@ -622,18 +634,22 @@ namespace ForkPlus.UI.Dialogs
 		JToken colorsToken = root["customColors"];
 		if (colorsToken == null)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid format: missing 'customColors' field.", lang),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
+				PreferencesLocalization.Translate("Invalid format: missing 'customColors' field.", lang),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 		if (colorsToken.Type != JTokenType.Object)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("Invalid format: 'customColors' must be an object.", lang),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Error);
+				PreferencesLocalization.Translate("Invalid format: 'customColors' must be an object.", lang),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 
@@ -687,19 +703,23 @@ namespace ForkPlus.UI.Dialogs
 					errorCount, maxErrorsShown);
 			else
 				summary = string.Format(PreferencesLocalization.Translate("Import aborted: {0} errors found:\n", lang), errorCount);
-			MessageBox.Show(this,
-				summary + errorBuf.ToString(),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Warning);
+				summary + errorBuf.ToString(),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 
 		if (imported.Count == 0)
 		{
-			MessageBox.Show(this,
-				PreferencesLocalization.Translate("No valid color entries found in file.", lang),
+			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Import Colors", lang),
-				MessageBoxButton.OK, MessageBoxImage.Warning);
+				PreferencesLocalization.Translate("No valid color entries found in file.", lang),
+				"OK",
+				showCancelButton: false,
+				showWarningIcon: true).ShowDialog();
 			return;
 		}
 
@@ -721,10 +741,11 @@ namespace ForkPlus.UI.Dialogs
 
 		ApplyAndRefresh();
 
-		MessageBox.Show(this,
-			string.Format(PreferencesLocalization.Translate("Imported {0} colors successfully.", lang), imported.Count),
+		new MessageBoxWindow(
 			PreferencesLocalization.Translate("Import Colors", lang),
-			MessageBoxButton.OK, MessageBoxImage.Information);
+			string.Format(PreferencesLocalization.Translate("Imported {0} colors successfully.", lang), imported.Count),
+			"OK",
+			showCancelButton: false).ShowDialog();
 	}
 
 	/// <summary>校验 hex 颜色字符串是否合法。接受以下格式：

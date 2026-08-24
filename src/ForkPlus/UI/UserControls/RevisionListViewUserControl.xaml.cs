@@ -1417,11 +1417,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (!OpenAiService.IsAiReviewConfigured())
 			{
-				MessageBox.Show(
-					PreferencesLocalization.Translate("AI is not configured. Please configure AI review settings in Preferences first.", ForkPlusSettings.Default.UiLanguage),
-					PreferencesLocalization.Translate("AI Explain Commit", ForkPlusSettings.Default.UiLanguage),
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
+				new MessageBoxWindow("AI Explain Commit", "AI is not configured. Please configure AI review settings in Preferences first.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 				return;
 			}
 			string shaStr = sha.ToString();

@@ -612,7 +612,7 @@ namespace ForkPlus
 			SubscribeToUserPreferences();
 			if (!Environment.Is64BitOperatingSystem)
 			{
-				MessageBox.Show(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Currently Fork doesn't support 32-bit Windows"));
+				new ForkPlus.UI.Dialogs.MessageBoxWindow("Unsupported Platform", "Currently Fork doesn't support 32-bit Windows", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 			}
 			else if (IsDebug || InitializeForkInstance())
 			{
@@ -864,7 +864,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is older than the required {1}. Some features (diff, status, empty-changes detection) may not work correctly. Please upgrade git.",
 						versionText, minText);
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), MessageBoxButton.OK, MessageBoxImage.Warning);
+					new ForkPlus.UI.Dialogs.MessageBoxWindow(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version too old"), msg, "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
 				}
 				else if (result.Status == GitVersionStatus.Outdated)
 				{
@@ -873,7 +873,7 @@ namespace ForkPlus
 					string msg = ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.FormatCurrent(
 						"Detected git version {0} is below the recommended {1}. Consider upgrading for better compatibility.",
 						versionText, recText);
-					MessageBox.Show(msg, ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), MessageBoxButton.OK, MessageBoxImage.Information);
+					new ForkPlus.UI.Dialogs.MessageBoxWindow(ForkPlus.UI.UserControls.Preferences.PreferencesLocalization.Current("Git version outdated"), msg, "OK", showCancelButton: false).ShowDialog();
 				}
 			}
 			catch (Exception ex)
