@@ -58,6 +58,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			CompactBranchLabelsCheckBox.IsChecked = ForkPlusSettings.Default.CompactBranchLabels;
 			// v3.0.4：Undo/Redo 开关，默认不使能
 			UndoRedoEnabledCheckBox.IsChecked = ForkPlusSettings.Default.UndoRedoEnabled;
+			// v3.12.0：拉取默认使用 Rebase，绑定既有 Pull_Rebase 设置（PullWindow/QuickPull 同源）
+			PullWithRebaseCheckBox.IsChecked = ForkPlusSettings.Default.Pull_Rebase;
 			RefreshLanguageComboBoxItems();
 			SelectUiLanguage(ForkPlusSettings.Default.UiLanguage);
 			_initialized = true;
@@ -270,6 +272,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 				bool valueOrDefault = UndoRedoEnabledCheckBox.IsChecked.GetValueOrDefault();
 				ForkPlusSettings.Default.UndoRedoEnabled = valueOrDefault;
 				ForkPlusSettings.Default.Save();
+			}
+		}
+
+		/// <summary>v3.12.0：拉取默认使用 Rebase。绑定既有 Pull_Rebase 设置，PullWindow 与 QuickPull 均读取该设置，此处提供全局开关入口。</summary>
+		private void PullWithRebaseCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (_initialized)
+			{
+				ForkPlusSettings.Default.Pull_Rebase = PullWithRebaseCheckBox.IsChecked.GetValueOrDefault();
 			}
 		}
 

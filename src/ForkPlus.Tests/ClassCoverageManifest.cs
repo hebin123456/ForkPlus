@@ -335,6 +335,8 @@ namespace ForkPlus.Tests
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetSubmoduleHeadGitCommand.cs", "class", "GetSubmoduleHeadGitCommand", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetSubmodulesGitCommand.cs", "class", "GetSubmodulesGitCommand", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetTagMessageGitCommand.cs", "class", "GetTagMessageGitCommand", "UNIT-SOURCE-COVERAGE-001"),
+			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetUnpushedCommitsGitCommand.cs", "class", "GetUnpushedCommitsGitCommand", "UNIT-SOURCE-COVERAGE-001"),
+			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetUnpushedCommitsGitCommand.cs", "class", "UnpushedCommit", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetUnpushedSubmodulesGitCommand.cs", "class", "GetUnpushedSubmodulesGitCommand", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetUserColorsGitCommand.cs", "class", "GetUserColorsGitCommand", "UNIT-SOURCE-COVERAGE-001"),
 			new ClassCoverageEntry("src/ForkPlus/Git/Commands/GetWorkingDirectoryChangedFilesGitCommand.cs", "class", "GetWorkingDirectoryChangedFilesGitCommand", "UNIT-SOURCE-COVERAGE-001"),

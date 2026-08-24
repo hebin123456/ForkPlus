@@ -138,6 +138,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _stopRefresh;
 
+		// v3.12.0：当前选中分支相对上游的未推送提交（新→旧）。null 表示不可用（无上游/未加载/查询失败）。
+		[Null]
+		private GetUnpushedCommitsGitCommand.UnpushedCommit[] _unpushedCommits;
+
 		private RemoteItem[] RemoteItems { get; set; }
 
 		[Null]
@@ -188,7 +192,20 @@ namespace ForkPlus.UI.Dialogs
 		{
 			parts.Add(localBranch.FullReference);
 		}
-		return string.Join(" ", parts);
+		// v3.12.0：勾选 Squash 时，预览中前置展示 reset --soft + commit 两条命令
+		System.Collections.Generic.List<string> fullCommands = new System.Collections.Generic.List<string>();
+		if (IsSquashRequested(localBranch, out RemoteBranch squashUpstream))
+		{
+			fullCommands.Add("git reset --soft " + squashUpstream.Sha.ToAbbreviatedString());
+			string previewMessage = SquashMessageTextBox.Text;
+			if (string.IsNullOrWhiteSpace(previewMessage))
+			{
+				previewMessage = GenerateSquashCommitMessage(_unpushedCommits);
+			}
+			fullCommands.Add("git commit -m \"" + FirstCommitMessageLine(previewMessage).Replace("\"", "'") + "\"");
+		}
+		fullCommands.Add(string.Join(" ", parts));
+		return string.Join(" && ", fullCommands);
 	}
 
 		public PushWindow(RepositoryUserControl repositoryUserControl, [Null] Remote remote = null, [Null] LocalBranch localBranch = null)
@@ -204,9 +221,10 @@ namespace ForkPlus.UI.Dialogs
 			AllTagsCheckBox.IsChecked = ForkPlusSettings.Default.Push_PushAllTags;
 			ForcePushWarningImage.ToolTip = Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions.");
 			Refresh();
-			CheckSubmodules();
-			UpdateSubmitButton();
-		}
+		RefreshUnpushedCommits();
+		CheckSubmodules();
+		UpdateSubmitButton();
+	}
 
 		protected override void OnSubmit()
 		{
@@ -229,6 +247,11 @@ namespace ForkPlus.UI.Dialogs
 			bool track = false;
 			string customRefspec = _customRefspec;
 			ForkPlusSettings.Default.Push_PushAllTags = pushAllTags;
+			// v3.12.0：推送前 Squash。仅在分支有上游且未推送提交 >= 2 时生效。
+			bool squash = IsSquashRequested(localBranch, out RemoteBranch squashUpstream);
+			string squashMessage = (squash ? SquashMessageTextBox.Text : null);
+			Sha? squashHeadSha = (squash ? localBranch.Sha : null);
+			Sha? squashUpstreamSha = (squash ? squashUpstream.Sha : null);
 			if (_remotes.Length > 1)
 			{
 				gitModule.Settings.RecentRemote = remote.Name;
@@ -237,9 +260,18 @@ namespace ForkPlus.UI.Dialogs
 			{
 				track = CreateTrackingReferenceCheckBox.IsChecked.GetValueOrDefault(true);
 			}
-			_repositoryUserControl.JobQueue.Add(string.Format(Translate("Push '{0}' to '{1}'"), localBranch.Name, remote.Name), delegate(JobMonitor monitor)
+			string jobTitle = (squash ? string.Format(Translate("Squash and push '{0}' to '{1}'"), localBranch.Name, remote.Name) : string.Format(Translate("Push '{0}' to '{1}'"), localBranch.Name, remote.Name));
+			_repositoryUserControl.JobQueue.Add(jobTitle, delegate(JobMonitor monitor)
 			{
-				GitCommandResult pushResult = new PushGitCommand().Execute(gitModule, remote.Name, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+				GitCommandResult pushResult;
+				if (squash)
+				{
+					pushResult = SquashAndPush(gitModule, squashHeadSha, squashUpstreamSha, squashMessage, remote.Name, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+				}
+				else
+				{
+					pushResult = new PushGitCommand().Execute(gitModule, remote.Name, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+				}
 				base.Dispatcher.Async(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
@@ -268,6 +300,154 @@ namespace ForkPlus.UI.Dialogs
 	private void CheckBox_Changed(object sender, RoutedEventArgs e)
 	{
 		RefreshCommandPreview();
+	}
+
+	// v3.12.0：推送前 Squash 执行流程：soft reset 到上游 → 重新提交为一条 → 推送。
+	// 提交前重新查询未推送提交，避免窗口打开期间新增提交导致信息遗漏；
+	// 若实际未推送数 < 2（例如期间已推送），则跳过 Squash 直接推送。
+	private GitCommandResult SquashAndPush(GitModule gitModule, Sha? headSha, Sha? upstreamSha, string message, string remote, LocalBranch localBranch, RemoteBranch remoteBranch, string customRefspec, bool pushAllTags, bool force, bool track, JobMonitor monitor)
+	{
+		if (!headSha.HasValue || !upstreamSha.HasValue)
+		{
+			return new PushGitCommand().Execute(gitModule, remote, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+		}
+		GetUnpushedCommitsGitCommand.UnpushedCommit[] array = _unpushedCommits;
+		GitCommandResult<GetUnpushedCommitsGitCommand.UnpushedCommit[]> gitCommandResult = new GetUnpushedCommitsGitCommand().Execute(gitModule, headSha.Value, upstreamSha.Value);
+		if (gitCommandResult.Succeeded && gitCommandResult.Result.Length != 0)
+		{
+			array = gitCommandResult.Result;
+		}
+		if (array == null || array.Length < 2)
+		{
+			return new PushGitCommand().Execute(gitModule, remote, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+		}
+		string text = ((!string.IsNullOrWhiteSpace(message)) ? message : GenerateSquashCommitMessage(array));
+		GitCommandResult gitCommandResult2 = new ResetCurrentBranchToRevisionGitCommand().Execute(gitModule, upstreamSha.Value, BranchResetType.Soft, monitor);
+		if (!gitCommandResult2.Succeeded)
+		{
+			return GitCommandResult.Failure(gitCommandResult2.Error);
+		}
+		GitCommandResult gitCommandResult3 = new CommitGitCommand().Execute(gitModule, text, false, false, monitor);
+		if (!gitCommandResult3.Succeeded)
+		{
+			return GitCommandResult.Failure(gitCommandResult3.Error);
+		}
+		return new PushGitCommand().Execute(gitModule, remote, localBranch, remoteBranch, customRefspec, pushAllTags, force, track, monitor);
+	}
+
+	// v3.12.0：后台查询当前分支相对上游的未推送提交，完成后刷新 Squash 复选框状态。
+	private void RefreshUnpushedCommits()
+	{
+		_unpushedCommits = null;
+		SquashMessageTextBox.Text = "";
+		UpdateSquashUi();
+		LocalBranch localBranch = LocalBranchesComboBox.SelectedItem as LocalBranch;
+		RemoteBranch upstream = FindUpstream(_allRemoteBranches, localBranch);
+		if (localBranch == null || upstream == null)
+		{
+			return;
+		}
+		GitModule gitModule = _repositoryUserControl.GitModule;
+		Sha headSha = localBranch.Sha;
+		Sha upstreamSha = upstream.Sha;
+		_repositoryUserControl.JobQueue.Add(Translate("Get unpushed commits"), delegate
+		{
+			GitCommandResult<GetUnpushedCommitsGitCommand.UnpushedCommit[]> result = new GetUnpushedCommitsGitCommand().Execute(gitModule, headSha, upstreamSha);
+			base.Dispatcher.Async(delegate
+			{
+				if (LocalBranchesComboBox.SelectedItem == localBranch)
+				{
+					if (result.Succeeded)
+					{
+						_unpushedCommits = result.Result;
+					}
+					else
+					{
+						_unpushedCommits = null;
+						Log.Error(result.Error.FriendlyDescription);
+					}
+					UpdateSquashUi();
+				}
+			});
+		}, JobFlags.Hidden);
+	}
+
+	private void UpdateSquashUi()
+	{
+		int num = _unpushedCommits?.Length ?? 0;
+		bool flag = num >= 2;
+		SquashCheckBox.IsEnabled = flag;
+		if (!flag)
+		{
+			SquashCheckBox.IsChecked = false;
+			SquashCheckBox.Content = Translate("Squash unpushed commits");
+		}
+		else
+		{
+			SquashCheckBox.Content = string.Format(Translate("Squash {0} unpushed commits"), num);
+		}
+		if (flag && SquashCheckBox.IsChecked.GetValueOrDefault())
+		{
+			if (SquashMessageTextBox.Text.Length == 0)
+			{
+				SquashMessageTextBox.Text = GenerateSquashCommitMessage(_unpushedCommits);
+			}
+			SquashMessageLabel.Show();
+			SquashMessageTextBox.Show();
+		}
+		else
+		{
+			SquashMessageLabel.Collapse();
+			SquashMessageTextBox.Collapse();
+		}
+	}
+
+	private void SquashCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		UpdateSquashUi();
+		RefreshCommandPreview();
+	}
+
+	// v3.12.0：Squash 后的提交信息默认值：最早一条提交的标题 + 全部标题列表（旧→新）。
+	private static string GenerateSquashCommitMessage(GetUnpushedCommitsGitCommand.UnpushedCommit[] commits)
+	{
+		if (commits == null || commits.Length == 0)
+		{
+			return "";
+		}
+		System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+		stringBuilder.Append(commits[commits.Length - 1].Subject);
+		if (commits.Length > 1)
+		{
+			stringBuilder.AppendLine();
+			stringBuilder.AppendLine();
+			for (int num = commits.Length - 1; num >= 0; num--)
+			{
+				stringBuilder.Append("* ").AppendLine(commits[num].Subject);
+			}
+		}
+		return stringBuilder.ToString();
+	}
+
+	private bool IsSquashRequested(LocalBranch localBranch, out RemoteBranch upstream)
+	{
+		upstream = FindUpstream(_allRemoteBranches, localBranch);
+		if (SquashCheckBox.IsEnabled && SquashCheckBox.IsChecked.GetValueOrDefault() && upstream != null)
+		{
+			return _unpushedCommits != null && _unpushedCommits.Length >= 2;
+		}
+		return false;
+	}
+
+	private static string FirstCommitMessageLine(string text)
+	{
+		string text2 = text.Trim();
+		int num = text2.IndexOf('\n');
+		if (num != -1)
+		{
+			text2 = text2.Substring(0, num).Trim();
+		}
+		return text2;
 	}
 
 	private void LocalBranchesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -300,6 +480,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			RefreshRemoteBranches();
 			UpdateSubmitButton();
+			RefreshUnpushedCommits();
 		}
 		RefreshCommandPreview();
 	}

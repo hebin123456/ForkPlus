@@ -255,6 +255,7 @@ namespace ForkPlus.Tests
 			"src/ForkPlus/Git/Commands/GetSubmoduleHeadGitCommand.cs",
 			"src/ForkPlus/Git/Commands/GetSubmodulesGitCommand.cs",
 			"src/ForkPlus/Git/Commands/GetTagMessageGitCommand.cs",
+			"src/ForkPlus/Git/Commands/GetUnpushedCommitsGitCommand.cs",
 			"src/ForkPlus/Git/Commands/GetUnpushedSubmodulesGitCommand.cs",
 			"src/ForkPlus/Git/Commands/GetUserColorsGitCommand.cs",
 			"src/ForkPlus/Git/Commands/GetWorkingDirectoryChangedFilesGitCommand.cs",
