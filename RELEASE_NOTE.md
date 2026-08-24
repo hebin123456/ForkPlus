@@ -2,6 +2,12 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.12.3
+
+### 修复
+
+- **AI 辅助开发窗口：AI 回复气泡未靠左的问题**：AI 对话气泡设置了 `MaxWidth = 700` 但未显式指定水平对齐，WPF 中 `Stretch` 对齐被 `MaxWidth` 截断时元素会居中放置，导致窗口较宽时 AI 回复气泡悬在消息区中间、左右留白不对称。现在流式回复气泡（`CreateStreamingResponseBubble`）与完整回复气泡（`AddAiResponseMessage`）均显式 `HorizontalAlignment = Left`，AI 气泡贴左、用户气泡靠右，形成标准对话布局。已排查确认欢迎横幅、状态文本、diff 结果容器等其他消息元素不受影响。
+
 ## v3.12.2
 
 ### 修复

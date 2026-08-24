@@ -851,7 +851,10 @@ namespace ForkPlus.UI.Dialogs
 				CornerRadius = new CornerRadius(6),
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
-				MaxWidth = 700
+				MaxWidth = 700,
+				// 显式靠左：Stretch 对齐被 MaxWidth 截断时 WPF 会居中放置，
+				// 导致 AI 气泡悬在中间不贴左（用户气泡同理需显式 Right）。
+				HorizontalAlignment = HorizontalAlignment.Left
 			};
 
 			TextBlock header = new TextBlock
@@ -1144,7 +1147,9 @@ namespace ForkPlus.UI.Dialogs
 				CornerRadius = new CornerRadius(6),
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
-				MaxWidth = 700
+				MaxWidth = 700,
+				// 显式靠左：与流式气泡一致，避免 Stretch + MaxWidth 居中悬浮
+				HorizontalAlignment = HorizontalAlignment.Left
 			};
 
 			TextBlock header = new TextBlock
