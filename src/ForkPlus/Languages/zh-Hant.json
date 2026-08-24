@@ -2272,6 +2272,14 @@
     "Unknown error": "未知錯誤",
     "AI is still resolving conflicts. Please wait for the current task to finish.": "AI 正在解決衝突，請等待當前任務完成。",
     "Cannot resolve conflicts: file or repository is not ready.": "無法解決衝突：檔案或儲存庫未就緒。",
-    "Failed to resolve file path: {0}": "解析檔案路徑失敗：{0}"
+    "Failed to resolve file path: {0}": "解析檔案路徑失敗：{0}",
+    "Stash changes": "貯藏變更",
+    "Unsupported Platform": "不支援的平台",
+    "Failed to load file": "載入檔案失敗",
+    "Confirm Import": "確認匯入",
+    "Import Complete": "匯入完成",
+    "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "匯入將覆蓋目前的 ForkPlus 設定。\nForkPlus 將在匯入後重新啟動。\n\n是否繼續？",
+    "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "設定匯入成功。\nForkPlus 即將重新啟動以套用新設定。",
+    "Force push": "強制推送"
   }
 }

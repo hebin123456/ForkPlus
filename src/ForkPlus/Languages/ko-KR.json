@@ -2269,6 +2269,14 @@
     "Unknown error": "알 수 없는 오류",
     "AI is still resolving conflicts. Please wait for the current task to finish.": "AI가 충돌을 해결하는 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
     "Cannot resolve conflicts: file or repository is not ready.": "충돌을 해결할 수 없습니다: 파일 또는 저장소가 준비되지 않았습니다.",
-    "Failed to resolve file path: {0}": "파일 경로 확인 실패: {0}"
+    "Failed to resolve file path: {0}": "파일 경로 확인 실패: {0}",
+    "Stash changes": "변경 사항 스태시",
+    "Unsupported Platform": "지원되지 않는 플랫폼",
+    "Failed to load file": "파일을 로드하지 못했습니다",
+    "Confirm Import": "가져오기 확인",
+    "Import Complete": "가져오기 완료",
+    "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "가져오면 현재 ForkPlus 구성을 덮어씁니다.\nForkPlus는 가져오기 후 다시 시작됩니다.\n\n계속하시겠습니까?",
+    "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "구성을 가져왔습니다.\nForkPlus가 곧 다시 시작되어 새 설정을 적용합니다.",
+    "Force push": "강제 푸시"
   }
 }

@@ -2269,6 +2269,14 @@
     "Unknown error": "Unbekannter Fehler",
     "AI is still resolving conflicts. Please wait for the current task to finish.": "Die KI löst noch Konflikte. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist.",
     "Cannot resolve conflicts: file or repository is not ready.": "Konflikte können nicht gelöst werden: Datei oder Repository ist nicht bereit.",
-    "Failed to resolve file path: {0}": "Dateipfad konnte nicht aufgelöst werden: {0}"
+    "Failed to resolve file path: {0}": "Dateipfad konnte nicht aufgelöst werden: {0}",
+    "Stash changes": "Änderungen stashen",
+    "Unsupported Platform": "Nicht unterstützte Plattform",
+    "Failed to load file": "Datei konnte nicht geladen werden",
+    "Confirm Import": "Import bestätigen",
+    "Import Complete": "Import abgeschlossen",
+    "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "Beim Import wird Ihre aktuelle ForkPlus-Konfiguration überschrieben.\nForkPlus wird nach dem Import neu gestartet.\n\nFortfahren?",
+    "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Konfiguration erfolgreich importiert.\nForkPlus wird jetzt neu gestartet, um die neuen Einstellungen zu übernehmen.",
+    "Force push": "Force-Push"
   }
 }

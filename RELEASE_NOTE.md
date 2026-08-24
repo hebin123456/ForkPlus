@@ -7,6 +7,7 @@
 ### 修复
 
 - **AI 辅助开发窗口：AI 回复气泡未靠左的问题**：AI 对话气泡设置了 `MaxWidth = 700` 但未显式指定水平对齐，WPF 中 `Stretch` 对齐被 `MaxWidth` 截断时元素会居中放置，导致窗口较宽时 AI 回复气泡悬在消息区中间、左右留白不对称。现在流式回复气泡（`CreateStreamingResponseBubble`）与完整回复气泡（`AddAiResponseMessage`）均显式 `HorizontalAlignment = Left`，AI 气泡贴左、用户气泡靠右，形成标准对话布局。已排查确认欢迎横幅、状态文本、diff 结果容器等其他消息元素不受影响。
+- **补齐 v3.12.2 MessageBox 替换引入的 8 个缺失国际化键**：v3.12.2 将原生 MessageBox 替换为 `MessageBoxWindow` 时，部分新引入的文案键未写入语言包，非英文界面回退显示英文。现已补齐 7 个语言包（zh-Hans / zh-Hant / ja-JP / ko-KR / fr-FR / de-DE / es-ES）：`Stash changes`（贮藏更改）、`Unsupported Platform`、`Failed to load file`、`Confirm Import`、`Import Complete`、`Import` 覆盖确认与导入完成两条多行提示、`Force push`（强制推送）。术语与各语言包既有译法对齐（stash → 贮藏/貯藏/スタッシュ/스태시/Remisage/Stash/stash）。已全量校验 9 个改动文件中 81 处 `MessageBoxWindow` 字面量全部命中语言包。
 
 ## v3.12.2
 
