@@ -419,19 +419,25 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void UploadButton_Click(object sender, RoutedEventArgs e)
+	{
+		SaveSettings();
+		if (KeyboardHelper.IsCtrlDown)
 		{
-			SaveSettings();
-			if (KeyboardHelper.IsCtrlDown)
-			{
-				RunGitMm(CreateQuickUploadArgs());
-				return;
-			}
-			GitMmUploadWindow window = new GitMmUploadWindow(_workspace.Path);
-			if (window.ShowDialog().GetValueOrDefault())
-			{
-				RunGitMm(window.UploadArgs);
-			}
+			RunGitMm(CreateQuickUploadArgs());
+			return;
 		}
+		OpenUploadWindow();
+	}
+
+	/// <summary>v3.12.1：打开 git mm 上传窗口。供上传按钮与 mm 子仓 push 引导流程复用（与 OpenSyncWindow 同构）。</summary>
+	public void OpenUploadWindow()
+	{
+		GitMmUploadWindow window = new GitMmUploadWindow(_workspace.Path);
+		if (window.ShowDialog().GetValueOrDefault())
+		{
+			RunGitMm(window.UploadArgs);
+		}
+	}
 
 		private void RefreshCommandButtonTooltips()
 		{

@@ -17,6 +17,11 @@ namespace ForkPlus.UI.Commands
 		{
 			if (repositoryUserControl != null)
 			{
+				// v3.12.1：mm 子仓 push 防呆——检测 + 引导 + 逃生口（与 pull 防呆同构）
+				if (!MmSubrepoPushGuard.ConfirmSingleRepoPush(repositoryUserControl))
+				{
+					return;
+				}
 				new PushWindow(repositoryUserControl, remote, localBranch).ShowDialog();
 			}
 		}

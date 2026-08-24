@@ -2,6 +2,18 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.12.1
+
+### 新功能
+
+- **mm 子仓 Push 防呆（与 v3.11.2 Pull 防呆同构）**：在 git mm 子仓中触发推送时，与拉取一样弹出告警引导：
+  - 检测逻辑与 Pull 防呆完全一致（`FindGitMmWorkspacePathForSubrepo`），同时覆盖"mm 页签内选中子仓"与"单仓页签打开但路径位于 mm 工作区内"两种场景。
+  - 推荐路径：切换到所属 git mm 工作区并自动打上传窗口执行 `git mm upload`，多个子仓变更一起推送，保持子仓间一致性。
+  - 逃生口：用户明确选择"仅推送该仓库"时按普通单仓 push 继续；取消则中止。
+  - 覆盖全部三个推送入口：Push 窗口（菜单/快捷键 Ctrl+Shift+P）、Quick Push、分支右键 Push。
+  - 新增公共 `GitMmUserControl.OpenUploadWindow()`（与 `OpenSyncWindow` 同构），供上传按钮与引导流程复用。
+  - 新增文案已国际化（zh-Hans/zh-Hant/ja-JP/ko-KR/fr-FR/de-DE/es-ES）。
+
 ## v3.12.0
 
 ### 新功能
