@@ -2,6 +2,17 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.13.0
+
+### 新功能
+
+- **集成 git-ai：在 GUI 中识别与统计 AI 生成代码**：接入 [git-ai](https://usegitai.com)（基于 Git Notes `refs/notes/ai` 记录行级 AI 作者归属的官方 Git 扩展），无需改变任何工作流即可在 ForkPlus 内查看哪些代码由 AI 写成：
+  - **检测与配置**：启动时自动检测 git-ai（PATH / 配置目录），偏好设置 → Git 新增 "git-ai 实例" 选择器（与 git 实例选择器同构，支持自定义路径）与 "启用 AI 归属（git-ai）" 总开关；未安装或关闭时相关 UI 自动隐藏，全部功能优雅降级，不影响原有 blame / 统计。
+  - **Blame 窗口 AI 归属徽标**：开启后 Blame 视图按所查提交调用 `git-ai diff` 获取行级归属数据，AI 生成的行所在 blame 块在作者栏显示紫色 "AI" 徽标，鼠标悬停可见生成该代码块的智能体（tool · model）、"n of m lines" 部分归属行数与提交该代码的人类作者。归属数据缺失或命令失败时静默降级为标准 blame 视图，不影响原有功能。
+  - **统计窗口 AI Authorship 区块**：统计页新增 AI 作者归属区块，调用 `git-ai stats` 展示区间内 AI 生成行占比饼图（人类 / 混合 / AI 三分），以及按智能体（工具 · 模型）维度的 AI 行数、直接采纳行数与占比列表；支持最近 100 / 500 / 1000 个提交与全历史区间切换。
+  - **AI diff 归属数据层**：新增 `git-ai diff --json` 解析（hunks + sessions + annotations 三级结构），兼容单提交与区间两种 JSON 形态，供后续 diff 视图标注复用。
+  - **主题与国际化**：22 套主题全部适配 AI 徽标配色（紫色系，明暗皮肤分别调校）；新增 22 条文案，覆盖 zh-Hans / zh-Hant / ja-JP / ko-KR / fr-FR / de-DE / es-ES 全部 8 种语言。
+
 ## v3.12.3
 
 ### 修复

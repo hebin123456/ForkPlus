@@ -1100,6 +1100,10 @@ namespace ForkPlus.Settings
 
 		private string _gitMmInstancePath;
 
+		private string _gitAiInstancePath;
+
+		private bool _aiAttributionEnabled = true;
+
 		private bool _verboseGitOutput;
 
 		private string[] _sshKeys;
@@ -2497,6 +2501,31 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		public string GitAiInstancePath
+		{
+			get
+			{
+				return _gitAiInstancePath;
+			}
+			set
+			{
+				_gitAiInstancePath = value;
+			}
+		}
+
+		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认开启，git-ai 未安装时自动降级。</summary>
+		public bool AiAttributionEnabled
+		{
+			get
+			{
+				return _aiAttributionEnabled;
+			}
+			set
+			{
+				_aiAttributionEnabled = value;
+			}
+		}
+
 		public bool VerboseGitOutput
 		{
 			get
@@ -2787,6 +2816,8 @@ namespace ForkPlus.Settings
 			string skippedUpdateVersion = json["SkippedUpdateVersion"]?.Value<string>() ?? "";
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
+			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
+			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? true;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
 			string recentPatchDirectory = json["RecentPatchDirectory"]?.Value<string>();
@@ -2909,6 +2940,8 @@ namespace ForkPlus.Settings
 				SkippedUpdateVersion = skippedUpdateVersion,
 				GitInstancePath = gitInstancePath,
 				GitMmInstancePath = gitMmInstancePath,
+				GitAiInstancePath = gitAiInstancePath,
+				AiAttributionEnabled = aiAttributionEnabled,
 				VerboseGitOutput = verboseGitOutput,
 				SshKeys = sshKeys,
 				RecentPatchDirectory = recentPatchDirectory,
@@ -3462,9 +3495,17 @@ namespace ForkPlus.Settings
 					new JValue(target.GitInstancePath)
 				},
 				{
-					"GitMmInstancePath",
-					new JValue(target.GitMmInstancePath)
-				},
+				"GitMmInstancePath",
+				new JValue(target.GitMmInstancePath)
+			},
+			{
+				"GitAiInstancePath",
+				new JValue(target.GitAiInstancePath)
+			},
+			{
+				"AiAttributionEnabled",
+				new JValue(target.AiAttributionEnabled)
+			},
 				{
 					"VerboseGitOutput",
 					new JValue(target.VerboseGitOutput)

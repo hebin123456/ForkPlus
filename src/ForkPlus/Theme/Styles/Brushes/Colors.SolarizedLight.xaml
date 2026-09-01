@@ -290,4 +290,6 @@
   <Color x:Key="SliderThumb.Disabled.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#F4F4F4</Color>
   <Color x:Key="SliderThumb.Disabled.BorderColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#ADB2B5</Color>
   <Color x:Key="NoColorButtonColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FFFFFF</Color>
+  <Color x:Key="AiBadge.BackgroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#6C71C4</Color>
+  <Color x:Key="AiBadge.ForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">#FDF6E3</Color>
 </ResourceDictionary>

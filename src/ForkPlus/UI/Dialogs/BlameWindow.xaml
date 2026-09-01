@@ -10,12 +10,13 @@
         <Grid Height="16.393333333333334">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="46" />
             <ColumnDefinition Width="18" />
           </Grid.ColumnDefinitions>
-          <Border Grid.Column="0" Grid.ColumnSpan="5" Margin="-4,-1,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
+          <Border Grid.Column="0" Grid.ColumnSpan="6" Margin="-4,-1,-4,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" />
           <controls:AvatarImage Grid.Column="0" Margin="4,2,6,1" VerticalAlignment="Top" Height="12" Width="12">
             <controls:AvatarImage.UserIdentity>
               <Binding Path="Author" />
@@ -24,12 +25,16 @@
               <Binding Path="FullCredentials" />
             </controls:AvatarImage.ToolTip>
           </controls:AvatarImage>
-          <controls:AutoTooltipTextBlock Grid.Column="1" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" Padding="0,-2,0,0" FontSize="12">
+          <!-- git-ai AI 归属徽标：该 blame 块由 AI agent 生成的行 -->
+          <Border Grid.Column="1" Margin="0,1,5,0" Padding="4,0,4,0" Height="13" VerticalAlignment="Top" CornerRadius="2" Background="{DynamicResource AiBadge.Background}" Visibility="{Binding AiBadgeVisibility}" ToolTip="{Binding AiBadgeToolTip}">
+            <TextBlock Text="AI" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource AiBadge.Foreground}" />
+          </Border>
+          <controls:AutoTooltipTextBlock Grid.Column="2" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" Padding="0,-2,0,0" FontSize="12">
             <controls:AutoTooltipTextBlock.Text>
               <Binding Path="RevisionSubject" />
             </controls:AutoTooltipTextBlock.Text>
           </controls:AutoTooltipTextBlock>
-          <TextBlock Grid.Column="2" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" HorizontalAlignment="Right">
+          <TextBlock Grid.Column="3" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" HorizontalAlignment="Right">
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
@@ -37,7 +42,7 @@
               <Binding Path="AuthorDate" />
             </TextBlock.ToolTip>
           </TextBlock>
-          <Button Grid.Column="3" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Style="{DynamicResource TextButtonStyle}" Click="ShaButton_Click">
+          <Button Grid.Column="4" Margin="0,-2,0,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Style="{DynamicResource TextButtonStyle}" Click="ShaButton_Click">
             <Button.Content>
               <Binding Path="AbbreviatedSha" />
             </Button.Content>
@@ -45,7 +50,7 @@
               <Binding Path="ShaToolTip" />
             </Button.ToolTip>
           </Button>
-          <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Style="{DynamicResource IconButtonStyle}" Click="OpenRevisionInSeparateWindowButton_Click">
+          <Button Grid.Column="5" Width="14" Height="14" Padding="1" Margin="4,0,0,1" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Style="{DynamicResource IconButtonStyle}" Click="OpenRevisionInSeparateWindowButton_Click">
             <Button.ToolTip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
             </Button.ToolTip>

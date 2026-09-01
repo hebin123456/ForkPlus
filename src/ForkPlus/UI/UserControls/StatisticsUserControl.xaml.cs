@@ -70,6 +70,26 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		/// <summary>AI authorship 工具维度列表行 ViewModel（git-ai tool_model_breakdown）。</summary>
+		public class AiAgentViewModel
+		{
+			public string Name { get; }
+			public string AiLines { get; }
+			public string Accepted { get; }
+			public string Share { get; }
+			/// <summary>列表色块颜色（与饼图同色系），XAML 里 Rectangle.Fill 绑定。</summary>
+			public string Color { get; }
+
+			public AiAgentViewModel(string name, long aiLines, long accepted, string share, string color)
+			{
+				Name = name;
+				AiLines = aiLines.ToString("N0");
+				Accepted = accepted.ToString("N0");
+				Share = share;
+				Color = color;
+			}
+		}
+
 		public static class PlotHelper
 		{
 			public static PlotModel CreateLinePlotModel()
@@ -306,6 +326,15 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>代码行数饼图的 PlotModel（按语言代码行数占比）。</summary>
 		private PlotModel _codeLinesPieModel;
 
+		/// <summary>AI authorship 饼图的 PlotModel（纯人类 / 混合 / 纯 AI 新增行占比）。</summary>
+		private PlotModel _aiStatsPieModel;
+
+		/// <summary>AI authorship 后台任务队列。串行化多次 refresh，避免切换区间时并发 spawn git-ai。</summary>
+		private readonly JobQueue _aiStatsJobQueue = new JobQueue();
+
+		/// <summary>当前 AI authorship 查询选中的区间提交数（0 = 全历史）。</summary>
+		private int _currentAiRangeCount = 100;
+
 		/// <summary>代码行数后台任务队列。串行化多次 refresh，避免切换 ref 时并发 spawn tokei。</summary>
 		private readonly JobQueue _codeLinesJobQueue = new JobQueue();
 
@@ -352,6 +381,14 @@ namespace ForkPlus.UI.UserControls
 			// 代码行数饼图复用 CreatePiePlotModel（同样的 PieSeries 配置）
 			_codeLinesPieModel = PlotHelper.CreatePiePlotModel();
 			CodeLinesPiePlot.Model = _codeLinesPieModel;
+			// AI authorship 饼图同样复用 CreatePiePlotModel
+			_aiStatsPieModel = PlotHelper.CreatePiePlotModel();
+			AiPiePlot.Model = _aiStatsPieModel;
+			// git-ai 未安装或用户关闭开关时整个区块隐藏（与代码行数区块的降级方式一致）
+			if (!App.IsAiAttributionEnabled)
+			{
+				AiAuthorshipSection.Collapse();
+			}
 			DateRangeButton.DateRangeChanged += delegate
 			{
 				if (!_isCalendarUpdatingInProgress)
@@ -388,6 +425,8 @@ namespace ForkPlus.UI.UserControls
 			InitializeCodeLinesRefComboBox(gitModule);
 			SelectCodeLineRef(initialRef);
 			RefreshCodeLines(_currentCodeLinesRef);
+			// AI authorship（git-ai）首次查询。构造期已对未安装/关闭的情况隐藏区块。
+			RefreshAiAuthorship();
 		}
 
 		/// <summary>在 _codeLineRefs 中找到 RefSpec == refSpec 的项并选中；找不到则回退到 Workspace（第一项）。</summary>
@@ -835,6 +874,188 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		private static string OxyColorToHex(OxyColor c)
 		{
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+		}
+
+		// ===================== AI authorship 统计（git-ai）=====================
+
+		/// <summary>区间下拉选中项变化：读取 Tag（提交数，0 = 全历史）后重跑。</summary>
+		private void AiRangeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (_gitModule == null || AiRangeComboBox.SelectedItem is not ComboBoxItem item)
+			{
+				return;
+			}
+			if (!int.TryParse(item.Tag?.ToString(), out int count))
+			{
+				count = 100;
+			}
+			// 构造期 XAML 里 IsSelected="True" 会触发一次 SelectionChanged，此时与默认值一致，避免重复首查
+			if (count == _currentAiRangeCount)
+			{
+				return;
+			}
+			_currentAiRangeCount = count;
+			RefreshAiAuthorship();
+		}
+
+		/// <summary>Refresh 按钮点击。用当前选中的区间重跑。</summary>
+		private void AiRefreshButton_Click(object sender, RoutedEventArgs e)
+		{
+			RefreshAiAuthorship();
+		}
+
+		/// <summary>git 空树对象哈希。git-ai stats 约定 emptytree..HEAD 表示全历史（自仓库起点）。</summary>
+		private const string GitEmptyTreeSha = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+		/// <summary>异步跑 git-ai stats 拿 AI 作者统计，更新饼图 + 工具列表 + 摘要。
+		/// 走 JobQueue 串行化，避免切换区间时并发 spawn。</summary>
+		private void RefreshAiAuthorship()
+		{
+			if (_gitModule == null || !App.IsAiAttributionEnabled)
+			{
+				return;
+			}
+			// 立刻显示"加载中"，避免用户以为按钮没响应
+			AiError.Visibility = Visibility.Collapsed;
+			AiSummary.Text = Translate("Analyzing AI authorship...");
+			AiRefreshButton.IsEnabled = false;
+			AiRangeComboBox.IsEnabled = false;
+
+			// 复制一份避免闭包捕获到后续变化的值
+			int rangeCountCopy = _currentAiRangeCount;
+			GitModule gitModule = _gitModule;
+			_aiStatsJobQueue.Add("AiAuthorshipStats", delegate (JobMonitor monitor)
+			{
+				string revSpec = ComputeAiRangeSpec(gitModule, rangeCountCopy);
+				var result = new GetGitAiStatsGitCommand().Execute(gitModule, App.GitAiPath, revSpec);
+				Dispatcher.Async(delegate
+				{
+					AiRefreshButton.IsEnabled = true;
+					AiRangeComboBox.IsEnabled = true;
+					if (!result.Succeeded)
+					{
+						ShowAiError(result.Error?.FriendlyDescription ?? "Failed");
+						return;
+					}
+					UpdateAiAuthorshipPlot(result.Result, revSpec);
+				});
+			}, JobFlags.LongRunning, showMessageWhenDone: false);
+		}
+
+		/// <summary>
+		/// 计算 git-ai stats 的 revSpec：
+		/// 全历史 → emptytree..HEAD；最近 N 条 → rev-list 找到第 N+1 旧提交作为边界（old..HEAD），
+		/// 仓库提交数不足 N 时退化为全历史。
+		/// </summary>
+		private static string ComputeAiRangeSpec(GitModule gitModule, int commitCount)
+		{
+			if (commitCount <= 0)
+			{
+				return GitEmptyTreeSha + "..HEAD";
+			}
+			try
+			{
+				var result = new ForkPlus.Git.Interaction.GitRequest(gitModule)
+					.Command("rev-list", "--max-count=" + (commitCount + 1), "HEAD")
+					.Execute(silent: true);
+				if (result.Success && !string.IsNullOrWhiteSpace(result.Stdout))
+				{
+					string[] shas = result.Stdout.Split(Consts.Chars.NewLine, StringSplitOptions.RemoveEmptyEntries);
+					// rev-list 由新到旧输出。拿到 N+1 条说明历史足够长，最后一条是区间下界（不含）
+					if (shas.Length > commitCount)
+					{
+						return shas[shas.Length - 1].Trim() + "..HEAD";
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to compute git-ai stats range boundary", ex);
+			}
+			return GitEmptyTreeSha + "..HEAD";
+		}
+
+		/// <summary>把 GitAiStats 渲染到饼图 + 工具列表 + 摘要。</summary>
+		private void UpdateAiAuthorshipPlot(GitAiStats stats, string revSpec)
+		{
+			AiError.Visibility = Visibility.Collapsed;
+			// 饼图：纯人类 / 混合（AI 生成后人类改写）/ 纯 AI。0 值切片不显示。
+			var pieSeries = _aiStatsPieModel.Series[0] as PieSeries;
+			pieSeries.Slices.Clear();
+			long pureHuman = stats.PureHumanAdditions;
+			if (pureHuman > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice(Translate("Human"), pureHuman)
+				{
+					Fill = _pieChartColors[1]
+				});
+			}
+			if (stats.MixedAdditions > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice(Translate("Mixed (AI + human edits)"), stats.MixedAdditions)
+				{
+					Fill = _pieChartColors[6]
+				});
+			}
+			if (stats.AiAccepted > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice(Translate("AI"), stats.AiAccepted)
+				{
+					Fill = _pieChartColors[5]
+				});
+			}
+			AiPiePlot.InvalidatePlot();
+
+			// 工具维度列表：tool · model | AI 行数 | 直接接受行数 | 占 AI 行比例
+			var listItems = new List<AiAgentViewModel>(stats.Breakdown.Length);
+			for (int i = 0; i < stats.Breakdown.Length; i++)
+			{
+				GitAiToolStats tool = stats.Breakdown[i];
+				string share = stats.AiAdditions > 0
+					? Math.Round(tool.AiAdditions * 100.0 / stats.AiAdditions, 1).ToString("0.#") + "%"
+					: "0%";
+				listItems.Add(new AiAgentViewModel(
+					tool.DisplayName,
+					tool.AiAdditions,
+					tool.AiAccepted,
+					share,
+					OxyColorToHex(_colors[(i + 5) % _colors.Length])));
+			}
+			AiBreakdownListBox.ItemsSource = listItems;
+
+			// 摘要：AI 行数 / 总新增行数 / 占比；区间统计再附 authorship 覆盖情况
+			string rangeLabel = revSpec == GitEmptyTreeSha + "..HEAD" ? Translate("All history") : revSpec;
+			if (stats.TotalCommits.HasValue)
+			{
+				AiSummary.Text = string.Format(CultureInfo.CurrentUICulture,
+					Translate("{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits"),
+					rangeLabel,
+					stats.AiAdditions.ToString("N0"),
+					stats.GitDiffAddedLines.ToString("N0"),
+					stats.AiPercentage,
+					(stats.CommitsWithAuthorship ?? 0L).ToString("N0"),
+					(stats.TotalCommits ?? 0L).ToString("N0"));
+			}
+			else
+			{
+				AiSummary.Text = string.Format(CultureInfo.CurrentUICulture,
+					Translate("{0}: {1} of {2} added lines were AI-generated ({3}%)"),
+					rangeLabel,
+					stats.AiAdditions.ToString("N0"),
+					stats.GitDiffAddedLines.ToString("N0"),
+					stats.AiPercentage);
+			}
+		}
+
+		/// <summary>AI authorship 查询失败：显示错误并清空饼图/列表。</summary>
+		private void ShowAiError(string message)
+		{
+			AiError.Text = message;
+			AiError.Visibility = Visibility.Visible;
+			AiSummary.Text = "";
+			(_aiStatsPieModel.Series[0] as PieSeries).Slices.Clear();
+			AiPiePlot.InvalidatePlot();
+			AiBreakdownListBox.ItemsSource = null;
 		}
 
 		/// <summary>ComboBox 项：显示名 + 实际 refSpec（null=工作区 snapshot）。</summary>

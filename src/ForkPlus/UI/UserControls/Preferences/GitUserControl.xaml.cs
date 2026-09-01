@@ -89,6 +89,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 				return new GitInstanceItem(PreferencesLocalization.Current("Custom git-mm Instance..."), string.Empty, GitInstanceType.AddCustom);
 			}
 
+			public static GitInstanceItem CreateAddCustomGitAiInstance()
+			{
+				return new GitInstanceItem(PreferencesLocalization.Current("Custom git-ai Instance..."), string.Empty, GitInstanceType.AddCustom);
+			}
+
 			internal GitInstanceItem(string fileName, string path, GitInstanceType itemType)
 			{
 				FileName = fileName;
@@ -181,6 +186,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 	private bool _isRefreshingGitMm;
 
+	private bool _isRefreshingGitAi;
+
 		public GitUserControl()
 		{
 			InitializeComponent();
@@ -192,6 +199,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			_parentWindow = parentWindow;
 			RefreshGitInstanceComboBox();
 			RefreshGitMmInstanceComboBox();
+			RefreshGitAiInstanceComboBox();
+			AiAttributionCheckBox.IsChecked = ForkPlusSettings.Default.AiAttributionEnabled;
 			VerboseGitOutputCheckBox.IsChecked = ForkPlusSettings.Default.VerboseGitOutput;
 			VerboseGitOutputCheckBox.ToolTip = new TextBlock
 			{
@@ -488,6 +497,120 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 		}
 		Log.Info("git-mm Location: " + (App.GitMmPath ?? "(none)"));
+	}
+
+	/// <summary>
+	/// 填充 git-ai 实例下拉框（与 git-mm 同模式）。候选项：PATH 中发现的 git-ai.exe、
+	/// git.exe 同目录的 git-ai.exe、用户已保存的自定义路径、以及"添加自定义..."入口。
+	/// 未安装 git-ai 时仍展示"添加自定义..."以便用户手动指定。
+	/// </summary>
+	private void RefreshGitAiInstanceComboBox()
+	{
+		_isRefreshingGitAi = true;
+		try
+		{
+			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
+			// 1. PATH 中查找的 git-ai.exe（走缓存）
+			string pathCandidate = App.GitAiPathFromPath;
+			if (!string.IsNullOrWhiteSpace(pathCandidate))
+			{
+				string version = GitAiVersionText(pathCandidate);
+				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + pathCandidate;
+				list.Add(new GitInstanceItem(label, pathCandidate, GitInstanceType.System));
+			}
+			// 2. git.exe 同目录的 git-ai.exe
+			try
+			{
+				string gitDir = Path.GetDirectoryName(App.GitPath);
+				if (gitDir != null)
+				{
+					string sibling = Path.Combine(gitDir, "git-ai.exe");
+					if (File.Exists(sibling) && (pathCandidate == null || !string.Equals(pathCandidate, sibling, StringComparison.OrdinalIgnoreCase)))
+					{
+						string version = GitAiVersionText(sibling);
+						string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + sibling;
+						list.Add(new GitInstanceItem(label, sibling, GitInstanceType.Local));
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to check git-ai in git directory", ex);
+			}
+			// 3. 用户已保存的自定义路径（若不在上述候选中）
+			string savedPath = ForkPlusSettings.Default.GitAiInstancePath;
+			if (!string.IsNullOrWhiteSpace(savedPath) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, savedPath, StringComparison.OrdinalIgnoreCase)))
+			{
+				if (File.Exists(savedPath))
+				{
+					string version = GitAiVersionText(savedPath);
+					string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + savedPath;
+					list.Add(new GitInstanceItem(label, savedPath, GitInstanceType.Custom));
+				}
+			}
+			list.Add(GitInstanceItem.CreateSeparator());
+			list.Add(GitInstanceItem.CreateAddCustomGitAiInstance());
+			GitAiInstanceComboBox.ItemsSource = list.ToArray();
+			// 选中当前生效的路径；未找到时不选中任何项（不 fallback 到 AddCustom，避免在构造期间弹出文件对话框）
+			string current = App.GitAiPath;
+			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
+			GitAiInstanceComboBox.SelectedItem = match;
+		}
+		finally
+		{
+			_isRefreshingGitAi = false;
+		}
+	}
+
+	private static string GitAiVersionText(string path)
+	{
+		GitCommandResult<string> result = new GetGitAiVersionShellCommand().Execute(path);
+		return result.Succeeded ? result.Result : null;
+	}
+
+	private void GitAiInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		// 刷新期间程序化设置 SelectedItem 会触发 SelectionChanged，跳过避免副作用（弹文件对话框/写磁盘）
+		if (_isRefreshingGitAi)
+		{
+			return;
+		}
+		GitInstanceItem previous = (e.RemovedItems.Count > 0) ? (e.RemovedItems[0] as GitInstanceItem) : null;
+		if (!(GitAiInstanceComboBox.SelectedItem is GitInstanceItem item))
+		{
+			return;
+		}
+		switch (item.GitInstanceType)
+		{
+		case GitInstanceType.System:
+		case GitInstanceType.Local:
+		case GitInstanceType.Custom:
+			ForkPlusSettings.Default.GitAiInstancePath = item.GitPath;
+			break;
+		case GitInstanceType.AddCustom:
+		{
+			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-ai instance"), initialDirectory, out var filePath))
+			{
+				string normalized = PathHelper.Normalize(filePath);
+				ForkPlusSettings.Default.GitAiInstancePath = normalized;
+				ForkPlusSettings.Default.Save();
+				RefreshGitAiInstanceComboBox();
+			}
+			else
+			{
+				GitAiInstanceComboBox.SelectedItem = previous;
+			}
+			break;
+		}
+		}
+		Log.Info("git-ai Location: " + (App.GitAiPath ?? "(none)"));
+	}
+
+	/// <summary>AI 归属开关（git-ai Blame 徽标 / AI 统计）。关闭后所有 AI 归属 UI 自动隐藏。</summary>
+	private void AiAttributionCheckBox_Checked(object sender, RoutedEventArgs e)
+	{
+		ForkPlusSettings.Default.AiAttributionEnabled = AiAttributionCheckBox.IsChecked.GetValueOrDefault();
 	}
 
 	}

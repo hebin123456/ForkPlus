@@ -30,6 +30,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <controls:DateRangeButton Grid.Row="0" Margin="0,10,0,10" HorizontalAlignment="Left" x:Name="DateRangeButton" />
       <TextBlock Grid.Row="1" Text="Commits per month" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
@@ -176,6 +177,77 @@
                     <TextBlock Grid.Column="3" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Code}" />
                     <TextBlock Grid.Column="4" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Comments}" />
                     <TextBlock Grid.Column="5" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Blanks}" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+      <!-- Row 7: AI authorship 统计（git-ai）—— 标题行 + 区间选择 + 摘要 + 饼图 + 工具维度列表 -->
+      <StackPanel Grid.Row="7" Margin="0,30,0,0" x:Name="AiAuthorshipSection">
+        <Grid Margin="10,0,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="AI Authorship" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock Text="Range:" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <ComboBox Width="170" Margin="0,0,8,0" x:Name="AiRangeComboBox" SelectionChanged="AiRangeComboBox_SelectionChanged">
+              <ComboBoxItem Content="Last 100 commits" Tag="100" IsSelected="True" />
+              <ComboBoxItem Content="Last 500 commits" Tag="500" />
+              <ComboBoxItem Content="Last 1000 commits" Tag="1000" />
+              <ComboBoxItem Content="All history" Tag="0" />
+            </ComboBox>
+            <Button Content="Refresh" Padding="10,2" x:Name="AiRefreshButton" Click="AiRefreshButton_Click" />
+          </StackPanel>
+        </Grid>
+        <TextBlock Margin="10,8,0,0" x:Name="AiSummary" TextWrapping="Wrap" />
+        <TextBlock Margin="10,8,0,0" x:Name="AiError" TextWrapping="Wrap" Foreground="#FFCC0000" Visibility="Collapsed" />
+        <Grid Margin="10,10,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" xmlns:oxy="http://oxyplot.org/wpf" x:Name="AiPiePlot" />
+          <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
+            <Grid Margin="0,0,0,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="60" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="1" Text="Agent (tool · model)" FontWeight="Medium" />
+              <TextBlock Grid.Column="2" Text="AI lines" FontWeight="Medium" TextAlignment="Right" />
+              <TextBlock Grid.Column="3" Text="Accepted" FontWeight="Medium" TextAlignment="Right" />
+              <TextBlock Grid.Column="4" Text="Share" FontWeight="Medium" TextAlignment="Right" />
+            </Grid>
+            <ListBox BorderThickness="1,1,1,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" Style="{DynamicResource NoSelectionListBoxStyle}" x:Name="AiBreakdownListBox">
+              <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
+                  <Setter Property="Panel.Background" Value="{DynamicResource BackgroundBrush}" />
+                  <Setter Property="Border.BorderThickness" Value="0,0,0,1" />
+                  <Setter Property="Border.BorderBrush" Value="{DynamicResource BorderBrush}" />
+                </Style>
+              </ListBox.ItemContainerStyle>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Height="20">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="10" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="90" />
+                      <ColumnDefinition Width="90" />
+                      <ColumnDefinition Width="60" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center" Fill="{Binding Color}" />
+                    <TextBlock Grid.Column="1" Margin="4,0,8,0" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
+                    <TextBlock Grid.Column="2" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding AiLines}" />
+                    <TextBlock Grid.Column="3" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Accepted}" />
+                    <TextBlock Grid.Column="4" Margin="4,0,0,0" TextAlignment="Right" Text="{Binding Share}" />
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>

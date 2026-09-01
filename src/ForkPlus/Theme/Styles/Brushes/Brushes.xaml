@@ -280,4 +280,6 @@
   <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="{DynamicResource SliderThumb.Track.BorderColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="{DynamicResource SliderThumb.Track.BackgroundColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
   <SolidColorBrush x:Key="NoColorButtonBrush" Color="{DynamicResource NoColorButtonColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <SolidColorBrush x:Key="AiBadge.Background" Color="{DynamicResource AiBadge.BackgroundColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+  <SolidColorBrush x:Key="AiBadge.Foreground" Color="{DynamicResource AiBadge.ForegroundColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
 </ResourceDictionary>

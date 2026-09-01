@@ -273,24 +273,27 @@ namespace ForkPlus.UI.Dialogs
 						TextDiffControl.SetDiff(diff, tabWidth, entireFile: true, DiffLocation.Revision);
 					});
 					GitCommandResult<GetBlameGitCommand.BlameChunk[]> blameResult = new GetBlameGitCommand().Execute(gitModule, args.Filepath, $"{args.Sha}~");
-					if (!blameResult.Succeeded)
+				if (!blameResult.Succeeded)
+				{
+					base.Dispatcher.Async(delegate
 					{
-						base.Dispatcher.Async(delegate
-						{
-							ShowErrorFallback(blameResult.Error);
-						});
-					}
-					else
+						ShowErrorFallback(blameResult.Error);
+					});
+				}
+				else
+				{
+					// git-ai 行级归属：仅当前提交新增的行会有归属条目。
+					// git-ai 未安装 / 用户关闭开关 / 仓库未使用 git-ai 时得到空列表，Blame 视图不显示 AI 徽标。
+					List<GitAiLineAttribution> aiAttributions = GetAiAttributions(gitModule, args);
+					base.Dispatcher.Async(delegate
 					{
-						base.Dispatcher.Async(delegate
+						if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
 						{
-							if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
-							{
-								BusyIndicator.Hide();
-								_undoManager.Add(args);
-								RefreshUndoControls();
-								Revision revision = IReadOnlyListExtensions.FirstItem(_revisions, (RevisionViewModel x) => x.Sha == args.Sha).Revision.Revision;
-								BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision);
+							BusyIndicator.Hide();
+							_undoManager.Add(args);
+							RefreshUndoControls();
+							Revision revision = IReadOnlyListExtensions.FirstItem(_revisions, (RevisionViewModel x) => x.Sha == args.Sha).Revision.Revision;
+							BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision, aiAttributions);
 								if (RevisionListScrollViewer != null)
 								{
 									RevisionListScrollViewer.ScrollChanged -= RevisionListScrollViewer_ScrollChanged;
@@ -306,10 +309,30 @@ namespace ForkPlus.UI.Dialogs
 			}).Start();
 		}
 
-		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit)
+		/// <summary>
+		/// 获取当前提交在当前文件上的 git-ai 行级归属（后台线程调用）。
+		/// git-ai 未安装、被关闭或该提交无 AI 代码时返回空列表。
+		/// </summary>
+		private static List<GitAiLineAttribution> GetAiAttributions(GitModule gitModule, BlameArgs args)
+		{
+			if (!App.IsAiAttributionEnabled)
+			{
+				return new List<GitAiLineAttribution>();
+			}
+			GitCommandResult<GitAiDiffAttribution> aiResult = new GetGitAiDiffAttributionGitCommand().Execute(gitModule, args.Sha, App.GitAiPath);
+			if (!aiResult.Succeeded)
+			{
+				return new List<GitAiLineAttribution>();
+			}
+			return aiResult.Result.GetAttributions(args.Filepath);
+		}
+
+		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit, List<GitAiLineAttribution> aiAttributions)
 		{
 			Revision[] array = Expand(blameChunks);
 			List<Revision> list = new List<Revision>();
+			// 与 list 平行的新文件行号（1-based）。删除行只存在于旧文件，记 0（不会命中 AI 归属）。
+			List<int> list2 = new List<int>();
 			bool flag = false;
 			VisualChunk[] visualChunks = visualPatch.VisualDiff.VisualChunks;
 			foreach (VisualChunk obj in visualChunks)
@@ -326,53 +349,103 @@ namespace ForkPlus.UI.Dialogs
 					for (int k = visualSubChunk.PreContextLines.Start; k < visualSubChunk.PreContextLines.End; k++)
 					{
 						list.Add(array[num - 1]);
+						list2.Add(num2);
 						num++;
 						num2++;
 					}
 					for (int l = visualSubChunk.DeletedLines.Start; l < visualSubChunk.DeletedLines.End; l++)
 					{
 						list.Add(array[num - 1]);
+						list2.Add(0);
 						num++;
 					}
 					for (int m = visualSubChunk.AddedLines.Start; m < visualSubChunk.AddedLines.End; m++)
 					{
 						list.Add(newCommit);
+						list2.Add(num2);
 						num2++;
 					}
 					for (int n = visualSubChunk.PostContextLines.Start; n < visualSubChunk.PostContextLines.End; n++)
 					{
 						list.Add(array[num - 1]);
+						list2.Add(num2);
 						num++;
 						num2++;
 					}
 				}
 			}
-			List<BlameItemViewModel> list2 = new List<BlameItemViewModel>();
+			List<BlameItemViewModel> list3 = new List<BlameItemViewModel>();
 			int num3 = 0;
 			for (int num4 = 0; num4 < list.Count; num4++)
 			{
 				if (num4 > 0 && list[num3].Sha != list[num4].Sha)
 				{
-					list2.Add(new BlameItemViewModel(list[num3]));
+					BlameItemViewModel blameItemViewModel = new BlameItemViewModel(list[num3]);
+					ApplyAiAttribution(blameItemViewModel, list, list2, num3, num4, newCommit, aiAttributions);
+					list3.Add(blameItemViewModel);
 					for (int num5 = 1; num5 < num4 - num3; num5++)
 					{
-						list2.Add(new BlameItemBodyViewModel(list[num3]));
+						list3.Add(new BlameItemBodyViewModel(list[num3]));
 					}
 					num3 = num4;
 				}
 			}
-			list2.Add(new BlameItemViewModel(list[num3]));
+			BlameItemViewModel blameItemViewModel2 = new BlameItemViewModel(list[num3]);
+			ApplyAiAttribution(blameItemViewModel2, list, list2, num3, list.Count, newCommit, aiAttributions);
+			list3.Add(blameItemViewModel2);
 			for (int num6 = 1; num6 < list.Count - num3; num6++)
 			{
-				list2.Add(new BlameItemBodyViewModel(list[num3]));
+				list3.Add(new BlameItemBodyViewModel(list[num3]));
 			}
-			list2.Add(new DummyBlameItemViewModel(DummyRevision));
-			list2.Add(new DummyBlameItemBodyViewModel(DummyRevision));
+			list3.Add(new DummyBlameItemViewModel(DummyRevision));
+			list3.Add(new DummyBlameItemBodyViewModel(DummyRevision));
 			if (flag)
 			{
-				list2.Add(new DummyBlameItemBodyViewModel(DummyRevision));
+				list3.Add(new DummyBlameItemBodyViewModel(DummyRevision));
 			}
-			return list2.ToArray();
+			return list3.ToArray();
+		}
+
+		/// <summary>
+		/// 给 blame 块头部视图模型打 AI 归属徽标。
+		/// 仅当该块属于当前被 blame 的提交（新增行），且其中有行命中 git-ai 归属区间时设置。
+		/// </summary>
+		/// <param name="header">块头部视图模型（XAML 徽标绑定其 AiBadgeVisibility）。</param>
+		/// <param name="revisions">按显示顺序排列的行归属（与 lineNumbers 平行）。</param>
+		/// <param name="lineNumbers">每行对应的新文件行号（1-based，0 = 仅旧文件的删除行）。</param>
+		/// <param name="start">块起始下标（含）。</param>
+		/// <param name="end">块结束下标（不含）。</param>
+		/// <param name="newCommit">当前被 blame 的提交。</param>
+		/// <param name="aiAttributions">git-ai diff 归属区间（空 = 功能未启用）。</param>
+		private static void ApplyAiAttribution(BlameItemViewModel header, List<Revision> revisions, List<int> lineNumbers, int start, int end, Revision newCommit, List<GitAiLineAttribution> aiAttributions)
+		{
+			if (aiAttributions.Count == 0 || end <= start || revisions[start].Sha != newCommit.Sha)
+			{
+				return;
+			}
+			GitAiLineAttribution first = null;
+			int num = 0;
+			for (int i = start; i < end; i++)
+			{
+				int lineNumber = lineNumbers[i];
+				if (lineNumber <= 0)
+				{
+					continue;
+				}
+				GitAiLineAttribution gitAiLineAttribution = IReadOnlyListExtensions.FirstItem(aiAttributions, (GitAiLineAttribution x) => x.Contains(lineNumber));
+				if (gitAiLineAttribution != null)
+				{
+					num++;
+					if (first == null)
+					{
+						first = gitAiLineAttribution;
+					}
+				}
+			}
+			if (first != null)
+			{
+				header.SetAiAttribution(first, num, end - start);
+			}
 		}
 
 		private static Revision[] Expand(GetBlameGitCommand.BlameChunk[] chunks)
