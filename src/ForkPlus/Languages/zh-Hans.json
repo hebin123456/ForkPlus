@@ -6,6 +6,8 @@
     "Custom git-ai Instance...": "自定义 git-ai 实例...",
     "Select git-ai instance": "选择 git-ai 实例",
     "Enable AI attribution (git-ai)": "启用 AI 归属（git-ai）",
+    "Report ForkPlus AI edits to git-ai (checkpoint)": "将 ForkPlus AI 的修改上报给 git-ai（checkpoint）",
+    "When ForkPlus AI (AI development / code review) modifies files, report a git-ai checkpoint so the edits are attributed as AI-generated": "当 ForkPlus AI（AI 开发 / 代码审查）修改文件时，向 git-ai 上报 checkpoint，使这些修改被标记为 AI 生成",
     "AI-generated": "AI 生成",
     "{0} of {1} lines in this block": "此代码块共 {1} 行，其中 {0} 行",
     "Committed by {0}": "由 {0} 提交",

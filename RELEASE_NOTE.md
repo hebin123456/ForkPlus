@@ -2,6 +2,19 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v3.13.2
+
+### 新功能
+
+- **ForkPlus 内置 AI 接入 git-ai checkpoint**：AI 开发与 AI 代码审查修改的文件现在会自动上报给 git-ai，进入其作者归属体系（refs/notes/ai），提交后可在 Blame 视图与统计页看到 "ForkPlus" 智能体的行级归属：
+  - **遵循官方 agent-v1 preset 协议**：AI 编辑文件前上报 human 检查点（把上次 AI 插入之后的人工改动标记为人类，并附带 will_edit_filepaths 让 git-ai 收窄 diff 范围），编辑完成后上报 ai_agent 检查点（携带完整对话 transcript、agent 名 ForkPlus、模型、会话 id 与实际编辑的文件列表）。
+  - **AI 开发窗口**：每轮 AI 修改文件前后自动打检查点；transcript 取自完整多轮对话历史（工具调用中间轮次天然被过滤，符合协议建议）；清空对话时会话 id 自动重置。
+  - **AI 代码审查**：应用审查建议（Apply suggestion）前后自动打检查点，transcript 如实记录审查建议原文。
+  - **独立开关**：偏好设置 → Git 新增 "将 ForkPlus AI 的修改上报给 git-ai（checkpoint）" 复选框（默认开启），与 "启用 AI 归属" 总开关独立控制；需两者同时开启且 git-ai 可用才生效。
+  - **完全无感降级**：checkpoint 上报全部尽力而为——git-ai 未安装、版本过旧不识别 agent-v1、或上报失败时仅记日志并静默跳过，绝不影响 AI 功能本身的文件修改；上报带 15 秒超时，编辑后的上报在线程池执行，不阻塞 UI。
+  - **基础设施**：ShellRequest 新增标准输入（stdin）支持（agent-v1 协议要求 JSON 走 stdin），读取输出与写入输入并行处理避免管道死锁。
+  - 8 种语言补齐开关文案与提示翻译。
+
 ## v3.13.1
 
 ### 性能优化

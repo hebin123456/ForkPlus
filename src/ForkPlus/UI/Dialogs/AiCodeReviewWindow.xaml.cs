@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
+using ForkPlus;
 using ForkPlus.Accounts;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git;
@@ -72,6 +73,9 @@ namespace ForkPlus.UI.Dialogs
 		private string _aiReviewStatusMessage;
 
 		private readonly Dictionary<string, string> _fileReviewHtmlCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+		// git-ai checkpoint 会话 id：同一审查窗口内保持不变（agent-v1 协议要求）
+		private readonly string _aiConversationId = Guid.NewGuid().ToString();
 
 		private const int AiResultColumn = 2;
 
@@ -898,8 +902,13 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 				string updated = content.Remove(matchIndex, suggestion.OldText.Length).Insert(matchIndex, suggestion.NewText);
-				File.WriteAllText(filePath, updated, Encoding.UTF8);
-				_suggestions.RemoveAt(index);
+			// git-ai checkpoint（编辑前）：把上次 AI 插入之后的人工改动标记为 human（agent-v1 协议）。
+			// 必须先于文件写入完成，因此同步执行（checkpoint 是本地操作，亚秒级）；失败静默跳过。
+			ReportGitAiCheckpointBeforeWrite(suggestion.File);
+			File.WriteAllText(filePath, updated, Encoding.UTF8);
+			// git-ai checkpoint（编辑后）：文件已写入，把本次 AI 修改上报为 ai_agent（后台执行，不阻塞 UI）
+			ReportGitAiCheckpointAfterWrite(suggestion.File, suggestion.Comment);
+			_suggestions.RemoveAt(index);
 				_aiReviewStatusMessage = PreferencesLocalization.FormatCurrent("Applied suggestion to {0}.", suggestion.File);
 				RenderAiReviewOutput();
 				_repositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
@@ -919,6 +928,57 @@ namespace ForkPlus.UI.Dialogs
 			}
 			return Regex.Replace(markdown, "```forkplus-ai-suggestions\\s*[\\s\\S]*?```", "", RegexOptions.IgnoreCase).Trim();
 		}
+
+		#region git-ai checkpoint 上报
+
+		/// <summary>
+		/// 应用 AI 审查建议前上报 human 检查点（agent-v1 协议）：把上次 AI 插入之后的
+		/// 工作区改动标记为人类编写。同步执行（须先于文件写入完成），失败静默跳过。
+		/// </summary>
+		private void ReportGitAiCheckpointBeforeWrite(string file)
+		{
+			if (!App.IsAiCheckpointReportingEnabled || string.IsNullOrWhiteSpace(file))
+			{
+				return;
+			}
+			GitModule gitModule = _repositoryUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			new GitAiCheckpointShellCommand().ReportHumanCheckpoint(gitModule, App.GitAiPath, new string[1] { file });
+		}
+
+		/// <summary>
+		/// 应用 AI 审查建议后上报 ai_agent 检查点（agent-v1 协议）：把本次修改标记为 AI 生成，
+		/// transcript 携带审查建议原文。转发线程池执行，不阻塞 UI；失败静默跳过。
+		/// </summary>
+		private void ReportGitAiCheckpointAfterWrite(string file, string comment)
+		{
+			if (!App.IsAiCheckpointReportingEnabled || string.IsNullOrWhiteSpace(file))
+			{
+				return;
+			}
+			GitModule gitModule = _repositoryUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			// transcript：单条 user 消息如实描述本次 AI 修改的来源（审查建议）
+			List<GitAiCheckpointShellCommand.TranscriptMessage> transcript = new List<GitAiCheckpointShellCommand.TranscriptMessage>
+			{
+				new GitAiCheckpointShellCommand.TranscriptMessage("user", "AI code review suggestion for " + file + ": " + (comment ?? ""))
+			};
+			string model = ForkPlusSettings.Default.AiReviewSelectedModel;
+			string conversationId = _aiConversationId;
+			string gitAiPath = App.GitAiPath;
+			System.Threading.ThreadPool.QueueUserWorkItem(delegate
+			{
+				new GitAiCheckpointShellCommand().ReportAiCheckpoint(gitModule, gitAiPath, model, conversationId, new string[1] { file }, transcript);
+			});
+		}
+
+		#endregion
 
 		private void ApplyAiReviewResult(AiCodeReviewTarget target, string displayMarkdown, string rawMarkdown, string html, bool replaceAll)
 		{

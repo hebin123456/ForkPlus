@@ -201,6 +201,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			RefreshGitMmInstanceComboBox();
 			RefreshGitAiInstanceComboBox();
 			AiAttributionCheckBox.IsChecked = ForkPlusSettings.Default.AiAttributionEnabled;
+		AiCheckpointCheckBox.IsChecked = ForkPlusSettings.Default.AiCheckpointReportingEnabled;
 			VerboseGitOutputCheckBox.IsChecked = ForkPlusSettings.Default.VerboseGitOutput;
 			VerboseGitOutputCheckBox.ToolTip = new TextBlock
 			{
@@ -611,6 +612,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 	private void AiAttributionCheckBox_Checked(object sender, RoutedEventArgs e)
 	{
 		ForkPlusSettings.Default.AiAttributionEnabled = AiAttributionCheckBox.IsChecked.GetValueOrDefault();
+	}
+
+	private void AiCheckpointCheckBox_Checked(object sender, RoutedEventArgs e)
+	{
+		ForkPlusSettings.Default.AiCheckpointReportingEnabled = AiCheckpointCheckBox.IsChecked.GetValueOrDefault();
 	}
 
 	}

@@ -270,6 +270,12 @@ namespace ForkPlus
 		public static bool IsAiAttributionEnabled => ForkPlusSettings.Default.AiAttributionEnabled && GitAiPath != null;
 
 		/// <summary>
+		/// 是否把 ForkPlus 内置 AI（AI 开发 / AI 代码审查）的文件修改上报给 git-ai checkpoint。
+		/// 需同时满足：总开关开启、checkpoint 上报开关开启、git-ai 可用。
+		/// </summary>
+		public static bool IsAiCheckpointReportingEnabled => IsAiAttributionEnabled && ForkPlusSettings.Default.AiCheckpointReportingEnabled;
+
+		/// <summary>
 		/// 在 PATH 环境变量中查找指定可执行文件，返回第一个匹配的完整路径；未找到返回 null。
 		/// </summary>
 		public static string FindExecutableInPath(string fileName)

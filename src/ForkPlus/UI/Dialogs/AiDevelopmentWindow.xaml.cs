@@ -51,6 +51,9 @@ namespace ForkPlus.UI.Dialogs
 		// 多轮对话记忆：按顺序存储历史 user/assistant 消息（不含 system prompt）
 		private readonly List<JObject> _conversationHistory = new List<JObject>();
 
+		// git-ai checkpoint 会话 id：同一对话线程内保持不变（agent-v1 协议要求），清空对话时重置
+		private string _aiConversationId = Guid.NewGuid().ToString();
+
 		// 单轮对话最大保留条数（防止 token 超限），超出时触发自动压缩
 		private const int MaxHistoryMessages = 20;
 
@@ -536,14 +539,18 @@ namespace ForkPlus.UI.Dialogs
 					}
 
 					// Parse AI response for file changes
-					ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
+				ParsedAiChanges parsedChanges = ParseAiResponse(aiResponse);
 
-						base.Dispatcher.Async(delegate
+				// git-ai checkpoint（编辑前）：把上次 AI 修改之后的人工改动标记为 human（agent-v1 协议）。
+				// 在本后台线程同步执行并先于下方的文件写入派发，保证顺序正确；失败静默跳过。
+				ReportHumanCheckpointBeforeAiEdits(parsedChanges);
+
+					base.Dispatcher.Async(delegate
+					{
+						try
 						{
-							try
-							{
-								// Apply file changes
-								List<AiFileChange> appliedChanges = ApplyFileChanges(parsedChanges, beforeContents);
+							// Apply file changes
+							List<AiFileChange> appliedChanges = ApplyFileChanges(parsedChanges, beforeContents);
 
 								if (appliedChanges.Count > 0)
 								{
@@ -553,9 +560,12 @@ namespace ForkPlus.UI.Dialogs
 									_fileChanges.AddRange(appliedChanges);
 									_lastBeforeContents = beforeContents;
 									ShowDiffResults(appliedChanges);
-									AddStatusMessage(
-										PreferencesLocalization.FormatCurrent("AI modified {0} files", appliedChanges.Count),
-										Brushes.Green);
+								AddStatusMessage(
+									PreferencesLocalization.FormatCurrent("AI modified {0} files", appliedChanges.Count),
+									Brushes.Green);
+								// git-ai checkpoint（编辑后）：文件已写入完毕，把本次 AI 修改上报为
+								// ai_agent（携带对话 transcript/模型/会话 id）。后台执行，不阻塞 UI。
+								ReportAiCheckpointAfterAiEdits(appliedChanges);
 								}
 								else
 								{
@@ -998,6 +1008,8 @@ namespace ForkPlus.UI.Dialogs
 		private void ClearConversation()
 		{
 			_conversationHistory.Clear();
+			// 对话线程结束，git-ai checkpoint 会话 id 随之重置
+			_aiConversationId = Guid.NewGuid().ToString();
 			_fileChanges.Clear();
 			_lastBeforeContents.Clear();
 			_streamingWebView = null;
@@ -1937,6 +1949,91 @@ Additionally, the user has defined the following coding standards / skills that 
 
 			return appliedChanges;
 		}
+
+		#region git-ai checkpoint 上报
+
+		/// <summary>
+		/// AI 编辑文件前上报 human 检查点（agent-v1 协议）：把上次 AI 插入之后到当前时刻的
+		/// 工作区改动标记为人类编写；will_edit_filepaths 让 git-ai 把 diff 收窄到即将编辑的文件。
+		/// 在应用文件修改的后台线程同步调用（先于文件写入完成），失败静默跳过。
+		/// </summary>
+		private void ReportHumanCheckpointBeforeAiEdits(ParsedAiChanges parsedChanges)
+		{
+			if (!App.IsAiCheckpointReportingEnabled || parsedChanges == null || parsedChanges.Files.Count == 0)
+			{
+				return;
+			}
+			GitModule gitModule = _gitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			List<string> willEdit = new List<string>();
+			foreach (ParsedFileChange fileChange in parsedChanges.Files)
+			{
+				if (!string.IsNullOrWhiteSpace(fileChange.FilePath))
+				{
+					willEdit.Add(fileChange.FilePath);
+				}
+			}
+			if (willEdit.Count == 0)
+			{
+				return;
+			}
+			new GitAiCheckpointShellCommand().ReportHumanCheckpoint(gitModule, App.GitAiPath, willEdit);
+		}
+
+		/// <summary>
+		/// AI 编辑文件后上报 ai_agent 检查点（agent-v1 协议）：把本次 AI 修改标记为 AI 生成，
+		/// 携带完整对话 transcript、模型与会话 id，之后可在 Blame 视图 / 统计页看到 ForkPlus AI 归属。
+		/// 必须在文件写入完成后调用；内部转发到线程池执行，不阻塞 UI。失败静默跳过。
+		/// </summary>
+		private void ReportAiCheckpointAfterAiEdits(List<AiFileChange> appliedChanges)
+		{
+			if (!App.IsAiCheckpointReportingEnabled || appliedChanges == null || appliedChanges.Count == 0)
+			{
+				return;
+			}
+			GitModule gitModule = _gitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			List<string> editedFiles = new List<string>();
+			foreach (AiFileChange change in appliedChanges)
+			{
+				if (!string.IsNullOrWhiteSpace(change.FilePath))
+				{
+					editedFiles.Add(change.FilePath);
+				}
+			}
+			if (editedFiles.Count == 0)
+			{
+				return;
+			}
+			// 快照当前对话作为 transcript（此刻已包含本轮 user 需求 + assistant 回复；
+			// 工具调用中间轮次不入 _conversationHistory，天然符合"过滤工具结果"的协议建议）
+			List<GitAiCheckpointShellCommand.TranscriptMessage> transcript = new List<GitAiCheckpointShellCommand.TranscriptMessage>();
+			foreach (JObject message in _conversationHistory)
+			{
+				string role = message["role"]?.Value<string>();
+				string content = message["content"]?.Value<string>();
+				if (string.IsNullOrWhiteSpace(content))
+				{
+					continue;
+				}
+				transcript.Add(new GitAiCheckpointShellCommand.TranscriptMessage(role == "assistant" ? "assistant" : "user", content));
+			}
+			string model = ForkPlusSettings.Default.AiReviewSelectedModel;
+			string conversationId = _aiConversationId;
+			string gitAiPath = App.GitAiPath;
+			System.Threading.ThreadPool.QueueUserWorkItem(delegate
+			{
+				new GitAiCheckpointShellCommand().ReportAiCheckpoint(gitModule, gitAiPath, model, conversationId, editedFiles, transcript);
+			});
+		}
+
+		#endregion
 
 		private void ShowDiffResults(List<AiFileChange> changes)
 		{

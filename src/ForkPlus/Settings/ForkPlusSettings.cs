@@ -1104,6 +1104,8 @@ namespace ForkPlus.Settings
 
 		private bool _aiAttributionEnabled = true;
 
+		private bool _aiCheckpointReportingEnabled = true;
+
 		private bool _verboseGitOutput;
 
 		private string[] _sshKeys;
@@ -2526,6 +2528,22 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>
+		/// 是否把 ForkPlus 内置 AI（AI 开发 / AI 代码审查）的文件修改上报给 git-ai checkpoint，
+		/// 使其进入 git-ai 的作者归属体系。默认开启；需同时开启 AiAttributionEnabled 且 git-ai 可用。
+		/// </summary>
+		public bool AiCheckpointReportingEnabled
+		{
+			get
+			{
+				return _aiCheckpointReportingEnabled;
+			}
+			set
+			{
+				_aiCheckpointReportingEnabled = value;
+			}
+		}
+
 		public bool VerboseGitOutput
 		{
 			get
@@ -2818,6 +2836,7 @@ namespace ForkPlus.Settings
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
 			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? true;
+			bool aiCheckpointReportingEnabled = json["AiCheckpointReportingEnabled"]?.Value<bool>() ?? true;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
 			string recentPatchDirectory = json["RecentPatchDirectory"]?.Value<string>();
@@ -2942,6 +2961,7 @@ namespace ForkPlus.Settings
 				GitMmInstancePath = gitMmInstancePath,
 				GitAiInstancePath = gitAiInstancePath,
 				AiAttributionEnabled = aiAttributionEnabled,
+				AiCheckpointReportingEnabled = aiCheckpointReportingEnabled,
 				VerboseGitOutput = verboseGitOutput,
 				SshKeys = sshKeys,
 				RecentPatchDirectory = recentPatchDirectory,
@@ -3505,6 +3525,10 @@ namespace ForkPlus.Settings
 			{
 				"AiAttributionEnabled",
 				new JValue(target.AiAttributionEnabled)
+			},
+			{
+				"AiCheckpointReportingEnabled",
+				new JValue(target.AiCheckpointReportingEnabled)
 			},
 				{
 					"VerboseGitOutput",

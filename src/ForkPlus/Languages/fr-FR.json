@@ -6,6 +6,8 @@
     "Custom git-ai Instance...": "Instance git-ai personnalisée...",
     "Select git-ai instance": "Sélectionner l'instance git-ai",
     "Enable AI attribution (git-ai)": "Activer l'attribution IA (git-ai)",
+    "Report ForkPlus AI edits to git-ai (checkpoint)": "Signaler les modifications de l'IA ForkPlus à git-ai (checkpoint)",
+    "When ForkPlus AI (AI development / code review) modifies files, report a git-ai checkpoint so the edits are attributed as AI-generated": "Quand l'IA ForkPlus (développement IA / revue de code) modifie des fichiers, signale un checkpoint git-ai afin que les modifications soient attribuées comme générées par l'IA",
     "AI-generated": "Généré par l'IA",
     "{0} of {1} lines in this block": "{0} lignes sur {1} dans ce bloc",
     "Committed by {0}": "Commité par {0}",

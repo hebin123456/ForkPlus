@@ -6,6 +6,8 @@
     "Custom git-ai Instance...": "カスタム git-ai インスタンス...",
     "Select git-ai instance": "git-ai インスタンスを選択",
     "Enable AI attribution (git-ai)": "AI 帰属を有効にする（git-ai）",
+    "Report ForkPlus AI edits to git-ai (checkpoint)": "ForkPlus AI の編集を git-ai に報告（checkpoint）",
+    "When ForkPlus AI (AI development / code review) modifies files, report a git-ai checkpoint so the edits are attributed as AI-generated": "ForkPlus AI（AI 開発 / コードレビュー）がファイルを変更した際、git-ai に checkpoint を報告して AI 生成コードとして帰属させます",
     "AI-generated": "AI 生成",
     "{0} of {1} lines in this block": "このブロックの {1} 行のうち {0} 行",
     "Committed by {0}": "{0} がコミット",

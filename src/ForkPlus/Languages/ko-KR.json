@@ -6,6 +6,8 @@
     "Custom git-ai Instance...": "사용자 지정 git-ai 인스턴스...",
     "Select git-ai instance": "git-ai 인스턴스 선택",
     "Enable AI attribution (git-ai)": "AI 귀속 사용(git-ai)",
+    "Report ForkPlus AI edits to git-ai (checkpoint)": "ForkPlus AI 편집 내용을 git-ai에 보고(checkpoint)",
+    "When ForkPlus AI (AI development / code review) modifies files, report a git-ai checkpoint so the edits are attributed as AI-generated": "ForkPlus AI(AI 개발 / 코드 리뷰)가 파일을 수정하면 git-ai에 checkpoint를 보고하여 AI 생성 코드로 귀속시킵니다",
     "AI-generated": "AI 생성",
     "{0} of {1} lines in this block": "이 블록의 {1}줄 중 {0}줄",
     "Committed by {0}": "{0}이(가) 커밋함",

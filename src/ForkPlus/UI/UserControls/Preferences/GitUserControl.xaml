@@ -38,6 +38,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
     <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource GitInstanceComboBoxItemStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox">
@@ -86,5 +87,6 @@
       </ComboBox.ItemTemplate>
     </ComboBox>
     <CheckBox Grid.Row="9" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable AI attribution (git-ai)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="AiAttributionCheckBox_Checked" Unchecked="AiAttributionCheckBox_Checked" x:Name="AiAttributionCheckBox" />
+    <CheckBox Grid.Row="10" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Report ForkPlus AI edits to git-ai (checkpoint)" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Checked="AiCheckpointCheckBox_Checked" Unchecked="AiCheckpointCheckBox_Checked" x:Name="AiCheckpointCheckBox" ToolTip="When ForkPlus AI (AI development / code review) modifies files, report a git-ai checkpoint so the edits are attributed as AI-generated" />
   </Grid>
 </UserControl>

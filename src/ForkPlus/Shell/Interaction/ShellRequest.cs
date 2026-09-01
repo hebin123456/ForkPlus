@@ -17,6 +17,15 @@ namespace ForkPlus.Shell.Interaction
 
 		public string FilePath { get; }
 
+		/// <summary>
+		/// 写入子进程标准输入的内容（可选）。
+		/// 设置后 Execute 会重定向 stdin、写入该内容并关闭流——用于
+		/// <c>git-ai checkpoint agent-v1 --hook-input stdin</c> 这类从 stdin 接收 JSON 的命令。
+		/// 未设置（null）时行为与原来完全一致。
+		/// </summary>
+		[Null]
+		public string StandardInput { get; set; }
+
 		public ShellRequest([Null] string workingDirectory, string filePath, string[] arguments)
 		{
 			WorkingDirectory = workingDirectory;
@@ -43,8 +52,10 @@ namespace ForkPlus.Shell.Interaction
 			Process process = new Process();
 			try
 			{
-				process.StartInfo = CreateProcessStartInfo();
+				process.StartInfo = CreateProcessStartInfo(StandardInput != null);
 				process.Start();
+				// 先启动 stdout/stderr 读取再写 stdin：若子进程输出先填满管道缓冲区而无人读取，
+				// 会停止消费 stdin 导致 Write 死锁（transcript JSON 可达数十 KB）
 				Task<string> stdoutTask = Task.Run(delegate
 				{
 					return process.StandardOutput.ReadToEnd();
@@ -53,6 +64,19 @@ namespace ForkPlus.Shell.Interaction
 				{
 					return process.StandardError.ReadToEnd();
 				});
+				if (StandardInput != null)
+				{
+					try
+					{
+						process.StandardInput.Write(StandardInput);
+						process.StandardInput.Close();
+					}
+					catch (Exception ex2)
+					{
+						// 子进程可能提前退出（如 git-ai 版本过旧不认识 agent-v1 preset），写 stdin 失败不影响结果读取
+						Log.Warn("Failed to write standard input for '" + FilePath + " " + argumentsString + "': " + ex2.Message);
+					}
+				}
 				bool exited;
 				if (timeoutMilliseconds > 0)
 				{
