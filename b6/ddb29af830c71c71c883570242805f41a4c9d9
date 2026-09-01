@@ -1,0 +1,30 @@
+RELEASE_NOTE.md
+  h_b23a6a8439c0dd 5-14
+src/ForkPlus/Git/Commands/GetGitAiDiffAttributionGitCommand.cs
+  h_b23a6a8439c0dd 16-22,33-38,41,45-46,49-54,58-59
+src/ForkPlus/Git/Commands/GetGitAiStatsGitCommand.cs
+  h_b23a6a8439c0dd 20-26,31-32,39-46,49,54-56
+src/ForkPlus/Git/Commands/GitAiResultCache.cs
+  h_b23a6a8439c0dd 1-130
+src/ForkPlus/Properties/AssemblyInfo.cs
+  h_b23a6a8439c0dd 18-19,22
+src/ForkPlus/Shell/Interaction/ShellRequest.cs
+  h_b23a6a8439c0dd 28-38,48,50,52-73,76,79,90-105
+src/ForkPlus/UI/Dialogs/BlameItemViewModel.cs
+  h_b23a6a8439c0dd 76-77,82,86,90-94,101-103,113-119
+src/ForkPlus/UI/Dialogs/BlameWindow.xaml.cs
+  h_b23a6a8439c0dd 285-287,289-293,302,313-326,349-354,406-408,410-412,422-425,483-535
+src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs
+  h_b23a6a8439c0dd 901,904,911-914,928,933,950,952-953,959-960,962,967,969-977,1036-1038
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b6ddb29af830c71c71c883570242805f41a4c9d9",
+  "prompts": {},
+  "humans": {
+    "h_b23a6a8439c0dd": {
+      "author": "unknown"
+    }
+  }
+}
