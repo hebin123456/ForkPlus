@@ -1,0 +1,104 @@
+RELEASE_NOTE.md
+  h_b23a6a8439c0dd 5-15
+src/ForkPlus/App.xaml.cs
+  h_b23a6a8439c0dd 178-204,206-223,225-233,235-236,238-239,241-251,253-257,262,267-271
+src/ForkPlus/Git/Commands/GetGitAiDiffAttributionGitCommand.cs
+  h_b23a6a8439c0dd 1-51
+src/ForkPlus/Git/Commands/GetGitAiStatsGitCommand.cs
+  h_b23a6a8439c0dd 1-48
+src/ForkPlus/Git/Commands/GetGitAiVersionShellCommand.cs
+  h_b23a6a8439c0dd 1-52
+src/ForkPlus/Git/Commands/GitAiModels.cs
+  h_b23a6a8439c0dd 1-420
+src/ForkPlus/Git/Commands/GitAiVersionChecker.cs
+  h_b23a6a8439c0dd 1-99
+src/ForkPlus/Languages/de-DE.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/es-ES.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/fr-FR.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/ja-JP.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/ko-KR.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/zh-Hans.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Languages/zh-Hant.json
+  h_b23a6a8439c0dd 1,5-26
+src/ForkPlus/Properties/AssemblyInfo.cs
+  h_b23a6a8439c0dd 18-19,22
+src/ForkPlus/Settings/ForkPlusSettings.cs
+  h_b23a6a8439c0dd 1103-1106,2504-2528,2819-2820,2943-2944,3498-3508
+src/ForkPlus/Theme/Styles/Brushes/Brushes.xaml
+  h_b23a6a8439c0dd 283-284
+src/ForkPlus/Theme/Styles/Brushes/Colors.BlueDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.BlueLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.CyanDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.CyanLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Dark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Dracula.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GreenDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GreenLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Light.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Monokai.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.RedDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.RedLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.YellowDark.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.YellowLight.xaml
+  h_b23a6a8439c0dd 293-294
+src/ForkPlus/UI/Dialogs/BlameItemViewModel.cs
+  h_b23a6a8439c0dd 4-6,30-75,90-107
+src/ForkPlus/UI/Dialogs/BlameWindow.xaml
+  h_b23a6a8439c0dd 13,19,28-32,37,45,53
+src/ForkPlus/UI/Dialogs/BlameWindow.xaml.cs
+  h_b23a6a8439c0dd 276-278,280-288,290,292-296,312-330,334-335,352,359,365,371,377,383-385,388,393-395,398,400-401,404-447
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.xaml
+  h_b23a6a8439c0dd 39-40,76-88
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.xaml.cs
+  h_b23a6a8439c0dd 92-96,189-190,202-203,502-615
+src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml
+  h_b23a6a8439c0dd 33,187-257
+src/ForkPlus/UI/UserControls/StatisticsUserControl.xaml.cs
+  h_b23a6a8439c0dd 73-92,329-337,384-391,428-429,879-1060
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "593010aa9aef8adba8915a1a75402d422360e254",
+  "prompts": {},
+  "humans": {
+    "h_b23a6a8439c0dd": {
+      "author": "unknown"
+    }
+  }
+}
