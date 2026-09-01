@@ -1,0 +1,46 @@
+RELEASE_NOTE.md
+  h_b23a6a8439c0dd 5-17
+src/ForkPlus/App.xaml.cs
+  h_b23a6a8439c0dd 272-277
+src/ForkPlus/Git/Commands/GitAiCheckpointShellCommand.cs
+  h_b23a6a8439c0dd 1-175
+src/ForkPlus/Languages/de-DE.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/es-ES.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/fr-FR.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/ja-JP.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/ko-KR.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/zh-Hans.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Languages/zh-Hant.json
+  h_b23a6a8439c0dd 9-10
+src/ForkPlus/Properties/AssemblyInfo.cs
+  h_b23a6a8439c0dd 18-19,22
+src/ForkPlus/Settings/ForkPlusSettings.cs
+  h_b23a6a8439c0dd 1107-1108,2531-2546,2839,2964,3528-3531
+src/ForkPlus/Shell/Interaction/ShellRequest.cs
+  h_b23a6a8439c0dd 20-28,55,57-58,67-79
+src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.xaml.cs
+  h_b23a6a8439c0dd 14,77-79,905-911,932-982
+src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.xaml.cs
+  h_b23a6a8439c0dd 54-56,542,544-550,552-553,563-568,1011-1012,1953-2037
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.xaml
+  h_b23a6a8439c0dd 41,90
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.xaml.cs
+  h_b23a6a8439c0dd 204,617-621
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "712c7eb2a172edbc8d16d22df416b6ccf9aad4b4",
+  "prompts": {},
+  "humans": {
+    "h_b23a6a8439c0dd": {
+      "author": "unknown"
+    }
+  }
+}
