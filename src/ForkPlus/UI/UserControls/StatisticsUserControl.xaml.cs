@@ -898,18 +898,20 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			RefreshAiAuthorship();
 		}
 
-		/// <summary>Refresh 按钮点击。用当前选中的区间重跑。</summary>
+		/// <summary>Refresh 按钮点击。用当前选中的区间重跑（跳过缓存强制刷新）。</summary>
 		private void AiRefreshButton_Click(object sender, RoutedEventArgs e)
 		{
-			RefreshAiAuthorship();
+			RefreshAiAuthorship(forceRefresh: true);
 		}
 
 		/// <summary>git 空树对象哈希。git-ai stats 约定 emptytree..HEAD 表示全历史（自仓库起点）。</summary>
 		private const string GitEmptyTreeSha = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
 		/// <summary>异步跑 git-ai stats 拿 AI 作者统计，更新饼图 + 工具列表 + 摘要。
-		/// 走 JobQueue 串行化，避免切换区间时并发 spawn。</summary>
-		private void RefreshAiAuthorship()
+		/// 走 JobQueue 串行化，避免切换区间时并发 spawn。命令内部带 LRU 缓存：
+		/// 同一区间的重复查询（再次打开统计页、切回同一区间）直接命中缓存秒出结果，
+		/// 仅 Refresh 按钮强制跳过缓存重查。</summary>
+		private void RefreshAiAuthorship(bool forceRefresh = false)
 		{
 			if (_gitModule == null || !App.IsAiAttributionEnabled)
 			{
@@ -923,11 +925,12 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 
 			// 复制一份避免闭包捕获到后续变化的值
 			int rangeCountCopy = _currentAiRangeCount;
+			bool forceRefreshCopy = forceRefresh;
 			GitModule gitModule = _gitModule;
 			_aiStatsJobQueue.Add("AiAuthorshipStats", delegate (JobMonitor monitor)
 			{
 				string revSpec = ComputeAiRangeSpec(gitModule, rangeCountCopy);
-				var result = new GetGitAiStatsGitCommand().Execute(gitModule, App.GitAiPath, revSpec);
+				var result = new GetGitAiStatsGitCommand().Execute(gitModule, App.GitAiPath, revSpec, forceRefreshCopy);
 				Dispatcher.Async(delegate
 				{
 					AiRefreshButton.IsEnabled = true;
@@ -944,27 +947,34 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 
 		/// <summary>
 		/// 计算 git-ai stats 的 revSpec：
-		/// 全历史 → emptytree..HEAD；最近 N 条 → rev-list 找到第 N+1 旧提交作为边界（old..HEAD），
+		/// 全历史 → emptytree..&lt;HEAD 的真实 sha&gt;；最近 N 条 → rev-list 找到第 N+1 旧提交作为边界（old..HEAD 同样解析为真实 sha），
 		/// 仓库提交数不足 N 时退化为全历史。
+		/// 区间下界与上界都解析成真实 sha 而非字面 "HEAD"：新提交产生后 revSpec 随之变化，
+		/// git-ai stats 的 LRU 缓存 key 才能正确失效，不会展示陈旧数据。
 		/// </summary>
 		private static string ComputeAiRangeSpec(GitModule gitModule, int commitCount)
 		{
-			if (commitCount <= 0)
-			{
-				return GitEmptyTreeSha + "..HEAD";
-			}
 			try
 			{
+				// 全历史只需 HEAD 一条；最近 N 条需要 N+1 条（第 N+1 旧提交是区间下界，不含）
+				int maxCount = commitCount <= 0 ? 1 : commitCount + 1;
 				var result = new ForkPlus.Git.Interaction.GitRequest(gitModule)
-					.Command("rev-list", "--max-count=" + (commitCount + 1), "HEAD")
+					.Command("rev-list", "--max-count=" + maxCount, "HEAD")
 					.Execute(silent: true);
 				if (result.Success && !string.IsNullOrWhiteSpace(result.Stdout))
 				{
 					string[] shas = result.Stdout.Split(Consts.Chars.NewLine, StringSplitOptions.RemoveEmptyEntries);
-					// rev-list 由新到旧输出。拿到 N+1 条说明历史足够长，最后一条是区间下界（不含）
-					if (shas.Length > commitCount)
+					if (shas.Length > 0)
 					{
-						return shas[shas.Length - 1].Trim() + "..HEAD";
+						// rev-list 由新到旧输出，第一行即 HEAD 的真实 sha
+						string headSha = shas[0].Trim();
+						// 最近 N 条且历史足够长：最后一条（第 N+1 旧）是区间下界（不含）
+						if (commitCount > 0 && shas.Length > commitCount)
+						{
+							return shas[shas.Length - 1].Trim() + ".." + headSha;
+						}
+						// 全历史，或仓库提交数不足 N 退化为全历史
+						return GitEmptyTreeSha + ".." + headSha;
 					}
 				}
 			}
@@ -1023,8 +1033,9 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			}
 			AiBreakdownListBox.ItemsSource = listItems;
 
-			// 摘要：AI 行数 / 总新增行数 / 占比；区间统计再附 authorship 覆盖情况
-			string rangeLabel = revSpec == GitEmptyTreeSha + "..HEAD" ? Translate("All history") : revSpec;
+			// 摘要：AI 行数 / 总新增行数 / 占比；区间统计再附 authorship 覆盖情况。
+			// 全历史的 revSpec 以空树哈希为下界（emptytree..headSha），据此显示"全部历史"标签。
+			string rangeLabel = revSpec != null && revSpec.StartsWith(GitEmptyTreeSha, StringComparison.Ordinal) ? Translate("All history") : revSpec;
 			if (stats.TotalCommits.HasValue)
 			{
 				AiSummary.Text = string.Format(CultureInfo.CurrentUICulture,

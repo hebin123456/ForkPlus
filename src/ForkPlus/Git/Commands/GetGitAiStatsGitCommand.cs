@@ -17,26 +17,43 @@ namespace ForkPlus.Git.Commands
 	public class GetGitAiStatsGitCommand
 	{
 		/// <summary>
-		/// 获取 AI 统计。
+		/// git-ai stats 超时（毫秒）。全历史/大区间统计可能要遍历大量提交的 notes，耗时可达数十秒；
+		/// 超时后返回失败（统计区显示错误，用户可重试），避免任务无限挂在 JobQueue 里。
+		/// </summary>
+		private const int TimeoutMilliseconds = 60000;
+
+		/// <summary>
+		/// 获取 AI 统计。命中缓存时零开销直接返回（再次打开统计页/切回同一区间秒出结果）。
 		/// </summary>
 		/// <param name="gitModule">仓库模块。</param>
 		/// <param name="gitAiPath">git-ai 可执行文件路径（App.GitAiPath），null 表示未安装。</param>
 		/// <param name="revSpec">统计目标：单提交（"HEAD"/sha）或区间（"a..b"）。null/空等同 "HEAD"。</param>
-		public GitCommandResult<GitAiStats> Execute(GitModule gitModule, [Null] string gitAiPath, [Null] string revSpec)
+		/// <param name="forceRefresh">true 时跳过缓存强制重查（统计页 Refresh 按钮使用）。</param>
+		public GitCommandResult<GitAiStats> Execute(GitModule gitModule, [Null] string gitAiPath, [Null] string revSpec, bool forceRefresh = false)
 		{
 			if (string.IsNullOrWhiteSpace(gitAiPath) || !File.Exists(gitAiPath))
 			{
 				return GitCommandResult<GitAiStats>.Failure(new GitCommandError.GenericError("git-ai not found. Install it from https://usegitai.com and configure the instance in Preferences → Git."));
 			}
 			string target = string.IsNullOrWhiteSpace(revSpec) ? "HEAD" : revSpec;
+			if (!forceRefresh)
+			{
+				GitAiStats cached = GitAiResultCache.GetStats(gitModule.Path, target);
+				if (cached != null)
+				{
+					return GitCommandResult<GitAiStats>.Success(cached);
+				}
+			}
 			try
 			{
-				GitRequestResult result = new ShellRequest(gitModule.Path, gitAiPath, new string[3] { "stats", target, "--json" }).Execute();
+				GitRequestResult result = new ShellRequest(gitModule.Path, gitAiPath, new string[3] { "stats", target, "--json" }).Execute(TimeoutMilliseconds);
 				if (!result.Success)
 				{
 					return GitCommandResult<GitAiStats>.Failure(new GitCommandError.GenericError("git-ai stats '" + target + "' failed: " + result.Stderr.Trim()));
 				}
-				return GitCommandResult<GitAiStats>.Success(GitAiStats.Decode(result.Stdout));
+				GitAiStats stats = GitAiStats.Decode(result.Stdout);
+				GitAiResultCache.PutStats(gitModule.Path, target, stats);
+				return GitCommandResult<GitAiStats>.Success(stats);
 			}
 			catch (Exception ex)
 			{

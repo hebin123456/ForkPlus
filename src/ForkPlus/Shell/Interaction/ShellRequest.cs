@@ -26,6 +26,17 @@ namespace ForkPlus.Shell.Interaction
 
 		public GitRequestResult Execute()
 		{
+			return Execute(0);
+		}
+
+		/// <summary>
+		/// 执行命令，可选超时（毫秒）。
+		/// 外部工具（如 git-ai）可能因 daemon 冷启动或大仓库而长时间不返回，
+		/// 超时后强制结束进程并返回失败结果（exit code -1、stderr 标注超时），调用方得以优雅降级。
+		/// </summary>
+		/// <param name="timeoutMilliseconds">超时毫秒数，小于等于 0 表示不设超时（与原 Execute 行为一致）。</param>
+		public GitRequestResult Execute(int timeoutMilliseconds)
+		{
 			string argumentsString = _command.ArgumentsString;
 			Benchmarker benchmarker = new Benchmarker("Running '" + FilePath + " " + argumentsString + "'");
 			Log.Info("Running '" + FilePath + " " + argumentsString + "'");
@@ -34,20 +45,38 @@ namespace ForkPlus.Shell.Interaction
 			{
 				process.StartInfo = CreateProcessStartInfo();
 				process.Start();
-				string error = string.Empty;
-				Task task = Task.Run(delegate
+				Task<string> stdoutTask = Task.Run(delegate
 				{
-					error = process.StandardError.ReadToEnd();
+					return process.StandardOutput.ReadToEnd();
 				});
-				string text = process.StandardOutput.ReadToEnd();
-				task.Wait();
-				process.WaitForExit();
+				Task<string> stderrTask = Task.Run(delegate
+				{
+					return process.StandardError.ReadToEnd();
+				});
+				bool exited;
+				if (timeoutMilliseconds > 0)
+				{
+					exited = process.WaitForExit(timeoutMilliseconds);
+				}
+				else
+				{
+					process.WaitForExit();
+					exited = true;
+				}
+				if (!exited)
+				{
+					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' timed out after " + timeoutMilliseconds + "ms, killing process");
+					TryKill(process);
+					return new GitRequestResult(-1, "", "Command timed out after " + timeoutMilliseconds + "ms: '" + FilePath + " " + argumentsString + "'");
+				}
+				string text = stdoutTask.Result;
+				string text2 = stderrTask.Result;
 				if (process.ExitCode != 0)
 				{
-					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' failed: '" + error + "'");
+					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' failed: '" + text2 + "'");
 				}
 				benchmarker.ReportElapsed();
-				return new GitRequestResult(process.ExitCode, text.ToString(), error.ToString());
+				return new GitRequestResult(process.ExitCode, text.ToString(), text2.ToString());
 			}
 			finally
 			{
@@ -55,6 +84,22 @@ namespace ForkPlus.Shell.Interaction
 				{
 					((IDisposable)process).Dispose();
 				}
+			}
+		}
+
+		/// <summary>尽力结束进程。进程已退出或无权限时静默忽略。</summary>
+		private static void TryKill(Process process)
+		{
+			try
+			{
+				if (process != null && !process.HasExited)
+				{
+					process.Kill();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to kill timed-out process: " + ex.Message);
 			}
 		}
 

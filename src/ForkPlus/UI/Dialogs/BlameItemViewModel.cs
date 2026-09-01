@@ -73,14 +73,23 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		private PropertyChangedEventHandler _propertyChanged;
+
 		public event PropertyChangedEventHandler PropertyChanged
 		{
 			add
 			{
+				_propertyChanged = (PropertyChangedEventHandler)Delegate.Combine(_propertyChanged, value);
 			}
 			remove
 			{
+				_propertyChanged = (PropertyChangedEventHandler)Delegate.Remove(_propertyChanged, value);
 			}
+		}
+
+		private void OnPropertyChanged(string propertyName)
+		{
+			_propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 		public BlameItemViewModel(Revision revision)
@@ -89,7 +98,9 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		/// <summary>
-		/// 设置 AI 归属信息（仅 BlameWindow.CreateBlameItems 调用）。
+		/// 设置 AI 归属信息（BlameWindow 加载流程调用）。
+		/// 归属数据可能在 blame 列表渲染完成后才异步到达（git-ai diff 与 git blame 并行执行），
+		/// 因此这里触发属性变更通知，让已绑定的 AI 徽标（可见性/tooltip）即时浮现，无需重建列表。
 		/// </summary>
 		/// <param name="attribution">命中的行级归属区间。</param>
 		/// <param name="attributedLineCount">块内带归属的行数。</param>
@@ -99,6 +110,13 @@ namespace ForkPlus.UI.Dialogs
 			AiAttribution = attribution;
 			AiAttributedLineCount = attributedLineCount;
 			TotalLineCount = totalLineCount;
+			OnPropertyChanged("AiAttribution");
+			OnPropertyChanged("AiAttributedLineCount");
+			OnPropertyChanged("TotalLineCount");
+			OnPropertyChanged("HasAiAttribution");
+			OnPropertyChanged("AiBadgeVisibility");
+			OnPropertyChanged("AiBadgeText");
+			OnPropertyChanged("AiBadgeToolTip");
 		}
 
 		private static string Translate(string text)

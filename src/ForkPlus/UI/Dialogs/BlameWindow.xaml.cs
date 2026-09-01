@@ -282,9 +282,15 @@ namespace ForkPlus.UI.Dialogs
 				}
 				else
 				{
-					// git-ai 行级归属：仅当前提交新增的行会有归属条目。
+					// git-ai 行级归属与 git blame 并行执行：blame 结果一到就渲染列表（BusyIndicator 立即消失），
+					// 归属数据（或缓存命中结果）异步到达后再通过属性变更通知补上 AI 徽标。
+					// 这样 blame 窗口不再被 git-ai 的耗时（首次 daemon 冷启动可达数秒）串行拖住。
 					// git-ai 未安装 / 用户关闭开关 / 仓库未使用 git-ai 时得到空列表，Blame 视图不显示 AI 徽标。
-					List<GitAiLineAttribution> aiAttributions = GetAiAttributions(gitModule, args);
+					Task<List<GitAiLineAttribution>> aiAttributionTask = Task.Run(delegate
+					{
+						return GetAiAttributions(gitModule, args);
+					});
+					List<BlameBlockContext> blockContexts = new List<BlameBlockContext>();
 					base.Dispatcher.Async(delegate
 					{
 						if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
@@ -293,7 +299,7 @@ namespace ForkPlus.UI.Dialogs
 							_undoManager.Add(args);
 							RefreshUndoControls();
 							Revision revision = IReadOnlyListExtensions.FirstItem(_revisions, (RevisionViewModel x) => x.Sha == args.Sha).Revision.Revision;
-							BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision, aiAttributions);
+							BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision, new List<GitAiLineAttribution>(), blockContexts);
 								if (RevisionListScrollViewer != null)
 								{
 									RevisionListScrollViewer.ScrollChanged -= RevisionListScrollViewer_ScrollChanged;
@@ -304,7 +310,20 @@ namespace ForkPlus.UI.Dialogs
 								BlameListBox.Show();
 							}
 						});
-					}
+					// 归属数据到达后补徽标。缓存命中时任务几乎立即完成，徽标与列表同时出现，无闪烁；
+					// 用户已切换到其他 blame 目标时（diff 不匹配）自动丢弃。
+					aiAttributionTask.ContinueWith(delegate (Task<List<GitAiLineAttribution>> completedTask)
+					{
+						if (completedTask.Status != TaskStatus.RanToCompletion)
+						{
+							return;
+						}
+						base.Dispatcher.Async(delegate
+						{
+							ApplyAiAttributions(diff, blockContexts, completedTask.Result);
+						});
+					});
+				}
 				}
 			}).Start();
 		}
@@ -327,7 +346,12 @@ namespace ForkPlus.UI.Dialogs
 			return aiResult.Result.GetAttributions(args.Filepath);
 		}
 
-		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit, List<GitAiLineAttribution> aiAttributions)
+		/// <summary>
+		/// 构建 blame 列表项。aiAttributions 为空时不打徽标；
+		/// blockContexts 非空时记录每个头部块的行号匹配上下文，
+		/// 供归属数据异步到达后重放 ApplyAiAttribution 补徽标（见 ApplyAiAttributions）。
+		/// </summary>
+		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit, List<GitAiLineAttribution> aiAttributions, [Null] List<BlameBlockContext> blockContexts = null)
 		{
 			Revision[] array = Expand(blameChunks);
 			List<Revision> list = new List<Revision>();
@@ -379,9 +403,13 @@ namespace ForkPlus.UI.Dialogs
 			for (int num4 = 0; num4 < list.Count; num4++)
 			{
 				if (num4 > 0 && list[num3].Sha != list[num4].Sha)
+			{
+				BlameItemViewModel blameItemViewModel = new BlameItemViewModel(list[num3]);
+				if (blockContexts != null)
 				{
-					BlameItemViewModel blameItemViewModel = new BlameItemViewModel(list[num3]);
-					ApplyAiAttribution(blameItemViewModel, list, list2, num3, num4, newCommit, aiAttributions);
+					blockContexts.Add(new BlameBlockContext(blameItemViewModel, list, list2, num3, num4, newCommit));
+				}
+				ApplyAiAttribution(blameItemViewModel, list, list2, num3, num4, newCommit, aiAttributions);
 					list3.Add(blameItemViewModel);
 					for (int num5 = 1; num5 < num4 - num3; num5++)
 					{
@@ -391,6 +419,10 @@ namespace ForkPlus.UI.Dialogs
 				}
 			}
 			BlameItemViewModel blameItemViewModel2 = new BlameItemViewModel(list[num3]);
+			if (blockContexts != null)
+			{
+				blockContexts.Add(new BlameBlockContext(blameItemViewModel2, list, list2, num3, list.Count, newCommit));
+			}
 			ApplyAiAttribution(blameItemViewModel2, list, list2, num3, list.Count, newCommit, aiAttributions);
 			list3.Add(blameItemViewModel2);
 			for (int num6 = 1; num6 < list.Count - num3; num6++)
@@ -445,6 +477,59 @@ namespace ForkPlus.UI.Dialogs
 			if (first != null)
 			{
 				header.SetAiAttribution(first, num, end - start);
+			}
+		}
+
+		/// <summary>
+		/// AI 归属数据异步到达后，把徽标补到已渲染的 blame 块上（BlameItemViewModel 触发属性变更通知，无需重建列表）。
+		/// 用户已切换到其他文件/提交（diff 不匹配）时丢弃，避免把徽标打到别的 blame 上。
+		/// 必须在 UI 线程调用。
+		/// </summary>
+		/// <param name="diff">本次 blame 对应的文件 diff，用作生命周期守卫。</param>
+		/// <param name="blockContexts">CreateBlameItems 记录的块上下文。</param>
+		/// <param name="aiAttributions">git-ai diff 归属区间。</param>
+		private void ApplyAiAttributions(Diff diff, List<BlameBlockContext> blockContexts, List<GitAiLineAttribution> aiAttributions)
+		{
+			if (aiAttributions == null || aiAttributions.Count == 0 || blockContexts == null || blockContexts.Count == 0)
+			{
+				return;
+			}
+			if (TextDiffControl.VisualPatch.VisualDiff.Node != diff)
+			{
+				return;
+			}
+			foreach (BlameBlockContext blockContext in blockContexts)
+			{
+				ApplyAiAttribution(blockContext.Header, blockContext.Revisions, blockContext.LineNumbers, blockContext.Start, blockContext.End, blockContext.NewCommit, aiAttributions);
+			}
+		}
+
+		/// <summary>
+		/// blame 块头部与行号匹配上下文。CreateBlameItems 构建列表时记录，
+		/// 供 AI 归属数据异步到达后重放 ApplyAiAttribution 补徽标（见 ApplyAiAttributions）。
+		/// </summary>
+		private sealed class BlameBlockContext
+		{
+			public readonly BlameItemViewModel Header;
+
+			public readonly List<Revision> Revisions;
+
+			public readonly List<int> LineNumbers;
+
+			public readonly int Start;
+
+			public readonly int End;
+
+			public readonly Revision NewCommit;
+
+			public BlameBlockContext(BlameItemViewModel header, List<Revision> revisions, List<int> lineNumbers, int start, int end, Revision newCommit)
+			{
+				Header = header;
+				Revisions = revisions;
+				LineNumbers = lineNumbers;
+				Start = start;
+				End = end;
+				NewCommit = newCommit;
 			}
 		}
 
