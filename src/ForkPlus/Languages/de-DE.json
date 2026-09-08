@@ -22,6 +22,8 @@
     "Accepted": "Akzeptiert",
     "Share": "Anteil",
     "Analyzing AI authorship...": "KI-Autorenschaft wird analysiert...",
+    "Unknown": "Unbekannt",
+    "Enable AI attribution in Preferences → Git to see AI authorship statistics.": "Aktiviere die KI-Zuschreibung unter Einstellungen → Git, um Statistiken zur KI-Autorenschaft zu sehen.",
     "Human": "Menschlich",
     "Mixed (AI + human edits)": "Gemischt (KI + menschliche Bearbeitung)",
     "{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits": "{0}: {1} von {2} hinzugefügten Zeilen sind KI-generiert ({3} %) · Autorenschaftsdaten bei {4} von {5} Commits",
@@ -2301,6 +2303,15 @@
     "Import Complete": "Import abgeschlossen",
     "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "Beim Import wird Ihre aktuelle ForkPlus-Konfiguration überschrieben.\nForkPlus wird nach dem Import neu gestartet.\n\nFortfahren?",
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Konfiguration erfolgreich importiert.\nForkPlus wird jetzt neu gestartet, um die neuen Einstellungen zu übernehmen.",
-    "Force push": "Force-Push"
+    "Force push": "Force-Push",
+    "Credentials": "Anmeldedaten",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Gespeicherte HTTP(S)-Anmeldedaten. Benutzernamen werden automatisch gespeichert; „Passwort merken“ füllt das Passwort im Dialog vor; „Nicht mehr fragen“ verwendet es stillschweigend. Hier können Anmeldedaten vorab hinzugefügt werden — der Schalter aktiviert die Abfrage jederzeit wieder.",
+    "Host (e.g. github.com)": "Host (z. B. github.com)",
+    "Ask Again for All Hosts": "Für alle Hosts erneut fragen",
+    "Never ask": "Nicht mehr fragen",
+    "Ask": "Fragen",
+    "No saved credentials yet.": "Noch keine gespeicherten Anmeldedaten.",
+    "Host": "Host",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Wenn aktiviert, werden diese Anmeldedaten stillschweigend verwendet; deaktivieren Sie den Schalter, um wieder gefragt zu werden."
   }
 }

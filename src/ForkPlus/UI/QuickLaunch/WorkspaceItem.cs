@@ -1,13 +1,16 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class WorkspaceItem : CommandProviderItem
 	{
-		public override ImageSource Icon => Application.Current.TryFindResource("WorkspaceIcon") as ImageSource;
+		public override global::Avalonia.Media.IImage Icon => Application.Current.TryFindResource("WorkspaceIcon") as global::Avalonia.Media.IImage;
 
-		public override ImageSource SelectedIcon => Application.Current.TryFindResource("WorkspaceIcon") as ImageSource;
+		public override global::Avalonia.Media.IImage SelectedIcon => Application.Current.TryFindResource("WorkspaceIcon") as global::Avalonia.Media.IImage;
 
 		public Workspace Workspace { get; }
 

@@ -1,8 +1,11 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.Tests
 {
@@ -15,10 +18,10 @@ namespace ForkPlus.Tests
 	public class WindowLocationStateCodecTests
 	{
 		[Theory]
-		[InlineData(100.0, 200.0, 1000.0, 600.0, WindowState.Normal)]
-		[InlineData(50.0, 75.0, 1920.0, 1080.0, WindowState.Maximized)]
-		[InlineData(0.0, 0.0, 800.0, 600.0, WindowState.Minimized)]
-		public void EncodeDecode_RoundTrip_PreservesAllFields(double left, double top, double width, double height, WindowState state)
+		[InlineData(100.0, 200.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal)]
+		[InlineData(50.0, 75.0, 1920.0, 1080.0, global::Avalonia.Controls.WindowState.Maximized)]
+		[InlineData(0.0, 0.0, 800.0, 600.0, global::Avalonia.Controls.WindowState.Minimized)]
+		public void EncodeDecode_RoundTrip_PreservesAllFields(double left, double top, double width, double height, global::Avalonia.Controls.WindowState state)
 		{
 			var original = new WindowLocationState(left, top, width, height, state);
 
@@ -59,7 +62,7 @@ namespace ForkPlus.Tests
 		{
 			// 守卫：序列化必须存 WPF WindowState 的枚举值（0/1/2），而不是 Win32 ShowCmd（1/2/3）。
 			// 最大化对应 WindowState.Maximized=2。若误存 ShowCmd=3，反序列化会得到未定义枚举值。
-			var maximized = new WindowLocationState(0, 0, 100, 100, WindowState.Maximized);
+			var maximized = new WindowLocationState(0, 0, 100, 100, global::Avalonia.Controls.WindowState.Maximized);
 			JObject json = CustomDecoders.Encode(maximized);
 
 			Assert.Equal(2, json["WindowState"].Value<int>());
@@ -69,12 +72,12 @@ namespace ForkPlus.Tests
 		public void EncodeDecode_MaximizedStateRoundTrips()
 		{
 			// 直接针对"窗口最大化记不住"的 bug：最大化状态经存取后必须仍是最大化。
-			var maximized = new WindowLocationState(10, 20, 1000, 700, WindowState.Maximized);
+			var maximized = new WindowLocationState(10, 20, 1000, 700, global::Avalonia.Controls.WindowState.Maximized);
 
 			JObject json = CustomDecoders.Encode(maximized);
 			WindowLocationState restored = CustomDecoders.DecodeWindowLocationState(json);
 
-			Assert.Equal(WindowState.Maximized, restored.WindowState);
+			Assert.Equal(global::Avalonia.Controls.WindowState.Maximized, restored.WindowState);
 		}
 	}
 }

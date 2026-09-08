@@ -1,14 +1,14 @@
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class RepositoryFileItem : CommandProviderItem
 	{
-		public override ImageSource Icon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
+		public override global::Avalonia.Media.IImage Icon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
 
-		public override ImageSource SelectedIcon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
+		public override global::Avalonia.Media.IImage SelectedIcon => IconTools.GetImageSourceForExtension(Path.GetExtension(FilePath));
 
 		public string FilePath { get; }
 

@@ -1,5 +1,7 @@
 namespace ForkPlus
 {
+	using System.Runtime.InteropServices;
+
 	public static class Consts
 	{
 		public static class ForkPlus
@@ -13,15 +15,23 @@ namespace ForkPlus
 
 			public static readonly string RepositorySettingsFilename = "fork-plus-settings";
 
-			public static readonly string AskPassFilename = "ForkPlus.AskPass.exe";
+			// Windows apphost 产物带 .exe 后缀；Linux/macOS 为无后缀可执行文件。
+			// 写死 .exe 会导致非 Windows 平台 File.Exists 找不到 helper（交互式变基/
+			// AskPass 凭证助手直接报 "Cannot find ... helper"）。
+			public static readonly string AskPassFilename = ExecutableName("ForkPlus.AskPass");
 
-			public static readonly string RIHelperFilename = "ForkPlus.RI.exe";
+			public static readonly string RIHelperFilename = ExecutableName("ForkPlus.RI");
 
-			public static readonly string BashFilename = "bash.exe";
+			public static readonly string BashFilename = ExecutableName("bash");
 
 			public static readonly string GitInstanceEnvVariable = "forkgitinstance";
 
 			public static readonly string Website = "https://hebin.me";
+
+			private static string ExecutableName(string filename)
+			{
+				return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? filename + ".exe" : filename;
+			}
 		}
 
 		public static class Env

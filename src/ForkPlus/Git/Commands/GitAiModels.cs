@@ -297,16 +297,16 @@ namespace ForkPlus.Git.Commands
 	}
 
 	/// <summary>
-	/// <c>git-ai stats --json</c> 的解析结果。同时兼容两种 JSON 形态（git-ai 1.x 实测）：
-	/// 单提交：根级 { human_additions, ai_additions, ai_accepted, ..., tool_model_breakdown }；
+	/// <c>git-ai stats --json</c> 的解析结果。同时兼容两种 JSON 形态（git-ai 1.7 实测）：
+	/// 单提交：根级 { human_additions, unknown_additions, ai_additions, ai_accepted, ..., tool_model_breakdown }；
 	/// 区间：{ authorship_stats: { total_commits, commits_with_authorship, ... }, range_stats: { 同单提交 } }。
 	/// </summary>
 	public class GitAiStats
 	{
 		public long HumanAdditions { get; }
 
-		/// <summary>AI 生成后被人类改写过的行数（同时计入 human_additions 与 ai_additions，是二者交集）。</summary>
-		public long MixedAdditions { get; }
+		/// <summary>无作者归属数据的新增行数（提交未记录 git-ai authorship note）。</summary>
+		public long UnknownAdditions { get; }
 
 		public long AiAdditions { get; }
 
@@ -325,10 +325,10 @@ namespace ForkPlus.Git.Commands
 
 		public GitAiToolStats[] Breakdown { get; }
 
-		public GitAiStats(long humanAdditions, long mixedAdditions, long aiAdditions, long aiAccepted, long gitDiffDeletedLines, long gitDiffAddedLines, long? totalCommits, long? commitsWithAuthorship, GitAiToolStats[] breakdown)
+		public GitAiStats(long humanAdditions, long unknownAdditions, long aiAdditions, long aiAccepted, long gitDiffDeletedLines, long gitDiffAddedLines, long? totalCommits, long? commitsWithAuthorship, GitAiToolStats[] breakdown)
 		{
 			HumanAdditions = humanAdditions;
-			MixedAdditions = mixedAdditions;
+			UnknownAdditions = unknownAdditions;
 			AiAdditions = aiAdditions;
 			AiAccepted = aiAccepted;
 			GitDiffDeletedLines = gitDiffDeletedLines;
@@ -357,8 +357,7 @@ namespace ForkPlus.Git.Commands
 		{
 			get
 			{
-				long mixed = MixedAdditions;
-				return mixed > 0 ? Math.Max(0L, HumanAdditions - mixed) : HumanAdditions;
+				return HumanAdditions;
 			}
 		}
 
@@ -385,7 +384,7 @@ namespace ForkPlus.Git.Commands
 				statsNode = root;
 			}
 			long humanAdditions = statsNode["human_additions"]?.Value<long>() ?? 0L;
-			long mixedAdditions = statsNode["mixed_additions"]?.Value<long>() ?? 0L;
+			long unknownAdditions = statsNode["unknown_additions"]?.Value<long>() ?? 0L;
 			long aiAdditions = statsNode["ai_additions"]?.Value<long>() ?? 0L;
 			long aiAccepted = statsNode["ai_accepted"]?.Value<long>() ?? 0L;
 			long deletedLines = statsNode["git_diff_deleted_lines"]?.Value<long>() ?? 0L;
@@ -414,7 +413,7 @@ namespace ForkPlus.Git.Commands
 				}
 			}
 			breakdown.Sort((GitAiToolStats a, GitAiToolStats b) => b.AiAdditions.CompareTo(a.AiAdditions));
-			return new GitAiStats(humanAdditions, mixedAdditions, aiAdditions, aiAccepted, deletedLines, addedLines, totalCommits, commitsWithAuthorship, breakdown.ToArray());
+			return new GitAiStats(humanAdditions, unknownAdditions, aiAdditions, aiAccepted, deletedLines, addedLines, totalCommits, commitsWithAuthorship, breakdown.ToArray());
 		}
 	}
 }

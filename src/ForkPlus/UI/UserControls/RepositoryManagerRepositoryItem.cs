@@ -1,4 +1,4 @@
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -6,11 +6,11 @@ namespace ForkPlus.UI.UserControls
 	{
 		private const string GitMmPrefix = "git mm: ";
 
-		private readonly string _name;
+		private string _name;
 
 		private readonly bool _isGitMmWorkspace;
 
-		private ImageSource _repositoryIcon;
+		private global::Avalonia.Media.IImage _repositoryIcon;
 
 		public string Name
 		{
@@ -23,7 +23,10 @@ namespace ForkPlus.UI.UserControls
 				string newName = NormalizeName(value);
 				if (!(_name == newName))
 				{
+					_name = newName;
 					base.Title = FormatName(newName);
+					RaisePropertyChanged(nameof(Name));
+					RaisePropertyChanged(nameof(Title));
 					base.IsInEditMode = false;
 					RepositoryManager.Instance.RenameRepository(Repository.Path, newName);
 					RepositoryManager.Instance.Save();
@@ -39,7 +42,7 @@ namespace ForkPlus.UI.UserControls
 		[Null]
 		public SolidColorBrush RepositoryColor => RepositoryColorsUserControl.GetBrush(Repository.Color);
 
-		public ImageSource RepositoryIcon
+		public global::Avalonia.Media.IImage RepositoryIcon
 		{
 			get
 			{
@@ -62,7 +65,7 @@ namespace ForkPlus.UI.UserControls
 			_name = repository.Name();
 			Repository = repository;
 			base.Title = Name;
-			RepositoryIcon = Theme.RepositoryIcon;
+			RepositoryIcon = global::ForkPlus.UI.Theme.RepositoryIcon;
 		}
 
 		private string FormatName(string name)

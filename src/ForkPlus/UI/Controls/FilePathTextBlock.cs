@@ -1,20 +1,22 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using ForkPlus.UI.WpfCompat;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class FilePathTextBlock : SelectableTextBlock
 	{
-		public static readonly DependencyProperty FilePathProperty = DependencyProperty.RegisterAttached("FilePath", typeof(string), typeof(FilePathTextBlock), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as FilePathTextBlock).Refresh();
-		}));
+		public static readonly global::Avalonia.StyledProperty<string> FilePathProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilePathTextBlock, string>("FilePath");
 
-		public static readonly DependencyProperty OldFilePathProperty = DependencyProperty.RegisterAttached("OldFilePath", typeof(string), typeof(FilePathTextBlock));
+		public static readonly global::Avalonia.StyledProperty<string> OldFilePathProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilePathTextBlock, string>("OldFilePath");
 
 		private Brush _labelBrush;
 
@@ -47,12 +49,21 @@ namespace ForkPlus.UI.Controls
 		public FilePathTextBlock()
 		{
 			RefreshBrushes();
-			base.MouseEnter += delegate(object s, MouseEventArgs e)
+			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
-				base.ToolTip = (TextIsTrimmed() ? GetToolTipText() : null);
+				global::Avalonia.Controls.ToolTip.SetTip(this, (TextIsTrimmed() ? GetToolTipText() : null));
 			};
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+		}
+
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == FilePathProperty || change.Property == OldFilePathProperty)
+			{
+				Refresh();
+			}
 		}
 
 		private void Refresh()
@@ -106,21 +117,22 @@ namespace ForkPlus.UI.Controls
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_secondaryLabelBrush = Theme.SecondaryLabelBrush;
+			_labelBrush = global::ForkPlus.UI.Theme.LabelBrush;
+			_secondaryLabelBrush = global::ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
 		private bool TextIsTrimmed()
 		{
-			if (!(base.Parent is Panel { ActualWidth: var num } panel))
+			if (!(base.Parent is Panel panel))
 			{
 				return false;
 			}
-			foreach (FrameworkElement child in panel.Children)
+			double num = panel.Bounds.Width; // Migration note：WPF Panel.ActualWidth → Avalonia Panel.Bounds.Width
+			foreach (global::Avalonia.Controls.Control child in panel.Children)
 			{
 				if (child != this)
 				{
-					num -= child.ActualWidth + child.Margin.Left + child.Margin.Right;
+					num -= child.Bounds.Width + child.Margin.Left + child.Margin.Right;
 				}
 			}
 			Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));

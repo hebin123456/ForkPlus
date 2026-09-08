@@ -20,10 +20,11 @@ namespace ForkPlus.Services.Wpf
 			if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
 				return true;
 
+			// Migration note：WPF DesignerProperties.GetIsInDesignMode(DependencyObject) →
+			// Avalonia.Controls.Design.IsDesignMode 静态属性。
 			try
 			{
-				var element = new System.Windows.DependencyObject();
-				if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(element))
+				if (global::Avalonia.Controls.Design.IsDesignMode)
 					return true;
 			}
 			catch { }

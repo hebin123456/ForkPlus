@@ -1,5 +1,5 @@
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.Controls
 {
@@ -22,9 +22,9 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public ImageSource Image { get; set; }
+		public global::Avalonia.Media.IImage Image { get; set; }
 
-		public ImageSource AlternativeImage { get; set; }
+		public global::Avalonia.Media.IImage AlternativeImage { get; set; }
 
 		public ImageToggleButton()
 		{

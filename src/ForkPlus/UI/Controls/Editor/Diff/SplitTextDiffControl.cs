@@ -1,7 +1,9 @@
 using System;
-using System.Windows.Controls;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Controls;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -12,7 +14,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		[Null]
 		public CodeEditorScrollPositionCache PositionCache { get; set; }
 
-		public ScrollBarVisibility VerticalScrollBarVisibility
+		public global::Avalonia.Controls.Primitives.ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get
 			{
@@ -24,7 +26,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public ScrollBarVisibility HorizontalScrollBarVisibility
+		public global::Avalonia.Controls.Primitives.ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get
 			{
@@ -36,7 +38,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public double VerticalOffset => _editor.TextArea.TextView.VerticalOffset;
+		public double VerticalOffset => _editor.TextArea.TextView.ScrollOffset.Y;
 
 		[Null]
 		public ForkPlus.Git.Diff.Diff Diff { get; private set; }
@@ -74,22 +76,24 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			add
 			{
-				_editor.ContextMenuOpening += value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_editor,(s, e) => value?.Invoke(s, e));
 			}
 			remove
 			{
-				_editor.ContextMenuOpening -= value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.RemoveContextMenuOpeningHandler(_editor,(s, e) => value?.Invoke(s, e));
 			}
 		}
 
 		public SplitTextDiffControl()
 		{
+			_editor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+			_editor.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Stretch;
 			base.Children.Add(_editor);
 			_editor.ContextMenu = new ContextMenu();
-			_editor.ContextMenuClosing += delegate
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_editor,delegate
 			{
 				_editor.ContextMenu.Items.Clear();
-			};
+			});
 		}
 
 		public void ScrollToLine(int line)
@@ -112,7 +116,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			PositionCache?.SaveScrollPosition(_editor);
 			_editor.Options.IndentationSize = tabWidth;
 			_editor.VisualPatch = VisualPatch.CreateVisualPatch(Diff, EntireFile, Location);
-			base.Dispatcher.Async(delegate
+			base.Dispatcher.Post(delegate
 			{
 				PositionCache?.RestoreScrollPosition(_editor);
 			});
@@ -120,7 +124,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public void ScrollToVerticalOffset(double verticalOffset)
 		{
-			_editor.ScrollToVerticalOffset(verticalOffset);
+			_editor.ScrollToVerticalOffsetCompat(verticalOffset);
 		}
 
 		public void RefreshDiffFont(double codeEditorFontSize)

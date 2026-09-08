@@ -1,14 +1,17 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class GitPointView : Grid
 	{
-		public static readonly DependencyProperty IconMarginProperty = DependencyProperty.Register("IconMargin", typeof(Thickness), typeof(GitPointView), new PropertyMetadata(new Thickness(1.0, 3.0, 7.0, 1.0)));
+		public static readonly global::Avalonia.StyledProperty<Thickness> IconMarginProperty =
+    global::Avalonia.AvaloniaProperty.Register<GitPointView, Thickness>("IconMargin");
 
 		private bool _customFontStyle;
 
@@ -66,19 +69,14 @@ namespace ForkPlus.UI.Controls
 						textBlock2.SetValue(Grid.ColumnProperty, 1);
 						base.Children.Add(textBlock2);
 					}
-					TextBlock textBlock3 = new TextBlock
+					TextBlock textBlock3 = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TextBlock
 					{
-						Margin = new Thickness(0.0, 0.0, 0.0, 0.0),
-						VerticalAlignment = VerticalAlignment.Center,
-						HorizontalAlignment = HorizontalAlignment.Left,
-						TextTrimming = TextTrimming.CharacterEllipsis,
-						Text = Description(_value),
-						ToolTip = Description(_value)
-					};
+						Margin = new Thickness(0.0, 0.0, 0.0, 0.0),						VerticalAlignment = VerticalAlignment.Center,						HorizontalAlignment = HorizontalAlignment.Left,						TextTrimming = TextTrimming.CharacterEllipsis,						Text = Description(_value)					},Description(_value)
+);
 					if (!CustomFontStyle)
 					{
 						textBlock3.FontSize = 13.0;
-						textBlock3.Foreground = Theme.LabelBrush;
+						textBlock3.Foreground = global::ForkPlus.UI.Theme.LabelBrush;
 					}
 					textBlock3.SetValue(Grid.ColumnProperty, 2);
 					base.Children.Add(textBlock3);
@@ -115,33 +113,33 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
-		private ImageSource GetIcon(Type type)
+		private global::Avalonia.Media.IImage GetIcon(Type type)
 		{
 			if (type == typeof(StashRevision))
 			{
-				return Theme.StashIcon;
+				return global::ForkPlus.UI.Theme.StashIcon;
 			}
 			if (type == typeof(Revision))
 			{
-				return Theme.RevisionIcon;
+				return global::ForkPlus.UI.Theme.RevisionIcon;
 			}
 			if (type == typeof(RevisionDetails))
 			{
-				return Theme.RevisionIcon;
+				return global::ForkPlus.UI.Theme.RevisionIcon;
 			}
 			if (type == typeof(LocalBranch))
 			{
-				return Theme.BranchIcon;
+				return global::ForkPlus.UI.Theme.BranchIcon;
 			}
 			if (type == typeof(RemoteBranch))
 			{
-				return Theme.BranchIcon;
+				return global::ForkPlus.UI.Theme.BranchIcon;
 			}
 			if (type == typeof(Tag))
 			{
-				return Theme.TagIcon;
+				return global::ForkPlus.UI.Theme.TagIcon;
 			}
-			return Theme.BranchIcon;
+			return global::ForkPlus.UI.Theme.BranchIcon;
 		}
 
 		private static TextBlock CreateIdTextBlock(string identifier)
@@ -152,7 +150,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Left,
 				FontSize = 13.0,
-				Foreground = Theme.LabelBrush,
+				Foreground = global::ForkPlus.UI.Theme.LabelBrush,
 				Text = identifier
 			};
 		}

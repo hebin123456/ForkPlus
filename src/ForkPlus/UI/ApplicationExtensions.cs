@@ -1,8 +1,11 @@
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {
@@ -11,13 +14,13 @@ namespace ForkPlus.UI
 		[DebuggerStepThrough]
 		public static TabManager TabManager(this Application application)
 		{
-			return (application.MainWindow as MainWindow)?.TabManager;
+			return (WpfApp.MainWindow as MainWindow)?.TabManager;
 		}
 
 		[DebuggerStepThrough]
 		public static RepositoryUserControl ActiveRepositoryUserControl(this Application application)
 		{
-			return (application.MainWindow as MainWindow)?.TabManager.ActiveRepositoryUserControl;
+			return (WpfApp.MainWindow as MainWindow)?.TabManager.ActiveRepositoryUserControl;
 		}
 
 		public static void RefreshLayoutScaling(this Application application)

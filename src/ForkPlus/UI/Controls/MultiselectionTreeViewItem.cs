@@ -4,8 +4,12 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using Avalonia;
 using ForkPlus.UI.Controls.Flattener;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Controls
 {
@@ -162,7 +166,7 @@ namespace ForkPlus.UI.Controls
 			this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public virtual void StartDrag(DependencyObject dragSource, MultiselectionTreeViewItem[] nodes)
+		public virtual void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // Migration note：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
 		}
 
@@ -180,7 +184,7 @@ namespace ForkPlus.UI.Controls
 		{
 		}
 
-		protected virtual IDataObject GetDataObject(MultiselectionTreeViewItem[] nodes)
+		protected virtual global::Avalonia.Input.IDataTransfer GetDataObject(MultiselectionTreeViewItem[] nodes)
 		{
 			return null;
 		}

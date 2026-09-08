@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI
@@ -15,7 +15,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override global::Avalonia.Media.IImage Icon { get; }
 
 			// v3.9.1：IDEA 适合 Java 系（Maven/Gradle）项目
 			public override ProjectType RecommendedProjectTypes => ProjectType.Maven | ProjectType.Gradle;
@@ -113,7 +113,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override global::Avalonia.Media.IImage Icon { get; }
 
 			protected override string[] ProjectExtensions => new string[5] { "*.sln", "*.slnf", "*.slnx", "*.csproj", "*.uproject" };
 
@@ -149,7 +149,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override global::Avalonia.Media.IImage Icon { get; }
 
 			protected override string[] ProjectExtensions => new string[3] { "*.sln", "*.slnf", "*.slnx" };
 
@@ -191,7 +191,7 @@ namespace ForkPlus.UI
 
 			public override string ApplicationPath { get; }
 
-			public override ImageSource Icon { get; }
+			public override global::Avalonia.Media.IImage Icon { get; }
 
 			// v3.9.1：Android Studio 适合 Android 项目
 			public override ProjectType RecommendedProjectTypes => ProjectType.Android;
@@ -224,7 +224,7 @@ namespace ForkPlus.UI
 
 		public abstract string ApplicationPath { get; }
 
-		public abstract ImageSource Icon { get; }
+		public abstract global::Avalonia.Media.IImage Icon { get; }
 
 		protected virtual string[] ProjectExtensions => new string[0];
 

@@ -1,0 +1,119 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="SettingsHeaderTextBlockStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Margin" Value="0,12,0,6" />
+  </ControlTheme>
+  <ControlTheme x:Key="ReferenceLabelTextBlockStyle" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceForeground}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Margin" Value="2,-1,2,1" />
+  </ControlTheme>
+  <ControlTheme x:Key="ToolbarButtonTitle" TargetType="TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Margin" Value="4,-3,4,2" />
+    <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}" />
+    
+  </ControlTheme>
+  <ControlTheme x:Key="LfsLabel" TargetType="TextBlock">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="28" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+<!-- Migration note：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
+
+  </ControlTheme>
+  <ControlTheme x:Key="NotLfsLabel" TargetType="TextBlock">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="#FFFF6663" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+<!-- Migration note：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
+
+  </ControlTheme>
+  <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- Migration note：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>-->
+
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="BlueHyperlinkStyle" TargetType="HyperlinkButton">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="BlueUnderlineHyperlinkStyle" TargetType="HyperlinkButton">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- Migration note：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>-->
+
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="GrayHyperlinkStyle" TargetType="HyperlinkButton">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="GrayUnderlineHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource GrayHyperlinkStyle}">
+<!-- Migration note：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>-->
+
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="HintTextBlock" TargetType="TextBlock">
+    <Setter Property="Text" Value="?" />
+    <Setter Property="Margin" Value="4,2,6,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+<!-- Migration note：WPF 原版在 Setter.Value 里直接放 ToolTip 控件（内容经 PlacementTarget 绑 Tag），
+     Avalonia 抛 InvalidOperationException: Cannot use a control as a Setter value。
+     改为 Tip 直接绑定目标控件自身 Tag（ControlTheme Setter 的 RelativeSource Self 即被
+     主题化的控件）；Tip 为字符串时 ToolTip 内部 new ToolTip{Content=tip} 渲染，语义等价。
+     反编译依据（Avalonia 12.1.1 ToolTip.IsOpenChanged）：tip as ToolTip ?? new ToolTip{Content=tip}。-->
+    <Setter Property="ToolTip.Tip" Value="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+  </ControlTheme>
+</ResourceDictionary>

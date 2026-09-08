@@ -1,0 +1,76 @@
+<UserControl xmlns:binaryDiff="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.SwipeImageDiffUserControl" xmlns="https://github.com/avaloniaui">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ControlTheme x:Key="SwipeGridSplitter" TargetType="GridSplitter">
+        
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="-3,0" />
+        <Setter Property="Width" Value="6" />
+        <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="GridSplitter">
+              <Grid Background="#00FFFFFF">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="9" />
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="9" />
+                </Grid.RowDefinitions>
+                <Border CornerRadius="3" Width="6" Height="6" Margin="0,3,0,0" HorizontalAlignment="Center" Background="{TemplateBinding Background}" />
+                <Border Grid.Row="1" BorderBrush="{TemplateBinding BorderBrush}" Width="2" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+                <Border Grid.Row="2" CornerRadius="3" Width="6" Height="6" Margin="0,0,0,3" HorizontalAlignment="Center" Background="{TemplateBinding Background}" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Top">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="35" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <DockPanel LastChildFill="False">
+      <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" HorizontalAlignment="Left">
+        <Grid HorizontalAlignment="Left">
+          <TextBlock Margin="0,10,0,6" x:Name="OldLfsLabel" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Margin="0,10,0,6" x:Name="OldNotLfsLabel" Theme="{DynamicResource NotLfsLabel}" />
+        </Grid>
+        <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="old" HorizontalAlignment="Right" Foreground="{DynamicResource Diff.Removed.Foreground}" x:Name="OldTextBlock" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+        <Grid HorizontalAlignment="Right">
+          <TextBlock Margin="0,10,0,6" x:Name="NewLfsLabel" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Margin="0,10,0,6" x:Name="NewNotLfsLabel" Theme="{DynamicResource NotLfsLabel}" />
+        </Grid>
+        <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="new" HorizontalAlignment="Right" Foreground="{DynamicResource Diff.Added.Foreground}" x:Name="NewTextBlock" />
+      </StackPanel>
+    </DockPanel>
+    <Border Grid.Row="1" Theme="{DynamicResource BinaryDiffShadowBorder}">
+      <Grid Background="{DynamicResource BinaryDiffBackground}">
+        <Border Margin="8" BorderThickness="1" BorderBrush="{DynamicResource BinaryDiffBorder}" Background="{DynamicResource TransparentVisualBrush}">
+          <binaryDiff:OverlayImageControl x:Name="OverlayImage" />
+        </Border>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="9" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="9" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="9" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="1" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="9" />
+          </Grid.ColumnDefinitions>
+          <Grid Grid.Column="1" SizeChanged="ClipXPlaceholderGrid_SizeChanged" x:Name="ClipXPlaceholderGrid" />
+          <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" ResizeBehavior="PreviousAndNext" x:Name="GridSplitter" Theme="{DynamicResource SwipeGridSplitter}" />
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

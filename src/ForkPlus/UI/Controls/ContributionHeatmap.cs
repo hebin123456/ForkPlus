@@ -1,14 +1,17 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -19,9 +22,12 @@ namespace ForkPlus.UI.Controls
 	// (total contributions / longest streak / most active day).
 	public class ContributionHeatmap : Grid
 	{
-		public static readonly DependencyProperty CommitsByDateProperty = DependencyProperty.Register(
-			"CommitsByDate", typeof(Dictionary<DateTime, DayContributionInfo>), typeof(ContributionHeatmap),
-			new PropertyMetadata(null, OnCommitsByDateChanged));
+		// Migration note修复：原 Register 未挂 changed 回调（wpf2avalonia 丢失 PropertyMetadata 的
+		// PropertyChangedCallback），OnCommitsByDateChanged 成死代码 → CommitsByDate 赋值后
+		// RebuildCells 永不执行 → 统计页热力图只有 Less/More 图例、53x7 网格全空（实测）。
+		// 改走 WpfPropertyCompat.Register 挂回调。
+		public static readonly global::Avalonia.StyledProperty<Dictionary<DateTime, DayContributionInfo>> CommitsByDateProperty =
+    global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<ContributionHeatmap, Dictionary<DateTime, DayContributionInfo>>("CommitsByDate", null, (owner, e) => owner.RebuildCells());
 
 		public Dictionary<DateTime, DayContributionInfo> CommitsByDate
 		{
@@ -99,7 +105,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(0, 0, 4, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(lessLabel);
 			for (int k = 0; k < 5; k++)
@@ -121,7 +127,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(4, 0, 16, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(moreLabel);
 			bottomPanel.Children.Add(legendPanel);
@@ -132,7 +138,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				TextWrapping = TextWrapping.NoWrap,
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			bottomPanel.Children.Add(_summaryText);
 
@@ -147,11 +153,6 @@ namespace ForkPlus.UI.Controls
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
 		{
 			RebuildCells();
-		}
-
-		private static void OnCommitsByDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((ContributionHeatmap)d).RebuildCells();
 		}
 
 		private void RebuildCells()
@@ -191,16 +192,10 @@ namespace ForkPlus.UI.Controls
 					DayContributionInfo info = data.TryGetValue(date, out var c) ? c : null;
 					int commits = info?.Commits ?? 0;
 					int level = GetLevel(commits, maxCommits);
-					Border border = new Border
+					Border border = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Border
 					{
-						Width = CellSize,
-						Height = CellSize,
-						Background = palette[level],
-						CornerRadius = new CornerRadius(2),
-						ToolTip = BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info),
-						HorizontalAlignment = HorizontalAlignment.Left,
-						VerticalAlignment = VerticalAlignment.Top
-					};
+						Width = CellSize,						Height = CellSize,						Background = palette[level],						CornerRadius = new CornerRadius(2),						HorizontalAlignment = HorizontalAlignment.Left,						VerticalAlignment = VerticalAlignment.Top
+					},BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info));
 					SetColumn(border, week);
 					SetRow(border, dow);
 					_heatmapGrid.Children.Add(border);
@@ -368,7 +363,6 @@ namespace ForkPlus.UI.Controls
 
 		private static Brush Freeze(Brush brush)
 		{
-			brush.Freeze();
 			return brush;
 		}
 	}

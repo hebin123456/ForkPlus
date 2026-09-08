@@ -19,7 +19,10 @@ namespace ForkPlus.Git.Commands
 			byte[] bytes = Encoding.UTF8.GetBytes(string.Join("\0", array));
 			HashSet<string> files2 = array.Map((string x) => PathHelper.NormalizeUnix(x)).ToHashSet();
 			StageProcessOutputHandler stageProcessOutputHandler = new StageProcessOutputHandler(monitor, files2);
-			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command("add", "--force", "--verbose", "--pathspec-from-file=-", "--pathspec-file-nul", "--").Stdin(bytes).ExecuteWithCallbackBt(stageProcessOutputHandler.StdoutHandler, stageProcessOutputHandler.StderrHandler, retryIfLocked: true, monitor);
+			// 问题6：写入侧四件套对齐——裸 git add 会信 fsmonitor daemon 的"无变更"结论
+			// 跳过 stat（daemon 漏报时 add 静默空操作，文件弹回未暂存），见 ReliableGitFlags。
+			GitCommand stageCommand = new GitCommand(ReliableGitFlags.Prefix, "add", "--force", "--verbose", "--pathspec-from-file=-", "--pathspec-file-nul", "--");
+			ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(stageCommand).Stdin(bytes).ExecuteWithCallbackBt(stageProcessOutputHandler.StdoutHandler, stageProcessOutputHandler.StderrHandler, retryIfLocked: true, monitor);
 			if (monitor.IsCanceled)
 			{
 				return GitCommandResult.Failure(new GitCommandError.Cancelled());

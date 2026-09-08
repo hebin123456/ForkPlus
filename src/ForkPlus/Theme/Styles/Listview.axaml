@@ -1,0 +1,664 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Migration note：DataTrigger 视觉状态补齐——bool→FontWeight 转换器（提交列表 HEAD 行加粗）。 -->
+  <controls:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
+  <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="4" />
+  </ControlTheme>
+  <ControlTheme x:Key="ListItemNotRoundedBorderStyle" TargetType="Border">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="0" />
+  </ControlTheme>
+  <DataTemplate x:Key="ReferencesDataTemplates">
+<!-- Migration note：WPF DataTemplate.Resources 已删（原内容见 git 历史） -->
+
+    <ContentPresenter>
+      <ContentPresenter.Content>
+        <Binding />
+      </ContentPresenter.Content>
+    </ContentPresenter>
+  </DataTemplate>
+  <!--
+      WPF migration note: 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      原始片段：
+      <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Rectangle Margin="2" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1 2" />
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <ControlTheme x:Key="ListViewItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="Padding" Value="4,1" />
+    <Setter Property="HorizontalContentAlignment">
+      <Setter.Value>
+        <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="VerticalContentAlignment">
+      <Setter.Value>
+        <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:pointerover /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style>
+<!-- Migration note：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
+<!-- Migration note：原 WPF ListBox 简单版主题（ScrollViewer+ItemsPresenter）已删——pass3 把 ListView 转 ListBox 后与下方 ListView 迁移版主题撞 key（运行时重复键异常）；保留功能完整的一份（含选中高亮与 TouchpadAwareScrollViewer）。 -->
+  <!--
+      WPF migration note: TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      原始片段：
+      <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="IsVisible" Value="False" />
+        </Style>
+    -->
+  <ControlTheme x:Key="ListViewWithGridViewScrollViewerStyle" TargetType="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollViewer">
+          <Grid Background="{TemplateBinding Background}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- 同 Scrollviewer.axaml 修复2：不能给 SCP 硬编码 CanHorizontallyScroll/CanVerticallyScroll，
+                 否则 HSBV/VSBV 的 TemplateBinding 永远影响不到测量（Disabled 时内容仍按无限宽排，
+                 * 列不拉伸、长内容被裁切且无横向滚动条）。删掉后由 SCP.AttachToScrollViewer()
+                 自动绑定 (HSBV/VSBV != Disabled)，提交列表(HSBV=Disabled)的 * 列终于能撑满视口。 -->
+            <ScrollContentPresenter Grid.Row="0"
+                                    Grid.Column="0"
+                                    Margin="{TemplateBinding Padding}"
+                                    Background="Transparent"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{x:Null}"
+                                    x:Name="PART_ScrollContentPresenter" />
+            <ScrollBar Grid.Row="0"
+                       Grid.Column="1"
+                       Cursor="Arrow"
+                       x:Name="PART_VerticalScrollBar"
+                       Theme="{DynamicResource VerticalScrollBarStyle}" />
+            <ScrollBar Grid.Row="1"
+                       Grid.Column="0"
+                       Cursor="Arrow"
+                       Orientation="Horizontal"
+                       x:Name="PART_HorizontalScrollBar"
+                       Theme="{DynamicResource HorizontalScrollBarStyle}" />
+            <Rectangle Grid.Row="1" Grid.Column="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="ListViewItemGridViewStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemStyle}">
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style>
+    <Style Selector="^:selected">
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="ListViewWithGridViewStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+<!-- Migration note：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
+    <Style.Resources>
+      <ResourceDictionary>
+        <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" />
+      </ResourceDictionary>
+    </Style.Resources>-->
+
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21）——ListViewWithGridViewStyle 是
+                   提交列表（RevisionListView）主题，裸 ItemsPresenter 落到非虚拟化 StackPanel，
+                   大仓库提交列表全量实化 = 用户报告"加载非常卡"的直接根因（与修复链10同坑）。 -->
+              <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NoSelectionRevisionListViewItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+    <Setter Property="Focusable" Value="False" />
+    <!-- Migration note：WPF DataTrigger IsHead=True → FontWeight=Bold（提交列表 HEAD 行加粗），
+         经 BoolToFontWeight 转换器绑定 DataContext 属性恢复（同 MultiselectionTreeView 的
+         IsFocusable Setter 绑定模式，Avalonia ControlTheme Setter Binding 相对 DataContext 求值）。 -->
+    <Setter Property="FontWeight">
+      <Setter.Value>
+        <Binding Path="IsHead" Converter="{StaticResource BoolToFontWeight}" />
+      </Setter.Value>
+    </Setter>
+
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    
+  
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsHead" />
+              </DataTrigger.Binding>
+              <Setter Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+    -->
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsReachable" />
+              </DataTrigger.Binding>
+              <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+            </DataTrigger>
+    --></ControlTheme>
+  <ControlTheme x:Key="ListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="MultiselectListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="NoSelectionListBoxItemStyle" TargetType="ListBoxItem">
+    <Setter Property="Focusable" Value="False" />
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NoVisibleSelectionListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
+    <Setter Property="Focusable" Value="True" />
+  </ControlTheme>
+  <ControlTheme x:Key="ListBoxItemWithBorderStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemNotRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+<!-- Migration note：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+<!-- Migration note：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Background="{TemplateBinding Background}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+              <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+<!-- Migration note：WPF 选择器 ^[SelectionMode=Extended] 无对应 Avalonia 属性，样式块已删（原始内容见 git 历史） -->
+</ControlTheme>
+  <ControlTheme x:Key="NoSelectionListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+  </ControlTheme>
+  <!-- Migration note（2026-09-05，"自动补全建议浮层显示类名"修复）：原 WPF 把这三个按 DataType 的
+       DataTemplate 放在下方 AutocompleteListBoxItemStyle 的 ControlTemplate.Resources 内；Avalonia 的
+       ControlTemplate 无 Resources，迁移时被注释化而代码侧查找键 "AutocompleteListBoxItemTemplate" 保留，
+       ItemTemplate=null → 列表按 ToString() 渲染类名。现恢复为顶层资源，并新增分发器
+       AutoCompleteSuggestionTemplateSelector 作为复合模板（按运行时类型路由到下面三个模板之一）。 -->
+  <DataTemplate x:Key="AutoCompleteSuggestionTemplate" DataType="controls:AutoCompleteSuggestion">
+    <TextBlock FontSize="13" TextTrimming="CharacterEllipsis" Text="{Binding Suggestion}" />
+  </DataTemplate>
+  <DataTemplate x:Key="UserIdentityAutoCompleteSuggestionTemplate" DataType="controls:UserIdentityAutoCompleteSuggestion">
+    <DockPanel>
+      <controls:AvatarImage Margin="0" DockPanel.Dock="Left" VerticalAlignment="Center" Height="14" Width="14" UserIdentity="{Binding UserIdentity}" />
+      <TextBlock FontSize="13" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" Text="{Binding Suggestion}" />
+    </DockPanel>
+  </DataTemplate>
+  <DataTemplate x:Key="GitmojiAutoCompleteSuggestionTemplate" DataType="controls:GitmojiAutoCompleteSuggestion">
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center" Text="{Binding Entry.Emoji}" />
+      <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13" FontFamily="Consolas" TextTrimming="CharacterEllipsis" Text="{Binding Entry.ShortName}" />
+      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" Text="{Binding Entry.Description}" />
+    </DockPanel>
+  </DataTemplate>
+  <controls:AutoCompleteSuggestionTemplateSelector x:Key="AutocompleteListBoxItemTemplate" />
+  <ControlTheme x:Key="AutoCompleteListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="MinWidth" Value="196" />
+    <Setter Property="Height" Value="78" />
+    <Setter Property="Padding" Value="0,2,0,0" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=HorizontalContentAlignment 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Grid>
+            <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
+              <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" OffsetY="1" />
+              </Border.Effect>
+            </Border>
+            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
+              <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  Background="#00FFFFFF"
+                                                  ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                  ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑）。 -->
+                <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
+              </controls:TouchpadAwareScrollViewer>
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="AutocompleteListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    
+    <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="4,2,4,2" />
+    <Setter Property="Height" Value="21" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+<!-- Migration note：WPF ControlTemplate.Resources 块注释化（Avalonia ControlTemplate 无 Resources，模板内资源须上移至 ControlTheme.Resources 或改用 DataTemplates 集合）。原始片段：
+          <ControlTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate DataType="controls:AutoCompleteSuggestion" x:Key="AutoCompleteSuggestionTemplate">
+                <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
+                  <TextBlock.Text>
+                    <Binding Path="Suggestion" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DataTemplate>
+              <DataTemplate DataType="controls:UserIdentityAutoCompleteSuggestion" x:Key="UserIdentityAutoCompleteSuggestionTemplate">
+                <DockPanel>
+                  <controls:AvatarImage Margin="0" DockPanel.Dock="Left" VerticalAlignment="Center" Height="14" Width="14" x:Name="AuthorAvatarImage">
+                    <controls:AvatarImage.UserIdentity>
+                      <Binding Path="UserIdentity" />
+                    </controls:AvatarImage.UserIdentity>
+                  </controls:AvatarImage>
+                  <TextBlock FontSize="13" Margin="4,0,0,0" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Suggestion" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+              </DataTemplate>
+              <DataTemplate DataType="controls:GitmojiAutoCompleteSuggestion" x:Key="GitmojiAutoCompleteSuggestionTemplate">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Emoji" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13" FontFamily="Consolas" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.ShortName" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Description" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+              </DataTemplate>
+            </ResourceDictionary>
+          </ControlTemplate.Resources>
+-->
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="DiffListListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="GridViewColumnHeaderGripper" TargetType="Thumb">
+    <Setter Property="Canvas.Right" Value="-9" />
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height">
+      <Setter.Value>
+        <Binding Path="ActualHeight"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Border Background="#00FFFFFF" Padding="{TemplateBinding Padding}">
+            <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <!--
+      WPF migration note: TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      原始片段：
+      <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Padding" Value="4,0,4,0" />
+          <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+          <Setter Property="BorderThickness" Value="0,0,0,1" />
+          <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="GridViewColumnHeader">
+                <Grid>
+                  <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
+                    <Grid>
+                      <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="7" />
+                        <RowDefinition />
+                      </Grid.RowDefinitions>
+                      <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
+                      </Border>
+                    </Grid>
+                  </Border>
+                  <Canvas>
+                    <Thumb x:Name="PART_HeaderGripper" Theme="{DynamicResource GridViewColumnHeaderGripper}" />
+                  </Canvas>
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="true">
+                    <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" Property="Background" />
+                  </Trigger>
+                  <Trigger Property="ButtonBase.IsPressed" Value="true">
+                    <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderPressBackground}" Property="Background" />
+                  </Trigger>
+                  <Trigger Property="FrameworkElement.Height" Value="Auto">
+                    <Setter Property="MinHeight" Value="20" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <!-- Migration note：WPF 原版此 Style 无 BasedOn（迁移误加 BasedOn="{StaticResource {x:Type controls:ReferencePanel}}"，
+       Avalonia 无对应隐式 ControlTheme → KeyNotFoundException 崩溃，已按原版移除）。 -->
+  <ControlTheme x:Key="ReferencePanelStyle" TargetType="controls:ReferencePanel">
+
+    <!-- Migration note：WPF 原版此 Style 无 Template（依赖 WPF 内置 ItemsControl 默认模板）；
+         Avalonia ControlTheme 无模板则不渲染条目，补 ItemsPresenter 模板等价复刻。
+         ItemTemplate 里的 4 个 ReferencePanel*ViewModel DataTemplate 已随
+         DataTemplate 迁移搬入 App.axaml Application.DataTemplates（按类型命中）。 -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:ReferencePanel">
+          <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+          <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="ItemTemplate">
+      <Setter.Value>
+        <DataTemplate>
+<!-- Migration note：WPF DataTemplate.Resources 块注释化（Avalonia DataTemplate 无 Resources）。原始片段：
+          <DataTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate DataType="controls:ReferencePanelTagViewModel" x:Key="ReferencePanelTagViewModelTemplate">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
+                  <DockPanel>
+                    <Image Source="{DynamicResource TagIcon}" DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0" />
+                    <Border BorderThickness="1,0,0,0" CornerRadius="0,4,4,0" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                        <TextBlock.Text>
+                          <Binding Path="Name" />
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </Border>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelLocalBranchViewModel" x:Key="ReferencePanelLocalBranchViewModelTemplate">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                  <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                    <TextBlock.Text>
+                      <Binding Path="Name" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelRemoteBranchViewModel" x:Key="ReferencePanelRemoteBranchViewModelTemplate">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
+                  <DockPanel>
+                    <Image DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0">
+                      <Image.Source>
+                        <Binding Path="RemoteIcon" />
+                      </Image.Source>
+                    </Image>
+                    <Border BorderThickness="1,0,0,0" CornerRadius="0,4,4,0" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                        <TextBlock.Text>
+                          <Binding Path="Name" />
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </Border>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelBisectMarkViewModel" x:Key="ReferencePanelBisectMarkViewModelTemplate">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                  <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                    <TextBlock.Text>
+                      <Binding Path="Name" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </Border>
+              </DataTemplate>
+            </ResourceDictionary>
+          </DataTemplate.Resources>-->
+
+          <ContentPresenter>
+            <ContentPresenter.Content>
+              <Binding />
+            </ContentPresenter.Content>
+          </ContentPresenter>
+        </DataTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="MultilineReferencePanelStyle" TargetType="controls:ReferencePanel" BasedOn="{StaticResource ReferencePanelStyle}">
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,31 @@
+<!-- 全局框架兼容样式（App.Styles 引入，2026-09-07 v3.13"自定义命令目标下拉框样式"修复）。
+
+     为什么不在 Theme/Styles/Combobox.axaml 的 ControlTheme 里写这个样式：
+     ComboBox 关闭态显示的内容不是模板部件——Avalonia ComboBox.UpdateSelectionBoxItem
+     对 UIElement 项生成 VisualBrush 快照 Rectangle（Width=项面板定宽，如自定义命令
+     "目标"项 DockPanel Width=280 / 编辑动作"动作"项 Width=370），运行时塞进模板
+     ContentPresenter#contentPresenter。该 Rectangle 没有 TemplatedParent，而
+     StyledElement.ApplyTemplatedParentControlTheme 只对模板部件应用 ControlTheme
+     嵌套样式（TemplatedParent 为 null 时跳过）——ControlTheme 里 ^/template/...>
+     Rectangle 选择器永远够不到它（实证：快照 HorizontalAlignment 仍为 Stretch）。
+     App 级 Style 不同：元素 attach 时 ApplyStyles 沿 InheritanceParent 链收集
+     host.Styles（presenter→ComboBox→Window→App），快照 Rectangle attach 时会
+     TryAttach 本样式——选择器经 LogicalParent(=presenter) + TemplatedParent(=ComboBox)
+     链求值命中（ChildSelector/TemplateSelector 源码实证）。
+
+     修的是什么：Avalonia Layoutable.ArrangeCore 把"Stretch+显式宽超槽位"与 Center 同样
+     处理为居中（case Center: case Stretch: originX += (available - size)/2），WPF
+     ArrangeCore.ComputeAlignmentOffset 对该情形显式退化为 Top-Left 左对齐（源码注释
+     "degenerate Stretch to Top-Left"）。280 定宽快照在 ~74 宽槽位被居中成 X=-103，
+     可见区只剩内容中段（用户截图：描述文字中间几个字悬在框里）。给快照补 Left 对齐
+     后可见区从快照左缘开始，溢出右侧不裁剪语义保持，与 Windows 原版一致。
+     字符串项不经快照路径（无 Rectangle），不受影响。
+
+     位置说明：本文件根节点是 Styles（非 ResourceDictionary），必须经 App.axaml 的
+     Application.Styles/StyleInclude 引入（放 App.Resources 合并字典里 Style 不生效，
+     那只是资源查找链）。 -->
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="ComboBox /template/ ContentPresenter#contentPresenter > Rectangle">
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+</Styles>

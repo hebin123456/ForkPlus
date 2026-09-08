@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -71,7 +74,7 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 
-				base.Dispatcher.Async(delegate
+				base.Dispatcher.Post(delegate
 				{
 					try
 					{

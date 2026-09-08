@@ -3,10 +3,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {
@@ -63,7 +66,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Open";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, global::Avalonia.Input.KeyModifiers.Alt | global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;
@@ -126,6 +129,21 @@ namespace ForkPlus.UI.Commands
 				{
 					return false;
 				}
+				// Migration note：AssocQueryString（Shlwapi.dll）是 Windows 专属的 shell 关联查询，
+				// Unix 上抛 DllNotFoundException（被 catch 吞掉后命令静默不可用）。
+				// Unix 退化为探测 xdg-open（xdg-open 在 PATH 即视为有默认编辑器，
+				// 实际打开由 Process.Start(UseShellExecute=true) 走 xdg-open 关联）。
+				if (!OperatingSystem.IsWindows())
+				{
+					string xdgOpen = FindOnPath("xdg-open");
+					if (xdgOpen == null)
+					{
+						Log.Info("Can't find editor for '" + text + "' (xdg-open not on PATH)");
+						return false;
+					}
+					Log.Info("File can be edited with '" + xdgOpen + "'");
+					return true;
+				}
 				string text2 = AssocQueryString(AssocStr.Executable, extension);
 				if (text2 == "%1" || text2.EndsWith("OpenWith.exe"))
 				{
@@ -140,6 +158,31 @@ namespace ForkPlus.UI.Commands
 				Log.Error("Failed to get associated editor for '" + filePath + "'", ex);
 				return false;
 			}
+		}
+
+		private static string FindOnPath(string tool)
+		{
+			string path = Environment.GetEnvironmentVariable("PATH") ?? "";
+			string[] array = path.Split(Path.PathSeparator);
+			foreach (string text in array)
+			{
+				if (string.IsNullOrEmpty(text))
+				{
+					continue;
+				}
+				try
+				{
+					string text2 = Path.Combine(text, tool);
+					if (File.Exists(text2))
+					{
+						return text2;
+					}
+				}
+				catch (Exception)
+				{
+				}
+			}
+			return null;
 		}
 
 		private static string AssocQueryString(AssocStr association, string extension)

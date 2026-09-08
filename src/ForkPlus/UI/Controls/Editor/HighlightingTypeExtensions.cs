@@ -1,7 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -35,6 +38,9 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxVariableBrush = Freeze(new SolidColorBrush(Color.FromRgb(104, 72, 186)));
 		private static readonly Brush SyntaxValueBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
 		private static readonly Brush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
+		// Migration note：Avalonia 的 Brushes.Transparent 是 IImmutableSolidColorBrush（非 Brush 派生），
+		// 本文件按 WPF 语义统一返回 Brush，故用 SolidColorBrush(透明色) 替代。
+		private static readonly Brush TransparentBrush = Freeze(new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)));
 
 		// ===== Dark 基底默认画刷（回退用） =====
 		private static readonly Brush ExactAddBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(56, 132, 66)));
@@ -88,7 +94,7 @@ namespace ForkPlus.UI.Controls.Editor
 			return null;
 		}
 
-		public static Brush GetHighlightBrush(this HighlightingType highlightingType, ThemeType theme)
+		public static IBrush GetHighlightBrush(this HighlightingType highlightingType, ThemeType theme)
 		{
 			// 优先读资源：自定义颜色覆盖或主题字典里定义了对应 key 就用它的 Color 构建新画刷。
 			// 不 Freeze——这样下次资源变化时订阅者重绘会再调本方法拿到最新画刷。
@@ -132,7 +138,7 @@ namespace ForkPlus.UI.Controls.Editor
 			case HighlightingType.SyntaxValue: return SyntaxValueBrush;
 			case HighlightingType.SyntaxNumber: return SyntaxNumberBrush;
 			}
-			return Brushes.Transparent;
+			return TransparentBrush;
 		}
 
 		private static Brush GetDarkHighlightBrush(HighlightingType highlightingType)
@@ -160,12 +166,11 @@ namespace ForkPlus.UI.Controls.Editor
 			case HighlightingType.SyntaxValue: return SyntaxValueBrushDark;
 			case HighlightingType.SyntaxNumber: return SyntaxNumberBrushDark;
 			}
-			return Brushes.Transparent;
+			return TransparentBrush;
 		}
 
 		private static Brush Freeze(Brush brush)
 		{
-			brush.Freeze();
 			return brush;
 		}
 	}

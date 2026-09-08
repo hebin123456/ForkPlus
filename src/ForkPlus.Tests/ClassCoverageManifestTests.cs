@@ -124,11 +124,14 @@ namespace ForkPlus.Tests
 
 		private static string FindRepositoryRoot()
 		{
-			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
+			// 迁移适配：原版向上找根级 ForkPlus.sln（原仓库 sln 在根目录）。
+			// 向上遍历可能在 src/ 等中间目录提前命中 sln → 返回错误根，
+			// 拼出 .../src/src/ForkPlus 双重路径（DirectoryNotFoundException）。
+			// 改为找 .git（git 仓根，目录或 worktree 文件均可），任何仓库布局都成立。
 			string directory = AppContext.BaseDirectory;
 			while (!string.IsNullOrWhiteSpace(directory))
 			{
-				if (File.Exists(Path.Combine(directory, "ForkPlus.sln")))
+				if (Directory.Exists(Path.Combine(directory, ".git")) || File.Exists(Path.Combine(directory, ".git")))
 				{
 					return directory;
 				}

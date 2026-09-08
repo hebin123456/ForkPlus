@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {

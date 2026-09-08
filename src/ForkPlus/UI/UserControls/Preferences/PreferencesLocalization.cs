@@ -4,14 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+// Migration note：HeaderedContentControl / HeaderedItemsControl 在 Avalonia 12 位于 Primitives 命名空间。
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Media;
+// Migration note：逻辑树遍历用 Avalonia 原生 LogicalExtensions（WPF LogicalTreeHelper.GetChildren 的等价物）。
+using Avalonia.LogicalTree;
 using System.Text.RegularExpressions;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json.Linq;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -28,17 +34,31 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private const string LanguagesDirectoryName = "Languages";
 
-		private static readonly DependencyProperty OriginalTextProperty = DependencyProperty.RegisterAttached("OriginalText", typeof(string), typeof(PreferencesLocalization));
+		// Migration note：WPF 里这些附加属性注册在静态类 PreferencesLocalization 上；
+		// Avalonia 的 AvaloniaProperty.RegisterAttached<TOwner,...> 要求 TOwner 是非静态的
+		// AvaloniaObject 派生类型（静态类做类型参数会报 CS0718），
+		// 故引入该内部占位类作为 owner。属性仍可附加到任意 AvaloniaObject，语义与 WPF 相同。
+		private sealed class AttachedPropertyOwner : global::Avalonia.AvaloniaObject
+		{
+		}
 
-		private static readonly DependencyProperty OriginalHeaderProperty = DependencyProperty.RegisterAttached("OriginalHeader", typeof(string), typeof(PreferencesLocalization));
+		private static readonly global::Avalonia.StyledProperty<string> OriginalTextProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalText");
 
-		private static readonly DependencyProperty OriginalContentProperty = DependencyProperty.RegisterAttached("OriginalContent", typeof(string), typeof(PreferencesLocalization));
+		private static readonly global::Avalonia.StyledProperty<string> OriginalHeaderProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalHeader");
 
-		private static readonly DependencyProperty OriginalPlaceholderProperty = DependencyProperty.RegisterAttached("OriginalPlaceholder", typeof(string), typeof(PreferencesLocalization));
+		private static readonly global::Avalonia.StyledProperty<string> OriginalContentProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalContent");
 
-		private static readonly DependencyProperty OriginalToolTipProperty = DependencyProperty.RegisterAttached("OriginalToolTip", typeof(string), typeof(PreferencesLocalization));
+		private static readonly global::Avalonia.StyledProperty<string> OriginalPlaceholderProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalPlaceholder");
 
-		private static readonly DependencyProperty OriginalTitleProperty = DependencyProperty.RegisterAttached("OriginalTitle", typeof(string), typeof(PreferencesLocalization));
+		private static readonly global::Avalonia.StyledProperty<string> OriginalToolTipProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalToolTip");
+
+		private static readonly global::Avalonia.StyledProperty<string> OriginalTitleProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<AttachedPropertyOwner, global::Avalonia.AvaloniaObject, string>("OriginalTitle");
 
 		private static readonly Dictionary<string, string> BuiltInLanguageNames = new Dictionary<string, string>
 		{
@@ -92,13 +112,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 		}
 
-		public static void Apply(DependencyObject root, string language)
+		public static void Apply(global::Avalonia.AvaloniaObject root, string language)
 		{
 			Dictionary<string, string> dictionary = GetDictionary(language);
-			ApplyRecursive(root, dictionary, new HashSet<DependencyObject>());
+			ApplyRecursive(root, dictionary, new HashSet<global::Avalonia.AvaloniaObject>());
 		}
 
-		public static void ApplyCurrent(DependencyObject root)
+		public static void ApplyCurrent(global::Avalonia.AvaloniaObject root)
 		{
 			Apply(root, ForkPlusSettings.Default.UiLanguage);
 		}
@@ -128,7 +148,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			return FormatCurrent(text, args).Replace("_", "__");
 		}
 
-		public static void ApplyElement(DependencyObject element, string language)
+		public static void ApplyElement(global::Avalonia.AvaloniaObject element, string language)
 		{
 			ApplyElementCore(element, GetDictionary(language));
 		}
@@ -269,40 +289,55 @@ namespace ForkPlus.UI.UserControls.Preferences
 			return result;
 		}
 
-		private static void ApplyRecursive(DependencyObject element, Dictionary<string, string> dictionary, HashSet<DependencyObject> visited)
+		private static void ApplyRecursive(global::Avalonia.AvaloniaObject element, Dictionary<string, string> dictionary, HashSet<global::Avalonia.AvaloniaObject> visited)
 		{
 			if (element == null || visited.Contains(element))
 			{
 				return;
 			}
 			visited.Add(element);
-			ApplyElementCore(element, dictionary);
-			IEnumerable logicalChildren;
-			try
+		ApplyElementCore(element, dictionary);
+		IEnumerable logicalChildren;
+		try
+		{
+			// Migration note：WPF LogicalTreeHelper.GetChildren(element) →
+			// Avalonia 的 LogicalExtensions.GetLogicalChildren（WpfCompat 的 LogicalTreeHelper
+			// 未提供 GetChildren，这里直接用 Avalonia 原生逻辑树遍历）。
+			logicalChildren = (element as global::Avalonia.LogicalTree.ILogical)?.GetLogicalChildren();
+		}
+		catch
+		{
+			return;
+		}
+		if (logicalChildren == null)
+		{
+			return;
+		}
+		foreach (object child in logicalChildren)
 			{
-				logicalChildren = LogicalTreeHelper.GetChildren(element);
-			}
-			catch
-			{
-				return;
-			}
-			foreach (object child in logicalChildren)
-			{
-				if (child is DependencyObject dependencyObject)
+				if (child is global::Avalonia.AvaloniaObject dependencyObject)
 				{
 					ApplyRecursive(dependencyObject, dictionary, visited);
 				}
 			}
-			if (element is FrameworkElement { ContextMenu: ContextMenu contextMenu })
+			if (element is global::Avalonia.Controls.Control { ContextMenu: ContextMenu contextMenu })
 			{
 				ApplyRecursive(contextMenu, dictionary, visited);
 			}
 		}
 
-		private static void ApplyElementCore(DependencyObject element, Dictionary<string, string> dictionary)
+		private static void ApplyElementCore(global::Avalonia.AvaloniaObject element, Dictionary<string, string> dictionary)
 		{
+			if (element is StyledElement { DataContext: global::ForkPlus.UI.Dialogs.WorkspaceViewModel })
+			{
+				return;
+			}
 			if (element is TextBlock textBlock)
 			{
+				if (IsWorkspaceToolbarTitleElement(element))
+				{
+					return;
+				}
 				if (!HasBinding(element, TextBlock.TextProperty))
 				{
 					string original = GetOriginal(element, OriginalTextProperty, textBlock.Text);
@@ -310,11 +345,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 				}
 			}
 			if (element is HeaderedContentControl headeredContentControl && headeredContentControl.Header is string header && !HasBinding(element, HeaderedContentControl.HeaderProperty))
-			{
-				string original = GetOriginal(element, OriginalHeaderProperty, header);
-				headeredContentControl.Header = Translate(original, dictionary);
-			}
-			if (element is HeaderedItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, HeaderedItemsControl.HeaderProperty))
+		{
+			string original = GetOriginal(element, OriginalHeaderProperty, header);
+			headeredContentControl.Header = Translate(original, dictionary);
+		}
+		if (element is HeaderedItemsControl headeredItemsControl && headeredItemsControl.Header is string itemsHeader && !HasBinding(element, HeaderedItemsControl.HeaderProperty))
 			{
 				string original = GetOriginal(element, OriginalHeaderProperty, itemsHeader);
 				headeredItemsControl.Header = Translate(original, dictionary);
@@ -337,10 +372,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 					placeholderTextBox.Placeholder = Translate(original, dictionary);
 				}
 			}
-			if (element is FrameworkElement frameworkElement && frameworkElement.ToolTip is string toolTip && !HasBinding(element, FrameworkElement.ToolTipProperty))
+			// Migration note：WPF FrameworkElement.ToolTip 实例属性 / Control.ToolTipProperty 在 Avalonia
+		// 是附加属性 ToolTip.Tip，读取用 ToolTip.GetTip，属性对象是 ToolTip.TipProperty。
+		if (element is global::Avalonia.Controls.Control frameworkElement && global::Avalonia.Controls.ToolTip.GetTip(frameworkElement) is string toolTip && !HasBinding(element, global::Avalonia.Controls.ToolTip.TipProperty))
 			{
 				string original = GetOriginal(element, OriginalToolTipProperty, toolTip);
-				frameworkElement.ToolTip = Translate(original, dictionary);
+				global::Avalonia.Controls.ToolTip.SetTip(frameworkElement,Translate(original, dictionary));
 			}
 			if (element is ToolbarButton toolbarButton)
 			{
@@ -349,17 +386,49 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			if (element is ToolbarDropDownButton toolbarDropDownButton)
 			{
+				if (toolbarDropDownButton.Name == "WorkspacesToolbarDropdownButton")
+				{
+					return;
+				}
 				string original = GetOriginal(element, OriginalTitleProperty, toolbarDropDownButton.Title);
 				toolbarDropDownButton.Title = Translate(original, dictionary);
 			}
 		}
 
-		private static bool HasBinding(DependencyObject element, DependencyProperty property)
+		private static bool IsWorkspaceToolbarTitleElement(global::Avalonia.AvaloniaObject element)
 		{
-			return BindingOperations.GetBindingExpressionBase(element, property) != null;
+			if (element is ToolbarDropDownButton toolbarDropDownButton)
+			{
+				return toolbarDropDownButton.Name == "WorkspacesToolbarDropdownButton";
+			}
+			if (element is StyledElement styledElement && styledElement.TemplatedParent is ToolbarDropDownButton templatedButton)
+			{
+				return templatedButton.Name == "WorkspacesToolbarDropdownButton";
+			}
+			if (element is global::Avalonia.Visual visual)
+			{
+				foreach (global::Avalonia.Visual ancestor in global::Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(visual))
+				{
+					if (ancestor is ToolbarDropDownButton ancestorButton)
+					{
+						return ancestorButton.Name == "WorkspacesToolbarDropdownButton";
+					}
+				}
+			}
+			return false;
 		}
 
-		private static string GetOriginal(DependencyObject element, DependencyProperty property, string current)
+		private static bool HasBinding(global::Avalonia.AvaloniaObject element, global::Avalonia.AvaloniaProperty property)
+	{
+		// Migration note：WPF 用 BindingOperations.GetBindingExpressionBase(element, property) 判断属性
+		// 是否被数据绑定占用，有绑定就跳过翻译，避免覆盖绑定值。
+		// Avalonia 12 没有公开 API 查询已有 Binding（WpfCompat 的 BindingCompat 也未提供），
+		// 只能恒返回 false（不跳过翻译）。Avalonia 的绑定与本地值同处 LocalValue 优先级，
+		// 绑定下一次推送会覆盖翻译值，风险可控；后续如需精确语义应给 BindingCompat 加查询 shim。
+		return false;
+	}
+
+		private static string GetOriginal(global::Avalonia.AvaloniaObject element, global::Avalonia.AvaloniaProperty property, string current)
 		{
 			string original = element.GetValue(property) as string;
 			if (original == null)

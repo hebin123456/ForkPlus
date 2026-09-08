@@ -1,0 +1,57 @@
+<TabItem xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.AccountRepositoriesTabItem" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <TabItem.DataTemplates>
+<DataTemplate DataType="local:AccountRepositoryItem">
+        <DockPanel Height="20" Margin="10,0,0,0" x:Name="TestDockPanel">
+          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Center" Margin="0,0,4,0" x:Name="IconImage">
+            <Image.Source>
+              <Binding Path="Icon" />
+            </Image.Source>
+          </Image>
+          <Button DockPanel.Dock="Right" VerticalAlignment="Center" Click="CloneButton_Click" x:Name="CloneButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+            <ToolTip.Tip>
+              <Binding Path="Tooltip" />
+            </ToolTip.Tip>
+            <Image Source="{DynamicResource DownloadIcon}" x:Name="StarButtonImage" />
+          </Button>
+          <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" x:Name="NameTextBlock">
+            <TextBlock.Text>
+              <Binding Path="Title" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DockPanel>
+      </DataTemplate>
+<DataTemplate DataType="local:AccountHeaderItem">
+        <Grid Height="20">
+          <Border HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,0">
+            <TextBlock Margin="2,0,0,0" FontSize="13.5" FontWeight="Medium" VerticalAlignment="Center" x:Name="NameTextBlock">
+              <TextBlock.Text>
+                <Binding Path="Title" />
+              </TextBlock.Text>
+            </TextBlock>
+          </Border>
+        </Grid>
+      </DataTemplate>
+  </TabItem.DataTemplates>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="30" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <controls:FilterTextBox Grid.Row="0" Margin="4" x:Name="FilterTextBox" />
+    <ListBox Grid.Row="1" BorderThickness="0" Margin="0,0,0,0" x:Name="RepositoriesListBox">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <ContentControl>
+            <ContentControl.Content>
+              <Binding />
+            </ContentControl.Content>
+          </ContentControl>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <local:FallbackUserControl Grid.Row="0" Grid.RowSpan="2" x:Name="FallbackUserControl" IsVisible="False" />
+  </Grid>
+</TabItem>

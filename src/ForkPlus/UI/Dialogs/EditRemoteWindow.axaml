@@ -1,0 +1,98 @@
+<dialogs:ForkPlusDialogWindow MinHeight="220" Width="630" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.EditRemoteWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <dialogs:ForkPlusDialogWindow.Resources>
+    <ResourceDictionary>
+      <ControlTheme x:Key="AccountComboBoxItemStyle" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        
+      
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="ItemType" />
+                  </DataTrigger.Binding>
+                  <Setter Property="Height" Value="1" />
+                  <Setter Property="IsEnabled" Value="False" />
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="ComboBoxItem">
+                        <Separator HorizontalAlignment="Stretch" Margin="0" />
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+    --></ControlTheme>
+    </ResourceDictionary>
+  </dialogs:ForkPlusDialogWindow.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="32" />
+        <RowDefinition Height="32" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Remote:" />
+      <controls:ReferenceTextBox TextChanged="RemoteNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Height="24" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Remote name" x:Name="RemoteNameTextBox" />
+      <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Repository Url:" />
+      <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,53,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
+      <controls:DropDownButton Grid.Row="1" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton">
+<!-- Migration note：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+        <controls:DropDownButton.ContextMenu>
+          <ContextMenu Opened="NetworkProtocolContextMenu_Opened" />
+        </controls:DropDownButton.ContextMenu>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="HTTPS" Margin="2,0,2,0" FontWeight="Medium" Foreground="{DynamicResource AccentBrush}" x:Name="NetworkProtocolTextBlock" />
+          <Path Data="F1M0,0L2.667,2.66665 5.3334,0 5.3334,-1.78168 2.6667,0.88501 0,-1.78168 0,0z" Fill="{DynamicResource AccentBrush}" HorizontalAlignment="Center" Margin="2,2,2,2" VerticalAlignment="Center" x:Name="arrow" />
+        </StackPanel>
+      </controls:DropDownButton>
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" IsChecked="True" Content="Sync submodule URL with parent repository" x:Name="SyncCheckBox" />
+      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Account:" FontSize="13" x:Name="AccountsTextBlock" />
+      <ComboBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="AccountsComboBox_SelectionChanged" x:Name="AccountsComboBox" ItemContainerTheme="{DynamicResource AccountComboBoxItemStyle}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <DockPanel>
+              <Image DockPanel.Dock="Left" Height="16" Width="16" Margin="0,0,4,0">
+                <Image.Source>
+                  <Binding Path="Icon" />
+                </Image.Source>
+              </Image>
+              <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="13" Margin="0,0,4,0">
+                <TextBlock.Text>
+                  <Binding Path="Title" />
+                </TextBlock.Text>
+              </TextBlock>
+              <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}">
+                <TextBlock.Text>
+                  <Binding Path="Description" />
+                </TextBlock.Text>
+              </TextBlock>
+            </DockPanel>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" Theme="{DynamicResource CircularProgressBar}" IsVisible="False" />
+      <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" HorizontalAlignment="Right" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" x:Name="StatusImage" IsVisible="False" />
+      <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+        <TextBlock Margin="8,3,0,0" FontSize="13" x:Name="StatusTextBlock" IsVisible="False" />
+        <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Click="TestButton_Click" x:Name="TestButton" Theme="{DynamicResource TextButtonStyle}" IsVisible="False" />
+        <Button Content="Configure SSH Keys" Margin="4,0,0,0" HorizontalAlignment="Left" Click="ConfigureSSHKeyButton_Click" x:Name="ConfigureSSHKeyButton" Theme="{DynamicResource TextButtonStyle}" IsVisible="False" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

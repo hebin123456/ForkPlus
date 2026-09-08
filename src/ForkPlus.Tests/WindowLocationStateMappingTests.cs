@@ -1,6 +1,9 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.UI.Helpers;
 using Xunit;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.Tests
 {
@@ -15,34 +18,34 @@ namespace ForkPlus.Tests
 	public class WindowLocationStateMappingTests
 	{
 		[Theory]
-		[InlineData(WindowState.Normal, 1)]     // SW_NORMAL
-		[InlineData(WindowState.Minimized, 2)]  // SW_SHOWMINIMIZED
-		[InlineData(WindowState.Maximized, 3)]  // SW_SHOWMAXIMIZED
-		public void ToShowCmd_MapsToWin32ShowCmdValues(WindowState state, int expectedShowCmd)
+		[InlineData(global::Avalonia.Controls.WindowState.Normal, 1)]     // SW_NORMAL
+		[InlineData(global::Avalonia.Controls.WindowState.Minimized, 2)]  // SW_SHOWMINIMIZED
+		[InlineData(global::Avalonia.Controls.WindowState.Maximized, 3)]  // SW_SHOWMAXIMIZED
+		public void ToShowCmd_MapsToWin32ShowCmdValues(global::Avalonia.Controls.WindowState state, int expectedShowCmd)
 		{
 			Assert.Equal(expectedShowCmd, WindowLocationStateExtensions.ToShowCmd(state));
 		}
 
 		[Theory]
-		[InlineData(1, WindowState.Normal)]     // SW_NORMAL
-		[InlineData(2, WindowState.Minimized)]  // SW_SHOWMINIMIZED
-		[InlineData(3, WindowState.Maximized)]  // SW_SHOWMAXIMIZED
-		public void FromShowCmd_MapsToCorrectWpfWindowState(int showCmd, WindowState expectedState)
+		[InlineData(1, global::Avalonia.Controls.WindowState.Normal)]     // SW_NORMAL
+		[InlineData(2, global::Avalonia.Controls.WindowState.Minimized)]  // SW_SHOWMINIMIZED
+		[InlineData(3, global::Avalonia.Controls.WindowState.Maximized)]  // SW_SHOWMAXIMIZED
+		public void FromShowCmd_MapsToCorrectWpfWindowState(int showCmd, global::Avalonia.Controls.WindowState expectedState)
 		{
 			Assert.Equal(expectedState, WindowLocationStateExtensions.FromShowCmd(showCmd));
 		}
 
 		[Theory]
-		[InlineData(WindowState.Normal)]
-		[InlineData(WindowState.Minimized)]
-		[InlineData(WindowState.Maximized)]
-		public void ShowCmdRoundTrip_PreservesWindowState(WindowState original)
+		[InlineData(global::Avalonia.Controls.WindowState.Normal)]
+		[InlineData(global::Avalonia.Controls.WindowState.Minimized)]
+		[InlineData(global::Avalonia.Controls.WindowState.Maximized)]
+		public void ShowCmdRoundTrip_PreservesWindowState(global::Avalonia.Controls.WindowState original)
 		{
 			// 保存路径：WindowState → ToShowCmd → 存入 Win32 placement.ShowCmd
 			// 读取路径：placement.ShowCmd → FromShowCmd → WindowState
 			// 这正是 GetWindowLocationState/SetWindowLocationState 的往返。
 			int showCmd = WindowLocationStateExtensions.ToShowCmd(original);
-			WindowState restored = WindowLocationStateExtensions.FromShowCmd(showCmd);
+			global::Avalonia.Controls.WindowState restored = WindowLocationStateExtensions.FromShowCmd(showCmd);
 
 			Assert.Equal(original, restored);
 		}
@@ -52,9 +55,9 @@ namespace ForkPlus.Tests
 		{
 			// 历史 bug：旧代码 (WindowState)3 产生无效枚举值 3。
 			// 新 FromShowCmd 对未知值（含 0、4、99 等）一律回退 Normal，绝不产生非法枚举值。
-			Assert.Equal(WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(0));
-			Assert.Equal(WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(4));
-			Assert.Equal(WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(99));
+			Assert.Equal(global::Avalonia.Controls.WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(0));
+			Assert.Equal(global::Avalonia.Controls.WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(4));
+			Assert.Equal(global::Avalonia.Controls.WindowState.Normal, WindowLocationStateExtensions.FromShowCmd(99));
 		}
 
 		[Fact]
@@ -65,8 +68,8 @@ namespace ForkPlus.Tests
 			int[] validShowCmds = { 1, 2, 3 };
 			foreach (int showCmd in validShowCmds)
 			{
-				WindowState state = WindowLocationStateExtensions.FromShowCmd(showCmd);
-				Assert.True(System.Enum.IsDefined(typeof(WindowState), state),
+				global::Avalonia.Controls.WindowState state = WindowLocationStateExtensions.FromShowCmd(showCmd);
+				Assert.True(System.Enum.IsDefined(typeof(global::Avalonia.Controls.WindowState), state),
 					"FromShowCmd(" + showCmd + ") 产生了未定义的 WindowState 值 " + (int)state);
 			}
 		}
@@ -75,11 +78,15 @@ namespace ForkPlus.Tests
 		public void DirectCastShowCmdToWindowState_WouldBeWrong()
 		{
 			// 文档化为何不能直接强转：记录旧 bug 的具体表现。
-			// SW_SHOWMAXIMIZED(3) 直接强转 (WindowState)3 既不是 Normal(0)、Minimized(1)、Maximized(2)，
-			// 是未定义值。这条断言永远成立，作为"为什么需要 FromShowCmd"的活文档。
+			// WPF 时代：(WindowState)3 是未定义值（Normal=0/Minimized=1/Maximized=2）。
+			// 迁移适配：Avalonia 的 WindowState 多了 FullScreen=3——强转 (WindowState)3
+			// 不再产生非法枚举，而是**语义错误**的 FullScreen（最大化窗口被恢复成全屏）。
+			// 坑换了形态依然存在：唯一正确路径仍是 FromShowCmd(SW_SHOWMAXIMIZED)→Maximized。
 			int swShowMaximized = 3;
+			global::Avalonia.Controls.WindowState directCast = (global::Avalonia.Controls.WindowState)swShowMaximized;
 
-			Assert.False(System.Enum.IsDefined(typeof(WindowState), (WindowState)swShowMaximized));
+			Assert.NotEqual(global::Avalonia.Controls.WindowState.Maximized, directCast);
+			Assert.Equal(global::Avalonia.Controls.WindowState.FullScreen, directCast);
 		}
 	}
 }

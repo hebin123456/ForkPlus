@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI
 {
@@ -60,7 +60,6 @@ namespace ForkPlus.UI
 				for (int j = 0; j < userBorderColors.Length; j++)
 				{
 					SolidColorBrush solidColorBrush = CreateBrush(userBorderColors[j], blendColor, opacity);
-					solidColorBrush.Freeze();
 					list.Add(solidColorBrush);
 				}
 			}

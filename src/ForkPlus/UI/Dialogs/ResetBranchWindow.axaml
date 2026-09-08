@@ -1,0 +1,66 @@
+<dialogs:ForkPlusDialogWindow Width="590" SizeToContent="Height" xmlns="https://github.com/avaloniaui" xmlns:commands="clr-namespace:ForkPlus.Git.Commands" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ResetBranchWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="ActiveBranchGitPointView" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Move to:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Reset type:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="ResetTypeCombobox_SelectionChanged" x:Name="ResetTypeCombobox">
+        <ComboBoxItem Tag="{x:Static commands:BranchResetType.Soft}">
+          <DockPanel Width="420">
+            <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Fill="#FF34C84A" Margin="0,0,4,0" />
+            <TextBlock DockPanel.Dock="Left" Text="Soft" Width="70" />
+            <TextBlock DockPanel.Dock="Right" Text="S" Width="20" HorizontalAlignment="Left" />
+            <TextBlock Text="Keep all changes. Stage differences" VerticalAlignment="Center" FontSize="13" />
+          </DockPanel>
+        </ComboBoxItem>
+        <!-- Migration note（2026-09-07 修复，"重置类型下拉框点了啥也没有"）：ComboBoxItem 上
+             绝不能写 IsSelected="True"（WPF 习惯）。Avalonia 里该本地值在项加入 Items 前设置，
+             routed IsSelectedChanged 到不了 ComboBox，于是存活到容器物化时刻——
+             SelectingItemsControl.ContainerForItemPreparedOverride 检测到 IsSet(IsSelected)，
+             走 UpdateSelection(index, true, toggleModifier:true)，单选 toggle 语义
+             SelectedIndex=(SelectedIndex==index)?-1:index 把已选中项反选成 -1，触发空
+             AddedItems 的 SelectionChanged；本文件后置的处理器 e.AddedItems[0] 抛
+             IndexOutOfRangeException，恰好中断 PanelContainerGenerator 物化循环——
+             后续项不物化（下拉只剩 2 项）且选中丢失（关闭态空白）。初始选中由构造器
+             SelectedIndex=1 编程式完成（走 MarkContainerSelected/SetCurrentValue 路径，
+             不产生 IsSet 本地值，安全）。 -->
+          <ComboBoxItem Tag="{x:Static commands:BranchResetType.Mixed}">
+          <DockPanel Width="420">
+            <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Fill="#FFFDBE41" Margin="0,0,4,0" />
+            <TextBlock DockPanel.Dock="Left" Text="Mixed" Width="70" />
+            <TextBlock DockPanel.Dock="Right" Text="M" Width="20" HorizontalAlignment="Left" />
+            <TextBlock Text="Keep all changes. Unstage differences" VerticalAlignment="Center" FontSize="13" />
+          </DockPanel>
+        </ComboBoxItem>
+        <ComboBoxItem Tag="{x:Static commands:BranchResetType.Hard}">
+          <DockPanel Width="420">
+            <Ellipse DockPanel.Dock="Left" Width="12" Height="12" Fill="#FFFA4B49" Margin="0,0,4,0" />
+            <TextBlock DockPanel.Dock="Left" Text="Hard" Width="70" />
+            <TextBlock DockPanel.Dock="Right" Text="H" Width="20" HorizontalAlignment="Left" />
+            <TextBlock Text="Discard all local changes" VerticalAlignment="Center" FontSize="13" />
+          </DockPanel>
+        </ComboBoxItem>
+      </ComboBox>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

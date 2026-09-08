@@ -1,8 +1,10 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -89,26 +91,28 @@ namespace ForkPlus.UI.Dialogs
 				new ShortcutRow("Enter", "Open Repository"))
 		};
 
+		// Migration note（2026-09-06 生产 bug）：键位徽章展示的是键名原文（Delete/Ctrl/Enter...），
+		// 不能参与 ForkPlusDialogWindow 的 Loaded 期自动本地化——zh-Hans 字典里有 "Delete"→"删除"，
+		// 会把键位徽章错误翻译成中文。窗口全部可见文案（段落标题/描述/标题栏 chrome）已在构造期
+		// 显式 Translate，关闭自动本地化无副作用（PreferencesWindow 同款口径）。
+		protected override bool ApplyAutomaticLocalization => false;
+
 		public KeyboardShortcutsWindow()
 		{
 			base.Title = PreferencesLocalization.Current("Keyboard Shortcuts");
 			base.ShowLogo = false;
+			// 这是“只读信息”窗口：按原版语义只需要一个 Close（Cancel）按钮，不需要 Submit。
+			base.ShowSubmitButton = false;
+			base.ShowCancelButton = true;
 			base.Width = 720.0;
 			base.Height = 620.0;
-			base.SizeToContent = SizeToContent.Manual;
+			base.SizeToContent = global::Avalonia.Controls.SizeToContent.Manual;
 			Content = CreateContent();
-			if (TitleTextBlock != null && Footer != null)
-			{
-				ApplyDialogChrome();
-			}
-			else
-			{
-				Initialized += KeyboardShortcutsWindow_Initialized;
-			}
-		}
-
-		private void KeyboardShortcutsWindow_Initialized(object sender, System.EventArgs e)
-		{
+			// Migration note（根因，模块25 E2E 实证，FileHistoryWindow/SaveAsPatchWindow 同类 bug）：
+			// WPF 原版在 Initialized 事件里 ApplyDialogChrome——WPF 的 Initialized 在构造完成后
+			// 触发。Avalonia 12 的 Initialized 在 TopLevel 基类构造链中就触发（早于本构造器
+			// 的订阅语句），下方订阅是死代码：ApplyDialogChrome 从不执行 → Cancel 按钮恒显示
+			// "Cancel"（WPF 原版为 "Close"）+ 描述文本丢失。Avalonia 等价时机 = 构造器尾部。
 			ApplyDialogChrome();
 		}
 
@@ -116,8 +120,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.DialogTitle = Translate("Keyboard Shortcuts");
 			base.DialogDescription = Translate("Available keyboard shortcuts");
-			base.SubmitButtonTitle = Translate("Close");
-			base.ShowCancelButton = false;
+			base.CancelButtonTitle = Translate("Close");
+			base.ShowSubmitButton = false;
+			base.ShowCancelButton = true;
 		}
 
 		private static Grid CreateContent()
@@ -126,13 +131,17 @@ namespace ForkPlus.UI.Dialogs
 			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0.0) });
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-			grid.RowDefinitions.Add(new RowDefinition());
+			// 中间区域必须是 *，否则 ScrollViewer 可能被 Auto 行撑开导致无法滚动。
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
 			ScrollViewer scrollViewer = new ScrollViewer
 			{
-				HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-				VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+				HorizontalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+				VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Visible,
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				VerticalAlignment = VerticalAlignment.Stretch,
+				Focusable = true,
 				Margin = new Thickness(0.0, 4.0, 0.0, 0.0)
 			};
 			StackPanel stackPanel = new StackPanel();

@@ -1,8 +1,12 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using ForkPlus.UI.WpfCompat;
 
 namespace ForkPlus.UI.Commands
 {
@@ -33,7 +37,11 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(GitModule gitModule, RepositoryData repositoryData)
 		{
-			new RepositorySettingsWindow(gitModule, repositoryData).ShowDialog();
+			// 居中到主窗口所在屏幕（原版 WPF：Owner + CenterOwner）。
+			Window owner = MainWindow.Instance;
+			new RepositorySettingsWindow(gitModule, repositoryData)
+				.SetOwnerAndCenter(owner)
+				.ShowDialog(owner);
 			Application.Current.ActiveRepositoryUserControl()?.InvalidateAndRefresh(SubDomain.All);
 		}
 	}

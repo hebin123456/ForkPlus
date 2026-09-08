@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Jobs;
@@ -15,8 +15,10 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {

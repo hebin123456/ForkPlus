@@ -90,6 +90,15 @@
     "Failed to resolve file path: {0}": "Failed to resolve file path: {0}",
     "Reveal in ForkPlus": "Reveal in ForkPlus",
     "Command History": "Command History",
-    "Command Output": "Command Output"
+    "Command Output": "Command Output",
+    "Credentials": "Credentials",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.",
+    "Host (e.g. github.com)": "Host (e.g. github.com)",
+    "Ask Again for All Hosts": "Ask Again for All Hosts",
+    "Never ask": "Never ask",
+    "Ask": "Ask",
+    "No saved credentials yet.": "No saved credentials yet.",
+    "Host": "Host",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "When enabled, this credential is used silently without prompting; turn it off to be asked again."
   }
 }

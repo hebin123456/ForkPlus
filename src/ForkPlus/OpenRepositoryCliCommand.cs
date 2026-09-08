@@ -1,7 +1,10 @@
 using System;
 using System.IO;
-using System.Windows;
+using Avalonia;
 using ForkPlus.UI;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus
 {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Controls.Editor.Diff;
@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Controls.Commands
 			menu.AddMenuItem("Copy as Patch", delegate
 			{
 				Execute(editor);
-			}, null, new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift));
+			}, null, new KeyGesture(Key.C, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift));
 		}
 
 		public static void Execute(DiffCodeEditor editor)

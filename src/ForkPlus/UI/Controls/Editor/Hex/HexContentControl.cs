@@ -1,9 +1,12 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {
@@ -60,8 +63,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showAsciiCheckBox.Checked += ShowAsciiCheckBox_Changed;
-			_showAsciiCheckBox.Unchecked += ShowAsciiCheckBox_Changed;
+			_showAsciiCheckBox.IsCheckedChanged+=ShowAsciiCheckBox_Changed;
 			DockPanel.SetDock(_showAsciiCheckBox, Dock.Left);
 			toolbar.Children.Add(_showAsciiCheckBox);
 
@@ -73,21 +75,15 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-			_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+			_showOffsetCheckBox.IsCheckedChanged+=ShowOffsetCheckBox_Changed;
 			DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
 			toolbar.Children.Add(_showOffsetCheckBox);
 
 			// 搜索按钮
-			Button searchButton = new Button
+			Button searchButton = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Button
 			{
-				Content = "🔍",
-				ToolTip = PreferencesLocalization.Current("Search (ASCII or hex bytes like 41 42)"),
-				Width = 28,
-				Height = 22,
-				Margin = new Thickness(0, 0, 4, 0),
-				VerticalAlignment = VerticalAlignment.Center
-			};
+				Content = "🔍",				Width = 28,				Height = 22,				Margin = new Thickness(0, 0, 4, 0),				VerticalAlignment = VerticalAlignment.Center
+			},PreferencesLocalization.Current("Search (ASCII or hex bytes like 41 42)"));
 			searchButton.Click += SearchButton_Click;
 			DockPanel.SetDock(searchButton, Dock.Left);
 			toolbar.Children.Add(searchButton);

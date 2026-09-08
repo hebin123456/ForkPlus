@@ -1,7 +1,11 @@
 using System;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -21,24 +25,24 @@ namespace ForkPlus.UI.UserControls
 
 		public EventHandler<DropEventArgs> ItemsDrop;
 
-		protected override void OnDragOver(DragEventArgs e)
+		protected void OnDragOver(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
-			if (e.Data.GetData(DragItemsFormat) is MultiselectionTreeViewItem[])
+			e.DragEffects= DragDropEffects.None;
+			if (e.WpfData().GetData(DragItemsFormat) is MultiselectionTreeViewItem[])
 			{
 				base.OnDragOver(e);
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 			}
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		protected void OnDrop(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
-			if (e.Data.GetData(DragItemsFormat) is MultiselectionTreeViewItem[] source)
+			e.DragEffects= DragDropEffects.None;
+			if (e.WpfData().GetData(DragItemsFormat) is MultiselectionTreeViewItem[] source)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 				ChangedFile[] files = source.CompactMap((MultiselectionTreeViewItem x) => (x as FileListItem)?.ChangedFile);
 				ItemsDrop?.Invoke(this, new DropEventArgs(files));
 			}

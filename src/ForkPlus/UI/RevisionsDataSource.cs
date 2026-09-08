@@ -2,13 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {
@@ -274,21 +278,23 @@ namespace ForkPlus.UI
 			RevisionVisualGraph revisionVisualGraph = RevisionVisualGraph.Create(newRevisionStorage, _references, _stashes, _showStashesInRevisionList, _reflog, _visualGraph.CollapseState);
 			if (_visualGraph.RevisionStorage.Count != revisionVisualGraph.RevisionStorage.Count)
 			{
-				if (_visualGraph.Count == revisionVisualGraph.Count)
-				{
-					_ = _visualGraph.RevisionStorage.Count;
-					_ = revisionVisualGraph.RevisionStorage.Count;
-				}
-				for (int i = 0; i < _visualGraph.Count; i++)
-				{
-				}
 				int count = _visualGraph.Count;
 				_visualGraph = revisionVisualGraph;
 				_contextSearch = contextSearch;
-				for (int j = count; j < _visualGraph.Count; j++)
+				int newCount = _visualGraph.Count;
+				if (newCount > count)
 				{
-					DecoratedRevision decoratedRevisionAtRow = GetDecoratedRevisionAtRow(j);
-					this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, decoratedRevisionAtRow, j));
+					// 性能修复（大仓库分页加载卡顿/崩溃）：原实现对每个新增行单独触发一次
+					// CollectionChanged(Add) —— 一页 10000 条提交就是 10000 次 UI 通知，
+					// 每次通知都会穿透 ItemsSourceView/SelectionModel/虚拟化面板，极易卡死或崩溃。
+					// 改为：按行序批量物化新增行（图轨道计算必须按行序，无法省略），
+					// 然后只发一次批量 Add 通知。
+					// 注意：_decoratedRevisions 是惰性物化的，其 Count 可能小于 count，
+					// DecorateRows 采用追加语义，必须从 _decoratedRevisions.Count 开始补齐，
+					// 否则列表索引与行号错位（IndexOf 依赖 Row == 列表索引）。
+					DecorateRows(new Range(_decoratedRevisions.Count, newCount));
+					List<DecoratedRevision> added = _decoratedRevisions.GetRange(count, newCount - count);
+					this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, added, count));
 				}
 			}
 		}
@@ -531,7 +537,7 @@ namespace ForkPlus.UI
 				else
 				{
 					RevisionHeader[] revisionHeaders = gitCommandResult.Result;
-					Application.Current.Dispatcher.Async(delegate
+					global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 					{
 						if (revisionVisualGraph != _visualGraph)
 						{
@@ -699,7 +705,7 @@ namespace ForkPlus.UI
 					}
 					else
 					{
-						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes.Items, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
+						global::Avalonia.Media.IImage remoteIcon = IReadOnlyListExtensions.FirstItem(remotes.Items, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
 						list.Add(new RemoteBranchViewModel(graphColumn, remoteBranch, remoteIcon));
 					}
 				}
@@ -824,7 +830,9 @@ namespace ForkPlus.UI
 
 		bool IList.Contains(object value)
 		{
-			return _decoratedRevisions.ContainsItem((DecoratedRevision x) => x == value);
+			// 与 IndexOf 语义对齐（引用匹配当前已物化行）。WPF 版遍历 _decoratedRevisions
+			// 引用比较，行为等价；改为复用 IndexOf 的 O(1) 快路径。
+			return ((IList)this).IndexOf(value) >= 0;
 		}
 
 		void IList.Clear()
@@ -834,6 +842,23 @@ namespace ForkPlus.UI
 
 		int IList.IndexOf(object value)
 		{
+			// v3.12 修复（启动后底部 tab/右键菜单状态错乱）：原先恒返回 -1，违反 IList 契约。
+			// Avalonia SelectionModel 的 item→index 解析（SelectedItems.Add / SelectedItem /
+			// ScrollIntoView 等）全部依赖 IndexOf：返回 -1 时 SelectedItems.Add(item) 会产生
+			// 无法解析索引的"孤儿选中项"，后续按索引的选中（如 ApplyContainerSelection 的
+			// container.IsSelected=true）再叠加一次 → 同一项在 SelectedItems 里出现两次 →
+			// 被误判为双选（Range）→ 底部"提交/文件树"tab 变灰、右键菜单变成多选菜单，
+			// 直到用户手动点击其他行再点回才恢复。
+			// DecoratedRevision.Row 与本数据源索引 1:1（DecorateRows 按 row 递增 Add），
+			// 用 Row + 引用校验做 O(1) 精确解析；非当前实例（如 Reload 后的旧实例）返回 -1。
+			if (value is DecoratedRevision decoratedRevision)
+			{
+				int row = decoratedRevision.Row;
+				if (row >= 0 && row < _decoratedRevisions.Count && ReferenceEquals(_decoratedRevisions[row], decoratedRevision))
+				{
+					return row;
+				}
+			}
 			return -1;
 		}
 
@@ -857,9 +882,20 @@ namespace ForkPlus.UI
 			throw new NotImplementedException();
 		}
 
+		// Migration note：WPF 版返回 _decoratedRevisions.GetEnumerator()（仅"已物化"行，Reload 后为空）。
+		// WPF ItemContainerGenerator 生成容器走 Count + IList 索引器（GetDecoratedRevisionAtRow 惰性物化），
+		// 枚举器从不参与容器生成 → 空枚举器在 WPF 下无影响（潜伏契约违背：Count=1 但枚举 0 项）。
+		// Avalonia 12 PanelContainerGenerator.OnItemsChanged 的 Reset 分支改用 foreach 枚举 ItemsView
+		// （ItemCollection.GetEnumerator → Source.GetEnumerator）生成容器 → 枚举空列表 = 0 容器 = 列表空白。
+		// 修正：按行枚举（与索引器/Count 语义一致，逐行惰性物化），[probe] 迁移期实证。
+		// 注：当前 ItemsPanel 是非虚拟化 StackPanel，大仓库全量物化有性能代价，后续切 VirtualizingStackPanel 优化。
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _decoratedRevisions.GetEnumerator();
+			int count = Count;
+			for (int i = 0; i < count; i++)
+			{
+				yield return GetDecoratedRevisionAtRow(i);
+			}
 		}
 	}
 }

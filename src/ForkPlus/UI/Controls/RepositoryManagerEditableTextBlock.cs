@@ -1,10 +1,14 @@
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Controls
 {
 	public class RepositoryManagerEditableTextBlock : EditableTextBlock
 	{
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property != EditableTextBlock.IsInEditModeProperty)
@@ -17,9 +21,19 @@ namespace ForkPlus.UI.Controls
 				{
 					if (success)
 					{
-						base.Value = newString;
+						if (DataContext is RepositoryManagerRepositoryItem repositoryItem)
+						{
+							repositoryItem.Name = newString;
+						}
+						else
+						{
+							SetCurrentValue(EditableTextBlock.ValueProperty, newString);
+						}
 					}
-					base.IsInEditMode = false;
+					if (DataContext is RepositoryManagerTreeViewItem treeViewItem)
+					{
+						treeViewItem.IsInEditMode = false;
+					}
 				});
 			}
 			else

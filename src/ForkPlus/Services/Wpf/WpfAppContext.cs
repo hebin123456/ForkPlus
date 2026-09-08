@@ -1,5 +1,6 @@
 using System;
 using ForkPlus.Services;
+using Avalonia.Threading;
 
 namespace ForkPlus.Services.Wpf
 {
@@ -12,9 +13,9 @@ namespace ForkPlus.Services.Wpf
 
 		public void Shutdown()
 		{
-			System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+			global::Avalonia.Application.Current?.Dispatcher.Invoke(() =>
 			{
-				System.Windows.Application.Current.Shutdown();
+				global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
 			});
 		}
 	}

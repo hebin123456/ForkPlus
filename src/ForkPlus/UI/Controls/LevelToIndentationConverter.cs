@@ -1,21 +1,23 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Controls
 {
 	public class LevelToIndentationConverter : IValueConverter
 	{
-		private static readonly double Offset = 10.0;
+		private static readonly double IndentStep = 10.0;
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			double num = 0.0;
-			if (value is int)
+			if (value is not int level)
 			{
-				num = (double)((int)value - 1) * Offset;
+				return new GridLength(0.0);
 			}
-			return num;
+			int indentLevel = Math.Max(0, level - 1);
+			return new GridLength(indentLevel * IndentStep);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

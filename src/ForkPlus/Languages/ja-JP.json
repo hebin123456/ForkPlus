@@ -22,6 +22,8 @@
     "Accepted": "そのまま採用",
     "Share": "割合",
     "Analyzing AI authorship...": "AI オーサーシップを分析中...",
+    "Unknown": "不明",
+    "Enable AI attribution in Preferences → Git to see AI authorship statistics.": "AI オーサーシップ統計を表示するには、設定 → Git で AI 帰属を有効にしてください。",
     "Human": "人間",
     "Mixed (AI + human edits)": "混合（AI + 人間による編集）",
     "{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits": "{0}：追加 {2} 行のうち {1} 行が AI 生成（{3}%）· {5} コミット中 {4} コミットにオーサーシップデータあり",
@@ -2301,6 +2303,15 @@
     "Import Complete": "インポート完了",
     "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "インポートすると現在の ForkPlus 構成が上書きされます。\nForkPlus はインポート後に再起動します。\n\n続行しますか？",
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "構成をインポートしました。\nForkPlus は新しい設定を適用するため、まもなく再起動します。",
-    "Force push": "強制プッシュ"
+    "Force push": "強制プッシュ",
+    "Credentials": "認証情報",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "保存済みの HTTP(S) 認証情報。ユーザー名は自動的に記憶されます。「パスワードを記憶」はダイアログにパスワードを事前入力し、「確認しない」は確認なしで使用します。ここで認証情報を事前に追加でき、スイッチでいつでも確認ダイアログを再有効化できます。",
+    "Host (e.g. github.com)": "ホスト（例: github.com）",
+    "Ask Again for All Hosts": "すべてのホストで再確認",
+    "Never ask": "確認しない",
+    "Ask": "確認する",
+    "No saved credentials yet.": "保存済みの認証情報はありません。",
+    "Host": "ホスト",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "オンにすると確認なしでこの認証情報を使用します。オフにすると再度確認されます。"
   }
 }

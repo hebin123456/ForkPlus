@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using ForkPlus.Git.Diff.Presentation;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

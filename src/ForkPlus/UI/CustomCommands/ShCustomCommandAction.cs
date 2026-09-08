@@ -5,6 +5,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.CustomCommands
 {
@@ -58,7 +59,7 @@ namespace ForkPlus.UI.CustomCommands
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
 				GitCommandResult<string> customCommandResult = new RunShCustomCommandActionShellCommand().Execute(this, env, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!customCommandResult.Succeeded)
 					{

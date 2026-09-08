@@ -1,13 +1,14 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data;
+using Avalonia.Markup;
 using ForkPlus.Git;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter : MarkupExtension, IValueConverter
+	public class InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -21,7 +22,11 @@ namespace ForkPlus.UI.Dialogs
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return ((InteractiveRebaseComboBoxItem)value).Action;
+			if (value is InteractiveRebaseComboBoxItem item)
+			{
+				return item.Action;
+			}
+			return BindingOperations.DoNothing;
 		}
 
 		public override object ProvideValue(IServiceProvider serviceProvider)

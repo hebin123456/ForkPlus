@@ -1,12 +1,13 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data;
+using Avalonia.Markup;
 using ForkPlus.Accounts;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.UserControls
 {
-	public class IssueStateToColorConverter : MarkupExtension, IValueConverter
+	public class IssueStateToColorConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -15,9 +16,9 @@ namespace ForkPlus.UI.UserControls
 				switch (issueState)
 				{
 				case IssueState.Open:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case IssueState.Closed:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

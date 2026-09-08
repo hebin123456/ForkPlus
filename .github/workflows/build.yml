@@ -1,261 +1,386 @@
-name: Build
+# ForkPlus 三平台自动构建与发布
+#
+# 触发：push v* 标签 / 手动（workflow_dispatch，仅构建+测试不发 Release）
+# 产物：self-contained publish 目录（自带 .NET 10 运行时，目标机无需安装任何框架）。
+#       主程序与 AskPass/RI 两个 git 子进程 helper 三 exe 全部自包含发布到同一目录
+#       （helper 由 git 以独立进程拉起，漏掉它们则无运行时机器上凭证输入/交互式变基
+#       直接挂）。含各平台 biturbo native 库（构建期由 workflow 显式 curl +
+#       ForkPlus.csproj 的 RestoreBiturbo Target 兜底，从 hebin123456/Biturbo latest release 拉取：
+#       win→biturbo.dll / linux→libbiturbo.so / macos→libbiturbo.dylib）+ tokei 代码统计工具
+#       （hebin123456/tokei latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压）+
+#       OxyPlot.Avalonia 图表库 nupkg（hebin123456/oxyplot-avalonia fork latest release，
+#       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）。
+#       linux-x64 自包含实测约 125M。
+#
+# 发布链：build（三平台矩阵）+ test（ubuntu 全量单测/E2E）全绿 → release job 下载
+#       三平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
+#       提取当前版本章节作为正文，softprops/action-gh-release 发布（generate_release_notes
+#       追加自动变更清单与 Full Changelog 对比链接）。未打 tag 的手动运行只出 Artifacts。
+#
+# 平台对应关系（与 Biturbo release 资产架构一致）：
+#   windows-latest → x64（biturbo.dll = x86_64）
+#   ubuntu-latest  → x64（libbiturbo.so = x86_64）
+#   macos-latest   → arm64（libbiturbo.dylib = arm64，Apple Silicon）
+#
+# 注意：UI 冒烟测试已归一到 ForkPlus.Tests 的 Avalonia.Headless（跨平台，随单测一起跑），
+#       原 Windows-only FlaUI 套件 ForkPlus.AutomationTests 已删除（2026-09-02）。
+#       build job 只构建主工程 ForkPlus.csproj（ProjectReference 会带出 AskPass/RI）；
+#       全量单元 + E2E 测试在独立 test job（ubuntu）运行。
+
+name: build
 
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            artifact_suffix: windows
+            name: windows-x64
+            rid: win-x64
+            platformtarget: x64
           - os: ubuntu-latest
-            artifact_suffix: linux
+            name: linux-x64
+            rid: linux-x64
+            platformtarget: x64
           - os: macos-latest
-            artifact_suffix: macos
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+            name: macos-arm64
+            rid: osx-arm64
+            platformtarget: arm64
 
-      # .NET 10 SDK：windows-latest runner 默认未预装 .NET 10，需 setup-dotnet 安装。
-      # 非 Windows 也装上（虽然非 Windows 只跑 biturbo 冒烟，但 setup-dotnet 跨平台一致）。
-      - name: Setup .NET 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # ===== biturbo 原生库拉取冒烟测试（所有平台）=====
-      # 验证 ForkPlus.csproj 中 RestoreBiturbo target 描述的多平台 asset 可达：
-      #   Windows → biturbo.dll, Linux → libbiturbo.so, macOS → libbiturbo.dylib
-      # Windows 后续 build 步骤会再次走 RestoreBiturbo（命中已下载文件，跳过）；
-      # 非 Windows 暂只做这一步冒烟（WPF net10.0-windows 还无法在非 Windows 上构建）。
-      - name: Fetch biturbo native lib (non-Windows smoke test)
-        if: runner.os != 'Windows'
+      # OxyPlot.Avalonia 改为消费 fork（hebin123456/oxyplot-avalonia）release 的预编译 nupkg：
+      # 本地 NuGet 源 third_party/nuget/（nuget.config 已注册该目录），csproj 以 PackageReference
+      # 引用（版本 2.1.2-avalonia12.1，由 ForkPlus.csproj 的 OxyPlotAvaloniaPackageVersion 单点维护）。
+      # 包按 Avalonia 12.1.1 原生编译——官方版按 11 编译的 XAML IL 在 12 运行时会
+      # MissingMethodException（PlotView 首布局即崩，迁移期模块20 用例实锤），fork 发包从根上
+      # 解决，CI 不再克隆源码打补丁。
+      # 与 tokei / biturbo 同模式显式下载（不走 csproj 的 RestoreOxyPlotAvalonia Exec，规避
+      # macOS runner 上 MSBuild Exec 行为差异；Exists 守卫直接短路）。资产名含版本号
+      # （NuGet 目录源要求 <id>.<version>.nupkg 命名），升级时与 ForkPlus.csproj 同步。
+      - name: Download OxyPlot.Avalonia nupkg
+        shell: bash
+        run: |
+          mkdir -p third_party/nuget
+          base="https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download"
+          asset="OxyPlot.Avalonia.2.1.2-avalonia12.1.nupkg"
+          out="third_party/nuget/$asset"
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "$out"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          ls -la "$out"
+          # 非空且 >10KB 校验（实际约数百 KB；拦 0 字节/截断残留）
+          size=$(wc -c < "$out")
+          [ "$size" -gt 10000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
+      # native 库下载走显式 step 而非只靠 csproj 的 RestoreBiturbo Target
+      # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal
+      # verbosity 下 Exec stdout 也不进日志，无从诊断），改为 workflow 显式 curl：
+      # 日志可见、重试明确、每平台文件名写死，下载后 csproj 的 Exists 守卫直接短路。
+      - name: Download biturbo native library
+        shell: bash
+        run: |
+          mkdir -p third_party
+          base="https://github.com/hebin123456/Biturbo/releases/latest/download"
+          case "${{ matrix.name }}" in
+            windows-x64) native=biturbo.dll ;;
+            linux-x64)   native=libbiturbo.so ;;
+            macos-arm64) native=libbiturbo.dylib ;;
+          esac
+          echo "Downloading $native ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$native" -o "third_party/$native"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $native after 5 attempts"; exit 1; }
+          ls -la "third_party/$native"
+          # 非空且 >1MB 校验（biturbo 约 2-3MB；curl 失败残留 0 字节文件的情况要拦住）
+          size=$(wc -c < "third_party/$native")
+          [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
+      # tokei 与 biturbo 同模式显式下载（不走 csproj 的 RestoreTokei Exec，
+      # 规避 macOS runner 上 MSBuild Exec 行为差异）。三平台资产：
+      #   windows → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
+      #   linux   → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
+      #   macos   → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无 aarch64-apple-darwin
+      #             资产，arm64 目标机经 Rosetta 2 运行——CI 只打包不执行，不受影响）
+      - name: Download tokei
+        shell: bash
+        run: |
+          mkdir -p third_party
+          base="https://github.com/hebin123456/tokei/releases/latest/download"
+          case "${{ matrix.name }}" in
+            windows-x64) asset="tokei-x86_64-pc-windows-msvc.exe"; out="third_party/tokei.exe"; bare=1 ;;
+            linux-x64)   asset="tokei-x86_64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
+            macos-arm64) asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
+          esac
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "third_party/tokei-download"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          if [ "$bare" = "1" ]; then
+            mv "third_party/tokei-download" "$out"
+          else
+            # tar.gz 内是裸 tokei 二进制（无目录结构），解压到临时目录再就位
+            tmp=$(mktemp -d)
+            tar -xzf "third_party/tokei-download" -C "$tmp" || { echo "FAILED to extract $asset"; exit 1; }
+            [ -f "$tmp/tokei" ] || { echo "archive does not contain bare 'tokei' binary"; ls -la "$tmp"; exit 1; }
+            mv "$tmp/tokei" "$out"
+            rm -rf "$tmp" "third_party/tokei-download"
+          fi
+          chmod +x "$out" || true
+          ls -la "$out"
+          # 非空且 >1MB 校验（解压后二进制约 2-7MB；拦 0 字节/截断残留）
+          size=$(wc -c < "$out")
+          [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
+      # RID-specific self-contained publish（免装 .NET 10 运行时）：
+      # 主程序先发，AskPass/RI 随后发到同一目录。三工程共享同一份运行时文件
+      # （同名同内容，后者覆盖前者），总增量只有一份运行时，linux-x64 实测约 125M。
+      # helper 必须自包含：它们由 git 以独立进程拉起（SSH_ASKPASS / core.editor），
+      # 主工程 PublishHelperExecutables 从 bin 拷来的 helper 三件套是框架依赖版 apphost，
+      # 此处自包含发布会覆盖之（顺序不可倒：主程序在后会拷回框架依赖版 exe）。
+      # 不带 -r 时 SDK 会把 NuGet 包里全部 18 个 RID 的 runtimes/ 复制进产物
+      # （SkiaSharp/HarfBuzzSharp 全平台 so/dylib/dll + pdb 调试符号），Linux 包
+      # 膨胀到 585M；带 -r 后只保留本平台。DebugType=none /
+      # AllowedReferenceRelatedFileExtensions=none 去掉 pdb。
+      # PlatformTarget 按 RID 传：csproj 固定 x64 会与 osx-arm64 冲突（NETSDK1032），
+      # AskPass/RI csproj 同样写死 x64，一并覆盖。
+      - name: Publish (self-contained)
+        run: >
+          dotnet publish src/ForkPlus/ForkPlus.csproj -c Release
+          -r ${{ matrix.rid }} --self-contained true
+          -p:PlatformTarget=${{ matrix.platformtarget }}
+          -p:DebugType=none -p:AllowedReferenceRelatedFileExtensions=none
+          -o publish/${{ matrix.rid }} --nologo
+
+      - name: Publish helpers (self-contained)
         shell: bash
         run: |
           set -e
-          mkdir -p third_party
-          case "$RUNNER_OS" in
-            macOS) asset=libbiturbo.dylib ;;
-            *)     asset=libbiturbo.so ;;
+          for proj in src/ForkPlus.AskPass/ForkPlus.AskPass.csproj src/ForkPlus.RI/ForkPlus.RI.csproj; do
+            dotnet publish "$proj" -c Release -r ${{ matrix.rid }} --self-contained true \
+              -p:PlatformTarget=${{ matrix.platformtarget }} \
+              -p:DebugType=none -p:AllowedReferenceRelatedFileExtensions=none \
+              -o "publish/${{ matrix.rid }}" --nologo
+          done
+
+      - name: Verify critical outputs
+        shell: bash
+        run: |
+          cd "publish/${{ matrix.rid }}"
+          # Windows 的 apphost 带 .exe 扩展名，Unix 是无扩展名可执行文件
+          if [ "${{ matrix.name }}" = "windows-x64" ]; then ext=".exe"; else ext=""; fi
+          missing=0
+          for f in ForkPlus.dll ForkPlus.runtimeconfig.json \
+                   "ForkPlus.AskPass${ext}" ForkPlus.AskPass.dll ForkPlus.AskPass.runtimeconfig.json ForkPlus.AskPass.deps.json \
+                   "ForkPlus.RI${ext}" ForkPlus.RI.dll ForkPlus.RI.runtimeconfig.json ForkPlus.RI.deps.json OxyPlot.Avalonia.dll; do
+            [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
+          done
+          case "${{ matrix.name }}" in
+            windows-x64) native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
+            linux-x64)   native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
+            macos-arm64) native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
           esac
-          url="https://github.com/hebin123456/Biturbo/releases/latest/download/$asset"
-          echo "Fetching $url → third_party/$asset"
-          curl -fsSL "$url" -o "third_party/$asset"
-          ls -lh "third_party/$asset"
-          echo "✓ Biturbo native lib ($asset) fetched successfully on $RUNNER_OS"
+          [ -f "$native" ] || { echo "MISSING native: $native"; missing=1; }
+          [ -f "$tokei_file" ] || { echo "MISSING tokei: $tokei_file"; missing=1; }
+          # self-contained 断言：运行时组件必须随产物分发（缺了 = 变回框架依赖发布）
+          [ -f "$clr" ] || { echo "MISSING self-contained runtime: $clr"; missing=1; }
+          [ -f "$policy" ] || { echo "MISSING self-contained runtime: $policy"; missing=1; }
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "All critical outputs present (native=$native, tokei=$tokei_file, self-contained runtime OK)."
 
-      # tokei 现已从 hebin123456/tokei 仓库最新 release 拉取预编译二进制（与 biturbo 一致），
-      # 不再从源码 cargo 编译。RestoreTokei target 会在 Windows build 时自动下载到 third_party/tokei.exe，
-      # 无需单独缓存步骤。
-      # 以下完整构建 / 测试 / 产物 / 发布仅 Windows 跑。
-      # 非 Windows 等 ForkPlus 迁移到跨平台 UI 框架后再放开。
-      # .NET 10 迁移：原 msbuild + setup-msbuild + setup-nuget 已替换为 dotnet CLI
-      # （SDK 风格工程自带 restore，无需 nuget.exe）。
-      - name: Restore (Release)
-        if: runner.os == 'Windows'
-        run: dotnet restore ForkPlus.sln --verbosity minimal
-
-      - name: Build (Release)
-        if: runner.os == 'Windows'
-        run: dotnet build ForkPlus.sln -c Release --no-restore -p:Platform="Any CPU" -v minimal
-
-      - name: Run unit tests
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $dll = "src/ForkPlus.Tests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.Tests.dll"
-          if (-not (Test-Path $dll)) {
-            Write-Host "Test assembly not found at $dll — skipping tests"
-            exit 0
-          }
-          # 用 --filter 选择性运行单元测试类，排除因 CI 工作目录与 FindRepositoryRoot
-          # 路径假设不符而失败的覆盖率清单测试，以及 Markdown 断言依赖本地资源而失败的
-          # GitMmReferenceWindowTests。
-          $testClasses = @(
-            'ShaTests','ShaCompareTests',
-            'WindowLocationStateMappingTests','WindowLocationStateCodecTests',
-            'StringExtensionsTests','FuzzySearchTests','LruCacheTests',
-            'DateTimeExtensionsTests','ArrayExtensionsTests','ArrayDiffTests',
-            'DictionaryExtensionsTests','IReadOnlyListExtensionsTests','IListExtensionsTests',
-            'RangeTests','RangeExtensionsTests',
-            'GitUrlTests','ChangeTypeHelperTests','StatusTypeHelperTests',
-            'RevisionParserTests','RevisionSearchQueryCoderTests','GitConfigTests',
-            'DiffStringHelperTests','UnifiedMergeTokenizerTests','UnifiedMergeParserTests',
-            'PathHelperTests',
-            'GitCommandTests','PipeStreamExtensionsTests','ChangedFilesDisplayNormalizerTests',
-            'AskPassParserTests','ReferenceNameValidatorTests',
-            'PerformanceTelemetryTests','GitStatusParsingTests',
-            'FeatureCoverageManifestTests','AssemblySmokeTests',
-            # v3.2.0：新增的单元测试类（覆盖 Undo/Redo、AI Commit Composer、Hex Viewer、Theme、JobMonitor）
-            'UndoRedoStackTests',
-            'WipCommitGroupTests','WipCommitPlanTests','OpenAiServiceStaticTests',
-            'HexFormatterTests','ThemeTypeExtensionsTests','JobMonitorTests',
-            # v3.3.0：分层重构新增测试类（reflog 解析 + 索引文件持久化）
-            'ReflogHistoryProviderTests','UndoIndexStoreTests',
-            # v3.4.0：Layer 2 工作区快照 + Reflog 视图
-            'ReflogViewItemTests'
-          )
-          $filter = ($testClasses | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
-          # .NET 10 + WPF + xUnit 在 windows runner 上 testhost 偶发不退出
-          # （所有测试已 Passed 但 testhost 进程挂住），TestSessionTimeout=240000
-          # 强制 4 分钟 abort。这里解析输出中的 "Passed!  - Failed: N" / "Failed!  - Failed: N"
-          # 行，若 Failed=0 视为通过，强制 exit 0 绕过 testhost hang 问题。
-          $output = & dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
-            --filter $filter `
-            -- RunConfiguration.TestSessionTimeout=240000 2>&1
-          $output | ForEach-Object { Write-Host $_ }
-          $testExit = $LASTEXITCODE
-          $resultLine = $output | Where-Object { $_ -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),' } | Select-Object -Last 1
-          if ($resultLine -and $resultLine -match 'Failed:\s+(\d+)') {
-            $failedCount = [int]$Matches[1]
-            Write-Host "Parsed Failed count from result line: $failedCount"
-            if ($failedCount -eq 0) {
-              Write-Host "All tests passed (testhost hang workaround) — exiting 0"
-              exit 0
-            }
-            Write-Host "Tests reported $failedCount failure(s) — exiting $testExit"
-          } else {
-            Write-Host "No result line parsed — exiting $testExit"
-          }
-          exit $testExit
-
-      # v2.1.2：ST (System Tests) 在 GitHub Actions windows-latest runner 上稳定失败
-      # （无交互式桌面会话，WPF ContextMenu popup 创建后 UIA 访问不到），暂注释掉不跑。
-      # 本地交互式桌面仍可手动运行：dotnet test src/ForkPlus.AutomationTests/...
-      # 待后续接入 self-hosted runner with interactive desktop 后再启用。
-      # .NET 10 迁移：路径已更新为 net10.0-windows10.0.19041.0，FlaUI 升级到 5.0.0。
-      # - name: Run system tests (ST)
-      #   if: runner.os == 'Windows'
-      #   continue-on-error: true
-      #   shell: pwsh
-      #   env:
-      #     FORKPLUS_AUTOMATION_EXE: ${{ github.workspace }}\src\ForkPlus\bin\Release\net10.0-windows10.0.19041.0\ForkPlus.exe
-      #   run: |
-      #     $exe = $env:FORKPLUS_AUTOMATION_EXE
-      #     if (-not (Test-Path $exe)) {
-      #       Write-Host "ForkPlus.exe not found at $exe — skipping system tests"
-      #       exit 0
-      #     }
-      #     $stCsproj = "src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj"
-      #     dotnet build $stCsproj -c Release --framework net10.0-windows10.0.19041.0
-      #     if ($LASTEXITCODE -ne 0) {
-      #       Write-Host "System test build failed"
-      #       exit $LASTEXITCODE
-      #     }
-      #     $stDll = "src/ForkPlus.AutomationTests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.AutomationTests.dll"
-      #     dotnet test $stDll --no-build --framework net10.0-windows10.0.19041.0 `
-      #       -- RunConfiguration.TestSessionTimeout=900000
-
-      - name: Run AskPass and RI unit tests
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          # AskPass 和 RI 是独立 exe（internal Program，private 方法），用黑盒进程测试 +
-          # 反射测试 private 方法。两个测试项目都在 sln 里，build 步骤已构建。
-          # 同 Run unit tests 步骤，.NET 10 + WPF testhost 偶发不退出，需要解析输出。
-          $testDlls = @(
-            "src/ForkPlus.AskPass.Tests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.AskPass.Tests.dll",
-            "src/ForkPlus.RI.Tests/bin/Release/net10.0-windows10.0.19041.0/ForkPlus.RI.Tests.dll"
-          )
-          $overallFailed = $false
-          foreach ($dll in $testDlls) {
-            if (-not (Test-Path $dll)) {
-              Write-Host "Test assembly not found at $dll — skipping"
-              continue
-            }
-            Write-Host "=== Running $dll ==="
-            $output = & dotnet test $dll --no-build --framework net10.0-windows10.0.19041.0 `
-              -- RunConfiguration.TestSessionTimeout=120000 2>&1
-            $output | ForEach-Object { Write-Host $_ }
-            $testExit = $LASTEXITCODE
-            $resultLine = $output | Where-Object { $_ -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),' } | Select-Object -Last 1
-            $failedCount = -1
-            if ($resultLine -and $resultLine -match 'Failed:\s+(\d+)') {
-              $failedCount = [int]$Matches[1]
-            }
-            Write-Host "Parsed Failed count: $failedCount (exit=$testExit)"
-            if ($failedCount -ne 0) {
-              Write-Host "Tests in $dll reported $failedCount failure(s)"
-              $overallFailed = $true
-            }
-          }
-          if ($overallFailed) {
-            exit 1
-          }
-
-      # v3.10.0：自包含发布——把 .NET 10 运行时打进包里，用户无需另装运行时。
-      # 3 个 exe（ForkPlus / AskPass / RI）各自 self-contained publish 到同一目录，
-      # 共享同一份运行时文件（coreclr.dll / System.*.dll 等），每个 exe 的 apphost
-      # 读各自 runtimeconfig（standalone）从同目录加载运行时，用户机器零依赖。
-      # 不做 trimming（WPF 反射重，易运行时崩）、不做 single-file（现有 MSBuild target
-      # 依赖目录结构加载原生 dll）。
-      - name: Publish self-contained
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $stage = "publish-stage"
-          dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
-          dotnet publish src/ForkPlus.AskPass/ForkPlus.AskPass.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
-          dotnet publish src/ForkPlus.RI/ForkPlus.RI.csproj -c Release -r win-x64 --self-contained true -o $stage -v minimal
-          # 保险：确保原生依赖落在发布目录根（RestoreBiturbo/RestoreTokei/CopyHelperExecutables
-          # 理论上已拷贝，这里双保险，缺失才拷）
-          if (Test-Path "third_party\biturbo.dll") { Copy-Item "third_party\biturbo.dll" "$stage\biturbo.dll" -Force }
-          if (Test-Path "third_party\tokei.exe") { Copy-Item "third_party\tokei.exe" "$stage\tokei.exe" -Force }
-          # WebView2Loader.dll 拷到根（self-contained publish 放在 runtimes\win-x64\native\，
-          # 根目录加载更稳；与 CopyWebView2LoaderToRoot target 同逻辑，双保险）
-          $wv = "$stage\runtimes\win-x64\native\WebView2Loader.dll"
-          if (Test-Path $wv) {
-            Copy-Item $w "$stage\WebView2Loader.dll" -Force
-            Remove-Item "$stage\runtimes" -Recurse -Force -ErrorAction SilentlyContinue
-          }
-          Write-Host "=== Publish stage contents (top-level) ==="
-          Get-ChildItem $stage -File | Select-Object Name, @{N='MB';E={[math]::Round($_.Length/1MB,2)}} | Format-Table -AutoSize
-
-          # v3.10.2：清理卫星程序集 culture 文件夹（belt-and-suspenders）。
-          # Directory.Build.props 的 SatelliteResourceLanguages=en 已在 build/publish 阶段
-          # 跳过非 en 卫星程序集，这里再删一次兜底——某些包可能通过不同机制注入 culture 文件夹。
-          # 只删 .resources.dll 所在的 culture 子目录（如 de/、fr/、ja/、zh-Hans/ 等），
-          # 保留 ForkPlus 自己的 Languages/ 文件夹（JSON 本地化文件）和 Docs/ 文件夹。
-          $culturePattern = '^(af|am|ar|az|be|bg|bn|bs|ca|cs|cy|da|de|el|en|es|et|eu|fa|fi|fil|fo|fr|ga|gl|gsw|he|hi|hr|hu|hy|id|is|it|ja|ka|kk|kl|km|kn|ko|ky|lb|lo|lt|lv|mk|ml|mn|mr|ms|mt|nb|ne|nl|nn|no|or|pa|pl|pt|ro|ru|sk|sl|sq|sr|sv|ta|te|th|tr|uk|ur|vi|zh-Hans|zh-Hant|zh-CHS|zh-CHT)$'
-          $removedCultures = @()
-          Get-ChildItem $stage -Directory | Where-Object { $_.Name -match $culturePattern } | ForEach-Object {
-            $removedCultures += $_.Name
-            Remove-Item $_.FullName -Recurse -Force
-          }
-          if ($removedCultures.Count -gt 0) {
-            Write-Host "Removed $($removedCultures.Count) culture satellite folders: $($removedCultures -join ', ')"
-          }
-          # 统计清理后的体积
-          $totalMB = [math]::Round((Get-ChildItem $stage -Recurse | Measure-Object Length -Sum).Sum/1MB,1)
-          Write-Host "Total publish size after culture cleanup: $totalMB MB"
-
+      # 直接上传产物目录内容，不先打 zip：
+      # GitHub Actions 下载 artifact 时本身就会自动包一层 zip（无法关闭），
+      # 先自己打包再上传 = 解压一次拿到的是内层压缩包，还得再解压一次（两层嵌套）。
+      # 上传目录内容（LCA = publish/<rid>）→ 下载的 artifact zip 解压即得全部文件，只有一层。
+      # （Release 用的 zip 由 release job 在下载后统一打包，保持 artifact 单层不变。）
       - name: Upload artifact
-        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: ForkPlus-${{ matrix.artifact_suffix }}
-          path: publish-stage/
+          name: ForkPlus-${{ matrix.name }}
+          path: publish/${{ matrix.rid }}/*
+          retention-days: 14
           if-no-files-found: error
 
-      - name: Package release zip
-        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path publish-stage/* -DestinationPath ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip -CompressionLevel Optimal
+  # ── 全量单元 + E2E 测试（发布门禁）──
+  # 套件为 Avalonia.Headless（Skia 软件渲染，无显示服务器依赖），在 ubuntu-latest 跑
+  # 全量 ~4400 用例。环境依赖：
+  #   ① OxyPlot.Avalonia —— 与 build job 同源：fork release 预编译 nupkg 下载到
+  #      third_party/nuget/（本地 NuGet 目录源，nuget.config + PackageReference 恢复；
+  #      官方版按 Avalonia 11 编译，12 运行时 PlotView 崩溃）；
+  #   ② gitflow-avh：E2e17 GitFlow 真实链路（flow init/start/finish），纯净 git 没有
+  #      git-flow 子命令；git 经 PATH 查找子命令（exec-path 方案无效），装到 /usr/local；
+  #   ③ git-lfs：E2e18 LFS 真实链路（track/fetch/pull/lock）需要真实 git-lfs CLI，
+  #      GitHub ubuntu runner 预装，此步仅校验版本；
+  #   ④ biturbo native 库：ForkPlus.Tests.csproj 的 RestoreBiturbo target 构建期自动
+  #      拉取（Linux 下 MSBuild Exec 正常，无需像 macOS 那样显式 curl）。
+  # 仅在 Linux 跑（全量验证过的平台，Windows/macOS 暂不扩矩阵）。测试写仓库级
+  # git config、像素断言为同帧相对比较（无固定参考图），不依赖环境字体/全局配置。
+  # 已实证的环境差异修复：① GitHub runner 全局已 git lfs install → LFS 测试工厂的
+  #   clone 会 smudge（改 -c 进程级关闭 lfs smudge）；② runner 无内置 git 实例 →
+  #   SSH 测试的候选源断言改环境自适应；③ InteractiveRebase 选中框扫描改按索引
+  #   定位第 0 行（视觉序首项在 runner 上与行序不一致）。
+  test:
+    name: test (linux-x64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Release on tag
-        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # 与 build job 的 "Download OxyPlot.Avalonia nupkg" 同一步骤（fork 预编译包，
+      # 官方版按 Avalonia 11 编译运行时崩溃）。资产名含版本号，升级时与 ForkPlus.csproj
+      # 的 OxyPlotAvaloniaPackageVersion 单点维护同步。
+      - name: Download OxyPlot.Avalonia nupkg
+        shell: bash
+        run: |
+          mkdir -p third_party/nuget
+          base="https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download"
+          asset="OxyPlot.Avalonia.2.1.2-avalonia12.1.nupkg"
+          out="third_party/nuget/$asset"
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "$out"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          ls -la "$out"
+          # 非空且 >10KB 校验（实际约数百 KB；拦 0 字节/截断残留）
+          size=$(wc -c < "$out")
+          [ "$size" -gt 10000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
+      # E2E 测试依赖新版 git：变基预检走 `git replay`（2.44+ 引入）、交互式变基带
+      # `--update-refs`（2.38+ 引入）。ubuntu-latest 自带 git 不一定够新（24.04 为 2.43），
+      # 从 git-core PPA 安装最新版保证测试环境一致（本地同款方案，见 BUILDING.md）。
+      - name: Install modern git (>= 2.44)
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:git-core/ppa
+          sudo apt-get update
+          sudo apt-get install -y git
+          git --version
+
+      - name: Install gitflow-avh
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/petervanderdoes/gitflow-avh.git /tmp/gitflow-avh
+          sudo make -C /tmp/gitflow-avh install
+          git flow version
+
+      - name: Verify git / git-lfs
+        shell: bash
+        run: |
+          git --version
+          git lfs version
+
+      # 三个测试工程全跑：ForkPlus.Tests（单元 + 25 模块 E2E）、AskPass.Tests、RI.Tests
+      - name: Run tests
+        shell: bash
+        run: dotnet test ForkPlus.sln --nologo
+
+      # 失败时上传证据截图（docs/evidence/，像素断言失败可下载 PNG 定位），便于 CI 红灯诊断
+      - name: Upload test evidence (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-evidence-linux-x64
+          path: docs/evidence/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ── 发布（仅 tag 触发；手动 workflow_dispatch 只跑 build+test 不发 Release）──
+  # build + test 全绿后：下载三平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
+  # 内层无嵌套）→ 从 RELEASE_NOTE.md 提取当前版本章节作为正文 → 发布 Release。
+  # generate_release_notes 会自动追加 PR 变更清单与 "Full Changelog" 对比链接。
+  release:
+    name: Release
+    needs: [build, test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout (for RELEASE_NOTE.md)
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Package release zips
+        shell: bash
+        run: |
+          set -e
+          tag="${GITHUB_REF_NAME#v}"
+          cd artifacts
+          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-macos-arm64; do
+            [ -d "$name" ] || { echo "MISSING artifact: $name"; exit 1; }
+            zip -qr "ForkPlus-${tag}-${name#ForkPlus-}.zip" "$name"
+            ls -la "ForkPlus-${tag}-${name#ForkPlus-}.zip"
+          done
+
+      # 提取 RELEASE_NOTE.md 中 "## v<版本>" 到下一个 "## v" 之间的正文；缺失时退化为占位。
+      - name: Extract release notes for this tag
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          awk -v header="## v$tag" '
+            $0 == header { found=1; next }
+            found && /^## v/ { exit }
+            found { print }
+          ' RELEASE_NOTE.md | sed -e '/./,$!d' > release-body.md
+          if [ ! -s release-body.md ]; then
+            echo "ForkPlus $GITHUB_REF_NAME" > release-body.md
+          fi
+          echo "--- release body (first 30 lines) ---"
+          head -30 release-body.md
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ForkPlus-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.zip
+            artifacts/ForkPlus-*-x64.zip
+            artifacts/ForkPlus-*-arm64.zip
+          body_path: release-body.md
           generate_release_notes: true

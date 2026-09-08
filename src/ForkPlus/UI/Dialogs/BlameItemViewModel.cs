@@ -40,11 +40,11 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>该块总行数（用于 tooltip 的 "n of m lines" 部分归属描述）。</summary>
 		public int TotalLineCount { get; private set; }
 
-		/// <summary>是否有 AI 归属（控制徽标 Visibility）。</summary>
+		/// <summary>是否有 AI 归属（控制徽标可见性）。</summary>
 		public bool HasAiAttribution => AiAttribution != null;
 
-		/// <summary>徽标可见性（无 AI 归属时折叠，不占布局空间）。</summary>
-		public System.Windows.Visibility AiBadgeVisibility => AiAttribution != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+		/// <summary>徽标可见性（无 AI 归属时折叠，不占布局空间）。Migration note：Avalonia IsVisible 绑 bool。</summary>
+		public bool AiBadgeVisibility => AiAttribution != null;
 
 		/// <summary>AI 徽标文本，固定为 "AI"（tool/model 详情放 tooltip）。</summary>
 		public string AiBadgeText => "AI";

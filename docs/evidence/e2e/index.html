@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ForkPlus · E2E UI 测试截图索引</title>
+<style>
+:root { --bg:#0f1419; --panel:#171e26; --card:#1d2630; --border:#2a3542;
+        --text:#dbe4ee; --muted:#8b98a8; --accent:#4da3ff; --accent2:#37c98b; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+       font:14px/1.6 -apple-system,"Segoe UI","Noto Sans CJK SC","Microsoft YaHei",sans-serif; }
+.wrap { max-width:1280px; margin:0 auto; padding:32px 24px 64px; }
+header h1 { font-size:26px; margin:0 0 6px; }
+header .sub { color:var(--muted); margin-bottom:18px; }
+.stats { display:flex; flex-wrap:wrap; gap:12px; margin:18px 0 26px; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:10px;
+        padding:14px 20px; min-width:130px; }
+.stat b { display:block; font-size:24px; color:var(--accent); }
+.stat span { color:var(--muted); font-size:12px; }
+nav.chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+nav.chips a { color:var(--accent); text-decoration:none; background:var(--card);
+              border:1px solid var(--border); border-radius:999px; padding:4px 12px; font-size:12px; }
+nav.chips a:hover { border-color:var(--accent); }
+table.sum { width:100%; border-collapse:collapse; margin-bottom:34px; background:var(--panel);
+            border:1px solid var(--border); border-radius:10px; overflow:hidden; font-size:13px; }
+table.sum th, table.sum td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+table.sum th { background:var(--card); color:var(--muted); font-weight:600; }
+table.sum tr:last-child td { border-bottom:none; }
+table.sum td.num { color:var(--accent2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+table.sum a { color:var(--accent); text-decoration:none; }
+section { margin-bottom:38px; }
+section > h2 { font-size:18px; border-left:4px solid var(--accent); padding-left:10px; margin-bottom:4px; }
+section .desc { color:var(--muted); font-size:13px; margin:0 0 14px 14px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+figure { margin:0; background:var(--card); border:1px solid var(--border); border-radius:10px;
+         overflow:hidden; transition:border-color .15s; }
+figure:hover { border-color:var(--accent); }
+figure a { display:block; background:#000; }
+figure img { display:block; width:100%; height:auto; max-height:230px; object-fit:cover; object-position:top; }
+figcaption { padding:8px 12px; font-size:12px; color:var(--muted); word-break:break-all; }
+footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border); padding-top:16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>ForkPlus · E2E UI 测试截图索引</h1>
+<div class="sub">Avalonia 12 headless · 真实 git 管线 · 计划与进度见 <code>docs/e2e-ui-test-plan.md</code></div>
+</header>
+
+<div class="stats">
+<div class="stat"><b>28</b><span>模块（阶段0 + 27 功能模块）</span></div>
+<div class="stat"><b>151</b><span>E2E 用例</span></div>
+<div class="stat"><b>217</b><span>截图证据</span></div>
+<div class="stat"><b>1920×1080 · 自然比例</b><span>截图口径（主窗口 / 弹窗）</span></div>
+</div>
+<nav class="chips">
+<a href="#m00-infra">阶段 0 · 测试基建</a>
+<a href="#m01-welcome">1 · 启动与仓库管理</a>
+<a href="#m02-revisionlist">2 · 提交历史视图</a>
+<a href="#m03-sidebar">3 · 侧边栏</a>
+<a href="#m04-revisiondetails">4 · 修订详情</a>
+<a href="#m05-changescommit">5 · 变更与提交</a>
+<a href="#m06-toolbar">6 · 工具栏</a>
+<a href="#m07-textdiff">7 · 文本 Diff</a>
+<a href="#m08-diffpopup">8 · Diff 弹窗</a>
+<a href="#m09-binarydiff">9 · 二进制 Diff</a>
+<a href="#m10-mergeconflict">10 · 合并冲突窗口</a>
+<a href="#m11-branchops">11 · 分支操作</a>
+<a href="#m12-tagops">12 · 标签操作</a>
+<a href="#m13-historyrewrite">13 · 历史改写</a>
+<a href="#m14-stash">14 · Stash</a>
+<a href="#m15-remote">15 · 远程交互</a>
+<a href="#m16-submodule-worktree">16 · 子模块与 Worktree</a>
+<a href="#m17-workflows">17 · 工作流套件</a>
+<a href="#m18-lfs">18 · Git LFS</a>
+<a href="#m19-patchsnapshot">19 · 补丁与快照</a>
+<a href="#m20-viewerwindows">20 · 查看类窗口</a>
+<a href="#m21-preferences">21 · 偏好设置</a>
+<a href="#m22-repository-settings">22 · 仓库设置</a>
+<a href="#m23-ssh-environment">23 · SSH 与环境</a>
+<a href="#m24-ai">24 · AI 功能</a>
+<a href="#m25-common-dialogs">25 · 通用对话框</a>
+<a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a>
+<a href="#m27-startup-selection-crash">27 · 启动选中越界崩溃</a>
+</nav>
+<table class="sum"><tr><th>模块</th><th>覆盖内容</th><th>E2E 用例</th><th>截图</th></tr>
+<tr><td><a href="#m00-infra">阶段 0 · 测试基建</a></td><td>headless 启动、截图助手、控件树查找基建冒烟</td><td class="num">7</td><td class="num">1</td></tr>
+<tr><td><a href="#m01-welcome">1 · 启动与仓库管理</a></td><td>欢迎页表单、仓库列表器（分组/搜索）、打开仓库、Tab 增删切换</td><td class="num">3</td><td class="num">8</td></tr>
+<tr><td><a href="#m02-revisionlist">2 · 提交历史视图</a></td><td>真实 git 管线加载、行选择、上下文搜索、滚动虚拟化</td><td class="num">1</td><td class="num">5</td></tr>
+<tr><td><a href="#m03-sidebar">3 · 侧边栏</a></td><td>分支/标签/stash/远程/子模块分组展开收起、过滤、右键菜单</td><td class="num">2</td><td class="num">9</td></tr>
+<tr><td><a href="#m04-revisiondetails">4 · 修订详情</a></td><td>变更 tab、文件树 tab、摘要、reflog/tags 隐藏开关</td><td class="num">2</td><td class="num">8</td></tr>
+<tr><td><a href="#m05-changescommit">5 · 变更与提交</a></td><td>暂存/取消暂存、行级 chunk stage/discard 浮窗、提交消息自动补全</td><td class="num">6</td><td class="num">11</td></tr>
+<tr><td><a href="#m06-toolbar">6 · 工具栏</a></td><td>push/pull/fetch/stash 按钮状态（领先/落后角标）</td><td class="num">3</td><td class="num">3</td></tr>
+<tr><td><a href="#m07-textdiff">7 · 文本 Diff</a></td><td>Split/SideBySide 切换、垂直+水平滚动同步（横向滚动条弹动修复回归）</td><td class="num">2</td><td class="num">5</td></tr>
+<tr><td><a href="#m08-diffpopup">8 · Diff 弹窗</a></td><td>提交/变更两入口、横向滚动条、Escape/Space 关闭、上下键换文件</td><td class="num">4</td><td class="num">6</td></tr>
+<tr><td><a href="#m09-binarydiff">9 · 二进制 Diff</a></td><td>Hex 视图、图片对比（SideBySide/Swipe/OnionSkin/HighlightPixels）</td><td class="num">2</td><td class="num">8</td></tr>
+<tr><td><a href="#m10-mergeconflict">10 · 合并冲突窗口</a></td><td>三方编辑器、冲突块选择、全选 ours/theirs、滚动同步回归</td><td class="num">5</td><td class="num">13</td></tr>
+<tr><td><a href="#m11-branchops">11 · 分支操作</a></td><td>创建/检出/重命名/删除/跟踪/多分支推送，9 窗口</td><td class="num">10</td><td class="num">13</td></tr>
+<tr><td><a href="#m12-tagops">12 · 标签操作</a></td><td>创建/删除/推送/多标签推送/详情，5 窗口</td><td class="num">7</td><td class="num">10</td></tr>
+<tr><td><a href="#m13-historyrewrite">13 · 历史改写</a></td><td>合并/变基/交互式变基真实仓库端到端/拣选/还原/重置/Reflog</td><td class="num">9</td><td class="num">16</td></tr>
+<tr><td><a href="#m14-stash">14 · Stash</a></td><td>保存/部分保存/应用/删除/重命名，5 窗口</td><td class="num">7</td><td class="num">10</td></tr>
+<tr><td><a href="#m15-remote">15 · 远程交互</a></td><td>Fetch/Pull/Push/编辑远程/自定义 refspec（对本地 bare 真实执行）</td><td class="num">7</td><td class="num">11</td></tr>
+<tr><td><a href="#m16-submodule-worktree">16 · 子模块与 Worktree</a></td><td>添加/删除子模块、子模块 diff、worktree 三窗口</td><td class="num">6</td><td class="num">6</td></tr>
+<tr><td><a href="#m17-workflows">17 · 工作流套件</a></td><td>GitFlow（init+start/finish×3）、GitMm、LeanBranching</td><td class="num">9</td><td class="num">12</td></tr>
+<tr><td><a href="#m18-lfs">18 · Git LFS</a></td><td>track/status/fetch/pull，4 窗口</td><td class="num">6</td><td class="num">6</td></tr>
+<tr><td><a href="#m19-patchsnapshot">19 · 补丁与快照</a></td><td>保存为 patch/应用 patch/快照，3 窗口</td><td class="num">7</td><td class="num">7</td></tr>
+<tr><td><a href="#m20-viewerwindows">20 · 查看类窗口</a></td><td>Blame/文件历史/仓库概览/统计/修订详情独立窗/GoToLine</td><td class="num">7</td><td class="num">8</td></tr>
+<tr><td><a href="#m21-preferences">21 · 偏好设置</a></td><td>General/Git/Commit/Integration/ImportExport/CustomCommands/AI</td><td class="num">9</td><td class="num">8</td></tr>
+<tr><td><a href="#m22-repository-settings">22 · 仓库设置</a></td><td>General/IssueTracker/CommitTemplate/CustomCommands 本地模式</td><td class="num">5</td><td class="num">5</td></tr>
+<tr><td><a href="#m23-ssh-environment">23 · SSH 与环境</a></td><td>SSH 密钥/生成密钥/Git 实例/Workspace</td><td class="num">6</td><td class="num">5</td></tr>
+<tr><td><a href="#m24-ai">24 · AI 功能</a></td><td>AI 提交/代码审查/开发助手（UI + OpenAI stub 全链路）</td><td class="num">6</td><td class="num">8</td></tr>
+<tr><td><a href="#m25-common-dialogs">25 · 通用对话框</a></td><td>MessageBox/Error/AskPass/颜色/快捷键/About/更新/诊断/通知</td><td class="num">7</td><td class="num">11</td></tr>
+<tr><td><a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a></td><td>命令面板点击"切换工作区"进参数态（Linux NRE 崩溃回归 + 单元级根因锁定）</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td><a href="#m27-startup-selection-crash">27 · 启动选中越界崩溃</a></td><td>源收缩下选中链路（控件级三变体）、仓库管理器单仓库确定性形态、Recent 重选语义、完整启动路径（Linux 每次启动必崩回归）</td><td class="num">4</td><td class="num">3</td></tr>
+<tr><td><b>合计</b></td><td></td><td class="num"><b>151</b></td><td class="num"><b>217</b></td></tr>
+</table>
+<section id="m00-infra">
+<h2>阶段 0 · 测试基建 <small style="color:var(--muted);font-size:13px">1 张 · 7 用例</small></h2>
+<p class="desc">headless 启动、截图助手、控件树查找基建冒烟</p>
+<div class="grid">
+<figure><a href="00-infra/00-infra-smoke.png" target="_blank"><img loading="lazy" src="00-infra/00-infra-smoke.png" alt="00-infra-smoke.png"></a><figcaption>00-infra-smoke.png</figcaption></figure>
+</div>
+</section>
+<section id="m01-welcome">
+<h2>1 · 启动与仓库管理 <small style="color:var(--muted);font-size:13px">8 张 · 3 用例</small></h2>
+<p class="desc">欢迎页表单、仓库列表器（分组/搜索）、打开仓库、Tab 增删切换</p>
+<div class="grid">
+<figure><a href="01-welcome/01-welcome-initial.png" target="_blank"><img loading="lazy" src="01-welcome/01-welcome-initial.png" alt="01-welcome-initial.png"></a><figcaption>01-welcome-initial.png</figcaption></figure>
+<figure><a href="01-welcome/02-welcome-filled.png" target="_blank"><img loading="lazy" src="01-welcome/02-welcome-filled.png" alt="02-welcome-filled.png"></a><figcaption>02-welcome-filled.png</figcaption></figure>
+<figure><a href="01-welcome/03-repomanager-with-repos.png" target="_blank"><img loading="lazy" src="01-welcome/03-repomanager-with-repos.png" alt="03-repomanager-with-repos.png"></a><figcaption>03-repomanager-with-repos.png</figcaption></figure>
+<figure><a href="01-welcome/04-repomanager-selected.png" target="_blank"><img loading="lazy" src="01-welcome/04-repomanager-selected.png" alt="04-repomanager-selected.png"></a><figcaption>04-repomanager-selected.png</figcaption></figure>
+<figure><a href="01-welcome/05-repomanager-empty-fallback.png" target="_blank"><img loading="lazy" src="01-welcome/05-repomanager-empty-fallback.png" alt="05-repomanager-empty-fallback.png"></a><figcaption>05-repomanager-empty-fallback.png</figcaption></figure>
+<figure><a href="01-welcome/06-tabs-three.png" target="_blank"><img loading="lazy" src="01-welcome/06-tabs-three.png" alt="06-tabs-three.png"></a><figcaption>06-tabs-three.png</figcaption></figure>
+<figure><a href="01-welcome/07-tabs-third-selected.png" target="_blank"><img loading="lazy" src="01-welcome/07-tabs-third-selected.png" alt="07-tabs-third-selected.png"></a><figcaption>07-tabs-third-selected.png</figcaption></figure>
+<figure><a href="01-welcome/08-tabs-after-remove.png" target="_blank"><img loading="lazy" src="01-welcome/08-tabs-after-remove.png" alt="08-tabs-after-remove.png"></a><figcaption>08-tabs-after-remove.png</figcaption></figure>
+</div>
+</section>
+<section id="m02-revisionlist">
+<h2>2 · 提交历史视图 <small style="color:var(--muted);font-size:13px">5 张 · 1 用例</small></h2>
+<p class="desc">真实 git 管线加载、行选择、上下文搜索、滚动虚拟化</p>
+<div class="grid">
+<figure><a href="02-revisionlist/01-revision-list-loaded.png" target="_blank"><img loading="lazy" src="02-revisionlist/01-revision-list-loaded.png" alt="01-revision-list-loaded.png"></a><figcaption>01-revision-list-loaded.png</figcaption></figure>
+<figure><a href="02-revisionlist/02-revision-row-selected.png" target="_blank"><img loading="lazy" src="02-revisionlist/02-revision-row-selected.png" alt="02-revision-row-selected.png"></a><figcaption>02-revision-row-selected.png</figcaption></figure>
+<figure><a href="02-revisionlist/03-revision-search-matches.png" target="_blank"><img loading="lazy" src="02-revisionlist/03-revision-search-matches.png" alt="03-revision-search-matches.png"></a><figcaption>03-revision-search-matches.png</figcaption></figure>
+<figure><a href="02-revisionlist/04-revision-search-cleared.png" target="_blank"><img loading="lazy" src="02-revisionlist/04-revision-search-cleared.png" alt="04-revision-search-cleared.png"></a><figcaption>04-revision-search-cleared.png</figcaption></figure>
+<figure><a href="02-revisionlist/05-revision-orientation-switched.png" target="_blank"><img loading="lazy" src="02-revisionlist/05-revision-orientation-switched.png" alt="05-revision-orientation-switched.png"></a><figcaption>05-revision-orientation-switched.png</figcaption></figure>
+</div>
+</section>
+<section id="m03-sidebar">
+<h2>3 · 侧边栏 <small style="color:var(--muted);font-size:13px">9 张 · 2 用例</small></h2>
+<p class="desc">分支/标签/stash/远程/子模块分组展开收起、过滤、右键菜单</p>
+<div class="grid">
+<figure><a href="03-sidebar/01-sidebar-loaded.png" target="_blank"><img loading="lazy" src="03-sidebar/01-sidebar-loaded.png" alt="01-sidebar-loaded.png"></a><figcaption>01-sidebar-loaded.png</figcaption></figure>
+<figure><a href="03-sidebar/02-sidebar-folder-expanded.png" target="_blank"><img loading="lazy" src="03-sidebar/02-sidebar-folder-expanded.png" alt="02-sidebar-folder-expanded.png"></a><figcaption>02-sidebar-folder-expanded.png</figcaption></figure>
+<figure><a href="03-sidebar/03-sidebar-folder-collapsed.png" target="_blank"><img loading="lazy" src="03-sidebar/03-sidebar-folder-collapsed.png" alt="03-sidebar-folder-collapsed.png"></a><figcaption>03-sidebar-folder-collapsed.png</figcaption></figure>
+<figure><a href="03-sidebar/04-sidebar-group-collapsed.png" target="_blank"><img loading="lazy" src="03-sidebar/04-sidebar-group-collapsed.png" alt="04-sidebar-group-collapsed.png"></a><figcaption>04-sidebar-group-collapsed.png</figcaption></figure>
+<figure><a href="03-sidebar/05-sidebar-tags-expanded.png" target="_blank"><img loading="lazy" src="03-sidebar/05-sidebar-tags-expanded.png" alt="05-sidebar-tags-expanded.png"></a><figcaption>05-sidebar-tags-expanded.png</figcaption></figure>
+<figure><a href="03-sidebar/06-sidebar-filtered.png" target="_blank"><img loading="lazy" src="03-sidebar/06-sidebar-filtered.png" alt="06-sidebar-filtered.png"></a><figcaption>06-sidebar-filtered.png</figcaption></figure>
+<figure><a href="03-sidebar/07-sidebar-filter-cleared.png" target="_blank"><img loading="lazy" src="03-sidebar/07-sidebar-filter-cleared.png" alt="07-sidebar-filter-cleared.png"></a><figcaption>07-sidebar-filter-cleared.png</figcaption></figure>
+<figure><a href="03-sidebar/08-sidebar-branch-context-menu.png" target="_blank"><img loading="lazy" src="03-sidebar/08-sidebar-branch-context-menu.png" alt="08-sidebar-branch-context-menu.png"></a><figcaption>08-sidebar-branch-context-menu.png</figcaption></figure>
+<figure><a href="03-sidebar/09-sidebar-stashes.png" target="_blank"><img loading="lazy" src="03-sidebar/09-sidebar-stashes.png" alt="09-sidebar-stashes.png"></a><figcaption>09-sidebar-stashes.png</figcaption></figure>
+</div>
+</section>
+<section id="m04-revisiondetails">
+<h2>4 · 修订详情 <small style="color:var(--muted);font-size:13px">8 张 · 2 用例</small></h2>
+<p class="desc">变更 tab、文件树 tab、摘要、reflog/tags 隐藏开关</p>
+<div class="grid">
+<figure><a href="04-revisiondetails/01-revisiondetails-commit-summary.png" target="_blank"><img loading="lazy" src="04-revisiondetails/01-revisiondetails-commit-summary.png" alt="01-revisiondetails-commit-summary.png"></a><figcaption>01-revisiondetails-commit-summary.png</figcaption></figure>
+<figure><a href="04-revisiondetails/02-revisiondetails-changes-tab.png" target="_blank"><img loading="lazy" src="04-revisiondetails/02-revisiondetails-changes-tab.png" alt="02-revisiondetails-changes-tab.png"></a><figcaption>02-revisiondetails-changes-tab.png</figcaption></figure>
+<figure><a href="04-revisiondetails/03-revisiondetails-filetree-tab.png" target="_blank"><img loading="lazy" src="04-revisiondetails/03-revisiondetails-filetree-tab.png" alt="03-revisiondetails-filetree-tab.png"></a><figcaption>03-revisiondetails-filetree-tab.png</figcaption></figure>
+<figure><a href="04-revisiondetails/04-revisiondetails-back-to-summary.png" target="_blank"><img loading="lazy" src="04-revisiondetails/04-revisiondetails-back-to-summary.png" alt="04-revisiondetails-back-to-summary.png"></a><figcaption>04-revisiondetails-back-to-summary.png</figcaption></figure>
+<figure><a href="04-revisiondetails/05-revisiondetails-range-compare.png" target="_blank"><img loading="lazy" src="04-revisiondetails/05-revisiondetails-range-compare.png" alt="05-revisiondetails-range-compare.png"></a><figcaption>05-revisiondetails-range-compare.png</figcaption></figure>
+<figure><a href="04-revisiondetails/06-revisiondetails-reflog-enabled.png" target="_blank"><img loading="lazy" src="04-revisiondetails/06-revisiondetails-reflog-enabled.png" alt="06-revisiondetails-reflog-enabled.png"></a><figcaption>06-revisiondetails-reflog-enabled.png</figcaption></figure>
+<figure><a href="04-revisiondetails/07-revisiondetails-tag-filtered.png" target="_blank"><img loading="lazy" src="04-revisiondetails/07-revisiondetails-tag-filtered.png" alt="07-revisiondetails-tag-filtered.png"></a><figcaption>07-revisiondetails-tag-filtered.png</figcaption></figure>
+<figure><a href="04-revisiondetails/08-revisiondetails-tags-hidden.png" target="_blank"><img loading="lazy" src="04-revisiondetails/08-revisiondetails-tags-hidden.png" alt="08-revisiondetails-tags-hidden.png"></a><figcaption>08-revisiondetails-tags-hidden.png</figcaption></figure>
+</div>
+</section>
+<section id="m05-changescommit">
+<h2>5 · 变更与提交 <small style="color:var(--muted);font-size:13px">11 张 · 6 用例</small></h2>
+<p class="desc">暂存/取消暂存、行级 chunk stage/discard 浮窗、提交消息自动补全</p>
+<div class="grid">
+<figure><a href="05-changescommit/01-commit-view-loaded.png" target="_blank"><img loading="lazy" src="05-changescommit/01-commit-view-loaded.png" alt="01-commit-view-loaded.png"></a><figcaption>01-commit-view-loaded.png</figcaption></figure>
+<figure><a href="05-changescommit/02-stage-selected-file.png" target="_blank"><img loading="lazy" src="05-changescommit/02-stage-selected-file.png" alt="02-stage-selected-file.png"></a><figcaption>02-stage-selected-file.png</figcaption></figure>
+<figure><a href="05-changescommit/03-unstage-selected-file.png" target="_blank"><img loading="lazy" src="05-changescommit/03-unstage-selected-file.png" alt="03-unstage-selected-file.png"></a><figcaption>03-unstage-selected-file.png</figcaption></figure>
+<figure><a href="05-changescommit/04-stage-all.png" target="_blank"><img loading="lazy" src="05-changescommit/04-stage-all.png" alt="04-stage-all.png"></a><figcaption>04-stage-all.png</figcaption></figure>
+<figure><a href="05-changescommit/05-unstage-all.png" target="_blank"><img loading="lazy" src="05-changescommit/05-unstage-all.png" alt="05-unstage-all.png"></a><figcaption>05-unstage-all.png</figcaption></figure>
+<figure><a href="05-changescommit/06-floating-buttons-on-selection.png" target="_blank"><img loading="lazy" src="05-changescommit/06-floating-buttons-on-selection.png" alt="06-floating-buttons-on-selection.png"></a><figcaption>06-floating-buttons-on-selection.png</figcaption></figure>
+<figure><a href="05-changescommit/07-line-level-stage-applied.png" target="_blank"><img loading="lazy" src="05-changescommit/07-line-level-stage-applied.png" alt="07-line-level-stage-applied.png"></a><figcaption>07-line-level-stage-applied.png</figcaption></figure>
+<figure><a href="05-changescommit/08-discard-floating-button.png" target="_blank"><img loading="lazy" src="05-changescommit/08-discard-floating-button.png" alt="08-discard-floating-button.png"></a><figcaption>08-discard-floating-button.png</figcaption></figure>
+<figure><a href="05-changescommit/09-discard-confirm-dialog.png" target="_blank"><img loading="lazy" src="05-changescommit/09-discard-confirm-dialog.png" alt="09-discard-confirm-dialog.png"></a><figcaption>09-discard-confirm-dialog.png</figcaption></figure>
+<figure><a href="05-changescommit/10-line-level-discard-applied.png" target="_blank"><img loading="lazy" src="05-changescommit/10-line-level-discard-applied.png" alt="10-line-level-discard-applied.png"></a><figcaption>10-line-level-discard-applied.png</figcaption></figure>
+<figure><a href="05-changescommit/11-commit-message-autocomplete.png" target="_blank"><img loading="lazy" src="05-changescommit/11-commit-message-autocomplete.png" alt="11-commit-message-autocomplete.png"></a><figcaption>11-commit-message-autocomplete.png</figcaption></figure>
+</div>
+</section>
+<section id="m06-toolbar">
+<h2>6 · 工具栏 <small style="color:var(--muted);font-size:13px">3 张 · 3 用例</small></h2>
+<p class="desc">push/pull/fetch/stash 按钮状态（领先/落后角标）</p>
+<div class="grid">
+<figure><a href="06-toolbar/01-toolbar-no-repo-disabled.png" target="_blank"><img loading="lazy" src="06-toolbar/01-toolbar-no-repo-disabled.png" alt="01-toolbar-no-repo-disabled.png"></a><figcaption>01-toolbar-no-repo-disabled.png</figcaption></figure>
+<figure><a href="06-toolbar/02-toolbar-repo-no-upstream.png" target="_blank"><img loading="lazy" src="06-toolbar/02-toolbar-repo-no-upstream.png" alt="02-toolbar-repo-no-upstream.png"></a><figcaption>02-toolbar-repo-no-upstream.png</figcaption></figure>
+<figure><a href="06-toolbar/03-toolbar-ahead-behind-badges.png" target="_blank"><img loading="lazy" src="06-toolbar/03-toolbar-ahead-behind-badges.png" alt="03-toolbar-ahead-behind-badges.png"></a><figcaption>03-toolbar-ahead-behind-badges.png</figcaption></figure>
+</div>
+</section>
+<section id="m07-textdiff">
+<h2>7 · 文本 Diff <small style="color:var(--muted);font-size:13px">5 张 · 2 用例</small></h2>
+<p class="desc">Split/SideBySide 切换、垂直+水平滚动同步（横向滚动条弹动修复回归）</p>
+<div class="grid">
+<figure><a href="07-textdiff/01-split-mode.png" target="_blank"><img loading="lazy" src="07-textdiff/01-split-mode.png" alt="01-split-mode.png"></a><figcaption>01-split-mode.png</figcaption></figure>
+<figure><a href="07-textdiff/02-side-by-side-mode.png" target="_blank"><img loading="lazy" src="07-textdiff/02-side-by-side-mode.png" alt="02-side-by-side-mode.png"></a><figcaption>02-side-by-side-mode.png</figcaption></figure>
+<figure><a href="07-textdiff/03-vertical-scroll-synced.png" target="_blank"><img loading="lazy" src="07-textdiff/03-vertical-scroll-synced.png" alt="03-vertical-scroll-synced.png"></a><figcaption>03-vertical-scroll-synced.png</figcaption></figure>
+<figure><a href="07-textdiff/04-horizontal-scroll-synced.png" target="_blank"><img loading="lazy" src="07-textdiff/04-horizontal-scroll-synced.png" alt="04-horizontal-scroll-synced.png"></a><figcaption>04-horizontal-scroll-synced.png</figcaption></figure>
+<figure><a href="07-textdiff/05-alternating-scroll-no-bounce.png" target="_blank"><img loading="lazy" src="07-textdiff/05-alternating-scroll-no-bounce.png" alt="05-alternating-scroll-no-bounce.png"></a><figcaption>05-alternating-scroll-no-bounce.png</figcaption></figure>
+</div>
+</section>
+<section id="m08-diffpopup">
+<h2>8 · Diff 弹窗 <small style="color:var(--muted);font-size:13px">6 张 · 4 用例</small></h2>
+<p class="desc">提交/变更两入口、横向滚动条、Escape/Space 关闭、上下键换文件</p>
+<div class="grid">
+<figure><a href="08-diffpopup/01-popup-from-commit-view.png" target="_blank"><img loading="lazy" src="08-diffpopup/01-popup-from-commit-view.png" alt="01-popup-from-commit-view.png"></a><figcaption>01-popup-from-commit-view.png</figcaption></figure>
+<figure><a href="08-diffpopup/02-popup-reopened.png" target="_blank"><img loading="lazy" src="08-diffpopup/02-popup-reopened.png" alt="02-popup-reopened.png"></a><figcaption>02-popup-reopened.png</figcaption></figure>
+<figure><a href="08-diffpopup/03-popup-long-line-scrollbar.png" target="_blank"><img loading="lazy" src="08-diffpopup/03-popup-long-line-scrollbar.png" alt="03-popup-long-line-scrollbar.png"></a><figcaption>03-popup-long-line-scrollbar.png</figcaption></figure>
+<figure><a href="08-diffpopup/04-popup-horizontal-scrolled.png" target="_blank"><img loading="lazy" src="08-diffpopup/04-popup-horizontal-scrolled.png" alt="04-popup-horizontal-scrolled.png"></a><figcaption>04-popup-horizontal-scrolled.png</figcaption></figure>
+<figure><a href="08-diffpopup/05-popup-arrow-next-file.png" target="_blank"><img loading="lazy" src="08-diffpopup/05-popup-arrow-next-file.png" alt="05-popup-arrow-next-file.png"></a><figcaption>05-popup-arrow-next-file.png</figcaption></figure>
+<figure><a href="08-diffpopup/06-popup-from-changes-view.png" target="_blank"><img loading="lazy" src="08-diffpopup/06-popup-from-changes-view.png" alt="06-popup-from-changes-view.png"></a><figcaption>06-popup-from-changes-view.png</figcaption></figure>
+</div>
+</section>
+<section id="m09-binarydiff">
+<h2>9 · 二进制 Diff <small style="color:var(--muted);font-size:13px">8 张 · 2 用例</small></h2>
+<p class="desc">Hex 视图、图片对比（SideBySide/Swipe/OnionSkin/HighlightPixels）</p>
+<div class="grid">
+<figure><a href="09-binarydiff/01-image-side-by-side.png" target="_blank"><img loading="lazy" src="09-binarydiff/01-image-side-by-side.png" alt="01-image-side-by-side.png"></a><figcaption>01-image-side-by-side.png</figcaption></figure>
+<figure><a href="09-binarydiff/02-image-swipe.png" target="_blank"><img loading="lazy" src="09-binarydiff/02-image-swipe.png" alt="02-image-swipe.png"></a><figcaption>02-image-swipe.png</figcaption></figure>
+<figure><a href="09-binarydiff/03-image-swipe-dragged.png" target="_blank"><img loading="lazy" src="09-binarydiff/03-image-swipe-dragged.png" alt="03-image-swipe-dragged.png"></a><figcaption>03-image-swipe-dragged.png</figcaption></figure>
+<figure><a href="09-binarydiff/04-image-onionskin-opaque.png" target="_blank"><img loading="lazy" src="09-binarydiff/04-image-onionskin-opaque.png" alt="04-image-onionskin-opaque.png"></a><figcaption>04-image-onionskin-opaque.png</figcaption></figure>
+<figure><a href="09-binarydiff/05-image-onionskin-half.png" target="_blank"><img loading="lazy" src="09-binarydiff/05-image-onionskin-half.png" alt="05-image-onionskin-half.png"></a><figcaption>05-image-onionskin-half.png</figcaption></figure>
+<figure><a href="09-binarydiff/06-image-highlightpixels.png" target="_blank"><img loading="lazy" src="09-binarydiff/06-image-highlightpixels.png" alt="06-image-highlightpixels.png"></a><figcaption>06-image-highlightpixels.png</figcaption></figure>
+<figure><a href="09-binarydiff/07-image-hex-view.png" target="_blank"><img loading="lazy" src="09-binarydiff/07-image-hex-view.png" alt="07-image-hex-view.png"></a><figcaption>07-image-hex-view.png</figcaption></figure>
+<figure><a href="09-binarydiff/08-binary-hex-view.png" target="_blank"><img loading="lazy" src="09-binarydiff/08-binary-hex-view.png" alt="08-binary-hex-view.png"></a><figcaption>08-binary-hex-view.png</figcaption></figure>
+</div>
+</section>
+<section id="m10-mergeconflict">
+<h2>10 · 合并冲突窗口 <small style="color:var(--muted);font-size:13px">13 张 · 5 用例</small></h2>
+<p class="desc">三方编辑器、冲突块选择、全选 ours/theirs、滚动同步回归</p>
+<div class="grid">
+<figure><a href="10-mergeconflict/01-conflict-view.png" target="_blank"><img loading="lazy" src="10-mergeconflict/01-conflict-view.png" alt="01-conflict-view.png"></a><figcaption>01-conflict-view.png</figcaption></figure>
+<figure><a href="10-mergeconflict/02-resolve-disabled.png" target="_blank"><img loading="lazy" src="10-mergeconflict/02-resolve-disabled.png" alt="02-resolve-disabled.png"></a><figcaption>02-resolve-disabled.png</figcaption></figure>
+<figure><a href="10-mergeconflict/03-after-choose-theirs-staged.png" target="_blank"><img loading="lazy" src="10-mergeconflict/03-after-choose-theirs-staged.png" alt="03-after-choose-theirs-staged.png"></a><figcaption>03-after-choose-theirs-staged.png</figcaption></figure>
+<figure><a href="10-mergeconflict/04-sidebyside-window.png" target="_blank"><img loading="lazy" src="10-mergeconflict/04-sidebyside-window.png" alt="04-sidebyside-window.png"></a><figcaption>04-sidebyside-window.png</figcaption></figure>
+<figure><a href="10-mergeconflict/05-select-all-ours.png" target="_blank"><img loading="lazy" src="10-mergeconflict/05-select-all-ours.png" alt="05-select-all-ours.png"></a><figcaption>05-select-all-ours.png</figcaption></figure>
+<figure><a href="10-mergeconflict/06-after-merge-resolve-cleared.png" target="_blank"><img loading="lazy" src="10-mergeconflict/06-after-merge-resolve-cleared.png" alt="06-after-merge-resolve-cleared.png"></a><figcaption>06-after-merge-resolve-cleared.png</figcaption></figure>
+<figure><a href="10-mergeconflict/07-partial-1-of-2.png" target="_blank"><img loading="lazy" src="10-mergeconflict/07-partial-1-of-2.png" alt="07-partial-1-of-2.png"></a><figcaption>07-partial-1-of-2.png</figcaption></figure>
+<figure><a href="10-mergeconflict/08-all-resolved-2-of-2.png" target="_blank"><img loading="lazy" src="10-mergeconflict/08-all-resolved-2-of-2.png" alt="08-all-resolved-2-of-2.png"></a><figcaption>08-all-resolved-2-of-2.png</figcaption></figure>
+<figure><a href="10-mergeconflict/09-mixed-resolve-staged.png" target="_blank"><img loading="lazy" src="10-mergeconflict/09-mixed-resolve-staged.png" alt="09-mixed-resolve-staged.png"></a><figcaption>09-mixed-resolve-staged.png</figcaption></figure>
+<figure><a href="10-mergeconflict/09-sidebyside-large.png" target="_blank"><img loading="lazy" src="10-mergeconflict/09-sidebyside-large.png" alt="09-sidebyside-large.png"></a><figcaption>09-sidebyside-large.png</figcaption></figure>
+<figure><a href="10-mergeconflict/10-scroll-synced.png" target="_blank"><img loading="lazy" src="10-mergeconflict/10-scroll-synced.png" alt="10-scroll-synced.png"></a><figcaption>10-scroll-synced.png</figcaption></figure>
+<figure><a href="10-mergeconflict/11-chunk-navigation.png" target="_blank"><img loading="lazy" src="10-mergeconflict/11-chunk-navigation.png" alt="11-chunk-navigation.png"></a><figcaption>11-chunk-navigation.png</figcaption></figure>
+<figure><a href="10-mergeconflict/12-orientation-toggled.png" target="_blank"><img loading="lazy" src="10-mergeconflict/12-orientation-toggled.png" alt="12-orientation-toggled.png"></a><figcaption>12-orientation-toggled.png</figcaption></figure>
+</div>
+</section>
+<section id="m11-branchops">
+<h2>11 · 分支操作 <small style="color:var(--muted);font-size:13px">13 张 · 10 用例</small></h2>
+<p class="desc">创建/检出/重命名/删除/跟踪/多分支推送，9 窗口</p>
+<div class="grid">
+<figure><a href="11-branchops/01-create-branch-initial.png" target="_blank"><img loading="lazy" src="11-branchops/01-create-branch-initial.png" alt="01-create-branch-initial.png"></a><figcaption>01-create-branch-initial.png</figcaption></figure>
+<figure><a href="11-branchops/02-create-branch-duplicate-warning.png" target="_blank"><img loading="lazy" src="11-branchops/02-create-branch-duplicate-warning.png" alt="02-create-branch-duplicate-warning.png"></a><figcaption>02-create-branch-duplicate-warning.png</figcaption></figure>
+<figure><a href="11-branchops/03-create-branch-command-preview.png" target="_blank"><img loading="lazy" src="11-branchops/03-create-branch-command-preview.png" alt="03-create-branch-command-preview.png"></a><figcaption>03-create-branch-command-preview.png</figcaption></figure>
+<figure><a href="11-branchops/04-checkout-branch.png" target="_blank"><img loading="lazy" src="11-branchops/04-checkout-branch.png" alt="04-checkout-branch.png"></a><figcaption>04-checkout-branch.png</figcaption></figure>
+<figure><a href="11-branchops/05-rename-branch.png" target="_blank"><img loading="lazy" src="11-branchops/05-rename-branch.png" alt="05-rename-branch.png"></a><figcaption>05-rename-branch.png</figcaption></figure>
+<figure><a href="11-branchops/06-remove-local-branch.png" target="_blank"><img loading="lazy" src="11-branchops/06-remove-local-branch.png" alt="06-remove-local-branch.png"></a><figcaption>06-remove-local-branch.png</figcaption></figure>
+<figure><a href="11-branchops/07-remove-remote-branch.png" target="_blank"><img loading="lazy" src="11-branchops/07-remove-remote-branch.png" alt="07-remove-remote-branch.png"></a><figcaption>07-remove-remote-branch.png</figcaption></figure>
+<figure><a href="11-branchops/07b-remove-remote-branches-multi.png" target="_blank"><img loading="lazy" src="11-branchops/07b-remove-remote-branches-multi.png" alt="07b-remove-remote-branches-multi.png"></a><figcaption>07b-remove-remote-branches-multi.png</figcaption></figure>
+<figure><a href="11-branchops/08-track-remote-branch.png" target="_blank"><img loading="lazy" src="11-branchops/08-track-remote-branch.png" alt="08-track-remote-branch.png"></a><figcaption>08-track-remote-branch.png</figcaption></figure>
+<figure><a href="11-branchops/09-push-multiple-branches.png" target="_blank"><img loading="lazy" src="11-branchops/09-push-multiple-branches.png" alt="09-push-multiple-branches.png"></a><figcaption>09-push-multiple-branches.png</figcaption></figure>
+<figure><a href="11-branchops/10-checkout-as-worktree.png" target="_blank"><img loading="lazy" src="11-branchops/10-checkout-as-worktree.png" alt="10-checkout-as-worktree.png"></a><figcaption>10-checkout-as-worktree.png</figcaption></figure>
+<figure><a href="11-branchops/11-lean-branching-start.png" target="_blank"><img loading="lazy" src="11-branchops/11-lean-branching-start.png" alt="11-lean-branching-start.png"></a><figcaption>11-lean-branching-start.png</figcaption></figure>
+<figure><a href="11-branchops/12-lean-branching-finish.png" target="_blank"><img loading="lazy" src="11-branchops/12-lean-branching-finish.png" alt="12-lean-branching-finish.png"></a><figcaption>12-lean-branching-finish.png</figcaption></figure>
+</div>
+</section>
+<section id="m12-tagops">
+<h2>12 · 标签操作 <small style="color:var(--muted);font-size:13px">10 张 · 7 用例</small></h2>
+<p class="desc">创建/删除/推送/多标签推送/详情，5 窗口</p>
+<div class="grid">
+<figure><a href="12-tagops/01-create-tag-initial.png" target="_blank"><img loading="lazy" src="12-tagops/01-create-tag-initial.png" alt="01-create-tag-initial.png"></a><figcaption>01-create-tag-initial.png</figcaption></figure>
+<figure><a href="12-tagops/02-create-tag-duplicate-warning.png" target="_blank"><img loading="lazy" src="12-tagops/02-create-tag-duplicate-warning.png" alt="02-create-tag-duplicate-warning.png"></a><figcaption>02-create-tag-duplicate-warning.png</figcaption></figure>
+<figure><a href="12-tagops/03-create-tag-command-preview.png" target="_blank"><img loading="lazy" src="12-tagops/03-create-tag-command-preview.png" alt="03-create-tag-command-preview.png"></a><figcaption>03-create-tag-command-preview.png</figcaption></figure>
+<figure><a href="12-tagops/04-create-tag-push-preview.png" target="_blank"><img loading="lazy" src="12-tagops/04-create-tag-push-preview.png" alt="04-create-tag-push-preview.png"></a><figcaption>04-create-tag-push-preview.png</figcaption></figure>
+<figure><a href="12-tagops/05-remove-tag-remote-delete.png" target="_blank"><img loading="lazy" src="12-tagops/05-remove-tag-remote-delete.png" alt="05-remove-tag-remote-delete.png"></a><figcaption>05-remove-tag-remote-delete.png</figcaption></figure>
+<figure><a href="12-tagops/06-remove-tags-multi.png" target="_blank"><img loading="lazy" src="12-tagops/06-remove-tags-multi.png" alt="06-remove-tags-multi.png"></a><figcaption>06-remove-tags-multi.png</figcaption></figure>
+<figure><a href="12-tagops/07-push-tag.png" target="_blank"><img loading="lazy" src="12-tagops/07-push-tag.png" alt="07-push-tag.png"></a><figcaption>07-push-tag.png</figcaption></figure>
+<figure><a href="12-tagops/08-push-tags-multi.png" target="_blank"><img loading="lazy" src="12-tagops/08-push-tags-multi.png" alt="08-push-tags-multi.png"></a><figcaption>08-push-tags-multi.png</figcaption></figure>
+<figure><a href="12-tagops/09-tag-details-annotated.png" target="_blank"><img loading="lazy" src="12-tagops/09-tag-details-annotated.png" alt="09-tag-details-annotated.png"></a><figcaption>09-tag-details-annotated.png</figcaption></figure>
+<figure><a href="12-tagops/10-tag-details-lightweight.png" target="_blank"><img loading="lazy" src="12-tagops/10-tag-details-lightweight.png" alt="10-tag-details-lightweight.png"></a><figcaption>10-tag-details-lightweight.png</figcaption></figure>
+</div>
+</section>
+<section id="m13-historyrewrite">
+<h2>13 · 历史改写 <small style="color:var(--muted);font-size:13px">16 张 · 9 用例</small></h2>
+<p class="desc">合并/变基/交互式变基真实仓库端到端/拣选/还原/重置/Reflog</p>
+<div class="grid">
+<figure><a href="13-historyrewrite/01-merge-default-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/01-merge-default-preview.png" alt="01-merge-default-preview.png"></a><figcaption>01-merge-default-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/02-merge-no-ff-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/02-merge-no-ff-preview.png" alt="02-merge-no-ff-preview.png"></a><figcaption>02-merge-no-ff-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/03-merge-conflict-warning.png" target="_blank"><img loading="lazy" src="13-historyrewrite/03-merge-conflict-warning.png" alt="03-merge-conflict-warning.png"></a><figcaption>03-merge-conflict-warning.png</figcaption></figure>
+<figure><a href="13-historyrewrite/04-rebase-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/04-rebase-preview.png" alt="04-rebase-preview.png"></a><figcaption>04-rebase-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/05-rebase-autostash-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/05-rebase-autostash-preview.png" alt="05-rebase-autostash-preview.png"></a><figcaption>05-rebase-autostash-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/06-cherry-pick-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/06-cherry-pick-preview.png" alt="06-cherry-pick-preview.png"></a><figcaption>06-cherry-pick-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/07-cherry-pick-no-commit.png" target="_blank"><img loading="lazy" src="13-historyrewrite/07-cherry-pick-no-commit.png" alt="07-cherry-pick-no-commit.png"></a><figcaption>07-cherry-pick-no-commit.png</figcaption></figure>
+<figure><a href="13-historyrewrite/08-cherry-pick-multi.png" target="_blank"><img loading="lazy" src="13-historyrewrite/08-cherry-pick-multi.png" alt="08-cherry-pick-multi.png"></a><figcaption>08-cherry-pick-multi.png</figcaption></figure>
+<figure><a href="13-historyrewrite/09-revert-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/09-revert-preview.png" alt="09-revert-preview.png"></a><figcaption>09-revert-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/10-revert-no-commit.png" target="_blank"><img loading="lazy" src="13-historyrewrite/10-revert-no-commit.png" alt="10-revert-no-commit.png"></a><figcaption>10-revert-no-commit.png</figcaption></figure>
+<figure><a href="13-historyrewrite/11-reset-hard-preview.png" target="_blank"><img loading="lazy" src="13-historyrewrite/11-reset-hard-preview.png" alt="11-reset-hard-preview.png"></a><figcaption>11-reset-hard-preview.png</figcaption></figure>
+<figure><a href="13-historyrewrite/12-reflog-window.png" target="_blank"><img loading="lazy" src="13-historyrewrite/12-reflog-window.png" alt="12-reflog-window.png"></a><figcaption>12-reflog-window.png</figcaption></figure>
+<figure><a href="13-historyrewrite/13-reflog-jump-confirm.png" target="_blank"><img loading="lazy" src="13-historyrewrite/13-reflog-jump-confirm.png" alt="13-reflog-jump-confirm.png"></a><figcaption>13-reflog-jump-confirm.png</figcaption></figure>
+<figure><a href="13-historyrewrite/14-reflog-after-jump.png" target="_blank"><img loading="lazy" src="13-historyrewrite/14-reflog-after-jump.png" alt="14-reflog-after-jump.png"></a><figcaption>14-reflog-after-jump.png</figcaption></figure>
+<figure><a href="13-historyrewrite/15-ir-todolist-loaded.png" target="_blank"><img loading="lazy" src="13-historyrewrite/15-ir-todolist-loaded.png" alt="15-ir-todolist-loaded.png"></a><figcaption>15-ir-todolist-loaded.png</figcaption></figure>
+<figure><a href="13-historyrewrite/16-ir-drop-selected.png" target="_blank"><img loading="lazy" src="13-historyrewrite/16-ir-drop-selected.png" alt="16-ir-drop-selected.png"></a><figcaption>16-ir-drop-selected.png</figcaption></figure>
+</div>
+</section>
+<section id="m14-stash">
+<h2>14 · Stash <small style="color:var(--muted);font-size:13px">10 张 · 7 用例</small></h2>
+<p class="desc">保存/部分保存/应用/删除/重命名，5 窗口</p>
+<div class="grid">
+<figure><a href="14-stash/01-save-default.png" target="_blank"><img loading="lazy" src="14-stash/01-save-default.png" alt="01-save-default.png"></a><figcaption>01-save-default.png</figcaption></figure>
+<figure><a href="14-stash/02-save-message.png" target="_blank"><img loading="lazy" src="14-stash/02-save-message.png" alt="02-save-message.png"></a><figcaption>02-save-message.png</figcaption></figure>
+<figure><a href="14-stash/03-save-untracked.png" target="_blank"><img loading="lazy" src="14-stash/03-save-untracked.png" alt="03-save-untracked.png"></a><figcaption>03-save-untracked.png</figcaption></figure>
+<figure><a href="14-stash/04-partial-selection.png" target="_blank"><img loading="lazy" src="14-stash/04-partial-selection.png" alt="04-partial-selection.png"></a><figcaption>04-partial-selection.png</figcaption></figure>
+<figure><a href="14-stash/05-partial-message.png" target="_blank"><img loading="lazy" src="14-stash/05-partial-message.png" alt="05-partial-message.png"></a><figcaption>05-partial-message.png</figcaption></figure>
+<figure><a href="14-stash/06-apply-preview.png" target="_blank"><img loading="lazy" src="14-stash/06-apply-preview.png" alt="06-apply-preview.png"></a><figcaption>06-apply-preview.png</figcaption></figure>
+<figure><a href="14-stash/07-apply-pop.png" target="_blank"><img loading="lazy" src="14-stash/07-apply-pop.png" alt="07-apply-pop.png"></a><figcaption>07-apply-pop.png</figcaption></figure>
+<figure><a href="14-stash/08-remove-single.png" target="_blank"><img loading="lazy" src="14-stash/08-remove-single.png" alt="08-remove-single.png"></a><figcaption>08-remove-single.png</figcaption></figure>
+<figure><a href="14-stash/09-remove-multiple.png" target="_blank"><img loading="lazy" src="14-stash/09-remove-multiple.png" alt="09-remove-multiple.png"></a><figcaption>09-remove-multiple.png</figcaption></figure>
+<figure><a href="14-stash/10-rename.png" target="_blank"><img loading="lazy" src="14-stash/10-rename.png" alt="10-rename.png"></a><figcaption>10-rename.png</figcaption></figure>
+</div>
+</section>
+<section id="m15-remote">
+<h2>15 · 远程交互 <small style="color:var(--muted);font-size:13px">11 张 · 7 用例</small></h2>
+<p class="desc">Fetch/Pull/Push/编辑远程/自定义 refspec（对本地 bare 真实执行）</p>
+<div class="grid">
+<figure><a href="15-remote/01-fetch-default.png" target="_blank"><img loading="lazy" src="15-remote/01-fetch-default.png" alt="01-fetch-default.png"></a><figcaption>01-fetch-default.png</figcaption></figure>
+<figure><a href="15-remote/02-fetch-all.png" target="_blank"><img loading="lazy" src="15-remote/02-fetch-all.png" alt="02-fetch-all.png"></a><figcaption>02-fetch-all.png</figcaption></figure>
+<figure><a href="15-remote/03-pull-rebase.png" target="_blank"><img loading="lazy" src="15-remote/03-pull-rebase.png" alt="03-pull-rebase.png"></a><figcaption>03-pull-rebase.png</figcaption></figure>
+<figure><a href="15-remote/04-pull-default.png" target="_blank"><img loading="lazy" src="15-remote/04-pull-default.png" alt="04-pull-default.png"></a><figcaption>04-pull-default.png</figcaption></figure>
+<figure><a href="15-remote/05-push-force.png" target="_blank"><img loading="lazy" src="15-remote/05-push-force.png" alt="05-push-force.png"></a><figcaption>05-push-force.png</figcaption></figure>
+<figure><a href="15-remote/06-push-default.png" target="_blank"><img loading="lazy" src="15-remote/06-push-default.png" alt="06-push-default.png"></a><figcaption>06-push-default.png</figcaption></figure>
+<figure><a href="15-remote/07-push-newbranch.png" target="_blank"><img loading="lazy" src="15-remote/07-push-newbranch.png" alt="07-push-newbranch.png"></a><figcaption>07-push-newbranch.png</figcaption></figure>
+<figure><a href="15-remote/08-editremote-duplicate.png" target="_blank"><img loading="lazy" src="15-remote/08-editremote-duplicate.png" alt="08-editremote-duplicate.png"></a><figcaption>08-editremote-duplicate.png</figcaption></figure>
+<figure><a href="15-remote/09-editremote-add.png" target="_blank"><img loading="lazy" src="15-remote/09-editremote-add.png" alt="09-editremote-add.png"></a><figcaption>09-editremote-add.png</figcaption></figure>
+<figure><a href="15-remote/10-editremote-editurl.png" target="_blank"><img loading="lazy" src="15-remote/10-editremote-editurl.png" alt="10-editremote-editurl.png"></a><figcaption>10-editremote-editurl.png</figcaption></figure>
+<figure><a href="15-remote/11-custom-refspec.png" target="_blank"><img loading="lazy" src="15-remote/11-custom-refspec.png" alt="11-custom-refspec.png"></a><figcaption>11-custom-refspec.png</figcaption></figure>
+</div>
+</section>
+<section id="m16-submodule-worktree">
+<h2>16 · 子模块与 Worktree <small style="color:var(--muted);font-size:13px">6 张 · 6 用例</small></h2>
+<p class="desc">添加/删除子模块、子模块 diff、worktree 三窗口</p>
+<div class="grid">
+<figure><a href="16-submodule-worktree/01-addsubmodule-ready.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/01-addsubmodule-ready.png" alt="01-addsubmodule-ready.png"></a><figcaption>01-addsubmodule-ready.png</figcaption></figure>
+<figure><a href="16-submodule-worktree/02-deletesubmodule.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/02-deletesubmodule.png" alt="02-deletesubmodule.png"></a><figcaption>02-deletesubmodule.png</figcaption></figure>
+<figure><a href="16-submodule-worktree/03-submodulediff.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/03-submodulediff.png" alt="03-submodulediff.png"></a><figcaption>03-submodulediff.png</figcaption></figure>
+<figure><a href="16-submodule-worktree/04-createworktree.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/04-createworktree.png" alt="04-createworktree.png"></a><figcaption>04-createworktree.png</figcaption></figure>
+<figure><a href="16-submodule-worktree/05-checkoutasworktree.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/05-checkoutasworktree.png" alt="05-checkoutasworktree.png"></a><figcaption>05-checkoutasworktree.png</figcaption></figure>
+<figure><a href="16-submodule-worktree/06-deleteworktree.png" target="_blank"><img loading="lazy" src="16-submodule-worktree/06-deleteworktree.png" alt="06-deleteworktree.png"></a><figcaption>06-deleteworktree.png</figcaption></figure>
+</div>
+</section>
+<section id="m17-workflows">
+<h2>17 · 工作流套件 <small style="color:var(--muted);font-size:13px">12 张 · 9 用例</small></h2>
+<p class="desc">GitFlow（init+start/finish×3）、GitMm、LeanBranching</p>
+<div class="grid">
+<figure><a href="17-workflows/01-gitflow-init-warning.png" target="_blank"><img loading="lazy" src="17-workflows/01-gitflow-init-warning.png" alt="01-gitflow-init-warning.png"></a><figcaption>01-gitflow-init-warning.png</figcaption></figure>
+<figure><a href="17-workflows/02-gitflow-init-ready.png" target="_blank"><img loading="lazy" src="17-workflows/02-gitflow-init-ready.png" alt="02-gitflow-init-ready.png"></a><figcaption>02-gitflow-init-ready.png</figcaption></figure>
+<figure><a href="17-workflows/03-gitflow-start-feature-dup.png" target="_blank"><img loading="lazy" src="17-workflows/03-gitflow-start-feature-dup.png" alt="03-gitflow-start-feature-dup.png"></a><figcaption>03-gitflow-start-feature-dup.png</figcaption></figure>
+<figure><a href="17-workflows/04-gitflow-start-feature-ready.png" target="_blank"><img loading="lazy" src="17-workflows/04-gitflow-start-feature-ready.png" alt="04-gitflow-start-feature-ready.png"></a><figcaption>04-gitflow-start-feature-ready.png</figcaption></figure>
+<figure><a href="17-workflows/05-gitflow-finish-feature-ready.png" target="_blank"><img loading="lazy" src="17-workflows/05-gitflow-finish-feature-ready.png" alt="05-gitflow-finish-feature-ready.png"></a><figcaption>05-gitflow-finish-feature-ready.png</figcaption></figure>
+<figure><a href="17-workflows/06-gitflow-start-release-ready.png" target="_blank"><img loading="lazy" src="17-workflows/06-gitflow-start-release-ready.png" alt="06-gitflow-start-release-ready.png"></a><figcaption>06-gitflow-start-release-ready.png</figcaption></figure>
+<figure><a href="17-workflows/07-gitflow-finish-release-ready.png" target="_blank"><img loading="lazy" src="17-workflows/07-gitflow-finish-release-ready.png" alt="07-gitflow-finish-release-ready.png"></a><figcaption>07-gitflow-finish-release-ready.png</figcaption></figure>
+<figure><a href="17-workflows/08-gitflow-start-hotfix-ready.png" target="_blank"><img loading="lazy" src="17-workflows/08-gitflow-start-hotfix-ready.png" alt="08-gitflow-start-hotfix-ready.png"></a><figcaption>08-gitflow-start-hotfix-ready.png</figcaption></figure>
+<figure><a href="17-workflows/09-gitflow-finish-hotfix-ready.png" target="_blank"><img loading="lazy" src="17-workflows/09-gitflow-finish-hotfix-ready.png" alt="09-gitflow-finish-hotfix-ready.png"></a><figcaption>09-gitflow-finish-hotfix-ready.png</figcaption></figure>
+<figure><a href="17-workflows/10-gitmm-init-ready.png" target="_blank"><img loading="lazy" src="17-workflows/10-gitmm-init-ready.png" alt="10-gitmm-init-ready.png"></a><figcaption>10-gitmm-init-ready.png</figcaption></figure>
+<figure><a href="17-workflows/11-gitmm-init-destguard.png" target="_blank"><img loading="lazy" src="17-workflows/11-gitmm-init-destguard.png" alt="11-gitmm-init-destguard.png"></a><figcaption>11-gitmm-init-destguard.png</figcaption></figure>
+<figure><a href="17-workflows/12-gitmm-workspace-tab.png" target="_blank"><img loading="lazy" src="17-workflows/12-gitmm-workspace-tab.png" alt="12-gitmm-workspace-tab.png"></a><figcaption>12-gitmm-workspace-tab.png</figcaption></figure>
+</div>
+</section>
+<section id="m18-lfs">
+<h2>18 · Git LFS <small style="color:var(--muted);font-size:13px">6 张 · 6 用例</small></h2>
+<p class="desc">track/status/fetch/pull，4 窗口</p>
+<div class="grid">
+<figure><a href="18-lfs/01-track-preview.png" target="_blank"><img loading="lazy" src="18-lfs/01-track-preview.png" alt="01-track-preview.png"></a><figcaption>01-track-preview.png</figcaption></figure>
+<figure><a href="18-lfs/02-status-files.png" target="_blank"><img loading="lazy" src="18-lfs/02-status-files.png" alt="02-status-files.png"></a><figcaption>02-status-files.png</figcaption></figure>
+<figure><a href="18-lfs/03-status-locked.png" target="_blank"><img loading="lazy" src="18-lfs/03-status-locked.png" alt="03-status-locked.png"></a><figcaption>03-status-locked.png</figcaption></figure>
+<figure><a href="18-lfs/04-status-unlocked.png" target="_blank"><img loading="lazy" src="18-lfs/04-status-unlocked.png" alt="04-status-unlocked.png"></a><figcaption>04-status-unlocked.png</figcaption></figure>
+<figure><a href="18-lfs/05-fetch-ready.png" target="_blank"><img loading="lazy" src="18-lfs/05-fetch-ready.png" alt="05-fetch-ready.png"></a><figcaption>05-fetch-ready.png</figcaption></figure>
+<figure><a href="18-lfs/06-pull-ready.png" target="_blank"><img loading="lazy" src="18-lfs/06-pull-ready.png" alt="06-pull-ready.png"></a><figcaption>06-pull-ready.png</figcaption></figure>
+</div>
+</section>
+<section id="m19-patchsnapshot">
+<h2>19 · 补丁与快照 <small style="color:var(--muted);font-size:13px">7 张 · 7 用例</small></h2>
+<p class="desc">保存为 patch/应用 patch/快照，3 窗口</p>
+<div class="grid">
+<figure><a href="19-patchsnapshot/01-save-as-patch-single.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/01-save-as-patch-single.png" alt="01-save-as-patch-single.png"></a><figcaption>01-save-as-patch-single.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/02-save-as-patch-output-dir.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/02-save-as-patch-output-dir.png" alt="02-save-as-patch-output-dir.png"></a><figcaption>02-save-as-patch-output-dir.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/03-save-as-patch-range.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/03-save-as-patch-range.png" alt="03-save-as-patch-range.png"></a><figcaption>03-save-as-patch-range.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/04-apply-patch-file.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/04-apply-patch-file.png" alt="04-apply-patch-file.png"></a><figcaption>04-apply-patch-file.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/05-apply-patch-conflict.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/05-apply-patch-conflict.png" alt="05-apply-patch-conflict.png"></a><figcaption>05-apply-patch-conflict.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/06-apply-patch-clipboard.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/06-apply-patch-clipboard.png" alt="06-apply-patch-clipboard.png"></a><figcaption>06-apply-patch-clipboard.png</figcaption></figure>
+<figure><a href="19-patchsnapshot/07-save-snapshot.png" target="_blank"><img loading="lazy" src="19-patchsnapshot/07-save-snapshot.png" alt="07-save-snapshot.png"></a><figcaption>07-save-snapshot.png</figcaption></figure>
+</div>
+</section>
+<section id="m20-viewerwindows">
+<h2>20 · 查看类窗口 <small style="color:var(--muted);font-size:13px">8 张 · 7 用例</small></h2>
+<p class="desc">Blame/文件历史/仓库概览/统计/修订详情独立窗/GoToLine</p>
+<div class="grid">
+<figure><a href="20-viewerwindows/01-blame-multicommit.png" target="_blank"><img loading="lazy" src="20-viewerwindows/01-blame-multicommit.png" alt="01-blame-multicommit.png"></a><figcaption>01-blame-multicommit.png</figcaption></figure>
+<figure><a href="20-viewerwindows/02-blame-first-commit.png" target="_blank"><img loading="lazy" src="20-viewerwindows/02-blame-first-commit.png" alt="02-blame-first-commit.png"></a><figcaption>02-blame-first-commit.png</figcaption></figure>
+<figure><a href="20-viewerwindows/03-filehistory-file.png" target="_blank"><img loading="lazy" src="20-viewerwindows/03-filehistory-file.png" alt="03-filehistory-file.png"></a><figcaption>03-filehistory-file.png</figcaption></figure>
+<figure><a href="20-viewerwindows/04-filehistory-directory.png" target="_blank"><img loading="lazy" src="20-viewerwindows/04-filehistory-directory.png" alt="04-filehistory-directory.png"></a><figcaption>04-filehistory-directory.png</figcaption></figure>
+<figure><a href="20-viewerwindows/05-repository-overview.png" target="_blank"><img loading="lazy" src="20-viewerwindows/05-repository-overview.png" alt="05-repository-overview.png"></a><figcaption>05-repository-overview.png</figcaption></figure>
+<figure><a href="20-viewerwindows/06-repository-statistics.png" target="_blank"><img loading="lazy" src="20-viewerwindows/06-repository-statistics.png" alt="06-repository-statistics.png"></a><figcaption>06-repository-statistics.png</figcaption></figure>
+<figure><a href="20-viewerwindows/07-revision-details-window.png" target="_blank"><img loading="lazy" src="20-viewerwindows/07-revision-details-window.png" alt="07-revision-details-window.png"></a><figcaption>07-revision-details-window.png</figcaption></figure>
+<figure><a href="20-viewerwindows/08-gotoline.png" target="_blank"><img loading="lazy" src="20-viewerwindows/08-gotoline.png" alt="08-gotoline.png"></a><figcaption>08-gotoline.png</figcaption></figure>
+</div>
+</section>
+<section id="m21-preferences">
+<h2>21 · 偏好设置 <small style="color:var(--muted);font-size:13px">8 张 · 9 用例</small></h2>
+<p class="desc">General/Git/Commit/Integration/ImportExport/CustomCommands/AI</p>
+<div class="grid">
+<figure><a href="21-preferences/01-general-tab.png" target="_blank"><img loading="lazy" src="21-preferences/01-general-tab.png" alt="01-general-tab.png"></a><figcaption>01-general-tab.png</figcaption></figure>
+<figure><a href="21-preferences/02-language-combo.png" target="_blank"><img loading="lazy" src="21-preferences/02-language-combo.png" alt="02-language-combo.png"></a><figcaption>02-language-combo.png</figcaption></figure>
+<figure><a href="21-preferences/03-commit-tab.png" target="_blank"><img loading="lazy" src="21-preferences/03-commit-tab.png" alt="03-commit-tab.png"></a><figcaption>03-commit-tab.png</figcaption></figure>
+<figure><a href="21-preferences/04-git-tab.png" target="_blank"><img loading="lazy" src="21-preferences/04-git-tab.png" alt="04-git-tab.png"></a><figcaption>04-git-tab.png</figcaption></figure>
+<figure><a href="21-preferences/05-integration-tab.png" target="_blank"><img loading="lazy" src="21-preferences/05-integration-tab.png" alt="05-integration-tab.png"></a><figcaption>05-integration-tab.png</figcaption></figure>
+<figure><a href="21-preferences/06-custom-commands.png" target="_blank"><img loading="lazy" src="21-preferences/06-custom-commands.png" alt="06-custom-commands.png"></a><figcaption>06-custom-commands.png</figcaption></figure>
+<figure><a href="21-preferences/07-ai-review-tab.png" target="_blank"><img loading="lazy" src="21-preferences/07-ai-review-tab.png" alt="07-ai-review-tab.png"></a><figcaption>07-ai-review-tab.png</figcaption></figure>
+<figure><a href="21-preferences/08-import-export-tab.png" target="_blank"><img loading="lazy" src="21-preferences/08-import-export-tab.png" alt="08-import-export-tab.png"></a><figcaption>08-import-export-tab.png</figcaption></figure>
+</div>
+</section>
+<section id="m22-repository-settings">
+<h2>22 · 仓库设置 <small style="color:var(--muted);font-size:13px">5 张 · 5 用例</small></h2>
+<p class="desc">General/IssueTracker/CommitTemplate/CustomCommands 本地模式</p>
+<div class="grid">
+<figure><a href="22-repository-settings/01-general-tab.png" target="_blank"><img loading="lazy" src="22-repository-settings/01-general-tab.png" alt="01-general-tab.png"></a><figcaption>01-general-tab.png</figcaption></figure>
+<figure><a href="22-repository-settings/02-commit-tab.png" target="_blank"><img loading="lazy" src="22-repository-settings/02-commit-tab.png" alt="02-commit-tab.png"></a><figcaption>02-commit-tab.png</figcaption></figure>
+<figure><a href="22-repository-settings/03-issue-tracker-app-disabled.png" target="_blank"><img loading="lazy" src="22-repository-settings/03-issue-tracker-app-disabled.png" alt="03-issue-tracker-app-disabled.png"></a><figcaption>03-issue-tracker-app-disabled.png</figcaption></figure>
+<figure><a href="22-repository-settings/04-issue-tracker-rule.png" target="_blank"><img loading="lazy" src="22-repository-settings/04-issue-tracker-rule.png" alt="04-issue-tracker-rule.png"></a><figcaption>04-issue-tracker-rule.png</figcaption></figure>
+<figure><a href="22-repository-settings/05-custom-commands-local.png" target="_blank"><img loading="lazy" src="22-repository-settings/05-custom-commands-local.png" alt="05-custom-commands-local.png"></a><figcaption>05-custom-commands-local.png</figcaption></figure>
+</div>
+</section>
+<section id="m23-ssh-environment">
+<h2>23 · SSH 与环境 <small style="color:var(--muted);font-size:13px">5 张 · 6 用例</small></h2>
+<p class="desc">SSH 密钥/生成密钥/Git 实例/Workspace</p>
+<div class="grid">
+<figure><a href="23-ssh-environment/01-ssh-keys-empty.png" target="_blank"><img loading="lazy" src="23-ssh-environment/01-ssh-keys-empty.png" alt="01-ssh-keys-empty.png"></a><figcaption>01-ssh-keys-empty.png</figcaption></figure>
+<figure><a href="23-ssh-environment/02-ssh-keys-list.png" target="_blank"><img loading="lazy" src="23-ssh-environment/02-ssh-keys-list.png" alt="02-ssh-keys-list.png"></a><figcaption>02-ssh-keys-list.png</figcaption></figure>
+<figure><a href="23-ssh-environment/03-generate-new-ssh-key.png" target="_blank"><img loading="lazy" src="23-ssh-environment/03-generate-new-ssh-key.png" alt="03-generate-new-ssh-key.png"></a><figcaption>03-generate-new-ssh-key.png</figcaption></figure>
+<figure><a href="23-ssh-environment/04-git-instance.png" target="_blank"><img loading="lazy" src="23-ssh-environment/04-git-instance.png" alt="04-git-instance.png"></a><figcaption>04-git-instance.png</figcaption></figure>
+<figure><a href="23-ssh-environment/05-workspaces.png" target="_blank"><img loading="lazy" src="23-ssh-environment/05-workspaces.png" alt="05-workspaces.png"></a><figcaption>05-workspaces.png</figcaption></figure>
+</div>
+</section>
+<section id="m24-ai">
+<h2>24 · AI 功能 <small style="color:var(--muted);font-size:13px">8 张 · 6 用例</small></h2>
+<p class="desc">AI 提交/代码审查/开发助手（UI + OpenAI stub 全链路）</p>
+<div class="grid">
+<figure><a href="24-ai/01-composer-groups.png" target="_blank"><img loading="lazy" src="24-ai/01-composer-groups.png" alt="01-composer-groups.png"></a><figcaption>01-composer-groups.png</figcaption></figure>
+<figure><a href="24-ai/02-composer-doc-group.png" target="_blank"><img loading="lazy" src="24-ai/02-composer-doc-group.png" alt="02-composer-doc-group.png"></a><figcaption>02-composer-doc-group.png</figcaption></figure>
+<figure><a href="24-ai/03-codereview-files.png" target="_blank"><img loading="lazy" src="24-ai/03-codereview-files.png" alt="03-codereview-files.png"></a><figcaption>03-codereview-files.png</figcaption></figure>
+<figure><a href="24-ai/04-codereview-branch.png" target="_blank"><img loading="lazy" src="24-ai/04-codereview-branch.png" alt="04-codereview-branch.png"></a><figcaption>04-codereview-branch.png</figcaption></figure>
+<figure><a href="24-ai/05-dev-conversation.png" target="_blank"><img loading="lazy" src="24-ai/05-dev-conversation.png" alt="05-dev-conversation.png"></a><figcaption>05-dev-conversation.png</figcaption></figure>
+<figure><a href="24-ai/06-dev-multiturn.png" target="_blank"><img loading="lazy" src="24-ai/06-dev-multiturn.png" alt="06-dev-multiturn.png"></a><figcaption>06-dev-multiturn.png</figcaption></figure>
+<figure><a href="24-ai/07-dev-stopped.png" target="_blank"><img loading="lazy" src="24-ai/07-dev-stopped.png" alt="07-dev-stopped.png"></a><figcaption>07-dev-stopped.png</figcaption></figure>
+<figure><a href="24-ai/08-dev-cleared.png" target="_blank"><img loading="lazy" src="24-ai/08-dev-cleared.png" alt="08-dev-cleared.png"></a><figcaption>08-dev-cleared.png</figcaption></figure>
+</div>
+</section>
+<section id="m25-common-dialogs">
+<h2>25 · 通用对话框 <small style="color:var(--muted);font-size:13px">11 张 · 7 用例</small></h2>
+<p class="desc">MessageBox/Error/AskPass/颜色/快捷键/About/更新/诊断/通知</p>
+<div class="grid">
+<figure><a href="25-common-dialogs/01-messagebox-standard.png" target="_blank"><img loading="lazy" src="25-common-dialogs/01-messagebox-standard.png" alt="01-messagebox-standard.png"></a><figcaption>01-messagebox-standard.png</figcaption></figure>
+<figure><a href="25-common-dialogs/02-messagebox-warning.png" target="_blank"><img loading="lazy" src="25-common-dialogs/02-messagebox-warning.png" alt="02-messagebox-warning.png"></a><figcaption>02-messagebox-warning.png</figcaption></figure>
+<figure><a href="25-common-dialogs/03-errorwindow-plain.png" target="_blank"><img loading="lazy" src="25-common-dialogs/03-errorwindow-plain.png" alt="03-errorwindow-plain.png"></a><figcaption>03-errorwindow-plain.png</figcaption></figure>
+<figure><a href="25-common-dialogs/04-errorwindow-locked.png" target="_blank"><img loading="lazy" src="25-common-dialogs/04-errorwindow-locked.png" alt="04-errorwindow-locked.png"></a><figcaption>04-errorwindow-locked.png</figcaption></figure>
+<figure><a href="25-common-dialogs/05-askpass-passphrase.png" target="_blank"><img loading="lazy" src="25-common-dialogs/05-askpass-passphrase.png" alt="05-askpass-passphrase.png"></a><figcaption>05-askpass-passphrase.png</figcaption></figure>
+<figure><a href="25-common-dialogs/06-customcolors.png" target="_blank"><img loading="lazy" src="25-common-dialogs/06-customcolors.png" alt="06-customcolors.png"></a><figcaption>06-customcolors.png</figcaption></figure>
+<figure><a href="25-common-dialogs/07-keyboardshortcuts.png" target="_blank"><img loading="lazy" src="25-common-dialogs/07-keyboardshortcuts.png" alt="07-keyboardshortcuts.png"></a><figcaption>07-keyboardshortcuts.png</figcaption></figure>
+<figure><a href="25-common-dialogs/08-about.png" target="_blank"><img loading="lazy" src="25-common-dialogs/08-about.png" alt="08-about.png"></a><figcaption>08-about.png</figcaption></figure>
+<figure><a href="25-common-dialogs/09-updatecheck-result.png" target="_blank"><img loading="lazy" src="25-common-dialogs/09-updatecheck-result.png" alt="09-updatecheck-result.png"></a><figcaption>09-updatecheck-result.png</figcaption></figure>
+<figure><a href="25-common-dialogs/10-diagnostics.png" target="_blank"><img loading="lazy" src="25-common-dialogs/10-diagnostics.png" alt="10-diagnostics.png"></a><figcaption>10-diagnostics.png</figcaption></figure>
+<figure><a href="25-common-dialogs/11-notification-panel.png" target="_blank"><img loading="lazy" src="25-common-dialogs/11-notification-panel.png" alt="11-notification-panel.png"></a><figcaption>11-notification-panel.png</figcaption></figure>
+</div>
+</section>
+<section id="m26-quicklaunch">
+<h2>26 · Quick Launch 快速启动 <small style="color:var(--muted);font-size:13px">1 张 · 2 用例</small></h2>
+<p class="desc">命令面板点击"切换工作区"进参数态（Linux 用户实测 NRE 崩溃回归：PushSection 清空输入写 null → 模板 TwoWay 绑定上传 → RefreshCommandList 的 .Text.Trim() 崩）+ 单元级根因锁定</p>
+<div class="grid">
+<figure><a href="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" target="_blank"><img loading="lazy" src="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" alt="01-quicklaunch-switchworkspace-argument.png"></a><figcaption>01-quicklaunch-switchworkspace-argument.png</figcaption></figure>
+</div>
+</section>
+<section id="m27-startup-selection-crash">
+<h2>27 · 启动选中越界崩溃 <small style="color:var(--muted);font-size:13px">3 张 · 4 用例</small></h2>
+<p class="desc">Linux 用户实测"重启后每次启动必崩"回归：Avalonia 12 的 SelectionChanged 事件参数是按索引惰性解析的视图，Flattener 收缩后枚举过期索引越界（WPF 是对象引用快照无此问题）。修复 = OnSelectionChanged 引用差集同步 + SelectedIndex 钳制；红绿验证（还原修复 3 用例抛同款异常）</p>
+<div class="grid">
+<figure><a href="27-startup-selection-crash/01-repomanager-single-repo-refresh-survived.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/01-repomanager-single-repo-refresh-survived.png" alt="01-repomanager-single-repo-refresh-survived.png"></a><figcaption>01-repomanager-single-repo-refresh-survived.png</figcaption></figure>
+<figure><a href="27-startup-selection-crash/02-repomanager-recent-reselect.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/02-repomanager-recent-reselect.png" alt="02-repomanager-recent-reselect.png"></a><figcaption>02-repomanager-recent-reselect.png</figcaption></figure>
+<figure><a href="27-startup-selection-crash/03-startup-manager-refresh-survived.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/03-startup-manager-refresh-survived.png" alt="03-startup-manager-refresh-survived.png"></a><figcaption>03-startup-manager-refresh-survived.png</figcaption></figure>
+</div>
+</section>
+<footer>生成日期 2026-09-07 · 截图随代码入库（docs/evidence/e2e/）· 每张截图至少配一条状态断言（铁律）· 生产 bug 修复均随模块提交并在测试计划变更日志记录</footer>
+</div></body></html>

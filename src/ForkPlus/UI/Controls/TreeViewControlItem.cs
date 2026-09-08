@@ -1,15 +1,18 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using ForkPlus.UI.Helpers;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class TreeViewControlItem : ListViewItem
+	public class TreeViewControlItem : global::Avalonia.Controls.ListBoxItem
 	{
 		private Point _startPoint;
 
@@ -21,10 +24,10 @@ namespace ForkPlus.UI.Controls
 
 		public MultiselectionTreeView ParentTreeView { get; internal set; }
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
-			if (e.Property == FrameworkElement.DataContextProperty)
+			if (e.Property == global::Avalonia.Controls.Control.DataContextProperty)
 			{
 				UpdateDataContext(e.OldValue as MultiselectionTreeViewItem, e.NewValue as MultiselectionTreeViewItem);
 			}
@@ -60,8 +63,8 @@ namespace ForkPlus.UI.Controls
 
 		internal double CalculateIndent()
 		{
-			int num = 19 * Node.Level;
-			num -= 19;
+			int num = 10 * Node.Level;
+			num -= 10;
 			if (num < 0)
 			{
 				return 0.0;
@@ -69,23 +72,27 @@ namespace ForkPlus.UI.Controls
 			return num;
 		}
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
+			if (ParentTreeView != null)
+			{
+				ParentTreeView.LastClickedItem = Node;
+			}
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				base.OnPointerPressed(e);
 			}
-			if (ParentTreeView.AllowDragDrop && Mouse.LeftButton == MouseButtonState.Pressed)
+			if (ParentTreeView.AllowDragDrop && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_startPoint = e.GetPosition(null);
-				CaptureMouse();
+				e.Pointer.Capture(this);
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!base.IsMouseCaptured)
+			if (e.Pointer.Captured != this)
 			{
 				return;
 			}
@@ -108,40 +115,50 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
+		protected void OnGiveFeedback(GiveFeedbackEventArgs e)
 		{
 			if (base.IsVisible && _adorner != null)
 			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
+				Point position = this.PointFromScreen(MouseHelper.GetMousePosition());
 				_adorner.UpdatePosition(position);
 			}
 		}
 
-		protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			if (e.Pointer.Captured == this)
+			{
+				e.Pointer.Capture(null);
+			}
 			if (_wasSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				// Migration note：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
+				// Avalonia 12 需合成 PointerPressedEventArgs 才能复用 base.OnPointerPressed 的选择逻辑。
+				global::Avalonia.Visual root = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+				if (root != null)
+				{
+					global::Avalonia.Input.PointerPressedEventArgs pressed = new global::Avalonia.Input.PointerPressedEventArgs(this, e.Pointer, root, e.GetPosition(root), e.Timestamp, e.Properties, e.KeyModifiers, 1);
+					base.OnPointerPressed(pressed);
+				}
 			}
 		}
 
-		protected override void OnDragEnter(DragEventArgs e)
+		protected void OnDragEnter(DragEventArgs e)
 		{
 			ParentTreeView.HandleDragEnter(this, e);
 		}
 
-		protected override void OnDragOver(DragEventArgs e)
+		protected void OnDragOver(DragEventArgs e)
 		{
 			ParentTreeView.HandleDragOver(this, e);
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		protected void OnDrop(DragEventArgs e)
 		{
 			ParentTreeView.HandleDrop(this, e);
 		}
 
-		protected override void OnDragLeave(DragEventArgs e)
+		protected void OnDragLeave(DragEventArgs e)
 		{
 			ParentTreeView.HandleDragLeave(this, e);
 		}

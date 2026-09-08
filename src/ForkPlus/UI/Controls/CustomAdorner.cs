@@ -1,7 +1,11 @@
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 using ForkPlus.UI;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -9,9 +13,14 @@ namespace ForkPlus.UI.Controls
 	{
 		private bool _centeredHorizontallyInParent;
 
-		private FrameworkElement _child;
+		private global::Avalonia.Controls.Control _child;
 
-		public FrameworkElement Child
+		// Bug 修复（2026-09-07，"重命名仓库……只是一个很窄的小框"）：本装饰器承载重命名
+		// 编辑 TextBox，宽度必须按名字内容自量——进入编辑态后被装饰的 ETB 已塌缩为 0 宽，
+		// 若照默认把 Width 设成它的 Bounds 会得到 0 宽编辑框。见 Adorner.TracksAdornedElementSize。
+		public override bool TracksAdornedElementSize => false;
+
+		public global::Avalonia.Controls.Control Child
 		{
 			get
 			{
@@ -43,9 +52,10 @@ namespace ForkPlus.UI.Controls
 
 		protected override int VisualChildrenCount => (Child != null) ? 1 : 0;
 
-		public CustomAdorner(UIElement adornernedElement, bool centeredHorizontally = false)
+		public CustomAdorner(global::Avalonia.Input.InputElement adornernedElement, bool centeredHorizontally = false)
 			: base(adornernedElement)
 		{
+			IsHitTestVisible = true;
 			_centeredHorizontallyInParent = centeredHorizontally;
 		}
 

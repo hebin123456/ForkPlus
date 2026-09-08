@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.CodeEditorSearchPanelUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Border Padding="6,4,4,4">
+    <Border.Background>
+      <DynamicResource ResourceKey="ToolbarBackgroundBrush" />
+    </Border.Background>
+    <Border.VerticalAlignment>Top</Border.VerticalAlignment>
+    <Border.RenderTransform>
+      <TranslateTransform />
+    </Border.RenderTransform>
+    <Border.Child>
+      <DockPanel>
+        <DockPanel.Children>
+          <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">
+            <Button.Theme>
+              <DynamicResource ResourceKey="IconButtonStyle" />
+            </Button.Theme>
+            <Button.Padding>0</Button.Padding>
+            <Button.BorderThickness>0</Button.BorderThickness>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="CancelSearchIcon" />
+              </Image.Source>
+              <Image.Width>16</Image.Width>
+              <Image.Height>16</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+          <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="JumpToNextSearchResultButton_Click">
+            <Button.Theme>
+              <DynamicResource ResourceKey="IconButtonStyle" />
+            </Button.Theme>
+            <Button.Padding>0</Button.Padding>
+            <Button.BorderThickness>0</Button.BorderThickness>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="NextIcon" />
+              </Image.Source>
+              <Image.Width>16</Image.Width>
+              <Image.Height>16</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+          <Button DockPanel.Dock="Right" Margin="2,0,2,0" Click="JumpToPreviousSearchResultButton_Click">
+            <Button.Theme>
+              <DynamicResource ResourceKey="IconButtonStyle" />
+            </Button.Theme>
+            <Button.Padding>0</Button.Padding>
+            <Button.BorderThickness>0</Button.BorderThickness>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="PrevIcon" />
+              </Image.Source>
+              <Image.Width>16</Image.Width>
+              <Image.Height>16</Image.Height>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+          <fuc:PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" x:Name="SearchTextBox">
+            <fuc:PlaceholderTextBox.Theme>
+              <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" />
+            </fuc:PlaceholderTextBox.Theme>
+            <fuc:PlaceholderTextBox.Icon>
+              <DynamicResource ResourceKey="SearchIcon" />
+            </fuc:PlaceholderTextBox.Icon>
+          </fuc:PlaceholderTextBox>
+        </DockPanel.Children>
+      </DockPanel>
+    </Border.Child>
+  </Border>
+</UserControl>

@@ -1,5 +1,6 @@
 using System;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Layout;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
@@ -80,10 +81,15 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				this.Discard?.Invoke(this, e);
 			};
-			_child.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+			_child.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
+			if (_child is Control childControl)
+			{
+				childControl.HorizontalAlignment = HorizontalAlignment.Stretch;
+				childControl.VerticalAlignment = VerticalAlignment.Stretch;
+			}
 			if (!VisualTreeAttachmentHelper.TryAddChild(this, _child as Grid, GetType().Name + ".Child"))
 			{
 				_child = null;

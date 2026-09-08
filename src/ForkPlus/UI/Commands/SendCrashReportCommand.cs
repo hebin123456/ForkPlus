@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.UI.Dialogs;

@@ -46,9 +46,19 @@ namespace ForkPlus.RI
 		private static string ReadString(PipeStream stream)
 		{
 			byte[] lengthBytes = new byte[4];
-			if (stream.Read(lengthBytes, 0, lengthBytes.Length) != lengthBytes.Length)
+			// Bug fix (2026-09-04, "there was a problem with the editor" 间歇性失败)：
+			// 流式管道语义下单次 Read 可能只返回部分字节，长度前缀必须循环读满，
+			// 否则会把 1~3 字节短读误判为消息损坏并以非零退出码结束，git 随即
+			// 报 "there was a problem with the editor"。
+			int headerOffset = 0;
+			while (headerOffset < lengthBytes.Length)
 			{
-				return null;
+				int read = stream.Read(lengthBytes, headerOffset, lengthBytes.Length - headerOffset);
+				if (read <= 0)
+				{
+					return null;
+				}
+				headerOffset += read;
 			}
 			int length = BitConverter.ToInt32(lengthBytes, 0);
 			byte[] buffer = new byte[length];

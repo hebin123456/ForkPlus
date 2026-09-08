@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Media;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using Avalonia.Media;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {
@@ -29,11 +29,6 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 
 		static HexColorizer()
 		{
-			OffsetBrush.Freeze();
-			HexBrush.Freeze();
-			HexNonPrintableBrush.Freeze();
-			AsciiBrush.Freeze();
-			DiffBackgroundBrush.Freeze();
 		}
 
 		public HexColorizer(HexEditor editor)

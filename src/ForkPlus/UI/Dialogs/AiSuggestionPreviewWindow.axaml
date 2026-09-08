@@ -1,0 +1,17 @@
+<dialogs:ForkPlusDialogWindow Height="520" Width="860" MinHeight="320" MinWidth="560" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiSuggestionPreviewWindow" xmlns="https://github.com/avaloniaui" CanResize="True">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1">
+      <controls:FileDiffControl Target="Popup" x:Name="PreviewDiffControl" />
+      <TextBox Text="" FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="FallbackTextBox" IsVisible="False" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

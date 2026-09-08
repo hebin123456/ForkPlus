@@ -1,10 +1,12 @@
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
-using ICSharpCode.AvalonEdit;
+using AvaloniaEdit;
 using ForkPlus.UI.Helpers;
+using ForkPlus.UI.WpfCompat;
+using Avalonia;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -20,22 +22,33 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public CodeEditor()
 		{
+			object codeEditorTheme = Application.Current?.TryFindResource(typeof(CodeEditor));
+			if (codeEditorTheme != null)
+			{
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, codeEditorTheme);
+			}
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// Bug 修复（2026-09-04，"FileDiff 高度计算多了，滚动条可拉到很下面有一大块空白"）：
+			// WPF AvalonEdit 的 AllowScrollBelowDocument 默认 false（拉到底即文档末尾）；
+			// AvaloniaEdit 12.x 把默认值改成了 true——TextView.MeasureOverride 会给
+			// 滚动 extent 加"viewport 高 - 一行"的额外空间，diff/代码编辑器都能滚到
+			// 文档底部之下一大块空白（探针实测 Extent=文档高+viewport）。显式关闭对齐 WPF。
+			base.Options.AllowScrollBelowDocument = false;
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());
 			for (int i = 0; i < base.TextArea.TextView.Layers.Count; i++)
 			{
-				RenderOptions.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
+				RenderOptionsShim.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
 			}
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
-			_templatePartSearchPanel = GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
+			base.OnApplyTemplate(e);
+			_templatePartSearchPanel = this.GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
 			_templatePartSearchPanel?.Attach(base.TextArea);
 		}
 
@@ -51,15 +64,17 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public double GetScrollPosition()
 		{
-			return base.TextArea.TextView.VerticalOffset;
+			return base.TextArea.TextView.ScrollOffset.Y;
 		}
 
 		public void SetScrollPosition(double y)
 		{
-			ScrollToVerticalOffset(y);
+			// Migration note：AvaloniaEdit 的 TextEditor.ScrollToVerticalOffset 是空操作，
+			// 改走 ScrollViewerCompat（经模板 PART_ScrollViewer.Offset 真正滚动）。
+			this.ScrollToVerticalOffsetCompat(y);
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if ((e.Key == Key.F3 || (e.Key == Key.F && KeyboardHelper.IsCtrlDown)) && !KeyboardHelper.IsShiftDown)
 			{
@@ -88,7 +103,7 @@ namespace ForkPlus.UI.Controls.Editor
 					e.Handled = true;
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 	}
 }

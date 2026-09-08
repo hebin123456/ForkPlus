@@ -19,7 +19,8 @@ namespace ForkPlus.Shell.Commands
 			try
 			{
 				string text = passphrase ?? "";
-				string path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(App.GitPath)), "usr", "bin", "ssh-keygen.exe");
+				// Migration note：ssh-keygen 路径跨平台探测（Unix 内置 git 布局无 usr/bin/ssh-keygen.exe）。
+				string path = SystemEnvironment.GetSshKeygenPath();
 				gitRequestResult = default(GitRequest).Path(path).Command("-y", "-P", text, "-f", keypath).ExecuteBt();
 			}
 			catch (Exception ex)

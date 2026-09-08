@@ -1,17 +1,18 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia.Data;
+using Avalonia.Markup;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.UserControls
 {
-	public class SubmoduleDiffShaToBackgroundConverter : MarkupExtension, IMultiValueConverter
+	public class SubmoduleDiffShaToBackgroundConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IMultiValueConverter
 	{
-		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		public object Convert(global::System.Collections.Generic.IList<object> values, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (values.Length < 3)
+			if (values.Count < 3) // Migration note：WPF 数组 → Avalonia IList<object>。
 			{
 				return Brushes.Transparent;
 			}
@@ -20,11 +21,11 @@ namespace ForkPlus.UI.UserControls
 			Sha sha3 = (Sha)values[2];
 			if (sha == sha3)
 			{
-				return Theme.Diff.AddedBrush;
+				return global::ForkPlus.UI.Theme.Diff.AddedBrush;
 			}
 			if (sha == sha2)
 			{
-				return Theme.Diff.RemovedBrush;
+				return global::ForkPlus.UI.Theme.Diff.RemovedBrush;
 			}
 			return Brushes.Transparent;
 		}

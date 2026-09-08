@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Settings;
 
 namespace ForkPlus.UI
@@ -135,22 +135,18 @@ namespace ForkPlus.UI
 			SolidColorBrush[] borderBrushesLight = _borderBrushesLight;
 			for (int i = 0; i < borderBrushesLight.Length; i++)
 			{
-				borderBrushesLight[i].Freeze();
 			}
 			borderBrushesLight = _borderBrushesDark;
 			for (int i = 0; i < borderBrushesLight.Length; i++)
 			{
-				borderBrushesLight[i].Freeze();
 			}
 			borderBrushesLight = _backgroundBrushesLight;
 			for (int i = 0; i < borderBrushesLight.Length; i++)
 			{
-				borderBrushesLight[i].Freeze();
 			}
 			borderBrushesLight = _backgroundBrushesDark;
 			for (int i = 0; i < borderBrushesLight.Length; i++)
 			{
-				borderBrushesLight[i].Freeze();
 			}
 		}
 

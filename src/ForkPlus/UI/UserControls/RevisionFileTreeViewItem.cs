@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls;
@@ -10,13 +10,13 @@ namespace ForkPlus.UI.UserControls
 {
 	public class RevisionFileTreeViewItem : MultiselectionTreeViewItem
 	{
-		private static readonly BitmapImage FolderIcon = new BitmapImage(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png"));
+		private static readonly global::Avalonia.Media.Imaging.Bitmap FolderIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")));
 
 		private GitModule _gitModule;
 
 		public FileTreeItem FileTreeItem { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public global::Avalonia.Media.IImage FileTypeIcon { get; }
 
 		public override bool ShowExpander
 		{

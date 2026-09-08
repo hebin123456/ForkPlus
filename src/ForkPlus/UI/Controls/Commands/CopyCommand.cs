@@ -1,8 +1,8 @@
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.UI.Controls.Editor;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Editing;
+using AvaloniaEdit;
+using AvaloniaEdit.Editing;
 
 namespace ForkPlus.UI.Controls.Commands
 {
@@ -13,7 +13,7 @@ namespace ForkPlus.UI.Controls.Commands
 			menu.AddMenuItem("Copy", delegate
 			{
 				editor.Copy();
-			}, null, new KeyGesture(Key.C, ModifierKeys.Control), CanCopy(editor));
+			}, null, new KeyGesture(Key.C, global::Avalonia.Input.KeyModifiers.Control), CanCopy(editor));
 		}
 
 		private static bool CanCopy(TextEditor editor)

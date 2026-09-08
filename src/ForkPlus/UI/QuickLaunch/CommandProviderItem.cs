@@ -1,6 +1,9 @@
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.QuickLaunch
 {
@@ -8,11 +11,11 @@ namespace ForkPlus.UI.QuickLaunch
 	{
 		private string _fuzzySearchString;
 
-		public virtual ImageSource Icon { get; }
+		public virtual global::Avalonia.Media.IImage Icon { get; }
 
-		public virtual ImageSource SelectedIcon { get; }
+		public virtual global::Avalonia.Media.IImage SelectedIcon { get; }
 
-		public Visibility DescriptionVisibility { get; }
+		public bool DescriptionVisibility { get; }
 
 		public string Title { get; }
 
@@ -43,7 +46,7 @@ namespace ForkPlus.UI.QuickLaunch
 			Argument = value;
 			Title = title;
 			SecondaryTitle = secondaryTitle;
-			DescriptionVisibility = (string.IsNullOrEmpty(SecondaryTitle) ? Visibility.Hidden : Visibility.Visible);
+			DescriptionVisibility = (string.IsNullOrEmpty(SecondaryTitle) ? false : true);
 		}
 	}
 }

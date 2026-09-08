@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -8,6 +8,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -44,7 +45,7 @@ namespace ForkPlus.UI.Commands
 		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Delete);
 
 
-		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.D, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.D, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 
 		public void Execute(CommitUserControl commitUserControl, RepositoryUserControl repositoryUserControl, ChangedFile[] changedFiles)
@@ -107,7 +108,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult discardResult = new DiscardFileChangesGitCommand().Execute(gitModule, changedFiles.ToArray(), monitor);
 			if (!discardResult.Succeeded)
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
 					commitUserControl.StageJob = null;
@@ -129,7 +130,7 @@ namespace ForkPlus.UI.Commands
 				string[] array = changedFiles.Map((ChangedFile x) => x.Path);
 				if (ExceedLength(array))
 				{
-					commitUserControl.Dispatcher.Async(delegate
+					commitUserControl.Dispatcher.Post(delegate
 					{
 						commitUserControl.StageJob = null;
 						commitUserControl.RefreshStageControls();
@@ -141,7 +142,7 @@ namespace ForkPlus.UI.Commands
 				else
 				{
 					GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, array, showIgnoredFiles, monitor);
-					commitUserControl.Dispatcher.Async(delegate
+					commitUserControl.Dispatcher.Post(delegate
 					{
 						commitUserControl.StageJob = null;
 						commitUserControl.RefreshStageControls();

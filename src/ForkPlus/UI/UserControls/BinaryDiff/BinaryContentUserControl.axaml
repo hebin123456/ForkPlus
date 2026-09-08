@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.BinaryContentUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Styles>
+    <!-- 原 WPF LfsProgressBar Style（Theme/Styles/Progressbar.axaml）迁移：
+         ControlTheme 无 BasedOn 会失去 Fluent 模板，改用 Classes + Style 叠加到默认主题上 -->
+    <Style Selector="ProgressBar.lfs">
+      <Setter Property="Maximum" Value="100" />
+      <Setter Property="Height" Value="3" />
+      <Setter Property="MinWidth" Value="10" />
+      <Setter Property="MaxWidth" Value="100" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid Margin="0,0,0,22" MinHeight="20" HorizontalAlignment="Center" VerticalAlignment="Top">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="35" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <Grid Margin="0,10,0,6">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="42" />
+          <ColumnDefinition />
+          <ColumnDefinition Width="42" />
+        </Grid.ColumnDefinitions>
+        <Grid.Children>
+          <ContentControl Grid.Column="0" x:Name="LfsLabel" HorizontalAlignment="Left">
+            <Label.Theme>
+              <DynamicResource ResourceKey="LfsLabel" />
+            </Label.Theme>
+          </ContentControl>
+          <ContentControl Grid.Column="0" x:Name="NotLfsLabel">
+            <Label.Theme>
+              <DynamicResource ResourceKey="NotLfsLabel" />
+            </Label.Theme>
+          </ContentControl>
+          <TextBlock Grid.Column="1" Margin="4,0,4,0" HorizontalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" />
+        </Grid.Children>
+      </Grid>
+      <Grid Grid.Row="1">
+        <Grid.Children>
+          <Border>
+<!-- Migration note：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+            <Border.Style>
+              <DynamicResource ResourceKey="BinaryDiffShadowBorder" />
+            </Border.Style>
+-->
+            <Border.Child>
+              <Grid>
+                <Grid.Children>
+                  <Border BorderThickness="8,8,8,8" x:Name="ImageContainer">
+                    <Border.BorderBrush>
+                      <DynamicResource ResourceKey="BinaryDiffBackground" />
+                    </Border.BorderBrush>
+                    <Border.Child>
+                      <Border>
+                        <Border.BorderBrush>
+                          <DynamicResource ResourceKey="BinaryDiffBorder" />
+                        </Border.BorderBrush>
+                        <Border.BorderThickness>1</Border.BorderThickness>
+                        <Border.Background>
+                          <DynamicResource ResourceKey="TransparentVisualBrush" />
+                        </Border.Background>
+                        <Border.Child>
+                          <Grid>
+                            <Grid.Children>
+                              <Viewbox x:Name="ImageViewBox">
+                                <Grid>
+                                  <Grid.Children>
+                                    <Image x:Name="Image" />
+                                    <Image x:Name="DiffImage" />
+                                  </Grid.Children>
+                                </Grid>
+                              </Viewbox>
+                            </Grid.Children>
+                          </Grid>
+                        </Border.Child>
+                      </Border>
+                    </Border.Child>
+                  </Border>
+                  <Border BorderThickness="0" Height="130" Width="110" CornerRadius="3" x:Name="FileContainer">
+                    <Border.Background>
+                      <DynamicResource ResourceKey="BinaryDiffBackground" />
+                    </Border.Background>
+                    <Border.Child>
+                      <Grid Height="130" Width="110" VerticalAlignment="Center">
+                        <Grid.Children>
+                          <Grid Margin="0,30,0,0">
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="44" />
+                              <RowDefinition Height="22" />
+                              <RowDefinition Height="14" />
+                              <RowDefinition Height="20" />
+                            </Grid.RowDefinitions>
+                            <Grid.Children>
+                              <Image Grid.Row="0" Width="32" Height="32" Margin="0" VerticalAlignment="Center" x:Name="FileIcon" />
+                              <Button Grid.Row="0" Margin="0" Click="ShowLfsImageButton_Click" x:Name="ShowLfsImageButton">
+                                <Button.Theme>
+                                  <DynamicResource ResourceKey="LfsImageButtonStyle" />
+                                </Button.Theme>
+                                <Image>
+                                  <Image.Source>
+                                    <DynamicResource ResourceKey="SearchIcon" />
+                                  </Image.Source>
+                                  <Image.Width>24</Image.Width>
+                                  <Image.Height>24</Image.Height>
+                                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                                  <Image.HorizontalAlignment>Center</Image.HorizontalAlignment>
+                                </Image>
+                              </Button>
+                              <Button Grid.Row="0" Margin="0" Click="CancelButton_Click" x:Name="CancelLfsButton">
+                                <Button.Theme>
+                                  <DynamicResource ResourceKey="LfsImageButtonStyle" />
+                                </Button.Theme>
+                                <Image>
+                                  <Image.Source>
+                                    <DynamicResource ResourceKey="CancelJobIcon" />
+                                  </Image.Source>
+                                  <Image.Width>24</Image.Width>
+                                  <Image.Height>24</Image.Height>
+                                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                                  <Image.HorizontalAlignment>Center</Image.HorizontalAlignment>
+                                </Image>
+                              </Button>
+                              <TextBlock Grid.Row="1" Margin="2,2,2,2" FontSize="13" HorizontalAlignment="Center" TextAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="FileExtensionTextBlock">
+                                <TextBlock.Foreground>
+                                  <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+                                </TextBlock.Foreground>
+                              </TextBlock>
+                              <ProgressBar Grid.Row="2" Margin="2,4,2,0" VerticalAlignment="Center" x:Name="LfsProgressBar" Classes="lfs" />
+                            </Grid.Children>
+                          </Grid>
+                        </Grid.Children>
+                      </Grid>
+                    </Border.Child>
+                  </Border>
+                </Grid.Children>
+              </Grid>
+            </Border.Child>
+          </Border>
+        </Grid.Children>
+      </Grid>
+      <StackPanel Grid.Row="1" Margin="0,0,0,-22" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+        <StackPanel.Children>
+          <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="13" x:Name="DescriprionTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <fuc:DropDownButton Margin="2,3,0,1" Padding="0,2,0,0" Height="14" Width="12" BorderThickness="0" x:Name="DropDownButton">
+            <fuc:DropDownButton.Background>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </fuc:DropDownButton.Background>
+            <fuc:DropDownButton.Focusable>False</fuc:DropDownButton.Focusable>
+<!-- Migration note：WPF fuc:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+            <fuc:DropDownButton.ContextMenu>
+              <ContextMenu>
+                <ContextMenu.Items>
+                  <MenuItem Header="Save As..." Click="SaveAsMenuItem_Click" x:Name="SaveAsMenuItem" />
+                </ContextMenu.Items>
+              </ContextMenu>
+            </fuc:DropDownButton.ContextMenu>
+            <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+              <Path.Fill>
+                <DynamicResource ResourceKey="ComboBox.Static.Glyph" />
+              </Path.Fill>
+              <Path.Data>
+                <DynamicResource ResourceKey="ArrowGeometry" />
+              </Path.Data>
+            </Path>
+          </fuc:DropDownButton>
+        </StackPanel.Children>
+      </StackPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

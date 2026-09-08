@@ -6,7 +6,9 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult Execute(GitModule gitModule, ChangedFile changedFile)
 		{
-			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("checkout", "-m", PathHelper.NormalizeUnix(changedFile.Path).Quotify()).Execute();
+			// 问题6：写入侧四件套对齐（见 ReliableGitFlags）——checkout -m 重建 index 未合并条目。
+			GitCommand checkoutCommand = new GitCommand(ReliableGitFlags.Prefix, "checkout", "-m", PathHelper.NormalizeUnix(changedFile.Path).Quotify());
+			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(checkoutCommand).Execute();
 			if (!gitRequestResult.Success)
 			{
 				if (GitCommandError.RepositoryIsLocked.Test(gitRequestResult.Stderr))

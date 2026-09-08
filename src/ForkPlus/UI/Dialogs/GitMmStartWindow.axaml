@@ -1,0 +1,142 @@
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmStartWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
+    <Grid.Resources>
+      <ControlTheme x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="Expander">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Expander">
+              <DockPanel>
+                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
+                  <ToggleButton.Template>
+                    <ControlTemplate TargetType="ToggleButton">
+                      <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
+                        <DockPanel Margin="{TemplateBinding Padding}">
+                          <TextBlock Text="&gt;" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
+                          <ContentPresenter Content="{TemplateBinding Content}" Margin="4,0,0,0" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        </DockPanel>
+                      </Border>
+                      <!--
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      原始片段：
+      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
+                              <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ArrowText" Property="Text" Value="v" />
+                              </Trigger>
+                            </ControlTemplate.Triggers>
+    -->
+                    </ControlTemplate>
+                  </ToggleButton.Template>
+                </ToggleButton>
+                <ContentPresenter Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+              </DockPanel>
+              
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      
+    <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+        <Setter Property="IsVisible" Value="True" />
+    </Style></ControlTheme>
+    </Grid.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <controls:PlaceholderTextBox TextChanged="BranchNameTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Branch name" x:Name="BranchNameTextBox" />
+      <TextBlock Grid.Column="0" Grid.Row="1" Text="Sub repositories:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <Button Grid.Column="1" Grid.Row="1" Margin="8,4,0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Click="SubreposDropDownButton_Click" x:Name="SubreposDropDownButton" />
+      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Theme="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
+        <Grid Margin="0,4,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Column="0" Grid.Row="0" Text="Jobs:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+          <ComboBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,4" Width="70" HorizontalAlignment="Left" x:Name="JobsComboBox">
+            <ComboBoxItem Content="1" />
+            <ComboBoxItem Content="2" />
+            <ComboBoxItem Content="3" />
+            <ComboBoxItem Content="4" />
+            <ComboBoxItem Content="5" />
+            <ComboBoxItem Content="6" />
+            <ComboBoxItem Content="7" />
+            <ComboBoxItem Content="8" />
+            <ComboBoxItem Content="9" />
+            <ComboBoxItem Content="10" />
+          </ComboBox>
+          <TextBlock Grid.Column="0" Grid.Row="1" Text="Search mode:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+          <ComboBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,4" Width="120" HorizontalAlignment="Left" x:Name="GrepModeComboBox">
+            <ComboBoxItem Content="mixed" />
+            <ComboBoxItem Content="name" />
+            <ComboBoxItem Content="path" />
+            <ComboBoxItem Content="namereg" />
+            <ComboBoxItem Content="pathreg" />
+            <ComboBoxItem Content="mixedreg" />
+            <ComboBoxItem Content="underpath" />
+          </ComboBox>
+          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_All sub repositories" IsChecked="True" IsCheckedChanged="AllSubreposCheckBox_Changed" x:Name="AllSubreposCheckBox" />
+          <Grid Grid.Column="1" Grid.Row="3" Margin="8,4,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="180" />
+              <ColumnDefinition Width="180" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow tag" ToolTip.Tip="--allow-tag" x:Name="AllowTagCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Allow commit" ToolTip.Tip="--allow-commit" x:Name="AllowCommitCheckBox" />
+          </Grid>
+          <Grid Grid.Column="1" Grid.Row="4" Margin="8,4,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="180" />
+              <ColumnDefinition Width="180" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow no tracking branch" ToolTip.Tip="--allow-no-track" x:Name="AllowNoTrackCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Start from HEAD" ToolTip.Tip="--head" x:Name="HeadCheckBox" />
+          </Grid>
+        </Grid>
+      </Expander>
+      <TextBlock Grid.Column="0" Grid.Row="8" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
+      <Grid Grid.Column="1" Grid.Row="8" Margin="8,8,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Column="0" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
+        </ScrollViewer>
+        <!-- Bug 修复（2026-09-07，"命令预览右侧没有复制按钮"）：同 InitGitMmRepositoryWindow——
+             XAML 内联预览不走基类 AddCommandPreview，迁移漏掉了复制按钮。 -->
+        <Button x:Name="CommandPreviewCopyButton" Grid.Column="1" Click="CommandPreviewCopyButton_Click" Background="Transparent" BorderThickness="0" Padding="2" Margin="4,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="Copy to clipboard">
+          <Path Width="14" Height="14" Stretch="Uniform" Fill="{DynamicResource SecondaryLabelBrush}" Data="M4,2 L12,2 L12,14 L4,14 Z M6,4 L6,12 L10,12 L10,4 Z M2,4 L2,16 L14,16 L14,14 L13,14 L13,15 L3,15 L3,5 L4,5 L4,4 Z" />
+        </Button>
+      </Grid>
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

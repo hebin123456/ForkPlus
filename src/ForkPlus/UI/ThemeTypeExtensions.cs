@@ -61,10 +61,12 @@ namespace ForkPlus.UI
 			}
 		}
 
-		/// <summary>皮肤对应的资源字典 URI（Generic.{SkinName}.xaml）。</summary>
+		/// <summary>皮肤对应的资源字典 URI（Generic.{SkinName}.axaml）。</summary>
 		public static Uri ResourceUri(this ThemeType themeType)
 		{
-			return new Uri("pack://application:,,,/ForkPlus;component/Theme/Generic." + themeType.SkinName() + ".xaml");
+			// Migration note：WPF pack URI 用 .xaml 扩展名；Avalonia 的 avares 资源清单按 .axaml 注册，
+			// 后缀不符会运行时抛 XamlLoadException（No precompiled XAML found）。
+			return new Uri("avares://ForkPlus/Theme/Generic." + themeType.SkinName() + ".axaml");
 		}
 
 		/// <summary>所有内置预设皮肤，用于主题选择菜单遍历。</summary>

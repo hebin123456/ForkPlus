@@ -22,6 +22,8 @@
     "Accepted": "Acceptées",
     "Share": "Part",
     "Analyzing AI authorship...": "Analyse de la paternité IA...",
+    "Unknown": "Inconnu",
+    "Enable AI attribution in Preferences → Git to see AI authorship statistics.": "Activez l'attribution IA dans Préférences → Git pour voir les statistiques de paternité IA.",
     "Human": "Humain",
     "Mixed (AI + human edits)": "Mixte (IA + modifications humaines)",
     "{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits": "{0} : {1} lignes ajoutées sur {2} générées par l'IA ({3} %) · données de paternité sur {4} commits sur {5}",
@@ -2301,6 +2303,15 @@
     "Import Complete": "Importation terminée",
     "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "L'importation remplacera votre configuration ForkPlus actuelle.\nForkPlus redémarrera après l'importation.\n\nContinuer ?",
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Configuration importée avec succès.\nForkPlus va maintenant redémarrer pour appliquer les nouveaux paramètres.",
-    "Force push": "Push forcé"
+    "Force push": "Push forcé",
+    "Credentials": "Identifiants",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Identifiants HTTP(S) enregistrés. Les noms d'utilisateur sont mémorisés automatiquement ; « Mémoriser le mot de passe » préremplit le mot de passe dans la boîte de dialogue ; « Ne plus demander » l'utilise en silence. Ajoutez des identifiants à l'avance ici — le commutateur réactive la demande à tout moment.",
+    "Host (e.g. github.com)": "Hôte (ex. github.com)",
+    "Ask Again for All Hosts": "Redemander pour tous les hôtes",
+    "Never ask": "Ne plus demander",
+    "Ask": "Demander",
+    "No saved credentials yet.": "Aucun identifiant enregistré pour le moment.",
+    "Host": "Hôte",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Si activé, cet identifiant est utilisé en silence sans demande ; désactivez-le pour être redemandé."
   }
 }

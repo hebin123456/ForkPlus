@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:binaryDiff="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.OnionSkinImageDiffUserControl">
+  <Grid Margin="0,0,0,22" HorizontalAlignment="Center" VerticalAlignment="Top">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="35" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <DockPanel LastChildFill="False">
+        <DockPanel.Children>
+          <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" HorizontalAlignment="Left">
+            <StackPanel.Children>
+              <Grid HorizontalAlignment="Left">
+                <Grid.Children>
+                  <ContentControl Margin="0,10,0,6" x:Name="OldLfsLabel">
+                    <Label.Theme>
+                      <DynamicResource ResourceKey="LfsLabel" />
+                    </Label.Theme>
+                  </ContentControl>
+                  <ContentControl Margin="0,10,0,6" x:Name="OldNotLfsLabel">
+                    <Label.Theme>
+                      <DynamicResource ResourceKey="NotLfsLabel" />
+                    </Label.Theme>
+                  </ContentControl>
+                </Grid.Children>
+              </Grid>
+              <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="old" HorizontalAlignment="Right" x:Name="OldTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="Diff.Removed.Foreground" />
+                </TextBlock.Foreground>
+              </TextBlock>
+            </StackPanel.Children>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+            <StackPanel.Children>
+              <Grid HorizontalAlignment="Right">
+                <Grid.Children>
+                  <ContentControl Margin="0,10,0,6" x:Name="NewLfsLabel">
+                    <Label.Theme>
+                      <DynamicResource ResourceKey="LfsLabel" />
+                    </Label.Theme>
+                  </ContentControl>
+                  <ContentControl Margin="0,10,0,6" x:Name="NewNotLfsLabel">
+                    <Label.Theme>
+                      <DynamicResource ResourceKey="NotLfsLabel" />
+                    </Label.Theme>
+                  </ContentControl>
+                </Grid.Children>
+              </Grid>
+              <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="new" HorizontalAlignment="Right" x:Name="NewTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="Diff.Added.Foreground" />
+                </TextBlock.Foreground>
+              </TextBlock>
+            </StackPanel.Children>
+          </StackPanel>
+        </DockPanel.Children>
+      </DockPanel>
+      <Border Grid.Row="1" HorizontalAlignment="Center">
+<!-- Migration note：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <Border.Style>
+          <DynamicResource ResourceKey="BinaryDiffShadowBorder" />
+        </Border.Style>
+-->
+        <Border.Child>
+          <Grid>
+            <Grid.Background>
+              <DynamicResource ResourceKey="BinaryDiffBackground" />
+            </Grid.Background>
+            <Grid.Children>
+              <Border Margin="8" BorderThickness="1">
+                <Border.BorderBrush>
+                  <DynamicResource ResourceKey="BinaryDiffBorder" />
+                </Border.BorderBrush>
+                <Border.Background>
+                  <DynamicResource ResourceKey="TransparentVisualBrush" />
+                </Border.Background>
+                <Border.Child>
+                  <fuub:OverlayImageControl x:Name="OverlayImage" />
+                </Border.Child>
+              </Border>
+            </Grid.Children>
+          </Grid>
+        </Border.Child>
+      </Border>
+      <Slider Grid.Row="2" Margin="0,0,0,-22" VerticalAlignment="Bottom" Width="220" Minimum="0" Maximum="1" Value="1" TickFrequency="0.01" IsSnapToTickEnabled="True" ValueChanged="Slider_ValueChanged" x:Name="Slider">
+        <Slider.Theme>
+          <DynamicResource ResourceKey="OnionSkinSliderStyle" />
+        </Slider.Theme>
+      </Slider>
+    </Grid.Children>
+  </Grid>
+</UserControl>

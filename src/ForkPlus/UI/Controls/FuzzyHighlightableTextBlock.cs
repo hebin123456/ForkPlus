@@ -1,15 +1,14 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	internal class FuzzyHighlightableTextBlock : TextBlock
 	{
-		public static readonly DependencyProperty FuzzySearchStringProperty = DependencyProperty.RegisterAttached("FuzzySearchString", typeof(string), typeof(FuzzyHighlightableTextBlock), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			FuzzyHighlightableTextBlock obj = s as FuzzyHighlightableTextBlock;
-			obj.ApplyFuzzyHighlighting(obj.FuzzySearchString);
-		}));
+		public static readonly global::Avalonia.StyledProperty<string> FuzzySearchStringProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<FuzzyHighlightableTextBlock, global::Avalonia.AvaloniaObject, string>("FuzzySearchString");
 
 		public string FuzzySearchString
 		{

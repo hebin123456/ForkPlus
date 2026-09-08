@@ -1,0 +1,325 @@
+<p:UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:p="https://github.com/avaloniaui" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ToolbarUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <p:Grid>
+    <p:Grid.Background>
+      <p:DynamicResource ResourceKey="ToolbarBackgroundBrush" />
+    </p:Grid.Background>
+    <p:Grid.ColumnDefinitions>
+      <p:ColumnDefinition />
+      <p:ColumnDefinition Width="300" />
+      <p:ColumnDefinition />
+    </p:Grid.ColumnDefinitions>
+    <p:Grid.Children>
+      <p:StackPanel Orientation="Horizontal" Grid.Column="0">
+        <p:StackPanel.Children>
+          <fuc:ToolbarButton Margin="8,3,0,3" Title="Quick Launch" x:Name="OpenQuicklyToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="OpenQuicklyIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <fuc:ToolbarButton Margin="16,3,0,3" Title="Fetch" x:Name="FetchToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="FetchIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <fuc:ToolbarButton Margin="0,3,0,3" Title="Pull" x:Name="PullToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="PullIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <fuc:ToolbarButton Margin="0,3,0,3" Title="Push" x:Name="PushToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="PushIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <p:StackPanel Orientation="Horizontal" Margin="20,3,0,3">
+            <p:StackPanel.Children>
+              <fuc:ToolbarButton Title="Stash" Padding="4,0,4,0" x:Name="StashToolbarButton">
+                <fuc:ToolbarButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarButtonStyle" />
+                </fuc:ToolbarButton.Theme>
+                <p:Image>
+                  <p:Image.Source>
+                    <p:DynamicResource ResourceKey="StashIcon" />
+                  </p:Image.Source>
+                  <p:Image.Width>20</p:Image.Width>
+                  <p:Image.Height>20</p:Image.Height>
+                  <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+                </p:Image>
+              </fuc:ToolbarButton>
+              <fuc:DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="StashToolbarDropdownButton">
+                <fuc:DropDownButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
+                </fuc:DropDownButton.Theme>
+                <fuc:DropDownButton.ContextMenu>
+                  <p:ContextMenu MaxWidth="500" Opened="StashToolbarDropdownButtonContextMenu_Opened" />
+                </fuc:DropDownButton.ContextMenu>
+                <p:Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+                  <p:Path.Fill>
+                    <p:DynamicResource ResourceKey="ToolbarForeground" />
+                  </p:Path.Fill>
+                  <p:Path.Data>
+                    <p:DynamicResource ResourceKey="ArrowGeometry" />
+                  </p:Path.Data>
+                </p:Path>
+              </fuc:DropDownButton>
+            </p:StackPanel.Children>
+          </p:StackPanel>
+          <p:StackPanel Orientation="Horizontal" Margin="8,3,0,3">
+            <p:StackPanel.Children>
+              <fuc:ToolbarButton Title="Undo" Padding="4,0,4,0" x:Name="UndoToolbarButton">
+                <fuc:ToolbarButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarButtonStyle" />
+                </fuc:ToolbarButton.Theme>
+                <p:Image>
+                  <p:Image.Source>
+                    <p:DynamicResource ResourceKey="UndoIcon" />
+                  </p:Image.Source>
+                  <p:Image.Width>20</p:Image.Width>
+                  <p:Image.Height>20</p:Image.Height>
+                  <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+                </p:Image>
+              </fuc:ToolbarButton>
+              <fuc:DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="UndoToolbarDropdownButton">
+                <fuc:DropDownButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
+                </fuc:DropDownButton.Theme>
+                <fuc:DropDownButton.ContextMenu>
+                  <p:ContextMenu MaxWidth="500" Opened="UndoToolbarDropdownButtonContextMenu_Opened" />
+                </fuc:DropDownButton.ContextMenu>
+                <p:Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+                  <p:Path.Fill>
+                    <p:DynamicResource ResourceKey="ToolbarForeground" />
+                  </p:Path.Fill>
+                  <p:Path.Data>
+                    <p:DynamicResource ResourceKey="ArrowGeometry" />
+                  </p:Path.Data>
+                </p:Path>
+              </fuc:DropDownButton>
+            </p:StackPanel.Children>
+          </p:StackPanel>
+          <p:StackPanel Orientation="Horizontal" Margin="0,3,0,3">
+            <p:StackPanel.Children>
+              <fuc:ToolbarButton Title="Redo" Padding="4,0,4,0" x:Name="RedoToolbarButton">
+                <fuc:ToolbarButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarButtonStyle" />
+                </fuc:ToolbarButton.Theme>
+                <p:Image>
+                  <p:Image.Source>
+                    <p:DynamicResource ResourceKey="RedoIcon" />
+                  </p:Image.Source>
+                  <p:Image.Width>20</p:Image.Width>
+                  <p:Image.Height>20</p:Image.Height>
+                  <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+                </p:Image>
+              </fuc:ToolbarButton>
+              <fuc:DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="RedoToolbarDropdownButton">
+                <fuc:DropDownButton.Theme>
+                  <p:DynamicResource ResourceKey="StashToolbarDropdownButtonStyle" />
+                </fuc:DropDownButton.Theme>
+                <fuc:DropDownButton.ContextMenu>
+                  <p:ContextMenu MaxWidth="500" Opened="RedoToolbarDropdownButtonContextMenu_Opened" />
+                </fuc:DropDownButton.ContextMenu>
+                <p:Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+                  <p:Path.Fill>
+                    <p:DynamicResource ResourceKey="ToolbarForeground" />
+                  </p:Path.Fill>
+                  <p:Path.Data>
+                    <p:DynamicResource ResourceKey="ArrowGeometry" />
+                  </p:Path.Data>
+                </p:Path>
+              </fuc:DropDownButton>
+            </p:StackPanel.Children>
+          </p:StackPanel>
+          <fuc:ToolbarButton Margin="8,3,0,3" Title="View Reflog..." x:Name="ReflogToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="RevisionListIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+        </p:StackPanel.Children>
+      </p:StackPanel>
+      <p:Canvas Grid.Column="0" IsHitTestVisible="False" x:Name="BadgesCanvas">
+        <p:Canvas.Children>
+          <!-- Migration note（2026-09-03，badge 不显眼的根因）：原版经 Border.Style 引用
+               PullPushBadge 样式（灰底 #A0A0A0/#606060、圆角 6、高 12、MinWidth 12、
+               Padding 4,0,4,1），迁移时 Style 块被注释化后这些视觉属性全部丢失，
+               badge 只剩 8px 白字无背景——浅色主题下几乎不可见。此处按原版样式值内联。
+               注意 TextBlock 原版 VerticalAlignment=Bottom + Border.Padding 底边 1px 一起生效。 -->
+          <p:Border x:Name="PullBadge" Height="12" MinWidth="12" Background="{DynamicResource Toolbar.PullPushBadgeBrush}" CornerRadius="6" Padding="4,0,4,1">
+            <p:Border.IsVisible>False</p:Border.IsVisible>
+            <p:Border.Child>
+              <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PullBadgeText">
+                <p:TextBlock.Foreground>
+                  <p:SolidColorBrush>#FFFFFFFF</p:SolidColorBrush>
+                </p:TextBlock.Foreground>
+                <p:TextBlock.FontWeight>Medium</p:TextBlock.FontWeight>
+              </p:TextBlock>
+            </p:Border.Child>
+          </p:Border>
+          <p:Border x:Name="PushBadge" Height="12" MinWidth="12" Background="{DynamicResource Toolbar.PullPushBadgeBrush}" CornerRadius="6" Padding="4,0,4,1">
+            <p:Border.IsVisible>False</p:Border.IsVisible>
+            <p:Border.Child>
+              <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PushBadgeText">
+                <p:TextBlock.Foreground>
+                  <p:SolidColorBrush>#FFFFFFFF</p:SolidColorBrush>
+                </p:TextBlock.Foreground>
+                <p:TextBlock.FontWeight>Medium</p:TextBlock.FontWeight>
+              </p:TextBlock>
+            </p:Border.Child>
+          </p:Border>
+        </p:Canvas.Children>
+      </p:Canvas>
+      <userControls:StatusUserControl p:Grid.Column="1" Margin="0,0,0,3" Height="36" x:Name="StatusUserControl" />
+      <p:DockPanel Grid.Column="2" LastChildFill="False">
+        <p:DockPanel.Children>
+          <p:StackPanel Orientation="Horizontal" Margin="10,3,0,3">
+            <p:StackPanel.Children>
+              <fuc:ToolbarButton Title="Branch" Padding="4,0,4,0" x:Name="BranchToolbarButton">
+                <fuc:ToolbarButton.Theme>
+                  <p:DynamicResource ResourceKey="BranchToolbarButtonStyle" />
+                </fuc:ToolbarButton.Theme>
+                <p:Image>
+                  <p:Image.Source>
+                    <p:DynamicResource ResourceKey="CreateBranchIcon" />
+                  </p:Image.Source>
+                  <p:Image.Width>20</p:Image.Width>
+                  <p:Image.Height>20</p:Image.Height>
+                  <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+                </p:Image>
+              </fuc:ToolbarButton>
+              <fuc:DropDownButton p:Grid.Row="0" Margin="0" Padding="0" Width="14" VerticalAlignment="Center" x:Name="BranchToolbarDropdownButton">
+                <fuc:DropDownButton.Theme>
+                  <p:DynamicResource ResourceKey="BranchToolbarDropdownButtonStyle" />
+                </fuc:DropDownButton.Theme>
+                <fuc:DropDownButton.ContextMenu>
+                  <p:ContextMenu MaxWidth="500" Opened="BranchToolbarDropdownButtonContextMenu_Opened" />
+                </fuc:DropDownButton.ContextMenu>
+                <p:Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+                  <p:Path.Fill>
+                    <p:DynamicResource ResourceKey="ToolbarForeground" />
+                  </p:Path.Fill>
+                  <p:Path.Data>
+                    <p:DynamicResource ResourceKey="ArrowGeometry" />
+                  </p:Path.Data>
+                </p:Path>
+              </fuc:DropDownButton>
+            </p:StackPanel.Children>
+          </p:StackPanel>
+          <fuc:ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,4,3" Title="Workspaces" x:Name="WorkspacesToolbarDropdownButton">
+            <fuc:ToolbarDropDownButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarDropdownButton" />
+            </fuc:ToolbarDropDownButton.Theme>
+            <fuc:ToolbarDropDownButton.ContextMenu>
+              <p:ContextMenu />
+            </fuc:ToolbarDropDownButton.ContextMenu>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="WorkspaceIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarDropDownButton>
+          <fuc:ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="0,3,0,3" Title="Appearance" x:Name="AppearanceToolbarDropdownButton" p:AutomationProperties.Name="Appearance">
+            <fuc:ToolbarDropDownButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarDropdownButton" />
+            </fuc:ToolbarDropDownButton.Theme>
+            <fuc:ToolbarDropDownButton.ContextMenu>
+              <p:ContextMenu />
+            </fuc:ToolbarDropDownButton.ContextMenu>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="LayoutVerticalIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarDropDownButton>
+          <fuc:ToolbarButton Margin="0,3,0,3" p:DockPanel.Dock="Right" x:Name="OpenInConsoleToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="ConsoleIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <fuc:ToolbarButton Margin="0,3,0,3" p:DockPanel.Dock="Right" Title="AI-Assisted Development" x:Name="AiDevelopmentToolbarButton">
+            <fuc:ToolbarButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarButton" />
+            </fuc:ToolbarButton.Theme>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="AiIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarButton>
+          <fuc:ToolbarDropDownButton p:DockPanel.Dock="Right" Margin="4,3,4,3" Title="Open in" x:Name="OpenInDropDownButton">
+            <fuc:ToolbarDropDownButton.Theme>
+              <p:DynamicResource ResourceKey="ToolbarDropdownButton" />
+            </fuc:ToolbarDropDownButton.Theme>
+            <fuc:ToolbarDropDownButton.ContextMenu>
+              <p:ContextMenu Opened="OpenInDropDownButtonContextMenu_Opened" />
+            </fuc:ToolbarDropDownButton.ContextMenu>
+            <p:Image>
+              <p:Image.Source>
+                <p:DynamicResource ResourceKey="OpenInIcon" />
+              </p:Image.Source>
+              <p:Image.Width>20</p:Image.Width>
+              <p:Image.Height>20</p:Image.Height>
+              <p:Image.VerticalAlignment>Center</p:Image.VerticalAlignment>
+            </p:Image>
+          </fuc:ToolbarDropDownButton>
+        </p:DockPanel.Children>
+      </p:DockPanel>
+    </p:Grid.Children>
+  </p:Grid>
+</p:UserControl>

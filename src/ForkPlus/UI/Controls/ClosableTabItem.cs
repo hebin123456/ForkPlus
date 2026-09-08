@@ -1,18 +1,27 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Controls.Shapes;
 
 namespace ForkPlus.UI.Controls
 {
 	public class ClosableTabItem : TabItem
 	{
+		// 关键：让隐式 ControlTheme `{x:Type controls:ClosableTabItem}` 能命中该控件
+		//（否则会回落到基类 TabItem 模板，导致缺少：仓库名/颜色标记/关闭按钮/右键菜单）。
+		protected override Type StyleKeyOverride => typeof(ClosableTabItem);
+
 		private const string CloseButton = "PART_Close";
 
 		private const string TabHeader = "PART_Header";
@@ -23,11 +32,22 @@ namespace ForkPlus.UI.Controls
 
 		public static readonly SolidColorBrush IsDirtyDefaultBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#8E8E91"));
 
-		public static readonly DependencyProperty TagBrushProperty = DependencyProperty.Register("TagBrush", typeof(SolidColorBrush), typeof(ClosableTabItem), new PropertyMetadata(Brushes.Transparent));
+		public static readonly global::Avalonia.StyledProperty<SolidColorBrush> TagBrushProperty =
+    global::Avalonia.AvaloniaProperty.Register<ClosableTabItem, SolidColorBrush>("TagBrush");
 
-		public static readonly DependencyProperty IsDirtyProperty = DependencyProperty.Register("IsDirty", typeof(bool), typeof(ClosableTabItem), new PropertyMetadata(false));
+		public static readonly global::Avalonia.StyledProperty<bool> IsDirtyProperty =
+    global::Avalonia.AvaloniaProperty.Register<ClosableTabItem, bool>("IsDirty", false);
 
 		private Point _dragStartPoint;
+
+		// 若模板/主题未生效（回落到默认 TabItem 模板），用运行时 header chrome 兜底：
+		// 右键菜单/关闭按钮/颜色标记不会缺失。
+		private bool _useFallbackHeaderChrome;
+		private CenteredDockPanel _fallbackHeader;
+		private Ellipse _fallbackEllipse;
+		private EditableTextBlock _fallbackTitle;
+		private Button _fallbackClose;
+		private string _titleText = string.Empty;
 
 		public TabItemMode Mode { get; private set; }
 
@@ -64,14 +84,40 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private EditableTextBlock TitleTextBlock => GetTemplateChild("PART_Title") as EditableTextBlock;
+		private EditableTextBlock TitleTextBlock => _fallbackTitle ?? this.GetTemplateChild("PART_Title") as EditableTextBlock;
+
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == TagBrushProperty || change.Property == IsDirtyProperty)
+			{
+				SyncHeaderChromeFromState();
+			}
+		}
 
 		public ClosableTabItem()
 		{
-			IsDirtyDefaultBrush.Freeze();
-			base.PreviewMouseDown += TabItem_PreviewMouseDown;
-			base.PreviewMouseMove += TabItem_PreviewMouseMove;
-			base.Drop += TabItem_Drop;
+			// 强制应用自定义 ControlTheme（避免回落到默认 TabItem 模板）。
+			ControlTheme tabTheme = null;
+			if (Application.Current?.TryFindResource("ClosableTabItemTheme", out var byName) == true)
+			{
+				tabTheme = byName as ControlTheme;
+			}
+			if (tabTheme == null && Application.Current?.TryFindResource(typeof(ClosableTabItem), out var byType) == true)
+			{
+				tabTheme = byType as ControlTheme;
+			}
+			if (tabTheme != null)
+			{
+				base.Theme = tabTheme;
+			}
+
+			base.PointerPressed += TabItem_PreviewMouseDown;
+			base.PointerMoved += TabItem_PreviewMouseMove;
+			// Migration note：WPF UIElement.Drop += handler（实例 CLR 事件）在 Avalonia 12 的 TabItem 上
+			// 不存在（CS0117）；等价写法是 AddHandler(DragDrop.DropEvent, handler)（Interactive 路由
+			// 事件订阅，默认 Direct|Bubble，与 WPF Drop 冒泡行为一致）。
+			this.AddHandler(global::Avalonia.Input.DragDrop.DropEvent, TabItem_Drop);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlTitleChanged", RepositoryUserControlTitleChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlColorChanged", RepositoryUserControlColorChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlIsDirtyChanged", RepositoryUserControlIsDirtyChanged);
@@ -80,32 +126,151 @@ namespace ForkPlus.UI.Controls
 
 		public void Close()
 		{
-			(base.Parent as ClosableTabControl)?.RemoveTab(this);
+			GetOwnerTabControl()?.RemoveTab(this);
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
-			if (GetTemplateChild("PART_Close") is Button button)
+			base.OnApplyTemplate(e);
+			if (this.GetTemplateChild("PART_Close") is Button button)
 			{
-				button.Click += delegate
-				{
-					Close();
-				};
+				button.Click -= CloseButton_Click;
+				button.Click += CloseButton_Click;
+				button.RemoveHandler(InputElement.PointerPressedEvent, CloseButton_PointerPressed);
+				button.AddHandler(InputElement.PointerPressedEvent, CloseButton_PointerPressed, global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+				button.RemoveHandler(InputElement.PointerReleasedEvent, CloseButton_PointerReleased);
+				button.AddHandler(InputElement.PointerReleasedEvent, CloseButton_PointerReleased, global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
 			}
-			if (!(GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel))
+			if (!(this.GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel))
 			{
+				_useFallbackHeaderChrome = true;
+				EnsureFallbackHeaderChrome();
 				return;
 			}
-			centeredDockPanel.PreviewMouseDown += delegate(object s, MouseButtonEventArgs e)
+			_useFallbackHeaderChrome = false;
+			centeredDockPanel.PointerPressed += delegate(object s, global::Avalonia.Input.PointerPressedEventArgs e)
 			{
-				if (e.MiddleButton == MouseButtonState.Pressed)
+				// Migration note：WPF e.MiddleButton == MouseButtonState.Pressed（查鼠标中键状态）在
+				// Avalonia 的 PointerPressedEventArgs 上不存在（CS1061）；等价物是当前指针点位的
+				// PointerPointProperties.IsMiddleButtonPressed。
+				if (e.GetCurrentPoint(null).Properties.IsMiddleButtonPressed)
 				{
 					Close();
 				}
 			};
-			centeredDockPanel.ToolTip = GetToolTip();
-			centeredDockPanel.ContextMenu = GetContextMenu();
+			RefreshHeaderChrome();
+			SyncHeaderChromeFromState();
+		}
+
+		private void CloseButton_Click(object sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			e.Handled = true;
+			Close();
+		}
+
+		private void CloseButton_PointerPressed(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (!e.GetCurrentPoint(sender as Control).Properties.IsLeftButtonPressed)
+			{
+				return;
+			}
+			e.Handled = true;
+			Close();
+		}
+
+		private void CloseButton_PointerReleased(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
+		{
+			if (e.InitialPressMouseButton != MouseButton.Left)
+			{
+				return;
+			}
+			e.Handled = true;
+			Close();
+		}
+
+		private void EnsureFallbackHeaderChrome()
+		{
+			if (_fallbackHeader == null)
+			{
+				_fallbackHeader = new CenteredDockPanel
+				{
+					Background = Brushes.Transparent,
+					Name = "PART_Header",
+				};
+
+				_fallbackEllipse = new Ellipse
+				{
+					Width = 8,
+					Height = 8,
+					Margin = new Thickness(3, 0, 3, -2),
+					HorizontalAlignment = HorizontalAlignment.Left,
+					VerticalAlignment = VerticalAlignment.Center,
+					StrokeThickness = 2,
+				};
+				DockPanel.SetDock(_fallbackEllipse, Dock.Left);
+				_fallbackHeader.Children.Add(_fallbackEllipse);
+
+				_fallbackClose = new Button
+				{
+					Width = 16,
+					Height = 16,
+					HorizontalAlignment = HorizontalAlignment.Right,
+					VerticalAlignment = VerticalAlignment.Center,
+				};
+				if (Application.Current?.TryFindResource("CloseButtonStyle", out var closeButtonTheme) == true && closeButtonTheme is ControlTheme controlTheme)
+				{
+					_fallbackClose.Theme = controlTheme;
+				}
+				_fallbackClose.Click += delegate { Close(); };
+				_fallbackClose.AddHandler(InputElement.PointerPressedEvent, CloseButton_PointerPressed, global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+				_fallbackClose.AddHandler(InputElement.PointerReleasedEvent, CloseButton_PointerReleased, global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+				DockPanel.SetDock(_fallbackClose, Dock.Right);
+				_fallbackHeader.Children.Add(_fallbackClose);
+
+				_fallbackTitle = new EditableTextBlock
+				{
+					Height = 22,
+					Margin = new Thickness(0, 1, 0, 1),
+					Padding = new Thickness(0, 2, 0, 2),
+					HorizontalAlignment = HorizontalAlignment.Left,
+					Name = "PART_Title",
+				};
+				_fallbackHeader.Children.Add(_fallbackTitle);
+
+				_fallbackHeader.PointerPressed += delegate (object s, global::Avalonia.Input.PointerPressedEventArgs e)
+				{
+					if (e.GetCurrentPoint(null).Properties.IsMiddleButtonPressed)
+					{
+						Close();
+					}
+				};
+			}
+
+			_useFallbackHeaderChrome = true;
+			UpdateFallbackHeaderFromState();
+			base.Header = _fallbackHeader;
+			RefreshHeaderChrome();
+		}
+
+		private void UpdateFallbackHeaderFromState()
+		{
+			if (_fallbackTitle != null)
+			{
+				_fallbackTitle.Value = _titleText;
+			}
+			if (_fallbackEllipse != null)
+			{
+				bool show = Mode == TabItemMode.Repository || Mode == TabItemMode.GitMm || IsDirty || TagBrush != null;
+				_fallbackEllipse.IsVisible = show;
+				SolidColorBrush b = TagBrush;
+				if (IsDirty && b == null)
+				{
+					b = IsDirtyDefaultBrush;
+				}
+				IBrush fillBrush = b;
+				_fallbackEllipse.Stroke = b;
+				_fallbackEllipse.Fill = fillBrush ?? Brushes.Transparent;
+			}
 		}
 
 		public void ActivateRepositoryManagerMode()
@@ -115,6 +280,8 @@ namespace ForkPlus.UI.Controls
 			RepositoryManagerUserControl = new RepositoryManagerUserControl();
 			Mode = TabItemMode.RepositoryManager;
 			VisualTreeAttachmentHelper.TrySetContent(this, RepositoryManagerUserControl, GetType().Name + ".Content");
+			RefreshTitle();
+			RefreshHeaderChrome();
 		}
 
 		public void ActivateRepositoryViewMode(GitModule gitModule)
@@ -127,6 +294,8 @@ namespace ForkPlus.UI.Controls
 			VisualTreeAttachmentHelper.TrySetContent(this, RepositoryUserControl, GetType().Name + ".Content");
 			TagBrush = RepositoryColorsUserControl.GetBrush(RepositoryUserControl.RepositoryColor);
 			IsDirty = RepositoryUserControl.IsDirty;
+			RefreshTitle();
+			RefreshHeaderChrome();
 		}
 
 		public void ActivateGitMmMode(string workspacePath)
@@ -138,6 +307,8 @@ namespace ForkPlus.UI.Controls
 			VisualTreeAttachmentHelper.TrySetContent(this, GitMmUserControl, GetType().Name + ".Content");
 			TagBrush = RepositoryColorsUserControl.GetBrush(RepositoryManager.Instance.Repositories.FirstItemStruct((RepositoryManager.Repository x) => x.Path == PathHelper.Normalize(workspacePath))?.Color ?? RepositoryColor.None);
 			IsDirty = false;
+			RefreshTitle();
+			RefreshHeaderChrome();
 		}
 
 		public void Refresh()
@@ -168,25 +339,42 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private void TabItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		private void TabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			_dragStartPoint = e.GetPosition(null);
+			if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
+			{
+				e.Handled = true;
+				Close();
+				return;
+			}
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+			{
+				IsSelected = true;
+			}
 		}
 
-		private void TabItem_PreviewMouseMove(object sender, MouseEventArgs e)
+		private void TabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.OriginalSource is Button) && e.Source is ClosableTabItem closableTabItem)
+			// Migration note：WPF Mouse.PrimaryDevice.LeftButton（全局查询鼠标左键状态）在 Avalonia 无
+			// 全局鼠标状态 API（CS0117）；拖动语义等价物 = 当前 PointerMoved 事件指针点位的
+			// IsLeftButtonPressed（按下并移动才会走到这里，行为一致）。
+			if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
-				DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (global::Avalonia.Input.DragDropEffects)7);
 			}
 		}
 
 		private void TabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (e.Data.GetData(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			// Migration note：WPF DataObject.GetData(Type) 以类型全名作隐式格式名；Avalonia 侧的
+			// WpfDataObject 只有 GetData(string)（CS1503），且 DragDropLauncher.DoDragDrop 把自定义
+			// 对象统一存为 "ForkPlusItem" 格式（WpfCompat.Batch2.cs ToTransfer 默认分支），
+			// 故按该格式名读取，读取结果仍以类型模式匹配校验，语义等价。
+			if (e.WpfData().GetData("ForkPlusItem") is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
 			{
-				ClosableTabControl closableTabControl = closableTabItem.Parent as ClosableTabControl;
-				if (closableTabItem != target)
+				ClosableTabControl closableTabControl = closableTabItem.GetOwnerTabControl();
+				if (closableTabControl != null && closableTabItem != target)
 				{
 					closableTabControl.StopSelectionChangedEventWhileDropInProgress = true;
 					int num = closableTabControl.Items.IndexOf(closableTabItem);
@@ -226,15 +414,27 @@ namespace ForkPlus.UI.Controls
 			if (Mode == TabItemMode.Repository)
 			{
 				RepositoryUserControl.RefreshRepositoryTitle();
-				base.Header = RepositoryUserControl.RepositoryTitle;
+				SetTitleText(RepositoryUserControl.RepositoryTitle);
 			}
 			else if (Mode == TabItemMode.GitMm)
 			{
-				base.Header = GitMmUserControl?.WorkspaceTitle ?? "git mm";
+				SetTitleText(GitMmUserControl?.WorkspaceTitle ?? "git mm");
 			}
 			else
 			{
-				base.Header = PreferencesLocalization.Translate("Repository Manager", ForkPlusSettings.Default.UiLanguage);
+				SetTitleText(PreferencesLocalization.Translate("Repository Manager", ForkPlusSettings.Default.UiLanguage));
+			}
+			RefreshHeaderChrome();
+		}
+
+		private void SetTitleText(string title)
+		{
+			title = title ?? string.Empty;
+			_titleText = title;
+			EnsureFallbackHeaderChrome();
+			if (_fallbackTitle != null)
+			{
+				_fallbackTitle.Value = title;
 			}
 		}
 
@@ -275,11 +475,79 @@ namespace ForkPlus.UI.Controls
 
 		private void RepositoryColorChanged(object sender, EventArgs<RepositoryManager.Repository> e)
 		{
+			if (Mode == TabItemMode.Repository && RepositoryUserControl?.GitModule != null && e.Value.Path == PathHelper.Normalize(RepositoryUserControl.GitModule.Path))
+			{
+				RepositoryManager.Repository? repository = RepositoryManager.Instance.Repositories.FirstItemStruct((RepositoryManager.Repository x) => x.Path == e.Value.Path);
+				TagBrush = RepositoryColorsUserControl.GetBrush(repository?.Color ?? RepositoryColor.None);
+				return;
+			}
 			if (Mode == TabItemMode.GitMm && GitMmUserControl != null && e.Value.Path == PathHelper.Normalize(GitMmUserControl.WorkspacePath))
 			{
 				RepositoryManager.Repository? repository = RepositoryManager.Instance.Repositories.FirstItemStruct((RepositoryManager.Repository x) => x.Path == e.Value.Path);
 				TagBrush = RepositoryColorsUserControl.GetBrush(repository?.Color ?? RepositoryColor.None);
 			}
+		}
+
+		private void RefreshHeaderChrome()
+		{
+			ContextMenu contextMenu = GetContextMenu();
+			global::ForkPlus.UI.MenuExtensions.AttachCloseOnLeafItemClick(contextMenu);
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, _fallbackHeader ?? (Control)this);
+			base.ContextMenu = contextMenu;
+
+			string toolTip = GetToolTip();
+			global::Avalonia.Controls.ToolTip.SetTip(this, toolTip);
+
+			if (_useFallbackHeaderChrome)
+			{
+				if (_fallbackHeader != null)
+				{
+					_fallbackHeader.ContextMenu = contextMenu;
+					global::Avalonia.Controls.ToolTip.SetTip(_fallbackHeader, toolTip);
+					UpdateFallbackHeaderFromState();
+				}
+				return;
+			}
+
+			if (this.GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel)
+			{
+				centeredDockPanel.ContextMenu = contextMenu;
+				global::Avalonia.Controls.ToolTip.SetTip(centeredDockPanel, toolTip);
+			}
+			SyncHeaderChromeFromState();
+		}
+
+		private void SyncHeaderChromeFromState()
+		{
+			if (_useFallbackHeaderChrome)
+			{
+				UpdateFallbackHeaderFromState();
+				return;
+			}
+
+			if (this.GetTemplateChild("PART_Title") is EditableTextBlock titleTextBlock)
+			{
+				titleTextBlock.Value = _titleText;
+			}
+			if (this.GetTemplateChild("PART_Color") is Ellipse ellipse)
+			{
+				SolidColorBrush brush = TagBrush;
+				if (IsDirty && brush == null)
+				{
+					brush = IsDirtyDefaultBrush;
+				}
+				ellipse.IsVisible = IsDirty || brush != null;
+				ellipse.Stroke = brush;
+				IBrush fillBrush = brush;
+				ellipse.Fill = fillBrush ?? Brushes.Transparent;
+			}
+		}
+
+		private ClosableTabControl GetOwnerTabControl()
+		{
+			return ItemsControl.ItemsControlFromItemContainer(this) as ClosableTabControl
+				?? base.Parent as ClosableTabControl
+				?? global::Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(this).OfType<ClosableTabControl>().FirstOrDefault();
 		}
 
 		private ContextMenu GetContextMenu()
@@ -289,14 +557,14 @@ namespace ForkPlus.UI.Controls
 			menuItem.Header = PreferencesLocalization.MenuHeader("Close All");
 			menuItem.Click += delegate
 			{
-				((ClosableTabControl)base.Parent).RemoveAllTabs();
+				GetOwnerTabControl()?.RemoveAllTabs();
 			};
 			contextMenu.Items.Add(menuItem);
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Close All But This");
 			menuItem2.Click += delegate
 			{
-				((ClosableTabControl)base.Parent).RemoveAllTabs(this);
+				GetOwnerTabControl()?.RemoveAllTabs(this);
 			};
 			contextMenu.Items.Add(menuItem2);
 			string managedRepositoryPath = null;
@@ -396,11 +664,10 @@ namespace ForkPlus.UI.Controls
 
 		private static Control CreateRepositoryColorsMenuItem(RepositoryManager.Repository repository)
 		{
-			return new MenuItem
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new MenuItem
 			{
-				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
-			};
+				Header = new RepositoryColorsUserControl(repository)			},global::ForkPlus.UI.Theme.CustomContentMenuItemStyle
+);
 		}
 
 		private static RepositoryManager.Repository? EnsureRepositoryManagerEntry(string repositoryPath)

@@ -22,6 +22,8 @@
     "Accepted": "Aceptadas",
     "Share": "Cuota",
     "Analyzing AI authorship...": "Analizando autoría de IA...",
+    "Unknown": "Desconocido",
+    "Enable AI attribution in Preferences → Git to see AI authorship statistics.": "Habilita la atribución de IA en Preferencias → Git para ver estadísticas de autoría de IA.",
     "Human": "Humano",
     "Mixed (AI + human edits)": "Mixto (IA + ediciones humanas)",
     "{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits": "{0}: {1} de {2} líneas añadidas fueron generadas por IA ({3} %) · datos de autoría en {4} de {5} commits",
@@ -2301,6 +2303,15 @@
     "Import Complete": "Importación completada",
     "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "La importación sobrescribirá la configuración actual de ForkPlus.\nForkPlus se reiniciará después de la importación.\n\n¿Continuar?",
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Configuración importada correctamente.\nForkPlus se reiniciará ahora para aplicar la nueva configuración.",
-    "Force push": "Push forzado"
+    "Force push": "Push forzado",
+    "Credentials": "Credenciales",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Credenciales HTTP(S) guardadas. Los nombres de usuario se recuerdan automáticamente; «Recordar contraseña» rellena la contraseña en el diálogo; «No preguntar» la usa en silencio. Añada credenciales por adelantado aquí; el interruptor reactiva la petición en cualquier momento.",
+    "Host (e.g. github.com)": "Host (p. ej. github.com)",
+    "Ask Again for All Hosts": "Volver a preguntar para todos los hosts",
+    "Never ask": "No preguntar",
+    "Ask": "Preguntar",
+    "No saved credentials yet.": "Aún no hay credenciales guardadas.",
+    "Host": "Host",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Si está activado, esta credencial se usa en silencio sin preguntar; desactívelo para que se le pregunte de nuevo."
   }
 }

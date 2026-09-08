@@ -6,7 +6,7 @@ namespace ForkPlus
 	{
 		public static string DefaultSourceDir(this RepositoryManager repositoryManager, [Null] string fallback = null)
 		{
-			return repositoryManager.SourceDirs.FirstItem() ?? fallback ?? Environment.ExpandEnvironmentVariables("%userprofile%");
+			return repositoryManager.SourceDirs.FirstItem() ?? fallback ?? SystemEnvironment.UserProfileDirectory;
 		}
 
 		[Null]

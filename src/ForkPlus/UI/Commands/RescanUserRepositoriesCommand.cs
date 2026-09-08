@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -20,7 +24,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			Application.Current.Dispatcher.Async(delegate
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 			{
 				ForkPlus.RepositoryManager.Instance.AddRepositories(result);
 				ForkPlus.RepositoryManager.Instance.Save();
@@ -39,7 +43,7 @@ namespace ForkPlus.UI.Commands
 			{
 				FindGitRepositoriesRecursive(path, ignore, result, scanDepth);
 			}
-			Application.Current.Dispatcher.Async(delegate
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 			{
 				if (reset)
 				{

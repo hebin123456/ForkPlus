@@ -1,11 +1,14 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class ToolbarButton : Button
 	{
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(ToolbarButton), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<string> TitleProperty =
+    global::Avalonia.AvaloniaProperty.Register<ToolbarButton, string>("Title", null);
 
 		public string Title
 		{

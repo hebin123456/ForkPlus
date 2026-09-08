@@ -1,13 +1,17 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
+using Avalonia;
+using Avalonia.Data;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.CircularProgressBar
 {
 	public class ArcEndPointConverter : IMultiValueConverter
 	{
-		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		public object Convert(global::System.Collections.Generic.IList<object> values, Type targetType, object parameter, CultureInfo culture)
 		{
 			double num = values[0].ExtractDouble();
 			double num2 = values[1].ExtractDouble();
@@ -15,9 +19,10 @@ namespace ForkPlus.UI.CircularProgressBar
 			double num4 = values[3].ExtractDouble();
 			if (new double[4] { num, num2, num3, num4 }.AnyNan())
 			{
-				return Binding.DoNothing;
+				return global::ForkPlus.UI.WpfCompat.WpfBinding.DoNothing;
 			}
-			if (values.Length == 5)
+			// Avalonia IMultiValueConverter 的 values 是 IList<object>，用 Count 而非 Length。
+			if (values.Count == 5)
 			{
 				double num5 = values[4].ExtractDouble();
 				if (!double.IsNaN(num5) && num5 > 0.0)

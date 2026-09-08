@@ -1,6 +1,6 @@
 using System;
 using ForkPlus.Git.Diff.Presentation;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit.Document;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {

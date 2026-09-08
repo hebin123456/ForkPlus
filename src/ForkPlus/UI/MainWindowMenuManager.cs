@@ -1,9 +1,10 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
@@ -13,6 +14,9 @@ using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI
 {
@@ -62,19 +66,19 @@ namespace ForkPlus.UI
 
 		private void RefreshRepositoryItemState()
 		{
-			Visibility visibility = Visibility.Collapsed;
+			bool visibility = false;
 			try
 			{
 				RepositoryUserControl activeRepositoryUserControl = Application.Current.TabManager().ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl != null)
 				{
-					visibility = Visibility.Visible;
+					visibility = true;
 				}
 			}
 			finally
 			{
-				_viewMenuItem.Visibility = visibility;
-				_repositoryMenuItem.Visibility = visibility;
+				_viewMenuItem.IsVisible = visibility;
+				_repositoryMenuItem.IsVisible = visibility;
 			}
 		}
 
@@ -284,7 +288,7 @@ namespace ForkPlus.UI
 					commands.SwitchApplicationTheme.Execute(themeCopy);
 				});
 				item.IsChecked = !useCustom && currentTheme == theme;
-				item.IsCheckable = true;
+				item.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 				themeParent.Items.Add(item);
 			}
 			// "Solid Colors"三级菜单：纯色主题按 SolidColorThemes 顺序（彩虹色）排列
@@ -301,7 +305,7 @@ namespace ForkPlus.UI
 					commands.SwitchApplicationTheme.Execute(solidCopy);
 				});
 				subItem.IsChecked = !useCustom && currentTheme == solidTheme;
-				subItem.IsCheckable = true;
+				subItem.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 				solidColorsParent.Items.Add(subItem);
 			}
 			themeParent.Items.Add(solidColorsParent);
@@ -309,7 +313,7 @@ namespace ForkPlus.UI
 			MenuItem customColorsItem = new MenuItem
 			{
 				Header = PreferencesLocalization.Translate("Custom Colors...", language),
-				IsCheckable = true,
+				ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox,
 				IsChecked = useCustom
 			};
 			customColorsItem.Click += delegate

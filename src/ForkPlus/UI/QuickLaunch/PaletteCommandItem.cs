@@ -1,16 +1,19 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class PaletteCommandItem : CommandProviderItem
 	{
-		public override ImageSource Icon => Application.Current.TryFindResource("ConsoleIcon") as ImageSource;
+		public override global::Avalonia.Media.IImage Icon => Application.Current.TryFindResource("ConsoleIcon") as global::Avalonia.Media.IImage;
 
-		public override ImageSource SelectedIcon => Application.Current.TryFindResource("ConsoleEmphasizedIcon") as ImageSource;
+		public override global::Avalonia.Media.IImage SelectedIcon => Application.Current.TryFindResource("ConsoleEmphasizedIcon") as global::Avalonia.Media.IImage;
 
 		public CommandDescriptor Command { get; }
 

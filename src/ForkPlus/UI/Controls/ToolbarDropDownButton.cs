@@ -1,12 +1,17 @@
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class ToolbarDropDownButton : DropDownButton
 	{
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(ToolbarDropDownButton), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<string> TitleProperty =
+    global::Avalonia.AvaloniaProperty.Register<ToolbarDropDownButton, string>("Title", null);
 
-		public static readonly DependencyProperty IsArrowVisibleProperty = DependencyProperty.Register("IsArrowVisible", typeof(bool), typeof(ToolbarDropDownButton), new PropertyMetadata(true));
+		public static readonly global::Avalonia.StyledProperty<bool> IsArrowVisibleProperty =
+    global::Avalonia.AvaloniaProperty.Register<ToolbarDropDownButton, bool>("IsArrowVisible", true);
 
 		public string Title
 		{

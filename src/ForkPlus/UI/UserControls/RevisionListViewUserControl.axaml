@@ -1,0 +1,586 @@
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionListViewUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <StreamGeometry x:Key="OptionMarkGeomentry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</StreamGeometry>
+      <controls:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter" />
+      <ControlTheme x:Key="ItemContainerStyle" TargetType="controls:DragAndDropListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+        
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="FontWeight" Value="{Binding IsHead, Converter={StaticResource BoolToFontWeightConverter}}" />
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+    <!-- Migration note：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
+        <Style Selector="^:selected /template/ Border#Bd">
+          <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+          <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        </Style>
+        <Style Selector="^:selected">
+          <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+        </Style>
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="IsHead" />
+                  </DataTrigger.Binding>
+                  <Setter Property="FontWeight" Value="Bold" />
+                </DataTrigger>
+    -->
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger Value="False" xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="IsReachable" />
+                  </DataTrigger.Binding>
+                  <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                </DataTrigger>
+    --></ControlTheme>
+      <!--
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段：
+      <GridView x:Key="SingleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+              <GridViewColumn>
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid Height="23">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="8 0 0 0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
+                      <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
+                        <Ellipse.Fill>
+                          <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                        </Ellipse.Fill>
+                        <Ellipse.Visibility>
+                          <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                        </Ellipse.Visibility>
+                      </Ellipse>
+                      <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+                        <ItemsControl.ItemsSource>
+                          <Binding Path="References" />
+                        </ItemsControl.ItemsSource>
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                      <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2 0 0 2" TextTrimming="CharacterEllipsis" IsParentSelected="False" x:Name="RevisionSubjectTextField" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                        <controls:RevisionSubjectTextField.StringValue>
+                          <Binding Path="Subject" />
+                        </controls:RevisionSubjectTextField.StringValue>
+                        <controls:RevisionSubjectTextField.HasBody>
+                          <Binding Path="HasBody" />
+                        </controls:RevisionSubjectTextField.HasBody>
+                        <controls:RevisionSubjectTextField.HighlightString>
+                          <Binding Path="SubjectSearchString" />
+                        </controls:RevisionSubjectTextField.HighlightString>
+                      </controls:RevisionSubjectTextField>
+                    </Grid>
+                    <DataTemplate.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="False">
+                            <Condition.Binding>
+                              <Binding Path="(Selector.IsSelectionActive)">
+                                <Binding.RelativeSource>
+                                  <RelativeSource AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="IsSelected">
+                                <Binding.RelativeSource>
+                                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                        </MultiDataTrigger.Conditions>
+                        <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="False" />
+                      </MultiDataTrigger>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="(Selector.IsSelectionActive)">
+                                <Binding.RelativeSource>
+                                  <RelativeSource AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="IsSelected">
+                                <Binding.RelativeSource>
+                                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                        </MultiDataTrigger.Conditions>
+                        <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
+                      </MultiDataTrigger>
+                    </DataTemplate.Triggers>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="19">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+                      <Border.Background>
+                        <Binding Path="UserBackgroundBrush" />
+                      </Border.Background>
+                      <Border.BorderBrush>
+                        <Binding Path="UserBackgroundBrush" />
+                      </Border.BorderBrush>
+                      <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                        <controls:AvatarImage.UserIdentity>
+                          <Binding Path="Author" />
+                        </controls:AvatarImage.UserIdentity>
+                      </controls:AvatarImage>
+                    </Border>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="120">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Border Margin="-7,2,0,2" BorderThickness="1" CornerRadius="0,3,3,0">
+                      <Border.BorderBrush>
+                        <Binding Path="UserBackgroundBrush" />
+                      </Border.BorderBrush>
+                      <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="4,0,2,0" x:Name="AuthorTextBlock" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                        <controls:HighlightableTextBlock.Text>
+                          <Binding Path="AuthorName" />
+                        </controls:HighlightableTextBlock.Text>
+                        <controls:HighlightableTextBlock.HighlightString>
+                          <Binding Path="SearchString" />
+                        </controls:HighlightableTextBlock.HighlightString>
+                      </controls:HighlightableTextBlock>
+                    </Border>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="70">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="5,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                      <controls:HighlightableTextBlock.Text>
+                        <Binding Path="AbbreviatedSha" />
+                      </controls:HighlightableTextBlock.Text>
+                      <controls:HighlightableTextBlock.HighlightString>
+                        <Binding Path="SearchString" />
+                      </controls:HighlightableTextBlock.HighlightString>
+                    </controls:HighlightableTextBlock>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="129">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,-5,0">
+                      <TextBlock.Text>
+                        <Binding Path="AuthorDateLongString" />
+                      </TextBlock.Text>
+                    </TextBlock>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn Width="4">
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Border Margin="-4,0,0,0" Width="4" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
+                    <DataTemplate.Triggers>
+                      <DataTrigger Value="True">
+                        <DataTrigger.Binding>
+                          <Binding Path="IsSearchMatch" />
+                        </DataTrigger.Binding>
+                        <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Panel.Background" />
+                      </DataTrigger>
+                    </DataTemplate.Triggers>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+    -->
+      <!--
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段：
+      <GridView x:Key="DoubleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+              <GridViewColumn>
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid Height="42">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="8,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
+                      <StackPanel Grid.Row="0" Grid.Column="1" Margin="3,0,0,0" Orientation="Horizontal">
+                        <Border Margin="0,2,0,0" Width="18" Height="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+                          <Border.Background>
+                            <Binding Path="UserBackgroundBrush" />
+                          </Border.Background>
+                          <Border.BorderBrush>
+                            <Binding Path="UserBackgroundBrush" />
+                          </Border.BorderBrush>
+                          <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                            <controls:AvatarImage.UserIdentity>
+                              <Binding Path="Author" />
+                            </controls:AvatarImage.UserIdentity>
+                          </controls:AvatarImage>
+                        </Border>
+                        <Border Height="18" Margin="0,2,0,0" BorderThickness="1" CornerRadius="0,2,3,0">
+                          <Border.BorderBrush>
+                            <Binding Path="UserBackgroundBrush" />
+                          </Border.BorderBrush>
+                          <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="4,0,2,0" x:Name="AuthorTextBlock" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                            <controls:HighlightableTextBlock.Text>
+                              <Binding Path="AuthorName" />
+                            </controls:HighlightableTextBlock.Text>
+                            <controls:HighlightableTextBlock.HighlightString>
+                              <Binding Path="SearchString" />
+                            </controls:HighlightableTextBlock.HighlightString>
+                          </controls:HighlightableTextBlock>
+                        </Border>
+                        <controls:HighlightableTextBlock Width="50" Margin="8,2,4,0" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ShaTextBlock" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                          <controls:HighlightableTextBlock.Text>
+                            <Binding Path="AbbreviatedSha" />
+                          </controls:HighlightableTextBlock.Text>
+                          <controls:HighlightableTextBlock.HighlightString>
+                            <Binding Path="SearchString" />
+                          </controls:HighlightableTextBlock.HighlightString>
+                        </controls:HighlightableTextBlock>
+                      </StackPanel>
+                      <TextBlock Grid.Row="0" Grid.Column="2" Margin="0,2,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">
+                        <TextBlock.Text>
+                          <Binding Path="AuthorDateShortString" />
+                        </TextBlock.Text>
+                      </TextBlock>
+                      <DockPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center">
+                        <Ellipse DockPanel.Dock="Left" Margin="4,0,0,0" Width="5" Height="5" HorizontalAlignment="Center">
+                          <Ellipse.Fill>
+                            <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                          </Ellipse.Fill>
+                          <Ellipse.Visibility>
+                            <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                          </Ellipse.Visibility>
+                        </Ellipse>
+                        <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+                          <ItemsControl.ItemsSource>
+                            <Binding Path="References" />
+                          </ItemsControl.ItemsSource>
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <controls:RevisionSubjectTextField DockPanel.Dock="Left" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" FontSize="13.5" IsParentSelected="False" x:Name="RevisionSubjectTextField" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                          <controls:RevisionSubjectTextField.StringValue>
+                            <Binding Path="Subject" />
+                          </controls:RevisionSubjectTextField.StringValue>
+                          <controls:RevisionSubjectTextField.HighlightString>
+                            <Binding Path="SubjectSearchString" />
+                          </controls:RevisionSubjectTextField.HighlightString>
+                          <controls:RevisionSubjectTextField.ToolTip>
+                            <Binding Path="Subject" />
+                          </controls:RevisionSubjectTextField.ToolTip>
+                          <controls:RevisionSubjectTextField.HasBody>
+                            <Binding Path="HasBody" />
+                          </controls:RevisionSubjectTextField.HasBody>
+                        </controls:RevisionSubjectTextField>
+                      </DockPanel>
+                      <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,-8,0" BorderBrush="{DynamicResource BorderBrush}" />
+                      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,-8,0" Width="4" HorizontalAlignment="Right" Background="#00FFFFFF" x:Name="SearchMatchBorder" />
+                    </Grid>
+                    <DataTemplate.Triggers>
+                      <DataTrigger Value="True">
+                        <DataTrigger.Binding>
+                          <Binding Path="IsSearchMatch" />
+                        </DataTrigger.Binding>
+                        <Setter TargetName="SearchMatchBorder" Value="{DynamicResource RevisionList.SearchMatch.BackgroundBrush}" Property="Panel.Background" />
+                      </DataTrigger>
+                      <DataTrigger Value="False">
+                        <DataTrigger.Binding>
+                          <Binding Path="IsReachable" />
+                        </DataTrigger.Binding>
+                        <Setter TargetName="AuthorTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                        <Setter TargetName="AuthorDateTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                        <Setter TargetName="ShaTextBlock" Property="TextElement.Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+                      </DataTrigger>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="False">
+                            <Condition.Binding>
+                              <Binding Path="(Selector.IsSelectionActive)">
+                                <Binding.RelativeSource>
+                                  <RelativeSource AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="IsSelected">
+                                <Binding.RelativeSource>
+                                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                        </MultiDataTrigger.Conditions>
+                        <Setter TargetName="AuthorTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="TextElement.Foreground" />
+                        <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="TextElement.Foreground" />
+                        <Setter TargetName="ShaTextBlock" Value="{DynamicResource SecondaryLabelBrush}" Property="TextElement.Foreground" />
+                        <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="False" />
+                      </MultiDataTrigger>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="(Selector.IsSelectionActive)">
+                                <Binding.RelativeSource>
+                                  <RelativeSource AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                          <Condition Value="True">
+                            <Condition.Binding>
+                              <Binding Path="IsSelected">
+                                <Binding.RelativeSource>
+                                  <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListViewItem}" />
+                                </Binding.RelativeSource>
+                              </Binding>
+                            </Condition.Binding>
+                          </Condition>
+                        </MultiDataTrigger.Conditions>
+                        <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                        <Setter TargetName="RevisionSubjectTextField" Property="controls:RevisionSubjectTextField.IsParentSelected" Value="True" />
+                      </MultiDataTrigger>
+                    </DataTemplate.Triggers>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+    -->
+      <!-- ===================== 修订列表行模板（WPF GridView CellTemplate 重建） =====================
+           WPF migration note：WPF SingleRowGridView/DoubleRowGridView（ListView.View 列视图）在 Avalonia
+           核心无等价物，此处按原 CellTemplate 内容重建为 Grid 列布局的 DataTemplate，
+           由 code-behind RefreshRevisionListViewTemplate() 按可用宽度切换 ItemTemplate。
+           原 DataTemplate.Triggers（IsParentSelected 传递 / IsSearchMatch 高亮 / IsReachable 灰字）
+           无模板级等价物，待 VM 计算属性 + Classes 选择器补齐。 -->
+      <!-- Bug 修复（"所有提交"轨道图宽度 100%）：WPF 原版靠 GridView.UpdateResizableColumnWidth(0)
+           把第 0 复合列（graph+refs+subject）宽度硬性钳制为 AvailableWidth - 固定列，永不出横向滚动条；
+           Avalonia 迁移版 UpdateResizableColumnWidth 是 no-op，行内 Auto 列（多 lane 轨道图、超长 refs
+           徽章）desired 超过视口时 extent 随之变宽 → 横向滚动条冒出来（用户报告"有点超出"）。
+           修复：横向滚动禁用（ScrollViewer 以视口宽测量行、超宽裁剪，与 WPF 列宽钳制语义对齐）。 -->
+      <!-- Bug2 修复（2026-09-07，"轨道太多/徽章太多时把作者、SHA 顶到后面去"）：
+           WPF 原版结构 = 第 0 复合列(graph+refs+subject，UpdateResizableColumnWidth 钳制) + 固定列
+           (avatar 19/author 120/sha 70/date 129)，固定列永远在视口右缘固定偏移处；
+           迁移版曾把 author/sha/date 做成行 Grid 末尾的 Auto 列——左侧 Auto 列(多 lane 轨道图
+           +超长徽章)desired 超过视口时 star(subject)列先归零，随后 author/sha/date 被整体顶出
+           视口右缘裁剪不可见。修复：重建 WPF 两层结构——外层 "* ,Auto,Auto,Auto,Auto"
+           (左组合 star 列拿满剩余宽度 + 四个固定列)，左组合列内部 Auto,Auto,Auto,*
+           与 WPF 第 0 列 CellTemplate 完全同构；组合列 ClipToBounds 超宽裁剪(对齐 WPF
+           GridView 单元格裁剪语义)，author/sha/date 恒定可见、永不被顶走。 -->
+      <DataTemplate x:Key="SingleRowRevisionTemplate">
+        <Grid Height="23" ClipToBounds="True" ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+          <!-- 左组合列（等价 WPF 第 0 复合列）：graph + 上游状态 + refs 徽章 + subject -->
+          <Grid Grid.Column="0" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*">
+            <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
+            <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Ellipse.Fill>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
+              </Ellipse.Fill>
+              <Ellipse.IsVisible>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
+              </Ellipse.IsVisible>
+            </Ellipse>
+            <!-- Bug1 修复：refs 徽章 ClipToBounds + MaxWidth（code-behind 动态计算），
+                 防止超长分支名徽章把 Auto 列撑爆、溢出盖住 subject/日期列。 -->
+            <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+              <ItemsControl.ItemsSource>
+                <Binding Path="References" />
+              </ItemsControl.ItemsSource>
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2,0,0,2" TextTrimming="CharacterEllipsis" IsParentSelected="False">
+              <controls:RevisionSubjectTextField.StringValue>
+                <Binding Path="Subject" />
+              </controls:RevisionSubjectTextField.StringValue>
+              <controls:RevisionSubjectTextField.HasBody>
+                <Binding Path="HasBody" />
+              </controls:RevisionSubjectTextField.HasBody>
+              <controls:RevisionSubjectTextField.HighlightString>
+                <Binding Path="SubjectSearchString" />
+              </controls:RevisionSubjectTextField.HighlightString>
+            </controls:RevisionSubjectTextField>
+          </Grid>
+          <Border Grid.Column="1" Margin="4,2,4,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+            <Border.Background>
+              <Binding Path="UserBackgroundBrush" />
+            </Border.Background>
+            <Border.BorderBrush>
+              <Binding Path="UserBackgroundBrush" />
+            </Border.BorderBrush>
+            <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center">
+              <controls:AvatarImage.UserIdentity>
+                <Binding Path="Author" />
+              </controls:AvatarImage.UserIdentity>
+            </controls:AvatarImage>
+          </Border>
+          <Border Grid.Column="2" Margin="0,2,0,2" Width="120" BorderThickness="0,1,1,1" CornerRadius="0,3,3,0">
+            <Border.BorderBrush>
+              <Binding Path="UserBackgroundBrush" />
+            </Border.BorderBrush>
+            <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="4,0,2,0" TextTrimming="CharacterEllipsis">
+              <controls:HighlightableTextBlock.Text>
+                <Binding Path="AuthorName" />
+              </controls:HighlightableTextBlock.Text>
+              <controls:HighlightableTextBlock.HighlightString>
+                <Binding Path="SearchString" />
+              </controls:HighlightableTextBlock.HighlightString>
+            </controls:HighlightableTextBlock>
+          </Border>
+          <controls:HighlightableTextBlock Grid.Column="3" VerticalAlignment="Center" Margin="5,0,0,0" Width="70" TextTrimming="CharacterEllipsis">
+            <controls:HighlightableTextBlock.Text>
+              <Binding Path="AbbreviatedSha" />
+            </controls:HighlightableTextBlock.Text>
+            <controls:HighlightableTextBlock.HighlightString>
+              <Binding Path="SearchString" />
+            </controls:HighlightableTextBlock.HighlightString>
+          </controls:HighlightableTextBlock>
+          <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="5,0,5,0" Width="130" TextTrimming="CharacterEllipsis">
+            <TextBlock.Text>
+              <Binding Path="AuthorDateLongString" />
+            </TextBlock.Text>
+          </TextBlock>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="DoubleRowRevisionTemplate">
+        <Grid Height="42" ClipToBounds="True" RowDefinitions="*,*" ColumnDefinitions="Auto,*,Auto">
+          <controls:GraphCellView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
+          <StackPanel Grid.Row="0" Grid.Column="1" Margin="3,0,0,0" Orientation="Horizontal">
+            <Border Margin="0,2,0,0" Width="18" Height="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+              <Border.Background>
+                <Binding Path="UserBackgroundBrush" />
+              </Border.Background>
+              <Border.BorderBrush>
+                <Binding Path="UserBackgroundBrush" />
+              </Border.BorderBrush>
+              <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center">
+                <controls:AvatarImage.UserIdentity>
+                  <Binding Path="Author" />
+                </controls:AvatarImage.UserIdentity>
+              </controls:AvatarImage>
+            </Border>
+            <Border Height="18" Margin="0,2,0,0" BorderThickness="1" CornerRadius="0,2,3,0">
+              <Border.BorderBrush>
+                <Binding Path="UserBackgroundBrush" />
+              </Border.BorderBrush>
+              <controls:HighlightableTextBlock VerticalAlignment="Center" Margin="4,0,2,0" TextTrimming="CharacterEllipsis">
+                <controls:HighlightableTextBlock.Text>
+                  <Binding Path="AuthorName" />
+                </controls:HighlightableTextBlock.Text>
+                <controls:HighlightableTextBlock.HighlightString>
+                  <Binding Path="SearchString" />
+                </controls:HighlightableTextBlock.HighlightString>
+              </controls:HighlightableTextBlock>
+            </Border>
+            <controls:HighlightableTextBlock Width="50" Margin="8,2,4,0" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis">
+              <controls:HighlightableTextBlock.Text>
+                <Binding Path="AbbreviatedSha" />
+              </controls:HighlightableTextBlock.Text>
+              <controls:HighlightableTextBlock.HighlightString>
+                <Binding Path="SearchString" />
+              </controls:HighlightableTextBlock.HighlightString>
+            </controls:HighlightableTextBlock>
+          </StackPanel>
+          <TextBlock Grid.Row="0" Grid.Column="2" Margin="0,2,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis">
+            <TextBlock.Text>
+              <Binding Path="AuthorDateShortString" />
+            </TextBlock.Text>
+          </TextBlock>
+          <DockPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center">
+            <Ellipse DockPanel.Dock="Left" Margin="4,0,0,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Ellipse.Fill>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
+              </Ellipse.Fill>
+              <Ellipse.IsVisible>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
+              </Ellipse.IsVisible>
+            </Ellipse>
+            <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+              <ItemsControl.ItemsSource>
+                <Binding Path="References" />
+              </ItemsControl.ItemsSource>
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <controls:RevisionSubjectTextField DockPanel.Dock="Left" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" FontSize="13.5" IsParentSelected="False">
+              <controls:RevisionSubjectTextField.StringValue>
+                <Binding Path="Subject" />
+              </controls:RevisionSubjectTextField.StringValue>
+              <controls:RevisionSubjectTextField.HighlightString>
+                <Binding Path="SubjectSearchString" />
+              </controls:RevisionSubjectTextField.HighlightString>
+              <!-- Migration note：WPF ToolTip 属性绑定已删（Avalonia 为 ToolTip.Tip 附加属性，行内提示非必需） -->
+              <controls:RevisionSubjectTextField.HasBody>
+                <Binding Path="HasBody" />
+              </controls:RevisionSubjectTextField.HasBody>
+            </controls:RevisionSubjectTextField>
+          </DockPanel>
+          <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,0" BorderBrush="{DynamicResource BorderBrush}" />
+        </Grid>
+      </DataTemplate>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid ClipToBounds="True">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
+    <!-- Bug 修复（轨道图宽度 100%）：HorizontalScrollBarVisibility=Disabled 对齐 WPF 原版
+         UpdateResizableColumnWidth(0) 的列宽钳制语义——行宽恒等于视口宽（100% 填充），
+         多 lane 轨道图/超长 refs 徽章超宽时裁剪显示，横向滚动条永不出现。 -->
+    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" ContextRequested="RevisionListView_ContextMenuOpening" Grid.Row="1" BorderThickness="0" SelectionMode="Multiple" Margin="0,0,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource ItemContainerStyle}" ItemTemplate="{StaticResource SingleRowRevisionTemplate}">
+      <controls:DragAndDropListView.ContextMenu>
+        <ContextMenu />
+      </controls:DragAndDropListView.ContextMenu>
+    </controls:DragAndDropListView>
+    <usercontrols:RevisionSearchPanelUserControl Grid.RowSpan="2" x:Name="RevisionSearchPanelUserControl">
+      <usercontrols:RevisionSearchPanelUserControl.SearchPanelPlaceholder>
+        <Binding ElementName="SearchPanelPlaceholder" />
+      </usercontrols:RevisionSearchPanelUserControl.SearchPanelPlaceholder>
+    </usercontrols:RevisionSearchPanelUserControl>
+  </Grid>
+</UserControl>

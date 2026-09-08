@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -7,7 +7,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 	{
 		public string Path { get; }
 
-		public ImageSource SrcFolderIcon { get; }
+		public global::Avalonia.Media.IImage SrcFolderIcon { get; }
 
 		public string SrcFolderIconTooltip { get; }
 
@@ -16,19 +16,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 			Path = path;
 			if (SrcFolderIsValid(path))
 			{
-				SrcFolderIcon = Theme.FolderIcon;
+				SrcFolderIcon = global::ForkPlus.UI.Theme.FolderIcon;
 				SrcFolderIconTooltip = null;
 			}
 			else
 			{
-				SrcFolderIcon = Theme.WarningIcon;
+				SrcFolderIcon = global::ForkPlus.UI.Theme.WarningIcon;
 				SrcFolderIconTooltip = "'" + path + "' should not be used as a source directory. Please choose a subfolder instead";
 			}
 		}
 
 		private static bool SrcFolderIsValid(string path)
 		{
-			string value = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string value = SystemEnvironment.UserProfileDirectory;
 			if (!path.TrimEnd("\\").Equals("c:", StringComparison.OrdinalIgnoreCase))
 			{
 				return !path.TrimEnd("\\").Equals(value, StringComparison.OrdinalIgnoreCase);

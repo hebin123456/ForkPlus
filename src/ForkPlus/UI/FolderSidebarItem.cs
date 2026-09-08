@@ -1,7 +1,12 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {
@@ -51,7 +56,7 @@ namespace ForkPlus.UI
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
 			{
 				return DragDropEffects.Move;
 			}
@@ -60,8 +65,8 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
-			if (!(e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
+			e.DragEffects= DragDropEffects.None;
+			if (!(e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
 			{
 				return;
 			}
@@ -85,9 +90,9 @@ namespace ForkPlus.UI
 			if (repositoryData != null)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 				string newName = FullName + "/" + localBranchSidebarItem.LocalBranch.LastNameComponent();
-				SidebarUserControl.Dispatcher.Async(delegate
+				SidebarUserControl.Dispatcher.Post(delegate
 				{
 					RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.Execute(repositoryUserControl, gitModule, repositoryData.References, localBranchSidebarItem.LocalBranch, newName);
 				});

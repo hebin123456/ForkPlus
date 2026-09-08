@@ -1,7 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Settings;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {
@@ -21,9 +24,9 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Zoom Out";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.OemMinus, ModifierKeys.Control);
+		public KeyGesture Shortcut => new KeyGesture(Key.OemMinus, global::Avalonia.Input.KeyModifiers.Control);
 
-		public KeyGesture SecondaryShortcut => new KeyGesture(Key.Subtract, ModifierKeys.Control);
+		public KeyGesture SecondaryShortcut => new KeyGesture(Key.Subtract, global::Avalonia.Input.KeyModifiers.Control);
 
 		public void Execute()
 		{

@@ -1,9 +1,9 @@
-using System.Windows.Controls;
+using Avalonia.Controls;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit.Document;
 
 namespace ForkPlus.UI.Controls.Commands
 {

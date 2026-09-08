@@ -1,0 +1,47 @@
+<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <UserControl.DataTemplates>
+<DataTemplate DataType="userControls:RevisionFileTreeViewItem">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Height="14" Width="14">
+            <Image.Source>
+              <Binding Path="FileTypeIcon" />
+            </Image.Source>
+          </Image>
+          <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+            <TextBlock.Text>
+              <Binding Path="Title" />
+            </TextBlock.Text>
+          </TextBlock>
+        </Grid>
+      </DataTemplate>
+  </UserControl.DataTemplates>
+  <Grid x:Name="ContainerGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition MinWidth="220" MaxWidth="850" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextRequested="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView" DoubleTapped="FilesTreeView_MouseDoubleClick">
+      <controls:MultiselectionTreeView.ItemTemplate>
+        <DataTemplate>
+          <ContentControl>
+            <ContentControl.Content>
+              <Binding />
+            </ContentControl.Content>
+          </ContentControl>
+        </DataTemplate>
+      </controls:MultiselectionTreeView.ItemTemplate>
+      <controls:MultiselectionTreeView.ContextMenu>
+        <ContextMenu />
+      </controls:MultiselectionTreeView.ContextMenu>
+    </controls:MultiselectionTreeView>
+    <controls:FileContentControl Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileContentControl" />
+    <GridSplitter Grid.Column="0" HorizontalAlignment="Right" x:Name="GridSplitter" Theme="{DynamicResource VerticalGridSplitter}" />
+  </Grid>
+</UserControl>

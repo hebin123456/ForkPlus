@@ -1,5 +1,5 @@
 using System.IO;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
@@ -7,7 +7,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 	public class ImageData
 	{
 		[Null]
-		public BitmapSource ImageSource { get; }
+		public global::Avalonia.Media.Imaging.Bitmap ImageSource { get; }
 
 		public long FileSize { get; }
 
@@ -15,9 +15,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public bool IsTracked { get; }
 
-		public ImageData([Null] BitmapSource imageSource, long fileSize, bool isLfs, bool isTracked)
+		public ImageData([Null] global::Avalonia.Media.Imaging.Bitmap imageSource, long fileSize, bool isLfs, bool isTracked)
 		{
-			ImageSource = imageSource;
+			ImageSource = imageSource; // Migration note：转换器误把属性名 ImageSource 写成类型全限定名。
 			FileSize = fileSize;
 			IsLfs = isLfs;
 			IsTracked = isTracked;

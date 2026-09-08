@@ -1,11 +1,12 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data;
+using Avalonia.Markup;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class CheckoutActionTypeToColorConverter : MarkupExtension, IValueConverter
+	public class CheckoutActionTypeToColorConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -14,13 +15,13 @@ namespace ForkPlus.UI.Dialogs
 				switch ((CheckoutActionType)value)
 				{
 				case CheckoutActionType.None:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case CheckoutActionType.Rebase:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case CheckoutActionType.Merge:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case CheckoutActionType.Reset:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

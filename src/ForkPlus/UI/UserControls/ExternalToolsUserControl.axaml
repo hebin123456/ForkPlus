@@ -1,0 +1,137 @@
+<UserControl xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ExternalToolsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      
+      <controls:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+      <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+      <!-- Migration note：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia StaticResource
+           在顶层 UserControl 实例化时只查本地资源链；缺失曾致本控件构造崩溃 → 偏好设置窗口打不开） -->
+      <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="160" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid Grid.Column="0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="85" />
+        <RowDefinition Height="17" />
+      </Grid.RowDefinitions>
+      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" x:Name="ToolsListBox">
+        <ListBox.ContextMenu>
+          <ContextMenu />
+        </ListBox.ContextMenu>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Right" FontSize="10" Margin="2,0,2,0" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="PrimaryTextBlock">
+                <TextBlock.Text>
+                  <Binding Path="PrimaryLabel" />
+                </TextBlock.Text>
+                <TextBlock.IsVisible>
+                  <Binding Path="IsPrimary" />
+                </TextBlock.IsVisible>
+              </TextBlock>
+              <Image DockPanel.Dock="Left" Width="16" Height="16" VerticalAlignment="Center" Margin="0">
+                <Image.Source>
+                  <Binding Path="Icon" />
+                </Image.Source>
+              </Image>
+              <TextBlock FontSize="13" Margin="6,1,2,1" TextTrimming="CharacterEllipsis">
+                <TextBlock.Text>
+                  <Binding Path="Name" />
+                </TextBlock.Text>
+              </TextBlock>
+            </DockPanel>
+            
+          
+    <!--
+      WPF migration note: DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+                      <MultiDataTrigger.Conditions>
+                        <Condition>
+                          <Condition.Binding>
+                            <Binding Path="IsSelected">
+                              <Binding.RelativeSource>
+                                <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                              </Binding.RelativeSource>
+                            </Binding>
+                          </Condition.Binding>
+                        </Condition>
+                      </MultiDataTrigger.Conditions>
+                      <MultiDataTrigger.Setters>
+                        <Setter TargetName="PrimaryTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                      </MultiDataTrigger.Setters>
+                    </MultiDataTrigger>
+    --></DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" BorderThickness="1,0,1,1">
+        <StackPanel Orientation="Horizontal">
+          <Button Height="18" Width="18" Margin="-1,-1,0,-1" Click="AddToolButton_Click" Theme="{DynamicResource InlineButton}">
+            <Image Source="{DynamicResource AddIcon}" Width="16" Height="16" VerticalAlignment="Center" />
+          </Button>
+          <Button Margin="0,-1,0,-1" Height="18" Width="18" Click="RemoveToolButton_Click" Theme="{DynamicResource InlineButton}">
+            <Button.IsEnabled>
+              <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource InverseBooleanConverter}" />
+            </Button.IsEnabled>
+            <Image Source="{DynamicResource RemoveIcon}" Width="16" Height="16" VerticalAlignment="Center" />
+          </Button>
+        </StackPanel>
+      </Border>
+    </Grid>
+    <Border Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="4" Margin="10,0,0,0" Height="102" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource GroupBoxBackgroundBrush}">
+      <Grid Margin="8,8,8,8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="68" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="24" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" Margin="0" Text="Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <controls:PlaceholderTextBox Grid.Row="0" Grid.Column="1" Margin="10,0,0,0" Width="195" HorizontalAlignment="Left" Padding="4,2,4,2" Placeholder="External tool name">
+          <controls:PlaceholderTextBox.Text>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.Name" UpdateSourceTrigger="PropertyChanged" />
+          </controls:PlaceholderTextBox.Text>
+          <controls:PlaceholderTextBox.IsVisible>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource InverseBooleanToVisibility}" />
+          </controls:PlaceholderTextBox.IsVisible>
+        </controls:PlaceholderTextBox>
+        <TextBlock Grid.Row="0" Grid.Column="1" Margin="10,0,0,0" Padding="7,2,4,2" Width="195" HorizontalAlignment="Left" VerticalAlignment="Center">
+          <TextBlock.Text>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.Name" />
+          </TextBlock.Text>
+          <TextBlock.IsVisible>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.IsPredefined" Converter="{StaticResource BooleanToVisibilityConverter}" />
+          </TextBlock.IsVisible>
+        </TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Path:" FontSize="13" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <controls:PlaceholderTextBox Grid.Row="1" Grid.Column="1" Margin="10,6,0,0" Padding="4,2,4,2" IsReadOnly="True" Placeholder="External tool location" x:Name="ToolPathTextBox">
+          <controls:PlaceholderTextBox.Text>
+            <Binding ElementName="ToolsListBox" Path="SelectedItem.Path" UpdateSourceTrigger="PropertyChanged" />
+          </controls:PlaceholderTextBox.Text>
+        </controls:PlaceholderTextBox>
+        <Button Grid.Row="1" Grid.Column="2" Margin="2,6,0,0" Click="BrowseButton_Click" Theme="{DynamicResource BrowseButtonStyle}" />
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Arguments:" FontSize="13" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <Grid Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2" Margin="10,6,0,0">
+          <controls:PlaceholderTextBox Padding="4,2,14,2" Placeholder="External tool arguments">
+            <controls:PlaceholderTextBox.Text>
+              <Binding ElementName="ToolsListBox" Path="SelectedItem.Arguments" UpdateSourceTrigger="PropertyChanged" />
+            </controls:PlaceholderTextBox.Text>
+          </controls:PlaceholderTextBox>
+          <TextBlock x:Name="ArgumentsHintTextBlock" Theme="{DynamicResource HintTextBlock}" />
+        </Grid>
+      </Grid>
+    </Border>
+    <uc:FallbackUserControl Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Height="102" x:Name="ToolsFallback" IsVisible="False" />
+  </Grid>
+</UserControl>

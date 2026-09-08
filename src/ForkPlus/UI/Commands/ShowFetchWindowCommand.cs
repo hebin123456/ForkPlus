@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
@@ -32,7 +32,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "Fetch...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.F, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

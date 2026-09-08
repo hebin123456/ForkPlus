@@ -1,5 +1,9 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git.Commands;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -15,7 +19,7 @@ namespace ForkPlus.UI.UserControls
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(DataFormats.FileDrop) is string[])
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[])
 			{
 				return DragDropEffects.Move;
 			}
@@ -24,7 +28,7 @@ namespace ForkPlus.UI.UserControls
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] source)
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[] source)
 			{
 				string[] paths = source.CompactMap((string path) => (new ValidateRepositoryPathGitCommand().Execute(path) == RepositoryValidState.ValidRepository) ? path : null);
 				RepositoryManager.Instance.AddRepositories(paths);

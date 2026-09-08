@@ -1,6 +1,46 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.0
+
+### 里程碑：跨平台版本重构（WPF → Avalonia 12）
+
+- **支持 Linux 与 macOS**：UI 层从 WPF 全面迁移至 Avalonia 12（.NET 10），一套代码运行于 Windows / Linux / macOS 三平台。底层 Rust 引擎（biturbo native）、git mm 工作流、git-ai 集成（AI 归属、Blame 徽标、统计区块）、AI 辅助开发、8 种语言、主题皮肤、贡献热力图、仓库树图等全部能力三平台可用，GitHub Actions CI 并行产出三平台构建（windows-x64 / linux-x64 / macos-arm64）。
+- **自包含发布扩展至三平台**：延续 v3.10.0 的自包含策略，Linux 与 macOS 产物同样自带 .NET 10 运行时，目标机无需安装任何框架。主程序与 AskPass / RI 两个 git 子进程辅助程序（凭证输入、交互式变基）全部自包含发布到同一目录，git 拉起 helper 的完整链路在无运行时环境下可用。
+- **配置与状态跨平台持久化**：设置、仓库列表、窗口布局等全部状态在 Linux / macOS 上正确持久化（迁移期修复了配置写入不生效的问题）；HTTP(S) 凭据以独立存储（credentials.json）跨平台持久化，不再依赖 Windows 专用的凭据管理器。
+
+### 新功能
+
+- **凭据管理器三档记忆**：
+  - **第一档：自动记住账号（默认行为）**——HTTP(S) Username 询问提交后自动记住，下次弹窗预填；
+  - **第二档：记住密码**——密码落盘，下次弹窗仍出现但密码框自动预填且预勾选；
+  - **第三档：记住密码 + 不再弹出**——credential get 与 askpass 全链路静默回填，完全不弹窗；凭据失效被 git erase 后快速失败，不会死循环弹窗。
+  - **偏好设置新增 Credentials 页**：可提前录入账号密码并设置"不再弹出"，支持单条编辑 / 删除、"不再弹出"开关即时生效（随时恢复弹窗）与全局恢复询问。
+- **测试体系重建为跨平台 E2E**：原 Windows-only FlaUI 自动化套件替换为 Avalonia.Headless 无头测试（4400+ 用例，覆盖 25 个功能模块的端到端测试），随 CI 全量运行；滚动同步、滚动条渲染、主题色加载、列表虚拟化等关键 UI 行为均有布局级回归防线。
+
+### 修复
+
+- **git mm 子命令"命令行可用、GUI 报 'mm' is not a git command"**：三层修复——跨平台可执行名（原版硬编码 `git-mm.exe`，Unix 上无法解析，改为按平台解析）；系统位置兜底探测（PATH 中各 git 的 exec-path、`~/.local/bin`、`~/bin` 均纳入解析链，桌面启动的 GUI 不再因进程 PATH 是 shell 子集而找不到命令行里可用的 git-mm）；git 子进程 PATH 注入（git mm 所在目录前置进每次 git 请求的子进程 PATH，封堵"GUI 用哪个 git 实例 + 进程 PATH 初始如何"的所有组合）。
+- **git-ai stats 报 'stats' is not a git command（argv[0] 代理模式）**：git-ai 二进制按自身文件名分发命令——非标准名安装（`git-ai-linux-x64`、改名副本）会进入 git 透明代理模式，把 stats 原样转发给 git 导致报错。现在非标准名自动在数据目录建标准名符号链接执行（argv[0] 修正）；Windows 无符号链接权限时优雅降级，并识别代理症状翻译成可定位的提示。
+- **FileDiff 左右视图滚动不同步**：三方件 AvaloniaEdit 12 的 `ScrollToVerticalOffset` / `ScrollToHorizontalOffset` 为空操作，Side-by-side 文本 diff、十六进制 diff、Blame 列表↔编辑器同步、切换文件恢复滚动位置等链路全部改走模板 ScrollViewer 的 `Offset`，恢复与 WPF 原版一致的同步行为。
+- **"在文件资源管理器中显示"打开文档目录而非目标目录**：git 相对路径的正斜杠未规范化，explorer.exe 无法解析 `/select` 参数而回退打开"文档"库——修复 Windows 分支的路径规范化（Unix 的 xdg-open 分支不受影响）。
+- **横向滚动条渲染为 13px 小方块**：WPF 样式迁移时丢失横向分支的宽度重置与 Track 方向绑定——修复后横向滚动条正确铺满视口宽度，thumb 沿水平方向布局。
+- **自定义颜色窗口显示全白**：Avalonia 资源索引器不穿透合并字典（与 WPF 语义不同），30 个颜色 key 全部取不到主题色——改用链式资源查找，主题当前色与用户自定义覆盖色均正确加载。
+- **偏好设置 Credentials 页未国际化**：页面全部文案（描述、表头、按钮、开关、占位符）均未录入语言包，非英文界面下整页显示英文——补齐简体/繁体中文、日语、韩语、法语、德语、西班牙语 8 语词条，含"凭据"页签名。
+- **偏好设置 Credentials 页输入框无占位提示**：自定义 TextBox 主题不渲染 Avalonia 的 Watermark，"提前录入"三个输入框与列表行内编辑框显示为无提示白框——统一改用带 Placeholder 的 PlaceholderTextBox（与登录窗口同模式），行内账号/密码框也补齐占位符，"不再询问"开关增加悬浮提示。
+- **添加账号窗口平台卡片选中无反馈**：WPF DataTrigger（监听 ListBoxItem.IsSelected 改卡片边框/背景色）在 Avalonia 迁移时无模板级等价物被丢弃——改为类选择器方案（`ListBoxItem:selected Border.tileBorder`），选中卡片恢复主题色边框与背景。
+- **登录窗口"管理个人访问令牌"文字贴到上方输入框**：TextButtonStyle 模板将按钮 Margin 透传给内部 TextBlock，WPF 时代用于抵消按钮内边距的负 Margin（`2,-3` / `0,-6`）在 Avalonia 下使文字双重上移——清除全部负 Margin 并统一字号与垂直对齐（GitHub / GitHub Enterprise / GitLab / Gitea / Bitbucket / Bitbucket Server / OpenAI 七个登录窗口）。
+- **彩色浅色主题弹窗内外配色不一致**：Blue / Cyan / Green / Orange / Purple / Red / Yellow 七套浅色主题的弹窗表面色（Window.Dialog / Panel / ListBox / TreeView / MenuItem / StatusBar / Sidebar / Tab / ComboBox 等 19 项）漏配为纯白/中性灰，导致弹窗仅外圈为彩色、内部整片白色——对照 SolarizedLight 的同构配色模式补齐（大面积表面=各主题次背景色，滚动视图/Tab/日历=主背景色，滚动条拇指改主题淡色）。
+- **彩色主题弹窗四周浮出一圈亮蓝边框**：窗口边框刷（WindowBorderBrush，两套窗口模板的 1px BorderBrush 均引用）在浅色/深色下都写死为 #3BACED 亮蓝——Solarized（蓝色系）下恰好协调，但 Purple / Green / Orange 等彩色主题下弹窗左下右浮出突兀的亮蓝外圈——改为跟随当前主题的 AccentColor，取不到时回退默认蓝；同时修复主题切换命令里边框刷在新主题字典加载前刷新的时序问题（切到紫色后边框仍是旧主题色）。
+- **彩色主题弹窗外圈颜色仍不一致（残余根因：系统强调色分支漏网）**：Windows 注册表 DWM\ColorPrevalence（系统"在标题栏/窗口边框显示强调色"，Win10/11 常见开启）生效时，窗口边框刷取的是【系统】强调色（常见默认蓝）而非当前【主题】的 AccentColor——SolarizedLight 恰为蓝色系看不出异常，Purple / Green 等彩色主题下弹窗四周仍浮一圈系统蓝。跨平台移植后边框一律跟随主题 AccentColor（三平台一致），彻底移除系统强调色分支，任意主题下边框与主题配色统一。
+- **合并冲突窗口（Side-by-side）打开即卡死、随后 UI 崩溃**：三个编辑器（本地/远端/合并结果）各自的 MergeConflictView 行数不同 → 滚动范围（Extent）不同 → 纯事件驱动的滚动同步在钳制边界互相拉扯形成回声链（A 滚到 X → 同步 B/C → B 钳到自己的 max ≠ X → 回调再同步 A → …… 100ms 防抖每到期放行一轮，三编辑器全量重排 ~10 次/秒；大文件/高 DPI 下布局永远追不上 → UI 永久卡死，Windows 上即"打开即卡住 → 崩溃"）。三重防线修复：1) 回声断路器——同步写入引发的连锁滚动回调直接忽略；2) 熔断器——2s 内同步超 40 次自动暂停联动 5s（兜底保证 UI 永不因同步卡死）；3) 初始定位与前后冲突块导航改为按冲突节点直接滚动三个编辑器，不再依赖事件链。同类防线同步应用到 Side-by-side 文本 diff 与提交 diff 控件。
+- **合并结果栏从不滚动到冲突块、一直停在文件开头**：上条防线 3 把初始定位改为"按冲突节点直接滚动三个编辑器"，但 `ScrollEditorChunkIntoView` 的守卫 `Lines.Length == 0` 把合并结果视图的未解决冲突块整个拦掉——该视图里未解决冲突块没有内容行（ResultLines 为空，块内只有 "--- Merge Conflict ---" 对齐占位行），守卫直接 return，合并结果栏从不定位到冲突块、一直停在文件开头（本地/远端视图的块带各自内容行不受影响；remote-only 冲突在本地视图的块同理被拦）。修正：内容行为空时回退用块首对齐行定位（对齐行行号与块在各视图中的行号同步推进），初始定位与 Next/Prev 冲突块导航时三个编辑器真正滚到同一冲突块；E2E 回归测试补充 Merged 视图跟随导航的断言。
+- **QuickFetch 偶发弹 "cannot lock ref" 错误窗**：QuickFetch（Ctrl+Shift+Alt+F）与后台自动 fetch（Fetch remotes automatically，默认开启）并发时，两个 git fetch 进程竞争 refs/remotes/* 的乐观锁——后完成的一方 compare-and-swap 失败，git 报 "cannot lock ref 'refs/remotes/...': is at X but expected Y" 并弹 ErrorWindow。QuickFetch 现在与后台自动 fetch 同款防重入：同名 fetch job 已在跑时直接跳过（在跑的那个做的是同一件事），E2E 测试环境同时全局禁用后台自动 fetch 消除偶发红。
+
+### 性能
+
+- **提交列表（轨道树）性能与 WPF 原版一致**：迁移后全面审计确认数据层与原版逐字节相同、列表虚拟化生效（5000 项首帧约 14ms、滚动后容器回收不累积），并新增三条性能回归防线（虚拟化失效、容器回收失效、全量实化即测试红灯），防止后续改动破坏。
+
 
 ## v3.13.2
 

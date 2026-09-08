@@ -1,4 +1,5 @@
-using System.Windows.Input;
+using System;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -151,9 +152,15 @@ namespace ForkPlus.UI.Commands
 
 		private static bool IsCanceled(GitCommandError error)
 		{
-			if (error is GitCommandError.GitError gitError && gitError.Stderr.Contains("Could not execute editor"))
+			if (error is GitCommandError.GitError gitError)
 			{
-				return true;
+				// 用户在变基窗口点取消（或关闭窗口确认取消）时，RI.exe 以非零退出码结束，
+				// git 随即中止变基并输出：
+				//   error: there was a problem with the editor '<ForkPlus.RI.exe>'
+				// （git 2.x 为小写 there，需忽略大小写；旧版 git 输出 Could not execute editor）。
+				// 这是用户主动取消而非错误，不应弹出错误窗口。
+				return gitError.Stderr.IndexOf("problem with the editor", StringComparison.OrdinalIgnoreCase) >= 0
+					|| gitError.Stderr.Contains("Could not execute editor");
 			}
 			return false;
 		}

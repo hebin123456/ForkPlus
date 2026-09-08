@@ -1,0 +1,27 @@
+<TabItem Margin="10" Padding="0" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ServiceTabItem" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <Grid.Children>
+      <fuc:ModernTabControl SelectionChanged="TabControl_SelectionChanged" Margin="0,-3,0,0" Padding="0">
+        <fuc:ModernTabControl.Background>
+          <DynamicResource ResourceKey="Sidebar.Static.Background" />
+        </fuc:ModernTabControl.Background>
+        <local:PullRequestsTabItem Header="Pull Requests" x:Name="PullRequestsTabItem">
+          <local:PullRequestsTabItem.Theme>
+            <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
+          </local:PullRequestsTabItem.Theme>
+          <local:PullRequestsTabItem.Background>
+            <DynamicResource ResourceKey="Sidebar.Static.Background" />
+          </local:PullRequestsTabItem.Background>
+        </local:PullRequestsTabItem>
+        <local:IssuesTabItem Header="Issues" x:Name="IssuesTabItem">
+          <local:IssuesTabItem.Theme>
+            <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
+          </local:IssuesTabItem.Theme>
+          <local:IssuesTabItem.Background>
+            <DynamicResource ResourceKey="Sidebar.Static.Background" />
+          </local:IssuesTabItem.Background>
+        </local:IssuesTabItem>
+      </fuc:ModernTabControl>
+    </Grid.Children>
+  </Grid>
+</TabItem>

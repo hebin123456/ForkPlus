@@ -1,0 +1,97 @@
+<UserControl xmlns:Preferences="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GitUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ControlTheme x:Key="GitInstanceComboBoxItemStyle" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        
+      
+    <!--
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="GitInstanceType" />
+                  </DataTrigger.Binding>
+                  <Setter Property="Height" Value="1" />
+                  <Setter Property="IsEnabled" Value="False" />
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="ComboBoxItem">
+                        <Separator HorizontalAlignment="Stretch" Margin="0" />
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+    --></ControlTheme>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid Width="500">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Git Instance:" />
+    <ComboBox Grid.Row="0" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitInstanceComboBox_SelectionChanged" x:Name="GitInstanceComboBox" ItemContainerTheme="{DynamicResource GitInstanceComboBoxItemStyle}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock FontSize="13" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="FileName" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+    <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" IsCheckedChanged="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
+    <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
+    <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox" ItemContainerTheme="{DynamicResource GitInstanceComboBoxItemStyle}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock FontSize="13" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="FileName" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+    <!-- git-ai（AI 代码归属追踪扩展）：实例选择 + AI 归属 / checkpoint 上报开关 -->
+    <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-ai Instance:" />
+    <ComboBox Grid.Row="3" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitAiInstanceComboBox_SelectionChanged" x:Name="GitAiInstanceComboBox" ItemContainerTheme="{DynamicResource GitInstanceComboBoxItemStyle}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock FontSize="13" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="FileName" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+    <CheckBox Grid.Row="4" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable AI attribution (git-ai)" IsCheckedChanged="AiAttributionCheckBox_Checked" x:Name="AiAttributionCheckBox" />
+    <CheckBox Grid.Row="5" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Report ForkPlus AI edits to git-ai (checkpoint)" IsCheckedChanged="AiCheckpointReportingCheckBox_Checked" x:Name="AiCheckpointReportingCheckBox" />
+    <Separator Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
+    <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Text="Global User Information" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
+    <controls:AvatarImage Grid.Row="8" Grid.RowSpan="2" Grid.Column="1" Margin="10,0,0,0" Width="42" Height="42" HorizontalAlignment="Right" x:Name="AuthorAvatarImage" />
+    <controls:PlaceholderTextBox TextChanged="UserNameTextBox_TextChanged" LostFocus="UserNameTextBox_LostFocus" Grid.Row="8" Grid.Column="2" Margin="10,0,0,4" Padding="4,2,4,2" Placeholder="User name" x:Name="UserNameTextBox" />
+    <controls:PlaceholderTextBox TextChanged="EmailTextBox_TextChanged" LostFocus="EmailTextBox_LostFocus" Grid.Row="9" Grid.Column="2" Margin="10,4,0,4" Padding="4,2,4,2" Placeholder="Email" x:Name="EmailTextBox" />
+    <TextBlock Grid.Row="10" Grid.Column="2" Margin="12,0,10,0" VerticalAlignment="Center">
+      <Span>
+        <Run>Change the avatar at</Run> <HyperlinkButton NavigateUri="https://gravatar.com" Theme="{DynamicResource BlueHyperlinkStyle}"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></HyperlinkButton></Span>
+    </TextBlock>
+  </Grid>
+</UserControl>

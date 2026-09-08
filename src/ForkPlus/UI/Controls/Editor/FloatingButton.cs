@@ -1,8 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using ICSharpCode.AvalonEdit;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using AvaloniaEdit;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -15,15 +17,16 @@ namespace ForkPlus.UI.Controls.Editor
 			_weakEditor = new WeakReference<TextEditor>(editor);
 		}
 
-		protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
+		protected override void OnPointerWheelChanged(global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			e.Handled = true;
-			MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-			mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
-			mouseWheelEventArgs.Source = this;
 			if (_weakEditor.TryGetTarget(out var target))
 			{
-				target.TextArea.TextView.RaiseEvent(mouseWheelEventArgs);
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器需 rootVisual 等复杂参数，
+				// 直接复用原事件参数（先复位 Handled 再转发，保持“子级已处理、编辑器继续滚动”的语义）。
+				e.Handled = false;
+				target.TextArea.TextView.RaiseEvent(e);
+				e.Handled = true;
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Xunit;
 
@@ -5,11 +6,15 @@ namespace ForkPlus.Tests
 {
 	public class PathHelperTests
 	{
+		// 迁移适配：PathHelper.Normalize 已跨平台化（Windows→'\'，Unix→'/'，修复破坏
+		// /usr/bin/git 那类路径的连锁问题），原测试硬编码 Windows 期望值在 Linux 上必挂。
+		// 期望值按当前平台分隔符计算。
 		[Theory]
-		[InlineData("a/b/c", "a\\b\\c")]
-		[InlineData("a\\b/c", "a\\b\\c")]
-		public void Normalize_ConvertsSlashesToWindowsSeparators(string input, string expected)
+		[InlineData("a/b/c")]
+		[InlineData("a\\b/c")]
+		public void Normalize_ConvertsSlashesToPlatformSeparators(string input)
 		{
+			string expected = OperatingSystem.IsWindows() ? input.Replace('/', '\\') : input.Replace('\\', '/');
 			Assert.Equal(expected, PathHelper.Normalize(input));
 		}
 

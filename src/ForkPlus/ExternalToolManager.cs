@@ -32,98 +32,108 @@ namespace ForkPlus
 			public const string Zed = "Zed";
 		}
 
-		public static readonly ToolDefinition[] MergeToolDefinitions = new ToolDefinition[9]
-		{
-			new ToolDefinition(ToolType.AraxisMerge, new string[3] { "%localappdata%\\Apps\\Araxis\\Araxis Merge\\compare.exe", "%ProgramW6432%\\Araxis\\Araxis Merge\\compare.exe", "%programfiles(x86)%\\Araxis\\Araxis Merge\\compare.exe" }, new string[8] { "-wait", "-merge", "-3", "-a1", "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.BeyondCompare, new string[4] { "%ProgramW6432%\\Beyond Compare 5\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 5\\BCompare.exe", "%ProgramW6432%\\Beyond Compare 4\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 4\\BCompare.exe" }, new string[4] { "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.Cursor, new string[1] { "%localappdata%\\Programs\\cursor\\Cursor.exe" }, new string[7] { "-n", "--wait", "--merge", "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.KDiff3, new string[4] { "%ProgramW6432%\\KDiff3\\kdiff3.exe", "%programfiles%\\KDiff3\\kdiff3.exe", "%ProgramW6432%\\KDiff3\\bin\\kdiff3.exe", "%programfiles%\\KDiff3\\bin\\kdiff3.exe" }, new string[6] { "\"$REMOTE\"", "-b", "\"$BASE\"", "\"$LOCAL\"", "-o", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.P4Merge, new string[2] { "%ProgramW6432%\\Perforce\\p4merge.exe", "%programfiles%\\Perforce\\p4merge.exe" }, new string[4] { "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.VSCode, new string[3] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe" }, new string[7] { "-n", "--wait", "--merge", "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.VisualStudio, new string[3] { "%ProgramW6432%\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe" }, new string[5] { "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"", "/m" }),
-			new ToolDefinition(ToolType.Unity3d, new string[2] { "%ProgramW6432%\\Unity\\Hub\\Editor\\2019.4.16f1\\Editor\\Data\\Tools\\UnityYAMLMerge.exe", "%programfiles%\\Unity\\Hub\\Editor\\2019.4.16f1\\Editor\\Data\\Tools\\UnityYAMLMerge.exe" }, new string[6] { "merge", "-p", "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
-			new ToolDefinition(ToolType.WinMerge, new string[3] { "%localappdata%\\Programs\\WinMerge\\WinMergeU.exe", "%programfiles%\\WinMerge\\WinMergeU.exe", "%programfiles(x86)%\\WinMerge\\WinMergeU.exe" }, new string[7] { "-u", "-e", "\"$REMOTE\"", "\"$BASE\"", "\"$LOCAL\"", "-o", "\"$MERGED\"" })
-		};
+		/// <summary>
+	/// 外部工具路径（2026-09-07 全仓 .exe/Win32 硬编码专项审计）：
+	/// 原版三组定义（Merge/Diff/FileEditor）全部只有 Windows 安装路径（%env%\...exe）。
+	/// Unix 上 ExpandEnvironmentVariables 不认 %xx%，File.Exists 恒 false——Linux 用户
+	/// 在首选项里一个预置工具都探测不到，只能手填 Custom。本类改为每个数组在 Windows
+	/// 候选后追加 Unix 标准安装位（.deb/.rpm 官方包路径、/opt 手动安装、snap、
+	/// Toolbox 的 ~/.local/bin 命令行脚本）；两端互不干扰（对方的路径在本地不存在即跳过）。
+	/// 仅 Windows 存在的工具（AraxisMerge/vsDiffMerge/WinMerge 等）保持原路径不动。
+	/// 通配符原版只认 "*\"（反斜杠），见 FindExistingInstance——现同时支持 Unix 的 "*/"。
+	/// </summary>
+	public static readonly ToolDefinition[] MergeToolDefinitions = new ToolDefinition[9]
+	{
+		new ToolDefinition(ToolType.AraxisMerge, new string[3] { "%localappdata%\\Apps\\Araxis\\Araxis Merge\\compare.exe", "%ProgramW6432%\\Araxis\\Araxis Merge\\compare.exe", "%programfiles(x86)%\\Araxis\\Araxis Merge\\compare.exe" }, new string[8] { "-wait", "-merge", "-3", "-a1", "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.BeyondCompare, new string[5] { "%ProgramW6432%\\Beyond Compare 5\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 5\\BCompare.exe", "%ProgramW6432%\\Beyond Compare 4\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 4\\BCompare.exe", "/usr/bin/bcompare" }, new string[4] { "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.Cursor, new string[4] { "%localappdata%\\Programs\\cursor\\Cursor.exe", "/usr/bin/cursor", "/usr/local/bin/cursor", "/opt/Cursor/cursor" }, new string[7] { "-n", "--wait", "--merge", "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.KDiff3, new string[5] { "%ProgramW6432%\\KDiff3\\kdiff3.exe", "%programfiles%\\KDiff3\\kdiff3.exe", "%ProgramW6432%\\KDiff3\\bin\\kdiff3.exe", "%programfiles%\\KDiff3\\bin\\kdiff3.exe", "/usr/bin/kdiff3" }, new string[6] { "\"$REMOTE\"", "-b", "\"$BASE\"", "\"$LOCAL\"", "-o", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.P4Merge, new string[4] { "%ProgramW6432%\\Perforce\\p4merge.exe", "%programfiles%\\Perforce\\p4merge.exe", "/usr/bin/p4merge", "/opt/perforce/p4v/bin/p4merge" }, new string[4] { "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.VSCode, new string[7] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe", "/usr/bin/code", "/usr/local/bin/code", "/usr/share/code/code", "/snap/bin/code" }, new string[7] { "-n", "--wait", "--merge", "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.VisualStudio, new string[3] { "%ProgramW6432%\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe" }, new string[5] { "\"$REMOTE\"", "\"$LOCAL\"", "\"$BASE\"", "\"$MERGED\"", "/m" }),
+		new ToolDefinition(ToolType.Unity3d, new string[3] { "%ProgramW6432%\\Unity\\Hub\\Editor\\2019.4.16f1\\Editor\\Data\\Tools\\UnityYAMLMerge.exe", "%programfiles%\\Unity\\Hub\\Editor\\2019.4.16f1\\Editor\\Data\\Tools\\UnityYAMLMerge.exe", "~/Unity/Hub/Editor/*/Editor/Data/Tools/UnityYAMLMerge" }, new string[6] { "merge", "-p", "\"$BASE\"", "\"$REMOTE\"", "\"$LOCAL\"", "\"$MERGED\"" }),
+		new ToolDefinition(ToolType.WinMerge, new string[3] { "%localappdata%\\Programs\\WinMerge\\WinMergeU.exe", "%programfiles%\\WinMerge\\WinMergeU.exe", "%programfiles(x86)%\\WinMerge\\WinMergeU.exe" }, new string[7] { "-u", "-e", "\"$REMOTE\"", "\"$BASE\"", "\"$LOCAL\"", "-o", "\"$MERGED\"" })
+	};
 
 		public static readonly ToolDefinition[] DiffToolDefinitions = new ToolDefinition[8]
-		{
-			new ToolDefinition(ToolType.AraxisMerge, new string[3] { "%localappdata%\\Apps\\Araxis\\Araxis Merge\\compare.exe", "%ProgramW6432%\\Araxis\\Araxis Merge\\compare.exe", "%programfiles(x86)%\\Araxis\\Araxis Merge\\compare.exe" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.BeyondCompare, new string[4] { "%ProgramW6432%\\Beyond Compare 5\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 5\\BCompare.exe", "%ProgramW6432%\\Beyond Compare 4\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 4\\BCompare.exe" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.Cursor, new string[1] { "%localappdata%\\Programs\\cursor\\Cursor.exe" }, new string[4] { "--diff", "--wait", "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.KDiff3, new string[4] { "%ProgramW6432%\\KDiff3\\kdiff3.exe", "%programfiles%\\KDiff3\\kdiff3.exe", "%ProgramW6432%\\KDiff3\\bin\\kdiff3.exe", "%programfiles%\\KDiff3\\bin\\kdiff3.exe" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.P4Merge, new string[2] { "%ProgramW6432%\\Perforce\\p4merge.exe", "%programfiles%\\Perforce\\p4merge.exe" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.VSCode, new string[3] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe" }, new string[4] { "--diff", "--wait", "\"$REMOTE\"", "\"$LOCAL\"" }),
-			new ToolDefinition(ToolType.VisualStudio, new string[3] { "%ProgramW6432%\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe" }, new string[3] { "\"$REMOTE\"", "\"$LOCAL\"", "/t" }),
-			new ToolDefinition(ToolType.WinMerge, new string[3] { "%localappdata%\\Programs\\WinMerge\\WinMergeU.exe", "%programfiles%\\WinMerge\\WinMergeU.exe", "%programfiles(x86)%\\WinMerge\\WinMergeU.exe" }, new string[4] { "-u", "-e", "\"$REMOTE\"", "\"$LOCAL\"" })
-		};
+	{
+		new ToolDefinition(ToolType.AraxisMerge, new string[3] { "%localappdata%\\Apps\\Araxis\\Araxis Merge\\compare.exe", "%ProgramW6432%\\Araxis\\Araxis Merge\\compare.exe", "%programfiles(x86)%\\Araxis\\Araxis Merge\\compare.exe" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.BeyondCompare, new string[5] { "%ProgramW6432%\\Beyond Compare 5\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 5\\BCompare.exe", "%ProgramW6432%\\Beyond Compare 4\\BCompare.exe", "%programfiles(x86)%\\Beyond Compare 4\\BCompare.exe", "/usr/bin/bcompare" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.Cursor, new string[4] { "%localappdata%\\Programs\\cursor\\Cursor.exe", "/usr/bin/cursor", "/usr/local/bin/cursor", "/opt/Cursor/cursor" }, new string[4] { "--diff", "--wait", "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.KDiff3, new string[5] { "%ProgramW6432%\\KDiff3\\kdiff3.exe", "%programfiles%\\KDiff3\\kdiff3.exe", "%ProgramW6432%\\KDiff3\\bin\\kdiff3.exe", "%programfiles%\\KDiff3\\bin\\kdiff3.exe", "/usr/bin/kdiff3" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.P4Merge, new string[4] { "%ProgramW6432%\\Perforce\\p4merge.exe", "%programfiles%\\Perforce\\p4merge.exe", "/usr/bin/p4merge", "/opt/perforce/p4v/bin/p4merge" }, new string[2] { "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.VSCode, new string[7] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe", "/usr/bin/code", "/usr/local/bin/code", "/usr/share/code/code", "/snap/bin/code" }, new string[4] { "--diff", "--wait", "\"$REMOTE\"", "\"$LOCAL\"" }),
+		new ToolDefinition(ToolType.VisualStudio, new string[3] { "%ProgramW6432%\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe", "%programfiles(x86)%\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsDiffMerge.exe" }, new string[3] { "\"$REMOTE\"", "\"$LOCAL\"", "/t" }),
+		new ToolDefinition(ToolType.WinMerge, new string[3] { "%localappdata%\\Programs\\WinMerge\\WinMergeU.exe", "%programfiles%\\WinMerge\\WinMergeU.exe", "%programfiles(x86)%\\WinMerge\\WinMergeU.exe" }, new string[4] { "-u", "-e", "\"$REMOTE\"", "\"$LOCAL\"" })
+	};
 
 		public static readonly ToolDefinition[] FileEditorToolDefinitions = new ToolDefinition[14]
+	{
+		new ToolDefinition(ToolType.Antigravity, new string[4] { "%localappdata%\\Programs\\Antigravity\\Antigravity.exe", "%programfiles%\\Google\\Antigravity\\Antigravity.exe", "/usr/bin/antigravity", "~/.local/bin/antigravity" }, new string[2]
 		{
-			new ToolDefinition(ToolType.Antigravity, new string[2] { "%localappdata%\\Programs\\Antigravity\\Antigravity.exe", "%programfiles%\\Google\\Antigravity\\Antigravity.exe" }, new string[2]
-			{
-				"--goto",
-				"$FILEPATH:$LINE:0".Quotify()
-			}),
-			new ToolDefinition(ToolType.Atom, new string[1] { "%localappdata%\\atom\\atom.exe" }, new string[1] { "$FILEPATH:$LINE".Quotify() }),
-			new ToolDefinition(ToolType.Cursor, new string[1] { "%localappdata%\\Programs\\cursor\\Cursor.exe" }, new string[2]
-			{
-				"--goto",
-				"$FILEPATH:$LINE:0".Quotify()
-			}),
-			new ToolDefinition(ToolType.Fleet, new string[1] { "%localappdata%\\Programs\\Fleet\\Fleet.exe" }, new string[2]
-			{
-				"--",
-				"--goto=$FILEPATH:$LINE".Quotify()
-			}),
-			new ToolDefinition(ToolType.GoLand, new string[2] { "%programfiles%\\JetBrains\\*\\bin\\goland64.exe", "%localappdata%\\Programs\\GoLand\\bin\\goland64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.IntelliJIdea, new string[2] { "%programfiles%\\JetBrains\\*\\bin\\idea64.exe", "%localappdata%\\Programs\\*\\bin\\idea64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.PhpStorm, new string[2] { "%programfiles%\\JetBrains\\*\\bin\\phpstorm64.exe", "%localappdata%\\Programs\\PhpStorm\\bin\\phpstorm64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.PyCharm, new string[2] { "%programfiles%\\JetBrains\\*\\bin\\pycharm64.exe", "%localappdata%\\Programs\\*\\bin\\pycharm64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.Rider, new string[3] { "%programfiles%\\JetBrains\\*\\bin\\rider64.exe", "%localappdata%\\Programs\\Rider\\bin\\rider64.exe", "%localappdata%\\JetBrains\\Installations\\*\\bin\\rider64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.SublimeText, new string[5] { "%ProgramW6432%\\Sublime Text\\sublime_text.exe", "%ProgramW6432%\\Sublime Text 3\\sublime_text.exe", "%programfiles%\\Sublime Text 3\\sublime_text.exe", "%ProgramW6432%\\Sublime Text 4\\sublime_text.exe", "%programfiles%\\Sublime Text 4\\sublime_text.exe" }, new string[1] { "$FILEPATH:$LINE".Quotify() }),
-			new ToolDefinition(ToolType.VSCode, new string[3] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe" }, new string[2]
-			{
-				"--goto",
-				"$FILEPATH:$LINE:0".Quotify()
-			}),
-			new ToolDefinition(ToolType.VSCodeInsiders, new string[3] { "%localappdata%\\Programs\\Microsoft VS Code Insiders\\Code - Insiders.exe", "%programfiles(x86)%\\Microsoft VS Code Insiders\\Code - Insiders.exe", "%programfiles%\\Microsoft VS Code Insiders\\Code - Insiders.exe" }, new string[2]
-			{
-				"--goto",
-				"$FILEPATH:$LINE:0".Quotify()
-			}),
-			new ToolDefinition(ToolType.WebStorm, new string[2] { "%programfiles%\\JetBrains\\*\\bin\\webstorm64.exe", "%localappdata%\\Programs\\WebStorm\\bin\\webstorm64.exe" }, new string[3]
-			{
-				"--line",
-				"$LINE".Quotify(),
-				"$FILEPATH".Quotify()
-			}),
-			new ToolDefinition(ToolType.Zed, new string[1] { "%localappdata%\\Programs\\Zed\\Zed.exe" }, new string[1] { "$FILEPATH:$LINE".Quotify() })
-		};
+			"--goto",
+			"$FILEPATH:$LINE:0".Quotify()
+		}),
+		new ToolDefinition(ToolType.Atom, new string[2] { "%localappdata%\\atom\\atom.exe", "/usr/bin/atom" }, new string[1] { "$FILEPATH:$LINE".Quotify() }),
+		new ToolDefinition(ToolType.Cursor, new string[4] { "%localappdata%\\Programs\\cursor\\Cursor.exe", "/usr/bin/cursor", "/usr/local/bin/cursor", "/opt/Cursor/cursor" }, new string[2]
+		{
+			"--goto",
+			"$FILEPATH:$LINE:0".Quotify()
+		}),
+		new ToolDefinition(ToolType.Fleet, new string[3] { "%localappdata%\\Programs\\Fleet\\Fleet.exe", "/opt/JetBrains/Fleet/bin/Fleet", "~/.local/bin/fleet" }, new string[2]
+		{
+			"--",
+			"--goto=$FILEPATH:$LINE".Quotify()
+		}),
+		new ToolDefinition(ToolType.GoLand, new string[4] { "%programfiles%\\JetBrains\\*\\bin\\goland64.exe", "%localappdata%\\Programs\\GoLand\\bin\\goland64.exe", "/opt/JetBrains/*/bin/goland.sh", "~/.local/bin/goland" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.IntelliJIdea, new string[4] { "%programfiles%\\JetBrains\\*\\bin\\idea64.exe", "%localappdata%\\Programs\\*\\bin\\idea64.exe", "/opt/JetBrains/*/bin/idea.sh", "~/.local/bin/idea" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.PhpStorm, new string[4] { "%programfiles%\\JetBrains\\*\\bin\\phpstorm64.exe", "%localappdata%\\Programs\\PhpStorm\\bin\\phpstorm64.exe", "/opt/JetBrains/*/bin/phpstorm.sh", "~/.local/bin/phpstorm" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.PyCharm, new string[4] { "%programfiles%\\JetBrains\\*\\bin\\pycharm64.exe", "%localappdata%\\Programs\\*\\bin\\pycharm64.exe", "/opt/JetBrains/*/bin/pycharm.sh", "~/.local/bin/pycharm" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.Rider, new string[5] { "%programfiles%\\JetBrains\\*\\bin\\rider64.exe", "%localappdata%\\Programs\\Rider\\bin\\rider64.exe", "%localappdata%\\JetBrains\\Installations\\*\\bin\\rider64.exe", "/opt/JetBrains/*/bin/rider.sh", "~/.local/bin/rider" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.SublimeText, new string[8] { "%ProgramW6432%\\Sublime Text\\sublime_text.exe", "%ProgramW6432%\\Sublime Text 3\\sublime_text.exe", "%programfiles%\\Sublime Text 3\\sublime_text.exe", "%ProgramW6432%\\Sublime Text 4\\sublime_text.exe", "%programfiles%\\Sublime Text 4\\sublime_text.exe", "/usr/bin/subl", "/opt/sublime_text/sublime_text", "/snap/bin/subl" }, new string[1] { "$FILEPATH:$LINE".Quotify() }),
+		new ToolDefinition(ToolType.VSCode, new string[7] { "%localappdata%\\Programs\\Microsoft VS Code\\Code.exe", "%programfiles(x86)%\\Microsoft VS Code\\Code.exe", "%programfiles%\\Microsoft VS Code\\Code.exe", "/usr/bin/code", "/usr/local/bin/code", "/usr/share/code/code", "/snap/bin/code" }, new string[2]
+		{
+			"--goto",
+			"$FILEPATH:$LINE:0".Quotify()
+		}),
+		new ToolDefinition(ToolType.VSCodeInsiders, new string[5] { "%localappdata%\\Programs\\Microsoft VS Code Insiders\\Code - Insiders.exe", "%programfiles(x86)%\\Microsoft VS Code Insiders\\Code - Insiders.exe", "%programfiles%\\Microsoft VS Code Insiders\\Code - Insiders.exe", "/usr/bin/code-insiders", "/usr/local/bin/code-insiders" }, new string[2]
+		{
+			"--goto",
+			"$FILEPATH:$LINE:0".Quotify()
+		}),
+		new ToolDefinition(ToolType.WebStorm, new string[4] { "%programfiles%\\JetBrains\\*\\bin\\webstorm64.exe", "%localappdata%\\Programs\\WebStorm\\bin\\webstorm64.exe", "/opt/JetBrains/*/bin/webstorm.sh", "~/.local/bin/webstorm" }, new string[3]
+		{
+			"--line",
+			"$LINE".Quotify(),
+			"$FILEPATH".Quotify()
+		}),
+		new ToolDefinition(ToolType.Zed, new string[4] { "%localappdata%\\Programs\\Zed\\Zed.exe", "/usr/bin/zed", "~/.local/bin/zed", "/usr/local/bin/zed" }, new string[1] { "$FILEPATH:$LINE".Quotify() })
+	};
 
 		public static ExternalTool[] RevealAvailableMergeTools(bool includeNonExistent = false)
 		{
@@ -297,18 +307,74 @@ namespace ForkPlus
 			return FindExistingInstance(toolDefinition.Paths);
 		}
 
+		/// <summary>
+		/// 解析单个候选模式（2026-09-07 跨平台审计改造）：
+		/// 1) <c>~</c> 前缀展开为用户主目录（ExpandEnvironmentVariables 在 Unix 不认 %xx%，
+		///    也不认 ~；Toolbox 的 ~/.local/bin 命令行脚本依赖此展开）；
+		/// 2) 通配符原版只按 "*\" 切分（Windows 目录分隔符）——Unix 的 "/opt/JetBrains/*/bin/xx.sh"
+		///    切不开，整串当字面路径 File.Exists 恒 false。现同时按 "*/" 切分；
+		/// 3) Unix 命中还需可执行位（UnixFileMode 任一 x 位），否则探测到的是"存在的文件"
+		///    而非"能启动的工具"（Process.Start execve 会 EACCES）。Windows 保持存在性判定。
+		/// </summary>
+		internal static string ExpandToolPath(string pattern)
+		{
+			string text = Environment.ExpandEnvironmentVariables(pattern);
+			if (text == "~")
+			{
+				string userProfileRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+				if (!string.IsNullOrEmpty(userProfileRoot))
+				{
+					return userProfileRoot;
+				}
+				return text;
+			}
+			if (text.Length > 1 && text[0] == '~' && (text[1] == '/' || text[1] == '\\'))
+			{
+				string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+				if (!string.IsNullOrEmpty(home))
+				{
+					text = Path.Combine(home, text.Substring(2));
+				}
+			}
+			return text;
+		}
+
+		internal static bool IsExistingExecutableFile(string path)
+		{
+			if (!File.Exists(path))
+			{
+				return false;
+			}
+			if (OperatingSystem.IsWindows())
+			{
+				return true;
+			}
+			try
+			{
+				System.IO.UnixFileMode mode = File.GetUnixFileMode(path);
+				return (mode & (System.IO.UnixFileMode.UserExecute | System.IO.UnixFileMode.GroupExecute | System.IO.UnixFileMode.OtherExecute)) != 0;
+			}
+			catch (Exception)
+			{
+				// 特殊文件系统上 GetUnixFileMode 可能抛 IOException（如 procfs/shm），
+				// 退化为存在性判定，不阻塞候选遍历
+				return true;
+			}
+		}
+
+		// 供 ForkPlus.Tests 回归测试注入任意候选模式（跨平台解析逻辑单测入口）
 		[Null]
-		private static string FindExistingInstance(string[] patterns)
+		internal static string FindExistingInstance(string[] patterns)
 		{
 			foreach (string text in patterns)
 			{
 				try
 				{
-					string text2 = Environment.ExpandEnvironmentVariables(text);
-					string[] array = text2.Split(new string[1] { "*\\" }, StringSplitOptions.None);
+					string text2 = ExpandToolPath(text);
+					string[] array = text2.Split(new string[2] { "*\\", "*/" }, StringSplitOptions.None);
 					if (array.Length == 1)
 					{
-						if (File.Exists(text2))
+						if (IsExistingExecutableFile(text2))
 						{
 							return text2;
 						}
@@ -328,7 +394,7 @@ namespace ForkPlus
 						for (int j = 0; j < array2.Length; j++)
 						{
 							string text3 = Path.Combine(array2[j], path2);
-							if (File.Exists(text3))
+							if (IsExistingExecutableFile(text3))
 							{
 								return text3;
 							}

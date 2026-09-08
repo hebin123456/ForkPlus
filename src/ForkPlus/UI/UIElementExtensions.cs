@@ -1,35 +1,38 @@
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {
 	public static class UIElementExtensions
 	{
-		public static void Show(this UIElement element)
+		public static void Show(this global::Avalonia.Input.InputElement element)
 		{
-			element.Visibility = Visibility.Visible;
+			element.IsVisible = true;
 		}
 
-		public static void Collapse(this UIElement element)
+		public static void Collapse(this global::Avalonia.Input.InputElement element)
 		{
-			element.Visibility = Visibility.Collapsed;
+			element.IsVisible = false;
 		}
 
-		public static void Hide(this UIElement element)
+		public static void Hide(this global::Avalonia.Input.InputElement element)
 		{
-			element.Visibility = Visibility.Hidden;
+			element.IsVisible = false;
 		}
 
-		public static void Hide(this UIElement element, bool hide)
+		public static void Hide(this global::Avalonia.Input.InputElement element, bool hide)
 		{
-			element.Visibility = (hide ? Visibility.Hidden : Visibility.Visible);
+			element.IsVisible = (hide ? false : true);
 		}
 
-		public static void Disable(this UIElement element)
+		public static void Disable(this global::Avalonia.Input.InputElement element)
 		{
 			element.IsEnabled = false;
 		}
 
-		public static void Enable(this UIElement element)
+		public static void Enable(this global::Avalonia.Input.InputElement element)
 		{
 			element.IsEnabled = true;
 		}

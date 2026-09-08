@@ -6,6 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -40,7 +41,7 @@ namespace ForkPlus.UI.Commands
 						RefreshRepositoryStatus(repositoryUserControl, gitModule, oldRepositoryStatus, oldRepositoryData, hideUntrackedFiles, showIgnoredFiles, subdomainsToReload, monitor);
 						RefreshRepositoryData(repositoryUserControl, gitModule, oldRepositoryData, showReflogInRevisionList, requiredShas, subdomainsToReload, select, commitGraphCache, monitor, out repositoryDataChanged);
 					}
-					repositoryUserControl.Dispatcher.Async(delegate
+					repositoryUserControl.Dispatcher.Post(delegate
 					{
 						_activeRefreshRepositoryJob = null;
 					});
@@ -70,7 +71,7 @@ namespace ForkPlus.UI.Commands
 			if (!response.Succeeded)
 			{
 				Log.Warn($"Refresh repository data failed: {response.Error}");
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					new ErrorWindow(repositoryUserControl, response.Error).ShowDialog();
 				});
@@ -79,7 +80,7 @@ namespace ForkPlus.UI.Commands
 			RepositoryData newRepositoryData = response.Result;
 			if (oldRepositoryData == newRepositoryData)
 			{
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					repositoryUserControl.ResetSubdomains(SubDomain.RepositoryData);
 				});
@@ -87,7 +88,7 @@ namespace ForkPlus.UI.Commands
 			}
 			Log.Info("Refresh '" + repositoryUserControl.RepositoryName + "' data. Updated.");
 			repositoryDataChanged = true;
-			repositoryUserControl.Dispatcher.Async(delegate
+			repositoryUserControl.Dispatcher.Post(delegate
 			{
 				repositoryUserControl.UpdateRepositoryData(newRepositoryData, null, select);
 				repositoryUserControl.ResetSubdomains(SubDomain.RepositoryData);
@@ -114,7 +115,7 @@ namespace ForkPlus.UI.Commands
 			}
 			RepositoryStatus newRepositoryStatus = gitCommandResult.Result;
 			Log.Info($"Refresh '{repositoryUserControl.RepositoryName}' status. Updated {newRepositoryStatus.ChangedFiles.Length} files");
-			repositoryUserControl.Dispatcher.Async(delegate
+			repositoryUserControl.Dispatcher.Post(delegate
 			{
 				repositoryUserControl.UpdateRepositoryStatus(newRepositoryStatus);
 				repositoryUserControl.ResetSubdomains(SubDomain.Status);

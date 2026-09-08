@@ -1,8 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -37,10 +39,10 @@ namespace ForkPlus.UI.Controls
 			_autoCompleteProvider = autoCompleteProvider;
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
-			if (GetTemplateChild("Popup") is Popup popup)
+			base.OnApplyTemplate(e);
+			if (this.GetTemplateChild("Popup") is Popup popup)
 			{
 				_popup = popup;
 				_popup.PlacementTarget = this;
@@ -56,13 +58,13 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnIsKeyboardFocusWithinChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnIsKeyboardFocusWithinChanged(e);
 			FocusChanged((bool)e.NewValue);
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.Escape)
 			{
@@ -97,7 +99,7 @@ namespace ForkPlus.UI.Controls
 				e.Handled = true;
 				return;
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
 		private void RefreshSuggestions(bool _)
@@ -122,10 +124,10 @@ namespace ForkPlus.UI.Controls
 			if (_listBox == null)
 			{
 				_listBox = new ListBox();
-				_listBox.Style = Application.Current.TryFindResource("AutoCompleteListBoxStyle") as Style;
-				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as DataTemplate;
+{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(_listBox, Application.Current.TryFindResource("AutoCompleteListBoxStyle"));
+}				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as global::Avalonia.Controls.Templates.IDataTemplate; // Migration note：WPF DataTemplate → Avalonia IDataTemplate
 				_listBox.MinWidth = 216.0;
-				_listBox.MouseUp += delegate
+				_listBox.PointerReleased += delegate
 				{
 					SubmitSelectedSuggestion();
 				};
@@ -138,9 +140,12 @@ namespace ForkPlus.UI.Controls
 			{
 				_listBox.Items.Add(newItem);
 			}
-			Rect rectFromCharacterIndex = GetRectFromCharacterIndex(autoComplete.DropdownPosition);
+			// Migration note：WPF TextBox.GetRectFromCharacterIndex（第 N 个字符的客户区矩形）Avalonia 无对应，
+			// 近似取本控件 Bounds 左上角，下拉框出现在文本框下方。
+			Rect rectFromCharacterIndex = new Rect(0.0, Bounds.Height, 0.0, 0.0);
 			int num = 8;
-			_popup.PlacementRectangle = new Rect(new Point(rectFromCharacterIndex.X - (double)num, rectFromCharacterIndex.Y), rectFromCharacterIndex.Size);
+			// Migration note：WPF Popup.PlacementRectangle → Avalonia Popup.PlacementRect（可空 Rect）。
+			_popup.PlacementRect = new Rect(new Point(rectFromCharacterIndex.X - (double)num, rectFromCharacterIndex.Y), rectFromCharacterIndex.Size);
 			_popup.PlacementTarget = this;
 			_popup.IsOpen = true;
 		}

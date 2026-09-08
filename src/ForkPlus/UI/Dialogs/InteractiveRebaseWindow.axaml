@@ -1,0 +1,439 @@
+<dialogs:ForkPlusDialogWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.InteractiveRebaseWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns="https://github.com/avaloniaui" CanResize="True">
+  <dialogs:ForkPlusDialogWindow.Resources>
+    <ResourceDictionary>
+      
+      <DataTemplate x:Key="NoneDataTemplate" DataType="dialogs:GraphItemType" />
+      <DataTemplate x:Key="StartDataTemplate" DataType="dialogs:GraphItemType">
+        <Canvas Height="22" Width="22">
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,11" EndPoint="11,22"/>
+          <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
+        </Canvas>
+      </DataTemplate>
+      <DataTemplate x:Key="MiddleDataTemplate" DataType="dialogs:GraphItemType">
+        <Canvas Height="22" Width="22">
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,0" EndPoint="11,22"/>
+          <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
+        </Canvas>
+      </DataTemplate>
+      <DataTemplate x:Key="ThroughDataTemplate" DataType="dialogs:GraphItemType">
+        <Canvas Height="22" Width="22">
+          <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,0" EndPoint="11,22"/>
+        </Canvas>
+      </DataTemplate>
+      <DataTemplate x:Key="TargetDataTemplate" DataType="dialogs:GraphItemType">
+        <Canvas Height="22" Width="22">
+          <Grid Canvas.Top="0" Canvas.Left="11" Height="14" Width="18">
+            <Path Stretch="Fill" StrokeThickness="0" Margin="-1,0,0,0" Fill="{DynamicResource ForegroundBrush.Gray}" Data="M8.38,11.598C3.523,9.982,-0.0640000000000001,5.335,0.00100000000000122,0.159000000000001L0.00100000000000122,6.93889390390723E-16C0.487000000000001,0.00100000000000069 0.974000000000001,0.00300000000000069 1.46,0.00400000000000069 1.447,4.469 4.236,8.469 8.38,10.051L8.38,7.566 18.034,10.784 8.38,14.002 8.38,11.598z" />
+          </Grid>
+        </Canvas>
+      </DataTemplate>
+      <dialogs:GraphItemTypeToVisibilityConverter x:Key="GraphItemTypeToVisibilityConverter" />
+    </ResourceDictionary>
+  </dialogs:ForkPlusDialogWindow.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition />
+        <RowDefinition />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="270" />
+        <ColumnDefinition />
+        <ColumnDefinition Width="40" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Interactive Rebase" Margin="4,0,0,6" FontSize="18" FontWeight="Medium" />
+      <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,4">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="300" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="Rebase:" />
+        <controls:GitPointView Grid.Column="1" Margin="8,0,8,4" x:Name="SourceGitPointView" />
+        <TextBlock Grid.Column="2" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,4" Text="On:" />
+        <controls:GitPointView Grid.Column="3" Margin="8,0,0,4" x:Name="DestinationGitPointView" />
+        <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
+      </Grid>
+      <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Toggle" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}">
+<!-- Migration note：WPF dialogs:MultiselectionListView.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+          <dialogs:MultiselectionListView.ItemContainerTheme>
+            <ControlTheme TargetType="dialogs:MultiselectionListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+              
+              <Setter Property="Height" Value="22" />
+              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              <Setter Property="VerticalContentAlignment" Value="Stretch" />
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="Margin" Value="0" />
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+    <!-- Migration note：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
+            </ControlTheme>
+          </dialogs:MultiselectionListView.ItemContainerTheme>
+          <dialogs:MultiselectionListView.ItemTemplate>
+            <DataTemplate>
+              <Grid Height="22" ColumnDefinitions="100,40,*,19,120,70,120">
+                <ComboBox Grid.Column="0"
+                          Width="85"
+                          VerticalAlignment="Center"
+                          Margin="0"
+                          Focusable="False"
+                          Theme="{DynamicResource InteractiveRebaseComboBoxStyle}"
+                          BorderThickness="0"
+                          Background="#00FFFFFF"
+                          DropDownClosed="ActionsComboBox_DropDownClosed"
+                          SelectionChanged="ComboBox_SelectionChanged"
+                          ItemsSource="{Binding DataContext.InteractiveRebaseComboBoxItemsSource, RelativeSource={RelativeSource AncestorType=dialogs:MultiselectionListView}}"
+                          SelectedItem="{Binding Action, Mode=TwoWay, Converter={dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter}}">
+                  <!-- 选中后显示在 ComboBox 框内的模板：带颜色圆点 + 标题，与 WPF 原版视觉对齐 -->
+                  <ComboBox.SelectionBoxItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Width="75">
+                        <Ellipse DockPanel.Dock="Left" Height="12" Width="12" Margin="0,0,4,0" IsVisible="{Binding Action, Converter={dialogs:InteractiveRebaseActionToVisibilityConverter}}">
+                          <Ellipse.Fill>
+                            <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToColorConverter /></Binding.Converter></Binding>
+                          </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Margin="0,0,0,2" FontSize="13" Text="{Binding DisplayTitle}" TextTrimming="CharacterEllipsis" />
+                      </DockPanel>
+                    </DataTemplate>
+                  </ComboBox.SelectionBoxItemTemplate>
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Width="450">
+                        <Ellipse DockPanel.Dock="Left" Height="12" Width="12" Margin="0,0,4,0" IsVisible="{Binding Action, Converter={dialogs:InteractiveRebaseActionToVisibilityConverter}}">
+                          <Ellipse.Fill>
+                            <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToColorConverter /></Binding.Converter></Binding>
+                          </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock DockPanel.Dock="Left" Width="70" Margin="0,0,0,2" FontSize="13" Text="{Binding DisplayTitle}" />
+                        <TextBlock DockPanel.Dock="Right" Width="40" Margin="0,0,0,2" HorizontalAlignment="Right" Text="{Binding Shortcut}" />
+                        <TextBlock Margin="4,0,4,2" HorizontalAlignment="Stretch" FontSize="13" Text="{Binding DisplayDescription}" />
+                      </DockPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Canvas Grid.Column="1" Height="22" Width="22" Margin="4,0,0,0">
+                  <Canvas IsVisible="{Binding GraphType, Converter={StaticResource GraphItemTypeToVisibilityConverter}, ConverterParameter=Start}">
+                    <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,11" EndPoint="11,22"/>
+                    <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
+                  </Canvas>
+                  <Canvas IsVisible="{Binding GraphType, Converter={StaticResource GraphItemTypeToVisibilityConverter}, ConverterParameter=Middle}">
+                    <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,0" EndPoint="11,22"/>
+                    <Ellipse Fill="{DynamicResource ForegroundBrush.Gray}" Height="6" Width="6" Canvas.Top="8" Canvas.Left="8" />
+                  </Canvas>
+                  <Canvas IsVisible="{Binding GraphType, Converter={StaticResource GraphItemTypeToVisibilityConverter}, ConverterParameter=Through}">
+                    <Line Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="11,0" EndPoint="11,22"/>
+                  </Canvas>
+                  <Canvas IsVisible="{Binding GraphType, Converter={StaticResource GraphItemTypeToVisibilityConverter}, ConverterParameter=Target}">
+                    <Grid Canvas.Top="0" Canvas.Left="11" Height="14" Width="18">
+                      <Path Stretch="Fill" StrokeThickness="0" Margin="-1,0,0,0" Fill="{DynamicResource ForegroundBrush.Gray}" Data="M8.38,11.598C3.523,9.982,-0.0640000000000001,5.335,0.00100000000000122,0.159000000000001L0.00100000000000122,6.93889390390723E-16C0.487000000000001,0.00100000000000069 0.974000000000001,0.00300000000000069 1.46,0.00400000000000069 1.447,4.469 4.236,8.469 8.38,10.051L8.38,7.566 18.034,10.784 8.38,14.002 8.38,11.598z" />
+                    </Grid>
+                  </Canvas>
+                </Canvas>
+                <DockPanel Grid.Column="2">
+                  <controls:ReferencePanel DockPanel.Dock="Left" Theme="{DynamicResource ReferencePanelStyle}" ItemsSource="{Binding RefViewModels}" />
+                  <TextBlock VerticalAlignment="Center" Margin="2,0,0,2" Text="{Binding Subject}" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Foreground>
+                      <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
+                    </TextBlock.Foreground>
+                  </TextBlock>
+                </DockPanel>
+                <controls:AvatarImage Grid.Column="3" Width="16" Height="16" HorizontalAlignment="Center" Margin="-6,2,-6,2">
+                  <controls:AvatarImage.UserIdentity>
+                    <Binding Path="Author" />
+                  </controls:AvatarImage.UserIdentity>
+                </controls:AvatarImage>
+                <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="-2,0,0,2" Text="{Binding AuthorName}" TextTrimming="CharacterEllipsis">
+                  <TextBlock.Foreground>
+                    <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
+                  </TextBlock.Foreground>
+                </TextBlock>
+                <TextBlock Grid.Column="5" VerticalAlignment="Center" Margin="5,0,0,2" Text="{Binding AbbreviatedSha}">
+                  <TextBlock.Foreground>
+                    <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
+                  </TextBlock.Foreground>
+                </TextBlock>
+                <TextBlock Grid.Column="6" VerticalAlignment="Center" Margin="0,0,-5,2" Text="{Binding AuthorDate}" TextTrimming="CharacterEllipsis">
+                  <TextBlock.Foreground>
+                    <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter /></Binding.Converter></Binding>
+                  </TextBlock.Foreground>
+                </TextBlock>
+              </Grid>
+            </DataTemplate>
+          </dialogs:MultiselectionListView.ItemTemplate>
+<!-- Migration note：WPF dialogs:MultiselectionListView.View 已删（Avalonia 无 GridView 视图，原片段见 git 历史） -->
+
+            <!--
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段：
+      <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns="https://github.com/avaloniaui">
+                    <GridViewColumn Width="100">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <ComboBox Width="85" VerticalAlignment="Center" Margin="0" Focusable="False" Style="{DynamicResource InteractiveRebaseComboBoxStyle}" BorderThickness="0" Background="#00FFFFFF" TextSearch.TextPath="DisplayTitle" DropDownClosed="ActionsComboBox_DropDownClosed" SelectionChanged="ComboBox_SelectionChanged" x:Name="ActionsComboBox" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                            <ComboBox.Foreground>
+                              <Binding Path="Foreground"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                            </ComboBox.Foreground>
+                            <ComboBox.SelectedItem>
+                              <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                            </ComboBox.SelectedItem>
+                            <ComboBox.ItemsSource>
+                              <Binding Path="DataContext.InteractiveRebaseComboBoxItemsSource"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListView}" /></Binding.RelativeSource></Binding>
+                            </ComboBox.ItemsSource>
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate>
+                                <DockPanel Width="450">
+                                  <Ellipse DockPanel.Dock="Left" Height="12" Width="12" Margin="0,0,4,0">
+                                    <Ellipse.Fill>
+                                      <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToColorConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Visibility>
+                                      <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToVisibilityConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                                    </Ellipse.Visibility>
+                                  </Ellipse>
+                                  <TextBlock DockPanel.Dock="Left" Width="70" Margin="0,0,0,2" FontSize="13">
+                                    <TextBlock.Text>
+                                      <Binding Path="DisplayTitle" />
+                                    </TextBlock.Text>
+                                  </TextBlock>
+                                  <TextBlock DockPanel.Dock="Right" Width="40" Margin="0,0,0,2" HorizontalAlignment="Right">
+                                    <TextBlock.Text>
+                                      <Binding Path="Shortcut" />
+                                    </TextBlock.Text>
+                                  </TextBlock>
+                                  <TextBlock Margin="4,0,4,2" HorizontalAlignment="Stretch" FontSize="13">
+                                    <TextBlock.Text>
+                                      <Binding Path="DisplayDescription" />
+                                    </TextBlock.Text>
+                                  </TextBlock>
+                                </DockPanel>
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+                          <DataTemplate.Triggers>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Value="True">
+                                  <Condition.Binding>
+                                    <Binding Path="IsMouseOver" />
+                                  </Condition.Binding>
+                                </Condition>
+                                <Condition Value="True">
+                                  <Condition.Binding>
+                                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                                  </Condition.Binding>
+                                </Condition>
+                              </MultiDataTrigger.Conditions>
+                              <Setter TargetName="ActionsComboBox" Value="{DynamicResource ForegroundBrush}" Property="TextElement.Foreground" />
+                            </MultiDataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="40">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <ContentControl Margin="4 0 0 0" Width="22">
+                            <ContentControl.Content>
+                              <Binding />
+                            </ContentControl.Content>
+                            <ContentControl.DataContext>
+                              <Binding />
+                            </ContentControl.DataContext>
+                            <ContentControl.Style>
+                              <Style TargetType="{x:Type ContentControl}">
+                                <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
+                                <Style.Triggers>
+                                  <DataTrigger Value="None">
+                                    <DataTrigger.Binding>
+                                      <Binding Path="GraphType" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource NoneDataTemplate}" />
+                                  </DataTrigger>
+                                  <DataTrigger Value="Start">
+                                    <DataTrigger.Binding>
+                                      <Binding Path="GraphType" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource StartDataTemplate}" />
+                                  </DataTrigger>
+                                  <DataTrigger Value="Middle">
+                                    <DataTrigger.Binding>
+                                      <Binding Path="GraphType" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource MiddleDataTemplate}" />
+                                  </DataTrigger>
+                                  <DataTrigger Value="Through">
+                                    <DataTrigger.Binding>
+                                      <Binding Path="GraphType" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource ThroughDataTemplate}" />
+                                  </DataTrigger>
+                                  <DataTrigger Value="Target">
+                                    <DataTrigger.Binding>
+                                      <Binding Path="GraphType" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="ContentControl.ContentTemplate" Value="{StaticResource TargetDataTemplate}" />
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </ContentControl.Style>
+                          </ContentControl>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn>
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <DockPanel>
+                            <controls:ReferencePanel DockPanel.Dock="Left" Style="{DynamicResource ReferencePanelStyle}" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                              <controls:ReferencePanel.ItemsSource>
+                                <Binding Path="RefViewModels" />
+                              </controls:ReferencePanel.ItemsSource>
+                              <controls:ReferencePanel.Visibility>
+                                <Binding Path="IsChecked" />
+                              </controls:ReferencePanel.Visibility>
+                            </controls:ReferencePanel>
+                            <TextBlock VerticalAlignment="Center" Margin="2 0 0 2" x:Name="SubjectTextBlock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                              <TextBlock.Text>
+                                <Binding Path="Subject" />
+                              </TextBlock.Text>
+                              <TextBlock.Foreground>
+                                <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                              </TextBlock.Foreground>
+                            </TextBlock>
+                          </DockPanel>
+                          <DataTemplate.Triggers>
+                            <DataTrigger Value="True">
+                              <DataTrigger.Binding>
+                                <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                              </DataTrigger.Binding>
+                              <Setter TargetName="SubjectTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                            </DataTrigger>
+                            <DataTrigger Value="Drop">
+                              <DataTrigger.Binding>
+                                <Binding Path="Action" />
+                              </DataTrigger.Binding>
+                              <Setter TargetName="SubjectTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
+                            </DataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="19">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="-6,2,-6,2" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                            <controls:AvatarImage.UserIdentity>
+                              <Binding Path="Author" />
+                            </controls:AvatarImage.UserIdentity>
+                          </controls:AvatarImage>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="120">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" Margin="-2,0,0,2" x:Name="AuthorTextBlock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                            <TextBlock.Text>
+                              <Binding Path="AuthorName" />
+                            </TextBlock.Text>
+                            <TextBlock.Foreground>
+                              <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                            </TextBlock.Foreground>
+                          </TextBlock>
+                          <DataTemplate.Triggers>
+                            <DataTrigger Value="True">
+                              <DataTrigger.Binding>
+                                <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AuthorTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                            </DataTrigger>
+                            <DataTrigger Value="Drop">
+                              <DataTrigger.Binding>
+                                <Binding Path="Action" />
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AuthorTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
+                            </DataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="70">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" Margin="5,0,0,2" x:Name="AbbreviatedShaTextBlock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                            <TextBlock.Text>
+                              <Binding Path="AbbreviatedSha" />
+                            </TextBlock.Text>
+                            <TextBlock.Foreground>
+                              <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                            </TextBlock.Foreground>
+                          </TextBlock>
+                          <DataTemplate.Triggers>
+                            <DataTrigger Value="True">
+                              <DataTrigger.Binding>
+                                <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AbbreviatedShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                            </DataTrigger>
+                            <DataTrigger Value="Drop">
+                              <DataTrigger.Binding>
+                                <Binding Path="Action" />
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AbbreviatedShaTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
+                            </DataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="120">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" Margin="0,0,-5,2" x:Name="AuthorDateTextBlock" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                            <TextBlock.Text>
+                              <Binding Path="AuthorDate" />
+                            </TextBlock.Text>
+                            <TextBlock.Foreground>
+                              <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToForegroundConverter xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" /></Binding.Converter></Binding>
+                            </TextBlock.Foreground>
+                          </TextBlock>
+                          <DataTemplate.Triggers>
+                            <DataTrigger Value="True">
+                              <DataTrigger.Binding>
+                                <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ListViewItem}" /></Binding.RelativeSource></Binding>
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="TextElement.Foreground" />
+                            </DataTrigger>
+                            <DataTrigger Value="Drop">
+                              <DataTrigger.Binding>
+                                <Binding Path="Action" />
+                              </DataTrigger.Binding>
+                              <Setter TargetName="AuthorDateTextBlock" Property="Inline.TextDecorations" Value="Strikethrough" />
+                            </DataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                  </GridView>
+    -->
+          
+        </dialogs:MultiselectionListView>
+      </Grid>
+      <userControls:RevisionDetailsUserControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" Background="{DynamicResource BackgroundBrush}" x:Name="RevisionDetails" />
+      <GridSplitter Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" Theme="{DynamicResource HorizontalGridSplitter}" />
+      <GridSplitter Grid.Row="3" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" />
+      <GridSplitter Grid.Row="3" Grid.Column="2" VerticalAlignment="Top" Theme="{DynamicResource HorizontalGridSplitter}" />
+      <userControls:FallbackUserControl Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListFallbackUserControl" />
+    </Grid>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

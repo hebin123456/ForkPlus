@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -6,6 +6,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -46,14 +47,14 @@ namespace ForkPlus.UI.Commands
 					discardResult = new DiscardAllSubmoduleChangesGitCommand().Execute(gitModule, submodule);
 					if (!discardResult.Succeeded)
 					{
-						commitUserControl.Dispatcher.Async(delegate
+						commitUserControl.Dispatcher.Post(delegate
 						{
 							new ErrorWindow(repositoryUserControl, discardResult.Error).ShowDialog();
 						});
 						break;
 					}
 				}
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 			{
 				// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
 				commitUserControl.StageJob = null;

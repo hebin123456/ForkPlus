@@ -1,0 +1,66 @@
+<UserControl Height="180" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RewordUserControl" KeyDown="UserControl_PreviewKeyDown" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <Grid.Children>
+      <!-- 阴影层 -->
+      <Border Margin="8">
+        <Border.Background>
+          <DynamicResource ResourceKey="BackgroundBrush" />
+        </Border.Background>
+        <Border.CornerRadius>6</Border.CornerRadius>
+        <Border.Effect>
+          <DropShadowEffect BlurRadius="10">
+            <DropShadowEffect.Color>
+              <DynamicResource ResourceKey="DropShadowColor" />
+            </DropShadowEffect.Color>
+            <DropShadowEffect.Opacity>0.2</DropShadowEffect.Opacity>
+<!-- Migration note：WPF DropShadowEffect.ShadowDepth 已删（Avalonia 用 OffsetY） -->
+          </DropShadowEffect>
+        </Border.Effect>
+      </Border>
+      <!-- 内容层：修复（2026-09-05，"改写说明弹窗样式不对"）：
+           原用 Menu.MenuItem.Static.*（菜单项配色），与弹窗视觉不符。
+           改用标准 BackgroundBrush/BorderBrush，对齐 ForkPlus 弹窗家族样式。 -->
+      <Border Padding="10" Margin="7" BorderThickness="1" CornerRadius="6">
+        <Border.BorderBrush>
+          <DynamicResource ResourceKey="BorderBrush" />
+        </Border.BorderBrush>
+        <Border.Background>
+          <DynamicResource ResourceKey="BackgroundBrush" />
+        </Border.Background>
+        <Border.Child>
+          <Grid Width="600">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="24" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Children>
+              <fuc:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" KeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,32,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" x:Name="CommitSubjectTextBox">
+                <fuc:SpellingPlaceholderTextBox.Theme>
+                  <DynamicResource ResourceKey="CommitPlaceholderTextBox" />
+                </fuc:SpellingPlaceholderTextBox.Theme>
+              </fuc:SpellingPlaceholderTextBox>
+              <TextBlock Grid.Row="0" Margin="0,4,6,1" HorizontalAlignment="Right" FontSize="12" x:Name="SubjectLengthLimitTextBlock" />
+              <Border Grid.Row="0">
+                <Border.BorderBrush>
+                  <DynamicResource ResourceKey="BorderBrush" />
+                </Border.BorderBrush>
+                <Border.BorderThickness>1</Border.BorderThickness>
+                <Border.Height>1</Border.Height>
+                <Border.VerticalAlignment>Bottom</Border.VerticalAlignment>
+                <Border.Margin>1,0,1,0</Border.Margin>
+              </Border>
+              <fuc:CommitDescriptionTextBox KeyDown="CommitDescriptionTextBox_PreviewKeyDown" Grid.Row="1" Margin="0" Padding="4,2,4,3" HorizontalAlignment="Stretch" BorderThickness="1,0,1,1" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" x:Name="CommitDescriptionTextBox" />
+              <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel.Children>
+                  <Button Click="CommitMessageCancelButton_Click">Cancel<Button.Margin>2,6,5,-3</Button.Margin><Button.Padding>10,2</Button.Padding></Button>
+                  <Button Click="CommitMessageOkButton_Click">OK<Button.Margin>2,6,0,-3</Button.Margin><Button.Padding>10,2</Button.Padding></Button>
+                </StackPanel.Children>
+              </StackPanel>
+            </Grid.Children>
+          </Grid>
+        </Border.Child>
+      </Border>
+    </Grid.Children>
+  </Grid>
+</UserControl>

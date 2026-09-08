@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor.Diff" xmlns:fuup="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.GeneralUserControl" xmlns:fuced="clr-namespace:ForkPlus.UI.Controls.Editor.Diff">
+  <Grid Width="500">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Source Code Folder" Margin="0">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <Grid Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="52" />
+          <RowDefinition Height="17" />
+        </Grid.RowDefinitions>
+        <Grid.Children>
+          <ListBox VerticalAlignment="Stretch" x:Name="SrcDirsListBox">
+            <ListBox.BorderBrush>
+              <DynamicResource ResourceKey="BorderBrush" />
+            </ListBox.BorderBrush>
+            <ScrollViewer.HorizontalScrollBarVisibility>Disabled</ScrollViewer.HorizontalScrollBarVisibility>
+            <ListBox.ContextMenu>
+              <ContextMenu />
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <DockPanel Height="18">
+                  <DockPanel.Children>
+                    <Button DockPanel.Dock="Right" Margin="2,0,0,0" Height="16" Width="18" Padding="1,0" Click="EditSrcDirButton_Click">
+                      <Image>
+                        <Image.Source>
+                          <DynamicResource ResourceKey="OpenedFolderIcon" />
+                        </Image.Source>
+                        <Image.Width>12</Image.Width>
+                        <Image.Height>12</Image.Height>
+                        <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                      </Image>
+                    </Button>
+                    <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0" VerticalAlignment="Center" Source="{Binding SrcFolderIcon}" ToolTip.Tip="{Binding SrcFolderIconTooltip}" />
+                    <TextBlock FontSize="13" Margin="6,1,2,1" TextTrimming="CharacterEllipsis" Text="{Binding Path}" />
+                  </DockPanel.Children>
+                </DockPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Grid.Row="1" BorderThickness="1,0,1,1">
+            <Border.BorderBrush>
+              <DynamicResource ResourceKey="BorderBrush" />
+            </Border.BorderBrush>
+            <Border.Background>
+              <DynamicResource ResourceKey="BackgroundBrush" />
+            </Border.Background>
+            <Border.Child>
+              <StackPanel Orientation="Horizontal">
+                <StackPanel.Children>
+                  <Button Height="18" Width="18" Margin="-1,-1,0,-1" Click="AddSrcDirButton_Click">
+                    <Button.Theme>
+                      <DynamicResource ResourceKey="InlineButton" />
+                    </Button.Theme>
+                    <Image>
+                      <Image.Source>
+                        <DynamicResource ResourceKey="AddIcon" />
+                      </Image.Source>
+                      <Image.Width>16</Image.Width>
+                      <Image.Height>16</Image.Height>
+                      <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                    </Image>
+                  </Button>
+                  <Button Margin="0,-1,0,-1" Height="18" Width="18" Click="RemoveSrcDirButton_Click" x:Name="RemoveSrcDirButton">
+                    <Button.Theme>
+                      <DynamicResource ResourceKey="InlineButton" />
+                    </Button.Theme>
+                    <Image>
+                      <Image.Source>
+                        <DynamicResource ResourceKey="RemoveIcon" />
+                      </Image.Source>
+                      <Image.Width>16</Image.Width>
+                      <Image.Height>16</Image.Height>
+                      <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                    </Image>
+                  </Button>
+                </StackPanel.Children>
+              </StackPanel>
+            </Border.Child>
+          </Border>
+        </Grid.Children>
+      </Grid>
+      <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
+      <TextBlock Grid.Row="4" Grid.Column="0" Text="Diff View" Margin="0,4,0,0">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <fuced:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
+<!-- Migration note：Control.BorderBrush 块已删（DiffCodeEditor 基类无 BorderBrush） -->
+
+        <ScrollViewer.VerticalScrollBarVisibility>Auto</ScrollViewer.VerticalScrollBarVisibility>
+      </fuced:DiffCodeEditor>
+      <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <StackPanel.Children>
+          <CheckBox Margin="10,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="ShowDiffChangeMarksCheckBox_Changed" x:Name="ShowDiffChangeMarksCheckBox">Show -+ marks</CheckBox>
+          <TextBlock Margin="14,4,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Font size:" />
+          <TextBox Text="" Width="30" Margin="10,4,0,0" HorizontalAlignment="Left" TextAlignment="Left" TextChanged="CodeEditorFontSizeTextBox_TextChanged" x:Name="CodeEditorFontSizeTextBox" />
+        </StackPanel.Children>
+      </StackPanel>
+      <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <StackPanel.Children>
+          <CheckBox HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="DisableSyntaxHighlightingCheckBox_Changed" x:Name="DisableSyntaxHighlightingCheckBox">Disable syntax highlighting</CheckBox>
+        </StackPanel.Children>
+      </StackPanel>
+      <Separator Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />
+      <TextBlock Grid.Row="9" Grid.Column="0" Text="Sort commits:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,0" Orientation="Horizontal">
+        <StackPanel.Children>
+          <RadioButton Click="RevisionSortOrder_Changed" x:Name="TopologicalSortOrderRadioButton">Topologically</RadioButton>
+          <RadioButton Click="RevisionSortOrder_Changed" x:Name="DateSortOrderRadioButton">By date<RadioButton.Margin>10,0,0,0</RadioButton.Margin></RadioButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <Separator Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,12" />
+      <CheckBox Grid.Row="11" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="FetchRemotesAutomaticallyCheckBox_Changed" x:Name="FetchRemotesAutomaticallyCheckBox">Fetch remotes automatically</CheckBox>
+      <CheckBox Grid.Row="12" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="FetchAllTagsCheckBox_Changed" x:Name="FetchAllTagsCheckBox">Always include tags into fetch</CheckBox>
+      <CheckBox Grid.Row="13" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="UpdateRepoStatusAutomaticallyCheckBox_Changed" x:Name="UpdateRepoStatusAutomaticallyCheckBox">Tab indicator for uncommitted changes</CheckBox>
+      <CheckBox Grid.Row="14" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="UpdateSubmodulesAutomaticallyCheckBox_Changed" x:Name="UpdateSubmodulesAutomaticallyCheckBox">Update submodules automatically on checkout</CheckBox>
+      <StackPanel Grid.Row="15" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4,0,0">
+        <StackPanel.Children>
+          <TextBlock Margin="33,0,0,0">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.WindowsInfo" />
+            </TextBlock.Foreground>
+            <TextBlock.Text>Space character in branch names:</TextBlock.Text>
+          </TextBlock>
+          <ComboBox Width="40" Height="20" Margin="10,0,0,0" Padding="4,0,0,0" SelectionChanged="SpaceCharacterComboBox_SelectionChanged" x:Name="SpaceCharacterComboBox">
+            <ComboBox.ItemContainerTheme>
+              <DynamicResource ResourceKey="SmallComboBoxItemStyle" />
+            </ComboBox.ItemContainerTheme>
+          </ComboBox>
+        </StackPanel.Children>
+      </StackPanel>
+      <CheckBox Grid.Row="16" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="PushAutomaticallyOnCommitCheckBox_Changed" x:Name="PushAutomaticallyOnCommitCheckBox">Push automatically on commit</CheckBox>
+      <CheckBox Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="CompactBranchLabelsCheckBox_Changed" x:Name="CompactBranchLabelsCheckBox">Compact branch labels</CheckBox>
+      <CheckBox Grid.Row="18" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="UndoRedoEnabledCheckBox_Changed" x:Name="UndoRedoEnabledCheckBox">Enable Undo/Redo (experimental, may impact performance on large repos)</CheckBox>
+      <CheckBox Grid.Row="19" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="Pull with --rebase instead of merge, keeping the commit history linear and avoiding merge commits." IsCheckedChanged="PullWithRebaseCheckBox_Changed" x:Name="PullWithRebaseCheckBox">Pull with rebase by default</CheckBox>
+      <Separator Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,10" />
+      <TextBlock Grid.Row="21" Grid.Column="0" Text="Language:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="21" Grid.Column="1" Grid.ColumnSpan="2" Width="150" Margin="10,0,0,0" HorizontalAlignment="Left" SelectionChanged="LanguageComboBox_SelectionChanged" x:Name="LanguageComboBox" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

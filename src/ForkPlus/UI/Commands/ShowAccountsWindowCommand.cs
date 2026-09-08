@@ -1,5 +1,8 @@
-using System.Windows.Input;
+using Avalonia.Input;
+using Avalonia.Controls;
+using Avalonia.Threading;
 using ForkPlus.UI.Dialogs.Accounts;
+using ForkPlus.UI.WpfCompat;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +16,20 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			new AccountsWindow().ShowDialog();
+			Dispatcher.UIThread.Post(delegate
+			{
+				AccountsWindow window = new AccountsWindow();
+				Window owner = WpfApp.MainWindow;
+				if (owner != null && owner.IsVisible)
+				{
+					window.SetOwnerAndCenter(owner);
+					window.ShowDialog();
+				}
+				else
+				{
+					window.ShowDialog();
+				}
+			}, DispatcherPriority.Background);
 		}
 	}
 }

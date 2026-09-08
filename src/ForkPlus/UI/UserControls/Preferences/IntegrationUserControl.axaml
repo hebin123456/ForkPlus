@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuup="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.IntegrationUserControl" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Grid Width="650">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="160" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <TextBlock Grid.Column="0" Grid.Row="0" Text="Issue Tracker Integration" Margin="0,0,0,6">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" x:Name="ShowBugtrackerLinksCheckBox">Highlight issue tracker links in commit messages</CheckBox>
+      <TextBlock Grid.Column="0" Grid.Row="2" Text="External Merge Tools">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <fuu:ExternalToolsUserControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="3" x:Name="ExternalMergeToolsUserControl" />
+      <TextBlock Grid.Column="0" Grid.Row="4" Text="External Diff Tools">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <fuu:ExternalToolsUserControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="5" x:Name="ExternalDiffToolsUserControl" />
+      <TextBlock Grid.Column="0" Grid.Row="6" Text="Shell">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <TextBlock Grid.Row="7" Grid.Column="0" Text="Shell:" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,4" SelectionChanged="ShellToolComboBox_SelectionChanged" x:Name="ShellToolComboBox" />
+      <TextBlock Grid.Row="8" Grid.Column="0" Text="Shell Path:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <fuc:PlaceholderTextBox Grid.Row="8" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" IsReadOnly="True" Placeholder="Select shell location" x:Name="ShellToolPathTextBox" />
+      <Button Grid.Row="8" Grid.Column="2" Click="BrowseShellTool_Click">
+        <Button.Theme>
+          <DynamicResource ResourceKey="BrowseButtonStyle" />
+        </Button.Theme>
+      </Button>
+      <TextBlock Grid.Row="9" Grid.Column="0" Text="Arguments:" FontSize="13" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <fuc:PlaceholderTextBox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,4,0,4" Padding="4,2,4,2" x:Name="ShellToolArgumentsTextBox" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

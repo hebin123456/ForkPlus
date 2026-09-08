@@ -27,7 +27,7 @@ namespace ForkPlus.AskPass
 				bool noPrompt = string.Equals(Environment.GetEnvironmentVariable(NoPromptVariable), "1", StringComparison.OrdinalIgnoreCase);
 				bool credentialHelperMode = args.Length > 0 && IsCredentialHelperAction(args[0]);
 				string request = credentialHelperMode ? Console.In.ReadToEnd() : string.Join(" ", args);
-				string mode = credentialHelperMode ? (noPrompt ? "3" : "2") : (noPrompt ? "1" : "0");
+				string mode = credentialHelperMode ? GetCredentialHelperMode(args[0], noPrompt) : (noPrompt ? "1" : "0");
 				using (NamedPipeClientStream pipe = CreatePipeClient(AskPassPipeName, processId))
 				{
 					pipe.Connect(30000);
@@ -58,6 +58,23 @@ namespace ForkPlus.AskPass
 				|| string.Equals(value, "erase", StringComparison.OrdinalIgnoreCase);
 		}
 
+		// 凭据收编（Layer C）：get/store/erase 是三种不同语义，必须映射到不同的 IPC mode——
+		// get=2/3（查询，noPrompt 变体为 3）、store=4（写入）、erase=5（抹除）。
+		// 此前三个动作一律走 2/3，App 侧会把 store/erase 误当 get 查询处理，
+		// 凭据永远存不下来（App 新增的 4/5 分支形同虚设）。
+		private static string GetCredentialHelperMode(string action, bool noPrompt)
+		{
+			if (string.Equals(action, "store", StringComparison.OrdinalIgnoreCase))
+			{
+				return "4";
+			}
+			if (string.Equals(action, "erase", StringComparison.OrdinalIgnoreCase))
+			{
+				return "5";
+			}
+			return noPrompt ? "3" : "2";
+		}
+
 		private static NamedPipeClientStream CreatePipeClient(string name, string processId)
 		{
 			return new NamedPipeClientStream(".", "Fork_Pipe" + processId + "_" + name, PipeDirection.InOut, PipeOptions.None, TokenImpersonationLevel.Impersonation);
@@ -66,9 +83,17 @@ namespace ForkPlus.AskPass
 		private static string ReadString(PipeStream stream)
 		{
 			byte[] lengthBytes = new byte[4];
-			if (stream.Read(lengthBytes, 0, lengthBytes.Length) != lengthBytes.Length)
+			// Bug fix (2026-09-04, 凭据回传间歇性失败)：流式管道语义下单次 Read 可能
+			// 只返回部分字节，长度前缀必须循环读满（与 ForkPlus.RI 同源问题）。
+			int headerOffset = 0;
+			while (headerOffset < lengthBytes.Length)
 			{
-				return null;
+				int read = stream.Read(lengthBytes, headerOffset, lengthBytes.Length - headerOffset);
+				if (read <= 0)
+				{
+					return null;
+				}
+				headerOffset += read;
 			}
 			int length = BitConverter.ToInt32(lengthBytes, 0);
 			byte[] buffer = new byte[length];

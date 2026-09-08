@@ -1,7 +1,10 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Accounts.AiServices;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {
@@ -11,12 +14,18 @@ namespace ForkPlus.UI.Controls
 	/// </summary>
 	public class AiActionButton : Button
 	{
-		public static readonly DependencyProperty ActionVerbProperty =
-			DependencyProperty.Register("ActionVerb", typeof(string), typeof(AiActionButton),
-				new PropertyMetadata(null, OnActionVerbChanged));
+		public static readonly global::Avalonia.StyledProperty<string> ActionVerbProperty =
+    global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<AiActionButton, string>("ActionVerb", null, (owner, e) => OnActionVerbChanged(owner, e));
 
 		private string _savedToolTip;
 		private bool _isBusy;
+
+		/// <summary>Migration note：WPF Control.ToolTip 属性 → Avalonia ToolTip.SetTip/GetTip 附加属性转发。</summary>
+		private object ToolTip
+		{
+			get => global::Avalonia.Controls.ToolTip.GetTip(this);
+			set => global::Avalonia.Controls.ToolTip.SetTip(this, value);
+		}
 
 		/// <summary>动作动词，显示为 "🤖 AI {verb}"。为空时显示 "🤖 AI"。</summary>
 		public string ActionVerb
@@ -43,7 +52,7 @@ namespace ForkPlus.UI.Controls
 		/// <summary>根据 AI 配置状态刷新按钮可见性。</summary>
 		public void RefreshVisibility()
 		{
-			Visibility = OpenAiService.IsAiReviewConfigured() ? Visibility.Visible : Visibility.Collapsed;
+			IsVisible = OpenAiService.IsAiReviewConfigured() ? true : false;
 		}
 
 		/// <summary>设置 Loading 状态：禁用按钮、切换 tooltip、内容加 ⏳ 前缀。</summary>
@@ -77,7 +86,7 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
-		private static void OnActionVerbChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnActionVerbChanged(global::Avalonia.AvaloniaObject d, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			((AiActionButton)d).UpdateContent();
 		}

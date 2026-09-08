@@ -15,7 +15,16 @@ namespace ForkPlus.Git.Commands
 			[Null]
 			public static string TryFindInstance()
 			{
-				return FindExistingInstance(new string[1] { "%userprofile%\\.local\\bin\\claude.exe" });
+				// Migration note：原为硬编码 Windows 路径 "%userprofile%\.local\bin\claude.exe"（%VAR%
+				// 与反斜杠均不适用于 Unix）。改为跨平台：Unix 的 ~/.local/bin/claude 无 .exe，
+				// 同时保留 Windows %userprofile% 展开路径与常见全局安装位置作回退。
+				return FindExistingInstance(new string[4]
+				{
+					global::ForkPlus.SystemEnvironment.UserProfileDirectory + global::System.IO.Path.DirectorySeparatorChar + ".local" + global::System.IO.Path.DirectorySeparatorChar + "bin" + global::System.IO.Path.DirectorySeparatorChar + "claude",
+					global::ForkPlus.SystemEnvironment.UserProfileDirectory + global::System.IO.Path.DirectorySeparatorChar + ".local" + global::System.IO.Path.DirectorySeparatorChar + "bin" + global::System.IO.Path.DirectorySeparatorChar + "claude.exe",
+					"%userprofile%\\.local\\bin\\claude.exe",
+					"/usr/local/bin/claude"
+				});
 			}
 
 			public Claude(string path)

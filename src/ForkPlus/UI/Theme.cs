@@ -1,6 +1,9 @@
 using System;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {
@@ -20,16 +23,16 @@ namespace ForkPlus.UI
 
 		public static class FileListMultiselectionTreeView
 		{
-			public static Style DefaultStyle => FindStyle("FileListMultiselectionTreeViewDefaultStyle");
+			public static global::Avalonia.Styling.IStyle DefaultStyle => FindStyle("FileListMultiselectionTreeViewDefaultStyle");
 
-			public static Style GridViewStyle => FindStyle("FileListMultiselectionTreeViewWithGridViewStyle");
+			public static global::Avalonia.Styling.IStyle GridViewStyle => FindStyle("FileListMultiselectionTreeViewWithGridViewStyle");
 		}
 
 		public static class CommitUserControl
 		{
-			public static Style CommitButtonVisibleDropdownStyle => FindStyle("CommitButtonVisibleDropdownStyle");
+			public static global::Avalonia.Styling.IStyle CommitButtonVisibleDropdownStyle => FindStyle("CommitButtonVisibleDropdownStyle");
 
-			public static Style CommitButtonHiddenDropdownStyle => FindStyle("CommitButtonHiddenDropdownStyle");
+			public static global::Avalonia.Styling.IStyle CommitButtonHiddenDropdownStyle => FindStyle("CommitButtonHiddenDropdownStyle");
 		}
 
 		public static class Diff
@@ -110,87 +113,87 @@ namespace ForkPlus.UI
 
 		public static Brush ForkPlusDialogBackgroundBrush => FindBrush("Window.Dialog.Background");
 
-		public static ImageSource BranchFilterOnIcon => FindImage("BranchFilterOnIcon");
+		public static global::Avalonia.Media.IImage BranchFilterOnIcon => FindImage("BranchFilterOnIcon");
 
-		public static ImageSource BranchFilterOnSelectedIcon => FindImage("BranchFilterOnSelectedIcon");
+		public static global::Avalonia.Media.IImage BranchFilterOnSelectedIcon => FindImage("BranchFilterOnSelectedIcon");
 
-		public static ImageSource BranchFilterOffIcon => FindImage("BranchFilterOffIcon");
+		public static global::Avalonia.Media.IImage BranchFilterOffIcon => FindImage("BranchFilterOffIcon");
 
-		public static ImageSource BranchFilterOffSelectedIcon => FindImage("BranchFilterOffSelectedIcon");
+		public static global::Avalonia.Media.IImage BranchFilterOffSelectedIcon => FindImage("BranchFilterOffSelectedIcon");
 
-		public static ImageSource BranchIcon => FindImage("BranchIcon");
+		public static global::Avalonia.Media.IImage BranchIcon => FindImage("BranchIcon");
 
-		public static ImageSource BranchSelectedIcon => FindImage("BranchSelectedIcon");
+		public static global::Avalonia.Media.IImage BranchSelectedIcon => FindImage("BranchSelectedIcon");
 
-		public static ImageSource BranchWarningIcon => FindImage("BranchWarningIcon");
+		public static global::Avalonia.Media.IImage BranchWarningIcon => FindImage("BranchWarningIcon");
 
-		public static ImageSource BranchWarningSelectedIcon => FindImage("BranchWarningSelectedIcon");
+		public static global::Avalonia.Media.IImage BranchWarningSelectedIcon => FindImage("BranchWarningSelectedIcon");
 
-		public static ImageSource BranchPaleIcon => FindImage("BranchPaleIcon");
+		public static global::Avalonia.Media.IImage BranchPaleIcon => FindImage("BranchPaleIcon");
 
-		public static ImageSource BranchPaleSelectedIcon => FindImage("BranchPaleSelectedIcon");
+		public static global::Avalonia.Media.IImage BranchPaleSelectedIcon => FindImage("BranchPaleSelectedIcon");
 
-		public static ImageSource ConsoleIcon => FindImage("ConsoleIcon");
+		public static global::Avalonia.Media.IImage ConsoleIcon => FindImage("ConsoleIcon");
 
-		public static ImageSource HideBranchOnIcon => FindImage("HideBranchOnIcon");
+		public static global::Avalonia.Media.IImage HideBranchOnIcon => FindImage("HideBranchOnIcon");
 
-		public static ImageSource HideBranchOffIcon => FindImage("HideBranchOffIcon");
+		public static global::Avalonia.Media.IImage HideBranchOffIcon => FindImage("HideBranchOffIcon");
 
-		public static ImageSource LockIcon => FindImage("LockIcon");
+		public static global::Avalonia.Media.IImage LockIcon => FindImage("LockIcon");
 
-		public static ImageSource OpenInIcon => FindImage("OpenInIcon");
+		public static global::Avalonia.Media.IImage OpenInIcon => FindImage("OpenInIcon");
 
-		public static ImageSource PinOnIcon => FindImage("PinOnIcon");
+		public static global::Avalonia.Media.IImage PinOnIcon => FindImage("PinOnIcon");
 
-		public static ImageSource PinOffIcon => FindImage("PinOffIcon");
+		public static global::Avalonia.Media.IImage PinOffIcon => FindImage("PinOffIcon");
 
-		public static ImageSource RevisionIcon => FindImage("RevisionIcon");
+		public static global::Avalonia.Media.IImage RevisionIcon => FindImage("RevisionIcon");
 
-		public static ImageSource StashIcon => FindImage("SidebarStashIcon");
+		public static global::Avalonia.Media.IImage StashIcon => FindImage("SidebarStashIcon");
 
-		public static ImageSource TagIcon => FindImage("TagIcon");
+		public static global::Avalonia.Media.IImage TagIcon => FindImage("TagIcon");
 
-		public static ImageSource UnlockIcon => FindImage("UnlockIcon");
+		public static global::Avalonia.Media.IImage UnlockIcon => FindImage("UnlockIcon");
 
-		public static ImageSource AzureIcon => FindImage("AzureIcon");
+		public static global::Avalonia.Media.IImage AzureIcon => FindImage("AzureIcon");
 
-		public static ImageSource AzureOnIcon => FindImage("AzureOnIcon");
+		public static global::Avalonia.Media.IImage AzureOnIcon => FindImage("AzureOnIcon");
 
-		public static ImageSource BitbucketIcon => FindImage("BitbucketIcon");
+		public static global::Avalonia.Media.IImage BitbucketIcon => FindImage("BitbucketIcon");
 
-		public static ImageSource BitbucketOnIcon => FindImage("BitbucketOnIcon");
+		public static global::Avalonia.Media.IImage BitbucketOnIcon => FindImage("BitbucketOnIcon");
 
-		public static ImageSource GitHubIcon => FindImage("GitHubIcon");
+		public static global::Avalonia.Media.IImage GitHubIcon => FindImage("GitHubIcon");
 
-		public static ImageSource GitHubOnIcon => FindImage("GitHubOnIcon");
+		public static global::Avalonia.Media.IImage GitHubOnIcon => FindImage("GitHubOnIcon");
 
-		public static ImageSource GitLabIcon => FindImage("GitLabIcon");
+		public static global::Avalonia.Media.IImage GitLabIcon => FindImage("GitLabIcon");
 
-		public static ImageSource GitLabOnIcon => FindImage("GitLabOnIcon");
+		public static global::Avalonia.Media.IImage GitLabOnIcon => FindImage("GitLabOnIcon");
 
-		public static ImageSource GiteaIcon => FindImage("GiteaIcon");
+		public static global::Avalonia.Media.IImage GiteaIcon => FindImage("GiteaIcon");
 
-		public static ImageSource GiteaOnIcon => FindImage("GiteaOnIcon");
+		public static global::Avalonia.Media.IImage GiteaOnIcon => FindImage("GiteaOnIcon");
 
-		public static ImageSource RemoteIcon => FindImage("GenericRemoteIcon");
+		public static global::Avalonia.Media.IImage RemoteIcon => FindImage("GenericRemoteIcon");
 
-		public static ImageSource RemoteOnIcon => FindImage("GenericRemoteOnIcon");
+		public static global::Avalonia.Media.IImage RemoteOnIcon => FindImage("GenericRemoteOnIcon");
 
-		public static ImageSource IssueIcon => FindImage("IssueIcon");
+		public static global::Avalonia.Media.IImage IssueIcon => FindImage("IssueIcon");
 
-		public static ImageSource PullRequestIcon => FindImage("PullRequestIcon");
+		public static global::Avalonia.Media.IImage PullRequestIcon => FindImage("PullRequestIcon");
 
-		public static ImageSource RepositoryIcon => FindImage("RepositoryIcon");
+		public static global::Avalonia.Media.IImage RepositoryIcon => FindImage("RepositoryIcon");
 
-		public static ImageSource RepositoryWarningIcon => FindImage("RepositoryWarningIcon");
+		public static global::Avalonia.Media.IImage RepositoryWarningIcon => FindImage("RepositoryWarningIcon");
 
-		public static ImageSource HorizontalMergerIcon => FindImage("HorizontalMergerIcon");
+		public static global::Avalonia.Media.IImage HorizontalMergerIcon => FindImage("HorizontalMergerIcon");
 
-		public static ImageSource VerticalMergerIcon => FindImage("VerticalMergerIcon");
+		public static global::Avalonia.Media.IImage VerticalMergerIcon => FindImage("VerticalMergerIcon");
 
-		public static ImageSource FolderIcon => FindImage("FolderIcon");
+		public static global::Avalonia.Media.IImage FolderIcon => FindImage("FolderIcon");
 
-		public static ImageSource WarningIcon => FindImage("WarningIcon");
+		public static global::Avalonia.Media.IImage WarningIcon => FindImage("WarningIcon");
 
 		public static Geometry AzureGeometry => FindGeometry("AzureGeometry");
 
@@ -204,39 +207,44 @@ namespace ForkPlus.UI
 
 		public static Geometry RemoteGeometry => FindGeometry("GenericRemoteGeometry");
 
-		public static Style BranchOptionButtonStyle => FindStyle("BranchOptionButton");
+		public static global::Avalonia.Styling.IStyle BranchOptionButtonStyle => FindStyle("BranchOptionButton");
 
-		public static Style CustomContentMenuItemStyle => FindStyle("CustomContentMenuItemStyle");
+		public static global::Avalonia.Styling.IStyle CustomContentMenuItemStyle => FindStyle("CustomContentMenuItemStyle");
 
-		public static Style SidebarTabButtonPathStyle => FindStyle("SidebarTabButtonPath");
+		public static global::Avalonia.Styling.IStyle SidebarTabButtonPathStyle => FindStyle("SidebarTabButtonPath");
 
-		public static Style TransparentButtonStyle => FindStyle("TransparentButtonStyle");
+		public static global::Avalonia.Styling.IStyle TransparentButtonStyle => FindStyle("TransparentButtonStyle");
 
 		public static ScaleTransform LayoutScaleTransform => FindTransform("LayoutScaleTransform");
 
-		public static ImageSource FindImage(string resourceKey)
-		{
-			return FindResource(resourceKey) as ImageSource;
-		}
+		public static global::Avalonia.Media.IImage FindImage(string resourceKey)
+                {
+                        // Migration note：WPF ImageSource → Avalonia IImage（资源里的位图对象）。
+                        return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res0) ? __res0 as global::Avalonia.Media.IImage : null);
+                }
 
 		public static Geometry FindGeometry(string resourceKey)
 		{
-			return FindResource(resourceKey) as Geometry;
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res1) ? __res1 as Geometry : null);
 		}
 
 		public static Brush FindBrush(string resourceKey)
 		{
-			return FindResource(resourceKey) as Brush;
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res2) ? __res2 as Brush : null);
 		}
 
-		public static Style FindStyle(string resourceKey)
+		public static global::Avalonia.Styling.IStyle FindStyle(string resourceKey)
 		{
-			return FindResource(resourceKey) as Style;
+			// Migration note：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme，与 Style 互不继承，
+			// 原 `as Style` 恒得 null（运行时 ControlTheme 再被 Styles.Add(null) 炸 NRE）。
+			// 返回 IStyle（ControlTheme/Style 公共接口）；ControlTheme 消费方须经 StyleCompat.SetStyle
+			// 挂到 TemplatedControl.Theme。
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res3) ? __res3 as global::Avalonia.Styling.IStyle : null);
 		}
 
 		public static ScaleTransform FindTransform(string resourceKey)
 		{
-			return FindResource(resourceKey) as ScaleTransform;
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res4) ? __res4 as ScaleTransform : null);
 		}
 
 		public static object FindResource(string resourceKey)

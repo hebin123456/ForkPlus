@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+      WPF migration note: 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      原始片段：
+      <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Rectangle Margin="2" Stroke="#FF000000" StrokeThickness="1" StrokeDashArray="1 2" />
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+</ResourceDictionary>

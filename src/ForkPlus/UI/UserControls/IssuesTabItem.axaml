@@ -1,0 +1,90 @@
+<TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.IssuesTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <TabItem.DataTemplates>
+<DataTemplate DataType="local:IssueItem">
+        <Grid Height="50">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="16" />
+            <RowDefinition Height="17" />
+            <RowDefinition Height="17" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="14" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+          </Grid.ColumnDefinitions>
+          <Ellipse Grid.Column="0" Width="6" Height="6" Margin="6,1,2,0" VerticalAlignment="Center">
+            <Ellipse.Fill>
+              <Binding Path="State"><Binding.Converter><local:IssueStateToColorConverter /></Binding.Converter></Binding>
+            </Ellipse.Fill>
+          </Ellipse>
+          <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Margin="2,0,4,0" VerticalAlignment="Center" FontWeight="Medium">
+            <TextBlock.Text>
+              <Binding Path="IssueNumber" />
+            </TextBlock.Text>
+          </TextBlock>
+          <controls:AvatarImage Grid.Column="2" Height="16" Width="16" Margin="2,1,2,0" VerticalAlignment="Center">
+            <controls:AvatarImage.Url>
+              <Binding Path="AvatarUrl" />
+            </controls:AvatarImage.Url>
+            <ToolTip.Tip>
+              <Binding Path="AvatarTooltip" />
+            </ToolTip.Tip>
+          </controls:AvatarImage>
+          <Button Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2" Height="34" Margin="2,0,0,0" FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundBrush}" Click="IssueButton_Click" Theme="{DynamicResource MultilineTextButtonStyle}">
+            <Button.Content>
+              <Binding Path="Title" />
+            </Button.Content>
+            <ToolTip.Tip>
+              <Binding Path="Title" />
+            </ToolTip.Tip>
+          </Button>
+        </Grid>
+      </DataTemplate>
+  </TabItem.DataTemplates>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,0">
+      <DockPanel LastChildFill="False">
+        <controls:DropDownButton DockPanel.Dock="Left" Height="20" Margin="6,0,6,0" Padding="4,0,0,0" VerticalAlignment="Center" BorderBrush="#00FFFFFF" Background="#00FFFFFF" x:Name="RemoteDropdownButton" Theme="{DynamicResource ArrowDropDownButtonStyle}">
+          <controls:DropDownButton.ContextMenu>
+            <ContextMenu MaxWidth="500" Opened="RemoteDropdownButtonContextMenu_Opened" />
+          </controls:DropDownButton.ContextMenu>
+          <DockPanel>
+            <Image DockPanel.Dock="Left" Height="13" Width="13" Margin="0,0,0,0" x:Name="RemoteDropdownButtonImage" />
+            <TextBlock Margin="4,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteDropdownButtonTitle" />
+          </DockPanel>
+        </controls:DropDownButton>
+        <Button DockPanel.Dock="Right" IsTabStop="False" ToolTip.Tip="New Issue" Click="NewIssueButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+          <Image Source="{DynamicResource AddIcon}" />
+        </Button>
+        <Grid DockPanel.Dock="Right">
+          <Button IsTabStop="False" Click="RefreshButton_Click" x:Name="RefreshButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+            <Image Source="{DynamicResource RefreshIcon}" />
+          </Button>
+          <ProgressBar Margin="2,0,2,0" Width="12" Height="12" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" Theme="{DynamicResource CircularProgressBar}" IsVisible="True" />
+        </Grid>
+      </DockPanel>
+      <controls:FilterTextBox Margin="4,0,4,4" UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <controls:MultiselectionTreeView SelectionMode="Toggle" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarIssuesMultiselectionTreeViewStyle}">
+        <controls:MultiselectionTreeView.ItemTemplate>
+          <DataTemplate>
+            <ContentControl>
+              <ContentControl.Content>
+                <Binding />
+              </ContentControl.Content>
+            </ContentControl>
+          </DataTemplate>
+        </controls:MultiselectionTreeView.ItemTemplate>
+      </controls:MultiselectionTreeView>
+      <local:FallbackUserControl x:Name="FallbackUserControl" />
+    </Grid>
+  </Grid>
+</TabItem>

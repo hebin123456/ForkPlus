@@ -1,11 +1,14 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {
@@ -34,13 +37,13 @@ namespace ForkPlus.UI.Controls
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
 			base.Click += AdvancedTooltipButton_Click;
-			base.MouseEnter += delegate(object s, MouseEventArgs e)
+			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
 				_closePopupTimer.Stop();
 				_showPopupTimer.Start();
 			};
-			base.MouseLeave += delegate(object s, MouseEventArgs e)
+			base.PointerExited += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
 				_showPopupTimer.Stop();
@@ -78,7 +81,7 @@ namespace ForkPlus.UI.Controls
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			if (_popup != null && _popup.IsOpen && (!_popup.IsPointerOver|| hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");
@@ -92,9 +95,8 @@ namespace ForkPlus.UI.Controls
 			{
 				HorizontalOffset = 0.0,
 				VerticalOffset = -4.0,
-				StaysOpen = true,
-				AllowsTransparency = true,
-				PopupAnimation = PopupAnimation.Fade,
+				// Migration note：WPF Popup.StaysOpen=true / AllowsTransparency / PopupAnimation
+				// 在 Avalonia 无对应（默认即常驻、始终透明渲染、无内置动画），移除。
 				PlacementTarget = this
 			};
 			TooltipRevisionDetailsUserControl tooltipRevisionDetailsUserControl = new TooltipRevisionDetailsUserControl(_repositoryUserControl, _sha);
@@ -103,7 +105,7 @@ namespace ForkPlus.UI.Controls
 				ClosePopup(hardClose: true);
 			});
 			VisualTreeAttachmentHelper.TrySetPopupChild(obj, tooltipRevisionDetailsUserControl, GetType().Name + ".Popup");
-			obj.MouseLeave += delegate
+			obj.PointerExited += delegate
 			{
 				_closePopupTimer.Start();
 			};

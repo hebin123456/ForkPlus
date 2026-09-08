@@ -1,14 +1,17 @@
-using System.Windows;
-using System.Windows.Media;
-using ICSharpCode.AvalonEdit.Editing;
+using Avalonia;
+using Avalonia.Media;
+using AvaloniaEdit.Editing;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor
 {
 	public class ClearTypeLineNumberMargin : LineNumberMargin
 	{
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, base.RenderSize.Width, base.RenderSize.Height));
+			drawingContext.DrawRectangle(global::ForkPlus.UI.Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, base.Bounds.Size.Width, base.Bounds.Size.Height));
 		}
 	}
 }

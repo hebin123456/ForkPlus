@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Documents;
+using Avalonia.Controls.Documents;
 using ForkPlus.UI.CustomCommands;
 
 namespace ForkPlus.UI.UserControls.Preferences

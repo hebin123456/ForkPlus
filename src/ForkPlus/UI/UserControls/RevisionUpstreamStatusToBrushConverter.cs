@@ -1,13 +1,14 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia.Data;
+using Avalonia.Markup;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.UserControls
 {
-	public class RevisionUpstreamStatusToBrushConverter : MarkupExtension, IValueConverter
+	public class RevisionUpstreamStatusToBrushConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -15,7 +16,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return Brushes.DarkGray;
 			}
-			return Theme.AccentBrush;
+			return global::ForkPlus.UI.Theme.AccentBrush;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

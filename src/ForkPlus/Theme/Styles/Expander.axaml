@@ -1,0 +1,78 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="ExpanderDownHeaderStyle" TargetType="ToggleButton">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border Padding="{TemplateBinding Padding}" Background="#00FFFFFF" x:Name="Border">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="1" />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="33" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Path Grid.Row="0" Grid.Column="0" Data="M0,0L3.5,3.5 0,7" Margin="25,1,0,0" HorizontalAlignment="Right" Stroke="{DynamicResource Expander.Static.Arrow.Stroke}" StrokeThickness="1.5" VerticalAlignment="Center" x:Name="Arrow" />
+              <ContentPresenter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+              <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="1" HorizontalAlignment="Stretch" Background="{DynamicResource BorderBrush}" x:Name="SeparatorBorder" IsVisible="False" />
+            </Grid>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:checked /template/ Border#SeparatorBorder">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#Arrow">
+        <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
+    </Style>
+    <Style Selector="^:pointerover /template/ ContentPresenter#ContentPresenter">
+        <Setter Value="{DynamicResource AccentBrush}" Property="Foreground" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#Arrow">
+        <Setter Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}" Property="Stroke" />
+    </Style>
+    <Style Selector="^:pointerover">
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#Arrow">
+        <Setter Value="{DynamicResource Expander.Pressed.Arrow.Stroke}" Property="Stroke" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#Arrow">
+        <Setter Value="{DynamicResource Expander.Disabled.Arrow.Stroke}" Property="Stroke" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="DiffListExpanderStyle" TargetType="Expander">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Expander">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+            <DockPanel>
+              <ToggleButton ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Theme="{StaticResource ExpanderDownHeaderStyle}">
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+                <ToggleButton.IsChecked>
+                  <Binding Path="IsExpanded" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                </ToggleButton.IsChecked>
+              </ToggleButton>
+              <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ExpandSite" IsVisible="False" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+            </DockPanel>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+        <Setter Property="IsVisible" Value="True" />
+    </Style></ControlTheme>
+</ResourceDictionary>

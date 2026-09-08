@@ -1,75 +1,92 @@
 using System;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
-using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.ViewManagement;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {
-	internal static class SystemThemeHelper
-	{
-		[Null]
-		private static object _uiSettings;
+        /// <summary>
+        /// 系统主题色读取（Avalonia 版）。
+        /// 原 WPF 版走 WinRT UISettings（net10.0 下无投影）；改为
+        /// Windows 上读注册表 AppsUseLightTheme + DWM ColorizationColor，
+        /// 其他平台返回中性色。Migration note：跟随系统主题变化需平台各自实现。
+        /// </summary>
+        internal static class SystemThemeHelper
+        {
+                public static void SubscribeToSystemEvents()
+                {
+                        // WinRT ColorValuesChanged 事件无 net10.0 等价物：不做实时订阅
+                }
 
-		private static bool IsWindows11 => App.OSVersion.Build >= 20000;
+                [Null]
+                public static Brush GetSystemBrush(global::ForkPlus.UI.Theme.SystemColorType colorType)
+                {
+                        SolidColorBrush solidColorBrush = new SolidColorBrush(GetColor(ToSystemColor(colorType)));
+                        return solidColorBrush;
+                }
 
-		public static void SubscribeToSystemEvents()
-		{
-			UISettings uiSettings = new UISettings();
-			uiSettings.ColorValuesChanged += UiSettings_ColorValuesChanged;
-			_uiSettings = uiSettings;
-		}
+                private static global::Avalonia.Media.Color GetColor((byte a, byte r, byte g, byte b) color)
+                {
+                        return global::Avalonia.Media.Color.FromArgb(color.a, color.r, color.g, color.b);
+                }
 
-		[Null]
-		public static Brush GetSystemBrush(Theme.SystemColorType colorType)
-		{
-			SolidColorBrush solidColorBrush = new SolidColorBrush(GetColor(((UISettings)_uiSettings).GetColorValue(ToUIColorType(colorType))));
-			solidColorBrush.Freeze();
-			return solidColorBrush;
-		}
+                private static (byte a, byte r, byte g, byte b) ToSystemColor(global::ForkPlus.UI.Theme.SystemColorType colorType)
+                {
+                        var accent = ReadAccentColor();
+                        bool dark = IsSystemDarkBase();
+                        double factor = colorType switch
+                        {
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent => 1.0,
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent1 => dark ? 1.35 : 0.75,
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent2 => dark ? 1.6 : 0.55,
+                                _ => 1.0,
+                        };
+                        return Scale(accent, factor);
+                }
 
-		private static void UiSettings_ColorValuesChanged(object sender, object args)
-		{
-			Log.Info("System colors changed");
-			Application.Current.Dispatcher?.Invoke(delegate
-			{
-				Theme.Refresh();
-			});
-		}
+                private static bool IsSystemDarkBase()
+                {
+                        if (!OperatingSystem.IsWindows()) return ForkPlusSettings.Default.Theme.IsDarkBase();
+                        try
+                        {
+                                var key = Microsoft.Win32.Registry.GetValue(
+                                        @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                                        "AppsUseLightTheme", 1);
+                                return key is int i && i == 0;
+                        }
+                        catch
+                        {
+                                return ForkPlusSettings.Default.Theme.IsDarkBase();
+                        }
+                }
 
-		private static UIColorType ToUIColorType(Theme.SystemColorType colorType)
-		{
-			switch (colorType)
-			{
-			case Theme.SystemColorType.Accent:
-				return (UIColorType)5;
-			case Theme.SystemColorType.Accent1:
-			if (ForkPlusSettings.Default.Theme.IsDarkBase())
-			{
-				return (UIColorType)6;
-			}
-			return (UIColorType)4;
-		case Theme.SystemColorType.Accent2:
-			if (IsWindows11)
-			{
-				if (ForkPlusSettings.Default.Theme.IsDarkBase())
-				{
-						return (UIColorType)7;
-					}
-					return (UIColorType)4;
-				}
-				return (UIColorType)5;
-			default:
-				return (UIColorType)5;
-			}
-		}
+                private static (byte a, byte r, byte g, byte b) ReadAccentColor()
+                {
+                        if (OperatingSystem.IsWindows())
+                        {
+                                try
+                                {
+                                        // DWM 着色色（含透明度位），低 32 位为 0xAABBGGRR
+                                        uint colorization = (uint)(Microsoft.Win32.Registry.GetValue(
+                                                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM",
+                                                "ColorizationColor", 0xFF0078D4) ?? 0xFF0078D4);
+                                        return (0xFF, (byte)((colorization >> 16) & 0xFF), (byte)((colorization >> 8) & 0xFF), (byte)(colorization & 0xFF));
+                                }
+                                catch
+                                {
+                                }
+                        }
+                        return (0xFF, 0x00, 0x78, 0xD4); // Windows 默认强调色兜底
+                }
 
-		private static System.Windows.Media.Color GetColor(Windows.UI.Color color)
-		{
-			return System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
-		}
-	}
+                private static (byte a, byte r, byte g, byte b) Scale((byte a, byte r, byte g, byte b) c, double factor)
+                {
+                        byte S(byte v) => (byte)Math.Clamp(v * factor, 0, 255);
+                        return (c.a, S(c.r), S(c.g), S(c.b));
+                }
+        }
 }

@@ -1,14 +1,18 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Globalization;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class RevisionTimeLine : FrameworkElement
+	public class RevisionTimeLine : global::Avalonia.Controls.Control
 	{
 		private readonly Typeface _typeface = new Typeface(FontConstants.ProportionalFontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
@@ -84,11 +88,11 @@ namespace ForkPlus.UI.Controls
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
-			Size renderSize = base.RenderSize;
-			drawingContext.DrawRectangle(Theme.RevisionTimeLine.BackgroundBrush, null, new Rect(new Point(0.0, 0.0), new Size(renderSize.Width, renderSize.Height - 30.0)));
+			base.Render(drawingContext);
+			Size renderSize = base.Bounds.Size;
+			drawingContext.DrawRectangle(global::ForkPlus.UI.Theme.RevisionTimeLine.BackgroundBrush, null, new Rect(new Point(0.0, 0.0), new Size(renderSize.Width, renderSize.Height - 30.0)));
 			RevisionWithFiles[] revisions = Revisions;
 			if (revisions == null || revisions.Length < 2)
 			{
@@ -139,14 +143,15 @@ namespace ForkPlus.UI.Controls
 				IsClosed = true
 			};
 			pathFigure.Segments.Add(new PolyLineSegment
+		{
+			// Migration note：WPF PointCollection → Avalonia 用 List<Point>（Points 是 IList<Point>）。
+			Points = new System.Collections.Generic.List<global::Avalonia.Point>
 			{
-				Points = new PointCollection
-				{
-					new Point(x + 4.0, 0.0),
-					new Point(x, 5.0)
-				},
-				IsStroked = false
-			});
+				new Point(x + 4.0, 0.0),
+				new Point(x, 5.0)
+			},
+			IsStroked = false
+		});
 			PathGeometry pathGeometry = new PathGeometry();
 			pathGeometry.Figures.Add(pathFigure);
 			ctx.DrawGeometry(_activeRevisionBrush, null, pathGeometry);
@@ -218,7 +223,8 @@ namespace ForkPlus.UI.Controls
 
 		private FormattedText CreateFormattedText(string text, TextAlignment alignment = TextAlignment.Center)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+			// Migration note：WPF FormattedText 第 7 参 PixelsPerDip 在 Avalonia 不存在，直接省略。
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush)
 			{
 				TextAlignment = alignment
 			};
@@ -246,11 +252,11 @@ namespace ForkPlus.UI.Controls
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_alternationBrush = Theme.RevisionTimeLine.AlternationBrush;
-			_tickPen = new Pen(Theme.RevisionTimeLine.TickBrush, 1.0);
-			_revisionPen = new Pen(Theme.RevisionTimeLine.RevisionBrush, 1.0);
-			_activeRevisionBrush = Theme.SystemAccentBrush;
+			_labelBrush = global::ForkPlus.UI.Theme.LabelBrush;
+			_alternationBrush = global::ForkPlus.UI.Theme.RevisionTimeLine.AlternationBrush;
+			_tickPen = new Pen(global::ForkPlus.UI.Theme.RevisionTimeLine.TickBrush, 1.0);
+			_revisionPen = new Pen(global::ForkPlus.UI.Theme.RevisionTimeLine.RevisionBrush, 1.0);
+			_activeRevisionBrush = global::ForkPlus.UI.Theme.SystemAccentBrush;
 			_activeRevisionPen = new Pen(_activeRevisionBrush, 1.0);
 		}
 	}

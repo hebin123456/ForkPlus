@@ -1,6 +1,9 @@
-using System.Windows;
-using System.Windows.Media;
-using ICSharpCode.AvalonEdit.Rendering;
+using Avalonia;
+using Avalonia.Media;
+using AvaloniaEdit.Rendering;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -10,7 +13,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, textView.ActualWidth, textView.ActualHeight));
+			drawingContext.DrawRectangle(global::ForkPlus.UI.Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, textView.Bounds.Width, textView.Bounds.Height));
 		}
 	}
 }

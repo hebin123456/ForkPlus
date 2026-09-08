@@ -1,8 +1,11 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Controls;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -44,7 +47,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public ForkPlus.Git.Diff.Diff DIff => _child?.Diff;
 
-		public ScrollBarVisibility VerticalScrollBarVisibility
+		public global::Avalonia.Controls.Primitives.ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get
 			{
@@ -69,20 +72,20 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public TextDiffControl(FileDiffControlTarget target)
 		{
 			_target = target;
-			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current, "DiffLayoutModeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current,"DiffLayoutModeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffLayoutMode();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowHiddenSymbolsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowHiddenSymbolsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffShowHiddenSymbols();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffWordWrapChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffWordWrapChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffWordWrap();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current,"CodeEditorFontSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffFontSize();
 			});
 			RefreshDiffLayoutMode();
@@ -127,17 +130,22 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				_child.PositionCache = child.PositionCache;
 				_child.SetDiff(child.Diff, child.TabWidth, child.EntireFile, child.Location);
 			}
-			_child.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+			_child.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
+			if (_child is Control childControl)
+			{
+				childControl.HorizontalAlignment = HorizontalAlignment.Stretch;
+				childControl.VerticalAlignment = VerticalAlignment.Stretch;
+			}
 			if (!VisualTreeAttachmentHelper.TryAddChild(this, _child as Grid, GetType().Name + ".Child"))
 			{
 				_child = null;
 			}
 		}
 
-		protected void RaiseEditorContextMenuOpening(object sender, ContextMenuEventArgs e)
+		protected void RaiseEditorContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
 			this.EditorContextMenuOpening?.Invoke(this, e);
 		}

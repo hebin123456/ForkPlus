@@ -1,0 +1,175 @@
+<UserControl xmlns:UserControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ActivityManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor">
+  <Border Width="1024" Height="440" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" Margin="10,5,10,10" CornerRadius="6">
+    <Border.Effect>
+      <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />
+    </Border.Effect>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="28" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="320" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CornerRadius="6,0,0,6" Background="{DynamicResource ListBox.Static.Background}" />
+      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" CornerRadius="0,6,6,0" Background="{DynamicResource CodeEditorBackground}" />
+      <Border Grid.Row="0" Grid.Column="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+        <controls:ModernTabControl SelectionChanged="ViewModeTabControl_SelectionChanged" HorizontalAlignment="Center" BorderThickness="0" x:Name="ViewModeTabControl" />
+      </Border>
+      <Border Grid.Row="0" Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+        <Grid>
+          <TextBlock FontSize="14" Margin="10,4,0,0" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="JobDetailsNameTextBlock" />
+          <TextBlock HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" Margin="0,6,10,0" x:Name="JobDetailsFinishTimeTextBlock" />
+        </Grid>
+      </Border>
+      <ListBox Grid.Row="1" Grid.Column="0" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0" Background="#00FFFFFF" SelectionChanged="JobListBox_SelectionChanged" x:Name="JobListBox">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" x:Name="CellBorder">
+              <Grid Margin="4,2,4,2">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="16" />
+                  <RowDefinition Height="16" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Row="0" Grid.Column="0" LastChildFill="True">
+                  <Border DockPanel.Dock="Left" Margin="0,0,4,0" Padding="3,0" CornerRadius="2" Background="{DynamicResource SystemAccentBrush}" VerticalAlignment="Center">
+                    <Border.IsVisible>
+                      <Binding Path="GitMmBadgeVisibility" />
+                    </Border.IsVisible>
+                    <StackPanel Orientation="Horizontal">
+                      <Image Height="10" Width="10" Margin="0,0,2,0" Source="{DynamicResource ConsoleIcon}" x:Name="GitMmCategoryImage" />
+                      <TextBlock FontSize="9" Foreground="White" Text="{Binding GitMmCategoryText}" />
+                    </StackPanel>
+                  </Border>
+                  <TextBlock FontSize="13" Margin="0,-2,2,0" HorizontalAlignment="Left" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontWeight="Medium" x:Name="NameTextBlock">
+                    <TextBlock.Text>
+                      <Binding Path="Name" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+                <DockPanel Grid.Row="0" Grid.Column="1">
+                  <TextBlock DockPanel.Dock="Right" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" Margin="0,-1,0,0" VerticalAlignment="Center" x:Name="FinishTimeTextBlock">
+                    <TextBlock.Text>
+                      <Binding Path="FinishTime" />
+                    </TextBlock.Text>
+                    <TextBlock.IsVisible>
+                      <Binding Path="FinishTimeTextBlockVisibility" />
+                    </TextBlock.IsVisible>
+                  </TextBlock>
+                  <Image Height="14" Width="14" Margin="0,0,2,0" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" x:Name="WarningImage">
+                    <Image.IsVisible>
+                      <Binding Path="WarningImageVisibility" />
+                    </Image.IsVisible>
+                  </Image>
+                </DockPanel>
+                <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <ProgressBar Margin="0,0,0,0" Width="14" Height="14" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" Theme="{DynamicResource CircularProgressBar}">
+                    <ProgressBar.IsVisible>
+                      <Binding Path="BusyIndicatorVisibility" />
+                    </ProgressBar.IsVisible>
+                  </ProgressBar>
+                  <Button Margin="4,0,0,0" Padding="0" VerticalAlignment="Center" Height="16" Width="16" Click="CancelButton_Click" x:Name="CancelButton" Theme="{DynamicResource IconButtonStyle}">
+                    <Button.IsVisible>
+                      <Binding Path="CancelButtonVisibility" />
+                    </Button.IsVisible>
+                    <Image Source="{DynamicResource CancelJobIcon}" />
+                  </Button>
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="12" Margin="0,-2,2,0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="DetailsTextBlock">
+                  <TextBlock.Text>
+                    <Binding Path="Message" />
+                  </TextBlock.Text>
+                </TextBlock>
+                <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Height="2" Margin="-13,0,-13,-3" Minimum="0" Maximum="100" Foreground="{DynamicResource SystemAccentBrush}" Background="{DynamicResource SystemAccentBrush}" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" x:Name="JobProgressProgressBar">
+                  <ProgressBar.Value>
+                    <Binding Path="CurrentProgress" />
+                  </ProgressBar.Value>
+                  <ProgressBar.IsVisible>
+                    <Binding Path="JobProgressProgressBarVisibility" />
+                  </ProgressBar.IsVisible>
+                </ProgressBar>
+              </Grid>
+            </Border>
+            
+          
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+                      <DataTrigger.Binding>
+                        <Binding Path="IsSelected">
+                          <Binding.RelativeSource>
+                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                          </Binding.RelativeSource>
+                        </Binding>
+                      </DataTrigger.Binding>
+                      <Setter TargetName="NameTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                      <Setter TargetName="DetailsTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                      <Setter TargetName="FinishTimeTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                      <Setter TargetName="JobProgressProgressBar" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                      <Setter TargetName="CellBorder" Property="BorderBrush" Value="#00FFFFFF" />
+                      <Setter TargetName="CancelButton" Property="Content">
+                        <Setter.Value>
+                          <Image Source="{DynamicResource CancelJobSelectedIcon}" />
+                        </Setter.Value>
+                      </Setter>
+                    </DataTrigger>
+    -->
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Binding="{Binding IsGitMmScanJob}" Value="True" xmlns="https://github.com/avaloniaui">
+                      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource SearchIcon}" />
+                    </DataTrigger>
+    -->
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Binding="{Binding IsGitMmStatusJob}" Value="True" xmlns="https://github.com/avaloniaui">
+                      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource RefreshIcon}" />
+                    </DataTrigger>
+    -->
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Binding="{Binding IsGitMmSyncJob}" Value="True" xmlns="https://github.com/avaloniaui">
+                      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PullIcon}" />
+                    </DataTrigger>
+    -->
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Binding="{Binding IsGitMmUploadJob}" Value="True" xmlns="https://github.com/avaloniaui">
+                      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PushIcon}" />
+                    </DataTrigger>
+    -->
+    <!--
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Binding="{Binding IsGitMmStartJob}" Value="True" xmlns="https://github.com/avaloniaui">
+                      <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource BranchIcon}" />
+                    </DataTrigger>
+    --></DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <editor:CodeEditor Grid.Row="1" Grid.Column="1" Margin="10,5,2,2" x:Name="JobDetailsOutputEditor" />
+      <Grid Grid.Row="1" Grid.Column="0" Margin="2,2,0,2" Background="{DynamicResource ListBox.Static.Background}" x:Name="JobListFallBack">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="No Activities" />
+      </Grid>
+      <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="0,2,2,2" Background="{DynamicResource CodeEditorBackground}" x:Name="JobDetailsFallBack">
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0" Source="{DynamicResource FallbackIcon}" HorizontalAlignment="Center" VerticalAlignment="Bottom" MaxHeight="64" MaxWidth="64" />
+        <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="18" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="No Selected Activity" />
+      </Grid>
+      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" HorizontalAlignment="Right" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" />
+    </Grid>
+  </Border>
+</UserControl>

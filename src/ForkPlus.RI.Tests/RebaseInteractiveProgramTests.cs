@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace ForkPlus.RI.Tests
@@ -20,8 +21,11 @@ namespace ForkPlus.RI.Tests
 	public class RebaseInteractiveProgramTests
 	{
 		private static string ExePath =>
-			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
-			Path.Combine(AppContext.BaseDirectory, "ForkPlus.RI.exe");
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory。
+			// apphost 命名按平台：Windows 带 .exe 扩展名，Linux/macOS 无扩展名
+			// （2026-09-06 修复：此前硬编码 .exe，Linux 上套件全挂）。
+			Path.Combine(AppContext.BaseDirectory,
+				RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ForkPlus.RI.exe" : "ForkPlus.RI");
 
 		/// <summary>
 		/// 启动 ForkPlus.RI.exe，传入参数和环境变量，返回 exit code。

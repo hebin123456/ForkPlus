@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryContentUserControl">
+  <Grid>
+    <Grid.Children>
+      <Grid x:Name="CommitView" IsVisible="False">
+        <Grid.Children>
+          <local:CommitUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="CommitUserControl" />
+        </Grid.Children>
+      </Grid>
+      <Grid x:Name="RevisionView">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition MinHeight="110" />
+          <RowDefinition MinHeight="110" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="400" MinWidth="300" />
+          <ColumnDefinition />
+          <ColumnDefinition Width="40" />
+        </Grid.ColumnDefinitions>
+        <Grid.Children>
+          <local:RevisionListStatusBarUserControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListStatusBarUserControl" IsVisible="False" />
+          <local:RevisionListViewUserControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RevisionListViewUserControl" />
+          <local:RevisionDetailsUserControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" x:Name="RevisionDetails" />
+          <GridSplitter Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" x:Name="FirstColumnHorizontalGridSplitter">
+            <GridSplitter.Theme>
+              <DynamicResource ResourceKey="HorizontalGridSplitter" />
+            </GridSplitter.Theme>
+          </GridSplitter>
+          <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Height="32" Margin="260,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" x:Name="SecondColumnHorizontalGridSplitter">
+            <GridSplitter.Background>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </GridSplitter.Background>
+            <GridSplitter.BorderBrush>
+              <DynamicResource ResourceKey="BorderBrush" />
+            </GridSplitter.BorderBrush>
+            <GridSplitter.BorderThickness>0,1,0,0</GridSplitter.BorderThickness>
+<!-- Migration note：WPF GridSplitter.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+          </GridSplitter>
+          <GridSplitter Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" x:Name="ThirdColumnHorizontalGridSplitter">
+            <GridSplitter.Theme>
+              <DynamicResource ResourceKey="HorizontalGridSplitter" />
+            </GridSplitter.Theme>
+          </GridSplitter>
+          <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" HorizontalAlignment="Right" x:Name="VerticalGridSplitter">
+            <GridSplitter.Theme>
+              <DynamicResource ResourceKey="VerticalGridSplitter" />
+            </GridSplitter.Theme>
+          </GridSplitter>
+        </Grid.Children>
+      </Grid>
+    </Grid.Children>
+  </Grid>
+</UserControl>

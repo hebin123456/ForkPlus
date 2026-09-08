@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ForkPlus.Git.Diff;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit.Document;
 
 namespace ForkPlus.Git.Merge.Presentation
 {

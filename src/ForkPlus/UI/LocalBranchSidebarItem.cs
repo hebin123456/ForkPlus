@@ -1,9 +1,14 @@
+using ForkPlus.UI.WpfCompat;
 using System;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
 
 namespace ForkPlus.UI
 {
@@ -58,21 +63,21 @@ namespace ForkPlus.UI
 			return PreferencesLocalization.Current("Local branch:") + "\t" + localBranch.Name;
 		}
 
-		public override void StartDrag(DependencyObject dragSource, MultiselectionTreeViewItem[] nodes)
+		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // Migration note：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
-			DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+			global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), (global::Avalonia.Input.DragDropEffects)7);
 		}
 
-		protected override IDataObject GetDataObject(MultiselectionTreeViewItem[] nodes)
+		protected override global::Avalonia.Input.IDataTransfer GetDataObject(MultiselectionTreeViewItem[] nodes)
 		{
-			DataObject dataObject = new DataObject();
+			WpfDataObject dataObject = new WpfDataObject();
 			dataObject.SetData(SidebarItem.DragItemsFormat, nodes);
 			return dataObject;
 		}
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is ReferenceSidebarItem)
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is ReferenceSidebarItem)
 			{
 				return DragDropEffects.Move;
 			}
@@ -81,11 +86,11 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is ReferenceSidebarItem { Reference: Branch reference } && reference != LocalBranch)
+			e.DragEffects= DragDropEffects.None;
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is ReferenceSidebarItem { Reference: Branch reference } && reference != LocalBranch)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 				SidebarUserControl.ShowDropContextMenu(LocalBranch, reference);
 			}
 		}

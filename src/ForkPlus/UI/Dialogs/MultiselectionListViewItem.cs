@@ -1,13 +1,17 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
+using ForkPlus.UI.WpfCompat;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using ForkPlus.UI.Helpers;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class MultiselectionListViewItem : ListViewItem
+	public class MultiselectionListViewItem : global::Avalonia.Controls.ListBoxItem
 	{
 		private bool _wasSelected;
 
@@ -21,38 +25,68 @@ namespace ForkPlus.UI.Dialogs
 
 		public DropPosition DropPosition { get; internal set; }
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
+			// WPF 语义对齐：ComboBox / 按钮 / 文本框等内嵌交互控件在 WPF 下会把
+			// MouseLeftButtonDown 标记 Handled（ButtonBase 以 handledEventsToo:true 注册类处理器
+			// 且置 Handled），事件不再到达 ListViewItem，选择与拖拽捕获逻辑完全不执行；
+			// Avalonia 下这些控件不标记 Handled，事件继续冒泡，item 无条件 Capture 抢走指针
+			// → ComboBox 模板里的 ToggleButton 收不到 PointerReleased → Click 不触发 →
+			// 下拉永远打不开（交互式变基窗口"不能更改类型"根因）。
+			// 修复：命中源位于内嵌交互控件内时，跳过整个按压处理（含捕获与选择）。
+			if (IsPressOnEmbeddedInteractiveControl(e))
+			{
+				return;
+			}
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				base.OnPointerPressed(e);
 			}
-			if (Mouse.LeftButton == MouseButtonState.Pressed)
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				CaptureMouse();
+				e.Pointer.Capture(this);
 			}
 		}
 
-		protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+		/// <summary>
+		/// 按压命中源（e.Source）到本 item 的可视树路径上是否经过内嵌交互控件。
+		/// ComboBox 的 ToggleButton / 模板内部元素都算（沿 VisualTree 向上遍历到 this）。
+		/// </summary>
+		private bool IsPressOnEmbeddedInteractiveControl(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			for (Visual v = e.Source as Visual; v != null && v != this; v = v.GetVisualParent())
+			{
+				if (v is ComboBox || v is Button || v is CheckBox || v is TextBox || v is Slider)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
+		{
+			if (e.Pointer.Captured == this)
+			{
+				e.Pointer.Capture(null);
+			}
 			if (_wasSelected)
 			{
-				base.OnMouseLeftButtonDown(e);
+				IsSelected = true;
 			}
 		}
 
-		protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+		protected override void OnDoubleTapped(global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			base.OnMouseDoubleClick(e);
+			base.OnDoubleTapped(e);
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!base.IsMouseCaptured)
+			if (e.Pointer.Captured != this)
 			{
 				return;
 			}
@@ -66,7 +100,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			ListViewItem[] array2 = array.CompactMap((RevisionEntry x) => ParentListView.ItemContainerGenerator.ContainerFromItem(x) as ListViewItem);
+			global::Avalonia.Controls.ListBoxItem[] array2 = array.CompactMap((RevisionEntry x) => ParentListView.ContainerFromItem(x) as global::Avalonia.Controls.ListBoxItem);
 			ListBoxItem[] listBoxItems = array2;
 			_adorner = new DragAndDropListBoxAdorner(this, listBoxItems, e.GetPosition(this));
 			if (_adorner != null)
@@ -75,17 +109,17 @@ namespace ForkPlus.UI.Dialogs
 				if (adornerLayer != null)
 				{
 					adornerLayer.Add(_adorner);
-					DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(this, array, DragDropEffects.Move);
 					adornerLayer.Remove(_adorner);
 				}
 			}
 		}
 
-		protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
+		protected void OnGiveFeedback(GiveFeedbackEventArgs e)
 		{
 			if (base.IsVisible && _adorner != null)
 			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
+				Point position = this.PointFromScreen(MouseHelper.GetMousePosition());
 				_adorner.UpdatePosition(position);
 			}
 		}
@@ -99,19 +133,19 @@ namespace ForkPlus.UI.Dialogs
 			return true;
 		}
 
-		protected override void OnDragEnter(DragEventArgs e)
+		protected void OnDragEnter(DragEventArgs e)
 		{
 			ClearDropAdorner();
 			DropPosition = GetDropPositoion(e);
 			ShowDropAdorner(DropPosition);
 		}
 
-		protected override void OnDrop(DragEventArgs e)
+		protected void OnDrop(DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}
 
-		protected override void OnDragLeave(DragEventArgs e)
+		protected void OnDragLeave(DragEventArgs e)
 		{
 			ClearDropAdorner();
 		}
@@ -119,7 +153,7 @@ namespace ForkPlus.UI.Dialogs
 		private DropPosition GetDropPositoion(DragEventArgs e)
 		{
 			double y = e.GetPosition(this).Y;
-			double actualHeight = base.ActualHeight;
+			double actualHeight = base.Bounds.Height;
 			if (!(y < actualHeight / 2.0))
 			{
 				return DropPosition.Bottom;

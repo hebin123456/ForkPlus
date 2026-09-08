@@ -1,12 +1,14 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -17,13 +19,14 @@ namespace ForkPlus.UI.Controls
 			void ControlWillBeRemovedFromFileContentControl();
 		}
 
-		private FrameworkElement _subView;
+		private global::Avalonia.Controls.Control _subView;
 
 		private readonly CodeEditorScrollPositionCache _positionCache = new CodeEditorScrollPositionCache();
 
 		public static readonly TextContentControlCommands Commands = new TextContentControlCommands();
 
-		public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(GitCommandResult<Content>), typeof(FileContentControl), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<GitCommandResult<Content>> ContentProperty =
+    global::Avalonia.AvaloniaProperty.Register<FileContentControl, GitCommandResult<Content>>("Content", null);
 
 		private int MaxContentSize => 1048576;
 
@@ -49,7 +52,10 @@ namespace ForkPlus.UI.Controls
 			{
 				Height = GridLength.Auto
 			});
-			base.RowDefinitions.Add(new RowDefinition());
+			base.RowDefinitions.Add(new RowDefinition
+			{
+				Height = new GridLength(1.0, GridUnitType.Star)
+			});
 			Header = new FileControlHeaderUserControl();
 			Header.Height = 18.0;
 			Header.SetValue(Grid.RowProperty, 0);
@@ -57,7 +63,7 @@ namespace ForkPlus.UI.Controls
 			base.Children.Add(Header);
 		}
 
-		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : FrameworkElement
+		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : global::Avalonia.Controls.Control
 		{
 			if (_subView == null)
 			{
@@ -85,7 +91,7 @@ namespace ForkPlus.UI.Controls
 			initialize?.Invoke(_subView as TChild, Header);
 		}
 
-		private bool AttachSubView(FrameworkElement subView)
+		private bool AttachSubView(global::Avalonia.Controls.Control subView)
 		{
 			if (subView == null)
 			{
@@ -95,7 +101,7 @@ namespace ForkPlus.UI.Controls
 			return VisualTreeAttachmentHelper.TryAddChild(this, subView, GetType().Name + ".SubView");
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == ContentProperty)
@@ -169,14 +175,14 @@ namespace ForkPlus.UI.Controls
 				TextContentControl textContentControl2 = new TextContentControl();
 				textContentControl2.PositionCache = _positionCache;
 				textContentControl2.ContextMenu = new ContextMenu();
-				textContentControl2.ContextMenuClosing += delegate
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(textContentControl2,delegate
 				{
 					textContentControl2.ContextMenu.Items.Clear();
-				};
+				});
 				return textContentControl2;
 			}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 			{
-				c.ContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::ForkPlus.UI.WpfCompat.ContextMenuEventArgs e)
 				{
 					if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 					{
@@ -187,7 +193,7 @@ namespace ForkPlus.UI.Controls
 						contextMenu.Items.Add(new Separator());
 						Commands.Copy.AddMenuItems(textContentControl, contextMenu);
 					}
-				};
+				});
 				c.SetContent(textContent);
 				ShowHeader(h, textContent.Path);
 			});

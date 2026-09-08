@@ -1,0 +1,99 @@
+<UserControl FontFamily="Segoe UI Variable Display" MaxWidth="700" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.TooltipRevisionDetailsUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Border>
+<!-- Migration note：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+    <Border.Style>
+      <DynamicResource ResourceKey="MenuShadowBorderStyle" />
+    </Border.Style>
+-->
+    <Border.Child>
+      <Border BorderThickness="1">
+        <Border.BorderBrush>
+          <DynamicResource ResourceKey="BorderBrush" />
+        </Border.BorderBrush>
+        <Border.Background>
+          <DynamicResource ResourceKey="BackgroundBrush" />
+        </Border.Background>
+        <Border.CornerRadius>6</Border.CornerRadius>
+        <Border.Padding>15,13,15,13</Border.Padding>
+        <Border.Child>
+          <Grid>
+            <Grid.Children>
+              <Grid x:Name="DetailsContainer">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.Children>
+                  <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.Children>
+                      <fuc:AvatarImage Grid.Column="0" HorizontalAlignment="Left" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" x:Name="AuthorAvatarImage" />
+                      <fuc:SelectableTextBlock Grid.Column="1" Margin="0,0,5,0" FontSize="13" FontWeight="Medium" x:Name="AuthorTextBlock">
+                        <TextBlock.Foreground>
+                          <DynamicResource ResourceKey="LabelBrush" />
+                        </TextBlock.Foreground>
+                      </fuc:SelectableTextBlock>
+                      <fuc:SelectableTextBlock Grid.Column="2" Margin="0,1,10,0" FontSize="12" x:Name="AuthorDateTextBlock">
+                        <TextBlock.Foreground>
+                          <DynamicResource ResourceKey="SecondaryLabelBrush" />
+                        </TextBlock.Foreground>
+                      </fuc:SelectableTextBlock>
+                      <StackPanel Orientation="Horizontal" Grid.Column="4" HorizontalAlignment="Right">
+                        <StackPanel.Children>
+                          <fuc:SelectableTextBlock Margin="0,1,4,0" FontSize="12" x:Name="ShaTextBlock">
+                            <TextBlock.Foreground>
+                              <DynamicResource ResourceKey="SecondaryLabelBrush" />
+                            </TextBlock.Foreground>
+                          </fuc:SelectableTextBlock>
+                          <Button Width="16" Height="16" Padding="0" Margin="0,0,0,0" VerticalAlignment="Center" BorderThickness="0" Click="ShowRevisionInSeparateWindowButton_Click" x:Name="ShowRevisionInSeparateWindowButton">
+                            <Button.Background>
+                              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                            </Button.Background>
+                            <ToolTip.Tip>Open in separate window</ToolTip.Tip>
+                            <Button.Theme>
+                              <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" />
+                            </Button.Theme>
+                            <Image>
+                              <Image.Source>
+                                <DynamicResource ResourceKey="OpenInSeparateWindowIcon" />
+                              </Image.Source>
+                              <Image.Height>14</Image.Height>
+                              <Image.Width>14</Image.Width>
+                            </Image>
+                          </Button>
+                        </StackPanel.Children>
+                      </StackPanel>
+                    </Grid.Children>
+                  </Grid>
+                  <fuc:ReferencePanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" FontSize="12" x:Name="ReferencePanel">
+                    <fuc:ReferencePanel.Theme>
+                      <DynamicResource ResourceKey="MultilineReferencePanelStyle" />
+                    </fuc:ReferencePanel.Theme>
+                  </fuc:ReferencePanel>
+                  <fuc:SelectableTextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="14" FontWeight="Medium" x:Name="SubjectTextBlock">
+                    <TextBlock.Foreground>
+                      <DynamicResource ResourceKey="LabelBrush" />
+                    </TextBlock.Foreground>
+                    <TextBlock.TextTrimming>CharacterEllipsis</TextBlock.TextTrimming>
+                  </fuc:SelectableTextBlock>
+                </Grid.Children>
+              </Grid>
+              <TextBlock TextAlignment="Center" Text="Not available" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="FallbackMessageTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="SecondaryLabelBrush" />
+                </TextBlock.Foreground>
+              </TextBlock>
+            </Grid.Children>
+          </Grid>
+        </Border.Child>
+      </Border>
+    </Border.Child>
+  </Border>
+</UserControl>

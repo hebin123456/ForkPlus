@@ -4,15 +4,18 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor.Hex
 {
@@ -40,9 +43,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		static HexDiffUserControl()
 		{
 			DiffByteBackgroundBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xD7, 0x00)); // Gold
-			DiffByteBackgroundBrush.Freeze();
 			DiffByteForegroundBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x00, 0x00)); // Black
-			DiffByteForegroundBrush.Freeze();
 		}
 
 		private readonly HexEditor _srcEditor;
@@ -118,8 +119,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showAsciiCheckBox.Checked += ShowAsciiCheckBox_Changed;
-			_showAsciiCheckBox.Unchecked += ShowAsciiCheckBox_Changed;
+			_showAsciiCheckBox.IsCheckedChanged+=ShowAsciiCheckBox_Changed;
 			DockPanel.SetDock(_showAsciiCheckBox, Dock.Left);
 			toolbar.Children.Add(_showAsciiCheckBox);
 
@@ -130,8 +130,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			VerticalAlignment = VerticalAlignment.Center,
 			Margin = new Thickness(0, 0, 8, 0)
 		};
-		_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-		_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+		_showOffsetCheckBox.IsCheckedChanged+=ShowOffsetCheckBox_Changed;
 		DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
 		toolbar.Children.Add(_showOffsetCheckBox);
 
@@ -245,7 +244,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				HorizontalAlignment = HorizontalAlignment.Center,
 				Margin = new Thickness(0, 4, 0, 4),
 				Padding = new Thickness(12, 2, 12, 2),
-				Visibility = Visibility.Collapsed
+				IsVisible = false
 			};
 			_loadMoreButton.Click += LoadMoreButton_Click;
 			Children.Add(_loadMoreButton);
@@ -307,7 +306,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				string dstMd5 = dstBytesFull == null ? "-" : ComputeMd5Hex(dstBytesFull);
 
 				// 切回 UI 线程：分帧执行 base.Text 赋值 + 高亮重绘 + 保存增量加载状态。
-				Dispatcher.BeginInvoke(new Action(async () =>
+				Dispatcher.Post(new Action(async () =>
 				{
 					if (token.IsCancellationRequested) return;
 					_srcFull = srcBytesFull;
@@ -347,12 +346,12 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			int maxRemaining = Math.Max(srcRemaining, dstRemaining);
 			if (maxRemaining <= 0)
 			{
-				_loadMoreButton.Visibility = Visibility.Collapsed;
+				_loadMoreButton.IsVisible = false;
 				return;
 			}
 			int nextChunk = Math.Min(LoadMoreChunkBytes, maxRemaining);
 			_loadMoreButton.Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(nextChunk) + " / 剩余 " + FormatByteSize(maxRemaining) + ")";
-			_loadMoreButton.Visibility = Visibility.Visible;
+			_loadMoreButton.IsVisible = true;
 		}
 
 		/// <summary>v3.7.1：点击"加载更多" — 后台格式化两侧下一段字节，增量追加到 editor 末尾并刷新高亮。</summary>
@@ -394,7 +393,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				HashSet<int> dstDiff = null;
 				ComputeDiffIndices(srcRendered, dstRendered, out srcDiff, out dstDiff);
 
-				Dispatcher.BeginInvoke(new Action(async () =>
+				Dispatcher.Post(new Action(async () =>
 				{
 					if (token.IsCancellationRequested) return;
 					if (srcAdd != null) _srcEditor.AppendBytesWithText(srcAdd, srcAddText, srcNewLen);
@@ -561,19 +560,25 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			return;
 		}
-		double verticalOffset = editor.TextArea.TextView.VerticalOffset;
-		double horizontalOffset = editor.TextArea.TextView.HorizontalOffset;
+		double verticalOffset = editor.TextArea.TextView.ScrollOffset.Y;
+		double horizontalOffset = editor.TextArea.TextView.ScrollOffset.X;
 		HexEditor other = editor == _srcEditor ? _dstEditor : _srcEditor;
 		_isSyncingScroll = true;
 		try
 		{
-			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
+			// 修复（2026-09-05）：同步前检查差值，避免无意义的 ScrollTo 触发额外事件
+			const double tolerance = 0.5;
+			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+				&& other.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+				&& Math.Abs(other.TextArea.TextView.ScrollOffset.Y - verticalOffset) > tolerance)
 			{
-				other.ScrollToVerticalOffset(verticalOffset);
+				other.ScrollToVerticalOffsetCompat(verticalOffset);
 			}
-			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
+			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+				&& other.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+				&& Math.Abs(other.TextArea.TextView.ScrollOffset.X - horizontalOffset) > tolerance)
 			{
-				other.ScrollToHorizontalOffset(horizontalOffset);
+				other.ScrollToHorizontalOffsetCompat(horizontalOffset);
 			}
 		}
 		finally

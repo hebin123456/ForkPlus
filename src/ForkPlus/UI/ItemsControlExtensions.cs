@@ -1,43 +1,46 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI
 {
 	public static class ItemsControlExtensions
 	{
-		public static object GetObjectAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : DependencyObject
+		public static object GetObjectAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.Controls.Control
 		{
 			ItemContainer containerAtPoint = control.GetContainerAtPoint<ItemContainer>(p);
 			if (containerAtPoint == null)
 			{
 				return null;
 			}
-			return control.ItemContainerGenerator.ItemFromContainer(containerAtPoint);
+			return control.ItemFromContainer(containerAtPoint);
 		}
 
-		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : DependencyObject
+		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.Controls.Control
 		{
-			HitTestResult hitTestResult = VisualTreeHelper.HitTest(control, p);
-			if (hitTestResult == null)
+			// Migration note：WPF HitTestResult.VisualHit → 兼容层 HitTest 直接返回 Visual。
+			global::Avalonia.Visual visualHit = VisualTreeHelper.HitTest(control, p);
+			if (visualHit == null)
 			{
 				return null;
 			}
-			DependencyObject dependencyObject = hitTestResult.VisualHit;
-			while (VisualTreeHelper.GetParent(dependencyObject) != null && !(dependencyObject is ItemContainer))
+			global::Avalonia.Visual dependencyObject = visualHit;
+			while (global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject) != null && !(dependencyObject is ItemContainer))
 			{
-				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
 			}
 			return dependencyObject as ItemContainer;
 		}
 
-		public static void FocusSelectedItem(this Selector control)
+		public static void FocusSelectedItem(this SelectingItemsControl control)
 		{
-			if (control.SelectedIndex >= 0 && control.ItemContainerGenerator.ContainerFromIndex(control.SelectedIndex) is IInputElement element)
+			if (control.SelectedIndex >= 0 && control.ContainerFromIndex(control.SelectedIndex) is IInputElement element)
 			{
-				Keyboard.Focus(element);
+				(element).Focus();
 			}
 		}
 	}

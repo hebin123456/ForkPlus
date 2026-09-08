@@ -1,0 +1,162 @@
+<UserControl Width="300" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatusUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Border>
+    <Border.Background>
+      <DynamicResource ResourceKey="StatusBar.Background" />
+    </Border.Background>
+    <Border.CornerRadius>3</Border.CornerRadius>
+    <Border.Child>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition MinWidth="20" Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition MinWidth="20" Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="18" />
+          <RowDefinition Height="16" />
+          <RowDefinition Height="2" />
+        </Grid.RowDefinitions>
+        <Grid.Children>
+          <Grid Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,2" ClipToBounds="True">
+            <Grid.Children>
+              <Grid Height="32" Margin="0,-8,0,-8" VerticalAlignment="Stretch" HorizontalAlignment="Center" x:Name="TitleContainer">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="16" />
+                  <RowDefinition Height="16" />
+                </Grid.RowDefinitions>
+                <Grid.Children>
+                  <Grid Grid.Row="0" HorizontalAlignment="Center" x:Name="SecondaryTitleGrid">
+                    <Grid.Children>
+                      <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
+                        <ProgressBar.Theme>
+                          <DynamicResource ResourceKey="CircularProgressBar" />
+                        </ProgressBar.Theme>
+                        <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
+                      </ProgressBar>
+                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="SecondaryTitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
+                        <TextBlock.Foreground>
+                          <DynamicResource ResourceKey="LabelBrush" />
+                        </TextBlock.Foreground>
+                      </TextBlock>
+                    </Grid.Children>
+                  </Grid>
+                  <Grid Grid.Row="1" HorizontalAlignment="Center" x:Name="TitleGrid">
+                    <Grid.Children>
+                      <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
+                        <ProgressBar.Theme>
+                          <DynamicResource ResourceKey="CircularProgressBar" />
+                        </ProgressBar.Theme>
+                        <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
+                      </ProgressBar>
+                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
+                        <TextBlock.Foreground>
+                          <DynamicResource ResourceKey="LabelBrush" />
+                        </TextBlock.Foreground>
+                      </TextBlock>
+                    </Grid.Children>
+                  </Grid>
+                </Grid.Children>
+                <Grid.RenderTransform>
+                  <TranslateTransform Y="-8" />
+                </Grid.RenderTransform>
+              </Grid>
+            </Grid.Children>
+          </Grid>
+          <Button Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="0,8,4,0" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Center" Height="16" Width="16" BorderThickness="0" Click="CancelButton_Click" x:Name="CancelButton">
+            <Button.Background>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </Button.Background>
+            <Button.IsVisible>False</Button.IsVisible>
+            <Button.Theme>
+              <DynamicResource ResourceKey="InlineButton" />
+            </Button.Theme>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="CancelJobIcon" />
+              </Image.Source>
+            </Image>
+          </Button>
+          <fuc:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
+            <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" x:Name="ShowActivityManagerToggleButton" ToolTip.Tip="Activity Manager">
+              <ToggleButton.Theme>
+                <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+              </ToggleButton.Theme>
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+              <Image>
+                <Image.Source>
+                  <DynamicResource ResourceKey="ListIcon" />
+                </Image.Source>
+              </Image>
+            </ToggleButton>
+            <Popup Placement="Top"
+                   PlacementTarget="{Binding ElementName=ShowActivityManagerToggleButton}"
+                   IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}"
+                   x:Name="ActivityManagerPopup">
+              <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
+            </Popup>
+            <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->
+            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Click="GitMmOutputButton_Click" x:Name="GitMmOutputButton" IsVisible="False" ToolTip.Tip="Command Output">
+              <Button.Theme>
+                <DynamicResource ResourceKey="BranchOptionButton" />
+              </Button.Theme>
+              <Image x:Name="GitMmOutputButtonImage">
+                <Image.Source>
+                  <DynamicResource ResourceKey="ConsoleIcon" />
+                </Image.Source>
+              </Image>
+            </Button>
+            <!-- v3.11.0：git mm History 按钮（仅 git mm 激活时可见，紧邻 Output 按钮右侧） -->
+            <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Click="GitMmHistoryButton_Click" x:Name="GitMmHistoryButton" IsVisible="False" ToolTip.Tip="Command History">
+              <Button.Theme>
+                <DynamicResource ResourceKey="BranchOptionButton" />
+              </Button.Theme>
+              <Image>
+                <Image.Source>
+                  <DynamicResource ResourceKey="RevisionListIcon" />
+                </Image.Source>
+              </Image>
+            </Button>
+            <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Click="FilterButton_Click" x:Name="FilterButton">
+              <Button.Theme>
+                <DynamicResource ResourceKey="BranchOptionButton" />
+              </Button.Theme>
+              <Image x:Name="FilterButtonImage">
+                <Image.Source>
+                  <DynamicResource ResourceKey="BranchFilterOffIcon" />
+                </Image.Source>
+              </Image>
+            </Button>
+            <Grid HorizontalAlignment="Left">
+              <Grid.Children>
+                <Image Margin="0" Width="12" Height="12" x:Name="DescriptionIcon">
+                  <Image.Source>
+                    <DynamicResource ResourceKey="BranchIcon" />
+                  </Image.Source>
+                  <Image.IsVisible>False</Image.IsVisible>
+                  <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
+                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                  <ToolTip.Tip>Cancel</ToolTip.Tip>
+                </Image>
+                <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" x:Name="DescriptionTextBlock" PointerPressed="DescriptionTextBlock_MouseUp">
+                  <TextBlock.Foreground>
+                    <DynamicResource ResourceKey="LabelBrush" />
+                  </TextBlock.Foreground>
+                  <TextBlock.FontSize>12</TextBlock.FontSize>
+                </TextBlock>
+              </Grid.Children>
+            </Grid>
+          </fuc:CenteredDockPanel>
+          <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Margin="0" x:Name="StatusProgressBar" IsVisible="True">
+            <ProgressBar.Foreground>
+              <DynamicResource ResourceKey="SystemAccentBrush" />
+            </ProgressBar.Foreground>
+            <ProgressBar.BorderBrush>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </ProgressBar.BorderBrush>
+          </ProgressBar>
+        </Grid.Children>
+      </Grid>
+    </Border.Child>
+  </Border>
+</UserControl>

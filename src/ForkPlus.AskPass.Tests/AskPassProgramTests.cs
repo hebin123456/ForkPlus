@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Xunit;
 
@@ -27,8 +28,11 @@ namespace ForkPlus.AskPass.Tests
 	public class AskPassProgramTests
 	{
 		private static string ExePath =>
-			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory
-			Path.Combine(AppContext.BaseDirectory, "ForkPlus.AskPass.exe");
+			// .NET 10 推荐 AppContext.BaseDirectory 替代 AppDomain.CurrentDomain.BaseDirectory。
+			// apphost 命名按平台：Windows 带 .exe 扩展名，Linux/macOS 无扩展名
+			// （2026-09-06 修复：此前硬编码 .exe，Linux 上套件 5 挂）。
+			Path.Combine(AppContext.BaseDirectory,
+				RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ForkPlus.AskPass.exe" : "ForkPlus.AskPass");
 
 		private static string ManagedDllPath =>
 			// .NET 10 下托管代码在 .dll 中（.exe 是 native apphost）

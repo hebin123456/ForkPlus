@@ -1,0 +1,65 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+    <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <!-- Migration note（2026-09-03，"弹窗 TextBox 选中颜色肉眼无法识别"根因）：
+         WPF TextBox 默认 SelectionBrush=SystemColors.HighlightBrush（系统高亮蓝）+
+         SelectionTextBrush=HighlightText（白），选区蓝底白字。迁移版自定义主题最初只把
+         SelectionBrush/SelectionForegroundBrush 传进 TextPresenter（画刷非空），但漏了
+         SelectionStart/SelectionEnd/CaretIndex/PasswordChar/TextAlignment/TextWrapping——
+         Avalonia 官方 Fluent 主题（12.1.1 TextBox.xaml）这些全部经 TemplateBinding 下传，
+         TextBox 程序化设选区后靠绑定流入 presenter；实测漏绑时 presenter.SelectionStart/End
+         恒为 0/0，选区索引根本到不了渲染层 → 画刷再对也没有任何高亮（用户"看不清"的真根因）。
+         附带修复：PasswordChar 未下传 → AskPassWindow/SshPassphraseWindow 密码明文显示；
+         TextWrapping 未下传 → StatisticsUserControl CodeLinesExcludeBox 不换行。 -->
+    <!-- Migration note（2026-09-04，"重命名仓库时选中颜色不对"）：选区原绑 AccentBrush——
+         Monokai/YellowDark/CyanDark 等浅色 accent 皮肤上白字不可读。改为全皮肤固定选区蓝
+         （同列表选中项 #236BD2），见 Brushes.axaml 的 TextBox.Selection.* 注释。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <!-- Migration note（2026-09-04，"TextBox 里面的字和左/上边框贴得太紧"）：原版 WPF 的
+         TextBox 模板经 PART_ContentHost（ScrollViewer）自动应用 Padding；迁移模板把
+         TextPresenter 直接放 Border 里且未下传 Padding——所有显式 Padding="4,2,4,2" 的
+         使用处（100+ 处）对真实文字全部无效（只作用于 placeholder），文字 0px 贴边。
+         修复：主题默认 Padding="2,1"（显式设置处局部值优先不受影响），模板经
+         Margin="{TemplateBinding Padding}" 下传到 TextPresenter。 -->
+    <Setter Property="Padding" Value="2,1" />
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+            <!-- Migration note（2026-09-03，同上根因）：WPF 模板经 PART_ContentHost（ScrollViewer）
+                 自动从 TextBox 渲染选区/光标/密码掩码；Avalonia 必须在 TextPresenter 上显式
+                 TemplateBinding 下传（对齐官方 Fluent 主题），漏一个属性对应功能即静默失效。
+                 Padding 同理经 Margin 下传（官方 Fluent 主题做法），否则文字贴边框。 -->
+            <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+          </Border>
+
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+<!-- Migration note：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
+    <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
+        <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
+    </Style>-->
+
+    <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="0.56" />
+    </Style>
+    <Style Selector="^:focus /template/ Border#Border">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style></ControlTheme>
+<!-- Migration note：原 WPF PasswordBox 隐式样式（x:Key={x:Type PasswordBox}）Avalonia 无 PasswordBox 类型，pass7 误转成第二个 TextBox 主题导致资源重复键（运行时 Add 抛 ArgumentException），已删除；密码框语义由各 TextBox 元素上的 PasswordChar 属性承担。 -->
+</ResourceDictionary>

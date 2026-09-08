@@ -1,15 +1,19 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class AvatarImage : Image
 	{
-		public static readonly DependencyProperty UserIdentityProperty = DependencyProperty.Register("UserIdentity", typeof(UserIdentity), typeof(AvatarImage), new PropertyMetadata((object)null));
+		public static readonly global::Avalonia.StyledProperty<UserIdentity> UserIdentityProperty =
+    global::Avalonia.AvaloniaProperty.Register<AvatarImage, UserIdentity>("UserIdentity");
 
-		public static readonly DependencyProperty UrlProperty = DependencyProperty.Register("Url", typeof(string), typeof(AvatarImage), new PropertyMetadata((object)null));
+		public static readonly global::Avalonia.StyledProperty<string> UrlProperty =
+    global::Avalonia.AvaloniaProperty.Register<AvatarImage, string>("Url");
 
 		[Null]
 		public UserIdentity UserIdentity
@@ -37,7 +41,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == UserIdentityProperty)
@@ -67,7 +71,7 @@ namespace ForkPlus.UI.Controls
 			new AvatarManager().RequestAvatar(this, userIdentity);
 		}
 
-		public void SetImage(ImageSource imageSource, UserIdentity userIdentity)
+		public void SetImage(global::Avalonia.Media.IImage imageSource, UserIdentity userIdentity)
 		{
 			if (UserIdentity?.Name == userIdentity?.Name && UserIdentity?.Email.ToLower() == userIdentity?.Email.ToLower())
 			{

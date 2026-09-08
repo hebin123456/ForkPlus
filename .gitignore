@@ -1,27 +1,25 @@
-# Build outputs
-**/bin/
-**/obj/
-**/obj_agent/
-
-# Visual Studio / Rider
+bin/
+obj/
+*.user
 .vs/
 .idea/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-_ReSharper*/
-*.DotSettings.user
+*.binlog
 
-# Logs
-*.log
-
-# biturbo 原生库不再提交，构建期 RestoreBiturbo target 按编译平台从 Biturbo 仓库最新 release 拉取
-# Windows → biturbo.dll / Linux → libbiturbo.so / macOS → libbiturbo.dylib
+# 构建期从 hebin123456/Biturbo、hebin123456/tokei 的 latest release 拉取的原生产物
+# 不入库（RestoreBiturbo/RestoreTokei Target 与 CI 显式下载步骤负责拉取）
 third_party/biturbo.dll
 third_party/libbiturbo.so
 third_party/libbiturbo.dylib
-
-# tokei.exe 不再提交，缺失时用 cargo install 从源码编译（tokei 上游不发布预编译二进制）
+third_party/tokei
 third_party/tokei.exe
-third_party/.tokei-install/
+# 构建期从 hebin123456/oxyplot-avalonia（fork）latest release 拉取的预编译 nupkg
+# 不入库（RestoreOxyPlotAvalonia Target 与 CI 显式下载步骤负责拉取）
+third_party/nuget/
+
+# 测试运行期在仓库根产生的应用数据目录（E2E 以 CWD=仓库根启动）
+/ForkPlus/
+/ForkPlusData/
+
+# 测试运行期落在 docs/evidence 顶层的过程性截图（如 InteractiveRebaseScreenshotTests 的 ir-*.png）；
+# docs/evidence/e2e/ 下的 E2E 证据截图正常入库
+docs/evidence/*.png

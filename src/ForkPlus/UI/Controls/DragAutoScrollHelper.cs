@@ -1,8 +1,12 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
@@ -19,9 +23,10 @@ namespace ForkPlus.UI.Controls
 		public DragAutoScrollHelper(ItemsControl control)
 		{
 			_control = control;
-			_control.DragOver += OnDragOver;
-			_control.DragLeave += OnDragLeave;
-			_control.Drop += OnDrop;
+			// Migration note：WPF 拖放事件属性（DragOver/DragLeave/Drop）→ Avalonia DragDrop 静态路由事件订阅。
+			global::Avalonia.Input.DragDrop.AddDragOverHandler(_control, OnDragOver);
+			global::Avalonia.Input.DragDrop.AddDragLeaveHandler(_control, OnDragLeave);
+			global::Avalonia.Input.DragDrop.AddDropHandler(_control, OnDrop);
 		}
 
 		private void OnDragOver(object sender, DragEventArgs e)
@@ -31,7 +36,7 @@ namespace ForkPlus.UI.Controls
 			{
 				StartAutoScroll(-1);
 			}
-			else if (position.Y > _control.ActualHeight - 25.0)
+			else if (position.Y > _control.Bounds.Height - 25.0)
 			{
 				StartAutoScroll(1);
 			}
@@ -90,15 +95,7 @@ namespace ForkPlus.UI.Controls
 
 		private ScrollViewer GetScrollViewer()
 		{
-			if (VisualTreeHelper.GetChildrenCount(_control) == 0)
-			{
-				return null;
-			}
-			if (!(VisualTreeHelper.GetChild(_control, 0) is Border reference))
-			{
-				return null;
-			}
-			return VisualTreeHelper.GetChild(reference, 0) as ScrollViewer;
+			return ScrollViewerHelper.FindScrollViewer(_control);
 		}
 	}
 }

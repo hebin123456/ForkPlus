@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Commands
@@ -12,9 +12,9 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Redo";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Z, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.Z, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
-		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.Y, ModifierKeys.Control);
+		public KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.Y, global::Avalonia.Input.KeyModifiers.Control);
 
 		public void Execute(RepositoryUserControl repositoryUserControl)
 		{

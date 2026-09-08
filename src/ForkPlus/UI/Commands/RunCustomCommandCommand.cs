@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
@@ -49,7 +49,7 @@ namespace ForkPlus.UI.Commands
 				return true;
 			}
 			RunSharedCustomCommandConfirmationWindow runSharedCustomCommandConfirmationWindow = new RunSharedCustomCommandConfirmationWindow(gitModule.RepositoryName);
-			runSharedCustomCommandConfirmationWindow.Owner = MainWindow.Instance;
+			runSharedCustomCommandConfirmationWindow.SetOwnerCompat(MainWindow.Instance);
 			if (runSharedCustomCommandConfirmationWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (runSharedCustomCommandConfirmationWindow.TrustThisRepository)

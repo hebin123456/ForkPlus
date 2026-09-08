@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
@@ -22,6 +22,9 @@ using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
 using ForkPlus.Services;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls
 {
@@ -53,13 +56,17 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		protected Job _activeRefreshJob;
 
-		public static readonly DependencyProperty RepositoryUserControlProperty = DependencyProperty.Register("RepositoryUserControl", typeof(RepositoryUserControl), typeof(FileDiffControl), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<RepositoryUserControl> RepositoryUserControlProperty =
+    global::Avalonia.AvaloniaProperty.Register<FileDiffControl, RepositoryUserControl>("RepositoryUserControl", null);
 
-		public static readonly DependencyProperty TargetProperty = DependencyProperty.Register("Target", typeof(FileDiffControlTarget), typeof(FileDiffControl), new PropertyMetadata(FileDiffControlTarget.Revision));
+		public static readonly global::Avalonia.StyledProperty<FileDiffControlTarget> TargetProperty =
+    global::Avalonia.AvaloniaProperty.Register<FileDiffControl, FileDiffControlTarget>("Target");
 
-		public static readonly DependencyProperty SubControlModeProperty = DependencyProperty.Register("SubControlMode", typeof(bool), typeof(FileDiffControl), new PropertyMetadata(false));
+		public static readonly global::Avalonia.StyledProperty<bool> SubControlModeProperty =
+    global::Avalonia.AvaloniaProperty.Register<FileDiffControl, bool>("SubControlMode", false);
 
-		public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(GitCommandResult<DiffContent>), typeof(FileDiffControl), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<GitCommandResult<DiffContent>> ContentProperty =
+    global::Avalonia.AvaloniaProperty.Register<FileDiffControl, GitCommandResult<DiffContent>>("Content", null);
 
 		private static readonly Regex SubmoduleChangesMergeRegEx = new Regex("(\\b[0-9a-f]{40}),(\\b[0-9a-f]{40})", RegexOptions.Multiline | RegexOptions.Compiled);
 
@@ -123,7 +130,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.V && KeyboardHelper.IsCtrlDown && !(Keyboard.FocusedElement is TextBox))
 			{
@@ -140,10 +147,10 @@ namespace ForkPlus.UI.Controls
 					}
 				}
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 			if (e.Property == ContentProperty)
@@ -203,7 +210,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading submodule content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<SubmoduleDiffContent> submoduleDiffContentResult2 = LoadSubmoduleDiffContent(diff2, parsedDiffContent.GitModule, submoduleChangedFile2, monitor);
-							base.Dispatcher.Async(delegate
+							base.Dispatcher.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -270,16 +277,21 @@ namespace ForkPlus.UI.Controls
 						TextDiffControl textDiffControl3 = new TextDiffControl(Target);
 						if (SubControlMode)
 						{
-							textDiffControl3.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl3.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl3.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
+							textDiffControl3.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 						}
 						textDiffControl3.PositionCache = _positionCache;
 						return textDiffControl3;
 					}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
 					{
-						c.EditorContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+						c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 						{
-							DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor;
+							DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+							if (diffCodeEditor == null)
+							{
+								e.Handled = true;
+								return;
+							}
 							ContextMenu contextMenu = diffCodeEditor.ContextMenu;
 							contextMenu.Items.Clear();
 							Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
@@ -300,7 +312,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading image content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<BinaryDiffContent> binaryDiffContentResult = LoadBinaryDiffContent(diff2, repositoryUserControl.GitModule, changedFile, monitor);
-							base.Dispatcher.Async(delegate
+							base.Dispatcher.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -336,7 +348,7 @@ namespace ForkPlus.UI.Controls
 					{
 						hexDiffContentResult = LoadHexDiffContent(diff2, parsedDiffContent.GitModule, changedFile, monitor);
 					}
-					base.Dispatcher.Async(delegate
+					base.Dispatcher.Post(delegate
 					{
 						if (!monitor.IsCanceled)
 						{
@@ -380,7 +392,7 @@ namespace ForkPlus.UI.Controls
 						_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading submodule content for '{0}'", changedFile.Path), delegate(JobMonitor monitor)
 						{
 							GitCommandResult<SubmoduleDiffContent> submoduleDiffContentResult = LoadSubmoduleDiffContent(diff2, parsedDiffContent.GitModule, submoduleChangedFile, monitor);
-							base.Dispatcher.Async(delegate
+							base.Dispatcher.Post(delegate
 							{
 								if (!monitor.IsCanceled)
 								{
@@ -411,8 +423,8 @@ namespace ForkPlus.UI.Controls
 						TextDiffControl textDiffControl2 = new TextDiffControl(Target);
 						if (SubControlMode)
 						{
-							textDiffControl2.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-							textDiffControl2.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl2.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
+							textDiffControl2.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 						}
 						textDiffControl2.PositionCache = _positionCache;
 						return textDiffControl2;
@@ -454,8 +466,8 @@ namespace ForkPlus.UI.Controls
 					TextDiffControl textDiffControl = new TextDiffControl(Target);
 					if (SubControlMode)
 					{
-						textDiffControl.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-						textDiffControl.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+						textDiffControl.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
+						textDiffControl.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 					}
 					textDiffControl.PositionCache = _positionCache;
 					return textDiffControl;
@@ -576,7 +588,7 @@ namespace ForkPlus.UI.Controls
 					fileContentResult = new GetFileContentGitCommand().Execute(gitModule, headShaNullable.GetValueOrDefault(), changedFile.Path);
 				}
 				GitCommandResult<Content> result = fileContentResult;
-				base.Dispatcher.Async(delegate
+				base.Dispatcher.Post(delegate
 				{
 					if (!monitor.IsCanceled)
 					{
@@ -629,14 +641,14 @@ namespace ForkPlus.UI.Controls
 					TextContentControl textContentControl = new TextContentControl();
 					textContentControl.PositionCache = _positionCache;
 					textContentControl.ContextMenu = new ContextMenu();
-					textContentControl.ContextMenuClosing += delegate
+					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(textContentControl,delegate
 					{
 						textContentControl.ContextMenu.Items.Clear();
-					};
+					});
 					return textContentControl;
 				}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 				{
-					c.ContextMenuOpening += delegate(object s, ContextMenuEventArgs e)
+					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::ForkPlus.UI.WpfCompat.ContextMenuEventArgs e)
 					{
 						if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 						{
@@ -645,7 +657,7 @@ namespace ForkPlus.UI.Controls
 							contextMenu.Items.Add(new Separator());
 							FileContentControl.Commands.Copy.AddMenuItems(textContentControl, contextMenu);
 						}
-					};
+					});
 					c.SetContent(textContent);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 				});
@@ -1030,27 +1042,35 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected void DiffCodeEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		protected void DiffCodeEditor_PreviewMouseWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
+				if (parent != null)
+				{
+					e.Handled = false;
+					parent.RaiseEvent(e);
+					e.Handled = true;
+				}
 			}
 		}
 
-		protected void SubmoduleDiffUserControl_RevisionListView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		protected void SubmoduleDiffUserControl_RevisionListView_PreviewMouseWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				MouseWheelEventArgs mouseWheelEventArgs = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = UIElement.MouseWheelEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((FrameworkElement)sender).Parent as FrameworkElement)?.RaiseEvent(mouseWheelEventArgs);
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
+				if (parent != null)
+				{
+					e.Handled = false;
+					parent.RaiseEvent(e);
+					e.Handled = true;
+				}
 			}
 		}
 

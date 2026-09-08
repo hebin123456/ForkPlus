@@ -13,6 +13,48 @@ namespace ForkPlus.UI.Controls.Flattener
 
 			private readonly object _syncRoot = new object();
 
+			// 性能优化（大仓库侧栏批量插入分支）：批量更新期间抑制逐节点 CollectionChanged，
+			// 结束时只发一次 Reset。否则 N 个分支 = N 次 Add 通知 → 列表每次刷新布局（O(N²)）。
+			private int _deferNotifications;
+
+			private bool _notificationsDirty;
+
+			public IDisposable DeferNotifications()
+			{
+				_deferNotifications++;
+				return new NotificationDeferral(this);
+			}
+
+			private sealed class NotificationDeferral : IDisposable
+			{
+				private Flattener _owner;
+
+				public NotificationDeferral(Flattener owner)
+				{
+					_owner = owner;
+				}
+
+				public void Dispose()
+				{
+					Flattener owner = _owner;
+					_owner = null;
+					if (owner == null)
+					{
+						return;
+					}
+					owner._deferNotifications--;
+					if (owner._deferNotifications <= 0)
+					{
+						owner._deferNotifications = 0;
+						if (owner._notificationsDirty)
+						{
+							owner._notificationsDirty = false;
+							owner.CollectionChanged?.Invoke(owner, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+						}
+					}
+				}
+			}
+
 			public object this[int index]
 			{
 				get
@@ -108,6 +150,11 @@ namespace ForkPlus.UI.Controls.Flattener
 
 			public void NodesInserted(int index, IEnumerable<MultiselectionTreeViewItem> nodes)
 			{
+				if (_deferNotifications > 0)
+				{
+					_notificationsDirty = true;
+					return;
+				}
 				index--;
 				foreach (MultiselectionTreeViewItem node in nodes)
 				{
@@ -117,6 +164,11 @@ namespace ForkPlus.UI.Controls.Flattener
 
 			public void NodesRemoved(int index, IEnumerable<MultiselectionTreeViewItem> nodes)
 			{
+				if (_deferNotifications > 0)
+				{
+					_notificationsDirty = true;
+					return;
+				}
 				index--;
 				foreach (MultiselectionTreeViewItem node in nodes)
 				{

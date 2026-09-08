@@ -1,10 +1,14 @@
+using ForkPlus.UI.WpfCompat;
 using System;
 using System.IO;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -12,9 +16,9 @@ namespace ForkPlus.UI.UserControls
 	{
 		public ChangedFile ChangedFile { get; }
 
-		public ImageSource ChangeTypeIcon { get; }
+		public global::Avalonia.Media.IImage ChangeTypeIcon { get; }
 
-		public ImageSource FileTypeIcon { get; }
+		public global::Avalonia.Media.IImage FileTypeIcon { get; }
 
 		public bool IsDirectory => ChangedFile.IsDirectory;
 
@@ -24,7 +28,7 @@ namespace ForkPlus.UI.UserControls
 
 		public string ToolTip { get; }
 
-		public FileListItem(ChangedFile changedFile, string name, ImageSource fileTypeIcon)
+		public FileListItem(ChangedFile changedFile, string name, global::Avalonia.Media.IImage fileTypeIcon)
 		{
 			ChangedFile = changedFile;
 			ChangeTypeIcon = GetChangeTypeIcon(changedFile);
@@ -54,7 +58,7 @@ namespace ForkPlus.UI.UserControls
 			return false;
 		}
 
-		private static ImageSource GetChangeTypeIcon(ChangedFile changedFile)
+		private static global::Avalonia.Media.IImage GetChangeTypeIcon(ChangedFile changedFile)
 		{
 			if (changedFile.IsDirectory)
 			{
@@ -80,20 +84,20 @@ namespace ForkPlus.UI.UserControls
 			return l.IsDirectory;
 		}
 
-		public override void StartDrag(DependencyObject dragSource, MultiselectionTreeViewItem[] nodes)
+		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // Migration note：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
 			try
 			{
-				DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), (global::Avalonia.Input.DragDropEffects)7);
 			}
 			catch
 			{
 			}
 		}
 
-		protected override IDataObject GetDataObject(MultiselectionTreeViewItem[] nodes)
+		protected override global::Avalonia.Input.IDataTransfer GetDataObject(MultiselectionTreeViewItem[] nodes)
 		{
-			DataObject dataObject = new DataObject();
+			WpfDataObject dataObject = new WpfDataObject();
 			dataObject.SetData(FileListTreeView.DragItemsFormat, nodes);
 			return dataObject;
 		}

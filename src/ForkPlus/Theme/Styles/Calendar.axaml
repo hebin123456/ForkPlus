@@ -1,0 +1,254 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="CalendarButtonStyle" TargetType="CalendarButton">
+    <Setter Property="Background" Value="{DynamicResource Calendar.ButtonSelectedBackground}" />
+    <Setter Property="MinWidth" Value="40" />
+    <Setter Property="MinHeight" Value="42" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CalendarButton">
+          <Grid>
+            <!--
+      WPF migration note: VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。
+      原始片段：
+      <VisualStateManager.VisualStateGroups xmlns="https://github.com/avaloniaui">
+                    <VisualStateGroup x:Name="SelectionStates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                      <VisualStateGroup.Transitions>
+                        <VisualTransition GeneratedDuration="0" />
+                      </VisualStateGroup.Transitions>
+                      <VisualState x:Name="Unselected" />
+                      <VisualState x:Name="Selected">
+                        <Storyboard>
+                          <DoubleAnimation Duration="0" To=".75" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="SelectedBackground" />
+                        </Storyboard>
+                      </VisualState>
+                    </VisualStateGroup>
+                  </VisualStateManager.VisualStateGroups>
+    -->
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="SelectedBackground" />
+            <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="Background" />
+            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <!-- Migration note：WPF CalendarButton.IsInactive 是普通 CLR 属性（非 AvaloniaProperty，选择器不可用）；
+         Avalonia 12 官方 Fluent 主题用 :inactive 伪类（CalendarItem 运行时设置），选择器改伪类语法。 -->
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+        <Setter Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="CalendarDayButtonStyle" TargetType="CalendarDayButton">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="MinWidth" Value="5" />
+    <Setter Property="MinHeight" Value="5" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CalendarDayButton">
+          <Border Background="{TemplateBinding Background}" x:Name="Border">
+            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <!-- Migration note：WPF [IsSelected=True]/[IsInactive=True] 是 CLR 属性选择器；Avalonia 12 用 :selected/:inactive 伪类。 -->
+    <Style Selector="^:selected /template/ Border#Border">
+        <Setter Value="{DynamicResource Calendar.ButtonSelectedBackground}" Property="Background" />
+    </Style>
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
+        <Setter Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="Button">
+    <Grid Cursor="Hand">
+      <!--
+      WPF migration note: VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。
+      原始片段：
+      <VisualStateManager.VisualStateGroups xmlns="https://github.com/avaloniaui">
+              <VisualStateGroup x:Name="CommonStates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Disabled" />
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+    -->
+      <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
+      <Grid>
+        <Path Data="M288.75,232.25L288.75,240.625 283,236.625z" Margin="14,-2,0,0" Fill="{DynamicResource LabelBrush}" HorizontalAlignment="Left" Height="10" Stretch="Fill" VerticalAlignment="Center" Width="6" x:Name="path" />
+      </Grid>
+    </Grid>
+  </ControlTemplate>
+  <ControlTemplate x:Key="NextButtonTemplate" TargetType="Button">
+    <Grid Cursor="Hand">
+      <!--
+      WPF migration note: VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。
+      原始片段：
+      <VisualStateManager.VisualStateGroups xmlns="https://github.com/avaloniaui">
+              <VisualStateGroup x:Name="CommonStates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Disabled" />
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+    -->
+      <Rectangle Fill="#00FFFFFF" Opacity="1" Stretch="Fill" />
+      <Grid>
+        <Path Data="M282.875,231.875L282.875,240.375 288.625,236z" Margin="0,-2,14,0" Fill="{DynamicResource LabelBrush}" HorizontalAlignment="Right" Height="10" Stretch="Fill" VerticalAlignment="Center" Width="6" x:Name="path" />
+      </Grid>
+    </Grid>
+  </ControlTemplate>
+  <ControlTemplate x:Key="HeaderButtonTemplate" TargetType="Button">
+    <Grid Cursor="Hand">
+      <!--
+      WPF migration note: VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。
+      原始片段：
+      <VisualStateManager.VisualStateGroups xmlns="https://github.com/avaloniaui">
+              <VisualStateGroup x:Name="CommonStates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Disabled" />
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+    -->
+      <ContentPresenter Margin="1,2,1,4" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" TextElement.Foreground="{TemplateBinding Foreground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="buttonContent" />
+    </Grid>
+  </ControlTemplate>
+  <ControlTheme x:Key="CalendarItemStyle" TargetType="CalendarItem">
+    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="Margin" Value="0,3,0,3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CalendarItem">
+<!-- Migration note：WPF ControlTemplate.Resources 块注释化（Avalonia ControlTemplate 无 Resources，模板内资源须上移至 ControlTheme.Resources 或改用 DataTemplates 集合）。原始片段：
+          <ControlTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate x:Key="{x:StaticExtension CalendarItem.DayTitleTemplateResourceKey}">
+                <TextBlock FontWeight="Medium" FontSize="13" HorizontalAlignment="Center" Margin="0,6,0,6" VerticalAlignment="Center">
+                  <TextBlock.Text>
+                    <Binding />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DataTemplate>
+            </ResourceDictionary>
+          </ControlTemplate.Resources>
+-->
+          <Grid x:Name="PART_Root">
+            <!--
+      WPF migration note: VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。
+      原始片段：
+      <VisualStateManager.VisualStateGroups xmlns="https://github.com/avaloniaui">
+                    <VisualStateGroup x:Name="CommonStates" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                      <VisualState x:Name="Normal" />
+                      <VisualState x:Name="Disabled">
+                        <Storyboard>
+                          <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_DisabledVisual" />
+                        </Storyboard>
+                      </VisualState>
+                    </VisualStateGroup>
+                  </VisualStateManager.VisualStateGroups>
+    -->
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="1">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="1">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <Button Grid.Column="0" Focusable="False" HorizontalAlignment="Left" Height="20" Grid.Row="0" Template="{DynamicResource PreviousButtonTemplate}" Width="28" x:Name="PART_PreviousButton" />
+                  <Button Grid.Column="1" FontWeight="Medium" Focusable="False" FontSize="12" HorizontalAlignment="Center" Grid.Row="0" Template="{DynamicResource HeaderButtonTemplate}" VerticalAlignment="Center" x:Name="PART_HeaderButton" />
+                  <Button Grid.Column="2" Focusable="False" HorizontalAlignment="Right" Height="20" Grid.Row="0" Template="{DynamicResource NextButtonTemplate}" Width="28" x:Name="PART_NextButton" />
+                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-1,6,6" Grid.Row="1" x:Name="PART_MonthView" IsVisible="True">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                  </Grid>
+                  <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="6,-3,7,6" Grid.Row="1" x:Name="PART_YearView" IsVisible="False">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                  </Grid>
+                </Grid>
+              </Border>
+            </Border>
+            <Rectangle Fill="{DynamicResource Calendar.DisabledBrush}" Opacity="0" RadiusY="2" RadiusX="2" Stretch="Fill" Stroke="{DynamicResource Calendar.DisabledBrush}" StrokeThickness="1" x:Name="PART_DisabledVisual" IsVisible="False" />
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:disabled /template/ Rectangle#PART_DisabledVisual">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <!--
+      WPF migration note: ControlTemplate 内 DataTrigger（DataContext/VM 属性条件）需人工改写（模板部件条件外观建议 Tag/Classes + 属性匹配器）。
+      原始片段：
+      <DataTrigger Value="Year" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="DisplayMode"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type Calendar}" /></Binding.RelativeSource></Binding>
+                    </DataTrigger.Binding>
+                    <Setter TargetName="PART_MonthView" Property="IsVisible" Value="False" />
+                    <Setter TargetName="PART_YearView" Property="IsVisible" Value="True" />
+                  </DataTrigger>
+    -->
+    <!--
+      WPF migration note: ControlTemplate 内 DataTrigger（DataContext/VM 属性条件）需人工改写（模板部件条件外观建议 Tag/Classes + 属性匹配器）。
+      原始片段：
+      <DataTrigger Value="Decade" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="DisplayMode"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type Calendar}" /></Binding.RelativeSource></Binding>
+                    </DataTrigger.Binding>
+                    <Setter TargetName="PART_MonthView" Property="IsVisible" Value="False" />
+                    <Setter TargetName="PART_YearView" Property="IsVisible" Value="True" />
+                  </DataTrigger>
+    --></ControlTheme>
+  <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar">
+    <Setter Property="Background" Value="{DynamicResource Calendar.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+<!-- Migration note：WPF Setter Property=CalendarDayButtonStyle 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=CalendarButtonStyle 已删（Avalonia 该类型无此属性） -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Calendar">
+          <StackPanel HorizontalAlignment="Center" x:Name="PART_Root">
+            <CalendarItem BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="PART_CalendarItem" Theme="{DynamicResource CalendarItemStyle}" />
+          </StackPanel>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

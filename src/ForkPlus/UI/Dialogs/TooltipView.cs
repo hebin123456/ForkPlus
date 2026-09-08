@@ -1,7 +1,9 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Media;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -24,8 +26,8 @@ namespace ForkPlus.UI.Dialogs
 		public TooltipView()
 		{
 			base.BorderThickness = new Thickness(1.0);
-			base.BorderBrush = Theme.BorderBrush;
-			base.Background = Theme.BackgroundBrush;
+			base.BorderBrush = global::ForkPlus.UI.Theme.BorderBrush;
+			base.Background = global::ForkPlus.UI.Theme.BackgroundBrush;
 			base.CornerRadius = new CornerRadius(3.0);
 			base.Padding = _padding;
 			base.Height = 62.0;
@@ -42,28 +44,28 @@ namespace ForkPlus.UI.Dialogs
 			stackPanel.Children.Add(_iconImage);
 			_filenameTextBlock = new TextBlock();
 			_filenameTextBlock.FontSize = 13.0;
-			_filenameTextBlock.Foreground = Theme.LabelBrush;
+			_filenameTextBlock.Foreground = global::ForkPlus.UI.Theme.LabelBrush;
 			stackPanel.Children.Add(_filenameTextBlock);
 			_stackPanel.Children.Add(stackPanel);
 			_pathTextBlock = new TextBlock();
 			_pathTextBlock.FontSize = 12.0;
-			_pathTextBlock.Foreground = Theme.SecondaryLabelBrush;
+			_pathTextBlock.Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush;
 			_pathTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
 			_stackPanel.Children.Add(_pathTextBlock);
 			_descriptionTextBlock = new TextBlock();
 			_descriptionTextBlock.Margin = new Thickness(0.0, 3.0, 0.0, 0.0);
 			_descriptionTextBlock.FontSize = 13.0;
-			_descriptionTextBlock.Foreground = Theme.LabelBrush;
+			_descriptionTextBlock.Foreground = global::ForkPlus.UI.Theme.LabelBrush;
 			_stackPanel.Children.Add(_descriptionTextBlock);
 			Child = _stackPanel;
 			Binding binding = new Binding("Width")
 			{
 				Source = this
 			};
-			BindingOperations.SetBinding(_stackPanel, FrameworkElement.WidthProperty, binding);
+			global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(_stackPanel, global::Avalonia.Controls.Control.WidthProperty, binding);
 		}
 
-		public void SetDetails(ImageSource icon, string filename, string folder, string description)
+		public void SetDetails(global::Avalonia.Media.IImage icon, string filename, string folder, string description)
 		{
 			_filenameTextBlock.Text = filename;
 			_pathTextBlock.Text = folder;

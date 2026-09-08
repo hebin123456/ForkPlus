@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -19,7 +20,7 @@ namespace ForkPlus.UI.Commands
 		public virtual KeyGesture Shortcut { get; } = new KeyGesture(Key.Return);
 
 
-		public virtual KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift);
+		public virtual KeyGesture SecondaryShortcut { get; } = new KeyGesture(Key.S, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 
 		public void Execute(CommitUserControl commitUserControl, RepositoryUserControl repositoryUserControl, ChangedFile[] changedFiles, bool amend)
@@ -75,7 +76,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, changedFiles, monitor);
 			if (!stageResult.Succeeded)
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行。
 					// 此前整段包在 if (!monitor.IsCanceled) 内，job 一旦被取消（工具栏取消按钮/刷新竞争等），
@@ -97,7 +98,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else if (TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: true, out var optimisticRepositoryStatus))
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -116,7 +117,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else if (ExceedLength(changedFiles) || changedFiles.ContainsItem((ChangedFile x) => x.ChangeType == ChangeType.Added || x.ChangeType == ChangeType.Deleted || x.ChangeType == ChangeType.Unmerged))
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -129,7 +130,7 @@ namespace ForkPlus.UI.Commands
 			{
 				string[] pathsToRefresh = changedFiles.Map((ChangedFile x) => x.Path);
 				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, pathsToRefresh, showIgnoredFiles, monitor);
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -185,7 +186,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult unstageResult = (amendMode ? new UnstageForAmendGitCommand().Execute(gitModule, changedFiles, monitor) : new UnstageGitCommand().Execute(gitModule, changedFiles, monitor));
 			if (!unstageResult.Succeeded)
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 Stage 路径同因）。
 					commitUserControl.StageJob = null;
@@ -204,7 +205,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else if (!amendMode && TryCreateOptimisticRepositoryStatus(repositoryStatus, changedFiles, stage: false, out var optimisticRepositoryStatus))
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -223,7 +224,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else if (ExceedLength(changedFiles))
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -245,7 +246,7 @@ namespace ForkPlus.UI.Commands
 					list.Add(changedFile.Path);
 				}
 				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, list.ToArray(), showIgnoredFiles, monitor);
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();

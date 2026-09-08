@@ -1,13 +1,21 @@
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Automation.Peers;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls
 {
-	public class NoUIAutomationListView : ListView
+	/// <summary>
+	/// WPF 版通过返回 StubWindowAutomationPeer 屏蔽 UI Automation 暴露（性能优化）。
+	/// Avalonia 无 FrameworkElementAutomationPeer 等价 API，已随迁移移除。
+	/// Migration note：UpdateResizableColumnWidth 依赖 WPF ListView+GridView 列宽模型，
+	/// Avalonia ListBox 无 GridView；该方法暂为 no-op，列宽自适应待重新设计。
+	/// </summary>
+	public class NoUIAutomationListView : global::Avalonia.Controls.ListBox
 	{
 		public enum SelectOptions
 		{
@@ -16,32 +24,26 @@ namespace ForkPlus.UI.Controls
 			Focus
 		}
 
-		public class StubWindowAutomationPeer : FrameworkElementAutomationPeer
+		public bool IsMultiselectionInProgress { get; set; }
+
+		/// <summary>
+		/// WPF PreviewMouseWheel（隧道路由预览滚轮事件）的兼容入口。
+		/// Avalonia 无独立 Preview 事件，等价映射为 Tunnel 路由的 PointerWheelChanged，
+		/// 供 SubmoduleDiffUserControl 等旧代码用 +=/-= 语法订阅（其 add 侧即 AddHandler+Tunnel）。
+		/// </summary>
+		public event global::System.EventHandler<PointerWheelEventArgs> PreviewMouseWheel
 		{
-			public StubWindowAutomationPeer(FrameworkElement owner)
-				: base(owner)
+			add
 			{
+				AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent, value, global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			}
-
-			protected override string GetNameCore()
+			remove
 			{
-				return "StubWindowAutomationPeer";
-			}
-
-			protected override AutomationControlType GetAutomationControlTypeCore()
-			{
-				return AutomationControlType.Window;
-			}
-
-			protected override List<AutomationPeer> GetChildrenCore()
-			{
-				return new List<AutomationPeer>();
+				RemoveHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent, value);
 			}
 		}
 
-		public bool IsMultiselectionInProgress { get; set; }
-
-		public double AvailableWidth => base.ActualWidth - 15.0 - 4.0 - 4.0;
+		public double AvailableWidth => base.Bounds.Width - 15.0 - 4.0 - 4.0;
 
 		public void Select(int row, SelectOptions options = (SelectOptions)3)
 		{
@@ -54,66 +56,100 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			IsMultiselectionInProgress = true;
-			base.SelectedItems.Clear();
+			List<int> validRows = new List<int>();
 			for (int i = 0; i < rows.Count; i++)
 			{
-				if (i == rows.Count - 1)
+				int row = rows[i];
+				if (row >= 0 && row < base.ItemCount)
 				{
-					IsMultiselectionInProgress = false;
+					validRows.Add(row);
 				}
-				base.SelectedItems.Add(base.Items[rows[i]]);
+			}
+			if (validRows.Count == 0)
+			{
+				return;
+			}
+			IsMultiselectionInProgress = true;
+			try
+			{
+				base.SelectedItems.Clear();
+				for (int i = 0; i < validRows.Count; i++)
+				{
+					object item = base.Items[validRows[i]];
+					if (!base.SelectedItems.Contains(item))
+					{
+						base.SelectedItems.Add(item);
+					}
+				}
+				base.SelectedIndex = validRows[0];
+				base.SelectedItem = base.Items[validRows[0]];
+			}
+			finally
+			{
+				IsMultiselectionInProgress = false;
 			}
 			if ((options & SelectOptions.ScrollIntoView) != 0)
 			{
-				ScrollRowIntoView(this, rows[0]);
+				ScrollRowIntoView(this, validRows[0]);
 			}
+			ApplyContainerSelection(validRows);
 			if ((options & SelectOptions.Focus) != 0)
 			{
-				SetKeyboardFocus(this, rows[0]);
+				SetKeyboardFocus(this, validRows[0]);
+			}
+		}
+
+		private void ApplyContainerSelection(IReadOnlyList<int> rows)
+		{
+			bool missingContainer = false;
+			for (int i = 0; i < rows.Count; i++)
+			{
+				int row = rows[i];
+				if (base.ContainerFromIndex(row) is ListBoxItem item)
+				{
+					item.IsSelected = true;
+					item.InvalidateVisual();
+				}
+				else
+				{
+					missingContainer = true;
+				}
+			}
+			if (missingContainer)
+			{
+				Dispatcher.UIThread.Post(delegate
+				{
+					for (int i = 0; i < rows.Count; i++)
+					{
+						if (base.ContainerFromIndex(rows[i]) is ListBoxItem item)
+						{
+							item.IsSelected = true;
+							item.InvalidateVisual();
+						}
+					}
+				}, DispatcherPriority.Background);
 			}
 		}
 
 		private static void ScrollRowIntoView(ListBox listBox, int row)
 		{
-			if (VisualTreeHelper.GetChildrenCount(listBox) != 0)
-			{
-				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
-				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
-				{
-					scrollViewer.ScrollToVerticalOffset(num);
-				}
-			}
+			// WPF 版沿视觉树找内嵌 ScrollViewer 控制偏移；Avalonia ListBox 自带
+			// ScrollIntoView（生成容器并滚动到位），直接使用。
+			listBox.ScrollIntoView(listBox.Items[row < listBox.ItemCount ? row : listBox.ItemCount - 1]);
 		}
 
 		private static void SetKeyboardFocus(ListBox listBox, int row)
 		{
-			listBox.UpdateLayout();
-			if (listBox.ItemContainerGenerator.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
+			if (row >= 0 && row < listBox.ItemCount && MainWindow.Instance.IsActive
+				&& listBox.ContainerFromIndex(row) is ListBoxItem element)
 			{
-				Keyboard.Focus(element);
+				element.Focus();
 			}
-		}
-
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			return new StubWindowAutomationPeer(this);
 		}
 
 		public void UpdateResizableColumnWidth(int resizableColumnIndex)
 		{
-			GridView gridView = base.View as GridView;
-			double num = 0.0;
-			for (int i = 0; i < gridView.Columns.Count; i++)
-			{
-				if (i != resizableColumnIndex)
-				{
-					num += gridView.Columns[i].ActualWidth;
-				}
-			}
-			double num2 = AvailableWidth - num;
-			gridView.Columns[resizableColumnIndex].Width = ((num2 > 0.0) ? num2 : 0.0);
+			// no-op：见类注释 Migration note
 		}
 	}
 }

@@ -1,0 +1,384 @@
+<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.MergeConflictUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <!-- Migration note：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia 无内置且
+           StaticResource 顶层 UserControl 实例化时只查本地资源链；缺失会在本控件构造时崩溃） -->
+      <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <UserControl.DataTemplates>
+<DataTemplate DataType="userControls:MergeRevisionViewModel">
+        <Grid Height="20">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="42" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <controls:AvatarImage Grid.Column="0" Margin="0,0,6,0" VerticalAlignment="Center" Height="16" Width="16">
+            <controls:AvatarImage.UserIdentity>
+              <Binding Path="Author" />
+            </controls:AvatarImage.UserIdentity>
+            <ToolTip.Tip>
+              <Binding Path="FullCredentialsString" />
+            </ToolTip.Tip>
+          </controls:AvatarImage>
+          <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click" Theme="{DynamicResource TextButtonStyle}">
+            <Button.Content>
+              <Binding Path="AbbreviatedShaString" />
+            </Button.Content>
+          </Button>
+          <controls:AutoTooltipTextBlock Grid.Column="2" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" FontSize="12" VerticalAlignment="Center">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="Subject" />
+            </controls:AutoTooltipTextBlock.Text>
+          </controls:AutoTooltipTextBlock>
+          <TextBlock Grid.Column="3" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="AuthorDate" />
+            </TextBlock.Text>
+            <ToolTip.Tip>
+              <Binding Path="AuthorDate" />
+            </ToolTip.Tip>
+          </TextBlock>
+        </Grid>
+      </DataTemplate>
+  </UserControl.DataTemplates>
+  <UserControl.Resources>
+<ResourceDictionary>
+      
+      <ControlTheme x:Key="MergeConflictCheckBox" TargetType="CheckBox">
+        
+        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="15,10,15,12" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="CheckBox">
+              <Grid Background="#00FFFFFF" x:Name="TemplateRoot">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="31" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Row="0" Grid.Column="0" Height="16" Width="16" Margin="0,15,10,0" VerticalAlignment="Top" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
+                  <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
+                  </Grid>
+                </Border>
+                <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="5" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentBorder">
+                  <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </Border>
+              </Grid>
+              
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      
+    <Style Selector="^:disabled /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Disabled.Background}" Property="Background" />
+        <Setter Value="{DynamicResource MergeCheckBox.Disabled.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Background}" Property="Background" />
+        <Setter Value="{DynamicResource OptionMark.Disabled.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#OptionMark">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#OptionMark">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#OptionMark">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource MergeCheckBox.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Path#OptionMark">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
+        <Setter Property="Opacity" Value="1" />
+    </Style></ControlTheme>
+      <ControlTheme x:Key="MergeConflictCheckBoxInverted" TargetType="CheckBox">
+        
+        <Setter Property="Background" Value="{DynamicResource MergeCheckBox.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MergeCheckBox.Static.Border}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="15,10,15,12" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="CheckBox">
+              <Grid x:Name="TemplateRoot">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="31" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="5" HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentBorder">
+                  <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </Border>
+                <Border Grid.Row="0" Grid.Column="1" Height="16" Width="16" Margin="10,15,0,0" VerticalAlignment="Top" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="CheckBoxBorder">
+                  <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Path Margin="1" Opacity="0" Stretch="None" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource OptionMark.Static.Glyph}" x:Name="OptionMark" />
+                    <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
+                  </Grid>
+                </Border>
+              </Grid>
+              
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      
+    <Style Selector="^:disabled /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Disabled.Background}" Property="Background" />
+        <Setter Value="{DynamicResource MergeCheckBox.Disabled.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Background}" Property="Background" />
+        <Setter Value="{DynamicResource OptionMark.Disabled.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#OptionMark">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Rectangle#IndeterminateMark">
+        <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Path#OptionMark">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#IndeterminateMark">
+        <Setter Value="{DynamicResource OptionMark.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#CheckBoxBorder">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="Background" />
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#OptionMark">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="^:checked /template/ Rectangle#IndeterminateMark">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Border#ContentBorder">
+        <Setter Value="{DynamicResource MergeCheckBox.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource MergeCheckBox.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Path#OptionMark">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
+        <Setter Property="Opacity" Value="1" />
+    </Style></ControlTheme>
+      
+      <ControlTheme x:Key="MergeListBoxItemContainerStyle" TargetType="ListBoxItem">
+        <Setter Property="Focusable" Value="False" />
+        
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ListBoxItem">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <Grid x:Name="ConflictVersionsContainer">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid Grid.Row="0" Margin="0,0,0,10">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,15,0,0">
+          <Image DockPanel.Dock="Left" Width="20" Height="NaN" Source="avares://ForkPlus/Assets/Warning.png" />
+          <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="16" Text="Merge conflict" FontWeight="Medium" />
+        </DockPanel>
+        <TextBlock Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" FontSize="14" Text="Select the changes or merge them manually" Foreground="{DynamicResource SecondaryLabelBrush}" />
+        <DockPanel Grid.Row="2" Margin="0,18,0,10" HorizontalAlignment="Center">
+          <Image DockPanel.Dock="Left" Width="20" Height="20" Margin="0,0,4,0" x:Name="FileIcon" />
+          <controls:FilePathTextBlock FontSize="15" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="FileNameTextBlock" />
+        </DockPanel>
+      </Grid>
+      <Grid Grid.Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" MinHeight="15" MaxHeight="15" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" MinWidth="160" />
+          <ColumnDefinition Width="50" />
+          <ColumnDefinition Width="50" />
+          <ColumnDefinition Width="*" MinWidth="160" />
+        </Grid.ColumnDefinitions>
+        <CheckBox Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="30,0,0,0" MinWidth="150" VerticalAlignment="Top" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" Click="MergeCheckBox_Changed" x:Name="RemoteCheckBox" Theme="{StaticResource MergeConflictCheckBoxInverted}">
+          <Grid HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0">
+              <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Status_Edit.png" x:Name="RemoteChangeTypeImage" />
+                <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="RemoteChangeTypeTextBlock" />
+              </StackPanel>
+              <controls:GitPointView Margin="6,0,0,0" x:Name="RemoteGitPointView" TextElement.FontSize="14" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource LabelBrush}" />
+            </DockPanel>
+            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" x:Name="SrcSeparator" IsVisible="False" />
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" x:Name="SrcRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <ContentControl>
+                    <ContentControl.Content>
+                      <Binding />
+                    </ContentControl.Content>
+                  </ContentControl>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </CheckBox>
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="10,23,0,10">
+          <Grid.IsVisible>
+            <Binding ElementName="RemoteCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
+          </Grid.IsVisible>
+          <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
+          <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
+        </Grid>
+        <CheckBox Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,30,0" MinWidth="150" VerticalAlignment="Top" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" Click="MergeCheckBox_Changed" x:Name="LocalCheckBox" Theme="{StaticResource MergeConflictCheckBox}">
+          <Grid HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0">
+              <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Image Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Status_Edit.png" x:Name="LocalChangeTypeImage" />
+                <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="LocalChangeTypeTextBlock" />
+              </StackPanel>
+              <controls:GitPointView Margin="6,0,0,0" x:Name="LocalGitPointView" TextElement.FontSize="14" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource LabelBrush}" />
+            </DockPanel>
+            <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" x:Name="DstSeparator" IsVisible="False" />
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" x:Name="DstRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <ContentControl>
+                    <ContentControl.Content>
+                      <Binding />
+                    </ContentControl.Content>
+                  </ContentControl>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </CheckBox>
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,23,10,4">
+          <Grid.IsVisible>
+            <Binding ElementName="LocalCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
+          </Grid.IsVisible>
+          <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="0,1,0,0" />
+          <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="-1,0,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="1,0,0,0" />
+        </Grid>
+        <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResolveButton_Click" x:Name="ResolveButton" />
+        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <controls:AiActionButton ActionVerb="Resolve" Margin="0,0,6,0" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts in this file" x:Name="AiResolveButton" />
+          <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" Click="ResolveInExternalMergerButton_Click" x:Name="ResolveInExternalMergerButton" Theme="{DynamicResource CommitButtonVisibleDropdownStyle}" />
+          <controls:DropDownButton Height="24" Margin="0" x:Name="ResolveInExternalMergerDropdownButton" Theme="{DynamicResource CommitDropDownButtonStyle}">
+            <controls:DropDownButton.ContextMenu>
+              <ContextMenu Opened="ResolveInExternalMergerDropdownButtonContextMenu_Opened" />
+            </controls:DropDownButton.ContextMenu>
+          </controls:DropDownButton>
+        </StackPanel>
+      </Grid>
+    </Grid>
+    <Grid x:Name="ConflictResolvedContainer">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="50" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <DockPanel LastChildFill="True" HorizontalAlignment="Stretch">
+        <Image DockPanel.Dock="Left" Width="32" Margin="10,0,8,0" Height="32" Source="avares://ForkPlus/Assets/ResolvedIcon.png" />
+        <Button DockPanel.Dock="Right" Content="Stage" Margin="0,0,15,0" IsTabStop="False" Focusable="False" Click="StageButton_Click" x:Name="StageButton" />
+        <TextBlock DockPanel.Dock="Left" FontSize="18" Margin="0" VerticalAlignment="Center" FontWeight="Medium" Text="File conflicts are resolved." />
+        <TextBlock Margin="6,0,0,-2" FontSize="15" VerticalAlignment="Center" Text="You can stage the file now." Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ConflictResolvedSubtitle" />
+      </DockPanel>
+      <Grid Grid.Row="1">
+        <Border BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}">
+          <controls:FileDiffControl Target="Revision" x:Name="FileDiffControl" />
+        </Border>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

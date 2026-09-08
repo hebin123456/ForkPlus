@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 
@@ -26,9 +26,11 @@ namespace ForkPlus.UI.Commands
 		public void Execute(string path)
 		{
 			string applicationPath = new ShellTool.Default().ApplicationPath;
-			if (!File.Exists(applicationPath))
+			// Unix 上可能为 null（无终端模拟器）；与 OpenRepositoryInShellToolCommand 同口径。
+			string notFoundDisplay = applicationPath ?? string.Join("/", global::ForkPlus.UI.ShellTool.UnixTerminalEmulatorCandidates);
+			if (string.IsNullOrEmpty(applicationPath) || !File.Exists(applicationPath))
 			{
-				Log.Error("Cannot find shellToolPath at '" + applicationPath + "'");
+				Log.Error("Cannot find shellToolPath at '" + notFoundDisplay + "'");
 				return;
 			}
 			Process process = new Process

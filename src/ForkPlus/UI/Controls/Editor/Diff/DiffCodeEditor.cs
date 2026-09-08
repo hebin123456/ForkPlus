@@ -1,12 +1,15 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Document;
+using AvaloniaEdit.Document;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -71,7 +74,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffCodeEditor(DiffViewMode diffViewMode)
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			DiffViewMode = diffViewMode;
 			_backgroundColorizer = new DiffBackgroundColorizer();
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);
@@ -85,22 +88,22 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DisableSyntaxHighlightingChanged", DisableSyntaxHighlightingChanged);
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		protected override void OnSizeChanged(global::Avalonia.Controls.SizeChangedEventArgs sizeInfo)
 		{
-			base.OnRenderSizeChanged(sizeInfo);
+			base.OnSizeChanged(sizeInfo);
 			RefreshScrollbarMap();
 		}
 
 		private void RefreshScrollbarMap()
 		{
-			if (base.VerticalScrollBarVisibility == ScrollBarVisibility.Hidden || (DiffViewMode != DiffViewMode.SideBySideNew && DiffViewMode != DiffViewMode.Split) || !base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) || !base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
+			if (base.VerticalScrollBarVisibility == global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden || (DiffViewMode != DiffViewMode.SideBySideNew && DiffViewMode != DiffViewMode.Split) || !base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) || !base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
 			{
 				return;
 			}
 			double defaultLineHeight = base.TextArea.TextView.DefaultLineHeight;
-			if (defaultLineHeight > 0.0 && base.TextArea.ActualHeight > 0.0)
+			if (defaultLineHeight > 0.0 && base.TextArea.Bounds.Height > 0.0)
 			{
-				double num = base.TextArea.ActualHeight / defaultLineHeight;
+				double num = base.TextArea.Bounds.Height / defaultLineHeight;
 				if ((double)base.Document.LineCount <= num)
 				{
 					match.Data = null;
@@ -109,12 +112,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			streamGeometry.FillRule = FillRule.Nonzero;
-			StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			StreamGeometry streamGeometry2 = new StreamGeometry();
-			streamGeometry2.FillRule = FillRule.Nonzero;
-			StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
+StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+			streamGeometryContext.SetFillRule(FillRule.NonZero);			StreamGeometry streamGeometry2 = new StreamGeometry();
+StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+			streamGeometryContext2.SetFillRule(FillRule.NonZero);			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
 			int x2 = ((DiffViewMode == DiffViewMode.Split) ? 1 : 4);
 			VisualPatch visualPatch = VisualPatch;
@@ -145,10 +146,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					}
 				}
 			}
-			streamGeometryContext.Close();
-			streamGeometry.Freeze();
-			streamGeometryContext2.Close();
-			streamGeometry2.Freeze();
+			streamGeometryContext.Dispose();
+			streamGeometryContext2.Dispose();
 			match.Data = streamGeometry;
 			match2.Data = streamGeometry2;
 		}
@@ -161,16 +160,16 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		private void AddLine(StreamGeometryContext ctx, int startLine, int blockLength, int totalLines, int x, int width)
 		{
 			double num = 12.0;
-			double num2 = base.TextArea.ActualHeight - num * 2.0;
+			double num2 = base.TextArea.Bounds.Height - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
-			ctx.BeginFigure(new Point(x, num3), isFilled: true, isClosed: true);
-			ctx.PolyLineTo(new Point[3]
+			ctx.BeginFigure(new Point(x, num3),true);
+			foreach (global::Avalonia.Point __p in new Point[3]
 			{
 				new Point(x + width, num3),
 				new Point(x + width, num3 + num4),
 				new Point(x, num3 + num4)
-			}, isStroked: false, isSmoothJoin: false);
+			}) { ctx.LineTo(__p, false); }
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)

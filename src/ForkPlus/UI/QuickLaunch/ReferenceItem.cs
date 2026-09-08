@@ -1,32 +1,35 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class ReferenceItem : CommandProviderItem
 	{
-		public override ImageSource Icon
+		public override global::Avalonia.Media.IImage Icon
 		{
 			get
 			{
 				if (Reference is Tag)
 				{
-					return Application.Current.TryFindResource("TagIcon") as ImageSource;
+					return Application.Current.TryFindResource("TagIcon") as global::Avalonia.Media.IImage;
 				}
-				return Application.Current.TryFindResource("BranchIcon") as ImageSource;
+				return Application.Current.TryFindResource("BranchIcon") as global::Avalonia.Media.IImage;
 			}
 		}
 
-		public override ImageSource SelectedIcon
+		public override global::Avalonia.Media.IImage SelectedIcon
 		{
 			get
 			{
 				if (Reference is Tag)
 				{
-					return Application.Current.TryFindResource("TagSelectedIcon") as ImageSource;
+					return Application.Current.TryFindResource("TagSelectedIcon") as global::Avalonia.Media.IImage;
 				}
-				return Application.Current.TryFindResource("BranchSelectedIcon") as ImageSource;
+				return Application.Current.TryFindResource("BranchSelectedIcon") as global::Avalonia.Media.IImage;
 			}
 		}
 

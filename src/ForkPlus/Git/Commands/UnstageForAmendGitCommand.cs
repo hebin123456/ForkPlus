@@ -42,7 +42,9 @@ namespace ForkPlus.Git.Commands
 			{
 				string s = string.Concat(list);
 				byte[] bytes = Encoding.UTF8.GetBytes(s);
-				GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("update-index", "-z", "--index-info").Stdin(bytes).Execute(3);
+				// 问题6：写入侧四件套对齐（见 ReliableGitFlags）——amend 的 unstage 同 stage 家族。
+				GitCommand updateIndexCommand = new GitCommand(ReliableGitFlags.Prefix, "update-index", "-z", "--index-info");
+				GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(updateIndexCommand).Stdin(bytes).Execute(3);
 				if (!gitRequestResult.Success)
 				{
 					if (GitCommandError.RepositoryIsLocked.Test(gitRequestResult.Stderr))

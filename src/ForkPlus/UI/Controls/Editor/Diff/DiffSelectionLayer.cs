@@ -1,13 +1,17 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using ForkPlus.UI.WpfCompat;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -45,7 +49,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		protected override FrameworkElement CreateAdornerContent(TextEditor textEditor)
+		protected override global::Avalonia.Controls.Control CreateAdornerContent(TextEditor textEditor)
 		{
 			StackPanel stackPanel = new StackPanel
 			{
@@ -58,8 +62,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				{
 					Content = PreferencesLocalization.Current("Unstage")
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.UnStage?.Invoke(this, EventArgs.Empty);
 				});
 				stackPanel.Children.Add(_unStageButton);
@@ -75,12 +79,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					Content = PreferencesLocalization.Current("Discard..."),
 					Margin = new Thickness(0.0, 2.0, 2.0, 2.0)
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.Stage?.Invoke(this, EventArgs.Empty);
 				});
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.Discard?.Invoke(this, EventArgs.Empty);
 				});
 				stackPanel.Children.Add(_stageButton);
@@ -89,13 +93,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return new Border
 			{
 				Child = stackPanel,
-				Background = Theme.Diff.FloatingButtonContainerBackground,
+				Background = global::ForkPlus.UI.Theme.Diff.FloatingButtonContainerBackground,
 				CornerRadius = new CornerRadius(3.0)
 			};
 		}
 
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
 			TextArea textArea = _textEditor.TextArea;
 			if (textArea.Selection.Length != 0)
@@ -123,7 +127,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			Range range = chunk.VisualChunk.CustomHunks[chunk.CustomHunkIndex];
 			for (int i = range.Start; i < range.End; i++)
 			{
-				ICSharpCode.AvalonEdit.Rendering.VisualLine visualLine = textView.GetVisualLine(chunk.VisualChunk.VisualLines[i].LineNumber + 1);
+				global::AvaloniaEdit.Rendering.VisualLine visualLine = textView.GetVisualLine(chunk.VisualChunk.VisualLines[i].LineNumber + 1);
 				if (visualLine != null)
 				{
 					int lineCount = range.End - i;

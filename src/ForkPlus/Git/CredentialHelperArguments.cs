@@ -20,6 +20,7 @@ namespace ForkPlus.Git
 			string text = null;
 			string text2 = null;
 			string username = null;
+			string password = null;
 			string[] array = rawDescription.Split(Consts.Chars.NewLine);
 			foreach (string text3 in array)
 			{
@@ -39,6 +40,12 @@ namespace ForkPlus.Git
 					case "username":
 						username = text5;
 						break;
+					case "password":
+						// 凭据收编（Layer C）：git 在 store/erase 时把完整凭据（含 password 行）
+						// 写到 helper 的 stdin，get 时不含。此前该行落 default 分支打
+						// "Unknown credentials description parameter" 警告，且 store 语义拿不到密码。
+						password = text5;
+						break;
 					default:
 						Log.Warn("Unknown credentials description parameter: '" + text3 + "'");
 						break;
@@ -55,7 +62,10 @@ namespace ForkPlus.Git
 				Log.Error("Credentials description doesn't contain protocol;");
 				return null;
 			}
-			return new CredentialHelperArguments(text2, text, username);
+			return new CredentialHelperArguments(text2, text, username)
+			{
+				Password = password
+			};
 		}
 
 		public CredentialHelperArguments(string host, string protocol, [Null] string username)

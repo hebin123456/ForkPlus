@@ -1,4 +1,5 @@
-using System.Windows.Input;
+using System;
+using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 
@@ -43,6 +44,15 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(Workspace newWorkspace)
 		{
+			if (newWorkspace == null)
+			{
+				return;
+			}
+			Workspace activeWorkspace = ForkPlusSettings.Default.Workspaces.ActiveWorkspace;
+			if (object.ReferenceEquals(newWorkspace, activeWorkspace) || string.Equals(newWorkspace.Name, activeWorkspace?.Name, StringComparison.Ordinal))
+			{
+				return;
+			}
 			MainWindow instance = MainWindow.Instance;
 			instance.TabManager.SaveSession();
 			ForkPlusSettings.Default.Workspaces.ActiveWorkspace = newWorkspace;

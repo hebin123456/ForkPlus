@@ -1,68 +1,28 @@
 using System;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class SelectableTextBlock : TextBlock
+	/// <summary>
+	/// 可选中文本的 TextBlock。
+	/// Migration note：原 WPF 实现通过反射调用 PresentationFramework 内部 TextEditor
+	/// （System.Windows.Documents.TextEditor.RegisterCommandHandlers + TextBlock.TextContainer）
+	/// 让 TextBlock 支持选择/复制。Avalonia 无这些内部类型，Type.GetType 返回 null，
+	/// 静态构造函数直接 NRE 崩溃（打开仓库页签时 EnsureLayoutInitialized → CommitUserControl
+	/// → FilePathTextBlock → 此类 cctor）。Avalonia 自带
+	/// Avalonia.Controls.SelectableTextBlock（TextBlock 派生、支持 Inlines 与选择/复制），
+	/// 直接继承，删除全部反射包装。
+	/// </summary>
+	public class SelectableTextBlock : global::Avalonia.Controls.SelectableTextBlock
 	{
-		private class TextEditorWrapper
-		{
-			private static readonly Type TextEditorType = Type.GetType("System.Windows.Documents.TextEditor, PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-
-			private static readonly PropertyInfo IsReadOnlyProp = TextEditorType.GetProperty("IsReadOnly", BindingFlags.Instance | BindingFlags.NonPublic);
-
-			private static readonly PropertyInfo TextViewProp = TextEditorType.GetProperty("TextView", BindingFlags.Instance | BindingFlags.NonPublic);
-
-			private static readonly MethodInfo RegisterMethod = TextEditorType.GetMethod("RegisterCommandHandlers", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[4]
-			{
-				typeof(Type),
-				typeof(bool),
-				typeof(bool),
-				typeof(bool)
-			}, null);
-
-			private static readonly Type TextContainerType = Type.GetType("System.Windows.Documents.ITextContainer, PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-
-			private static readonly PropertyInfo TextContainerTextViewProp = TextContainerType.GetProperty("TextView");
-
-			private static readonly PropertyInfo TextContainerProp = typeof(TextBlock).GetProperty("TextContainer", BindingFlags.Instance | BindingFlags.NonPublic);
-
-			private readonly object _editor;
-
-			public static void RegisterCommandHandlers(Type controlType, bool acceptsRichContent, bool readOnly, bool registerEventListeners)
-			{
-				RegisterMethod.Invoke(null, new object[4] { controlType, acceptsRichContent, readOnly, registerEventListeners });
-			}
-
-			public static TextEditorWrapper CreateFor(TextBlock tb)
-			{
-				object value = TextContainerProp.GetValue(tb);
-				TextEditorWrapper textEditorWrapper = new TextEditorWrapper(value, tb, isUndoEnabled: false);
-				IsReadOnlyProp.SetValue(textEditorWrapper._editor, true);
-				TextViewProp.SetValue(textEditorWrapper._editor, TextContainerTextViewProp.GetValue(value));
-				return textEditorWrapper;
-			}
-
-			public TextEditorWrapper(object textContainer, FrameworkElement uiScope, bool isUndoEnabled)
-			{
-				_editor = Activator.CreateInstance(TextEditorType, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new object[3] { textContainer, uiScope, isUndoEnabled }, null);
-			}
-		}
-
-		private readonly TextEditorWrapper _editor;
-
-		static SelectableTextBlock()
-		{
-			UIElement.FocusableProperty.OverrideMetadata(typeof(SelectableTextBlock), new FrameworkPropertyMetadata(true));
-			FrameworkElement.FocusVisualStyleProperty.OverrideMetadata(typeof(SelectableTextBlock), new FrameworkPropertyMetadata((object)null));
-			TextEditorWrapper.RegisterCommandHandlers(typeof(SelectableTextBlock), acceptsRichContent: true, readOnly: true, registerEventListeners: true);
-		}
-
 		public SelectableTextBlock()
 		{
-			_editor = TextEditorWrapper.CreateFor(this);
+			// Migration note：WPF FocusableProperty.OverrideMetadata(default true) → 构造函数 Focusable = true；
+			// FocusVisualStyle 在 Avalonia 无对应（焦点视觉由主题伪类承担），移除。
+			Focusable = true;
 		}
 	}
 }

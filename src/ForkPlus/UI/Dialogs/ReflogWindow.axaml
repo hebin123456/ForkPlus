@@ -1,0 +1,60 @@
+<ui:CustomWindow x:Class="ForkPlus.UI.Dialogs.ReflogWindow" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:undo="clr-namespace:ForkPlus.Undo" Title="Reflog" Height="500" Width="700" MinHeight="300" MinWidth="500" WindowStartupLocation="CenterOwner">
+  <Grid Margin="8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- 顶部工具栏 -->
+    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
+      <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold" Text="Reflog History" x:Name="HeaderTitle" />
+      <!-- 垂直 Padding=0：主题固定 Height=24，垂直 Padding ≥3 挤压内容槽裁切文字（2026-09-05 修复） -->
+      <Button DockPanel.Dock="Right" x:Name="RefreshButton" Click="RefreshButton_Click" Padding="12,0" Margin="8,0,0,0" Content="Refresh" />
+      <Button DockPanel.Dock="Right" x:Name="JumpButton" Click="JumpButton_Click" Padding="12,0" Margin="4,0,0,0" Content="Jump to..." IsEnabled="False" />
+    </DockPanel>
+
+    <!-- 列头（Avalonia 无 WPF GridViewColumnHeader，手工实现） -->
+    <Grid Grid.Row="1" ColumnDefinitions="70,90,240,*,160" Margin="0,0,0,6">
+      <TextBlock Grid.Column="0" x:Name="IndexHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Index" />
+      <TextBlock Grid.Column="1" x:Name="ShaHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="SHA" />
+      <TextBlock Grid.Column="2" x:Name="OperationHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Operation" />
+      <TextBlock Grid.Column="3" x:Name="CommitSubjectHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Commit Subject" />
+      <TextBlock Grid.Column="4" x:Name="TimeHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Time" />
+    </Grid>
+
+    <!-- reflog 列表 -->
+    <ListBox Grid.Row="2"
+             x:Name="ReflogListView"
+             SelectionChanged="ReflogListView_SelectionChanged"
+             DoubleTapped="ReflogListView_MouseDoubleClick"
+             Focusable="True"
+             ScrollViewer.VerticalScrollBarVisibility="Auto"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <!-- 原 WPF ItemContainerStyle（ReflogListItemStyle）迁移：ControlTheme 无 BasedOn 会失去
+           Fluent ListBoxItem 模板，改用容器 Style 叠加到默认主题 -->
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+          <Setter Property="Padding" Value="6,3" />
+        </Style>
+      </ListBox.Styles>
+
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="70,90,240,*,160" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Text="{Binding IndexDisplay}" />
+            <TextBlock Grid.Column="1" Text="{Binding ShaDisplay}" FontFamily="Consolas" />
+            <TextBlock Grid.Column="2" Text="{Binding OperationName}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="3" Text="{Binding CommitSubject}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="4" Text="{Binding TimeDisplay}" FontFamily="Consolas" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- 状态栏 -->
+    <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Double-click an entry to jump to that state." />
+  </Grid>
+</ui:CustomWindow>

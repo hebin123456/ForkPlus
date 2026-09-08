@@ -1,5 +1,5 @@
 using System;
-using WindowState = System.Windows.WindowState;
+using WindowState = global::Avalonia.Controls.WindowState;
 using ForkPlus.UI;
 using Newtonsoft.Json.Linq;
 
@@ -280,7 +280,7 @@ namespace ForkPlus.Settings
 				double top = json["Top"].Value<double>();
 				double width = json["Width"].Value<double>();
 				double height = json["Height"].Value<double>();
-				WindowState windowState = (WindowState)json["WindowState"].Value<int>();
+				global::Avalonia.Controls.WindowState windowState = (global::Avalonia.Controls.WindowState)json["WindowState"].Value<int>();
 				return new WindowLocationState(left, top, width, height, windowState);
 			}
 			catch

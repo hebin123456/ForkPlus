@@ -1,4 +1,5 @@
-using System.Windows.Controls;
+using Avalonia.Controls;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 
@@ -17,7 +18,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		DiffLocation Location { get; }
 
-		ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
+		global::Avalonia.Controls.Primitives.ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 
 		event ContextMenuEventHandler EditorContextMenuOpening;
 

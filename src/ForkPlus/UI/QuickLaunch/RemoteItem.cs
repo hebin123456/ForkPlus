@@ -1,13 +1,13 @@
-using System.Windows.Media;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.QuickLaunch
 {
 	public class RemoteItem : CommandProviderItem
 	{
-		public override ImageSource Icon => Remote.Icon;
+		public override global::Avalonia.Media.IImage Icon => Remote.Icon;
 
-		public override ImageSource SelectedIcon => Remote.Icon;
+		public override global::Avalonia.Media.IImage SelectedIcon => Remote.Icon;
 
 		public Remote Remote { get; }
 

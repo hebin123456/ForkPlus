@@ -1,12 +1,13 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data;
+using Avalonia.Markup;
 using ForkPlus.UI.CustomCommands;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
-	public class CustomCommandTargetToDescriptionConverter : MarkupExtension, IValueConverter
+	public class CustomCommandTargetToDescriptionConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

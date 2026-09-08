@@ -12,15 +12,21 @@ namespace ForkPlus
 			while (num < num2)
 			{
 				int num3 = (num + num2) / 2;
-				switch (f(source[num3]))
+				// Migration note：原 switch 只匹配 -1/0/1，比较器返回其他整数（如
+				// string.Compare/char.CompareTo 的任意差值）时三分支全部落空，
+				// num/num2 不再更新 → 死循环（UI 线程 100% CPU 卡死实证）。
+				// 按二分语义归一：负数 → 目标在右半区，正数 → 左半区，0 → 命中。
+				int num4 = f(source[num3]);
+				if (num4 < 0)
 				{
-				case -1:
 					num = num3 + 1;
-					break;
-				case 1:
+				}
+				else if (num4 > 0)
+				{
 					num2 = num3;
-					break;
-				case 0:
+				}
+				else
+				{
 					return num3;
 				}
 			}

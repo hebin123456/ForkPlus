@@ -1,9 +1,13 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Media;
 using System.Text;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Settings;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -11,10 +15,10 @@ namespace ForkPlus.UI.Controls
 	{
 		public ReferenceTextBox()
 		{
-			DataObject.AddPastingHandler(this, OnPaste);
+			this.AddPastingHandler(OnPaste);
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.Space)
 			{
@@ -25,19 +29,19 @@ namespace ForkPlus.UI.Controls
 			}
 			else
 			{
-				base.OnPreviewKeyDown(e);
+				base.OnKeyDown(e);
 			}
 		}
 
 		private void OnPaste(object sender, DataObjectPastingEventArgs e)
 		{
+			// Migration note：WPF 原实现重建 DataObject 后替换 e.DataObject；
+			// Avalonia 无粘贴拦截事件，PasteGuard shim 用 PastingDataObject.SetData 原位改写文本。
 			if (e.DataObject.GetDataPresent(typeof(string)))
 			{
 				string text = (string)e.DataObject.GetData(typeof(string));
 				string data = ReplaceInvalidCharactersWithSpace(text);
-				DataObject dataObject = new DataObject();
-				dataObject.SetData(DataFormats.Text, data);
-				e.DataObject = dataObject;
+				e.DataObject.SetData(DataFormats.Text, data);
 			}
 			else
 			{

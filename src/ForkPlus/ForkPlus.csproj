@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- .NET 10 LTS + Windows 10 2004 (19041) 最低要求（WebView2 需要）。
-         WPF + WebView2 + FlaUI 都是 Windows-only，故用 -windows TFM；
-         暂未做跨平台 UI 迁移（A 方向），Linux/macOS 仍只跑 biturbo 冒烟测试。-->
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <!-- .NET 10 LTS。UI 已迁移 Avalonia（跨平台），TFM 用 net10.0（不带 -windows 后缀）；
+         CI 三平台（win/linux/macos）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>
     <RootNamespace>ForkPlus</RootNamespace>
@@ -32,18 +30,25 @@
                  整个工程只跑 Windows，但 AvalonEdit/OxyPlot/WebView2 等库的 API
                  标注 [SupportedOSPlatform("Windows")]，分析器认为"call site 可达
                  所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
-    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416;CS0618;CS0619</NoWarn>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- OxyPlot.Avalonia fork 包版本（单点维护）：fork（hebin123456/oxyplot-avalonia）release 产出的
+         预编译 nupkg，按 Avalonia 12.1.1 编译（官方 oxyplot-avalonia 停留在 Avalonia 11 且不发二进制；
+         按 11 编译的旧物在 Avalonia 12 运行时会因 XAML IL 引用 11 时代 TemplateBinding.ProvideValue()
+         签名而 MissingMethodException 崩溃，迁移期 PlotView 首布局用例实证）。-avalonia12.x 预发布后缀确保
+         NuGet 恢复只命中 fork 包（nuget.org 官方 OxyPlot.Avalonia 2.1.2 面向 Avalonia 11，
+         永远没有该版本号）。下方 PackageReference 与 RestoreOxyPlotAvalonia target 均由本属性派生，
+         升级 = fork 仓库发新 Release + 只改这里。-->
+    <OxyPlotAvaloniaPackageVersion>2.1.2-avalonia12.1</OxyPlotAvaloniaPackageVersion>
   </PropertyGroup>
-
   <ItemGroup>
-    <None Remove="assets\**\*.*" />
+    <None Remove="Assets\**\*.*" />
     <None Remove="ForkPlus.Assets.Legal.txt" />
     <None Remove="ForkPlus.Assets.gitignore.txt" />
     <None Remove="ForkPlus.Assets.md-ai-output.css" />
   </ItemGroup>
-
   <ItemGroup>
-    <Resource Include="assets\**\*.*" />
+    <AvaloniaResource Include="Assets\**\*.*" />
     <Content Include="Languages\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -87,28 +92,30 @@
     <EmbeddedResource Include="ForkPlus.Assets.gitignore.txt" LogicalName="ForkPlus.Assets.gitignore.txt" />
     <EmbeddedResource Include="ForkPlus.Assets.md-ai-output.css" LogicalName="ForkPlus.Assets.md-ai-output.css" />
   </ItemGroup>
-
   <!-- .NET 10 SDK 风格工程：PresentationCore / WindowsBase / System.* 由框架隐式提供，
        无需显式 Reference。原 net472 时代的 6 个 Reference 节已删除。-->
-
   <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+    <!-- Microsoft.Web.WebView2 已移除：Windows-only；用 UI/WpfCompat/WebView2Stub.cs 占位（Migration note：跨平台 WebView） -->
+    <!-- <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />  已隔离：依赖 WPF（TaskDialog 等基于 WPF 实现）；替代方案：H.NotifyIcon / 平台对话框 API -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
+    <!-- OxyPlot.Avalonia（MIT，fork：hebin123456/oxyplot-avalonia）改为消费 fork release 的预编译
+         nupkg（net8.0/net10.0，按 Avalonia 12.1.1 原生编译），不再克隆上游源码随主工程一起编译。
+         与 tokei / biturbo 一致的"latest release 构建期拉取"模式：nupkg 下载到 third_party/nuget/
+         （nuget.config 注册的本地目录源），由本文件的 RestoreOxyPlotAvalonia target（本地开发）
+         与 CI 的显式下载步骤（build.yml）完成。版本由 OxyPlotAvaloniaPackageVersion 单点维护。-->
+    <PackageReference Include="OxyPlot.Avalonia" Version="$(OxyPlotAvaloniaPackageVersion)" />
+    <!-- <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />  已隔离：WPF 绘图控件库（PlotView 继承 WPF Control，引发 PresentationFramework 级联错误）；替代方案：ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia / 手工自绘 -->
     <!-- System.Drawing.Common 通过 OxyPlot.Wpf 等包传递引入，不再显式引用（NU1510）。
          IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
-
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
        Biturbo 仓库最新 release 拉取。Biturbo v1.1.0 起发布多平台 asset：
          Windows → biturbo.dll
@@ -121,77 +128,109 @@
       <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
     </PropertyGroup>
     <!-- Windows: PowerShell 拉取 biturbo.dll -->
-    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
-          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
     <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
-         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。-->
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
-          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。
+         带 3 次重试（指数退避）——CI 上 GitHub release 下载偶发连接中断（与 RestoreTokei 同模式）。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
-
-  <!-- tokei.exe（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
-       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。Windows 产物名为 tokei.exe。
-       本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。
-       带重试（3 次，指数退避）以容忍 GitHub release 下载偶发连接中断。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
+  <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
+       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。v14.0.1 release 覆盖三平台：
+         Windows x64 → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 third_party/tokei.exe）
+         Linux   x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 third_party/tokei）
+         macOS       → tokei-x86_64-apple-darwin.tar.gz（同上；arm64 机器经 Rosetta 2 运行，
+                       release 暂无 aarch64-apple-darwin 资产——如后续补上可切原生 arm64）
+       Migration note：原 target 只在 Windows_NT 下生效（Condition 卡死），Linux/macOS 构建不拉
+       tokei，统计页功能直接不可用。本 target 按 $(OS) 分派，缺失时下载；已存在则跳过。
+       CI 每次全新 checkout 都会拉最新版。带重试（3 次，指数退避）以容忍 GitHub release
+       下载偶发连接中断。-->
+  <Target Name="RestoreTokei" BeforeTargets="Build">
     <PropertyGroup>
       <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/latest/download</TokeiBaseUrl>
     </PropertyGroup>
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Windows: PowerShell 拉取裸 exe 存为 tokei.exe -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl 下载 tar.gz，解压出裸 tokei 二进制（tar 保留可执行位，
+         再 chmod +x 兜底），存为 third_party/tokei（无扩展名）。按 uname -s 选 darwin/linux 资产。
+         用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
+         $(TokeiBaseUrl) 仍由 MSBuild 正常展开（与 RestoreBiturbo 同模式）。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmp=`mktemp -d`; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$tmp/tokei.tar.gz&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; tar -xzf &quot;$tmp/tokei.tar.gz&quot; -C &quot;$tmp&quot;; mv &quot;$tmp/tokei&quot; ../../third_party/tokei; chmod +x ../../third_party/tokei; rm -rf &quot;$tmp&quot;; echo &quot;Restored ../../third_party/tokei from tokei latest release ($asset)&quot;'" />
   </Target>
-
-  <Target Name="CopyHelperExecutables" AfterTargets="Build">
-    <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0-windows10.0.19041.0）。
-         Exists 守卫保证非 Windows build 或子项目尚未构建时不会失败。-->
-    <!-- .NET 10 下 exe 是 native apphost（启动器），托管代码在同名 .dll 中，
-         apphost 还需 .runtimeconfig.json 才能解析运行时框架。三者必须一起拷到主程序
-         输出目录，否则主程序 spawn ForkPlus.AskPass.exe 时报“缺少 ForkPlus.AskPass.dll”
-         （v3.5.0 迁移时漏拷 .dll/.runtimeconfig.json，v3.5.1 修复）。-->
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json')" />
-    <!-- biturbo 原生库按平台拷贝：Exists 守卫确保只拷实际存在的那一份 -->
-    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
-    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
-    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
-    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
-  </Target>
-
-  <!-- WebView2Loader.dll 处理：
-       Microsoft.Web.WebView2 NuGet 包按 RID 把 native loader 放在
-         runtimes\win-x64\native\WebView2Loader.dll
-         runtimes\win-x86\native\WebView2Loader.dll
-         runtimes\win-arm64\native\WebView2Loader.dll
-       原 .NET Framework 4.7.2 设计是平铺在 bin 根目录（见 AssemblyInfo.cs 的
-       [AssemblyAssociatedContentFile("webview2loader.dll")]），WebView2 初始化时
-       从根目录加载。.NET 10 下 NuGet 不再平铺放，需手动把当前 PlatformTarget
-       对应的 WebView2Loader.dll 拷到根目录，再删 runtimes 子目录避免冗余。
-
-       $(PlatformTarget) = x64 时取 win-x64 那份；x86/arm64 同理。-->
-  <Target Name="CopyWebView2LoaderToRoot" AfterTargets="Build;Publish">
+  <!-- OxyPlot.Avalonia（MIT 协议，fork：hebin123456/oxyplot-avalonia）从 fork 仓库最新 release 拉取
+       预编译 nupkg 到本地 NuGet 源 third_party/nuget/（nuget.config 已注册该目录源）。与 tokei /
+       biturbo 一致的发布产物拉取模式，两点差异：
+       1) BeforeTargets=Restore（而非 Build）——PackageReference 的解析发生在 NuGet restore 阶段，
+          nupkg 必须在 restore 评估本地源之前就位，等 Build 就晚了（首次 restore 会 NU1101 找不到包）；
+          同时挂 Build 兜底 dotnet build 的 no-restore 场景。已存在（Exists 守卫）则跳过。
+       2) 资产名含版本号——NuGet 目录源要求 <PackageId>.<version>.nupkg 命名才能被识别，
+          由 OxyPlotAvaloniaPackageVersion 属性派生（见顶部单点维护注释）。
+       CI（build.yml）不走本 Exec（与 tokei/biturbo 同理：规避 macOS runner 上 MSBuild Exec 行为差异），
+       由显式下载步骤提前就位，本 target 的 Exists 守卫直接短路。带 3 次重试（指数退避）。-->
+  <Target Name="RestoreOxyPlotAvalonia" BeforeTargets="Restore;Build">
     <PropertyGroup>
-      <!-- win-x64 / win-x86 / win-arm64 三种之一，匹配 PlatformTarget -->
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x64'">win-x64</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'x86'">win-x86</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(PlatformTarget)' == 'arm64'">win-arm64</WebView2RuntimeRid>
-      <WebView2RuntimeRid Condition="'$(WebView2RuntimeRid)' == ''">win-x64</WebView2RuntimeRid>
+      <OxyPlotAvaloniaBaseUrl>https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download</OxyPlotAvaloniaBaseUrl>
+      <OxyPlotAvaloniaAsset>OxyPlot.Avalonia.$(OxyPlotAvaloniaPackageVersion).nupkg</OxyPlotAvaloniaAsset>
     </PropertyGroup>
-    <!-- Build 输出目录（$(TargetDir)）-->
-    <Copy SourceFiles="$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
-          DestinationFolder="$(TargetDir)"
-          SkipUnchangedFiles="true"
-          Condition="Exists('$(TargetDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
-    <!-- Publish 输出目录（$(PublishDir)，仅在 publish 时有值）-->
-    <Copy SourceFiles="$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll"
-          DestinationFolder="$(PublishDir)"
-          SkipUnchangedFiles="true"
-          Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes\$(WebView2RuntimeRid)\native\WebView2Loader.dll')" />
-    <!-- 删 runtimes 子目录（loader 已拷到根目录，避免重复）-->
-    <RemoveDir Directories="$(TargetDir)runtimes" Condition="Exists('$(TargetDir)runtimes')" />
-    <RemoveDir Directories="$(PublishDir)runtimes" Condition="'$(PublishDir)' != '' And Exists('$(PublishDir)runtimes')" />
+    <!-- Windows: PowerShell 下载 nupkg -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\nuget\$(OxyPlotAvaloniaAsset)')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party\nuget' | Out-Null; $url='$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)'; $out='..\..\third_party\nuget\$(OxyPlotAvaloniaAsset)'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored $(OxyPlotAvaloniaAsset) from oxyplot-avalonia fork latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl（与 RestoreTokei/RestoreBiturbo 同模式，3 次重试指数退避；
+         用反引号做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；MSBuild 属性正常展开）-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('../../third_party/nuget/$(OxyPlotAvaloniaAsset)')" Command="bash -c 'set -e; mkdir -p ../../third_party/nuget; url=&quot;$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)&quot;; out=&quot;../../third_party/nuget/$(OxyPlotAvaloniaAsset)&quot;; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from oxyplot-avalonia fork latest release&quot;'" />
   </Target>
+  <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
+       Migration note（CI）两点坑：
+       1) 原版只有 Build 后拷 $(TargetDir)，dotnet publish 的输出目录走的是 $(PublishDir)
+          （-o 指定或 bin/.../publish/）→ publish 产物缺 biturbo native 库与 AskPass/RI
+          托管 dll（apphost 在但 .dll 不在，spawn 时报缺程序集；v3.5.1 同款坑在 publish
+          场景的复现）→ 拆 Build/Publish 两个 Target 各自拷对应目录。
+       2) 清单收集必须放在 Target 内（执行期求值），不能放顶层 ItemGroup——RestoreBiturbo
+          是 BeforeTargets=Build 的下载动作，CI 全新 checkout 时评估阶段文件还不存在，
+          Exists 守卫全 false → publish 目录恒缺 native 库（本地二次构建才正常，CI 必踩）。
+       子进程产物按平台命名：Windows 是 .exe，Unix 是无扩展名 apphost，都在清单里由
+       Exists 守卫自动取舍。-->
+  <Target Name="CollectHelperOutputs" Returns="@(_HelperOutputs)">
+    <PropertyGroup>
+      <!-- RID-specific publish（dotnet publish -r linux-x64 等）时，子项目输出到
+           bin\$(Configuration)\$(TargetFramework)\<RID>\ 子目录；非 RID 构建则在根。
+           两个路径都放守卫，谁存在取谁（与下面每个 Exists 一致）。 -->
+      <HelperRidDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</HelperRidDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.exe" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.dll" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.runtimeconfig.json" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.runtimeconfig.json')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.exe" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json')" />
+      <!-- biturbo 原生库按平台：Exists 守卫确保只拷实际存在的那一份（每平台 CI 只有一份） -->
+      <_HelperOutputs Include="..\..\third_party\biturbo.dll" Condition="Exists('..\..\third_party\biturbo.dll')" />
+      <_HelperOutputs Include="..\..\third_party\libbiturbo.so" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+      <_HelperOutputs Include="..\..\third_party\libbiturbo.dylib" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+      <!-- tokei 按平台：Windows 是 tokei.exe，Unix 是无扩展名 tokei（Exists 守卫自动取舍） -->
+      <_HelperOutputs Include="..\..\third_party\tokei.exe" Condition="Exists('..\..\third_party\tokei.exe')" />
+      <_HelperOutputs Include="..\..\third_party\tokei" Condition="Exists('..\..\third_party\tokei')" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyHelperExecutables" AfterTargets="Build" DependsOnTargets="CollectHelperOutputs">
+    <Copy SourceFiles="@(_HelperOutputs)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PublishHelperExecutables" AfterTargets="Publish" DependsOnTargets="CollectHelperOutputs">
+    <Copy SourceFiles="@(_HelperOutputs)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <!-- 官方跨平台 WebView（2026-09-04，"引入官方 Native WebView 替代自研渲染"）：
+         Win=WebView2 / macOS=WKWebView / Linux=WPE WebKit(缺失时回退 WebKitGTK)。
+         版本对齐 Avalonia 12.1.1。WebView2Stub 兼容层内部改为真 WebView 优先、
+         自研 MarkdownHtmlRenderer 降级（headless 测试/无 WPE 的 Linux）。 -->
+    <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
+    <PackageReference Include="System.CodeDom" Version="10.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+  </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -31,7 +32,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Refresh working directory"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult<RepositoryStatus> response = Execute(gitModule, repositoryData, oldRepositoryStatus, pathsToRefresh, commitUserControl.ShowIgnoredFiles, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!response.Succeeded)
 					{

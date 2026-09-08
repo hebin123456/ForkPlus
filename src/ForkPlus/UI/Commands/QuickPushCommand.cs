@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -6,6 +6,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +14,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Quick Push";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.P, ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut => new KeyGesture(Key.P, global::Avalonia.Input.KeyModifiers.Alt | global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 		public KeyGesture SecondaryShortcut => null;
 
@@ -70,7 +71,7 @@ namespace ForkPlus.UI.Commands
 				bool push_PushAllTags = ForkPlusSettings.Default.Push_PushAllTags;
 				bool force = false;
 				GitCommandResult pushResult = new PushGitCommand().Execute(gitModule, remote.Name, localBranch, null, null, push_PushAllTags, force, track, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!pushResult.Succeeded && !monitor.IsCanceled)
 					{

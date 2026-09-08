@@ -1,17 +1,20 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using global::Avalonia.Animation;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls
 {
-	[TemplatePart(Name = "PART_ClearButton", Type = typeof(FrameworkElement))]
-	[TemplatePart(Name = "PART_TranslateTransform", Type = typeof(TranslateTransform))]
-	[TemplatePart(Name = "PART_DropDownButton", Type = typeof(DropDownButton))]
+	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_ClearButton", Type = typeof(global::Avalonia.Controls.Control))]
+	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_TranslateTransform", Type = typeof(TranslateTransform))]
+	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_DropDownButton", Type = typeof(DropDownButton))]
 	public class FilterTextBox : PlaceholderTextBox
 	{
 		private static readonly double FilterTextBoxAnimationHeight = 30.0;
@@ -36,13 +39,17 @@ namespace ForkPlus.UI.Controls
 
 		private DropDownButton _dropdownButton;
 
-		public static readonly DependencyProperty AnimationPlaceholderProperty = DependencyProperty.Register("AnimationPlaceholder", typeof(Grid), typeof(FilterTextBox), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<Grid> AnimationPlaceholderProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilterTextBox, Grid>("AnimationPlaceholder", null);
 
-		public static readonly DependencyProperty UseSecondaryTextBoxBackgroundProperty = DependencyProperty.Register("UseSecondaryTextBoxBackground", typeof(bool), typeof(FilterTextBox), new PropertyMetadata(false));
+		public static readonly global::Avalonia.StyledProperty<bool> UseSecondaryTextBoxBackgroundProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilterTextBox, bool>("UseSecondaryTextBoxBackground", false);
 
-		public static readonly DependencyProperty ShowDropdownProperty = DependencyProperty.Register("ShowDropdown", typeof(bool), typeof(FilterTextBox), new PropertyMetadata(false));
+		public static readonly global::Avalonia.StyledProperty<bool> ShowDropdownProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilterTextBox, bool>("ShowDropdown", false);
 
-		public static readonly DependencyProperty HintProperty = DependencyProperty.Register("Hint", typeof(string), typeof(FilterTextBox), new PropertyMetadata(null));
+		public static readonly global::Avalonia.StyledProperty<string> HintProperty =
+    global::Avalonia.AvaloniaProperty.Register<FilterTextBox, string>("Hint", null);
 
 		public string FilterRequest => base.Text;
 
@@ -102,15 +109,20 @@ namespace ForkPlus.UI.Controls
 
 		public event EventHandler ClearButtonClicked;
 
+		public event EventHandler EnterPressed;
+
 		public FilterTextBox()
 		{
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Down)
 				{
-					_dropdownButton.IsChecked = true;
+					if (_dropdownButton != null)
+					{
+						_dropdownButton.IsChecked = true;
+					}
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Escape && !string.IsNullOrEmpty(base.Text))
@@ -125,25 +137,45 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			base.OnApplyTemplate();
+			if (HandleEnterKey(e))
+			{
+				return;
+			}
+			base.OnKeyDown(e);
+		}
+
+		private bool HandleEnterKey(KeyEventArgs e)
+		{
+			if (e.Key != Key.Return && e.Key != Key.Enter)
+			{
+				return false;
+			}
+			e.Handled = true;
+			EnterPressed?.Invoke(this, EventArgs.Empty);
+			return true;
+		}
+
+		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
+		{
+			base.OnApplyTemplate(e);
 			if (base.Placeholder == "Filter")
 			{
 				base.Placeholder = PreferencesLocalization.Translate("Filter", ForkPlusSettings.Default.UiLanguage);
 			}
-			_iconImage = GetTemplateChild("PART_Icon") as Image;
-			_dropdownButton = GetTemplateChild("PART_DropDownButton") as DropDownButton;
+			_iconImage = this.GetTemplateChild("PART_Icon") as Image;
+			_dropdownButton = this.GetTemplateChild("PART_DropDownButton") as DropDownButton;
 			_dropdownButton.ContextMenu.Opened += delegate(object s, RoutedEventArgs e)
 			{
 				this.DropdownContextMenuOpened?.Invoke(s, e);
 			};
-			_clearButton = GetTemplateChild("PART_ClearButton") as Button;
+			_clearButton = this.GetTemplateChild("PART_ClearButton") as Button;
 			if (_clearButton != null)
 			{
 				_clearButton.Click += ClearButton_Click;
 			}
-			_translateTransform = GetTemplateChild("PART_TranslateTransform") as TranslateTransform;
+			_translateTransform = this.GetTemplateChild("PART_TranslateTransform") as TranslateTransform;
 			if (AnimationPlaceholder != null && _translateTransform != null && !IsAnimationPlaceholderVisible)
 			{
 				_translateTransform.Y = 0.0 - FilterTextBoxAnimationHeight;
@@ -152,8 +184,8 @@ namespace ForkPlus.UI.Controls
 			}
 			if (UseSecondaryTextBoxBackground)
 			{
-				base.Background = Theme.FilterPanelSecondaryBackground;
-				base.BorderBrush = Theme.FilterPanelSecondaryBorder;
+				base.Background = global::ForkPlus.UI.Theme.FilterPanelSecondaryBackground;
+				base.BorderBrush = global::ForkPlus.UI.Theme.FilterPanelSecondaryBorder;
 			}
 			if (ShowDropdown)
 			{
@@ -177,11 +209,25 @@ namespace ForkPlus.UI.Controls
 		{
 			if (AnimationPlaceholder != null)
 			{
-				if (SlidingPanelHelper.ShowPanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight))
+				bool changed;
+				if (_translateTransform == null)
+				{
+					changed = AnimationPlaceholder.Height != FilterTextBoxAnimationHeight;
+					AnimationPlaceholder.Height = FilterTextBoxAnimationHeight;
+					Opacity = 1.0;
+				}
+				else
+				{
+					changed = SlidingPanelHelper.ShowPanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
+				}
+				if (changed)
 				{
 					Clear();
 				}
-				UpdateOpacity(0.0, 1.0, ShowAnimationDuration);
+				if (_translateTransform != null)
+				{
+					UpdateOpacity(0.0, 1.0, ShowAnimationDuration);
+				}
 				FocusAndSelectAllText();
 				IsAnimationPlaceholderVisible = true;
 			}
@@ -192,8 +238,16 @@ namespace ForkPlus.UI.Controls
 			if (AnimationPlaceholder != null && IsAnimationPlaceholderVisible)
 			{
 				Clear();
-				SlidingPanelHelper.HidePanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
-				UpdateOpacity(1.0, 0.0, HideAnimationDuration);
+				if (_translateTransform == null)
+				{
+					AnimationPlaceholder.Height = 0.0;
+					Opacity = 0.0;
+				}
+				else
+				{
+					SlidingPanelHelper.HidePanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
+					UpdateOpacity(1.0, 0.0, HideAnimationDuration);
+				}
 				IsAnimationPlaceholderVisible = false;
 			}
 		}
@@ -215,7 +269,7 @@ namespace ForkPlus.UI.Controls
 		private void UpdateOpacity(double from, double to, TimeSpan duration)
 		{
 			DoubleAnimation animation = new DoubleAnimation(from, to, duration);
-			BeginAnimation(UIElement.OpacityProperty, animation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(this,global::Avalonia.Input.InputElement.OpacityProperty,animation);
 		}
 	}
 }

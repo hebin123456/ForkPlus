@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -6,6 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -177,7 +178,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Checkout branch '{0}'", branch.Name), delegate(JobMonitor monitor)
 			{
 				GitCommandResult result = PerformCheckout(gitModule, branch, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!monitor.IsCanceled && !result.Succeeded)
 					{

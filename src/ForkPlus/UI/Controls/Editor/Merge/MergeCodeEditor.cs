@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
@@ -83,7 +85,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		public MergeCodeEditor()
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			Theme = ForkPlusSettings.Default.Theme;
 			_mergeChunkSelectionLayer = new MergeChunkSelectionLayer(this);
 			base.TextArea.TextView.InsertLayer(_mergeChunkSelectionLayer, KnownLayer.Selection, LayerInsertionPosition.Above);
@@ -136,9 +138,9 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			this.MergeChunkRemoved?.Invoke(this, new EventArgs<MergeConflictView.Chunk>(chunk));
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		protected override void OnSizeChanged(global::Avalonia.Controls.SizeChangedEventArgs sizeInfo)
 		{
-			base.OnRenderSizeChanged(sizeInfo);
+			base.OnSizeChanged(sizeInfo);
 			if (_refreshUI && _showScrollbarMap)
 			{
 				RefreshScrollbarMap();
@@ -147,18 +149,16 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private void RefreshScrollbarMap()
 		{
-			if (_blocks != null && base.VerticalScrollBarVisibility != ScrollBarVisibility.Hidden && base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) && base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
+			if (_blocks != null && base.VerticalScrollBarVisibility != global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden && base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) && base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
 			{
 				StreamGeometry streamGeometry = new StreamGeometry();
-				streamGeometry.FillRule = FillRule.Nonzero;
-				StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-				StreamGeometry streamGeometry2 = new StreamGeometry();
-				streamGeometry2.FillRule = FillRule.Nonzero;
-				StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-				int num = 6;
+StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+				streamGeometryContext.SetFillRule(FillRule.NonZero);				StreamGeometry streamGeometry2 = new StreamGeometry();
+StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+				streamGeometryContext2.SetFillRule(FillRule.NonZero);				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
-				double num4 = base.TextArea.ActualHeight - num3 * 2.0;
+				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
 				Block[] blocks = _blocks;
 				for (int i = 0; i < blocks.Length; i++)
 				{
@@ -166,18 +166,16 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 					double num5 = num3 + num4 * block.Start;
 					double num6 = Math.Max(2.0, num4 * block.Length);
 					StreamGeometryContext obj = ((block.Kind == Block.BlockKind.Resolved) ? streamGeometryContext2 : streamGeometryContext);
-					obj.BeginFigure(new Point(num2, num5), isFilled: true, isClosed: true);
-					obj.PolyLineTo(new Point[3]
+					obj.BeginFigure(new Point(num2, num5),true);
+					foreach (global::Avalonia.Point __p in new Point[3]
 					{
 						new Point(num2 + num, num5),
 						new Point(num2 + num, num5 + num6),
 						new Point(num2, num5 + num6)
-					}, isStroked: false, isSmoothJoin: false);
+					}) { obj.LineTo(__p, false); }
 				}
-				streamGeometryContext.Close();
-				streamGeometry.Freeze();
-				streamGeometryContext2.Close();
-				streamGeometry2.Freeze();
+				streamGeometryContext.Dispose();
+				streamGeometryContext2.Dispose();
 				match.Data = streamGeometry;
 				match2.Data = streamGeometry2;
 			}

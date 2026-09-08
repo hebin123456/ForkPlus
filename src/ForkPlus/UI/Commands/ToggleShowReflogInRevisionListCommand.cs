@@ -1,7 +1,10 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {
@@ -9,7 +12,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Show Lost Commits (Reflog)";
 
-		public KeyGesture Shortcut => new KeyGesture(Key.OemPeriod, ModifierKeys.Control | ModifierKeys.Shift);
+		public KeyGesture Shortcut => new KeyGesture(Key.OemPeriod, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 		public KeyGesture SecondaryShortcut => null;
 

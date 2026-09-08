@@ -33,7 +33,9 @@ namespace ForkPlus.Git.Commands
 			if (list.Count > 0)
 			{
 				byte[] bytes = Encoding.UTF8.GetBytes(string.Join("\0", list));
-				ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command("update-index", "--force-remove", "-z", "--stdin").Stdin(bytes).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, retryIfLocked: true, monitor);
+				// 问题6：写入侧四件套对齐（见 ReliableGitFlags）——unstage 与 stage 同族。
+				GitCommand removeCommand = new GitCommand(ReliableGitFlags.Prefix, "update-index", "--force-remove", "-z", "--stdin");
+				ExecuteWithCallbackResponse executeWithCallbackResponse = new GitRequest(gitModule).Command(removeCommand).Stdin(bytes).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, retryIfLocked: true, monitor);
 				if (monitor.IsCanceled)
 				{
 					return GitCommandResult.Failure(new GitCommandError.Cancelled());
@@ -57,7 +59,9 @@ namespace ForkPlus.Git.Commands
 			if (list2.Count > 0)
 			{
 				byte[] bytes2 = Encoding.UTF8.GetBytes(string.Join("\0", list2));
-				ExecuteWithCallbackResponse executeWithCallbackResponse2 = new GitRequest(gitModule).Command("reset", "HEAD", "--pathspec-from-file=-", "--pathspec-file-nul", "--").Stdin(bytes2).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, retryIfLocked: true, monitor);
+				// 问题6：写入侧四件套对齐（见 ReliableGitFlags）。
+				GitCommand resetCommand = new GitCommand(ReliableGitFlags.Prefix, "reset", "HEAD", "--pathspec-from-file=-", "--pathspec-file-nul", "--");
+				ExecuteWithCallbackResponse executeWithCallbackResponse2 = new GitRequest(gitModule).Command(resetCommand).Stdin(bytes2).ExecuteWithCallbackBt(processOutputHandler.StdoutHandler, processOutputHandler.StderrHandler, retryIfLocked: true, monitor);
 				if (monitor.IsCanceled)
 				{
 					return GitCommandResult.Failure(new GitCommandError.Cancelled());

@@ -1,19 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI
 {
 	public static class MenuExtensions
 	{
-		private class PasteCommand : ICommand
+		private class PasteCommand : global::System.Windows.Input.ICommand
 		{
 			public static readonly PasteCommand Instance = new PasteCommand();
 
@@ -26,13 +32,15 @@ namespace ForkPlus.UI
 
 			public void Execute(object parameter)
 			{
-				ApplicationCommands.Paste.Execute(parameter, Keyboard.FocusedElement);
+				ApplicationCommands.Paste.Execute(parameter ?? Keyboard.FocusedElement);
 			}
 		}
 
 		public static void SetItems(this ContextMenu menu, IEnumerable<Control> items)
 		{
+			ContextMenuCompat.AttachAutoDismiss(menu, menu.PlacementTarget as Control);
 			SetItems(menu.Items, items, VisualTreeAttachmentHelper.Describe(menu));
+			menu.AttachCloseOnLeafItemClick();
 		}
 
 		public static void SetItems(this MenuItem menu, IEnumerable<Control> items)
@@ -40,7 +48,58 @@ namespace ForkPlus.UI
 			SetItems(menu.Items, items, VisualTreeAttachmentHelper.Describe(menu));
 		}
 
-		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static void AttachCloseOnLeafItemClick(this ContextMenu menu)
+		{
+			if (menu == null)
+			{
+				return;
+			}
+
+			menu.RemoveHandler(InputElement.PointerReleasedEvent, ContextMenu_PointerReleasedCloseLeafItem);
+			menu.AddHandler(
+				InputElement.PointerReleasedEvent,
+				ContextMenu_PointerReleasedCloseLeafItem,
+				RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+				handledEventsToo: true);
+
+			foreach (object item in menu.Items)
+			{
+				if (item is MenuItem menuItem)
+				{
+					AttachCloseOnLeafClick(menuItem, menu);
+				}
+			}
+		}
+
+		private static void ContextMenu_PointerReleasedCloseLeafItem(object sender, PointerReleasedEventArgs e)
+		{
+			if (sender is not ContextMenu contextMenu)
+			{
+				return;
+			}
+			if (e.InitialPressMouseButton != MouseButton.Left)
+			{
+				return;
+			}
+
+			for (StyledElement current = e.Source as StyledElement; current != null; current = current.Parent as StyledElement)
+			{
+				if (current is TextBox)
+				{
+					return;
+				}
+				if (current is MenuItem menuItem)
+				{
+					if (menuItem.IsEnabled && menuItem.Items.Count == 0)
+					{
+						Dispatcher.UIThread.Post(contextMenu.Close, DispatcherPriority.Background);
+					}
+					return;
+				}
+			}
+		}
+
+		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader(header);
@@ -51,7 +110,8 @@ namespace ForkPlus.UI
 			menuItem.IsEnabled = isEnabled;
 			if (keyGesture != null)
 			{
-				menuItem.InputGestureText = keyGesture.ToFriendlyString();
+				// Migration note：Avalonia MenuItem 无 InputGestureText 字符串属性，改为设置 InputGesture(KeyGesture)。
+				menuItem.InputGesture = keyGesture;
 			}
 			if (clickHandler != null)
 			{
@@ -61,7 +121,7 @@ namespace ForkPlus.UI
 			return menuItem;
 		}
 
-		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = AddMenuItem(menu, header, clickHandler, icon, keyGesture, isEnabled);
 			menuItem.Header = PreferencesLocalization.FormatMenuHeader(header, args);
@@ -86,8 +146,7 @@ namespace ForkPlus.UI
 				Margin = icon.Margin,
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
-				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = icon.SnapsToDevicePixels
+				VerticalAlignment = icon.VerticalAlignment
 			};
 		}
 
@@ -95,12 +154,26 @@ namespace ForkPlus.UI
 		{
 			targetItems.Clear();
 			HashSet<Control> hashSet = new HashSet<Control>();
+			bool previousWasSeparator = true;
 			foreach (Control item in items ?? Array.Empty<Control>())
 			{
 				Control control = PrepareMenuControl(item, hashSet, ownerDescription);
 				if (control == null)
 				{
 					continue;
+				}
+				if (control is Separator)
+				{
+					if (previousWasSeparator)
+					{
+						continue;
+					}
+					ApplySeparatorTheme(control);
+					previousWasSeparator = true;
+				}
+				else
+				{
+					previousWasSeparator = false;
 				}
 				TranslateMenuControl(control);
 				try
@@ -111,6 +184,10 @@ namespace ForkPlus.UI
 				{
 					Log.Warn("Skipping " + VisualTreeAttachmentHelper.Describe(control) + " while rebuilding " + ownerDescription + ". " + ex.Message, ex);
 				}
+			}
+			while (targetItems.Count > 0 && targetItems[targetItems.Count - 1] is Separator)
+			{
+				targetItems.RemoveAt(targetItems.Count - 1);
 			}
 		}
 
@@ -134,7 +211,78 @@ namespace ForkPlus.UI
 				Log.Warn("Skipping still-parented menu control " + VisualTreeAttachmentHelper.Describe(item) + " while rebuilding " + ownerDescription + ".");
 				return null;
 			}
+			if (item is MenuItem menuItem)
+			{
+				AttachCloseOnLeafClick(menuItem);
+			}
 			return item;
+		}
+
+		private static void AttachCloseOnLeafClick(MenuItem menuItem)
+		{
+			menuItem.Click -= MenuItem_CloseOwningMenuOnClick;
+			menuItem.Click += MenuItem_CloseOwningMenuOnClick;
+			foreach (object item in menuItem.Items)
+			{
+				if (item is MenuItem childMenuItem)
+				{
+					AttachCloseOnLeafClick(childMenuItem);
+				}
+			}
+		}
+
+		private static void AttachCloseOnLeafClick(MenuItem menuItem, ContextMenu contextMenu)
+		{
+			menuItem.Click += (_, _) =>
+			{
+				if (menuItem.Items.Count == 0)
+				{
+					Dispatcher.UIThread.Post(contextMenu.Close, DispatcherPriority.Background);
+				}
+			};
+			foreach (object item in menuItem.Items)
+			{
+				if (item is MenuItem childMenuItem)
+				{
+					AttachCloseOnLeafClick(childMenuItem, contextMenu);
+				}
+			}
+		}
+
+		private static void MenuItem_CloseOwningMenuOnClick(object sender, RoutedEventArgs e)
+		{
+			if (sender is not MenuItem menuItem || menuItem.Items.Count > 0)
+			{
+				return;
+			}
+
+			Dispatcher.UIThread.Post(() => CloseOwningMenu(menuItem), DispatcherPriority.Background);
+		}
+
+		private static void CloseOwningMenu(MenuItem menuItem)
+		{
+			for (StyledElement current = menuItem; current != null; current = current.Parent as StyledElement)
+			{
+				if (current is ContextMenu contextMenu)
+				{
+					contextMenu.Close();
+					return;
+				}
+				if (current is MenuItem parentMenuItem)
+				{
+					parentMenuItem.IsSubMenuOpen = false;
+				}
+			}
+		}
+
+		private static void ApplySeparatorTheme(Control control)
+		{
+			if (control is TemplatedControl templatedControl &&
+				Application.Current?.TryFindResource("SeparatorStyleKey", out var style) == true &&
+				style is ControlTheme theme)
+			{
+				templatedControl.Theme = theme;
+			}
 		}
 
 		public static void AddDefaultTextBoxMenuItems(this ContextMenu contextMenu, IInputElement commandTarget)
@@ -142,17 +290,17 @@ namespace ForkPlus.UI
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader("Cut");
 			menuItem.Command = ApplicationCommands.Cut;
-			menuItem.CommandTarget = commandTarget;
+			menuItem.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem);
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Copy");
 			menuItem2.Command = ApplicationCommands.Copy;
-			menuItem2.CommandTarget = commandTarget;
+			menuItem2.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem2);
 			MenuItem menuItem3 = new MenuItem();
 			menuItem3.Header = PreferencesLocalization.MenuHeader("Paste");
 			menuItem3.Command = PasteCommand.Instance;
-			menuItem3.CommandTarget = commandTarget;
+			menuItem3.CommandParameter = commandTarget;
 			contextMenu.Items.Add(menuItem3);
 		}
 
@@ -171,7 +319,6 @@ namespace ForkPlus.UI
 				menuItem.FontWeight = FontWeights.Bold;
 				menuItem.Command = EditingCommands.CorrectSpellingError;
 				menuItem.CommandParameter = suggestion;
-				menuItem.CommandTarget = commandTarget;
 				contextMenu.Items.Insert(num, menuItem);
 				num++;
 			}
@@ -180,7 +327,6 @@ namespace ForkPlus.UI
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Ignore All");
 			menuItem2.Command = EditingCommands.IgnoreSpellingError;
-			menuItem2.CommandTarget = commandTarget;
 			contextMenu.Items.Insert(num, menuItem2);
 			if (!flag)
 			{

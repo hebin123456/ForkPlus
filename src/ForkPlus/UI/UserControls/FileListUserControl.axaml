@@ -1,0 +1,144 @@
+<UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileListUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <controls:NullToVisibilityConverter x:Key="NullToVisibility" />
+      <DataTemplate x:Key="TreeViewTemplate">
+        <Grid HorizontalAlignment="Stretch">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0" x:Name="Image" IsVisible="{Binding ChangeTypeIcon, Converter={StaticResource NullToVisibility}}">
+            <Image.Source>
+              <Binding Path="ChangeTypeIcon" />
+            </Image.Source>
+          </Image>
+          <Image Grid.Column="1" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0">
+            <Image.Source>
+              <Binding Path="FileTypeIcon" />
+            </Image.Source>
+          </Image>
+          <controls:AutoTooltipTextBlock Grid.Column="2" FontSize="13" HorizontalAlignment="Left" TextAlignment="Left">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="Title" />
+            </controls:AutoTooltipTextBlock.Text>
+            <controls:AutoTooltipTextBlock.CustomToolTip>
+              <Binding Path="ToolTip" />
+            </controls:AutoTooltipTextBlock.CustomToolTip>
+          </controls:AutoTooltipTextBlock>
+        </Grid>
+        
+      </DataTemplate>
+      <DataTemplate x:Key="ListViewTemplate">
+        <Grid HorizontalAlignment="Stretch">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0">
+            <Image.Source>
+              <Binding Path="ChangeTypeIcon" />
+            </Image.Source>
+          </Image>
+          <Image Grid.Column="1" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0">
+            <Image.Source>
+              <Binding Path="FileTypeIcon" />
+            </Image.Source>
+          </Image>
+          <controls:AutoTooltipTextBlock Grid.Column="2" FontSize="13" HorizontalAlignment="Left" TextAlignment="Left">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="Title" />
+            </controls:AutoTooltipTextBlock.Text>
+            <controls:AutoTooltipTextBlock.CustomToolTip>
+              <Binding Path="ToolTip" />
+            </controls:AutoTooltipTextBlock.CustomToolTip>
+          </controls:AutoTooltipTextBlock>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="CombinedListViewTemplate">
+        <Grid HorizontalAlignment="Stretch" ColumnDefinitions="18,18,2*,3*">
+          <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0">
+            <Image.Source>
+              <Binding Path="ChangeTypeIcon" />
+            </Image.Source>
+          </Image>
+          <Image Grid.Column="1" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0">
+            <Image.Source>
+              <Binding Path="FileTypeIcon" />
+            </Image.Source>
+          </Image>
+          <controls:AutoTooltipTextBlock Grid.Column="2" FontSize="13" HorizontalAlignment="Stretch" TextAlignment="Left">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="FileName" />
+            </controls:AutoTooltipTextBlock.Text>
+            <controls:AutoTooltipTextBlock.CustomToolTip>
+              <Binding Path="ToolTip" />
+            </controls:AutoTooltipTextBlock.CustomToolTip>
+          </controls:AutoTooltipTextBlock>
+          <controls:AutoTooltipTextBlock Grid.Column="3" FontSize="13" HorizontalAlignment="Stretch" TextAlignment="Left" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="10,0,0,0">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="FolderPath" />
+            </controls:AutoTooltipTextBlock.Text>
+          </controls:AutoTooltipTextBlock>
+        </Grid>
+      </DataTemplate>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <userControls:FileListTreeView SizeChanged="TreeView_SizeChanged" x:Name="TreeView">
+<!-- Migration note：WPF userControls:FileListTreeView.View 已删（Avalonia 无 GridView 视图，原片段见 git 历史） -->
+
+      <!--
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段：
+      <GridView xmlns="https://github.com/avaloniaui">
+              <GridViewColumn>
+                <GridViewColumnHeader Content="Name" SizeChanged="GridViewColumnHeader_SizeChanged" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <Image Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="2,0,2,0">
+                        <Image.Source>
+                          <Binding Path="ChangeTypeIcon" />
+                        </Image.Source>
+                      </Image>
+                      <Image Grid.Column="1" Height="14" Width="14" VerticalAlignment="Center" Margin="2,0,2,0">
+                        <Image.Source>
+                          <Binding Path="FileTypeIcon" />
+                        </Image.Source>
+                      </Image>
+                      <controls:AutoTooltipTextBlock Grid.Column="2" FontSize="13" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                        <controls:AutoTooltipTextBlock.Text>
+                          <Binding Path="FileName" />
+                        </controls:AutoTooltipTextBlock.Text>
+                        <controls:AutoTooltipTextBlock.CustomToolTip>
+                          <Binding Path="ToolTip" />
+                        </controls:AutoTooltipTextBlock.CustomToolTip>
+                      </controls:AutoTooltipTextBlock>
+                    </Grid>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn>
+                <GridViewColumnHeader Content="Location" SizeChanged="GridViewColumnHeader_SizeChanged" Loaded="LocationColumnHeader_Loaded" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <controls:AutoTooltipTextBlock FontSize="13" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                      <controls:AutoTooltipTextBlock.Text>
+                        <Binding Path="FolderPath" />
+                      </controls:AutoTooltipTextBlock.Text>
+                    </controls:AutoTooltipTextBlock>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+    -->
+    
+  </userControls:FileListTreeView>
+</UserControl>

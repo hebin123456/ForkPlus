@@ -1,8 +1,10 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
@@ -14,12 +16,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			New
 		}
 
-		private BitmapSource _oldImageSource;
+		private global::Avalonia.Media.Imaging.Bitmap _oldImageSource;
 
-		private BitmapSource _newImageSource;
+		private global::Avalonia.Media.Imaging.Bitmap _newImageSource;
 
 		[Null]
-		private BitmapSource _diffImageSource;
+		private global::Avalonia.Media.Imaging.Bitmap _diffImageSource;
 
 		private Size _parentBounds;
 
@@ -85,13 +87,13 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		public void SetContent(BitmapSource oldImageSource, BitmapSource newImageSource, [Null] BitmapSource diffImageSource)
-		{
-			base.Background = Brushes.Red;
-			_oldImageSource = oldImageSource;
-			_newImageSource = newImageSource;
-			_diffImageSource = diffImageSource;
-		}
+		public void SetContent(global::Avalonia.Media.Imaging.Bitmap oldImageSource, global::Avalonia.Media.Imaging.Bitmap newImageSource, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource)
+	{
+		// Migration note：WPF Control.Background 在 Avalonia 的 Control 基类不存在（且原码从未渲染它，属死代码），移除。
+		_oldImageSource = oldImageSource;
+		_newImageSource = newImageSource;
+		_diffImageSource = diffImageSource;
+	}
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
@@ -108,12 +110,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			return new Size(width, height);
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			if (_oldImageSource != null && _newImageSource != null)
 			{
-				Rect targetRect = new Rect(0.0, 0.0, base.ActualWidth, base.ActualHeight);
+				Rect targetRect = new Rect(0.0, 0.0, base.Bounds.Width, base.Bounds.Height);
 				Rect imageRect = GetImageRect(_oldImageSize, targetRect);
 				Draw(drawingContext, _oldImageSource, imageRect, HorizontalClip.Old, ClipX);
 				Rect imageRect2 = GetImageRect(_newImageSize, targetRect);
@@ -125,7 +127,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private void Draw(DrawingContext drawingContext, BitmapSource image, Rect imageRect, HorizontalClip clipKind, double? clipX, double? opacity = null)
+		private void Draw(DrawingContext drawingContext, global::Avalonia.Media.Imaging.Bitmap image, Rect imageRect, HorizontalClip clipKind, double? clipX, double? opacity = null)
 		{
 			RectangleGeometry rectangleGeometry = null;
 			if (clipX.HasValue)
@@ -141,23 +143,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 					break;
 				}
 			}
-			if (rectangleGeometry != null)
-			{
-				drawingContext.PushClip(rectangleGeometry);
-			}
-			if (opacity.HasValue)
-			{
-				drawingContext.PushOpacity(opacity.Value);
-			}
+			// Migration note：WPF Push/Pop 配对 → Avalonia Push* 返回 struct PushedState，
+		// 不能与 null 组成条件表达式；default(PushedState).Dispose() 是判空安全的空操作，用它替代 null 分支。
+		// PushClip(RectangleGeometry) → PushGeometryClip(Geometry)。
+		using (rectangleGeometry != null ? drawingContext.PushGeometryClip(rectangleGeometry) : default(global::Avalonia.Media.DrawingContext.PushedState))
+		using (opacity.HasValue ? drawingContext.PushOpacity(opacity.Value) : default(global::Avalonia.Media.DrawingContext.PushedState))
+		{
 			drawingContext.DrawImage(image, imageRect);
-			if (rectangleGeometry != null)
-			{
-				drawingContext.Pop();
-			}
-			if (opacity.HasValue)
-			{
-				drawingContext.Pop();
-			}
+		}
 		}
 
 		private Rect GetImageRect(Size imageSize, Rect targetRect)
@@ -175,19 +168,19 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			return new Rect(x, y, imageSize.Width, imageSize.Height);
 		}
 
-		private static Size ResizeImageMaintaningAspectRatio(BitmapSource image, Size targetSize)
+		private static Size ResizeImageMaintaningAspectRatio(global::Avalonia.Media.Imaging.Bitmap image, Size targetSize)
 		{
-			if ((double)image.PixelWidth < targetSize.Width && (double)image.PixelHeight < targetSize.Height)
+			if ((double)image.PixelSize.Width < targetSize.Width && (double)image.PixelSize.Height < targetSize.Height)
 			{
-				return new Size(image.PixelWidth, image.PixelHeight);
+				return new Size(image.PixelSize.Width, image.PixelSize.Height);
 			}
-			double num = targetSize.Width / (double)image.PixelWidth;
-			double num2 = targetSize.Height / (double)image.PixelHeight;
+			double num = targetSize.Width / (double)image.PixelSize.Width;
+			double num2 = targetSize.Height / (double)image.PixelSize.Height;
 			if (!(num < num2))
 			{
-				return new Size(Math.Floor((double)image.PixelWidth * num2), Math.Floor((double)image.PixelHeight * num2));
+				return new Size(Math.Floor((double)image.PixelSize.Width * num2), Math.Floor((double)image.PixelSize.Height * num2));
 			}
-			return new Size(Math.Floor((double)image.PixelWidth * num), Math.Floor((double)image.PixelHeight * num));
+			return new Size(Math.Floor((double)image.PixelSize.Width * num), Math.Floor((double)image.PixelSize.Height * num));
 		}
 	}
 }

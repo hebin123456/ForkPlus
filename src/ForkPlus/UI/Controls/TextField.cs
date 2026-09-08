@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -11,15 +13,29 @@ namespace ForkPlus.UI.Controls
 	{
 		protected static readonly List<Range> Empty = new List<Range>();
 
-		public static readonly DependencyProperty StringValueProperty = DependencyProperty.RegisterAttached("StringValue", typeof(string), typeof(TextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
+		public TextField()
 		{
-			(s as TextField).RefreshInlines();
-		}));
+			// Migration note：WPF 版 DependencyProperty.Register 带 PropertyChangedCallback → RefreshInlines，
+			// 转换丢了回调 → Inlines 永不填充 → TextBlock 空白（提交主题不渲染，迁移期实证）。
+			// GetObservable 订阅时立即触发一次 + 绑定赋值后再触发，补回整条触发链。
+			this.GetObservable(StringValueProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<string>(delegate
+			{
+				RefreshInlines();
+			}));
+			this.GetObservable(HighlightStringProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<string>(delegate
+			{
+				RefreshInlines();
+			}));
+		}
 
-		public static readonly DependencyProperty HighlightPatternProperty = DependencyProperty.RegisterAttached("HighlightString", typeof(string), typeof(TextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as TextField).RefreshInlines();
-		}));
+		// Migration note：WPF DependencyProperty → Avalonia StyledProperty。
+		// 原转换用 RegisterAttached<..., AvaloniaObject, ...>（附加属性形式），XAML 属性元素语法
+		// <controls:TextField.StringValue><Binding/></...> 无法解析，改为普通 Register。
+		public static readonly global::Avalonia.StyledProperty<string> StringValueProperty =
+    global::Avalonia.AvaloniaProperty.Register<TextField, string>("StringValue");
+
+		public static readonly global::Avalonia.StyledProperty<string> HighlightStringProperty =
+    global::Avalonia.AvaloniaProperty.Register<TextField, string>("HighlightString");
 
 		public string StringValue
 		{
@@ -37,11 +53,11 @@ namespace ForkPlus.UI.Controls
 		{
 			get
 			{
-				return (string)GetValue(HighlightPatternProperty);
+				return GetValue(HighlightStringProperty);
 			}
 			set
 			{
-				SetValue(HighlightPatternProperty, value);
+				SetValue(HighlightStringProperty, value);
 			}
 		}
 
@@ -65,8 +81,8 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush matchForegroundBrush = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush matchBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 			new Range(0, stringValue.Length).Merge(new List<Range>[1] { searchMatchRanges }, delegate(Range range, int? searchIndex, int? _, int? __)
 			{
 				Run run = new Run(stringValue.Substring(range));

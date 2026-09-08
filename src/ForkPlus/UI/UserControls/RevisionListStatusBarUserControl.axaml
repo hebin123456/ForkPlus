@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionListStatusBarUserControl">
+  <Border Height="22" BorderThickness="0,0,0,1" x:Name="Container">
+    <Border.BorderBrush>
+      <DynamicResource ResourceKey="BorderBrush" />
+    </Border.BorderBrush>
+    <Border.Background>
+      <DynamicResource ResourceKey="BackgroundBrush" />
+    </Border.Background>
+    <Border.Child>
+      <StackPanel Orientation="Horizontal">
+        <StackPanel.Children>
+          <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" x:Name="HeaderTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" x:Name="ReferencesTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <Button Margin="0,0,0,0" VerticalAlignment="Center" FontSize="12" Click="StatusBarButton_Click" x:Name="StatusBarButton">
+            <Button.Theme>
+              <DynamicResource ResourceKey="TextButtonStyle" />
+            </Button.Theme>
+          </Button>
+        </StackPanel.Children>
+      </StackPanel>
+    </Border.Child>
+  </Border>
+</UserControl>

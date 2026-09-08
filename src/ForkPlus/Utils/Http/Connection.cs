@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +58,77 @@ namespace ForkPlus.Utils.Http
 		{
 			ClientHandler = new HttpClientHandler();
 			ClientHandler.UseCookies = false;
+			// 兼容自签名证书的 AI 推理服务：本地 Ollama/vLLM/one-api 或企业内网网关常用自签 HTTPS，
+			// .NET 默认校验会报 "The remote certificate is invalid because of errors in the
+			// certificate chain: UntrustedRoot"，导致刷新模型直接失败。
+			// 仅当请求目标是用户在偏好设置里配置的 AI 服务地址（AiReviewServiceUrl）时放宽校验，
+			// GitHub/GitLab 等其余服务仍走 .NET 默认严格校验，不影响既有安全性。
+			ClientHandler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
 			Client = new HttpClient(ClientHandler);
+		}
+
+		/// <summary>
+		/// 服务端证书校验回调：校验无错误直接放行；出现证书错误时仅对用户配置的 AI 推理服务地址放宽
+		/// （自签名/企业网关证书），其余目标一律按 .NET 默认策略拒绝。
+		/// </summary>
+		private static bool ValidateServerCertificate([Null] HttpRequestMessage request, [Null] X509Certificate2 certificate, [Null] X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		{
+			if (sslPolicyErrors == SslPolicyErrors.None)
+			{
+				return true;
+			}
+			if (ShouldAcceptCertificate(request?.RequestUri, sslPolicyErrors))
+			{
+				Log.Warn("Accepting server certificate with " + sslPolicyErrors + " for AI endpoint: " + (request?.RequestUri?.Host ?? "<unknown>"));
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// 判定是否放宽证书校验：仅当请求地址与设置中的 AI 服务地址同 host 时放行（任意证书错误均放行——
+		/// 自签证书常见 UntrustedRoot/PartialChain/NameMismatch 组合，只放行部分错误会导致另一些机器仍然失败）。
+		/// 拆成独立静态方法便于单元测试（无需真实 TLS 握手）。
+		/// </summary>
+		internal static bool ShouldAcceptCertificate([Null] Uri requestUri, SslPolicyErrors sslPolicyErrors)
+		{
+			if (sslPolicyErrors == SslPolicyErrors.None)
+			{
+				return true;
+			}
+			if (requestUri == null)
+			{
+				return false;
+			}
+			return IsAiReviewEndpoint(requestUri);
+		}
+
+		/// <summary>请求地址的 host 是否与用户配置的 AI 服务地址一致（大小写不敏感；端口/路径不参与比较）。</summary>
+		private static bool IsAiReviewEndpoint(Uri requestUri)
+		{
+			try
+			{
+				string configured = Settings.ForkPlusSettings.Default?.AiReviewServiceUrl;
+				if (string.IsNullOrWhiteSpace(configured))
+				{
+					return false;
+				}
+				string trimmed = configured.Trim();
+				if (!Uri.TryCreate(trimmed, UriKind.Absolute, out Uri configuredUri))
+				{
+					// 用户可能只填了 "host:port" 这种无 scheme 的写法，按 https 补全再解析
+					if (!Uri.TryCreate("https://" + trimmed, UriKind.Absolute, out configuredUri))
+					{
+						return false;
+					}
+				}
+				return string.Equals(configuredUri.Host, requestUri.Host, StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				// 设置读取失败（早期初始化竞态等）按严格校验处理
+				return false;
+			}
 		}
 
 		public Connection(string serverUrl, [Null] IRestServiceAuthentication authentication)

@@ -1,24 +1,57 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Navigation;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Services;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	internal static class HighlightingTextBlockExtensions
 	{
+		// ===== Avalonia Text/Inlines 语义适配（2026-09-04 修复"提交详情内容缩进"）=====
+		// 探针实证（TextInlinesSyncProbeTests）：Avalonia 与 WPF 的关键差异——
+		//   WPF：TextBlock.Text 与 Inlines 是同一文档的两个视图，Clear+Add 不会重复渲染。
+		//   Avalonia：Inlines 首次 Add 时，若 Text 非空，会把 Text 内容隐式转成 Run 插到
+		//     Inlines 开头并清空 Text。按 WPF 语义写的高亮逻辑（Clear 后分段 Add）因此把
+		//     全文重复渲染了一遍，issue 链接按钮被推到重复文本后面——提交详情中含 #123
+		//     等引用的 subject/description 出现整体缩进；RestoreText 读 Text（已被清空）
+		//     则把文本恢复成空。
+		// 修复：进入分段模式前把原文存入弱表并置 Text=null（阻止隐式插入）；原文优先
+		//   从弱表取（Inlines.Count>0 = 分段模式；外部重设 Text 会自动清空 Inlines，
+		//   回到 Text 模式，见探针步骤 9b）。
+		// 原文存储：ConditionalWeakTable 随 TextBlock GC 自动清理（不新增生产类型，
+		// 也无需污染 Avalonia 属性系统）。
+		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<TextBlock, string> OriginalTexts = new();
+
+		private static string GetOriginalText(TextBlock textBlock)
+		{
+			if (textBlock.Inlines is { Count: > 0 } && OriginalTexts.TryGetValue(textBlock, out string original) && original != null)
+			{
+				return original;
+			}
+			return textBlock.Text ?? "";
+		}
+
+		private static void BeginInlineSegments(TextBlock textBlock, string text)
+		{
+			textBlock.Inlines.Clear();
+			OriginalTexts.AddOrUpdate(textBlock, text);
+			textBlock.Text = null; // 阻止 Avalonia 在首次 Inlines.Add 时隐式插入全文 Run
+		}
+
 		public static void ApplySearchAndButrackerHighlighting(this TextBlock textBlock, [Null] string highlightString, BugtrackerLinkDefinition[] bugtrackers)
 		{
-			Brush matchBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
-			string text = textBlock.Text;
+			Brush matchBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			string text = GetOriginalText(textBlock);
 			List<(Range, Uri)> issueTrackerLinks = GetIssueTrackerLinks(text, bugtrackers);
 			List<Range> searchRanges = GetSearchRanges(text, highlightString);
 			if (issueTrackerLinks.Count == 0 && searchRanges.Count == 0)
@@ -28,7 +61,7 @@ namespace ForkPlus.UI.Controls
 			}
 			List<Range> list = issueTrackerLinks.Map(((Range, Uri) x) => x.Item1).ToList();
 			Uri[] issueTrackerUrls = issueTrackerLinks.Map(((Range, Uri) x) => x.Item2);
-			textBlock.Inlines.Clear();
+			BeginInlineSegments(textBlock, text);
 			new Range(0, text.Length).Merge(new List<Range>[2] { list, searchRanges }, delegate(Range range, int? issueIndex, int? searchIndex, int? _)
 			{
 				string text2 = text.Substring(range);
@@ -44,13 +77,17 @@ namespace ForkPlus.UI.Controls
 						textBlock.Inlines.Add(new Run());
 					}
 					Uri uri = issueTrackerUrls[issueIndex.Value];
-					Hyperlink hyperlink = new Hyperlink(run);
-					hyperlink.NavigateUri = uri;
-					hyperlink.ToolTip = uri;
-					hyperlink.ToolTip = uri;
-					hyperlink.Style = Theme.FindStyle("BugtrackerHyperlinkStyle");
-					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
-					hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
+					// Migration note：WPF Hyperlink(Run) 内联超链接 → Avalonia HyperlinkButton（Content 承载 Run，
+					// InlineCollection.Add(Control) 支持 Control 作为内联元素）。
+					global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
+					{
+						Content = run,
+						NavigateUri = uri
+					};
+					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
+					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
+{					global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(hyperlink, global::ForkPlus.UI.Theme.FindStyle("BugtrackerHyperlinkStyle"));
+}					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
 					textBlock.Inlines.Add(hyperlink);
 					if (range.End == text.Length)
 					{
@@ -90,7 +127,7 @@ namespace ForkPlus.UI.Controls
 
 		public static void ApplyFuzzyHighlighting(this FuzzyHighlightableTextBlock textBlock, string fuzzySearchString)
 		{
-			string text = textBlock.Text;
+			string text = GetOriginalText(textBlock);
 			if (string.IsNullOrEmpty(fuzzySearchString) || !text.HasFuzzyMatch(fuzzySearchString))
 			{
 				RestoreText(textBlock);
@@ -98,7 +135,7 @@ namespace ForkPlus.UI.Controls
 			}
 			int[] array = new int[fuzzySearchString.Length];
 			text.MatchPositions(fuzzySearchString, array);
-			textBlock.Inlines.Clear();
+			BeginInlineSegments(textBlock, text);
 			int num = 0;
 			for (int i = 0; i < array.Length; i++)
 			{
@@ -123,7 +160,7 @@ namespace ForkPlus.UI.Controls
 
 		public static void ApplySearchHighlighting(this TextBlock textBlock, string highlightString)
 		{
-			string text = textBlock.Text;
+			string text = GetOriginalText(textBlock);
 			if (string.IsNullOrEmpty(highlightString))
 			{
 				RestoreText(textBlock);
@@ -137,9 +174,9 @@ namespace ForkPlus.UI.Controls
 			}
 			int length = highlightString.Length;
 			int num2 = 0;
-			Brush foreground = Theme.FindBrush("ForegroundBrush");
-			Brush background = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
-			textBlock.Inlines.Clear();
+			Brush foreground = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush background = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			BeginInlineSegments(textBlock, text);
 			while (num != -1)
 			{
 				int length2 = num - num2;
@@ -288,9 +325,12 @@ namespace ForkPlus.UI.Controls
 			InlineCollection inlines = textBlock.Inlines;
 			if (inlines.Count > 1)
 			{
-				string text = textBlock.Text;
+				// Avalonia 语义：分段模式下 Text 已被清空，原文在弱表里；
+				// Inlines.Clear() 后用 Text 赋值恢复纯文本渲染模式。
+				string text = GetOriginalText(textBlock);
 				inlines.Clear();
-				inlines.Add(text);
+				textBlock.Text = text;
+				OriginalTexts.Remove(textBlock);
 			}
 		}
 

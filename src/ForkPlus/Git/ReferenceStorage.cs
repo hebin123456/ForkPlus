@@ -163,7 +163,7 @@ namespace ForkPlus.Git
 				}
 			}
 			string[] upstreams = list.ToArray();
-			return new ReferenceStorage(refs, shas, refsHash, committerDates, symrefs, symrefTargets, localBranches, remoteBranches, tags, upstreams, upstreamsHash, headSha, activeBranchIndex);
+		return new ReferenceStorage(refs, shas, refsHash, committerDates, symrefs, symrefTargets, localBranches, remoteBranches, tags, upstreams, upstreamsHash, headSha, activeBranchIndex);
 		}
 
 		public ReferenceStorage WithHead(Sha? headSha)

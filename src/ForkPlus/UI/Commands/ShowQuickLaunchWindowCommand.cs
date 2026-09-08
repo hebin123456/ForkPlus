@@ -1,4 +1,5 @@
-using System.Windows.Input;
+using System;
+using Avalonia.Input;
 using ForkPlus.UI.QuickLaunch;
 
 namespace ForkPlus.UI.Commands
@@ -7,7 +8,7 @@ namespace ForkPlus.UI.Commands
 	{
 		public string Title => "Quick Launch...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.P, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.P, global::Avalonia.Input.KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

@@ -1,10 +1,11 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -36,7 +37,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(Translate("LFS Lock"), delegate(JobMonitor monitor)
 			{
 				GitCommandResult lockResult = new GitLfsLockGitCommand().Execute(repositoryUserControl.GitModule, filePaths, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!lockResult.Succeeded && !monitor.IsCanceled)
 					{

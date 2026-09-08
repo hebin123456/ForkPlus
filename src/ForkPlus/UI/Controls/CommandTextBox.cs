@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.QuickLaunch;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	[TemplatePart(Name = "PART_LabelsStackPanel", Type = typeof(FrameworkElement))]
-	[TemplatePart(Name = "PART_PlaceholderTextBox", Type = typeof(FrameworkElement))]
+	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_LabelsStackPanel", Type = typeof(global::Avalonia.Controls.Control))]
+	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_PlaceholderTextBox", Type = typeof(global::Avalonia.Controls.Control))]
 	public class CommandTextBox : TextBox
 	{
 		public EventHandler<object[]> CommandArgumentsCompleted;
@@ -44,6 +46,16 @@ namespace ForkPlus.UI.Controls
 
 		public CommandDescriptor CommandDescriptor { get; private set; }
 
+		public CommandTextBox()
+		{
+			// Migration note：WPF TextBox.Text 默认 ""，Avalonia 12 默认 null——同 PlaceholderTextBox 的构造期回填，
+			// 防止 `.Text.Trim()` 等 C# 调用在未输入时 NRE（剪贴板读取崩溃同根）。
+			if (base.Text == null)
+			{
+				base.Text = string.Empty;
+			}
+		}
+
 		private string Placeholder
 		{
 			get
@@ -56,19 +68,19 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public override void OnApplyTemplate()
+		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
-			base.OnApplyTemplate();
-			_labelsStackPanel = GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
-			_textBox = GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
+			base.OnApplyTemplate(e);
+			_labelsStackPanel = this.GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
+			_textBox = this.GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
 			Placeholder = Translate("Command");
-			_textBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			_textBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Back && _textBox.CaretIndex == 0)
 				{
 					RemoveArgument();
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			_textBox.Focus();
 		}
 
@@ -141,16 +153,20 @@ namespace ForkPlus.UI.Controls
 			border.Padding = new Thickness(6.0, 0.0, 6.0, 2.0);
 			border.Margin = new Thickness(2.0, 0.0, 0.0, 0.0);
 			border.CornerRadius = new CornerRadius(3.0, 3.0, 3.0, 3.0);
-			border.Background = Theme.CommandTextBox.LabelBackgroundBrush;
+			border.Background = global::ForkPlus.UI.Theme.CommandTextBox.LabelBackgroundBrush;
 			TextBlock child = new TextBlock
 			{
 				VerticalAlignment = VerticalAlignment.Center,
 				Text = text,
-				Foreground = Theme.CommandTextBox.LabelForegroundBrush
+				Foreground = global::ForkPlus.UI.Theme.CommandTextBox.LabelForegroundBrush
 			};
 			border.Child = child;
 			_labelsStackPanel.Children.Add(border);
-			_textBox.Text = null;
+			// Migration note：WPF TextBox.Text 对 null 有 CoerceText(null→"")，Avalonia 12 没有——
+			// 这里写 null 会经模板 TwoWay 绑定上传把外层 CommandTextBox.Text 也变成 null，
+			// 随后 QuickLaunchWindow.RefreshCommandList 的 `.Text.Trim()` 直接 NRE
+			// （Linux 用户实测：快速启动点击"切换工作区"必崩，2026-09-07）。清空请写 string.Empty。
+			_textBox.Text = string.Empty;
 		}
 
 		private void PopSection()

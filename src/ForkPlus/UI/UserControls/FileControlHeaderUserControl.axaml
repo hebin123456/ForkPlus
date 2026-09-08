@@ -1,0 +1,148 @@
+<UserControl BorderThickness="0,0,0,1" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.FileControlHeaderUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.BorderBrush>
+    <DynamicResource ResourceKey="BorderBrush" />
+  </UserControl.BorderBrush>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="100" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="140" />
+    </Grid.ColumnDefinitions>
+    <Grid.Children>
+      <StackPanel Grid.Column="0" Orientation="Horizontal" x:Name="TextModeNavigationButtonsContainer" IsVisible="False">
+        <StackPanel.Children>
+          <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
+            <Button.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
+            </Button.Theme>
+            <ToolTip.Tip>Go to previous change</ToolTip.Tip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="UpIcon" />
+              </Image.Source>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+          <Button IsTabStop="False" Click="NextButton_Click" x:Name="NextButton">
+            <Button.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
+            </Button.Theme>
+            <ToolTip.Tip>Go to next change</ToolTip.Tip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="DownIcon" />
+              </Image.Source>
+              <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+            </Image>
+          </Button>
+        </StackPanel.Children>
+      </StackPanel>
+      <DockPanel Grid.Column="1" HorizontalAlignment="Center">
+        <DockPanel.Children>
+          <Image DockPanel.Dock="Left" Margin="2,1,2,1" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="FileTypeImage" />
+          <fuc:FilePathTextBlock x:Name="FilePathTextBlock">
+            <fuc:FilePathTextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+            </fuc:FilePathTextBlock.Foreground>
+            <fuc:FilePathTextBlock.Margin>0</fuc:FilePathTextBlock.Margin>
+          </fuc:FilePathTextBlock>
+        </DockPanel.Children>
+      </DockPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="TextModeButtonsContainer" IsVisible="False">
+        <StackPanel.Children>
+          <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Ignore whitespaces</ToolTip.Tip>
+            <Image x:Name="IgnoreWhitespacesImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="IgnoreWhiteSpacesIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="ShowHiddenSymbolsToggleButton_Click" x:Name="ShowHiddenSymbolsToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Show hidden symbols</ToolTip.Tip>
+            <Image x:Name="ShowHiddenSymbolsImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="ShowHiddenSymbolsIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="WordWrapToggleButton_Click" x:Name="WordWrapToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Word wrap</ToolTip.Tip>
+            <Image x:Name="WordWrapImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="WordWrapIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+          <Button IsTabStop="False" Click="DecreaseVisibleLines_Click" x:Name="DecreaseNumberOfVisibleLinesButton">
+            <Button.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
+            </Button.Theme>
+            <ToolTip.Tip>Decrease number of visible lines</ToolTip.Tip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="DecreaseVisibleLinesIcon" />
+              </Image.Source>
+            </Image>
+          </Button>
+          <Button IsTabStop="False" Click="IncreaseVisibleLines_Click" x:Name="IncreaseNumberOfVisibleLinesButton">
+            <Button.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
+            </Button.Theme>
+            <ToolTip.Tip>Increase number of visible lines</ToolTip.Tip>
+            <Image>
+              <Image.Source>
+                <DynamicResource ResourceKey="IncreaseVisibleLinesIcon" />
+              </Image.Source>
+            </Image>
+          </Button>
+          <ToggleButton IsTabStop="False" Click="ShowEntireFileToggleButton_Click" x:Name="ShowEntireFileToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Show entire file</ToolTip.Tip>
+            <Image x:Name="ShowEntireFileImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="ShowEntireFileIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+          <ToggleButton IsTabStop="False" Click="DiffLayoutModeToggleButton_Click" x:Name="DiffLayoutModeToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <Image x:Name="DiffLayoutModeImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="SideBySideIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ImageModeButtonsContainer" IsVisible="False">
+        <StackPanel.Children>
+          <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Highlight pixels</ToolTip.Tip>
+            <Image x:Name="HighlightPixelsImage">
+              <Image.Source>
+                <DynamicResource ResourceKey="HighlightPixelsIcon" />
+              </Image.Source>
+            </Image>
+          </ToggleButton>
+        </StackPanel.Children>
+      </StackPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

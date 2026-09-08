@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Commands
 {

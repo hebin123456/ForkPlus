@@ -1,0 +1,405 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <StreamGeometry x:Key="ArrowTop">M5.551,1.229L8.818,6.791C9.234,7.831 8.956,8.44 7.788,8.5L4.5,8.5L1.212,8.5C0.044,8.44 -0.234,7.831 0.182,6.791L3.449,1.229C3.8,0.759 4.15,0.512 4.5,0.5L4.5,0.5C4.85,0.512 5.2,0.758 5.551,1.229Z</StreamGeometry>
+  <StreamGeometry x:Key="ArrowBottom">M0.182,2.209L3.449,7.771C3.8,8.242 4.15,8.488 4.5,8.5L4.5,8.5C4.85,8.488 5.2,8.242 5.551,7.771L8.818,2.209C9.234,1.169 8.956,0.56 7.788,0.5L1.212,0.5C0.044,0.56 -0.234,1.169 0.182,2.209Z</StreamGeometry>
+  <StreamGeometry x:Key="ArrowRight">M7.771,3.449L2.209,0.182C1.169,-0.234 0.56,0.044 0.5,1.212L0.5,7.788C0.56,8.956 1.169,9.234 2.209,8.818L7.771,5.551C8.242,5.201 8.488,4.85 8.5,4.5L8.5,4.5C8.488,4.15 8.242,3.8 7.771,3.449Z</StreamGeometry>
+  <StreamGeometry x:Key="ArrowLeft">M1.229,3.449L6.791,0.182C7.831,-0.234 8.44,0.044 8.5,1.212L8.5,7.788C8.44,8.956 7.831,9.234 6.791,8.818L1.229,5.551C0.758,5.201 0.512,4.85 0.5,4.5L0.5,4.5C0.512,4.15 0.758,3.8 1.229,3.449Z</StreamGeometry>
+  <ControlTheme x:Key="ScrollBarButton" TargetType="RepeatButton">
+    
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="1" />
+    <Setter Property="Focusable" Value="false" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Border BorderBrush="#00FFFFFF" Background="#00FFFFFF" BorderThickness="0" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="RepeatButtonTransparent" TargetType="RepeatButton">
+    
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Focusable" Value="false" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="ScrollBarThumbVertical" TargetType="Thumb">
+    <!-- Migration note（2026-09-05，修复"垂直滚动条有时候长度不对"）：
+         1) MinHeight 从 60 降到 18：长内容时按比例 thumb 可能只有十几像素，
+            60 的下限会把 thumb 强行拉成 3~4 倍大，用户拖到底部发现内容还没滚完。
+            18px 是 thumb 圆角 + 可拖拽的视觉下限，比官方 Fluent 主题的 8px 略大，
+            兼顾可用性与比例准确性。
+         2) 去掉 Border 的 Height="{TemplateBinding Height}" / Width="{TemplateBinding Width}"：
+            Avalonia Track 通过 Arrange 设置 Thumb 的 Bounds，不设置 Height/Width 属性
+            （这两个属性运行时是 NaN），TemplateBinding 到 NaN 在 measure 阶段可能
+            干扰布局计算；让 Border 默认 Stretch 铺满 Thumb 即可。 -->
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="MinHeight" Value="18" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Grid Background="#00FFFFFF">
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:pointerover /template/ Border#rectangle">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Thumb}" Property="Background" />
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#rectangle">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb}" Property="Background" />
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" Property="BorderBrush" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="ScrollBarThumbHorizontal" TargetType="Thumb">
+    <!-- 同垂直版：MinWidth 60→18，去掉 Height/Width TemplateBinding。 -->
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="MinWidth" Value="18" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Grid Background="#00FFFFFF">
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:pointerover /template/ Border#rectangle">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Thumb.Horizontal}" Property="Background" />
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Thumb.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#rectangle">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Horizontal}" Property="Background" />
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" Property="BorderBrush" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="VerticalScrollBarStyle" TargetType="ScrollBar">
+
+    <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Width" Value="13" />
+    <Setter Property="MinWidth" Value="13" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollBar">
+          <Grid x:Name="Bg">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="10" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="10" />
+            </Grid.RowDefinitions>
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
+            <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+            </RepeatButton>
+            <Track IsDirectionReversed="true"
+                   Grid.Row="1"
+                   Margin="0,0,0,0"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}"
+                   x:Name="PART_Track">
+              <Track.DecreaseButton>
+                <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+              </Track.IncreaseButton>
+              <Track.Thumb>
+                <Thumb Theme="{DynamicResource ScrollBarThumbVertical}" />
+              </Track.Thumb>
+            </Track>
+            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+            </RepeatButton>
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^:horizontal">
+        <!-- Migration note（2026-09-03，横向滚动条只画出 13px 小方块的根因）：
+             WPF 原版 :horizontal 触发器第一个 Setter 就是 Width="Auto"，把基础样式的
+             Width="13" 重置掉；迁移时丢失导致横向滚动条被硬约束成 13px 宽。
+             Avalonia 的 Width 是 double，NaN 即 WPF 的 Auto。 -->
+        <Setter Property="Width" Value="NaN" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="MinHeight" Value="13" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollBar">
+              <Grid x:Name="Bg">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="10" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="10" />
+                </Grid.ColumnDefinitions>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
+                <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
+                <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                </RepeatButton>
+                <Track Grid.Column="1"
+                       Margin="0,0,0,0"
+                       Minimum="{TemplateBinding Minimum}"
+                       Maximum="{TemplateBinding Maximum}"
+                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       ViewportSize="{TemplateBinding ViewportSize}"
+                       Orientation="{TemplateBinding Orientation}"
+                       x:Name="PART_Track">
+                  <Track.DecreaseButton>
+                    <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+                  </Track.DecreaseButton>
+                  <Track.IncreaseButton>
+                    <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+                  </Track.IncreaseButton>
+                  <Track.Thumb>
+                    <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
+                  </Track.Thumb>
+                </Track>
+                <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                </RepeatButton>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowRight">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowRight">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowRight">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="HorizontalScrollBarStyle" TargetType="ScrollBar">
+
+    <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Width" Value="13" />
+    <Setter Property="MinWidth" Value="13" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollBar">
+          <Grid x:Name="Bg">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="10" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="10" />
+            </Grid.RowDefinitions>
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
+            <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+            </RepeatButton>
+            <Track IsDirectionReversed="true"
+                   Grid.Row="1"
+                   Margin="0,0,0,0"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}"
+                   x:Name="PART_Track">
+              <Track.DecreaseButton>
+                <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+              </Track.IncreaseButton>
+              <Track.Thumb>
+                <Thumb Theme="{DynamicResource ScrollBarThumbVertical}" />
+              </Track.Thumb>
+            </Track>
+            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+            </RepeatButton>
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^:horizontal">
+        <!-- Migration note（2026-09-03）：同 VerticalScrollBarStyle——补上 WPF 原版
+             Width="Auto"（Avalonia 写作 NaN）重置，横向才不会被基础样式 Width=13 约束。 -->
+        <Setter Property="Width" Value="NaN" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="MinHeight" Value="13" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ScrollBar">
+              <Grid x:Name="Bg">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="10" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="10" />
+                </Grid.ColumnDefinitions>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
+                <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
+                <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                </RepeatButton>
+                <Track Grid.Column="1"
+                       Margin="0,0,0,0"
+                       Minimum="{TemplateBinding Minimum}"
+                       Maximum="{TemplateBinding Maximum}"
+                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       ViewportSize="{TemplateBinding ViewportSize}"
+                       Orientation="{TemplateBinding Orientation}"
+                       x:Name="PART_Track">
+                  <Track.DecreaseButton>
+                    <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+                  </Track.DecreaseButton>
+                  <Track.IncreaseButton>
+                    <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
+                  </Track.IncreaseButton>
+                  <Track.Thumb>
+                    <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
+                  </Track.Thumb>
+                </Track>
+                <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                </RepeatButton>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowTop">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
+    <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
+    <!-- WPF 默认 HorizontalScrollBarVisibility=Auto；Avalonia 12 裸默认是 Disabled。
+         迁移自 WPF 的 20+ 处 ScrollViewer 大多没显式设 HSBV（依赖 WPF 的 Auto），
+         主题层补齐默认，保持“内容超宽时允许横向滚动”的原版行为。 -->
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollViewer">
+          <Grid Background="{TemplateBinding Background}" x:Name="Grid">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
+            <!-- 关键说明（2026-09-04，修复2“引用徽章不换行”重写）：
+                 1) 不要在模板里给 SCP 设 CanHorizontallyScroll/CanVerticallyScroll！
+                    SCP.AttachToScrollViewer() 只在属性“未被设置”(IfUnset/IsSet)时才会自动绑定
+                    CanHorizontallyScroll = (owner.HorizontalScrollBarVisibility != Disabled)。
+                    一旦模板硬编码 True，绑定被跳过，MeasureOverride 永远给内容无限宽，
+                    HorizontalScrollBarVisibility=Disabled 的视图（如提交摘要里的引用徽章区）
+                    里的 WrapPanel 永不换行、内容被裁切。删掉硬编码值让自动绑定生效：
+                    Disabled → 有限宽（换行）；Auto/Visible/Hidden → 无限宽（横向滚动）。
+                    官方 Fluent 主题同样不设置这两个属性。
+                 2) 不要手动给 PART_ScrollBar 绑定 Value/Maximum/ViewportSize；
+                    让 Avalonia ScrollViewer 自己把 Offset/Viewport 与 PART_* 连接起来，
+                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条”。
+                 3) Background="Transparent"（2026-09-04，问题D“提交页滚轮无法滚动”）：
+                    Avalonia 的滚轮滚动由 ScrollContentPresenter 的类处理器 OnPointerWheelChanged
+                    完成（WPF 是 ScrollViewer.OnMouseWheel 自己处理冒泡事件），事件只有路由
+                    “经过” SCP 才会触发。没有背景的元素不可命中——内容里无背景的空白区域
+                    （Grid/Panels）命中会穿透内容落到模板根 Grid（SCP 的兄弟节点），事件冒泡
+                    永远到不了 SCP，滚轮因此失效（只能拖滚动条）。给 SCP 一个透明背景让整个
+                    视口区域可命中，空白处滚轮也能滚，与 WPF 行为一致。
+                    （滚动能力本身由 1) 的自动绑定按 HSBV/VSBV 动态决定，与背景无关。） -->
+            <ScrollContentPresenter Grid.Row="0"
+                                    Margin="{TemplateBinding Padding}"
+                                    Grid.Column="0"
+                                    Background="Transparent"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{x:Null}"
+                                    x:Name="PART_ScrollContentPresenter" />
+            <ScrollBar Grid.Row="0"
+                       Grid.Column="1"
+                       Cursor="Arrow"
+                       AutomationProperties.AutomationId="VerticalScrollBar"
+                       x:Name="PART_VerticalScrollBar"
+                       Theme="{DynamicResource VerticalScrollBarStyle}" />
+            <ScrollBar Grid.Row="1"
+                       Orientation="Horizontal"
+                       Grid.Column="0"
+                       Cursor="Arrow"
+                       AutomationProperties.AutomationId="HorizontalScrollBar"
+                       x:Name="PART_HorizontalScrollBar"
+                       Theme="{DynamicResource HorizontalScrollBarStyle}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:TouchpadAwareScrollViewer}" TargetType="controls:TouchpadAwareScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}" />
+</ResourceDictionary>

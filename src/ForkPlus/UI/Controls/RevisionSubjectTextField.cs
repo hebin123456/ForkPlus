@@ -1,18 +1,20 @@
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
 	public class RevisionSubjectTextField : TextField
 	{
-		public static readonly DependencyProperty IsParentSelectedProperty = DependencyProperty.RegisterAttached("IsParentSelected", typeof(bool), typeof(RevisionSubjectTextField), new PropertyMetadata(delegate(DependencyObject s, DependencyPropertyChangedEventArgs e)
-		{
-			(s as RevisionSubjectTextField).RefreshInlines();
-		}));
+		public static readonly global::Avalonia.StyledProperty<bool> IsParentSelectedProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<RevisionSubjectTextField, global::Avalonia.AvaloniaObject, bool>("IsParentSelected");
 
-		public static readonly DependencyProperty HasBodyProperty = DependencyProperty.RegisterAttached("HasBody", typeof(bool), typeof(RevisionSubjectTextField));
+		public static readonly global::Avalonia.StyledProperty<bool> HasBodyProperty =
+    global::Avalonia.AvaloniaProperty.RegisterAttached<RevisionSubjectTextField, global::Avalonia.AvaloniaObject, bool>("HasBody");
 
 		public bool IsParentSelected
 		{
@@ -38,6 +40,20 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		public RevisionSubjectTextField()
+		{
+			// Migration note：WPF 属性变更回调驱动 RefreshInlines（选中态换画刷/正文 ↩ 指示符），
+			// 迁移丢回调后这些状态变化不再重排 Inlines，这里补回（StringValue/HighlightString 在基类）。
+			this.GetObservable(IsParentSelectedProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<bool>(delegate
+			{
+				RefreshInlines();
+			}));
+			this.GetObservable(HasBodyProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<bool>(delegate
+			{
+				RefreshInlines();
+			}));
+		}
+
 		protected override void RefreshInlines()
 		{
 			string stringValue = base.StringValue;
@@ -55,10 +71,10 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
-			Brush codeSolidBackgroundBrush = Theme.FindBrush("RevisionList.Code.BackgroundBrush");
-			Brush codeTransparentBackgroundBrush = Theme.FindBrush("RevisionList.Code.Selected.BackgroundBrush");
+			Brush matchForegroundBrush = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush matchBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush codeSolidBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.Code.BackgroundBrush");
+			Brush codeTransparentBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.Code.Selected.BackgroundBrush");
 			new Range(0, stringValue.Length).Merge(new List<Range>[3] { prefixHighlighting, codeHighlighting, searchMatchRanges }, delegate(Range range, int? prefixIndex, int? codeIndex, int? searchIndex)
 			{
 				Run run2 = new Run(stringValue.Substring(range));
@@ -83,7 +99,7 @@ namespace ForkPlus.UI.Controls
 			{
 				Run run = new Run(" ↩");
 				run.FontSize = 10.0;
-				run.Foreground = (IsParentSelected ? Theme.FindBrush("RevisionList.BodyIndicator.Selected.ForegroundBrush") : Theme.FindBrush("RevisionList.BodyIndicator.ForegroundBrush"));
+				run.Foreground = (IsParentSelected ? global::ForkPlus.UI.Theme.FindBrush("RevisionList.BodyIndicator.Selected.ForegroundBrush") : global::ForkPlus.UI.Theme.FindBrush("RevisionList.BodyIndicator.ForegroundBrush"));
 				base.Inlines.Add(run);
 			}
 		}

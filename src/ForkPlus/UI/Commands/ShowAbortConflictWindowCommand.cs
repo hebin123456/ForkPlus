@@ -5,6 +5,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -166,7 +167,7 @@ namespace ForkPlus.UI.Commands
 			repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("Updating submodules..."), delegate(JobMonitor monitor)
 			{
 				GitCommandResult updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					repositoryUserControl.InvalidateAndRefresh(subdomainToRefresh);
 					if (!updateSubmodulesResult.Succeeded)

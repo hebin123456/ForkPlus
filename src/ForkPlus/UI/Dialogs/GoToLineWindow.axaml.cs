@@ -1,0 +1,41 @@
+using System;
+using System.ComponentModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup;
+using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Layout;
+using Avalonia.Styling;
+
+namespace ForkPlus.UI.Dialogs
+{
+	public partial class GoToLineWindow : ForkPlusDialogWindow
+	{
+
+		public int? LineNumber { get; private set; }
+
+		public GoToLineWindow()
+		{
+			base.ShowLogo = false;
+			base.ShowHeader = false;
+			base.IsTitleVisible = true;
+			InitializeComponent();
+			base.Title = PreferencesLocalization.Current("Go To Line");
+			base.SubmitButtonTitle = PreferencesLocalization.Current("Go");
+		}
+
+		protected override void OnSubmit()
+		{
+			if (int.TryParse(LineNumberTextBox.Text, out var result))
+			{
+				LineNumber = result;
+			}
+			else
+			{
+				LineNumber = null;
+			}
+			CloseWithOk();
+		}
+
+	}
+}

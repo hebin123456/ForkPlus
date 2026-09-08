@@ -1,18 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.Helpers;
 using ForkPlus;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class Treemap : FrameworkElement
+	public class Treemap : global::Avalonia.Controls.Control
 	{
 		private struct LayoutItem
 		{
@@ -160,7 +162,9 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.RenderSize.Width, base.RenderSize.Height));
+		// Migration note：WPF new Rect(RenderSize) 由 Size 隐式转 Rect；Avalonia 用显式 new Rect(Size)。
+		private Rect _boundsProbe => new Rect(base.Bounds.Size);
+	private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.Bounds.Size.Width, base.Bounds.Size.Height));
 
 		private Canvas Canvas => ((base.Parent as Grid).Parent as Grid).Parent as Canvas;
 
@@ -213,15 +217,15 @@ namespace ForkPlus.UI.Controls
 			_showTooltipAction = new DelayedAction<IndexPath>(ShowTooltip, 0.5);
 		}
 
-		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		protected override void OnSizeChanged(global::Avalonia.Controls.SizeChangedEventArgs sizeInfo)
 		{
 			_needRecalculateLayout = true;
-			base.OnRenderSizeChanged(sizeInfo);
+			base.OnSizeChanged(sizeInfo);
 		}
 
-		protected override void OnRender(DrawingContext ctx)
+		public override void Render(DrawingContext ctx)
 		{
-			base.OnRender(ctx);
+			base.Render(ctx);
 			try
 			{
 				RecalculateLayoutIfNeeded();
@@ -240,18 +244,18 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnMouseEnter(MouseEventArgs e)
+		protected override void OnPointerEntered(global::Avalonia.Input.PointerEventArgs e)
 		{
-			base.OnMouseEnter(e);
+			base.OnPointerEntered(e);
 			if (!hovered)
 			{
 				hovered = true;
 			}
 		}
 
-		protected override void OnMouseLeave(MouseEventArgs e)
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
 		{
-			base.OnMouseLeave(e);
+			base.OnPointerExited(e);
 			if (hovered)
 			{
 				hovered = false;
@@ -259,15 +263,15 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
 			Point position = e.GetPosition(this);
 			UpdateHoverIndexPath(position);
 			UpdateTooltipPosition();
-			base.OnMouseMove(e);
+			base.OnPointerMoved(e);
 		}
 
-		protected override void OnMouseDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
 			if (e.ClickCount == 1)
@@ -278,7 +282,7 @@ namespace ForkPlus.UI.Controls
 			{
 				OpenIndexPath = FindItemAtPoint(_layout, position, new IndexPath());
 			}
-			base.OnMouseDown(e);
+			base.OnPointerPressed(e);
 		}
 
 		private void ShowTooltip(IndexPath indexPath)
@@ -302,8 +306,12 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_tooltipView != null)
 			{
-				Point point = Canvas.PointFromScreen(MouseHelper.GetMousePosition());
-				point.Offset(10.0, 10.0);
+				// Migration note：Avalonia PointFromScreen 入参为 PixelPoint（WPF 为屏幕坐标 Point），
+				// MouseHelper 返回的是 DIP Point，这里做一次显式转换（假定显示缩放 1:1）。
+				Point screenPosition = MouseHelper.GetMousePosition();
+				Point point = Canvas.PointFromScreen(new global::Avalonia.PixelPoint((int)screenPosition.X, (int)screenPosition.Y));
+				// Avalonia Point 无 Offset(原地修改)，用新 Point 等价改写。
+				point = new Point(point.X + 10.0, point.Y + 10.0);
 				Canvas.SetLeft(_tooltipView, point.X);
 				Canvas.SetTop(_tooltipView, point.Y);
 			}

@@ -1,12 +1,13 @@
 using System;
 using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia.Data;
+using Avalonia.Markup;
 using ForkPlus.Git;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class InteractiveRebaseActionToColorConverter : MarkupExtension, IValueConverter
+	public class InteractiveRebaseActionToColorConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -15,17 +16,17 @@ namespace ForkPlus.UI.Dialogs
 				switch ((InteractiveRebaseAction)value)
 				{
 				case InteractiveRebaseAction.Pick:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case InteractiveRebaseAction.Edit:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case InteractiveRebaseAction.Reword:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case InteractiveRebaseAction.Squash:
-					return Theme.ApplicationColors.GrayBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GrayBrush;
 				case InteractiveRebaseAction.Fixup:
-					return Theme.ApplicationColors.GrayBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GrayBrush;
 				case InteractiveRebaseAction.Drop:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

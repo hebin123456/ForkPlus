@@ -22,6 +22,8 @@
     "Accepted": "直接採納",
     "Share": "佔比",
     "Analyzing AI authorship...": "正在分析 AI 作者歸屬...",
+    "Unknown": "未知",
+    "Enable AI attribution in Preferences → Git to see AI authorship statistics.": "在 偏好設定 → Git 中啟用 AI 歸屬後可檢視 AI 作者歸屬統計。",
     "Human": "人類",
     "Mixed (AI + human edits)": "混合（AI + 人工修改）",
     "{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits": "{0}：新增 {2} 行中有 {1} 行由 AI 產生（{3}%）· {5} 個提交中 {4} 個含作者歸屬資料",
@@ -2304,6 +2306,15 @@
     "Import Complete": "匯入完成",
     "Importing will overwrite your current ForkPlus configuration.\nForkPlus will restart after import.\n\nContinue?": "匯入將覆蓋目前的 ForkPlus 設定。\nForkPlus 將在匯入後重新啟動。\n\n是否繼續？",
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "設定匯入成功。\nForkPlus 即將重新啟動以套用新設定。",
-    "Force push": "強制推送"
+    "Force push": "強制推送",
+    "Credentials": "憑證",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "已儲存的 HTTP(S) 憑證。使用者名稱會自動記住；「記住密碼」會在對話方塊中預填密碼；「不再詢問」將靜默使用。可在此提前新增憑證，開關可隨時恢復彈窗詢問。",
+    "Host (e.g. github.com)": "主機（如 github.com）",
+    "Ask Again for All Hosts": "對所有主機重新詢問",
+    "Never ask": "不再詢問",
+    "Ask": "詢問",
+    "No saved credentials yet.": "尚無已儲存的憑證。",
+    "Host": "主機",
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "開啟後將靜默使用該憑證，不再彈出詢問；關閉後恢復彈窗。"
   }
 }

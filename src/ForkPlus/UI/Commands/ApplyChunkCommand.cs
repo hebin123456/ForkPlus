@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
@@ -6,6 +6,7 @@ using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -51,7 +52,7 @@ namespace ForkPlus.UI.Commands
 			{
 				if (!new ApplyGitCommand().Execute(gitModule, staged, patchData).Succeeded)
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					// v3.10.2 修复：StageJob 重置与 UI 解锁必须无条件执行（与 ToggleFileStageCommand 同因）。
 					commitUserControl.StageJob = null;
@@ -65,7 +66,7 @@ namespace ForkPlus.UI.Commands
 			}
 			else if (editorIsNewOrUntracked)
 			{
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();
@@ -76,7 +77,7 @@ namespace ForkPlus.UI.Commands
 			else
 			{
 				GitCommandResult<RepositoryStatus> refreshFileResponse = new RefreshFileStatusCommand().Execute(gitModule, repositoryData, repositoryStatus, paths, showIgnoredFiles, monitor);
-				commitUserControl.Dispatcher.Async(delegate
+				commitUserControl.Dispatcher.Post(delegate
 				{
 					commitUserControl.StageJob = null;
 					commitUserControl.RefreshStageControls();

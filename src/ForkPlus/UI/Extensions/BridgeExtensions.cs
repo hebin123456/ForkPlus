@@ -1,6 +1,6 @@
 using System;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using ForkPlus.Services;
 using ForkPlus.UI.Helpers;
 
@@ -15,29 +15,29 @@ namespace ForkPlus.Git
 	/// </summary>
 	public static class ChangeTypeBridgeExtensions
 	{
-		private static readonly Uri AddIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Add.png");
-		private static readonly Uri EditIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png");
-		private static readonly Uri CopyIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Copy.png");
-		private static readonly Uri DeletedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Remove.png");
-		private static readonly Uri RenamedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Rename.png");
-		private static readonly Uri TypeChangedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Status_Edit.png");
-		private static readonly Uri UnmergedIconUrl = new Uri("pack://application:,,,/ForkPlus;component/Assets/Warning.png");
+		private static readonly Uri AddIconUrl = new Uri("avares://ForkPlus/Assets/Status_Add.png");
+		private static readonly Uri EditIconUrl = new Uri("avares://ForkPlus/Assets/Status_Edit.png");
+		private static readonly Uri CopyIconUrl = new Uri("avares://ForkPlus/Assets/Status_Copy.png");
+		private static readonly Uri DeletedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Remove.png");
+		private static readonly Uri RenamedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Rename.png");
+		private static readonly Uri TypeChangedIconUrl = new Uri("avares://ForkPlus/Assets/Status_Edit.png");
+		private static readonly Uri UnmergedIconUrl = new Uri("avares://ForkPlus/Assets/Warning.png");
 
-		private static readonly ImageSource AddIcon = Freeze(new BitmapImage(AddIconUrl));
-		private static readonly ImageSource EditIcon = Freeze(new BitmapImage(EditIconUrl));
-		private static readonly ImageSource CopyIcon = Freeze(new BitmapImage(CopyIconUrl));
-		private static readonly ImageSource DeletedIcon = Freeze(new BitmapImage(DeletedIconUrl));
-		private static readonly ImageSource RenamedIcon = Freeze(new BitmapImage(RenamedIconUrl));
-		private static readonly ImageSource TypeChangedIcon = Freeze(new BitmapImage(TypeChangedIconUrl));
-		private static readonly ImageSource UnmergedIcon = Freeze(new BitmapImage(UnmergedIconUrl));
+		private static readonly global::Avalonia.Media.IImage AddIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(AddIconUrl)));
+		private static readonly global::Avalonia.Media.IImage EditIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(EditIconUrl)));
+		private static readonly global::Avalonia.Media.IImage CopyIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(CopyIconUrl)));
+		private static readonly global::Avalonia.Media.IImage DeletedIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(DeletedIconUrl)));
+		private static readonly global::Avalonia.Media.IImage RenamedIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(RenamedIconUrl)));
+		private static readonly global::Avalonia.Media.IImage TypeChangedIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(TypeChangedIconUrl)));
+		private static readonly global::Avalonia.Media.IImage UnmergedIcon = Freeze(new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(UnmergedIconUrl)));
 
-		private static ImageSource Freeze(ImageSource source)
+		private static global::Avalonia.Media.IImage Freeze(global::Avalonia.Media.IImage source)
 		{
-			if (source?.CanFreeze == true) source.Freeze();
+			// Migration note：WPF Freezable.CanFreeze/Freeze 在 Avalonia 无对应（Bitmap 天然不可变），直接返回。
 			return source;
 		}
 
-		public static ImageSource GetImageSource(this ChangeType changeType)
+		public static global::Avalonia.Media.IImage GetImageSource(this ChangeType changeType)
 		{
 			return changeType.GetIconKey() switch
 			{
@@ -51,7 +51,7 @@ namespace ForkPlus.Git
 			};
 		}
 
-		public static ImageSource GetImageSource(this StatusType statusType)
+		public static global::Avalonia.Media.IImage GetImageSource(this StatusType statusType)
 		{
 			return statusType.GetIconKey() switch
 			{
@@ -65,7 +65,7 @@ namespace ForkPlus.Git
 			};
 		}
 
-		public static ImageSource GetConflictImageSource(this StatusType statusType)
+		public static global::Avalonia.Media.IImage GetConflictImageSource(this StatusType statusType)
 		{
 			return statusType.GetIconKey() switch
 			{
@@ -82,7 +82,7 @@ namespace ForkPlus.Git
 	/// </summary>
 	public static class RemoteTypeBridgeExtensions
 	{
-		public static ImageSource Icon(this RemoteType remoteType)
+		public static global::Avalonia.Media.IImage Icon(this RemoteType remoteType)
 		{
 			string key = remoteType.GetIconKey();
 			return UI.Theme.FindImage(key) ?? UI.Theme.RemoteIcon;
@@ -101,7 +101,7 @@ namespace ForkPlus.Git
 	/// </summary>
 	public static class RemoteBridgeExtensions
 	{
-		public static ImageSource GetIconImage(this Remote remote)
+		public static global::Avalonia.Media.IImage GetIconImage(this Remote remote)
 		{
 			return UI.Theme.FindImage(remote.IconKey) ?? UI.Theme.RemoteIcon;
 		}
@@ -121,7 +121,7 @@ namespace ForkPlus.Accounts
 	/// </summary>
 	public static class NotificationIconBridgeExtensions
 	{
-		public static ImageSource Icon(this GitServiceNotificationTargetType targetType)
+		public static global::Avalonia.Media.IImage Icon(this GitServiceNotificationTargetType targetType)
 		{
 			string key = targetType.GetIconKey();
 			return key switch

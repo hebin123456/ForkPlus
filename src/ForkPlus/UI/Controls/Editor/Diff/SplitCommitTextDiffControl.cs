@@ -1,7 +1,9 @@
 using System;
-using System.Windows.Controls;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Controls;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -12,7 +14,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		[Null]
 		public CodeEditorScrollPositionCache PositionCache { get; set; }
 
-		public ScrollBarVisibility VerticalScrollBarVisibility
+		public global::Avalonia.Controls.Primitives.ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get
 			{
@@ -109,16 +111,18 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			add
 			{
-				_editor.ContextMenuOpening += value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_editor,(s, e) => value?.Invoke(s, e));
 			}
 			remove
 			{
-				_editor.ContextMenuOpening -= value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.RemoveContextMenuOpeningHandler(_editor,(s, e) => value?.Invoke(s, e));
 			}
 		}
 
 		public SplitCommitTextDiffControl()
 		{
+			_editor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+			_editor.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Stretch;
 			base.Children.Add(_editor);
 			_editor.ContextMenu = new ContextMenu();
 		}
@@ -135,12 +139,18 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			EntireFile = entireFile;
 			Location = location;
 			PositionCache?.SaveScrollPosition(_editor);
-			_editor.Options.IndentationSize = tabWidth;
-			_editor.VisualPatch = VisualPatch.CreateVisualPatch(Diff, EntireFile, Location);
-			base.Dispatcher.Async(delegate
+			ApplyDiffToEditor();
+			base.Dispatcher.Post(delegate
 			{
+				ApplyDiffToEditor();
 				PositionCache?.RestoreScrollPosition(_editor);
 			});
+		}
+
+		private void ApplyDiffToEditor()
+		{
+			_editor.Options.IndentationSize = TabWidth;
+			_editor.VisualPatch = VisualPatch.CreateVisualPatch(Diff, EntireFile, Location);
 		}
 
 		public void RefreshDiffFont(double codeEditorFontSize)

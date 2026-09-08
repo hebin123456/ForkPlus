@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionsHeaderUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <Grid Grid.Row="0" Margin="0,1,0,1" x:Name="RevisionDetailsContainer">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.Children>
+          <fuc:AvatarImage Grid.Column="0" HorizontalAlignment="Left" Width="18" Height="18" Margin="10,2,10,2" VerticalAlignment="Center" x:Name="AuthorAvatarImage" />
+          <Border Grid.Column="1" Height="18" Margin="-3,0,0,0" CornerRadius="3" x:Name="CustomTextBlockBorder">
+            <Border.Child>
+              <fuc:SelectableTextBlock Margin="3,0,3,1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="CustomTextBlock" />
+            </Border.Child>
+          </Border>
+          <fuc:SelectableTextBlock Grid.Column="2" Margin="0,2,5,0" FontSize="13" FontWeight="Medium" x:Name="AuthorTextBlock" />
+          <Border Grid.Column="3" Height="16" Margin="0,1,0,1" Padding="3,0,3,1" CornerRadius="3" x:Name="ShaBackgroundBorder">
+            <Border.Child>
+              <fuc:SelectableTextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ShaTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="SecondaryLabelBrush" />
+                </TextBlock.Foreground>
+              </fuc:SelectableTextBlock>
+            </Border.Child>
+          </Border>
+          <fuc:SelectableTextBlock Grid.Column="4" Margin="5,3,10,0" FontWeight="Medium" x:Name="AuthorDateTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="SecondaryLabelBrush" />
+            </TextBlock.Foreground>
+          </fuc:SelectableTextBlock>
+          <DockPanel Grid.Column="5" Margin="0,0,10,0">
+            <DockPanel.Children>
+              <fuc:SelectableTextBlock DockPanel.Dock="Left" Margin="0,0.8,0,0" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis" x:Name="SubjectTextBlock" />
+              <TextBlock DockPanel.Dock="Left" Margin="6,3,0,0" FontSize="12" Text="↩" x:Name="DescriptionSymbolTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="RevisionList.BodyIndicator.ForegroundBrush" />
+                </TextBlock.Foreground>
+              </TextBlock>
+            </DockPanel.Children>
+          </DockPanel>
+        </Grid.Children>
+      </Grid>
+      <Grid Grid.Row="1" Margin="0,0,0,1" x:Name="OtherRevisionDetailsContainer">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.Children>
+          <fuc:AvatarImage Grid.Column="0" HorizontalAlignment="Left" Width="18" Height="18" Margin="10,2,10,2" x:Name="OtherAuthorAvatarImage" />
+          <Border Grid.Column="1" Height="18" Margin="-3,0,0,0" CornerRadius="3" x:Name="OtherCustomTextBlockBorder">
+            <Border.Child>
+              <fuc:SelectableTextBlock Margin="3,0,3,1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="OtherCustomTextBlock" />
+            </Border.Child>
+          </Border>
+          <fuc:SelectableTextBlock Grid.Column="2" Margin="0,2,5,0" FontSize="13" FontWeight="Medium" x:Name="OtherAuthorTextBlock" />
+          <Border Grid.Column="3" Height="16" Margin="0,1,0,1" Padding="3,0,3,1" CornerRadius="3" x:Name="OtherShaBackgroundBorder">
+            <Border.Child>
+              <fuc:SelectableTextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="OtherShaTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="SecondaryLabelBrush" />
+                </TextBlock.Foreground>
+              </fuc:SelectableTextBlock>
+            </Border.Child>
+          </Border>
+          <fuc:SelectableTextBlock Grid.Column="4" Margin="5,3,10,0" FontWeight="Medium" x:Name="OtherAuthorDateTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="SecondaryLabelBrush" />
+            </TextBlock.Foreground>
+          </fuc:SelectableTextBlock>
+          <DockPanel Grid.Column="5" Margin="0,0,10,0">
+            <DockPanel.Children>
+              <fuc:SelectableTextBlock DockPanel.Dock="Left" Margin="0,0.8,0,0" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis" x:Name="OtherSubjectTextBlock" />
+              <TextBlock DockPanel.Dock="Left" Margin="6,3,0,0" FontSize="12" Text="↩" x:Name="OtherDescriptionSymbolTextBlock">
+                <TextBlock.Foreground>
+                  <DynamicResource ResourceKey="RevisionList.BodyIndicator.ForegroundBrush" />
+                </TextBlock.Foreground>
+              </TextBlock>
+            </DockPanel.Children>
+          </DockPanel>
+        </Grid.Children>
+      </Grid>
+      <Button Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" x:Name="SwapRevisionsButton" IsVisible="False">
+        <Button.Background>
+          <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+        </Button.Background>
+        <Button.Width>22</Button.Width>
+        <Button.Height>22</Button.Height>
+        <Button.Padding>2</Button.Padding>
+        <Button.Margin>0,0,10,0</Button.Margin>
+        <ToolTip.Tip>Reverse Commits</ToolTip.Tip>
+        <Button.Theme>
+          <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" />
+        </Button.Theme>
+        <Image>
+          <Image.Source>
+            <DynamicResource ResourceKey="SwapIcon" />
+          </Image.Source>
+          <Image.Height>16</Image.Height>
+          <Image.Width>16</Image.Width>
+        </Image>
+      </Button>
+    </Grid.Children>
+  </Grid>
+</UserControl>

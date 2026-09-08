@@ -9,73 +9,88 @@ namespace ForkPlus.Git.Commands
 {
 	public class UpdateSubmodulesGitCommand
 	{
-		public GitCommandResult Execute(GitModule gitModule, SubmodulesToUpdate oldSubmodules, JobMonitor monitor, string referenceGitDir = null)
+		// git ≥ 2.38.1 默认禁止 file transport，本地路径 URL 的子模块 init/update 会失败
+	//（"fatal: transport 'file' not allowed"，与 AddSubmoduleGitCommand 同因，模块16 E2E 实证修复）。
+	private static string[] SubmoduleTransportConfig
+	{
+		get
 		{
-			GitCommandResult<Submodule[]> gitCommandResult = new GetSubmodulesGitCommand().Execute(gitModule);
-			if (!gitCommandResult.Succeeded)
-			{
-				return GitCommandResult.Failure(gitCommandResult.Error);
-			}
-			Submodule[] result = gitCommandResult.Result;
-			List<Submodule> list = new List<Submodule>();
-			Tuple<Submodule, bool>[] submodules = oldSubmodules.Submodules;
-			for (int i = 0; i < submodules.Length; i++)
-			{
-				var (oldSubmodule, flag2) = submodules[i];
-				if (oldSubmodule.IsActive && !flag2 && result.ContainsItem((Submodule existing) => oldSubmodule.Path == existing.Path))
-				{
-					list.Add(oldSubmodule);
-				}
-			}
-			Submodule[] array = result;
-			foreach (Submodule newSubmodule in array)
-			{
-				if (newSubmodule.IsActive && !oldSubmodules.Submodules.ContainsItem((Tuple<Submodule, bool> old) => newSubmodule.Path == old.Item1.Path))
-				{
-					list.Add(newSubmodule);
-				}
-			}
-			if (list.Count == 0)
-			{
-				return GitCommandResult.Success();
-			}
-			if (referenceGitDir != null)
-			{
-				return ExecuteWithReference(gitModule, list, referenceGitDir, monitor);
-			}
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "submodule", "update", "--init", "--recursive", "--progress", "--");
-			foreach (Submodule item in list)
-			{
-				gitCommand.Add(item.Path.Quotify());
-			}
-			return ExecuteUpdate(gitModule, gitCommand, monitor);
+			string[] helper = App.OverrideCredentialHelper;
+			string[] config = new string[helper.Length + 2];
+			helper.CopyTo(config, 0);
+			config[helper.Length] = "-c";
+			config[helper.Length + 1] = "protocol.file.allow=always";
+			return config;
 		}
+	}
 
-		public GitCommandResult Execute(GitModule gitModule, Submodule[] submodules, JobMonitor monitor)
+	public GitCommandResult Execute(GitModule gitModule, SubmodulesToUpdate oldSubmodules, JobMonitor monitor, string referenceGitDir = null)
+	{
+		GitCommandResult<Submodule[]> gitCommandResult = new GetSubmodulesGitCommand().Execute(gitModule);
+		if (!gitCommandResult.Succeeded)
 		{
-			if (submodules.Length == 0)
-			{
-				return GitCommandResult.Success();
-			}
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "submodule", "update", "--init", "--recursive", "--progress", "--");
-			foreach (Submodule submodule in submodules)
-			{
-				gitCommand.Add(submodule.Path.Quotify());
-			}
-			return ExecuteUpdate(gitModule, gitCommand, monitor);
+			return GitCommandResult.Failure(gitCommandResult.Error);
 		}
-
-		public GitCommandResult ExecuteAll(GitModule gitModule, JobMonitor monitor)
+		Submodule[] result = gitCommandResult.Result;
+		List<Submodule> list = new List<Submodule>();
+		Tuple<Submodule, bool>[] submodules = oldSubmodules.Submodules;
+		for (int i = 0; i < submodules.Length; i++)
 		{
-			GitCommand command = new GitCommand(App.OverrideCredentialHelper, "submodule", "update", "--init", "--recursive", "--progress");
-			return ExecuteUpdate(gitModule, command, monitor);
-		}
-
-		private GitCommandResult ExecuteWithReference(GitModule gitModule, List<Submodule> submodules, string referenceGitDir, JobMonitor monitor)
-		{
-			foreach (Submodule submodule in submodules)
+			var (oldSubmodule, flag2) = submodules[i];
+			if (oldSubmodule.IsActive && !flag2 && result.ContainsItem((Submodule existing) => oldSubmodule.Path == existing.Path))
 			{
-				GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "submodule", "update", "--init", "--recursive", "--progress");
+				list.Add(oldSubmodule);
+			}
+		}
+		Submodule[] array = result;
+		foreach (Submodule newSubmodule in array)
+		{
+			if (newSubmodule.IsActive && !oldSubmodules.Submodules.ContainsItem((Tuple<Submodule, bool> old) => newSubmodule.Path == old.Item1.Path))
+			{
+				list.Add(newSubmodule);
+			}
+		}
+		if (list.Count == 0)
+		{
+			return GitCommandResult.Success();
+		}
+		if (referenceGitDir != null)
+		{
+			return ExecuteWithReference(gitModule, list, referenceGitDir, monitor);
+		}
+		GitCommand gitCommand = new GitCommand(SubmoduleTransportConfig, "submodule", "update", "--init", "--recursive", "--progress", "--");
+		foreach (Submodule item in list)
+		{
+			gitCommand.Add(item.Path.Quotify());
+		}
+		return ExecuteUpdate(gitModule, gitCommand, monitor);
+	}
+
+	public GitCommandResult Execute(GitModule gitModule, Submodule[] submodules, JobMonitor monitor)
+	{
+		if (submodules.Length == 0)
+		{
+			return GitCommandResult.Success();
+		}
+		GitCommand gitCommand = new GitCommand(SubmoduleTransportConfig, "submodule", "update", "--init", "--recursive", "--progress", "--");
+		foreach (Submodule submodule in submodules)
+		{
+			gitCommand.Add(submodule.Path.Quotify());
+		}
+		return ExecuteUpdate(gitModule, gitCommand, monitor);
+	}
+
+	public GitCommandResult ExecuteAll(GitModule gitModule, JobMonitor monitor)
+	{
+		GitCommand command = new GitCommand(SubmoduleTransportConfig, "submodule", "update", "--init", "--recursive", "--progress");
+		return ExecuteUpdate(gitModule, command, monitor);
+	}
+
+	private GitCommandResult ExecuteWithReference(GitModule gitModule, List<Submodule> submodules, string referenceGitDir, JobMonitor monitor)
+	{
+		foreach (Submodule submodule in submodules)
+		{
+			GitCommand gitCommand = new GitCommand(SubmoduleTransportConfig, "submodule", "update", "--init", "--recursive", "--progress");
 				string text = Path.Combine(referenceGitDir, "modules", submodule.Path);
 				if (Directory.Exists(text))
 				{

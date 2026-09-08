@@ -1,8 +1,12 @@
-using System.Windows;
+using Avalonia;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -19,14 +23,14 @@ namespace ForkPlus.UI.Controls
 
 		public TextContentControl()
 		{
-			SetResourceReference(FrameworkElement.StyleProperty, typeof(CodeEditor));
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			_codeEditorLineNumberMargin = new CodeEditorLineNumberMargin();
 			base.TextArea.LeftMargins.Add(_codeEditorLineNumberMargin);
 			_syntaxHighlighting = new SyntaxHighlighting();
 			base.TextArea.TextView.LineTransformers.Add(_syntaxHighlighting);
 			base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current,"CodeEditorFontSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
 			});
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);

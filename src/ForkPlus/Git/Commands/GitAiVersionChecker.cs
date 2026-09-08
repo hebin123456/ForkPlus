@@ -31,7 +31,24 @@ namespace ForkPlus.Git.Commands
 			{
 				return null;
 			}
+			// git 代理模式误判防线（2026-09-07 "git-ai stats 报 git: 'stats' is not a git
+			// command" 修复链）：可执行文件名不是 git-ai 时，git-ai 会把 --version 转发给真 git
+			// （退出码 0、输出 "git version 2.34.1"）。解析出 2.34.1 会被误判为"版本正常"
+			// （>= 1.0.0），偏好设置显示假版本、掩盖配置问题——识别该形态返回 null（Unknown）。
+			if (LooksLikeGitProxyVersionOutput(result.Result))
+			{
+				return null;
+			}
 			return ParseVersion(result.Result);
+		}
+
+		/// <summary>
+		/// 检测版本输出是否来自 git 代理转发（形如 "git version 2.34.1"，git-ai 原生 --version
+		/// 只输出纯版本号如 "1.7.2"）。internal 供回归测试直接验证。
+		/// </summary>
+		internal static bool LooksLikeGitProxyVersionOutput([Null] string raw)
+		{
+			return raw != null && raw.TrimStart().StartsWith("git version", StringComparison.OrdinalIgnoreCase);
 		}
 
 		/// <summary>

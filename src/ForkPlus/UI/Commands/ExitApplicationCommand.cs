@@ -1,5 +1,8 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {
@@ -13,7 +16,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			Application.Current.Shutdown(0);
+			global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown(0);
 		}
 	}
 }

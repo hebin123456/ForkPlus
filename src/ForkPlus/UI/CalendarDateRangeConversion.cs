@@ -1,5 +1,5 @@
 using System;
-using WpfCalendarDateRange = System.Windows.Controls.CalendarDateRange;
+using WpfCalendarDateRange = global::Avalonia.Controls.CalendarDateRange;
 using ServicesCalendarDateRange = ForkPlus.Services.CalendarDateRange;
 
 namespace ForkPlus.UI

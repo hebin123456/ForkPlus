@@ -1,0 +1,30 @@
+<dialogs:ForkPlusDialogWindow Height="330" Width="740" MinHeight="220" MinWidth="420" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ErrorWindow" xmlns="https://github.com/avaloniaui" CanResize="True">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Border Grid.Row="1" Grid.Column="1" BorderThickness="1" BorderBrush="{DynamicResource AccentSecondaryBrush}" Margin="0,10,0,10">
+      <!-- AvaloniaEdit/TextEditor 在主题缺失时可能“有内容但不可见”，这里改用 TextBox 确保错误文本一定可读。 -->
+      <TextBox Padding="6"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"
+               FontFamily="Consolas"
+               FontSize="13"
+               TextWrapping="Wrap"
+               AcceptsReturn="True"
+               IsReadOnly="True"
+               Background="{DynamicResource BackgroundBrush}"
+               Foreground="{DynamicResource ForegroundBrush}"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               x:Name="MessageTextBox" />
+    </Border>
+    <Button Grid.Row="2" Grid.Column="1" Margin="0,14,4,4" HorizontalAlignment="Left" Click="FirstButton_Click" x:Name="FirstButton" IsVisible="False" />
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

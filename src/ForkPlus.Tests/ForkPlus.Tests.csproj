@@ -1,16 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- 引用 ForkPlus 主工程，必须使用 windows TFM（WPF）。与主工程对齐 19041。-->
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
     <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- .NET 10 支持：Microsoft.NET.Test.Sdk 17.13+ 起官方支持 .NET 10。-->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
@@ -25,31 +24,26 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus\ForkPlus.csproj" />
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
-
   <!-- biturbo 原生库构建期从 Biturbo 仓库最新 release 拉取（缺失时下载）。
        与主工程 ForkPlus.csproj 的 RestoreBiturbo 同样按 OS 分支拉取。-->
   <Target Name="RestoreBiturbo" BeforeTargets="Build">
     <PropertyGroup>
       <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
     </PropertyGroup>
-    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')"
-          Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')"
-          Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
-
-  <!-- tokei.exe（代码行数统计）缺失时用 cargo install 从源码编译。
-       仅 Windows：tokei.exe 产物名带 .exe，非 Windows 上 cargo 产出无后缀。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $out='..\..\third_party\tokei.exe'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $cargo = Get-Command cargo -ErrorAction SilentlyContinue; if(-not $cargo){ throw &quot;tokei.exe not found at $out and cargo not on PATH. Install Rust (https://rustup.rs) and re-run, or manually build tokei from https://github.com/XAMPPRocky/tokei and place the executable at $out.&quot; }; $root='..\..\third_party\.tokei-install'; if(Test-Path $root){ Remove-Item $root -Recurse -Force }; Write-Host 'Building tokei via cargo install (first run may take a few minutes)...'; &amp; cargo install tokei --version 14.0.0 --locked --root $root --no-track; if($LASTEXITCODE -ne 0){ throw 'cargo install tokei failed with exit code ' + $LASTEXITCODE }; $built = Join-Path $root 'bin\tokei.exe'; if(-not (Test-Path $built)){ throw &quot;tokei.exe not found at $built after cargo install&quot; }; Move-Item $built $out -Force; Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue; Write-Host &quot;Built and installed tokei.exe to $out&quot;&quot;" />
-  </Target>
-
+  <!-- tokei 说明（2026-09-04 清理）：本工程原有一个 Windows-only 的 RestoreTokei target
+       （缺失时 cargo install 从源码编译）——主工程 ForkPlus.csproj 已改为跨平台 release
+       产物下载机制（RestoreTokei 下载 tokei.exe/tokei 到 third_party/），此残留 target 会在
+       Windows 跑测试时于主工程下载完成前抢先触发数分钟的 cargo 编译，已删除。
+       测试工程没有任何测试执行真实 tokei（路径解析测试用假文件 + PATH 参数注入，
+       见 TokeiResolutionTests.cs），输出目录无需 tokei 副本，对应的拷贝行一并移除。-->
   <Target Name="CopyHelperExecutables" AfterTargets="Build">
     <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM。Exists 守卫保证非 Windows
          build 或子项目尚未构建时不会失败。
@@ -62,6 +56,12 @@
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
-    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
   </Target>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+  </ItemGroup>
 </Project>

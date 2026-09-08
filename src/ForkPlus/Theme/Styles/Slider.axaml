@@ -1,0 +1,76 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="RepeatButtonTransparent" TargetType="RepeatButton">
+    
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Rectangle Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Fill="{TemplateBinding Background}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTemplate x:Key="SliderThumbHorizontalDefault" TargetType="Thumb">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+      <Ellipse Width="11" Height="11" VerticalAlignment="Center" Stretch="Fill" StrokeThickness="1" Fill="{DynamicResource SliderThumb.Static.Background}" Stroke="{DynamicResource SliderThumb.Static.Border}" x:Name="grip" />
+    </Grid>
+    <!--
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      原始片段：
+      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
+            <Trigger Property="UIElement.IsMouseOver" Value="true">
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Background}" Property="Shape.Fill" />
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.MouseOver.Border}" Property="Shape.Stroke" />
+            </Trigger>
+            <Trigger Property="Thumb.IsDragging" Value="true">
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Background}" Property="Shape.Fill" />
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Pressed.Border}" Property="Shape.Stroke" />
+            </Trigger>
+            <Trigger Property="UIElement.IsEnabled" Value="false">
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Background}" Property="Shape.Fill" />
+              <Setter TargetName="grip" Value="{DynamicResource SliderThumb.Disabled.Border}" Property="Shape.Stroke" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+    -->
+  </ControlTemplate>
+  <ControlTemplate x:Key="OnionSkinSliderTemplate" TargetType="Slider">
+    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+      <Grid MinHeight="{TemplateBinding MinHeight}">
+        <Border Grid.Row="1" Height="4.0" Margin="5,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SliderThumb.Track.Border}" Background="{DynamicResource SliderThumb.Track.Background}" x:Name="TrackBackground">
+          <Canvas Margin="-6,-1">
+            <Rectangle Height="4.0" Fill="#FF0078D4" x:Name="PART_SelectionRange" IsVisible="False" />
+          </Canvas>
+        </Border>
+        <Track Grid.Row="1" x:Name="PART_Track">
+          <Track.DecreaseButton>
+            <RepeatButton x:Name="PART_DecreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
+          </Track.DecreaseButton>
+          <Track.IncreaseButton>
+            <RepeatButton x:Name="PART_IncreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
+          </Track.IncreaseButton>
+          <Track.Thumb>
+            <Thumb Height="18" Width="11" VerticalAlignment="Center" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
+          </Track.Thumb>
+        </Track>
+      </Grid>
+    </Border>
+    <!--
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      原始片段：
+      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
+            <Trigger Property="Slider.IsSelectionRangeEnabled" Value="true">
+              <Setter TargetName="PART_SelectionRange" Property="UIElement.Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+    -->
+  </ControlTemplate>
+  <ControlTheme x:Key="OnionSkinSliderStyle" TargetType="Slider">
+
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />
+    <Setter Property="Template" Value="{DynamicResource OnionSkinSliderTemplate}" />
+  </ControlTheme>
+</ResourceDictionary>

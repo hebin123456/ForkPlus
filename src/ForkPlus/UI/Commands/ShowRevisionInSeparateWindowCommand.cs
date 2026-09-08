@@ -1,8 +1,11 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
 {
@@ -19,7 +22,7 @@ namespace ForkPlus.UI.Commands
 		{
 			if (!(target is RevisionDiffTarget.WorkingDirectory) && !(target is RevisionDiffTarget.MultipleRevisions))
 			{
-				new RevisionDetailsWindow(Application.Current.ActiveRepositoryUserControl(), gitModule, target, fileToSelect).Show();
+				new RevisionDetailsWindow(Application.Current.ActiveRepositoryUserControl(), gitModule, target, fileToSelect).ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			}
 		}
 
@@ -28,7 +31,7 @@ namespace ForkPlus.UI.Commands
 			GitModule gitModule = repositoryUserControl.GitModule;
 			if (gitModule != null && !(target is RevisionDiffTarget.WorkingDirectory) && !(target is RevisionDiffTarget.MultipleRevisions))
 			{
-				new RevisionDetailsWindow(repositoryUserControl, gitModule, target, fileToSelect).Show();
+				new RevisionDetailsWindow(repositoryUserControl, gitModule, target, fileToSelect).ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			}
 		}
 	}

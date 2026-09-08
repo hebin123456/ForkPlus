@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git;
 
 namespace ForkPlus.UI.Controls
@@ -32,7 +32,7 @@ namespace ForkPlus.UI.Controls
 					}
 					else
 					{
-						ImageSource remoteIcon = IReadOnlyListExtensions.FirstItem(remotes, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
+						global::Avalonia.Media.IImage remoteIcon = IReadOnlyListExtensions.FirstItem(remotes, (Remote x) => x.Name == remoteBranch.Remote)?.Icon;
 						array[i] = new ReferencePanelRemoteBranchViewModel(remoteBranch, remoteIcon);
 					}
 				}

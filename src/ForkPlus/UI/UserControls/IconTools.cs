@@ -2,10 +2,15 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
+// Migration note：Imaging / Int32Rect / BitmapSizeOptions 来自 WPF System.Windows.Media.Imaging，
+// 兼容层已在 WpfCompat.Batch2.cs 重建同名命名空间，这里显式引入。
 using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -37,7 +42,7 @@ namespace ForkPlus.UI.UserControls
 
 		private static readonly object Padlock = new object();
 
-		private static LruCache<string, ImageSource> _defaultFileIconCache = null;
+		private static LruCache<string, global::Avalonia.Media.IImage> _defaultFileIconCache = null;
 
 		internal const uint SHGFI_ICON = 256u;
 
@@ -47,7 +52,7 @@ namespace ForkPlus.UI.UserControls
 
 		private const uint SHGFI_USEFILEATTRIBUTES = 16u;
 
-		public static LruCache<string, ImageSource> DefaultFileIconCache
+		public static LruCache<string, global::Avalonia.Media.IImage> DefaultFileIconCache
 		{
 			get
 			{
@@ -55,7 +60,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					if (_defaultFileIconCache == null)
 					{
-						_defaultFileIconCache = new LruCache<string, ImageSource>(128);
+						_defaultFileIconCache = new LruCache<string, global::Avalonia.Media.IImage>(128);
 					}
 					return _defaultFileIconCache;
 				}
@@ -64,6 +69,14 @@ namespace ForkPlus.UI.UserControls
 
 		public static Icon GetIconForFile(string filename, ShellIconSize size)
 		{
+			// Migration note：SHGetFileInfo（shell32.dll）是 Windows 专属。Linux/macOS 抛
+			// DllNotFoundException——实证：点击提交行 → RevisionDetails 文件列表建图标缓存
+			// → 崩溃整个应用（2026-08-30 fork.log）。Unix 无系统图标 API，返回 null，
+			// 由 GetImageSourceForExtension 提供 BinaryFile 占位图标。
+			if (!OperatingSystem.IsWindows())
+			{
+				return null;
+			}
 			SHFILEINFO psfi = default(SHFILEINFO);
 			NativeMethods.SHGetFileInfo(filename, 0u, ref psfi, (uint)Marshal.SizeOf(psfi), size);
 			Icon result = null;
@@ -85,7 +98,7 @@ namespace ForkPlus.UI.UserControls
 			return GetIconForFile(extension, size);
 		}
 
-		public static ImageSource GetImageSourceForPath(string relativeFilePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		public static global::Avalonia.Media.IImage GetImageSourceForPath(string relativeFilePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
 			string extension;
 			try
@@ -99,21 +112,55 @@ namespace ForkPlus.UI.UserControls
 			return GetImageSourceForExtension(extension, iconsize);
 		}
 
-		public static ImageSource GetImageSourceForExtension(string extension, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		// Migration note：Unix 无 SHGetFileInfo/ExtractAssociatedIcon（shell32 + System.Drawing 均
+		// Windows 专属）。用内置 BinaryFile 图标做统一占位（96x128 原图，列表显示时按目标
+		// 尺寸缩放），保证文件列表/历史/blame 等视图有图标可显示。后续可按 freedesktop
+		// 图标主题（xdg-icon/resource）实现按扩展名取真实图标。
+		[Null]
+		private static global::Avalonia.Media.IImage _unixPlaceholderFileIcon;
+
+		[Null]
+		private static global::Avalonia.Media.IImage UnixPlaceholderFileIcon
 		{
-			LruCache<string, ImageSource> defaultFileIconCache = DefaultFileIconCache;
+			get
+			{
+				if (_unixPlaceholderFileIcon == null)
+				{
+					try
+					{
+						_unixPlaceholderFileIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/BinaryFile.png")));
+					}
+					catch (Exception ex)
+					{
+						Log.Error("Failed to load placeholder file icon", ex);
+					}
+				}
+				return _unixPlaceholderFileIcon;
+			}
+		}
+
+		public static global::Avalonia.Media.IImage GetImageSourceForExtension(string extension, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		{
+			LruCache<string, global::Avalonia.Media.IImage> defaultFileIconCache = DefaultFileIconCache;
 			if (defaultFileIconCache.TryGet(extension, out var value))
 			{
 				return value;
 			}
-			Icon iconForExtension = GetIconForExtension(extension, iconsize);
-			if (iconForExtension != null)
+			if (!OperatingSystem.IsWindows())
 			{
-				try
-				{
-					value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-					value.Freeze();
-				}
+				value = UnixPlaceholderFileIcon;
+				defaultFileIconCache.Put(extension, value);
+				return value;
+			}
+			Icon iconForExtension = GetIconForExtension(extension, iconsize);
+		if (iconForExtension != null)
+		{
+			try
+			{
+				// Migration note：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+				//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
+				value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+			}
 				catch (Exception ex)
 				{
 					Log.Error("Failed to create bitmap source from icon handle", ex);
@@ -124,18 +171,25 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		public static ImageSource GetImageSourceForFile(string filePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
+		public static global::Avalonia.Media.IImage GetImageSourceForFile(string filePath, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
-			ImageSource imageSource = null;
+			global::Avalonia.Media.IImage imageSource = null;
 			if (!File.Exists(filePath))
 			{
 				return imageSource;
 			}
-			try
+			// Migration note：Icon.ExtractAssociatedIcon（System.Drawing.Common）在 .NET 6+ 仅支持
+			// Windows，Unix 走 BinaryFile 占位图标（同 GetImageSourceForExtension）。
+			if (!OperatingSystem.IsWindows())
 			{
-				imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-				imageSource.Freeze();
+				return UnixPlaceholderFileIcon;
 			}
+			try
+		{
+			// Migration note：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+			//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
+			imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+		}
 			catch (Exception ex)
 			{
 				Log.Error("Failed to create bitmap source from icon handle", ex);

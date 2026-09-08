@@ -1,0 +1,25 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Brushes/Brushes.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Geometries.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Button.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Border.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Commonresources.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Calendar.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Checkbox.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Combobox.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Expander.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Textblock.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Textbox.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Placeholdertextbox.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Listview.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Multiselectiontreeview.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Tabcontrol.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Progressbar.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Scrollviewer.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Slider.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Sidebar.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Menu.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Window.axaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

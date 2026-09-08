@@ -14,7 +14,8 @@ namespace ForkPlus.Shell.Commands
 			{
 				string localSSHDirectory = SystemEnvironment.LocalSSHDirectory;
 				Directory.CreateDirectory(localSSHDirectory);
-				string path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(App.GitPath)), "usr", "bin", "ssh-keygen.exe");
+				// Migration note：ssh-keygen 路径跨平台探测（Unix 内置 git 布局无 usr/bin/ssh-keygen.exe）。
+				string path = SystemEnvironment.GetSshKeygenPath();
 				gitRequestResult = default(GitRequest).Path(path).CurrentDir(localSSHDirectory).Command("-q", "-t", "ed25519", "-N", string.Empty, "-C", email, "-f", keypath)
 					.ExecuteBt();
 			}

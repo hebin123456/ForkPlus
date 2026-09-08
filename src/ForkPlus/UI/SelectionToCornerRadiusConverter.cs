@@ -1,12 +1,16 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Data;
+using Avalonia.Markup;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI
 {
-	public class SelectionToCornerRadiusConverter : MarkupExtension, IValueConverter
+	public class SelectionToCornerRadiusConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		private static CornerRadius CornerRadiusNone = new CornerRadius(0.0, 0.0, 0.0, 0.0);
 

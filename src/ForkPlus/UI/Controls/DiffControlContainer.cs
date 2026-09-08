@@ -1,7 +1,9 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
 using ForkPlus.UI.UserControls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
@@ -12,9 +14,11 @@ namespace ForkPlus.UI.Controls
 			void ControlWillBeRemovedFromFileDiffControl();
 		}
 
-		private FrameworkElement _subView;
+		private global::Avalonia.Controls.Control _subView;
 
 		public FileControlHeaderUserControl Header { get; }
+
+		public global::Avalonia.Controls.Control CurrentSubView => _subView;
 
 		public DiffControlContainer()
 		{
@@ -22,7 +26,10 @@ namespace ForkPlus.UI.Controls
 			{
 				Height = GridLength.Auto
 			});
-			base.RowDefinitions.Add(new RowDefinition());
+			base.RowDefinitions.Add(new RowDefinition
+			{
+				Height = new GridLength(1.0, GridUnitType.Star)
+			});
 			Header = new FileControlHeaderUserControl();
 			Header.Height = 18.0;
 			Header.SetValue(Grid.RowProperty, 0);
@@ -39,7 +46,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : FrameworkElement
+		public void ShowSubView<TChild>(Func<TChild> factory, Action<TChild, FileControlHeaderUserControl> initialize = null) where TChild : global::Avalonia.Controls.Control
 		{
 			if (_subView == null)
 			{
@@ -67,7 +74,7 @@ namespace ForkPlus.UI.Controls
 			initialize?.Invoke(_subView as TChild, Header);
 		}
 
-		private bool AttachSubView(FrameworkElement subView)
+		private bool AttachSubView(global::Avalonia.Controls.Control subView)
 		{
 			if (subView == null)
 			{

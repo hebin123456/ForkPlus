@@ -1,11 +1,14 @@
 using System;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
-using ICSharpCode.AvalonEdit.Utils;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Utils;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor
 {
@@ -54,18 +57,6 @@ namespace ForkPlus.UI.Controls.Editor
 			_commandRequestBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
 			_defaultBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DADADA"));
 			_noiseBrushDark = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ABABAB"));
-			_hintBrushLight.Freeze();
-			_errorBrushLight.Freeze();
-			_warningBrushLight.Freeze();
-			_defaultBrushLight.Freeze();
-			_noiseBrushLight.Freeze();
-			_commandRequestBrushLight.Freeze();
-			_hintBrushDark.Freeze();
-			_errorBrushDark.Freeze();
-			_warningBrushDark.Freeze();
-			_defaultBrushDark.Freeze();
-			_noiseBrushDark.Freeze();
-			_commandRequestBrushDark.Freeze();
 		}
 
 		protected override void ColorizeLine(DocumentLine documentLine)

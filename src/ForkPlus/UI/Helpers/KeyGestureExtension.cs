@@ -1,6 +1,6 @@
 using ForkPlus.UI.Helpers;
 using System.Text;
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace ForkPlus.UI.Helpers
 {
@@ -9,15 +9,16 @@ namespace ForkPlus.UI.Helpers
 		public static string ToFriendlyString(this KeyGesture gesture)
 		{
 			StringBuilder stringBuilder = new StringBuilder(16);
-			if ((gesture.Modifiers & ModifierKeys.Control) != 0)
+		// Migration note：Avalonia KeyGesture 的修饰键属性是 KeyModifiers（WPF 为 Modifiers），枚举成员名一致。
+			if ((gesture.KeyModifiers & global::Avalonia.Input.KeyModifiers.Control) != 0)
 			{
 				stringBuilder.Append("Ctrl+");
 			}
-			if ((gesture.Modifiers & ModifierKeys.Shift) != 0)
+			if ((gesture.KeyModifiers & global::Avalonia.Input.KeyModifiers.Shift) != 0)
 			{
 				stringBuilder.Append("Shift+");
 			}
-			if ((gesture.Modifiers & ModifierKeys.Alt) != 0)
+			if ((gesture.KeyModifiers & global::Avalonia.Input.KeyModifiers.Alt) != 0)
 			{
 				stringBuilder.Append("Alt+");
 			}

@@ -1,14 +1,18 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Markup;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Data;
+using Avalonia.Markup;
+using Avalonia.Media;
 using ForkPlus.Git;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Dialogs
 {
-	public class InteractiveRebaseActionToForegroundConverter : MarkupExtension, IValueConverter
+	public class InteractiveRebaseActionToForegroundConverter : global::Avalonia.Markup.Xaml.MarkupExtension, IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

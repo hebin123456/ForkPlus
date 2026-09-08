@@ -1,6 +1,10 @@
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Input;
 
 namespace ForkPlus.UI
 {
@@ -25,7 +29,7 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects= DragDropEffects.None;
 			e.Handled = true;
 		}
 	}

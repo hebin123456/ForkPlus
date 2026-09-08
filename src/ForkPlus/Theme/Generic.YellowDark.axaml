@@ -1,0 +1,7 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Brushes/Colors.YellowDark.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Styles/Images.Dark.axaml" />
+    <ResourceInclude Source="avares://ForkPlus/Theme/Generic.axaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

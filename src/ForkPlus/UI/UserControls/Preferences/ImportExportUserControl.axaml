@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.ImportExportUserControl">
+  <Grid Width="500">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <!-- 标题说明 -->
+      <TextBlock Grid.Row="0" Text="Export your ForkPlus configuration (settings, custom commands, accounts) to a zip file, or import a previously exported file to restore on another machine." Margin="0,0,0,10" TextWrapping="Wrap" />
+
+      <!-- 导出区 -->
+      <TextBlock Grid.Row="1" Text="Export" FontWeight="Medium" Margin="0,0,0,4">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <CheckBox Grid.Row="2" x:Name="IncludeAccountsCheckBox" Content="Include accounts (contains tokens/credentials)" IsChecked="True" Margin="10,0,0,6" />
+      <!-- 垂直 Padding=0：主题固定 Height=24，垂直 Padding ≥3 挤压内容槽裁切文字（2026-09-05 修复） -->
+      <Button Grid.Row="3" x:Name="ExportButton" Content="Export to file..." Padding="12,0" Margin="10,0,0,0" HorizontalAlignment="Left" Click="ExportButton_Click" />
+
+      <!-- 分隔 -->
+      <Border Grid.Row="4" Height="1" Background="#FFACA899" Margin="0,14,0,14" />
+
+      <!-- 导入区 -->
+      <TextBlock Grid.Row="5" Text="Import" FontWeight="Medium" Margin="0,0,0,4">
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+        <TextBlock.Style>
+          <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
+        </TextBlock.Style>
+-->
+      </TextBlock>
+      <TextBlock Grid.Row="6" Text="Importing will overwrite your current configuration. ForkPlus will restart after import." Margin="10,0,0,6" TextWrapping="Wrap" Foreground="#FFACA899" />
+      <Button Grid.Row="7" x:Name="ImportButton" Content="Import from file..." Padding="12,0" Margin="10,0,0,0" HorizontalAlignment="Left" Click="ImportButton_Click" />
+
+      <!-- 状态文本 -->
+      <TextBlock Grid.Row="8" x:Name="StatusText" Text="" Margin="0,10,0,0" TextWrapping="Wrap" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

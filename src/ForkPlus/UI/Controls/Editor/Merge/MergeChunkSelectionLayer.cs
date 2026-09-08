@@ -1,12 +1,16 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using ForkPlus.UI.WpfCompat;
+using Avalonia.Controls;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.UI.UserControls.Preferences;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
@@ -22,12 +26,12 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			_textEditor = mergeCodeEditor;
 		}
 
-		protected override FrameworkElement CreateAdornerContent(TextEditor textEditor)
+		protected override global::Avalonia.Controls.Control CreateAdornerContent(TextEditor textEditor)
 		{
 			_selectButton = new FloatingButton(textEditor);
 			RefreshButtonsState();
-			WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_selectButton, "Click", delegate
-			{
+			WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_selectButton,"Click",delegate
+(object sender, global::System.EventArgs e)			{
 				MergeConflictView.Chunk activeChunk = ActiveChunk;
 				if (activeChunk != null)
 				{
@@ -52,7 +56,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			return new Border
 			{
 				Child = stackPanel,
-				Background = Theme.Diff.FloatingButtonContainerBackground,
+				Background = global::ForkPlus.UI.Theme.Diff.FloatingButtonContainerBackground,
 				CornerRadius = new CornerRadius(3.0),
 				Margin = new Thickness(0.0, 0.0, 20.0, 0.0)
 			};
@@ -99,9 +103,9 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			TextArea textArea = _textEditor.TextArea;
 			if (_textEditor.ViewMode == MergeConflictPart.Local || _textEditor.ViewMode == MergeConflictPart.Remote)
 			{

@@ -1,0 +1,174 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.GitMmUserControl">
+  <UserControl.Resources>
+    <DropShadowEffect x:Key="GitMmSubrepoTabShadow" BlurRadius="8" Color="Black" Opacity="{DynamicResource ClosableTabItem.ShadowOpacity}" OffsetY="2" />
+    <ControlTheme x:Key="GitMmSubrepoTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
+      <Setter Property="Height" Value="28" />
+      <Setter Property="MinWidth" Value="140" />
+      <Setter Property="Padding" Value="14,2" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TabItem">
+            <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
+              <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
+              <!-- Migration note：WPF ContentSource="Header" → 显式绑定 Header（TabItem 标签头） -->
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" Content="{TemplateBinding Header}"/>
+            </Grid>
+            
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    
+    <Style Selector="^:pointerover /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.MouseOver.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.MouseOver.Border}" />
+    </Style>
+    <Style Selector="^:selected">
+        <Setter Property="Panel.ZIndex" Value="1" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Selected.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ClosableTabItem.Selected.Border}" />
+        <Setter Property="Effect" Value="{StaticResource GitMmSubrepoTabShadow}" />
+    </Style>
+    <Style Selector="^:selected /template/ ContentPresenter#contentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabItem.Selected.Foreground}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#contentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
+    </Style></ControlTheme>
+    <ControlTheme x:Key="GitMmSubrepoTabControlStyle" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
+<!-- Migration note：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
+      <Style.Resources>
+        <ResourceDictionary>
+          <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />
+        </ResourceDictionary>
+      </Style.Resources>-->
+      <!-- WPF 隐式 TabItem 样式（上面的 Style.Resources 片段）的等价物是 ItemContainerTheme
+           （同 Tabcontrol.axaml 中 ModernTabControl/RepositoryManagerTabControl 的做法）。
+           迁移时丢失了这行 → RebuildSubrepoTabs 代码创建的 TabItem 拿不到
+           GitMmSubrepoTabItemStyle（28px 高/140 最小宽/圆角顶边/选中阴影），回落到
+           基类 ModernTabControlTabItemStyle 通用外观。 -->
+      <Setter Property="ItemContainerTheme" Value="{StaticResource GitMmSubrepoTabItemStyle}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="controls:ModernTabControl">
+            <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
+                <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
+                  <!-- Migration note：ItemsPanel 必须显式 TemplateBinding（同 Tabcontrol.axaml 基础主题
+                       修复链的坑）：Avalonia ItemsPresenter 不绑 ItemsPanel 时物化自身默认面板
+                       （垂直 StackPanel）→ 子仓标签竖排堆叠、"展示得不对"的根因。
+                       ScrollViewer 以无限宽测量内容，WrapPanel 不会换行，配合滚轮横滚。 -->
+                  <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                  <Canvas>
+                    <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
+                  </Canvas>
+                </Grid>
+              </ScrollViewer>
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel" TabIndex="2">
+                <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
+              </Border>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
+  </UserControl.Resources>
+  <!-- v3.11.0：RootGrid 简化为单行，子仓区域获得全部高度。
+       原底部命令输出面板已删除，改为覆盖层（OutputOverlayPanel）按需弹出。
+       原独立状态栏已移除，状态信息融入主 StatusUserControl 活动状态栏。 -->
+  <Grid Margin="10" x:Name="RootGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" MinHeight="160" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}">
+      <DockPanel>
+        <!-- 标题栏 -->
+        <DockPanel DockPanel.Dock="Top" Margin="8,6,8,4">
+          <Button DockPanel.Dock="Right" Margin="4,-2,0,-2" Padding="6,0" Width="24" Height="24" Foreground="{DynamicResource SecondaryLabelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" Content="?" FontWeight="SemiBold" ToolTip.Tip="git mm help" Click="GitMmHelpButton_Click" x:Name="GitMmHelpButton" Theme="{DynamicResource TransparentButtonStyle}" />
+          <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Click="SubrepoFilterButton_Click" x:Name="SubrepoFilterButton" Theme="{DynamicResource TextButtonStyle}" />
+          <TextBlock Text="Sub repositories" FontWeight="Medium" VerticalAlignment="Center" x:Name="SubreposTitleTextBlock" />
+          <WrapPanel Margin="10,0,0,0" VerticalAlignment="Center" x:Name="SubrepoSummaryPanel" />
+        </DockPanel>
+
+        <!-- 工具栏 -->
+        <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,0" Orientation="Horizontal">
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Start" Click="StartButton_Click" x:Name="StartButton">
+            <controls:ToolbarButton.Theme>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Theme>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource BranchIcon}" />
+          </controls:ToolbarButton>
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Sync" Click="SyncButton_Click" x:Name="SyncButton">
+            <controls:ToolbarButton.Theme>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Theme>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PullIcon}" />
+          </controls:ToolbarButton>
+          <controls:ToolbarButton Margin="0,3,0,3" Title="Upload" Click="UploadButton_Click" x:Name="UploadButton">
+            <controls:ToolbarButton.Theme>
+              <DynamicResource ResourceKey="ToolbarButton" />
+            </controls:ToolbarButton.Theme>
+            <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
+          </controls:ToolbarButton>
+        </WrapPanel>
+
+        <!-- 子仓 tab（获得全部剩余高度） -->
+        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SubreposTabControl" Theme="{StaticResource GitMmSubrepoTabControlStyle}" />
+      </DockPanel>
+    </Border>
+
+    <!-- v3.11.0：命令输出覆盖层——与活动管理器相同的浮层风格
+         (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)。
+         本轮25 修复：原 WPF 用 StaysOpen=False 的 Popup（点击外部/窗口失活即关闭），
+         用户要求输出弹窗保持显示直到手动关闭 → 改为控件树内浮动覆盖层：
+         结构上不存在失焦/失活消失路径，仅通过 Command Output 按钮或 × 按钮关闭。
+         2026-09-04 修复（"弹出位置跑到别的地方去了"）：锚定主状态栏 GitMmOutputButton，
+         左对齐按钮。2026-09-07 二次修复（"弹窗在很下面"）：该轮误设
+         VerticalAlignment=Bottom——按钮实际在主窗口顶部工具栏（ToolbarUserControl Row0），
+         底部锚定把弹窗钉在内容区底部、与顶部按钮相距整个窗口高度。现改锚定按钮下方
+         （VerticalAlignment=Top + 动态 Top margin，见代码后置
+         PositionOutputOverlayAtCommandOutputButton/ComputeOutputOverlayAnchor），按钮
+         找不到时保持此默认位置。标题栏无 × 关闭按钮——覆盖层已是点击外部/失焦即关的
+         模态行为，与 ActivityManager 标题栏一致。 -->
+    <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6" x:Name="OutputOverlayBorder" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16" ZIndex="10">
+      <Border.Effect>
+        <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />
+      </Border.Effect>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="28" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线，无关闭按钮——
+             点击覆盖层外部/窗口失焦即关，无需手动关闭入口） -->
+        <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+          <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
+        </Border>
+
+        <!-- Upload links 容器（可折叠） -->
+        <Border Grid.Row="1" Margin="8,4,8,4" Padding="8,4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" x:Name="UploadLinksContainer" IsVisible="False">
+          <DockPanel LastChildFill="True">
+            <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" Theme="{DynamicResource TextButtonStyle}" />
+            <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
+            <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+              <WrapPanel x:Name="UploadLinksPanel" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+
+        <!-- RichTextBox 输出区 -->
+        <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
+          <TextBox Text="" BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+        </Border>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

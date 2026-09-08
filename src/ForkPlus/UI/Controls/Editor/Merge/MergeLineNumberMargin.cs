@@ -1,19 +1,25 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Input;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
 using ForkPlus.Settings;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
 	internal class MergeLineNumberMargin : ClearTypeLineNumberMargin
 	{
-		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+		// v3.13 修复（v3.12 同款）：WPF 原版 Typeface 第 5 参 fallback FontFamily("Courier New")
+		// 迁移时丢失——非 Windows 无 Consolas 时回退到等宽字体，避免行号测量与实际渲染宽度不一致。
+		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas, Courier New, monospace"), FontStyles.Normal, FontWeights.Normal);
 
 		private static readonly Brush _textBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 
@@ -41,14 +47,22 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private Dictionary<int, int> _lineNumbers = new Dictionary<int, int>();
 
+		// Migration note：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
+
+		private Typeface typeface = _typeface;
+
+		private double emSize = 11.0;
+
+
 		public MergeLineNumberMargin(MergeCodeEditor editor)
 		{
 			_editor = editor;
-			typeface = _typeface;
+			// Migration note：WPF 原基类的 typeface/emSize 字段在此补声明
+			this.typeface = _typeface;
 			emSize = 11.0;
 			RefreshPen();
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			RenderOptionsShim.SetClearTypeHint(this, ClearTypeHint.Enabled);
 		}
 
 		public void UpdateLineNumbersData(MergeConflictView mergeConflictView)
@@ -95,58 +109,61 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			double num = base.RenderSize.Width - 3.0;
+			double num = base.Bounds.Size.Width - 3.0;
 			double num2 = 16.0;
-			streamGeometryContext.BeginFigure(origin, isFilled: true, isClosed: false);
-			streamGeometryContext.LineTo(Offset(origin, num - 5.0, 0.0), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, num, num2 / 2.0), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, num - 5.0, num2), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(Offset(origin, 0.0, num2), isStroked: true, isSmoothJoin: false);
-			streamGeometryContext.LineTo(origin, isStroked: true, isSmoothJoin: false);
+			streamGeometryContext.BeginFigure(origin,true);
+			streamGeometryContext.LineTo(Offset(origin, num - 5.0, 0.0),true);
+			streamGeometryContext.LineTo(Offset(origin, num, num2 / 2.0),true);
+			streamGeometryContext.LineTo(Offset(origin, num - 5.0, num2),true);
+			streamGeometryContext.LineTo(Offset(origin, 0.0, num2),true);
+			streamGeometryContext.LineTo(origin,true);
 			return streamGeometry;
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		public override void Render(DrawingContext drawingContext)
 		{
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
-				Brush brush = _textBrush;
+				IBrush brush = _textBrush;
 				if (_editor.ViewMode == MergeConflictPart.Local || _editor.ViewMode == MergeConflictPart.Remote)
 				{
 					if (IsLineSelected(visualLine.FirstDocumentLine.LineNumber - 1))
 					{
-						Geometry geometry = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.VerticalOffset));
+						Geometry geometry = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						drawingContext.DrawGeometry(_mergeConflictSelectedBrush, null, geometry);
 						brush = Brushes.White;
 					}
 					else if (visualLine.FirstDocumentLine.LineNumber == _mouseOverLine)
 					{
-						Geometry geometry2 = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.VerticalOffset));
+						Geometry geometry2 = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						drawingContext.DrawGeometry(_mergeConflictMouseOverBrush, null, geometry2);
 						brush = Brushes.White;
 					}
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.RenderSize.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.VerticalOffset + 1.0));
+					// v3.13 修复（行号被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin) 以 origin
+					// 为右上角向左绘制；Avalonia 的 origin 恒为左上角，须显式减去文本宽度防右缘溢出。
+					FormattedText text = CreateFormattedText(value.ToString(), brush);
+					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y + 1.0));
 				}
 			}
-			drawingContext.DrawLine(_separatorPen, new Point(base.RenderSize.Width - 2.0, 0.0), new Point(base.RenderSize.Width - 2.0, base.RenderSize.Height));
+			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - 2.0, 0.0), new Point(base.Bounds.Size.Width - 2.0, base.Bounds.Size.Height));
 		}
 
-		protected override void OnMouseLeave(MouseEventArgs e)
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
 		{
-			base.OnMouseLeave(e);
+			base.OnPointerExited(e);
 			_mouseOverLine = -1;
 			InvalidateVisual();
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			base.OnMouseMove(e);
+			base.OnPointerMoved(e);
 			Point position = e.GetPosition(base.TextView);
-			VisualLine visualLineFromVisualTop = base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.VerticalOffset);
+			VisualLine visualLineFromVisualTop = base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.ScrollOffset.Y);
 			if (visualLineFromVisualTop == null)
 			{
 				return;
@@ -166,10 +183,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			e.Handled = true;
-			base.OnMouseLeftButtonDown(e);
+			base.OnPointerPressed(e);
 			int lineUnderCursor = GetLineUnderCursor(e);
 			if (lineUnderCursor != -1)
 			{
@@ -186,10 +203,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		private int GetLineUnderCursor(MouseEventArgs e)
+		private int GetLineUnderCursor(global::Avalonia.Input.PointerEventArgs e)
 		{
 			Point position = e.GetPosition(base.TextView);
-			return base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.VerticalOffset)?.FirstDocumentLine.LineNumber ?? (-1);
+			return base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.ScrollOffset.Y)?.FirstDocumentLine.LineNumber ?? (-1);
 		}
 
 		private bool IsLineSelected(int lineNumber)
@@ -284,9 +301,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		return c.HasValue ? new SolidColorBrush(c.Value) : null;
 	}
 
-		private FormattedText CreateFormattedText(string text, Brush brush)
+		// Migration note：WPF Brush → Avalonia IBrush（FormattedText.Foreground 接受 IBrush）。
+                private FormattedText CreateFormattedText(string text, IBrush brush)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush);
 		}
 	}
 }

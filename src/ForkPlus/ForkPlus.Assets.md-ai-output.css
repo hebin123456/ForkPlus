@@ -3,13 +3,26 @@
   box-sizing: border-box;
 }
 
+/* 主题修复（2026-09-07，"AI 解释打开一片黑/内容看不清"批量修复）：
+   1. color-scheme 只声明亮色，暗色声明放进 (prefers-color-scheme: dark) 块内——
+      WebView2Stub.ForcePreferredColorScheme 会按"应用皮肤"改写该媒体查询，
+      于是 UA 默认文字/表单/画布配色也跟随应用主题，而不是操作系统主题。
+      修复场景：应用亮色 + 系统暗色时，UA 默认给白字 → 白字配 #fafafa 底完全看不见。
+   2. html 显式底色：引擎首帧/正文未铺满时画布不再透明（原生 WebView 透明表面呈现为黑，
+      即"刚打开一片黑"），且 body 未加载完成前就有与正文一致的底色。
+   3. 亮色 body 显式 color（原先只在暗色块里有 color，亮色依赖 UA 默认值，主题错配时不可读）。 */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+html {
+  background-color: #fafafa;
 }
 
 body {
   min-width: 200px;
   max-width: 100%;
+  color: #1f2328;
   background-color: #fafafa;
   margin: 0;
   padding: 16px;
@@ -23,8 +36,16 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    background-color: #282828;
+  }
+
   body {
-    color: #dddddd;
+    color: #e6e6e6;
     background-color: #282828;
   }
 }
@@ -96,6 +117,10 @@ h6 {
 @media (prefers-color-scheme: dark) {
   h1 {
     border-bottom-color: #3A3939;
+  }
+
+  h6 {
+    color: #9da7b3;
   }
 }
 
@@ -184,6 +209,13 @@ blockquote {
   padding: 0 1em;
 }
 
+@media (prefers-color-scheme: dark) {
+  blockquote {
+    border-left-color: #4a4b50;
+    color: #9da7b3;
+  }
+}
+
 blockquote > :first-child {
   margin-top: 0;
 }
@@ -220,6 +252,24 @@ table tr:nth-child(2n) {
   background-color: #f6f8fa;
 }
 
+/* 暗色表格修复：原先暗色块只覆盖了 pre/img，表格行仍是白底（#fff/#f6f8fa）——
+   暗色主题下大片白色表格 + #dddddd 文字，对比刺眼且看不清。 */
+@media (prefers-color-scheme: dark) {
+  table td,
+  table th {
+    border-color: #3e3f44;
+  }
+
+  table tr {
+    background-color: #242529;
+    border-top-color: #3a3939;
+  }
+
+  table tr:nth-child(2n) {
+    background-color: #2e2f33;
+  }
+}
+
 /* Images */
 img {
   max-width: 100%;
@@ -254,6 +304,12 @@ code {
   border-radius: 3px;
   font-size: 85%;
   margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  code {
+    background-color: rgba(187, 187, 187, 0.18);
+  }
 }
 
 pre {
@@ -311,6 +367,16 @@ kbd {
   border-bottom-color: #c6cbd1;
   border-radius: 3px;
   box-shadow: inset 0 -1px 0 #c6cbd1;
+}
+
+@media (prefers-color-scheme: dark) {
+  kbd {
+    color: #c8cfd6;
+    background-color: #2e2f33;
+    border-color: #4a4b50;
+    border-bottom-color: #3e3f44;
+    box-shadow: inset 0 -1px 0 #3e3f44;
+  }
 }
 
 /* Details/Summary */

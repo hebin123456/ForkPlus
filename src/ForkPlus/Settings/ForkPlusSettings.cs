@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Windows;
+using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.Services;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.Settings
 {
@@ -272,7 +275,7 @@ namespace ForkPlus.Settings
 
 			public RepositoryManagerSettings([Null] string[] sourceDirectories, Category[] categories, Repository[] repositories, int scanDepth)
 			{
-				SourceDirectories = sourceDirectories ?? new string[1] { Environment.ExpandEnvironmentVariables("%userprofile%") };
+				SourceDirectories = sourceDirectories ?? new string[1] { SystemEnvironment.UserProfileDirectory };
 				Categories = categories;
 				Repositories = repositories;
 				ScanDepth = scanDepth;
@@ -1102,7 +1105,7 @@ namespace ForkPlus.Settings
 
 		private string _gitAiInstancePath;
 
-		private bool _aiAttributionEnabled = true;
+		private bool _aiAttributionEnabled = false;
 
 		private bool _aiCheckpointReportingEnabled = true;
 
@@ -2153,7 +2156,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _mainWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
+				return _mainWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2165,7 +2168,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _revisionWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, WindowState.Normal);
+				return _revisionWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2177,7 +2180,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _sideBySideMergeWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, WindowState.Normal);
+				return _sideBySideMergeWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2189,7 +2192,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _blameWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, WindowState.Normal);
+				return _blameWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2201,7 +2204,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _historyWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, WindowState.Normal);
+				return _historyWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2213,7 +2216,7 @@ namespace ForkPlus.Settings
 		{
 			get
 			{
-				return _aiResultWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, WindowState.Normal);
+				return _aiResultWindowLocationState ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			}
 			set
 			{
@@ -2515,7 +2518,7 @@ namespace ForkPlus.Settings
 			}
 		}
 
-		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认开启，git-ai 未安装时自动降级。</summary>
+		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认关闭（2026-09-07 用户约定），git-ai 未安装时自动降级。</summary>
 		public bool AiAttributionEnabled
 		{
 			get
@@ -2793,12 +2796,12 @@ namespace ForkPlus.Settings
 			// v3.8.0：默认关闭，保持现有"仅显示变更文件"行为
 			bool showFullWorkingDirectory = json["ShowFullWorkingDirectory"]?.Value<bool>() ?? false;
 			bool updateSubmodulesOnCheckout = json["UpdateSubmodulesOnCheckout"]?.Value<bool>() ?? true;
-			WindowLocationState mainWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["MainWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
-			WindowLocationState revisionWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["RevisionWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, WindowState.Normal);
-			WindowLocationState sideBySideMergeWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["SideBySideMergeWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, WindowState.Normal);
-			WindowLocationState blameWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["BlameWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, WindowState.Normal);
-			WindowLocationState historyWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["HistoryWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, WindowState.Normal);
-			WindowLocationState aiResultWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["AiResultWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, WindowState.Normal);
+			WindowLocationState mainWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["MainWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
+			WindowLocationState revisionWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["RevisionWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
+			WindowLocationState sideBySideMergeWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["SideBySideMergeWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
+			WindowLocationState blameWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["BlameWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
+			WindowLocationState historyWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["HistoryWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1020.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
+			WindowLocationState aiResultWindowLocationState = CustomDecoders.DecodeWindowLocationState(json["AiResultWindowLocationState"] as JObject) ?? new WindowLocationState(100.0, 100.0, 1080.0, 720.0, global::Avalonia.Controls.WindowState.Normal);
 			ExpandedTreeViewElement[] repositoryManagerTreeViewExpandedItems = ExpandedTreeViewElement.Coder.DecodeExpandedTreeViewElementArray(json["RepositoryManagerTreeViewExpandedItems"] as JArray) ?? ExpandedTreeViewElement.Coder.Decode(json["RepositoryManagerTreeViewExpandedItems"] as JObject)?.Children;
 			double repositoryManagerTreeViewColumnWidth = json["RepositoryManagerTreeViewColumnWidth"]?.Value<double>() ?? 350.0;
 			ExternalTool[] externalMergeTools = JsonHelper.DecodeArray(json["ExternalMergeTools"] as JArray, ExternalTool.Coder.Decode) ?? TryImportOldTool(CustomDecoders.Decode(json["MergeTool"] as JObject), isDiffTool: false) ?? new ExternalTool[0];
@@ -2835,7 +2838,7 @@ namespace ForkPlus.Settings
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
-			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? true;
+			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? false;
 			bool aiCheckpointReportingEnabled = json["AiCheckpointReportingEnabled"]?.Value<bool>() ?? true;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];

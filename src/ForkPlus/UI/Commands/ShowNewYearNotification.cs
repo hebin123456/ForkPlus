@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;

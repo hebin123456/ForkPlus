@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -82,7 +82,7 @@ namespace ForkPlus.UI
 										{
 											if (new FetchGitCommand().Execute(gitModule, remote, fetchAllRemotes, mon1, noPrompt, fetchAllTags).Succeeded)
 											{
-												repositoryUserControl.Dispatcher.Async(delegate
+												repositoryUserControl.Dispatcher.Post(delegate
 												{
 													RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
 													if (activeRepositoryUserControl != null)

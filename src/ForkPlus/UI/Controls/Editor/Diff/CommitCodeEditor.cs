@@ -1,10 +1,13 @@
 using System;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Input;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 using ForkPlus.UI.Helpers;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -40,7 +43,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				_diffSelectionLayer = new SideBySideCommitDiffSelectionLayer(this);
 			}
-			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as UIElement, KnownLayer.Selection, LayerInsertionPosition.Above);
+			// Migration note：InsertLayer 参数是 Control（不是 InputElement），_diffSelectionLayer 是 Control 子类。
+			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as global::Avalonia.Controls.Control, KnownLayer.Selection, LayerInsertionPosition.Above);
 			_diffSelectionLayer.Stage += delegate
 			{
 				this.Stage?.Invoke(this, this);
@@ -123,11 +127,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (base.IsSearchBarFocused)
 			{
-				base.OnPreviewKeyDown(e);
+				base.OnKeyDown(e);
 				return;
 			}
 			bool flag = Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftShift);
@@ -145,7 +149,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				this.Discard?.Invoke(this, this);
 				e.Handled = true;
 			}
-			base.OnPreviewKeyDown(e);
+			base.OnKeyDown(e);
 		}
 	}
 }

@@ -1,0 +1,151 @@
+<UserControl FontFamily="Segoe UI Variable Display" Width="600" Height="80" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionGraphTooltipUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Resources>
+    <!-- ===================== 折叠节点 hover 详情行模板（WPF GridView CellTemplate 重建） =====================
+         Bug 修复（2026-09-03，"可收拢节点悬浮详情视图空白"）：WPF 原版此列表用 GridView 三列
+         （复合列 graph+upstream+refs+subject / 头像列 19 / 日期列 125）渲染折叠范围内的提交；
+         迁移时 GridView 整体被注释删除，ListView 无 ItemTemplate → 数据加载后渲染空白。
+         按主提交列表 SingleRowRevisionTemplate 的重建方式恢复为 Grid 列布局 DataTemplate。 -->
+    <DataTemplate x:Key="TooltipRevisionRowTemplate">
+      <Grid Height="23" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+        <!-- 原第 1 列（resizable 复合列）：mini 轨道图 + upstream 圆点 + refs 徽章 + subject。
+             ShowGraphToolTip=False：tooltip 内的 mini 图不再嵌套 tooltip（原版语义）。 -->
+        <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" ShowGraphToolTip="False" />
+        <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Ellipse.Fill>
+            <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
+          </Ellipse.Fill>
+          <Ellipse.IsVisible>
+            <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
+          </Ellipse.IsVisible>
+        </Ellipse>
+        <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" MaxWidth="360" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+          <ItemsControl.ItemsSource>
+            <Binding Path="References" />
+          </ItemsControl.ItemsSource>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <controls:HighlightableTextBlock Grid.Column="3" VerticalAlignment="Center" Margin="2,0,0,2" TextTrimming="CharacterEllipsis">
+          <controls:HighlightableTextBlock.Text>
+            <Binding Path="Subject" />
+          </controls:HighlightableTextBlock.Text>
+          <controls:HighlightableTextBlock.HighlightString>
+            <Binding Path="SubjectSearchString" />
+          </controls:HighlightableTextBlock.HighlightString>
+        </controls:HighlightableTextBlock>
+        <!-- 原第 2 列（GridViewColumn Width=19）：作者头像。
+             Migration note：原 Margin="-6,2,-6,2" 是 WPF GridView 单元格间隙的负补偿，
+             Grid 列布局无单元格间隙，改用对称 margin；UserBackgroundBrush 同款首尾圆角。 -->
+        <Border Grid.Column="4" Margin="0,2,0,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+          <Border.Background>
+            <Binding Path="UserBackgroundBrush" />
+          </Border.Background>
+          <Border.BorderBrush>
+            <Binding Path="UserBackgroundBrush" />
+          </Border.BorderBrush>
+          <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,0">
+            <controls:AvatarImage.UserIdentity>
+              <Binding Path="Author" />
+            </controls:AvatarImage.UserIdentity>
+          </controls:AvatarImage>
+        </Border>
+        <!-- 原第 3 列（GridViewColumn Width=125）：作者日期。 -->
+        <TextBlock Grid.Column="5" VerticalAlignment="Center" Margin="5,0,0,0">
+          <TextBlock.Text>
+            <Binding Path="AuthorDateLongString" />
+          </TextBlock.Text>
+        </TextBlock>
+      </Grid>
+    </DataTemplate>
+  </UserControl.Resources>
+  <Border Theme="{DynamicResource MenuShadowBorderStyle}">
+    <Border CornerRadius="6" Padding="4,10" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ListBox.Static.Background}">
+      <Grid>
+        <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Margin="0,0,0,0" Padding="0" x:Name="RevisionListView" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource NoSelectionRevisionListViewItemStyle}" ItemTemplate="{StaticResource TooltipRevisionRowTemplate}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <!--
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段（已按其 CellTemplate 内容在上文 TooltipRevisionRowTemplate 重建）：
+      <GridView ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns="https://github.com/avaloniaui">
+                    <GridViewColumn>
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid Height="23">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="Auto" />
+                              <ColumnDefinition Width="Auto" />
+                              <ColumnDefinition Width="Auto" />
+                              <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="4 0 0 0" ShowGraphToolTip="False" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
+                            <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
+                              <Ellipse.Fill>
+                                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                              </Ellipse.Fill>
+                              <Ellipse.Visibility>
+                                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
+                              </Ellipse.Visibility>
+                            </Ellipse>
+                            <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+                              <ItemsControl.ItemsSource>
+                                <Binding Path="References" />
+                              </ItemsControl.ItemsSource>
+                              <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                  <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                              </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                            <controls:HighlightableTextBlock Grid.Column="3" VerticalAlignment="Center" Margin="2 0 0 2" TextTrimming="CharacterEllipsis" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                              <controls:HighlightableTextBlock.Text>
+                                <Binding Path="Subject" />
+                              </controls:HighlightableTextBlock.Text>
+                              <controls:HighlightableTextBlock.HighlightString>
+                                <Binding Path="SubjectSearchString" />
+                              </controls:HighlightableTextBlock.HighlightString>
+                            </controls:HighlightableTextBlock>
+                          </Grid>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="19">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <Border Margin="-6,2,-6,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+                            <Border.Background>
+                              <Binding Path="UserBackgroundBrush" />
+                            </Border.Background>
+                            <Border.BorderBrush>
+                              <Binding Path="UserBackgroundBrush" />
+                            </Border.BorderBrush>
+                            <controls:AvatarImage Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+                              <controls:AvatarImage.UserIdentity>
+                                <Binding Path="Author" />
+                              </controls:AvatarImage.UserIdentity>
+                            </controls:AvatarImage>
+                          </Border>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="125">
+                      <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">
+                            <TextBlock.Text>
+                              <Binding Path="AuthorDateLongString" />
+                            </TextBlock.Text>
+                          </TextBlock>
+                        </DataTemplate>
+                      </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                  </GridView>
+    -->
+        </controls:NoUIAutomationListView>
+        <TextBlock Margin="10, 4" TextAlignment="Center" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="FallbackMessageTextBlock" />
+        <ProgressBar Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" Theme="{DynamicResource CircularProgressBar}" />
+      </Grid>
+    </Border>
+  </Border>
+</UserControl>

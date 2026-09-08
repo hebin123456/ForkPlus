@@ -1,11 +1,14 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Media;
 using ForkPlus.Git.Merge;
 using ForkPlus.Git.Merge.Presentation;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls.Editor.Merge
 {
@@ -102,11 +105,12 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, Brush brush)
+		// Migration note：GetHighlightBrush 返回 IBrush，参数类型从 Brush 改为 IBrush。
+			private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, IBrush brush)
 		{
 			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, range, extendToFullWidthAtLineEnd: true))
 			{
-				Rect rectangle = new Rect(item.X, item.Y, textView.ActualWidth + textView.HorizontalOffset, item.Height);
+				Rect rectangle = new Rect(item.X, item.Y, textView.Bounds.Width + textView.ScrollOffset.X, item.Height);
 				context.DrawRectangle(brush, null, rectangle);
 			}
 		}

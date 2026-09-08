@@ -1,7 +1,7 @@
 using System;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Input;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
@@ -65,7 +65,7 @@ namespace ForkPlus.UI
 
 		public static void FocusRow(this ListBox listbox, int row)
 		{
-			(listbox.ItemContainerGenerator.ContainerFromIndex(row) as ListBoxItem)?.Focus();
+			(listbox.ContainerFromIndex(row) as ListBoxItem)?.Focus();
 		}
 
 		private static bool SelectNextRow(this ListBox listBox, int row, Direction direction, [Null] Func<object, bool> condition)
@@ -85,21 +85,21 @@ namespace ForkPlus.UI
 		private static void SetKeyboardFocus(ListBox listBox, int row)
 		{
 			listBox.UpdateLayout();
-			if (listBox.ItemContainerGenerator.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
+			if (listBox.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
 			{
-				Keyboard.Focus(element);
+				(element).Focus();
 			}
 		}
 
 		private static void ScrollRowIntoView(ListBox listBox, int row)
 		{
-			if (VisualTreeHelper.GetChildrenCount(listBox) != 0)
+			ScrollViewer scrollViewer = ScrollViewerHelper.FindScrollViewer(listBox);
+			if (scrollViewer != null)
 			{
-				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
 				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
 				{
-					scrollViewer.ScrollToVerticalOffset(num);
+					scrollViewer.ScrollToVerticalOffsetCompat(num);
 				}
 			}
 		}

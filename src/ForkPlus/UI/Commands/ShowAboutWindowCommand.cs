@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.Commands

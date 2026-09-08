@@ -1,0 +1,307 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  
+  <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
+  <ControlTheme x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Background" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" />
+    <!-- Migration note：原 WPF 转 Avalonia 时 Height setter 重复出现两次，
+         Avalonia 12 同一 ControlTheme 内重复 setter 抛
+         InvalidOperationException: Duplicate setter（主窗口树视图渲染崩溃实证），已删重复项 -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Background="#00FFFFFF">
+            <Path Data="M0,0L3.5,3.5 0,7" Margin="2,1,0,0" Stroke="{TemplateBinding Background}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ExpandPath" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:checked /template/ Path#ExpandPath">
+        <Setter Property="Data" Value="M0,0L3.5,3.5 7,0" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="TreeViewControlItemStyle" TargetType="controls:TreeViewControlItem">
+    <Setter Property="Focusable">
+      <Setter.Value>
+        <Binding Path="IsFocusable" />
+      </Setter.Value>
+    </Setter>
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="Margin" Value="2,0,2,0" />
+    <Setter Property="Height" Value="20" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition>
+                  <ColumnDefinition.Width>
+                    <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
+                  </ColumnDefinition.Width>
+                </ColumnDefinition>
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <ToggleButton Grid.Column="1" VerticalAlignment="Center" x:Name="ExpandCollapseToggleButton" Theme="{StaticResource ExpandCollapseToggleStyle}">
+                <ToggleButton.IsChecked>
+                  <Binding Path="IsExpanded" />
+                </ToggleButton.IsChecked>
+                <ToggleButton.IsVisible>
+                  <Binding Path="ShowExpander" />
+                </ToggleButton.IsVisible>
+              </ToggleButton>
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+            </Grid>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style>
+    <Style Selector="^:selected /template/ ToggleButton#ExpandCollapseToggleButton">
+        <Setter Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" Property="Background" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Bd">
+<!-- Migration note：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MultiselectionTreeView}" TargetType="controls:MultiselectionTreeView">
+    <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}" />
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource TreeViewControlItemStyle}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:MultiselectionTreeView">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Background="#00FFFFFF"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding——MultiselectionTreeView 继承 ListBox（默认 ItemsPanel
+                   为 VirtualizingStackPanel），未绑定时 ItemsPresenter 落到非虚拟化 StackPanel，
+                   大仓库提交列表全量实化导致性能崩塌（与 Menu/TabControl 修复同坑）。 -->
+              <ItemsPresenter HorizontalAlignment="Stretch" ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="ExpandButtonAutoWidthTreeViewControlItemStyle" TargetType="controls:TreeViewControlItem">
+    <Setter Property="Focusable">
+      <Setter.Value>
+        <Binding Path="IsFocusable" />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="Margin" Value="2,0" />
+<!-- Migration note：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
+    
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition>
+                  <ColumnDefinition.Width>
+                    <Binding Path="Level" Converter="{StaticResource LevelToIndentation}" />
+                  </ColumnDefinition.Width>
+                </ColumnDefinition>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <ToggleButton Grid.Column="1" VerticalAlignment="Center" Width="16" x:Name="ExpandCollapseToggleButton" Theme="{StaticResource ExpandCollapseToggleStyle}">
+                <ToggleButton.IsChecked>
+                  <Binding Path="IsExpanded" />
+                </ToggleButton.IsChecked>
+                <ToggleButton.IsVisible>
+                  <Binding Path="ShowExpander" />
+                </ToggleButton.IsVisible>
+              </ToggleButton>
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+            </Grid>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style>
+    <Style Selector="^:selected /template/ ToggleButton#ExpandCollapseToggleButton">
+        <Setter Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" Property="Background" />
+    </Style>
+<!-- Migration note：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） -->
+    <!--
+      WPF migration note: ControlTemplate 内 DataTrigger（DataContext/VM 属性条件）需人工改写（模板部件条件外观建议 Tag/Classes + 属性匹配器）。
+      原始片段：
+      <DataTrigger Value="False" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="ShowBorder" />
+                    </DataTrigger.Binding>
+                    <Setter TargetName="Bd" Property="BorderBrush" Value="#00FFFFFF" />
+                  </DataTrigger>
+    --></ControlTheme>
+  <ControlTheme x:Key="FileHistoryMultiselectionTreeViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
+    <Setter Property="BorderThickness" Value="1,1,0,1" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource ExpandButtonAutoWidthTreeViewControlItemStyle}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarSearchTreeViewControlItemStyle" TargetType="controls:TreeViewControlItem" BasedOn="{StaticResource ExpandButtonAutoWidthTreeViewControlItemStyle}">
+    <Setter Property="Height" Value="22" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarSearchMultiselectionTreeViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource FileHistoryMultiselectionTreeViewStyle}">
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource SideBarSearchTreeViewControlItemStyle}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarIssuesTreeViewControlItemStyle" TargetType="controls:TreeViewControlItem" BasedOn="{StaticResource ExpandButtonAutoWidthTreeViewControlItemStyle}">
+    <Setter Property="Height" Value="50" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+<!-- Migration note：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarIssuesMultiselectionTreeViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource FileHistoryMultiselectionTreeViewStyle}">
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource SideBarIssuesTreeViewControlItemStyle}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarTreeViewControlItemStyle" TargetType="controls:TreeViewControlItem" BasedOn="{StaticResource TreeViewControlItemStyle}">
+    <Setter Property="Height" Value="22" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    
+  </ControlTheme>
+  <ControlTheme x:Key="SideBarMultiselectionTreeViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource SideBarTreeViewControlItemStyle}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+  </ControlTheme>
+  <ControlTheme x:Key="TreeViewControlItemGridViewStyle" TargetType="controls:TreeViewControlItem">
+    <Setter Property="Focusable">
+      <Setter.Value>
+        <Binding Path="IsFocusable" />
+      </Setter.Value>
+    </Setter>
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="Margin" Value="2,0" />
+    <Setter Property="Height" Value="20" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+    </Style>
+<!-- Migration note：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
+  <ControlTheme x:Key="FileListMultiselectionTreeViewWithGridViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource TreeViewControlItemGridViewStyle}" />
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:MultiselectionTreeView">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Background="#00FFFFFF"
+                                                Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21）——此主题是文件列表（变更文件树），
+                   未绑定时非虚拟化 StackPanel 全量实化，大变更集同样性能崩塌（与修复链10同坑）。 -->
+              <ItemsPresenter Margin="0,4,0,0" ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="FileListMultiselectionTreeViewDefaultStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource TreeViewControlItemStyle}" />
+  </ControlTheme>
+  <ControlTheme x:Key="RepositoryManagerTreeViewControlItemStyle" TargetType="controls:TreeViewControlItem" BasedOn="{StaticResource TreeViewControlItemStyle}">
+    <Setter Property="Height" Value="22" />
+    <Setter Property="Padding" Value="2,0,2,0" />
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </ControlTheme>
+</ResourceDictionary>

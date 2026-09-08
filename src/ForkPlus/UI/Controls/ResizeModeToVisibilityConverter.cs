@@ -1,7 +1,11 @@
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
+using Avalonia;
+using Avalonia.Data;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
+using Avalonia.Data.Converters;
 
 namespace ForkPlus.UI.Controls
 {
@@ -9,7 +13,7 @@ namespace ForkPlus.UI.Controls
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return ((ResizeMode)value != ResizeMode.CanResizeWithGrip) ? Visibility.Collapsed : Visibility.Visible;
+			return ((ResizeMode)value != ResizeMode.CanResizeWithGrip) ? false : true;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

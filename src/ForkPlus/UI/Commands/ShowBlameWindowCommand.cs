@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Commands
 				return sha2 == sha3;
 			});
 			Reference targetReference = IReadOnlyListExtensions.FirstItem(source, (Reference x) => (x as LocalBranch)?.IsActive ?? false) ?? source.FirstItem();
-			new BlameWindow(repositoryUserControl, filePath, sha, targetReference).Show();
+			new BlameWindow(repositoryUserControl, filePath, sha, targetReference).ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 		}
 	}
 }

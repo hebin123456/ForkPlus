@@ -1,0 +1,262 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:editorHex="clr-namespace:ForkPlus.UI.Controls.Editor.Hex" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<!-- Migration note：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
+  <PopupAnimation x:Key="MenuPopupAnimationKey">None</PopupAnimation>-->
+
+  <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
+  
+  <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+  <!-- Migration note：WPF 内置 BooleanToVisibilityConverter（Avalonia 无内置），补托管实现供 StaticResource 引用 -->
+  <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+  <!-- Migration note：菜单快捷键显示本地化（KeyGesture.ToString 会显示 "Ctrl+OemComma" 枚举名） -->
+  <controls:KeyGestureTextConverter x:Key="KeyGestureTextConverter" />
+  <!-- Bug 修复（2026-09-04，"二进制对比（Hex Diff）显示一片空白"）：
+       Avalonia 的 ControlTheme 不像 WPF DefaultStyleKey 沿基类链匹配派生类——HexEditor
+       的 StyleKey 是自身类型，AvaloniaEdit 官方 {x:Type TextEditor} 主题匹配不到它，
+       导致无模板、无 ScrollViewer、TextArea 不挂视觉树（text 已赋值但 tvBounds=0x0、
+       VisualLines 永不重建、渲染一片空白，工具栏/MD5 行正常）。与 CodeEditor 同模式：
+       这里定义 {x:Type HexEditor} 专属主题，HexEditor 构造函数从应用资源取出挂到 Theme。
+       模板为 CodeEditor 的精简版：去掉搜索面板占位（Hex 视图用 AvaloniaEdit 官方
+       SearchPanel.Install，挂在 TextArea 层不依赖模板部件）与 Src/Dst 色块 Canvas。 -->
+  <ControlTheme x:Key="{x:Type editorHex:HexEditor}" TargetType="editorHex:HexEditor">
+    <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="IsReadOnly" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="editorHex:HexEditor">
+          <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+              <controls:TouchpadAwareScrollViewer.Content>
+                <Binding Path="TextArea">
+                  <Binding.RelativeSource>
+                    <RelativeSource Mode="TemplatedParent" />
+                  </Binding.RelativeSource>
+                </Binding>
+              </controls:TouchpadAwareScrollViewer.Content>
+            </controls:TouchpadAwareScrollViewer>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
+    <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
+    <Setter Property="FontFamily" Value="Consolas" />
+    <Setter Property="FontSize" Value="13.0" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="IsReadOnly" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="editor:CodeEditor">
+          <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+              <controls:TouchpadAwareScrollViewer.Content>
+                <Binding Path="TextArea">
+                  <Binding.RelativeSource>
+                    <RelativeSource Mode="TemplatedParent" />
+                  </Binding.RelativeSource>
+                </Binding>
+              </controls:TouchpadAwareScrollViewer.Content>
+            </controls:TouchpadAwareScrollViewer>
+            <usercontrols:CodeEditorSearchPanelUserControl Grid.RowSpan="2" x:Name="PART_SearchPanelUserControl">
+              <usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
+                <Binding ElementName="SearchPanelPlaceholder" />
+              </usercontrols:CodeEditorSearchPanelUserControl.SearchPanelPlaceholder>
+            </usercontrols:CodeEditorSearchPanelUserControl>
+            <Canvas Grid.Row="1" Width="10" HorizontalAlignment="Right" IsHitTestVisible="False">
+              <Path Fill="#CCD18281" x:Name="SrcBlockPath" />
+              <Path Fill="#CC90C494" x:Name="DstBlockPath" />
+            </Canvas>
+          </Grid>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^[WordWrap=True] /template/ controls|TouchpadAwareScrollViewer#PART_ScrollViewer">
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style></ControlTheme>
+  <!--
+      WPF migration note: 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      原始片段：
+      <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Rectangle Margin="2" Stroke="#FF000000" StrokeThickness="1" StrokeDashArray="1 2" />
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <!--
+      WPF migration note: 焦点视觉样式 OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      原始片段：
+      <Style x:Key="OptionMarkFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Rectangle Margin="0" Stroke="#FF000000" StrokeThickness="1" StrokeDashArray="1 2" />
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <!-- Bug 修复（2026-09-04，"所有提交页分隔条只有 tab 附近能拖"）：原迁移只带了
+       Background setter、无 Template。WPF 中 GridSplitter 有系统默认模板（Border
+       Background=TemplateBinding Background）兜底，透明背景热区仍可命中；Avalonia 中
+       本 ControlTheme（x:Key={x:Type GridSplitter}）在 App.Resources 中优先于 Fluent
+       主题生效，无模板 = 无视觉内容 = 不参与命中测试 → 所有未显式引用
+       HorizontalGridSplitter/VerticalGridSplitter 主题的 GridSplitter（如
+       RepositoryContentUserControl 的 SecondColumnHorizontalGridSplitter：32px 热区 +
+       透明背景 + 顶部 1px 边线）整个不可拖。补齐与 WPF 系统默认等价的 Border 模板。 -->
+  <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
+    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="GridSplitter">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="HorizontalGridSplitter" TargetType="GridSplitter">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+    <Setter Property="Margin" Value="0,-2,0,-2" />
+    <Setter Property="Height" Value="5" />
+    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="GridSplitter">
+          <Grid Background="#00FFFFFF">
+            <Border BorderBrush="{TemplateBinding BorderBrush}" Height="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="VerticalGridSplitter" TargetType="GridSplitter">
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+    <Setter Property="Margin" Value="-2,0,-2,0" />
+    <Setter Property="Width" Value="5" />
+    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="GridSplitter">
+          <Grid Background="#00FFFFFF">
+            <Border BorderBrush="{TemplateBinding BorderBrush}" Width="1" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type Separator}" TargetType="Separator">
+    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+    <Setter Property="FontSize" Value="13" />
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:EditableTextBlock}" TargetType="controls:EditableTextBlock">
+    <Setter Property="Height" Value="22" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:EditableTextBlock">
+          <TextBlock Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalAlignment}" TextTrimming="CharacterEllipsis">
+            <TextBlock.Text>
+              <Binding Path="Value">
+                <Binding.RelativeSource>
+                  <RelativeSource Mode="TemplatedParent" />
+                </Binding.RelativeSource>
+              </Binding>
+            </TextBlock.Text>
+            <TextBlock.IsVisible>
+              <Binding Path="IsInEditMode" Converter="{StaticResource InverseBooleanToVisibility}">
+                <Binding.RelativeSource>
+                  <RelativeSource Mode="TemplatedParent" />
+                </Binding.RelativeSource>
+              </Binding>
+            </TextBlock.IsVisible>
+          </TextBlock>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:CommandTextBox}" TargetType="controls:CommandTextBox">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:CommandTextBox">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
+            <!-- Migration note：TextBox 子类必须有 PART_TextPresenter 模板部件（AVLN2205），
+                 CommandTextBox 的文本显示实际由内嵌 PlaceholderTextBox 承担，此处放隐藏占位部件。 -->
+            <TextPresenter x:Name="PART_TextPresenter" IsVisible="False" />
+            <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
+              <controls:PlaceholderTextBox.Text>
+                <Binding Path="Text">
+                  <Binding.RelativeSource>
+                    <RelativeSource Mode="TemplatedParent" />
+                  </Binding.RelativeSource>
+                </Binding>
+              </controls:PlaceholderTextBox.Text>
+            </controls:PlaceholderTextBox>
+          </DockPanel>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:BindableGitPointView}" TargetType="controls:BindableGitPointView">
+    <Setter Property="controls:GitPointView.IconMargin" Value="4,3,4,1" />
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+    
+<!-- Migration note：WPF Setter Property=HasDropShadow 已删（Avalonia 该类型无此属性） -->
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Popup.BorderBrush}" />
+    <Setter Property="Padding" Value="6,2,6,3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToolTip">
+          <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
+            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+<!-- Migration note：WPF 选择器 ^[HasDropShadow=True] 无对应 Avalonia 属性，样式块注释化。原始片段：
+    <Style Selector="^[HasDropShadow=True]">
+        <Setter Property="Margin" Value="10" />
+    </Style>-->
+
+<!-- Migration note：WPF 选择器 ^[HasDropShadow=True] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
+    <Style Selector="^[HasDropShadow=True] /template/ Border#Border">
+        <Setter Property="Effect">
+                <Setter.Value>
+                  <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" OffsetY="1" />
+                </Setter.Value>
+              </Setter>
+    </Style>-->
+</ControlTheme>
+  <ControlTheme x:Key="{x:Type ContentControl}" TargetType="ContentControl">
+    
+  </ControlTheme>
+</ResourceDictionary>

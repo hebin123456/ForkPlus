@@ -1,13 +1,14 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -153,7 +154,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "External Diff";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D, ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.D, global::Avalonia.Input.KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

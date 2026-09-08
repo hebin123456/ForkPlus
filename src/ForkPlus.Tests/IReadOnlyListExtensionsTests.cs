@@ -157,6 +157,33 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
+		public void BinarySearchBy_TerminatesWhenComparatorReturnsNonUnitValues()
+		{
+			// 回归：RepositoryManager 死循环。NumericIgnoreCaseStringComparer 在 Unix 上
+			// 返回任意差值（如 "forkplus" vs "freeze-repo" 的 'o'-'r' = -3），
+			// 原 switch 只匹配 -1/0/1，三分支全部落空导致 UI 线程死循环。
+			IReadOnlyList<string> source = new List<string> { "ForkPlus", "freeze-repo" };
+
+			int idx = source.BinarySearchBy(x => NumericIgnoreCaseStringComparer.Comparer.Compare(x, "git-repo"));
+			Assert.True(idx < 0);
+		}
+
+		[Fact]
+		public void NumericIgnoreCaseStringComparer_ReturnsOnlyUnitValues()
+		{
+			// 契约：比较结果恒为 -1/0/1（StrCmpLogicalW 语义），供 BinarySearchBy 等消费。
+			Assert.Equal(0, NumericIgnoreCaseStringComparer.Comparer.Compare("abc", "abc"));
+			Assert.Equal(0, NumericIgnoreCaseStringComparer.Comparer.Compare("a2", "A2"));
+			// 数值相等但前导零不同：前导零多者在后（Explorer 行为）→ -1/1，非任意差值。
+			Assert.Equal(-1, NumericIgnoreCaseStringComparer.Comparer.Compare("a2", "a02"));
+			Assert.Equal(1, NumericIgnoreCaseStringComparer.Comparer.Compare("a02", "a2"));
+			int less = NumericIgnoreCaseStringComparer.Comparer.Compare("ForkPlus", "freeze-repo");
+			int greater = NumericIgnoreCaseStringComparer.Comparer.Compare("freeze-repo", "ForkPlus");
+			Assert.Equal(-1, less);
+			Assert.Equal(1, greater);
+		}
+
+		[Fact]
 		public void CompactMapStruct_FiltersOutNullResults()
 		{
 			IReadOnlyList<string> source = new List<string> { "1", "abc", "3" };

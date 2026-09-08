@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 
@@ -24,7 +24,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl)
 		{
-			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? ForkPlus.RepositoryManager.Instance.SourceDirs.FirstItem() ?? Environment.ExpandEnvironmentVariables("%userprofile%");
+			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? ForkPlus.RepositoryManager.Instance.SourceDirs.FirstItem() ?? SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectFile(MainWindow.Instance, "Select patch", initialDirectory, "Git Patch", "*.*", out var filePath))
 			{
 				ForkPlusSettings.Default.RecentPatchDirectory = Path.GetDirectoryName(filePath);

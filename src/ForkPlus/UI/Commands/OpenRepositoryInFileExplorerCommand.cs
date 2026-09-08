@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
 
@@ -21,9 +21,10 @@ namespace ForkPlus.UI.Commands
 			})
 		};
 
-		public string Title => "Open In File Explorer";
+		// Migration note：平台化文案（macOS 期望 Finder 措辞）。
+		public string Title => OperatingSystem.IsMacOS() ? "Open in Finder" : (OperatingSystem.IsWindows() ? "Open In File Explorer" : "Open in File Manager");
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, ModifierKeys.Alt | ModifierKeys.Control);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, global::Avalonia.Input.KeyModifiers.Alt | global::Avalonia.Input.KeyModifiers.Control);
 
 
 		public KeyGesture SecondaryShortcut => null;

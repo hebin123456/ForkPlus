@@ -1,15 +1,18 @@
 using System;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class GraphCellView : FrameworkElement
+	public class GraphCellView : global::Avalonia.Controls.Control
 	{
 		private static readonly double _defaultCellHeight;
 
@@ -36,11 +39,53 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		private Popup _popup;
 
+		[Null]
+		private global::Avalonia.Controls.Panel _popupHost;
+
+		[Null]
+		private global::Avalonia.Controls.Control _popupContent;
+
+		[Null]
+		private global::Avalonia.Controls.TopLevel _popupPointerMoveRoot;
+
+		// 弹窗打开期间订阅顶层 PointerMoved（只有鼠标真实移动才触发；滚动/布局变化导致的
+		// 命中测试重算不会触发）——鼠标移出单元格且不在弹窗上时才启动关闭定时器。
+		private void OnPopupRootPointerMoved(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			if (_popup == null || !_popup.IsOpen)
+			{
+				return;
+			}
+			bool overContent = _popupContent != null && _popupContent.IsPointerOver;
+			if (IsPointerOver || overContent)
+			{
+				_closePopupTimer.Stop();
+			}
+			else
+			{
+				_closePopupTimer.Start();
+			}
+		}
+
+		private void UnhookPopupPointerMove()
+		{
+			if (_popupPointerMoveRoot != null)
+			{
+				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerMovedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved);
+				_popupPointerMoveRoot = null;
+			}
+		}
+
 		private Sha? _activeMergePointSha;
 
-		public static readonly DependencyProperty CellHeightProperty;
+		// WPF Mouse.GetPosition(this) 的替代：WpfCompat Mouse shim 恒返回 (0,0)。
+		// 在指针事件中记录真实 X（供命中测试列计算使用）。
+		private double _lastPointerX;
 
-		public static readonly DependencyProperty ShowGraphToolTipProperty;
+		// Migration note：字段类型收紧为 StyledProperty<T>（XAML 编译器要求 typed property）。
+                public static readonly global::Avalonia.StyledProperty<double> CellHeightProperty;
+
+                public static readonly global::Avalonia.StyledProperty<bool> ShowGraphToolTipProperty;
 
 		private bool _isMouseOver;
 
@@ -101,19 +146,17 @@ namespace ForkPlus.UI.Controls
 				"#5856D6", "#B4D435", "#FF6F61"
 			};
 			_branchPens = _branchColors.Map((string c) => new Pen(new SolidColorBrush((Color)ColorConverter.ConvertFromString(c)), _penThickness));
-			CellHeightProperty = DependencyProperty.Register("CellHeight", typeof(double), typeof(GraphCellView), new FrameworkPropertyMetadata(_defaultCellHeight));
-			ShowGraphToolTipProperty = DependencyProperty.Register("ShowGraphToolTip", typeof(bool), typeof(GraphCellView), new PropertyMetadata(true));
+			CellHeightProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<GraphCellView, double>("CellHeight", _defaultCellHeight);
+			ShowGraphToolTipProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<GraphCellView, bool>("ShowGraphToolTip", true);
 			Pen[] branchPens = _branchPens;
 			for (int i = 0; i < branchPens.Length; i++)
 			{
-				branchPens[i].Freeze();
 			}
-			_mouseOverPen.Freeze();
 		}
 
 		public GraphCellView()
 		{
-			base.SnapsToDevicePixels = true;
+			base.UseLayoutRounding= true;
 			if (ShowGraphToolTip)
 			{
 				_showPopupTimer.Interval = TimeSpan.FromMilliseconds(600.0);
@@ -123,12 +166,26 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnMouseEnter(MouseEventArgs e)
+		// 修复（2026-09-05，"轨道图刷出来一片白色，点击才显示"）：
+		// 虚拟化列表回收复用时，容器短暂 detach → DataContext 变化 → InvalidateVisual
+		// 只打脏标记但不真正渲染（控件不在渲染路径上）。重新 attach 后 Avalonia
+		// 只做 Measure/Arrange（Bounds 没变），不会自动触发 Render → 控件透出
+		// 背景色（"白屏"）。点击行触发 ListBoxItem 重绘才把子控件一起画出来。
+		// 修复：AttachedToVisualTree 时强制 InvalidateVisual，确保重新挂树后立即渲染。
+		protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
 		{
-			e.Handled = true;
-			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && e.LeftButton != MouseButtonState.Pressed)
+			base.OnAttachedToVisualTree(e);
+			InvalidateMeasure();
+			InvalidateVisual();
+		}
+
+		protected override void OnPointerEntered(global::Avalonia.Input.PointerEventArgs e)
+		{
+			// Migration note：WPF PointerEventArgs.LeftButton != MouseButtonState.Pressed → GetCurrentPoint().Properties.IsLeftButtonPressed
+			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
-				base.OnMouseEnter(e);
+				base.OnPointerEntered(e);
+				_lastPointerX = e.GetPosition(this).X;
 				if (decoratedRevision.GetParents().Length > 1)
 				{
 					_activeMergePointSha = decoratedRevision.Sha;
@@ -138,35 +195,39 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnMouseLeave(MouseEventArgs e)
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
 		{
-			e.Handled = true;
-			base.OnMouseLeave(e);
+			base.OnPointerExited(e);
 			IsMouseOver = false;
 			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && decoratedRevision.GetParents().Length > 1)
 			{
 				_activeMergePointSha = null;
 				_showPopupTimer.Stop();
-				_closePopupTimer.Start();
+				// 弹窗已打开时不在这里启动关闭定时器：滚动/布局变化会对静止鼠标重新命中测试，
+				// 产生假的 PointerExited。关闭时机改由顶层 PointerMoved 处理器决定（见 CreatePopup）。
+				if (_popup == null || !_popup.IsOpen)
+				{
+					_closePopupTimer.Start();
+				}
 			}
 		}
 
-		protected override void OnMouseMove(MouseEventArgs e)
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			e.Handled = true;
-			base.OnMouseMove(e);
+			base.OnPointerMoved(e);
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
-				int num = (int)((e.GetPosition(this).X + 5.0) / _defaultCellWidth);
+				_lastPointerX = e.GetPosition(this).X;
+				int num = (int)((_lastPointerX + 5.0) / _defaultCellWidth);
 				IsMouseOver = num == decoratedRevision.GraphInfo.CurrentCommitColumn;
 			}
 		}
 
-		protected override void OnMouseDown(MouseButtonEventArgs e)
+		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
-			e.Handled = true;
-			base.OnMouseDown(e);
-			if (IsMouseOver && e.ChangedButton == MouseButton.Left && base.DataContext is DecoratedRevision decoratedRevision)
+			base.OnPointerPressed(e);
+			// Migration note：WPF PointerPressedEventArgs.ChangedButton == MouseButton.Left → GetCurrentPoint().Properties.IsLeftButtonPressed
+			if (IsMouseOver && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && base.DataContext is DecoratedRevision decoratedRevision)
 			{
 				this.ExpandToggle?.Invoke(this, EventArgs.Empty);
 				if (ShowGraphToolTip && decoratedRevision.GetParents().Length > 1)
@@ -178,29 +239,37 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		// Migration note：WPF 版在 OnRender 里直接设 this.Width = cellWidth * lines.Length（WPF 允许渲染后
+		// 触发下一轮流排；Avalonia 渲染期使布局失效直接抛 InvalidOperationException
+		// "Visual was invalidated during the render pass"，迁移期实证）。
+		// 正确做法：MeasureOverride 按数据源返回期望尺寸（Auto 列/StackPanel 布局取该值），
+		// Render 只绘制；DataContext 变化（容器回收复用换绑）时手动失效量测。
+		protected override global::Avalonia.Size MeasureOverride(global::Avalonia.Size availableSize)
+		{
+			double num = _defaultCellWidth;
+			if (base.DataContext is DecoratedRevision decoratedRevision)
+			{
+				num = _defaultCellWidth * (double)decoratedRevision.GraphInfo.Lines.Length;
+			}
+			return new global::Avalonia.Size(num, CellHeight);
+		}
+
+		protected override void OnDataContextChanged(EventArgs e)
+		{
+			base.OnDataContextChanged(e);
+			InvalidateMeasure();
+			InvalidateVisual();
+		}
+
+		public override void Render(DrawingContext drawingContext)
 		{
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
-				base.Width = _defaultCellWidth * (double)decoratedRevision.GraphInfo.Lines.Length;
-				GuidelineSet guidelineSet = new GuidelineSet();
+				// WPF 版在此构造 GuidelineSet 并 PushGuidelineSet 做像素对齐（列坐标均为
+				// cellWidth 整数倍，1px 线条需对齐到设备像素中点）。Avalonia 无 GuidelineSet，
+				// Migration note：如需恢复像素级锐利，可在 DrawLine/DrawCommitPoint 内对坐标做
+				// Math.Floor(x)+0.5 半像素偏移；当前先按原始坐标绘制（视觉上可能有轻微模糊）。
 				GraphLine[] lines = decoratedRevision.GraphInfo.Lines;
-				for (int i = 0; i < lines.Length; i++)
-				{
-					GraphLine graphLine = lines[i];
-					AddColumnGuideline(guidelineSet, graphLine.Column);
-					if (graphLine.TopColumn != byte.MaxValue)
-					{
-						AddColumnGuideline(guidelineSet, graphLine.TopColumn);
-					}
-					if (graphLine.BottomColumn != byte.MaxValue)
-					{
-						AddColumnGuideline(guidelineSet, graphLine.BottomColumn);
-					}
-				}
-				guidelineSet.Freeze();
-				drawingContext.PushGuidelineSet(guidelineSet);
-				lines = decoratedRevision.GraphInfo.Lines;
 				foreach (GraphLine line in lines)
 				{
 					DrawLine(drawingContext, line, _defaultCellWidth);
@@ -208,15 +277,11 @@ namespace ForkPlus.UI.Controls
 				bool isMergeCommit = decoratedRevision.GetParents().Length > 1;
 				bool isCollapsed = decoratedRevision.IsCollapsed;
 				DrawCommitPoint(drawingContext, decoratedRevision.GraphInfo, _defaultCellWidth, isMergeCommit, isCollapsed);
-				drawingContext.Pop();
 			}
-			base.OnRender(drawingContext);
+			base.Render(drawingContext);
 		}
 
-		private void AddColumnGuideline(GuidelineSet guidelines, int column)
-		{
-			guidelines.GuidelinesX.Add(_defaultCellWidth * (double)column);
-		}
+		// WPF GuidelineSet 辅助已随 PushGuidelineSet 一并移除（见 Render 内注释）
 
 		private void _showPopupTimer_Tick(object sender, EventArgs e)
 		{
@@ -249,8 +314,8 @@ namespace ForkPlus.UI.Controls
 					StreamGeometry streamGeometry = new StreamGeometry();
 					using (StreamGeometryContext streamGeometryContext = streamGeometry.Open())
 					{
-						streamGeometryContext.BeginFigure(point2, isFilled: false, isClosed: false);
-						streamGeometryContext.BezierTo(new Point(point2.X, point3.Y - 5.0), new Point(point3.X, point2.Y + 5.0), point3, isStroked: true, isSmoothJoin: false);
+						streamGeometryContext.BeginFigure(point2,false);
+						streamGeometryContext.CubicBezierTo(new Point(point2.X, point3.Y - 5.0),new Point(point3.X, point2.Y + 5.0),point3,true);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry);
 				}
@@ -263,8 +328,8 @@ namespace ForkPlus.UI.Controls
 					StreamGeometry streamGeometry2 = new StreamGeometry();
 					using (StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open())
 					{
-						streamGeometryContext2.BeginFigure(point2, isFilled: false, isClosed: false);
-						streamGeometryContext2.BezierTo(new Point(point2.X, point.Y), new Point(point.X + 5.0, point.Y), point, isStroked: true, isSmoothJoin: false);
+						streamGeometryContext2.BeginFigure(point2,false);
+						streamGeometryContext2.CubicBezierTo(new Point(point2.X, point.Y),new Point(point.X + 5.0, point.Y),point,true);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry2);
 				}
@@ -284,8 +349,8 @@ namespace ForkPlus.UI.Controls
 				StreamGeometry streamGeometry3 = new StreamGeometry();
 				using (StreamGeometryContext streamGeometryContext3 = streamGeometry3.Open())
 				{
-					streamGeometryContext3.BeginFigure(point, isFilled: false, isClosed: false);
-					streamGeometryContext3.BezierTo(new Point(point4.X, point.Y), new Point(point4.X, point.Y + 5.0), point4, isStroked: true, isSmoothJoin: false);
+					streamGeometryContext3.BeginFigure(point,false);
+					streamGeometryContext3.CubicBezierTo(new Point(point4.X, point.Y),new Point(point4.X, point.Y + 5.0),point4,true);
 				}
 				drawingContext.DrawGeometry(null, pen, streamGeometry3);
 			}
@@ -305,70 +370,169 @@ namespace ForkPlus.UI.Controls
 				return;
 			}
 			Pen pen2 = (IsMouseOver ? _mouseOverPen : pen);
-			drawingContext.DrawEllipse(Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
+			drawingContext.DrawEllipse(global::ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using (StreamGeometryContext streamGeometryContext = streamGeometry.Open())
 			{
 				if (isCollapsed)
 				{
-					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize * 0.5, center.Y - _chevronSize), isFilled: false, isClosed: false);
-					streamGeometryContext.LineTo(new Point(center.X + _chevronSize * 0.5, center.Y), isStroked: true, isSmoothJoin: false);
-					streamGeometryContext.LineTo(new Point(center.X - _chevronSize * 0.5, center.Y + _chevronSize), isStroked: true, isSmoothJoin: false);
+					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize * 0.5, center.Y - _chevronSize),false);
+					streamGeometryContext.LineTo(new Point(center.X + _chevronSize * 0.5, center.Y),true);
+					streamGeometryContext.LineTo(new Point(center.X - _chevronSize * 0.5, center.Y + _chevronSize),true);
 				}
 				else
 				{
-					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize, center.Y - _chevronSize * 0.5), isFilled: false, isClosed: false);
-					streamGeometryContext.LineTo(new Point(center.X, center.Y + _chevronSize * 0.5), isStroked: true, isSmoothJoin: false);
-					streamGeometryContext.LineTo(new Point(center.X + _chevronSize, center.Y - _chevronSize * 0.5), isStroked: true, isSmoothJoin: false);
+					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize, center.Y - _chevronSize * 0.5),false);
+					streamGeometryContext.LineTo(new Point(center.X, center.Y + _chevronSize * 0.5),true);
+					streamGeometryContext.LineTo(new Point(center.X + _chevronSize, center.Y - _chevronSize * 0.5),true);
 				}
 			}
-			streamGeometry.Freeze();
 			drawingContext.DrawGeometry(null, pen, streamGeometry);
 		}
 
 		private void ShowPopup()
 		{
-			RepositoryUserControl parent = this.GetParent<RepositoryUserControl>();
-			if (parent != null && (_popup == null || !_popup.IsOpen))
+			try
 			{
-				Sha? activeMergePointSha = _activeMergePointSha;
-				if (activeMergePointSha.HasValue)
+				RepositoryUserControl parent = this.GetParent<RepositoryUserControl>();
+				if (parent != null && (_popup == null || !_popup.IsOpen))
 				{
-					Sha valueOrDefault = activeMergePointSha.GetValueOrDefault();
-					double horizontalOffset = Mouse.GetPosition(this).X + 5.0;
-					_popup = CreatePopup(parent, horizontalOffset, valueOrDefault);
-					_popup.IsOpen = true;
+					Sha? activeMergePointSha = _activeMergePointSha;
+					if (activeMergePointSha.HasValue)
+					{
+						Sha valueOrDefault = activeMergePointSha.GetValueOrDefault();
+						_popup = CreatePopup(parent, valueOrDefault);
+						_popup.IsOpen = true;
+					}
 				}
+			}
+			catch (System.Exception ex)
+			{
+				Log.Error("GraphCellView.ShowPopup failed: " + ex);
 			}
 		}
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			// Bug 修复（弹窗悬停闪烁死循环）：Avalonia 的 Popup 不是 Visual，IsPointerOver 恒为
+			// false → 原判断 !_popup.IsPointerOver 永远成立 → 弹窗一盖住轨道图单元格就触发
+			// PointerExited → 关窗 → 鼠标又回到单元格 → 再开 → 死循环。改为检查弹窗内容控件
+			//（真正的 Visual）的 IsPointerOver，并在内容 PointerEntered 时停止关闭定时器。
+			bool pointerOverContent = (_popupContent != null && _popupContent.IsPointerOver) || IsPointerOver;
+			if (_popup != null && _popup.IsOpen && (!pointerOverContent || hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");
+				DetachPopupFromHost(_popup);
+				UnhookPopupPointerMove();
 				_popup = null;
+				_popupContent = null;
 			}
 		}
 
-		private Popup CreatePopup(RepositoryUserControl repositoryUserControl, double horizontalOffset, Sha sha)
+		private void DetachPopupFromHost(Popup popup)
+		{
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Remove(popup);
+				_popupHost = null;
+			}
+		}
+
+		private Popup CreatePopup(RepositoryUserControl repositoryUserControl, Sha sha)
 		{
 			Popup popup = new Popup();
-			popup.HorizontalOffset = horizontalOffset;
-			popup.VerticalOffset = -50.0;
-			popup.StaysOpen = true;
-			popup.AllowsTransparency = true;
-			popup.PopupAnimation = PopupAnimation.Fade;
+			// 弹窗定位：左上角对齐合并按钮（圆点）的右下角，不遮挡按钮。
+			// 圆点圆心 = (cellWidth * CurrentCommitColumn, CellHeight/2)，半径 _commitMergePointRadius。
+			// 注意：Placement=Bottom 是 xdg 语义——锚点取锚定矩形底边【中点】，弹窗水平居中过去，
+			// 这就是之前"按钮跑到弹窗中心"的原因。改用 AnchorAndGravity 精确定位（同 Menu.axaml）：
+			// PlacementAnchor=BottomRight 锚点取按钮矩形的右下角，PlacementGravity=BottomRight
+			// 弹窗从该点向右下延伸（即弹窗左上角 = 按钮右下角 + 偏移）。
+			Rect anchorRect = new Rect(_defaultCellWidth - _commitMergePointRadius, CellHeight - _commitMergePointRadius, _commitMergePointRadius * 2.0, _commitMergePointRadius * 2.0);
+			if (base.DataContext is DecoratedRevision decoratedRevision)
+			{
+				double centerX = _defaultCellWidth * (double)(int)decoratedRevision.GraphInfo.CurrentCommitColumn;
+				double centerY = CellHeight / 2.0;
+				anchorRect = new Rect(centerX - _commitMergePointRadius, centerY - _commitMergePointRadius, _commitMergePointRadius * 2.0, _commitMergePointRadius * 2.0);
+			}
+			popup.Placement = PlacementMode.AnchorAndGravity;
+			popup.PlacementAnchor = global::Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.BottomRight;
+			popup.PlacementGravity = global::Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
+			popup.PlacementRect = anchorRect;
+			popup.HorizontalOffset = 4.0;
+			popup.VerticalOffset = 4.0;
+			popup.IsLightDismissEnabled= (!true);
+			/* Migration note: AllowsTransparency 已删除 */;
+			/* Migration note: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			RevisionGraphTooltipUserControl revisionGraphTooltipUserControl = new RevisionGraphTooltipUserControl(repositoryUserControl, sha);
-			revisionGraphTooltipUserControl.HeightChanged += delegate(object s, EventArgs<double> e)
-			{
-				double value = e.Value;
-				popup.VerticalOffset = 0.0 - value / 2.0 - 10.0;
-			};
 			VisualTreeAttachmentHelper.TrySetPopupChild(popup, revisionGraphTooltipUserControl, GetType().Name + ".Popup");
-			popup.MouseLeave += delegate
+			_popupContent = revisionGraphTooltipUserControl;
+			// 鼠标进入弹窗内容时取消关闭定时器（可在弹窗上自由移动/点击），离开后再启动关闭。
+			revisionGraphTooltipUserControl.PointerEntered += delegate
+			{
+				_closePopupTimer.Stop();
+			};
+			revisionGraphTooltipUserControl.PointerExited += delegate
+			{
+				_closePopupTimer.Start();
+			};
+			// Bug 修复（合并节点悬浮详情弹窗空白）：孤立 Popup（不在逻辑树中）的子控件
+			// DynamicResource 解析链在自身截止（BorderBrush/ListBox.Static.Background/主题全部
+			// 解析为 null）→ 弹窗只剩宿主白底、无边框无内容。与 GitMmUserControl 本轮25 修复
+			// 同法：把 Popup 挂进 Panel 祖先（不占布局空间），资源沿逻辑树正常解析；
+			// 关闭时移除防泄漏。
+			// 注意宿主选择：不能挂最近的行容器 Panel——提交列表是虚拟化的，点击/滚动触发的
+			// 布局刷新会回收行容器（PlacementTarget 随之 detach → Avalonia 自动关弹窗，
+			// 即"点击/滚动时弹窗突然消失"）。这里挂到 RepositoryUserControl 根 Grid
+			//（稳定、不随行回收），找不到才退回最近的 Panel。
+			global::Avalonia.Controls.Panel fallbackPanel = null;
+			global::Avalonia.Visual ancestor = this;
+			while ((ancestor = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(ancestor)) != null)
+			{
+				if (fallbackPanel == null && ancestor is global::Avalonia.Controls.Panel nearPanel)
+				{
+					fallbackPanel = nearPanel;
+				}
+				if (ancestor is RepositoryUserControl)
+				{
+					foreach (global::Avalonia.Visual child in global::Avalonia.VisualTree.VisualExtensions.GetVisualChildren(ancestor))
+					{
+						if (child is global::Avalonia.Controls.Panel rootPanel)
+						{
+							_popupHost = rootPanel;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			if (_popupHost == null)
+			{
+				_popupHost = fallbackPanel;
+			}
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Add(popup);
+				Popup popupRef = popup;
+				popup.Closed += delegate
+				{
+					DetachPopupFromHost(popupRef);
+					UnhookPopupPointerMove();
+				};
+			}
+			// 弹窗打开期间：滚动/点击/布局变化不再直接关窗（Avalonia 会对静止鼠标重新命中测试，
+			// 滚动时单元格会收到假 PointerExited；WPF 只在鼠标真实移动时改变悬停）。
+			// 改为监听顶层 PointerMoved（仅真实鼠标移动触发）决定关闭时机。
+			_popupPointerMoveRoot = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+			if (_popupPointerMoveRoot != null)
+			{
+				_popupPointerMoveRoot.AddHandler(global::Avalonia.Input.InputElement.PointerMovedEvent,
+					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved,
+					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+					true);
+			}
+			popup.PointerExited += delegate
 			{
 				_closePopupTimer.Start();
 			};

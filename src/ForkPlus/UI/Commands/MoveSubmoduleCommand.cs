@@ -1,5 +1,5 @@
 using System.IO;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -7,6 +7,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -41,7 +42,7 @@ namespace ForkPlus.UI.Commands
 				GitCommandResult moveSubmoduleResult = new MoveSubmoduleGitCommand().Execute(gitModule, submodule.Path, newSubmodulePath, monitor);
 				if (!moveSubmoduleResult.Succeeded)
 				{
-					repositoryUserControl.Dispatcher.Async(delegate
+					repositoryUserControl.Dispatcher.Post(delegate
 					{
 						new ErrorWindow(repositoryUserControl, moveSubmoduleResult.Error).ShowDialog();
 						repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
@@ -52,7 +53,7 @@ namespace ForkPlus.UI.Commands
 					GitCommandResult renameGitmodulesSectionResult = new RenameGitmodulesSectionGitCommand().Execute(gitModule, submodule.Path, newSubmodulePath, monitor);
 					if (!renameGitmodulesSectionResult.Succeeded)
 					{
-						repositoryUserControl.Dispatcher.Async(delegate
+						repositoryUserControl.Dispatcher.Post(delegate
 						{
 							new ErrorWindow(repositoryUserControl, renameGitmodulesSectionResult.Error).ShowDialog();
 							repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
@@ -60,7 +61,7 @@ namespace ForkPlus.UI.Commands
 					}
 					else
 					{
-						repositoryUserControl.Dispatcher.Async(delegate
+						repositoryUserControl.Dispatcher.Post(delegate
 						{
 							repositoryUserControl.InvalidateAndRefresh(SubDomain.Status | SubDomain.Submodules);
 						});

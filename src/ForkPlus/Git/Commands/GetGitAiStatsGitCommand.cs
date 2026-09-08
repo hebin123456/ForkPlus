@@ -49,7 +49,18 @@ namespace ForkPlus.Git.Commands
 				GitRequestResult result = new ShellRequest(gitModule.Path, gitAiPath, new string[3] { "stats", target, "--json" }).Execute(TimeoutMilliseconds);
 				if (!result.Success)
 				{
-					return GitCommandResult<GitAiStats>.Failure(new GitCommandError.GenericError("git-ai stats '" + target + "' failed: " + result.Stderr.Trim()));
+					string stderr = result.Stderr.Trim();
+					// git 代理转发症状（2026-09-07 修复链的兜底防线）：git-ai 可执行文件名不是
+					// git-ai 时，git-ai 会把 stats 原样转发给真 git（git: 'stats' is not a git
+					// command）。App.GitAiPath 的 staging 符号链接已根治常规场景；此处兜底
+					// staging 降级（如 Windows 无符号链接权限）等残余场景，把 git 的原始报错
+					// 翻译成可定位的提示，而不是让用户对着一脸懵的 "not a git command"。
+					string message = IsGitProxyForwardingSymptom(stderr)
+						? "git-ai at '" + gitAiPath + "' responded as a git proxy (its file name is not '" + App.GitAiExecutableName
+							+ "', so git-ai forwards unknown commands to git). Rename the executable to '" + App.GitAiExecutableName
+							+ "' or reconfigure Preferences \u2192 Git with the original git-ai binary."
+						: "git-ai stats '" + target + "' failed: " + stderr;
+					return GitCommandResult<GitAiStats>.Failure(new GitCommandError.GenericError(message));
 				}
 				GitAiStats stats = GitAiStats.Decode(result.Stdout);
 				GitAiResultCache.PutStats(gitModule.Path, target, stats);
@@ -60,6 +71,15 @@ namespace ForkPlus.Git.Commands
 				Log.Error("Failed to get git-ai stats for '" + target + "'", ex);
 				return GitCommandResult<GitAiStats>.Failure(new GitCommandError.GenericError("Failed to parse git-ai stats output: " + ex.Message));
 			}
+		}
+
+		/// <summary>
+		/// 识别 stderr 是否为 git 代理转发症状（git 报 "xxx is not a git command"）——
+		/// git-ai 以非标准文件名被调用时进入 git 透明代理模式，把 stats 转发给真 git 所致。
+		/// </summary>
+		internal static bool IsGitProxyForwardingSymptom([Null] string stderr)
+		{
+			return stderr != null && stderr.Contains("is not a git command", StringComparison.Ordinal);
 		}
 	}
 }

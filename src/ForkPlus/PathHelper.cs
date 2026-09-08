@@ -7,7 +7,14 @@ namespace ForkPlus
 	{
 		public static string Normalize(string path)
 		{
-			return path.Replace("/", "\\");
+			// Migration note：跨平台路径分隔符规范化。原实现无条件 Replace('/', '\\') 是 Windows
+			// 专属惯例；Unix 上会把 /usr/bin/git 破坏成 \usr\bin\git（File.Exists/Process 全失败，
+			// 45 处调用点连锁炸）。Windows 保持原行为，Unix 统一为正斜杠。
+			if (OperatingSystem.IsWindows())
+			{
+				return path.Replace("/", "\\");
+			}
+			return path.Replace("\\", "/");
 		}
 
 		public static string NormalizeUnix(string path)

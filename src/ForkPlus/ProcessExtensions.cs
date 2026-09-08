@@ -29,6 +29,16 @@ namespace ForkPlus
 
 			[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
 			internal static extern bool FreeConsole();
+
+			/// <summary>
+			/// Unix 信号发送（2026-09-07 .exe/Win32 硬编码专项审计补齐）。实证（Linux 沙盒
+			/// net10.0）：DllImport("libc") 可解析（运行时按 name→lib{name}.so→{name}.so
+			/// 候选链命中已装载的 libc），macOS 同名可用。kill(2) 与 Ctrl+C 等价。
+			/// </summary>
+			[DllImport("libc", SetLastError = true)]
+			internal static extern int kill(int pid, int signal);
+
+			public const int UnixSigint = 2;
 		}
 
 		public static bool SendSigintSignal(this Process process)
@@ -41,6 +51,29 @@ namespace ForkPlus
 			catch
 			{
 				return false;
+			}
+			// Migration note：原版只有 Windows 的 AttachConsole+GenerateConsoleCtrlEvent——
+			// Unix 上 AttachConsole 抛 DllNotFoundException 被最外层 catch 吞掉返回 false，
+			// 表现为"取消按钮点了 git 进程还在跑"（JobMonitor.Cancel 无 Kill 兜底）。
+			// Unix 用 kill(pid, SIGINT) 等价实现：git 收到 SIGINT 会自己收尾（gc 锁、
+			// 后台进程正常退出），语义与 Windows 的 Ctrl+C 事件一致。
+			if (!OperatingSystem.IsWindows())
+			{
+				try
+				{
+					if (NativeMethods.kill(id, NativeMethods.UnixSigint) != 0)
+					{
+						return false;
+					}
+					process.WaitForExit(2000);
+					Log.Info($"Process {id} interrupted via SIGINT");
+					return true;
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to send SIGINT event to process " + id, ex);
+					return false;
+				}
 			}
 			try
 			{

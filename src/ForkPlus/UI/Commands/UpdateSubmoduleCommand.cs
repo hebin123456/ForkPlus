@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using Avalonia.Input;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
@@ -7,6 +7,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Commands
 {
@@ -37,7 +38,7 @@ namespace ForkPlus.UI.Commands
 			{
 				monitor.Update(0.0, progressMessage);
 				GitCommandResult updateSubmoduleResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodules, monitor);
-				repositoryUserControl.Dispatcher.Async(delegate
+				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (callback != null)
 					{

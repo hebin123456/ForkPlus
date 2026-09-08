@@ -1,14 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace ForkPlus
 {
@@ -294,13 +297,14 @@ namespace ForkPlus
 					NotificationCenter.Current.RaiseActiveTabChanged(this, value);
 					SaveSession();
 					ForkPlusSettings.Default.Save();
-					Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(delegate
+					// Migration note：WPF Dispatcher.BeginInvoke(priority, action) → Avalonia Dispatcher.Post(action, priority)（参数顺序相反）。
+					Application.Current?.Dispatcher.Post(new Action(delegate
 					{
 						if (_tabControl.SelectedTab == value)
 						{
 							value.Refresh();
 						}
-					}));
+					}), DispatcherPriority.Background);
 				}
 			}
 		}

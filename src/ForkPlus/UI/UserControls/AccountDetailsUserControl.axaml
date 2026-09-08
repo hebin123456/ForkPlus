@@ -1,0 +1,37 @@
+<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.AccountDetailsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Border Background="{DynamicResource BackgroundBrush}" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}">
+    <Grid>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="62" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="26" />
+          <RowDefinition Height="26" />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <controls:AvatarImage Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="20,0,8,0" Width="32" Height="32" VerticalAlignment="Center" x:Name="AvatarImage" />
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
+          <TextBlock FontSize="13" Margin="4,0,4,0" x:Name="HeaderUserNameTextBlock" />
+          <TextBlock Margin="4,0,4,0" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="HeaderLoginTextBlock">
+            <TextBlock.Text>
+              <Binding Path="UserName" />
+            </TextBlock.Text>
+          </TextBlock>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Margin="4,0,8,0" Padding="0" VerticalAlignment="Top">
+          <HyperlinkButton x:Name="HeaderProfileUrlHyperlink" Theme="{StaticResource BlueHyperlinkStyle}">
+            <TextBlock HorizontalAlignment="Center" x:Name="HeaderProfileUrlTextBlock" />
+          </HyperlinkButton>
+        </TextBlock>
+        <Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="0" />
+        <controls:ModernTabControl SelectionChanged="TabControl_SelectionChanged" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="AccountDetailsTabControl">
+          <usercontrols:AccountTabItem Header="Account" x:Name="AccountTabItem" Theme="{DynamicResource ModernTabControlTabItemStyle}" />
+          <usercontrols:AccountRepositoriesTabItem Header="Repositories" x:Name="AccountRepositoriesTabItem" Theme="{DynamicResource ModernTabControlTabItemStyle}" />
+        </controls:ModernTabControl>
+      </Grid>
+      <usercontrols:FallbackUserControl Grid.Row="0" Grid.RowSpan="2" x:Name="FallbackUserControl" />
+    </Grid>
+  </Border>
+</UserControl>
