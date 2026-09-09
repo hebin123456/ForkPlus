@@ -14,7 +14,7 @@
 #       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）。
 #       linux-x64 自包含实测约 125M。
 #
-# 发布链：build（四平台矩阵）+ test（ubuntu 全量单测/E2E）全绿 → release job 下载
+# 发布链：build（四平台矩阵）+ test（ubuntu 五分片并行矩阵）全绿 → release job 下载
 #       四平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
 #       提取当前版本章节作为正文，softprops/action-gh-release 发布（generate_release_notes
 #       追加自动变更清单与 Full Changelog 对比链接）。未打 tag 的手动运行只出 Artifacts。
@@ -29,7 +29,8 @@
 # 注意：UI 冒烟测试已归一到 ForkPlus.Tests 的 Avalonia.Headless（跨平台，随单测一起跑），
 #       原 Windows-only FlaUI 套件 ForkPlus.AutomationTests 已删除（2026-09-02）。
 #       build job 只构建主工程 ForkPlus.csproj（ProjectReference 会带出 AskPass/RI）；
-#       全量单元 + E2E 测试在独立 test job（ubuntu x64）运行。
+#       全量单元 + E2E 测试在独立 test job（ubuntu x64，2026-09-09 起五分片并行矩阵，
+#       详见 test job 头注释）运行。
 
 name: build
 
@@ -253,7 +254,7 @@ jobs:
 
   # ── 全量单元 + E2E 测试（发布门禁）──
   # 套件为 Avalonia.Headless（Skia 软件渲染，无显示服务器依赖），在 ubuntu-latest 跑
-  # 全量 ~4400 用例。环境依赖：
+  # 全量 ~4500 用例（分片口径见下方矩阵注释）。环境依赖：
   #   ① OxyPlot.Avalonia —— 与 build job 同源：fork release 预编译 nupkg 下载到
   #      third_party/nuget/（本地 NuGet 目录源，nuget.config + PackageReference 恢复；
   #      官方版按 Avalonia 11 编译，12 运行时 PlotView 崩溃）；
@@ -269,10 +270,49 @@ jobs:
   #   clone 会 smudge（改 -c 进程级关闭 lfs smudge）；② runner 无内置 git 实例 →
   #   SSH 测试的候选源断言改环境自适应；③ InteractiveRebase 选中框扫描改按索引
   #   定位第 0 行（视觉序首项在 runner 上与行序不一致）。
+  # ── 测试（2026-09-09 起五分片并行矩阵）──
+  # 背景：4500+ 用例挤在一个 job 里跑，"Run tests" 实测 ~17min。真正的串行瓶颈不是
+  # 用例数，而是 112 个 UI 测试类共享 [Collection("HeadlessAvalonia")]——headless App
+  # 是进程级单例 + 单 UI 线程，同一集合内用例必须逐个执行；xUnit 的集合并行救不了它
+  # （单测们早已按类并行），单进程里这条串行链就是墙钟下限。
+  # 分片原理：vstest --filter 按类名前缀把用例集切成互斥子集，每片一个独立 job =
+  # 独立 testhost 进程。进程之间没有共享 UI 状态，HeadlessAvalonia 的串行约束只在
+  # 各片内部生效，片与片之间由 Actions matrix 天然并行。按 2026-09-09 本地单类耗时
+  # 实测均衡切分（runner 约慢 2.7x），测试墙钟 ~17min → ~8min。
+  # 过滤器口径（vstest 的 ~ 为大小写不敏感的"包含"匹配，锚定 "ForkPlus.Tests." 命名
+  # 空间前缀后等价于类名前缀匹配——方法名里的 "_E2E" 后缀（如 ShellToolUnixResolution
+  # Tests）不会被误伤）：
+  #   e2e-1/2/3 ：E2E 家族按模块号十位分组（E2e0*=01-09，E2e1*=10-19，E2e2*=20-28，
+  #               E2e2 前缀顺带覆盖未来新增的 E2e29），两个无编号类 E2eInfraSmoke /
+  #               E2eStageScrollbarRefresh 显式并入 e2e-3；AskPass/RI 两个秒级小工程
+  #               （10+6 用例）搭最轻的 e2e-1 凑平衡。
+  #   core-a/b  ：非 E2E 用例按类名首字母在 T 处切两半。T-W 片集中 Theme*/TextBox*
+  #               等重量级 UI 类（实测 ~54s），A-S 片摊平其余——含 Class/Source 两个
+  #               Coverage 清单类（1900+/1500+ 用例，但纯内存断言，各 <1s）。core-a
+  #               是纯否定式 filter，须显式排除 AskPass/RI 命名空间（否则 solution 级
+  #               命令会把这两个小工程的用例吸进来，与 e2e-1 片重叠——该重叠正是
+  #               "分片完整性守卫"在开发期实锤抓到的第一只虫）。
+  # 维护：新增 E2e3x 模块（E2e30+）时需显式扩 e2e-3 的 filter（E2e2 前缀覆盖不到
+  # E2e3x，且会被 core 片的 !~ 排除）；否则 e2e-1 里的"分片完整性守卫"会红灯
+  # （各片 --list-tests 求和 != 全量总数），不会静默丢覆盖。
   test:
-    name: test (linux-x64)
+    name: test (${{ matrix.shard }})
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: e2e-1
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e0|FullyQualifiedName~ForkPlus.AskPass|FullyQualifiedName~ForkPlus.RI"
+          - shard: e2e-2
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
+          - shard: e2e-3
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
+          - shard: core-a
+            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
+          - shard: core-b
+            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName~ForkPlus.Tests.T|FullyQualifiedName~ForkPlus.Tests.U|FullyQualifiedName~ForkPlus.Tests.V|FullyQualifiedName~ForkPlus.Tests.W)"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -309,6 +349,8 @@ jobs:
       # --update-refs 原生路径；老版本自动降级 merge-tree / 省略选项。ubuntu-latest 自带
       # git 不够新（24.04 为 2.43），仍从 git-core PPA 装最新版——保证 CI 覆盖 replay /
       # update-refs 原生路径（降级路径由老 git 环境覆盖，如沙箱 2.34）。
+      # 五个分片统一安装（分片间环境一致，排查"某片独有失败"时不用怀疑工具链差异）；
+      # gitflow-avh（E2e17）/git-lfs（E2e18）在 e2e 分片按需用到。
       - name: Install modern git (>= 2.44)
         shell: bash
         run: |
@@ -330,17 +372,46 @@ jobs:
           git --version
           git lfs version
 
-      # 三个测试工程全跑：ForkPlus.Tests（单元 + 25 模块 E2E）、AskPass.Tests、RI.Tests
+      # 分片完整性守卫（只在最轻的 e2e-1 片跑，其余片省去）：从本 workflow 文件里提取
+      # 全部 matrix test-filter（单一事实来源，不与 matrix 定义脱节），逐个 --list-tests
+      # 计数求和，必须等于不带过滤器的全量总数。新增测试类落在所有分片之外（如 E2e30）
+      # 或 filter 手误写岔时立即红灯，防止并行化悄悄吞掉覆盖。首次调用顺带完成构建，
+      # 后续枚举与 Run tests 复用同一产物。
+      - name: Verify shard partition (sum of shards == total)
+        if: matrix.shard == 'e2e-1'
+        shell: bash
+        run: |
+          mapfile -t FILTERS < <(grep -oP '^\s+test-filter:\s*"\K[^"]+' .github/workflows/build.yml)
+          echo "discovered ${#FILTERS[@]} shard filters from workflow matrix"
+          [ "${#FILTERS[@]}" -ge 2 ] || { echo "::error::未能从 workflow 提取分片 filter"; exit 1; }
+          # 构建一次（增量），后续 --no-build 枚举秒级
+          dotnet test ForkPlus.sln --list-tests --nologo > /dev/null
+          total=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo 2>/dev/null | grep -c '^    ')
+          sum=0
+          for f in "${FILTERS[@]}"; do
+            n=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo --filter "$f" 2>/dev/null | grep -c '^    ')
+            echo "  $n tests  <- $f"
+            sum=$((sum + n))
+          done
+          echo "shard sum = $sum, full total = $total"
+          if [ "$sum" -ne "$total" ]; then
+            echo "::error::分片不完整（sum=$sum != total=$total）：有测试类落在所有分片 filter 之外，或分片间有重叠。新增 E2e3x 模块需显式扩 e2e-3 的 filter。"
+            exit 1
+          fi
+
+      # 各分片跑互斥子集（solution 级命令：构建全部工程含 AskPass/RI helper，与原单
+      # job 完全同构；零匹配的工程只告警不失败，AskPass/RI 由 e2e-1 的 filter 覆盖）
       - name: Run tests
         shell: bash
-        run: dotnet test ForkPlus.sln --nologo
+        run: dotnet test ForkPlus.sln --nologo --filter "${{ matrix.test-filter }}"
 
-      # 失败时上传证据截图（docs/evidence/，像素断言失败可下载 PNG 定位），便于 CI 红灯诊断
+      # 失败时上传证据截图（docs/evidence/，像素断言失败可下载 PNG 定位），便于 CI 红灯
+      # 诊断；按分片命名，红灯时直接定位到是哪一片挂了
       - name: Upload test evidence (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-evidence-linux-x64
+          name: test-evidence-${{ matrix.shard }}
           path: docs/evidence/
           retention-days: 7
           if-no-files-found: ignore
