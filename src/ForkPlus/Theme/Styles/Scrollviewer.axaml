@@ -35,16 +35,22 @@
   </ControlTheme>
   <ControlTheme x:Key="ScrollBarThumbVertical" TargetType="Thumb">
     <!-- Migration note（2026-09-05，修复"垂直滚动条有时候长度不对"）：
-         1) MinHeight 从 60 降到 18：长内容时按比例 thumb 可能只有十几像素，
-            60 的下限会把 thumb 强行拉成 3~4 倍大，用户拖到底部发现内容还没滚完。
-            18px 是 thumb 圆角 + 可拖拽的视觉下限，比官方 Fluent 主题的 8px 略大，
-            兼顾可用性与比例准确性。
-         2) 去掉 Border 的 Height="{TemplateBinding Height}" / Width="{TemplateBinding Width}"：
-            Avalonia Track 通过 Arrange 设置 Thumb 的 Bounds，不设置 Height/Width 属性
-            （这两个属性运行时是 NaN），TemplateBinding 到 NaN 在 measure 阶段可能
-            干扰布局计算；让 Border 默认 Stretch 铺满 Thumb 即可。 -->
+         去掉 Border 的 Height="{TemplateBinding Height}" / Width="{TemplateBinding Width}"：
+         Avalonia Track 通过 Arrange 设置 Thumb 的 Bounds，不设置 Height/Width 属性
+         （这两个属性运行时是 NaN），TemplateBinding 到 NaN 在 measure 阶段可能
+         干扰布局计算；让 Border 默认 Stretch 铺满 Thumb 即可。
+     Migration note（2026-09-09，v4.0.1 bug3"暂存/取消暂存后滚动条样式与文件树对不上"）：
+         显式 MinHeight=0。WPF 原版 ScrollBarThumbVertical 没有 MinHeight——thumb
+         严格按 viewport/extent 比例缩放；此前迁移时加的下限（60→18）在长列表场景
+         （如 240 文件的未暂存树，比例 thumb 仅 ~8px）把 thumb 强行拉到 18px，
+         暂存/取消暂存改变列表长度后 thumb 视觉上"冻住不动"，长度与左侧文件树
+         内容比例失真（E2E 实证：extent=4620 viewport=199 时 ideal=7.9 被钳到 18）。
+         且 Avalonia 12 的 Track.ComputeScrollBarLengths 内置 thumbMinLength=10 下限，
+         仅当 Thumb 显式 IsSet(MinHeight) 时才采用自定义值——彻底不设置会落到 10px
+         （第二次 E2E 实证 thumb=10.0）。故必须显式设 0 覆盖内置下限，
+         对齐 WPF 原版：thumb 始终精确反映内容比例。 -->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-    <Setter Property="MinHeight" Value="18" />
+    <Setter Property="MinHeight" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
@@ -65,9 +71,11 @@
         <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" Property="BorderBrush" />
     </Style></ControlTheme>
   <ControlTheme x:Key="ScrollBarThumbHorizontal" TargetType="Thumb">
-    <!-- 同垂直版：MinWidth 60→18，去掉 Height/Width TemplateBinding。 -->
+    <!-- 同垂直版（2026-09-09 v4.0.1）：去掉 Height/Width TemplateBinding，
+         并显式 MinWidth=0——对齐 WPF 原版（横向 thumb 同样无最小宽度下限，
+         严格按比例缩放；显式设 0 同时覆盖 Avalonia Track 内置的 10px thumbMinLength）。 -->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-    <Setter Property="MinWidth" Value="18" />
+    <Setter Property="MinWidth" Value="0" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">

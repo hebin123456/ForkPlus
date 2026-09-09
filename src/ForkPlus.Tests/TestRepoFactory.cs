@@ -141,6 +141,35 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>大量变更文件仓库（供暂存区滚动条刷新回归，v4.0.1 bug3）：
+		/// folders×filesPerFolder 个已提交文件全部追加修改 → 全量未暂存（Modified）。
+		/// Tree 模式列表 = folders 个文件夹节点 + folders×filesPerFolder 行，行数远超视口
+		/// 高度，可真实滚动。基线用单次 add -A + commit 建立（避免逐文件提交的进程开销）。</summary>
+		public static string CreateManyChangedFiles(int folders, int filesPerFolder)
+		{
+			string root = NewTempDir("manychanged");
+			Init(root);
+			for (int f = 0; f < folders; f++)
+			{
+				string dir = Path.Combine(root, string.Format("folder{0:D3}", f));
+				Directory.CreateDirectory(dir);
+				for (int i = 0; i < filesPerFolder; i++)
+				{
+					File.WriteAllText(Path.Combine(dir, string.Format("file{0:D3}.txt", i)), "v1\n");
+				}
+			}
+			Run(root, "add -A");
+			Run(root, "commit -q -m " + Quote("add all files"));
+			for (int f = 0; f < folders; f++)
+			{
+				for (int i = 0; i < filesPerFolder; i++)
+				{
+					File.AppendAllText(Path.Combine(root, string.Format("folder{0:D3}", f), string.Format("file{0:D3}.txt", i)), "v2\n");
+				}
+			}
+			return root;
+		}
+
 		/// <summary>本地 bare 远程 + 克隆工作仓库：work 推到 origin（origin=本地 bare），
 		/// 供 push/pull/fetch/多分支推送的真实执行验证（结果落文件系统，无网络）。</summary>
 		public static string CreateBareRemote()

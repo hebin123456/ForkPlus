@@ -161,10 +161,22 @@ namespace ForkPlus.UI.Commands
 							}
 						}
 						else
+					{
+						// v4.0.1 修复：丢弃 .gitignore 后忽略规则变化会影响其他文件的
+						// untracked/ignored 状态；增量刷新（RefreshFileStatusCommand 只
+						// 刷新被丢弃路径）会让未暂存区残留过期条目，因此丢弃集合里
+						// 含 .gitignore 时改为全量刷新 Status。
+						if (MayChangeIgnoreRules(array))
+						{
+							SubDomain subdomains3 = SubDomain.Status;
+							repositoryUserControl.InvalidateAndRefresh(subdomains3, null, RepositoryViewMode.CommitViewMode);
+						}
+						else
 						{
 							repositoryUserControl.UpdateRepositoryStatus(refreshFileResponse.Result);
-							new DiscardSubmoduleChangesCommand().Execute(commitUserControl, repositoryUserControl, submodules);
 						}
+						new DiscardSubmoduleChangesCommand().Execute(commitUserControl, repositoryUserControl, submodules);
+					}
 					});
 				}
 			}
@@ -195,6 +207,21 @@ namespace ForkPlus.UI.Commands
 			{
 				num += text.Length + 1;
 				if (num > Consts.Env.ArgumentLengthLimit)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// v4.0.1：判断丢弃集合是否包含 .gitignore（仓库根或任意子目录）。
+		// 丢弃 .gitignore 会改变忽略规则，间接影响其他文件的 untracked/ignored 状态。
+		private static bool MayChangeIgnoreRules(string[] paths)
+		{
+			foreach (string path in paths)
+			{
+				string normalizedPath = PathHelper.NormalizeUnix(path);
+				if (normalizedPath == ".gitignore" || normalizedPath.EndsWith("/.gitignore"))
 				{
 					return true;
 				}

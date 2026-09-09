@@ -651,15 +651,10 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private bool IsStashesContextMenuTarget()
 		{
-			if (SidebarTreeView.LastClickedItem is StashSidebarItem)
-			{
-				return true;
-			}
-			if (SidebarTreeView.LastClickedItem == _stashes)
-			{
-				return true;
-			}
-			return SidebarTreeView.LastClickedItem?.ParentItem == _stashes;
+			// v4.0.1 修复：右键屏蔽范围只保留"Stashes"组标题本身（组标题不需要右键菜单），
+			// 具体的 StashSidebarItem 不再被屏蔽，改走 SetSidebarTreeViewContextMenuItems
+			// 里的 CreateStashContextMenuItems 生成 Apply/Rename/Delete 菜单（对齐 WPF 原版）。
+			return SidebarTreeView.LastClickedItem == _stashes;
 		}
 
 		private void SuppressNativeSidebarContextMenuForCurrentInput()
@@ -734,7 +729,17 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			}
 			else if (sidebarItem is StashSidebarItem)
 			{
-				return false;
+				// v4.0.1 修复：具体贮藏项补回右键菜单（WPF 原版行为）。
+				// 单选：Apply.../Rename.../Delete...；多选：Delete N Stashes...
+				if (source.All((SidebarItem x) => x is StashSidebarItem))
+				{
+					StashRevision[] stashes = source.CompactMap((SidebarItem x) => (x as StashSidebarItem)?.Stash);
+					SidebarTreeView.ContextMenu.SetItems(CreateStashContextMenuItems(repositoryUserControl, stashes));
+				}
+				else
+				{
+					return false;
+				}
 			}
 			else if (sidebarItem is RemoteSidebarItem remoteSidebarItem)
 			{

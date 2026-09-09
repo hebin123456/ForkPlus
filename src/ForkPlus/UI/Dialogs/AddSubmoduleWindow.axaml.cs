@@ -14,6 +14,7 @@ using ForkPlus.Services;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -142,6 +143,40 @@ namespace ForkPlus.UI.Dialogs
 			}
 			UpdateSubmitButton();
 			RefreshCommandPreview();
+		}
+
+		private void BrowseButton_Click(object sender, RoutedEventArgs e)
+		{
+			// v4.0.1 修复：补上选择文件夹按钮。子模块路径是仓库内相对路径，
+			// 因此初始目录取当前输入路径的绝对形式（存在时），否则落在仓库根目录；
+			// 选择完成后把绝对路径换算回相对路径再回填。
+			string initialDirectory = _gitModule.Path;
+			try
+			{
+				string currentPath = _gitModule.MakePath(PathTextBox.Text.Trim());
+				if (Directory.Exists(currentPath))
+				{
+					initialDirectory = currentPath;
+				}
+			}
+			catch
+			{
+			}
+			if (OpenDialog.SelectDirectory(this, "Select location", initialDirectory, out var directoryPath))
+			{
+				string relativePath;
+				try
+				{
+					relativePath = Path.GetRelativePath(_gitModule.Path, directoryPath);
+				}
+				catch (ArgumentException)
+				{
+					// 跨盘符等无法计算相对路径的场景，退回直接使用所选目录名
+					relativePath = PathHelper.GetReadableFileName(directoryPath);
+				}
+				PathTextBox.Text = PathHelper.NormalizeUnix(relativePath);
+				PathTextBox.CaretIndex = PathTextBox.Text.Length;
+			}
 		}
 
 		private void RepositoryUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)

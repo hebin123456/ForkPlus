@@ -845,25 +845,25 @@ namespace ForkPlus.UI.UserControls
 			if (!isSubmodule)
 			{
 				yield return new Separator();
-				bool canIgnore = selectedFile.Path != ".gitignore" && selectedFile.Path != ".gitattributes";
+				// v4.0.1 修复：多选时 canIgnore 检查全部选中项，忽略菜单不再只反映第一个文件的信息
+				bool canIgnore = selectedFiles.Length > 0 && !selectedFiles.ContainsItem((ChangedFile x) => x.Path == ".gitignore" || x.Path == ".gitattributes");
 				MenuItem ignoreMenuItem = Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem(null, canIgnore);
 				ignoreMenuItem.Name = "Ignore";
 				ignoreMenuItem.IsEnabled = canIgnore;
 				if (canIgnore)
 				{
-					string fileName = Path.GetFileName(selectedFile.Path);
-					if (selectedFile.IsDirectory)
+					if (multipleFilesSelected)
 					{
-						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore all files in '" + fileName + "'...", delegate
+						// v4.0.1 修复：多选场景生成覆盖全部选中项的合并入口。
+						// IgnoreFilesGitCommand 的 pattern 支持按 \n 分隔的多行模式，
+						// 一条多行 pattern 即可忽略所有选中的文件/文件夹；
+						// Custom Pattern... 预填全部路径供用户编辑确认。
+						string multiPattern = string.Join("\n", selectedFiles.Map((ChangedFile x) => PathHelper.NormalizeUnix(x.Path)));
+						int directoryCount = selectedFiles.Filter((ChangedFile x) => x.IsDirectory).Count;
+						string multiHeader = ((directoryCount == 0) ? "Ignore {0} Files" : ((directoryCount == selectedFiles.Length) ? "Ignore {0} Folders" : "Ignore {0} Items"));
+						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItemFormat(multiHeader, new object[] { selectedFiles.Length }, delegate
 						{
-							Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, PathHelper.NormalizeUnix(selectedFile.Path));
-						}));
-					}
-					else
-					{
-						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore '" + fileName + "'", delegate
-						{
-							string pattern = PathHelper.NormalizeUnix(selectedFile.Path).Replace("[", "\\[").Replace("#", "\\#");
+							string pattern = string.Join("\n", selectedFiles.Map((ChangedFile x) => PathHelper.NormalizeUnix(x.Path).Replace("[", "\\[").Replace("#", "\\#")));
 							GitCommandResult gitCommandResult = new IgnoreFilesGitCommand().Execute(GitModule, pattern, null);
 							RepositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
 							if (!gitCommandResult.Succeeded)
@@ -871,17 +871,46 @@ namespace ForkPlus.UI.UserControls
 								new ErrorWindow(RepositoryUserControl, gitCommandResult.Error).ShowDialog();
 							}
 						}));
-						string extension = Path.GetExtension(selectedFile.Path);
-						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore All " + extension + " Files...", delegate
+						ignoreMenuItem.Items.Add(new Separator());
+						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Custom Pattern...", delegate
 						{
-							Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, "*" + extension);
+							Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, multiPattern);
 						}));
 					}
-					ignoreMenuItem.Items.Add(new Separator());
-					ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Custom Pattern...", delegate
+					else
 					{
-						Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, PathHelper.NormalizeUnix(selectedFile.Path));
-					}));
+						string fileName = Path.GetFileName(selectedFile.Path);
+						if (selectedFile.IsDirectory)
+						{
+							ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore all files in '" + fileName + "'...", delegate
+							{
+								Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, PathHelper.NormalizeUnix(selectedFile.Path));
+							}));
+						}
+						else
+						{
+							ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore '" + fileName + "'", delegate
+							{
+								string pattern = PathHelper.NormalizeUnix(selectedFile.Path).Replace("[", "\\[").Replace("#", "\\#");
+								GitCommandResult gitCommandResult = new IgnoreFilesGitCommand().Execute(GitModule, pattern, null);
+								RepositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
+								if (!gitCommandResult.Succeeded)
+								{
+									new ErrorWindow(RepositoryUserControl, gitCommandResult.Error).ShowDialog();
+								}
+							}));
+							string extension = Path.GetExtension(selectedFile.Path);
+							ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Ignore All " + extension + " Files...", delegate
+							{
+								Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, "*" + extension);
+							}));
+						}
+						ignoreMenuItem.Items.Add(new Separator());
+						ignoreMenuItem.Items.Add(Commands.ShowAddGitIgnorePatternWindowCommand.CreateMenuItem("Custom Pattern...", delegate
+						{
+							Commands.ShowAddGitIgnorePatternWindowCommand.Execute(RepositoryUserControl, GitModule, PathHelper.NormalizeUnix(selectedFile.Path));
+						}));
+					}
 				}
 				yield return ignoreMenuItem;
 				RepositoryData repositoryData = RepositoryUserControl.RepositoryData;
