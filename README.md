@@ -12,7 +12,7 @@
 
 ## 主要特性
 
-- **跨平台**：基于 Avalonia 12 的跨平台 UI 层，CI 同时产出 Windows x64 / Linux x64 / macOS arm64 三平台构建，产物为自包含（self-contained）发布，无需安装 .NET 运行时
+- **跨平台**：基于 Avalonia 12 的跨平台 UI 层，CI 同时产出 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 四平台构建，产物为自包含（self-contained）发布，无需安装 .NET 运行时
 - **多语言支持**：内置英语、简体中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 种语言，并支持通过 JSON 文件扩展更多语言
 - **多主题皮肤**：内置 12 套预设皮肤（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/绿色浅色深色），并支持用户自定义颜色覆盖，即时生效
 - **git mm 工作流**：内置 `git mm` 子命令，提供精益分支（Lean Branching）工作流，统一管理多子仓的变更与同步
@@ -78,11 +78,12 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 |------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so`（下载 Biturbo release 的 `libbiturbo-arm64.so` 资产后重命名） |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 具体机制（见 [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)）：
 
-- `RestoreBiturbo` target（`BeforeTargets=Build`）：检测到当前平台的 native 库缺失时自动下载（Windows 走 PowerShell，Linux/macOS 走 bash + curl 并按 `uname -s` 选择 `.so` / `.dylib`，均带重试）
+- `RestoreBiturbo` target（`BeforeTargets=Build`）：检测到当前平台的 native 库缺失时自动下载（Windows 走 PowerShell，Linux/macOS 走 bash + curl 并按 `uname -s` 选择 `.so` / `.dylib`、Linux 再按 `uname -m` 分流 aarch64，均带重试）
 - `CopyHelperExecutables` / `PublishHelperExecutables` target（`AfterTargets=Build` / `Publish`）：将 native 库与 AskPass/RI 子进程产物拷贝到 Build / Publish 输出目录
 - `.gitignore` 已忽略 `third_party/` 下这些文件
 
@@ -93,8 +94,8 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 [tokei](https://github.com/XAMPPRocky/tokei)（MIT 协议）用于统计面板的"代码行数"功能。构建期从 [hebin123456/tokei](https://github.com/hebin123456/tokei) 仓库的最新 Release 拉取**预编译二进制**，不再需要本地 Rust 工具链：
 
 - Windows x64 → 裸 exe，存为 `third_party/tokei.exe`
-- Linux x64 / macOS → tar.gz（内含裸 `tokei` 二进制），解压存为 `third_party/tokei`
-- macOS 资产为 x86_64，Apple Silicon 经 Rosetta 2 运行
+- Linux x64 / Linux arm64 / macOS → tar.gz（内含裸 `tokei` 二进制），解压存为 `third_party/tokei`
+- Linux arm64 使用 `tokei-aarch64-unknown-linux-gnu.tar.gz` 资产；macOS 资产为 x86_64，Apple Silicon 经 Rosetta 2 运行
 
 机制与 biturbo 相同：`RestoreTokei` target（`BeforeTargets=Build`）自动拉取，CI 显式下载并校验，`.gitignore` 忽略产物。
 
@@ -109,12 +110,13 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 
 ### 持续集成
 
-项目配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 标签或手动触发时，在三平台并行构建并上传产物，同时在 Linux runner 上运行全量单元与 E2E 测试，全部通过后自动发布 Release（三平台 zip 附件）：
+项目配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 标签或手动触发时，在四平台并行构建并上传产物，同时在 Linux runner 上运行全量单元与 E2E 测试，全部通过后自动发布 Release（四平台 zip 附件）：
 
 | 矩阵 | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm（原生 ARM64 runner，公开仓库免费） | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 产物为 **self-contained publish**（自带 .NET 10 运行时，目标机无需安装任何框架），包含主程序、AskPass/RI 子进程（同样自包含，git 凭证输入与交互式变基链路在无运行时环境可用）、对应平台的 biturbo native 库、tokei 与语言文件（linux-x64 约 125MB）。发布版本的 zip 附件见 [Releases 页面](https://github.com/hebin123456/ForkPlus/releases)；未打 tag 的手动构建产物可在仓库 [Actions](https://github.com/hebin123456/ForkPlus/actions) 页面的对应运行中下载（Artifacts，保留 14 天）。

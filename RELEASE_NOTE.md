@@ -1,6 +1,26 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.2
+
+### 新增 Linux ARM64（aarch64）平台
+
+- **第四个平台**：构建矩阵从三平台扩展为四平台（windows-x64 / linux-x64 / linux-arm64 / macos-arm64），Linux ARM64 在 GitHub 原生 ARM64 runner（`ubuntu-22.04-arm`，公开仓库免费）上原生构建发布，不做 x86_64→aarch64 交叉。产物为 self-contained publish（自带 .NET 10 运行时），树莓派 4/5、ARM 服务器、Apple Silicon 虚拟机（UTM/Virtualizor）等 ARM64 Linux 目标机解压即用。
+- **native 依赖链路全面适配 aarch64**：
+  - **biturbo**：消费 [Biturbo v1.1.3](https://github.com/hebin123456/Biturbo/releases/tag/v1.1.3) 新增的 `libbiturbo-arm64.so` release 资产（落地重命名为 `libbiturbo.so`，运行时 DllImport 库名不变）。该资产依赖 Biturbo v1.1.3 的 rust-lld 链接修复（rustc 注入的 anonymous 版本脚本与 `biturbo.exports.map` 在 GNU ld 下冲突，aarch64 默认 GNU ld，v1.1.1 已知限制自此解除）。
+  - **tokei**：消费 [tokei v14.0.1](https://github.com/hebin123456/tokei/releases/tag/v14.0.1) 的 `tokei-aarch64-unknown-linux-gnu.tar.gz` 资产。
+  - `RestoreBiturbo` / `RestoreTokei` target（Unix 腿）在构建机 `uname -m` 为 `aarch64` 时自动分流对应资产，本地在 ARM64 Linux 上构建同样开箱即用。
+- **SkiaSharp / HarfBuzzSharp**：linux-arm64 的 native 运行时包按 RID 自动解析（Avalonia 12 / SkiaSharp 3 均原生支持），无需额外配置。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.2-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.2-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.2-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.2-macos-arm64.zip` |
+
 ## v4.0.0
 
 ### 里程碑：跨平台版本重构（WPF → Avalonia 12）

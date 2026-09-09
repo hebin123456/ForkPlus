@@ -1,4 +1,4 @@
-# ForkPlus 三平台自动构建与发布
+# ForkPlus 四平台自动构建与发布
 #
 # 触发：push v* 标签 / 手动（workflow_dispatch，仅构建+测试不发 Release）
 # 产物：self-contained publish 目录（自带 .NET 10 运行时，目标机无需安装任何框架）。
@@ -6,26 +6,30 @@
 #       （helper 由 git 以独立进程拉起，漏掉它们则无运行时机器上凭证输入/交互式变基
 #       直接挂）。含各平台 biturbo native 库（构建期由 workflow 显式 curl +
 #       ForkPlus.csproj 的 RestoreBiturbo Target 兜底，从 hebin123456/Biturbo latest release 拉取：
-#       win→biturbo.dll / linux→libbiturbo.so / macos→libbiturbo.dylib）+ tokei 代码统计工具
-#       （hebin123456/tokei latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压）+
+#       win→biturbo.dll / linux→libbiturbo.so（arm64 资产名为 libbiturbo-arm64.so）
+#       / macos→libbiturbo.dylib）+ tokei 代码统计工具
+#       （hebin123456/tokei latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压，
+#       linux-arm64 用 tokei-aarch64-unknown-linux-gnu.tar.gz）+
 #       OxyPlot.Avalonia 图表库 nupkg（hebin123456/oxyplot-avalonia fork latest release，
 #       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）。
 #       linux-x64 自包含实测约 125M。
 #
-# 发布链：build（三平台矩阵）+ test（ubuntu 全量单测/E2E）全绿 → release job 下载
-#       三平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
+# 发布链：build（四平台矩阵）+ test（ubuntu 全量单测/E2E）全绿 → release job 下载
+#       四平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
 #       提取当前版本章节作为正文，softprops/action-gh-release 发布（generate_release_notes
 #       追加自动变更清单与 Full Changelog 对比链接）。未打 tag 的手动运行只出 Artifacts。
 #
 # 平台对应关系（与 Biturbo release 资产架构一致）：
-#   windows-latest → x64（biturbo.dll = x86_64）
-#   ubuntu-latest  → x64（libbiturbo.so = x86_64）
-#   macos-latest   → arm64（libbiturbo.dylib = arm64，Apple Silicon）
+#   windows-latest   → x64（biturbo.dll = x86_64）
+#   ubuntu-latest    → x64（libbiturbo.so = x86_64）
+#   ubuntu-22.04-arm → arm64（libbiturbo-arm64.so = aarch64，GitHub 原生 ARM64 runner，
+#                      公开仓库免费；glibc 2.35 与 linux-x64 基线一致）
+#   macos-latest     → arm64（libbiturbo.dylib = arm64，Apple Silicon）
 #
 # 注意：UI 冒烟测试已归一到 ForkPlus.Tests 的 Avalonia.Headless（跨平台，随单测一起跑），
 #       原 Windows-only FlaUI 套件 ForkPlus.AutomationTests 已删除（2026-09-02）。
 #       build job 只构建主工程 ForkPlus.csproj（ProjectReference 会带出 AskPass/RI）；
-#       全量单元 + E2E 测试在独立 test job（ubuntu）运行。
+#       全量单元 + E2E 测试在独立 test job（ubuntu x64）运行。
 
 name: build
 
@@ -55,6 +59,13 @@ jobs:
             name: linux-x64
             rid: linux-x64
             platformtarget: x64
+          # Linux ARM64：GitHub 原生 ARM64 runner（公开仓库免费），原生 dotnet publish，
+          # 不做交叉发布（-r linux-arm64 在 x64 上交叉也可行，原生构建更接近真实目标机，
+          # 且 SkiaSharp/HarfBuzzSharp 的 linux-arm64 native 包会按 RID 自动解析）。
+          - os: ubuntu-22.04-arm
+            name: linux-arm64
+            rid: linux-arm64
+            platformtarget: arm64
           - os: macos-latest
             name: macos-arm64
             rid: osx-arm64
@@ -102,33 +113,37 @@ jobs:
       # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal
       # verbosity 下 Exec stdout 也不进日志，无从诊断），改为 workflow 显式 curl：
       # 日志可见、重试明确、每平台文件名写死，下载后 csproj 的 Exists 守卫直接短路。
+      # asset 是 Biturbo release 里的资产名（Linux ARM64 为 libbiturbo-arm64.so），
+      # out 是 third_party/ 落地名——运行时 DllImport 的库名固定是 libbiturbo.so。
       - name: Download biturbo native library
         shell: bash
         run: |
           mkdir -p third_party
           base="https://github.com/hebin123456/Biturbo/releases/latest/download"
           case "${{ matrix.name }}" in
-            windows-x64) native=biturbo.dll ;;
-            linux-x64)   native=libbiturbo.so ;;
-            macos-arm64) native=libbiturbo.dylib ;;
+            windows-x64) asset=biturbo.dll;         out=biturbo.dll ;;
+            linux-x64)   asset=libbiturbo.so;       out=libbiturbo.so ;;
+            linux-arm64) asset=libbiturbo-arm64.so; out=libbiturbo.so ;;
+            macos-arm64) asset=libbiturbo.dylib;    out=libbiturbo.dylib ;;
           esac
-          echo "Downloading $native ..."
+          echo "Downloading $asset -> third_party/$out ..."
           ok=0
           for i in 1 2 3 4 5; do
-            if curl -fsSL --retry 3 "$base/$native" -o "third_party/$native"; then ok=1; break; fi
+            if curl -fsSL --retry 3 "$base/$asset" -o "third_party/$out"; then ok=1; break; fi
             echo "attempt $i failed, retrying in $((i*5))s..."
             sleep $((i*5))
           done
-          [ "$ok" = "1" ] || { echo "FAILED to download $native after 5 attempts"; exit 1; }
-          ls -la "third_party/$native"
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          ls -la "third_party/$out"
           # 非空且 >1MB 校验（biturbo 约 2-3MB；curl 失败残留 0 字节文件的情况要拦住）
-          size=$(wc -c < "third_party/$native")
+          size=$(wc -c < "third_party/$out")
           [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
       # tokei 与 biturbo 同模式显式下载（不走 csproj 的 RestoreTokei Exec，
-      # 规避 macOS runner 上 MSBuild Exec 行为差异）。三平台资产：
+      # 规避 macOS runner 上 MSBuild Exec 行为差异）。四平台资产：
       #   windows → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
-      #   linux   → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
+      #   linux-x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
+      #   linux-arm64 → tokei-aarch64-unknown-linux-gnu.tar.gz（同上，aarch64 资产）
       #   macos   → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无 aarch64-apple-darwin
       #             资产，arm64 目标机经 Rosetta 2 运行——CI 只打包不执行，不受影响）
       - name: Download tokei
@@ -139,6 +154,7 @@ jobs:
           case "${{ matrix.name }}" in
             windows-x64) asset="tokei-x86_64-pc-windows-msvc.exe"; out="third_party/tokei.exe"; bare=1 ;;
             linux-x64)   asset="tokei-x86_64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
+            linux-arm64) asset="tokei-aarch64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
             macos-arm64) asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
           esac
           echo "Downloading $asset ..."
@@ -211,6 +227,7 @@ jobs:
           case "${{ matrix.name }}" in
             windows-x64) native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
             linux-x64)   native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
+            linux-arm64) native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
             macos-arm64) native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
           esac
           [ -f "$native" ] || { echo "MISSING native: $native"; missing=1; }
@@ -354,7 +371,7 @@ jobs:
           set -e
           tag="${GITHUB_REF_NAME#v}"
           cd artifacts
-          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-macos-arm64; do
+          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-linux-arm64 ForkPlus-macos-arm64; do
             [ -d "$name" ] || { echo "MISSING artifact: $name"; exit 1; }
             zip -qr "ForkPlus-${tag}-${name#ForkPlus-}.zip" "$name"
             ls -la "ForkPlus-${tag}-${name#ForkPlus-}.zip"

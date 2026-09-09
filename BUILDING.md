@@ -78,10 +78,11 @@ dotnet test ForkPlus.sln --nologo
 与 CI 产物一致的自包含发布（自带 .NET 10 运行时，目标机无需安装任何框架）：
 
 ```bash
-# 平台 RID：win-x64 / linux-x64 / osx-arm64
+# 平台 RID：win-x64 / linux-x64 / linux-arm64 / osx-arm64
 RID=linux-x64
 
 # 主程序（ProjectReference 自动带出 AskPass/RI 的构建，但发布需逐工程自包含到同一目录）
+# linux-arm64 时 PlatformTarget 传 arm64（见下方说明）；x64 平台传 x64
 dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -r $RID --self-contained true \
   -p:PlatformTarget=x64 -p:DebugType=none -p:AllowedReferenceRelatedFileExtensions=none \
   -o publish/$RID --nologo
@@ -97,7 +98,7 @@ done
 
 注意：
 - `-r` 不可省略：不带 RID 时 SDK 会把 NuGet 包里全部 18 个 RID 的运行时文件复制进产物，Linux 包从约 125MB 膨胀到 585MB；
-- osx-arm64 时 `PlatformTarget` 传 `arm64`（csproj 固定 x64 会与 arm64 RID 冲突，NETSDK1032）；
+- osx-arm64 / linux-arm64 时 `PlatformTarget` 传 `arm64`（csproj 固定 x64 会与 arm64 RID 冲突，NETSDK1032）；linux-arm64 需在原生 ARM64 机器（或 GitHub 原生 ARM64 runner）上发布，或自行配置交叉工具链；
 - helper 的发布顺序必须在主程序之后（主工程的 Publish target 会把框架依赖版 helper 拷进输出目录，自包含发布随后覆盖之）。
 
 ## 常见问题

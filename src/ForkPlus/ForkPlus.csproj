@@ -117,33 +117,36 @@
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
-       Biturbo 仓库最新 release 拉取。Biturbo v1.1.0 起发布多平台 asset：
-         Windows → biturbo.dll
-         Linux   → libbiturbo.so
-         macOS   → libbiturbo.dylib
-       本 target 按 $(OS) 选择对应 asset，缺失时下载到 third_party/；已存在则跳过。
-       CI 每次全新 checkout 都会拉最新版。-->
+       Biturbo 仓库最新 release 拉取。Biturbo v1.1.3 起发布四平台 asset：
+         Windows        → biturbo.dll
+         Linux x64      → libbiturbo.so
+         Linux ARM64    → libbiturbo-arm64.so（落地重命名为 libbiturbo.so，运行时库名不变）
+         macOS          → libbiturbo.dylib
+       本 target 按 $(OS)（Unix 上再按 uname -m）选择对应 asset，缺失时下载到 third_party/；
+       已存在则跳过。CI 每次全新 checkout 都会拉最新版。-->
   <Target Name="RestoreBiturbo" BeforeTargets="Build">
     <PropertyGroup>
       <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
     </PropertyGroup>
     <!-- Windows: PowerShell 拉取 biturbo.dll -->
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
-    <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib。
+    <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib；Linux 再按 uname -m
+         分流 aarch64（资产名 libbiturbo-arm64.so，落地为 libbiturbo.so）。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
          $(BiturboBaseUrl) 仍由 MSBuild 正常展开。
          带 3 次重试（指数退避）——CI 上 GitHub release 下载偶发连接中断（与 RestoreTokei 同模式）。-->
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; elif [ &quot;`uname -m`&quot; = &quot;aarch64&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo-arm64.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
   <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
-       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。v14.0.1 release 覆盖三平台：
+       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。v14.0.1 release 覆盖四平台：
          Windows x64 → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 third_party/tokei.exe）
          Linux   x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 third_party/tokei）
+         Linux ARM64 → tokei-aarch64-unknown-linux-gnu.tar.gz（同上，aarch64 资产）
          macOS       → tokei-x86_64-apple-darwin.tar.gz（同上；arm64 机器经 Rosetta 2 运行，
                        release 暂无 aarch64-apple-darwin 资产——如后续补上可切原生 arm64）
        Migration note：原 target 只在 Windows_NT 下生效（Condition 卡死），Linux/macOS 构建不拉
-       tokei，统计页功能直接不可用。本 target 按 $(OS) 分派，缺失时下载；已存在则跳过。
-       CI 每次全新 checkout 都会拉最新版。带重试（3 次，指数退避）以容忍 GitHub release
+       tokei，统计页功能直接不可用。本 target 按 $(OS)（Unix 上再按 uname -m）分派，缺失时下载；
+       已存在则跳过。CI 每次全新 checkout 都会拉最新版。带重试（3 次，指数退避）以容忍 GitHub release
        下载偶发连接中断。-->
   <Target Name="RestoreTokei" BeforeTargets="Build">
     <PropertyGroup>
@@ -152,10 +155,11 @@
     <!-- Windows: PowerShell 拉取裸 exe 存为 tokei.exe -->
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
     <!-- Unix (Linux/macOS): bash + curl 下载 tar.gz，解压出裸 tokei 二进制（tar 保留可执行位，
-         再 chmod +x 兜底），存为 third_party/tokei（无扩展名）。按 uname -s 选 darwin/linux 资产。
+         再 chmod +x 兜底），存为 third_party/tokei（无扩展名）。按 uname -s 选 darwin/linux 资产，
+         Linux 再按 uname -m 分流 aarch64（tokei-aarch64-unknown-linux-gnu.tar.gz）。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
          $(TokeiBaseUrl) 仍由 MSBuild 正常展开（与 RestoreBiturbo 同模式）。-->
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmp=`mktemp -d`; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$tmp/tokei.tar.gz&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; tar -xzf &quot;$tmp/tokei.tar.gz&quot; -C &quot;$tmp&quot;; mv &quot;$tmp/tokei&quot; ../../third_party/tokei; chmod +x ../../third_party/tokei; rm -rf &quot;$tmp&quot;; echo &quot;Restored ../../third_party/tokei from tokei latest release ($asset)&quot;'" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; elif [ &quot;`uname -m`&quot; = &quot;aarch64&quot; ]; then asset=&quot;tokei-aarch64-unknown-linux-gnu.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmp=`mktemp -d`; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$tmp/tokei.tar.gz&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; tar -xzf &quot;$tmp/tokei.tar.gz&quot; -C &quot;$tmp&quot;; mv &quot;$tmp/tokei&quot; ../../third_party/tokei; chmod +x ../../third_party/tokei; rm -rf &quot;$tmp&quot;; echo &quot;Restored ../../third_party/tokei from tokei latest release ($asset)&quot;'" />
   </Target>
   <!-- OxyPlot.Avalonia（MIT 协议，fork：hebin123456/oxyplot-avalonia）从 fork 仓库最新 release 拉取
        预编译 nupkg 到本地 NuGet 源 third_party/nuget/（nuget.config 已注册该目录源）。与 tokei /
