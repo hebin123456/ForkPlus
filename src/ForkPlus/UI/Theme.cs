@@ -264,22 +264,19 @@ namespace ForkPlus.UI
 		{
 			Log.Info("Refresh Theme");
 			ResourceDictionary resourceDictionary = new ResourceDictionary();
-			resourceDictionary.Add("SystemAccentBrush", GetSystemBrush(SystemColorType.Accent2, AccentBrush));
+			// 修复（2026-09-09，"主题还有一圈颜色不对"）：SystemAccentBrush 此前在 Windows 10+
+			// 读取系统 DWM 着色色（HKCU\...\DWM\ColorizationColor）——IsDefault（继续）按钮描边、
+			// Tab 指示条、进度条等所有 {DynamicResource SystemAccentBrush} 引用点会浮出与当前
+			// 主题不符的系统色"一圈"；非 Windows 平台则一直回退主题 AccentBrush。跨平台统一：
+			// SystemAccentBrush 一律取当前主题 AccentBrush（各 Colors.*.axaml 的 AccentColor），
+			// 保证任意主题下强调色与主题配色一致（与 App.RefreshWindowBorderBrush 同一策略）。
+			resourceDictionary.Add("SystemAccentBrush", AccentBrush);
 			Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
 			if (_systemAccentBrushes != null)
 			{
 				Application.Current.Resources.MergedDictionaries.Remove(_systemAccentBrushes);
 			}
 			_systemAccentBrushes = resourceDictionary;
-		}
-
-		private static Brush GetSystemBrush(SystemColorType colorType, Brush fallback)
-		{
-			if (App.OSVersion.Major < new Version(10, 0).Major)
-			{
-				return fallback;
-			}
-			return SystemThemeHelper.GetSystemBrush(colorType) ?? fallback;
 		}
 	}
 }

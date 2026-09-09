@@ -164,9 +164,19 @@
           </DockPanel>
         </Border>
 
-        <!-- RichTextBox 输出区 -->
+        <!-- 命令输出区（2026-09-09 重构，"git mm 输出弹窗要有 scrollview + 超链接可点击"）：
+             原 TextBox 方案两个缺陷——(1) 应用自定义 TextBox 主题模板内只有 TextPresenter、
+             没有 ScrollViewer（无 PART_ContentHost），设在 TextBox 上的滚动附加属性无处生效，
+             输出超高直接被裁剪（"内容都显示不完整"）；(2) TextBox 纯文本，无法承载可点击
+             超链接。现改为显式 ScrollViewer + SelectableTextBlock.Inlines 富文本：普通文本
+             Run（保留 ANSI 颜色分段），URL 渲染为 InlineUIContainer 内的链接文本（主题
+             强调色 + 下划线 + 手型光标 + 点击打开，悬停加亮），行尾 LineBreak；
+             SelectableTextBlock 保留原 TextBox 的文本选择/复制能力，NoWrap + 横向滚动
+             保留长命令行不折行的终端语义。 -->
         <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
-          <TextBox Text="" BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+          <ScrollViewer Background="{DynamicResource CodeEditorBackground}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="OutputScrollViewer">
+            <SelectableTextBlock FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Margin="6,4" TextWrapping="NoWrap" x:Name="OutputTextBlock" />
+          </ScrollViewer>
         </Border>
       </Grid>
     </Border>

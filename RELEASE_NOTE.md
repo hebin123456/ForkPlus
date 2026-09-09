@@ -21,6 +21,11 @@
 | Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.2-linux-arm64.zip` |
 | macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.2-macos-arm64.zip` |
 
+### 修复
+
+- **彩色主题下弹窗按钮/Tab 指示条等浮出一圈系统默认蓝**：v4.0.1 已修窗口边框刷的同一类问题，但还有一处漏网——`SystemAccentBrush`（默认按钮"继续/确定"的描边、Tab 指示条、进度条、超链接等全部强调色引用点的基础资源）在 Windows 上仍读取系统 DWM 着色色（注册表 `HKCU\...\DWM\ColorizationColor`，常见为 #0078D4 系统蓝），非 Windows 平台则回退主题色——同一主题跨平台表现不一致，Windows 上 Purple / Green 等彩色主题的弹窗里"继续"按钮一圈仍是系统蓝。跨平台统一：`SystemAccentBrush` 一律取当前主题的 AccentColor（与窗口边框刷同一策略），任意主题、任意平台下强调色与主题配色完全一致；新增 SystemAccentBrushThemeConsistencyTests 回归测试（多主题遍历断言资源值 = 主题 AccentColor + PurpleDark 下默认按钮描边 = #A855F7）。
+- **git mm 命令输出弹窗内容被裁剪、超链接不可点击**：迁移时输出区降级为 TextBox，而应用自定义 TextBox 主题模板内只有 TextPresenter、没有 ScrollViewer，长输出纵向直接被裁剪显示不完整。重构为显式 ScrollViewer + SelectableTextBlock 富文本（保留 ANSI 颜色分段与文本选择/复制能力，NoWrap + 横向滚动保留终端语义）：纵向/横向均可滚动；输出中的 URL 渲染为可点击超链接（主题强调色 + 下划线 + 手型光标，悬停加亮，点击即打开系统浏览器，点按不误触文本选择）。
+
 ## v4.0.0
 
 ### 里程碑：跨平台版本重构（WPF → Avalonia 12）
