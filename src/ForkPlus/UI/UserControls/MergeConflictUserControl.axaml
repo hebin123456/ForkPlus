@@ -354,7 +354,7 @@
         <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResolveButton_Click" x:Name="ResolveButton" />
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
           <controls:AiActionButton ActionVerb="Resolve" Margin="0,0,6,0" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts in this file" x:Name="AiResolveButton" />
-          <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" Click="ResolveInExternalMergerButton_Click" x:Name="ResolveInExternalMergerButton" Theme="{DynamicResource CommitButtonVisibleDropdownStyle}" />
+          <Button DockPanel.Dock="Right" Padding="10,0,10,0" Margin="0" BorderThickness="1,1,1,1" Click="ResolveInExternalMergerButton_Click" x:Name="ResolveInExternalMergerButton" Theme="{DynamicResource CommitButtonVisibleDropdownStyle}" />
           <controls:DropDownButton Height="24" Margin="0" x:Name="ResolveInExternalMergerDropdownButton" Theme="{DynamicResource CommitDropDownButtonStyle}">
             <controls:DropDownButton.ContextMenu>
               <ContextMenu Opened="ResolveInExternalMergerDropdownButtonContextMenu_Opened" />

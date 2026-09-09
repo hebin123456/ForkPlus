@@ -305,9 +305,10 @@ jobs:
           size=$(wc -c < "$out")
           [ "$size" -gt 10000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
-      # E2E 测试依赖新版 git：变基预检走 `git replay`（2.44+ 引入）、交互式变基带
-      # `--update-refs`（2.38+ 引入）。ubuntu-latest 自带 git 不一定够新（24.04 为 2.43），
-      # 从 git-core PPA 安装最新版保证测试环境一致（本地同款方案，见 BUILDING.md）。
+      # E2E 测试的变基链路（v4.0.5 起按 git 版本能力降级）：≥2.44 走 git replay 预检 +
+      # --update-refs 原生路径；老版本自动降级 merge-tree / 省略选项。ubuntu-latest 自带
+      # git 不够新（24.04 为 2.43），仍从 git-core PPA 装最新版——保证 CI 覆盖 replay /
+      # update-refs 原生路径（降级路径由老 git 环境覆盖，如沙箱 2.34）。
       - name: Install modern git (>= 2.44)
         shell: bash
         run: |

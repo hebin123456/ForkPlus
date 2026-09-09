@@ -18,7 +18,13 @@ namespace ForkPlus.UI.WpfCompat
             Action<TOwner, AvaloniaPropertyChangedEventArgs> changed = null)
             where TOwner : AvaloniaObject
         {
+            // v4.0.5：AVP1001（Register 应在静态构造/静态初始化器中调用）在此抑制——
+            // 本封装层的全部调用点都是 WPF 风格的 static readonly 字段初始化器 / 静态构造函数
+            // （CustomWindow / GraphCellView / AiActionButton / ContributionHeatmap 等，已逐一核对），
+            // 语义上满足告警要求（类型加载期一次性注册），分析器只是无法跨方法验证封装层调用点。
+#pragma warning disable AVP1001
             var property = AvaloniaProperty.Register<TOwner, TValue>(name, defaultValue);
+#pragma warning restore AVP1001
             if (changed != null)
             {
                 // Avalonia 12 的 AvaloniaProperty<T>.Changed 是 IObservable<AvaloniaPropertyChangedEventArgs<T>>，

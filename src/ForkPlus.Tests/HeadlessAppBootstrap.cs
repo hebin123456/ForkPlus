@@ -376,9 +376,15 @@ namespace ForkPlus.Tests
 						// CaptureRenderedFrame 恒 null，任何像素级回归断言都无从谈起。切换到真 Skia
 						// 软件渲染（Tests 项目经 Avalonia.Desktop 传递引用 Skia）后 RTB 可像素读回
 						// （Bitmap.CopyPixels(ILockedFramebuffer)）。全套件 3958 用例实证切换后仍全绿。
+						// With(FontSetup.CreateFontManagerOptions())（2026-09-09，v4.0.5 字体内置）：
+						// 与生产 Program.BuildAvaloniaApp 共用同一份全局字体回退配置（内置
+						// Noto Sans CJK SC 子集）。生产已启用该回退，测试环境保持一致才能
+						// 验证字体行为；内嵌字体与本机系统 Noto CJK 同源同字形，覆盖区间内
+						// 的文本度量不变，既有像素级回归不受影响。
 						AppBuilder.Configure<HeadlessRealApp>()
 							.UseSkia()
 							.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+							.With(global::ForkPlus.FontSetup.CreateFontManagerOptions())
 							.SetupWithClassicDesktopLifetime(Array.Empty<string>(), delegate { });
 						// 默认 ShutdownMode.OnLastWindowClose：单个测试关闭唯一窗口会把
 						// Dispatcher 整个 shut down，后续测试的 InvokeAsync 全部
@@ -412,6 +418,15 @@ namespace ForkPlus.Tests
 						// 测试环境一律禁用后台自动 fetch（生产 QuickFetchCommand 另有同名 job
 						// 防重入兜底真实用户场景）。
 						global::ForkPlus.Settings.ForkPlusSettings.Default.FetchRemotesAutomatically = false;
+						// v4.0.5 字体预热（2026-09-09）：内嵌 CJK 回退字体（~25MB OTF × 2 字重）的
+						// 加载解析、字形整形、文本测量管线首次开销一次性发生在启动期——否则落在
+						// 首个 E2E 用例的首次渲染里，慢环境（本沙箱）下视图装配竞态临界后移，
+						// E2e05-10 的 WaitFor 轮询裸 NRE 翻车率上升（对照实验：基线 0 vs 带字体 4-10）。
+						// Measure 即触发 TextLayout → FontManager 回退链解析 → 内嵌字体加载整形；
+						// 文本须含 CJK 字符（拉丁文本不触发回退），两字重各预热一次。
+						var latinCJK = "ForkPlus 字体预热 提交 검색 かな gjpqy";
+						new global::Avalonia.Controls.TextBlock { Text = latinCJK, FontSize = 13 }.Measure(global::Avalonia.Size.Infinity);
+						new global::Avalonia.Controls.TextBlock { Text = latinCJK, FontSize = 13, FontWeight = global::Avalonia.Media.FontWeight.Bold }.Measure(global::Avalonia.Size.Infinity);
 					}
 					catch (Exception e)
 					{

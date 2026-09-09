@@ -113,7 +113,9 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private new bool IsMouseOver
+		// v4.0.5：去掉多余的 new 修饰符（CS0109）——Avalonia 的 IsMouseOver 是 pseudoclass
+		// 而非基类 CLR 属性，基类无可隐藏成员；此私有属性仅供本视图内部 hover 高亮状态机使用。
+		private bool IsMouseOver
 		{
 			get
 			{

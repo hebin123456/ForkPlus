@@ -29,8 +29,14 @@
          CA1416  平台兼容性分析：本工程 TFM 已是 net10.0-windows10.0.19041.0，
                  整个工程只跑 Windows，但 AvalonEdit/OxyPlot/WebView2 等库的 API
                  标注 [SupportedOSPlatform("Windows")]，分析器认为"call site 可达
-                 所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
-    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416;CS0618;CS0619</NoWarn>
+                 所有平台"而触发警告。Windows-only 工程此警告无意义。
+         AVLN3001  XAML 视图缺公共无参构造 → "运行时加载器不可达"。全工程 200 个视图
+                 均经编译期生成的 .g.cs（InitializeComponent）实例化，无任何
+                 RuntimeXamlLoader / LoadDefinition 运行时加载路径（已 grep 确认零引用），
+                 告警承诺的"不可达"不影响任何功能。多数视图构造带必需参数（如
+                 GitHubLoginWindow([Null] Account)），强行补 200 个无参构造反而暴露
+                 绕过初始化的误用入口，故项目级抑制。 -->
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416;CS0618;CS0619;AVLN3001</NoWarn>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <!-- OxyPlot.Avalonia fork 包版本（单点维护）：fork（hebin123456/oxyplot-avalonia）release 产出的
          预编译 nupkg，按 Avalonia 12.1.1 编译（官方 oxyplot-avalonia 停留在 Avalonia 11 且不发二进制；

@@ -36,7 +36,9 @@ namespace ForkPlus.UI.Controls
 
 		public AiActionButton()
 		{
-			Padding = new Thickness(8, 2, 8, 2);
+			// v4.0.5：垂直 Padding 2→0——内嵌 CJK 回退字体生效后 12px 字行高 ≈17.5px，
+			// Height=22（内槽 20px）再扣垂直 4px 只剩 16px，"🤖 AI 提交"类中文文案上下被裁。
+			Padding = new Thickness(8, 0, 8, 0);
 			Height = 22;
 			FontSize = 12;
 			VerticalAlignment = VerticalAlignment.Center;

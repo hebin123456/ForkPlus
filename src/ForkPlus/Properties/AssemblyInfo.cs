@@ -15,13 +15,14 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-09，v4.0.3）：键盘导航选中文件 diff 不刷新、界面重构后
-//   大量对话框/控件国际化丢失、多平台 Release 资产导致更新下载链接错位——三项修复。
+// 版本号说明（2026-09-09，v4.0.5）：ARM 版配置持久化兜底、内置 CJK 字体、
+//   崩溃兜底日志、构建告警清零四项修复。v4.0.4 为愚人节彩蛋版本（404 Not Found，
+//   无构建产物），实际修复内容全部包含在本版。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示
-//   "4.0.3"；程序集标识与文件版本同为 4.0.3（.0）。
-[assembly: AssemblyFileVersion("4.0.3")]
-[assembly: AssemblyInformationalVersion("4.0.3")]
+//   "4.0.5"；程序集标识与文件版本同为 4.0.5（.0）。
+[assembly: AssemblyFileVersion("4.0.5")]
+[assembly: AssemblyInformationalVersion("4.0.5")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("4.0.3.0")]
+[assembly: AssemblyVersion("4.0.5.0")]

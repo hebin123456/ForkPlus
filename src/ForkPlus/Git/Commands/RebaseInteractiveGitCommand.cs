@@ -33,7 +33,14 @@ namespace ForkPlus.Git.Commands
 			{
 				return helperMissing;
 			}
-			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "-c", "core.commentChar=" + Consts.Git.CommentChar, "-c", "rebase.instructionFormat=" + TokenSeparator + "%H", "-c", "rebase.abbreviateCommands=true", "-c", "sequence.editor=" + input.EscapeSpaces().Quotify(), "-c", "core.editor=" + input.EscapeSpaces().Quotify(), "rebase", "-i", "--autosquash", "--update-refs");
+			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "-c", "core.commentChar=" + Consts.Git.CommentChar, "-c", "rebase.instructionFormat=" + TokenSeparator + "%H", "-c", "rebase.abbreviateCommands=true", "-c", "sequence.editor=" + input.EscapeSpaces().Quotify(), "-c", "core.editor=" + input.EscapeSpaces().Quotify(), "rebase", "-i", "--autosquash");
+			// v4.0.5：--update-refs 需 git ≥2.38。老版本（Ubuntu 22.04 的 2.34 等）带上
+			// 会被 git 整条拒收（unknown option），交互式变基全灭。降级为不带——区间内
+			// 旁支 ref 不随动，todo 列表与重放主流程不受影响。
+			if (GitCapabilities.SupportsUpdateRefs())
+			{
+				gitCommand.Add("--update-refs");
+			}
 			if (destination == null)
 			{
 				gitCommand.Add("--root");

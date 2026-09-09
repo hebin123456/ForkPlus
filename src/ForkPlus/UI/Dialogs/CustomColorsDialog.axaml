@@ -35,7 +35,7 @@
                    回写）会把 Reset 刚清掉的自定义项又写回去。 -->
               <TextBox Grid.Column="2" Text="{Binding HexValue, Mode=TwoWay}" Margin="8,0,0,0" VerticalAlignment="Center" Tag="{Binding}" />
               <!-- 重置按钮 -->
-              <Button Grid.Column="3" x:Name="ResetItemBtn" Content="{Binding ResetLabel}" Padding="12,2" Margin="8,0,0,0" Click="ResetItem_Click" Tag="{Binding}" IsEnabled="{Binding IsCustomized}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+              <Button Grid.Column="3" x:Name="ResetItemBtn" Content="{Binding ResetLabel}" Padding="12,0" Margin="8,0,0,0" Click="ResetItem_Click" Tag="{Binding}" IsEnabled="{Binding IsCustomized}" VerticalAlignment="Center" HorizontalAlignment="Left" />
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

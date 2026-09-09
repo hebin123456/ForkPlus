@@ -166,21 +166,50 @@ namespace ForkPlus.Tests
 		}
 
 		/// <summary>在 UI 线程内轮询等待条件成立（后台 JobQueue 完成后经 Dispatcher.Post 回 UI）。
-		/// 模式：Delay（后台线程可继续跑）→ RunJobs（处理 Post 回调）→ 检查条件。</summary>
+		/// 模式：Delay（后台线程可继续跑）→ RunJobs（处理 Post 回调）→ 检查条件。
+		/// v4.0.5：条件求值抛 NullReferenceException / ArgumentNullException（LINQ 对 null
+		/// 集合的 Any/First 抛参数空异常）时视为"未就绪、条件未成立"继续轮询——headless
+		/// 慢环境下视图模板/数据装配晚于轮询开始（E2e05-10/16 实证：字体回退渲染开销让
+		/// 装配临界后移），裸异常炸测试既无描述也无重试机会；超时后由调用方
+		/// Assert.True(msg) 报可定位失败。仅容错这两种"未就绪"表征，其他异常照常抛。</summary>
 		public static bool WaitFor(Func<bool> condition, int timeoutMs = 15000)
 		{
 			var sw = System.Diagnostics.Stopwatch.StartNew();
 			while (sw.ElapsedMilliseconds < timeoutMs)
 			{
 				Dispatcher.UIThread.RunJobs();
-				if (condition())
+				bool satisfied;
+				try
+				{
+					satisfied = condition();
+				}
+				catch (NullReferenceException)
+				{
+					satisfied = false;
+				}
+				catch (ArgumentNullException)
+				{
+					satisfied = false;
+				}
+				if (satisfied)
 				{
 					return true;
 				}
 				System.Threading.Tasks.Task.Delay(50).GetAwaiter().GetResult();
 			}
 			Dispatcher.UIThread.RunJobs();
-			return condition();
+			try
+			{
+				return condition();
+			}
+			catch (NullReferenceException)
+			{
+				return false;
+			}
+			catch (ArgumentNullException)
+			{
+				return false;
+			}
 		}
 	}
 }

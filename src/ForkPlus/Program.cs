@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Media;
 
 namespace ForkPlus;
 
@@ -9,10 +10,11 @@ internal static class Program
     public static void Main(string[] args) => BuildAvaloniaApp()
         .StartWithClassicDesktopLifetime(args);
 
-    // 如需自定义字体/渲染等，请在此扩展 AppBuilder。
+    // 字体/回退配置见 FontSetup（v4.0.5：内置 CJK 字体子集，修复无字体环境的方框问题）。
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
+            .With(FontSetup.CreateFontManagerOptions())
             .LogToTrace();
 }

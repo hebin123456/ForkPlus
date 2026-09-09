@@ -75,7 +75,10 @@ namespace ForkPlus.UI.Dialogs
 				_rebaseContainsLocalBranches = localBranchesInRange.Count > 0;
 				if (_rebaseContainsLocalBranches)
 				{
-					UpdateRefsCheckBox.IsVisible = true;
+					// v4.0.5：--update-refs 需 git ≥2.38，老版本（Ubuntu 22.04 的 2.34 等）
+					// 带上即报错。git 不支持时隐藏开关（区间分支列表仍展示，纯信息提示），
+					// 命令侧同条件兜底，预览与实际执行保持一致。
+					UpdateRefsCheckBox.IsVisible = GitCapabilities.SupportsUpdateRefs();
 					List<string> list = new List<string>(localBranchesInRange.Count);
 					for (int i = 0; i < localBranchesInRange.Count; i++)
 					{
@@ -108,7 +111,9 @@ namespace ForkPlus.UI.Dialogs
 				return null;
 			}
 			var parts = new System.Collections.Generic.List<string> { "git", "rebase" };
-			bool updateRefs = _rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault();
+			// 与 RebaseBranchGitCommand 的能力判定一致：老 git 上开关已隐藏，此处再兜底
+			// 拦截"隐藏前已勾选"的残留状态，保证预览不出现实际不会执行的选项。
+			bool updateRefs = _rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault() && GitCapabilities.SupportsUpdateRefs();
 			bool autostash = AutostashCheckBox.IsChecked.GetValueOrDefault();
 			if (updateRefs)
 			{
@@ -138,7 +143,9 @@ namespace ForkPlus.UI.Dialogs
 			IGitPoint destination = _destination;
 			bool workingDirectoryIsDirty = repositoryStatus.WorkingDirectoryIsDirty();
 			SubmodulesToUpdate submodulesToUpdate = _repositoryUserControl.SubmodulesToUpdate();
-			bool updateRefs = _rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault();
+			// 与预览同源判定（GetCommandPreview）：老 git 不支持 --update-refs 时恒 false，
+			// RebaseBranchGitCommand 内亦有兜底。
+			bool updateRefs = _rebaseContainsLocalBranches && UpdateRefsCheckBox.IsChecked.GetValueOrDefault() && GitCapabilities.SupportsUpdateRefs();
 			bool stashAndReapply = AutostashCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.RebaseAutostash = stashAndReapply;
 			ForkPlusSettings.Default.RebaseUpdateRefs = UpdateRefsCheckBox.IsChecked.GetValueOrDefault();

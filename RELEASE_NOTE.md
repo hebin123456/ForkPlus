@@ -1,6 +1,27 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.5
+
+> v4.0.4 是一个玩笑版本（404 Not Found，没有任何构建产物 😄）——真正的修复都在这里。
+
+### 修复
+
+- **Linux ARM64 版本配置文件不持久化（x86_64 版正常）**：仓库列表（repositories.toml）的读写走 biturbo 原生库（libgit2 封装），而 `libbiturbo.so` 要求 GLIBC ≥ 2.34——较老的 ARM 发行版（Debian 11、Ubuntu 20.04 等）加载即失败，`RepositoryManager.Save()` 的 21 处调用点全部零防护：异常直接炸 UI（"无响应崩溃"表象），且配置一个字节都写不出去，表现为"ARM 版没有持久化配置"。修复：原生保存失败（加载异常或返回错误码）时自动降级为托管兜底——完整仓库状态镜像写入 settings.json 的 RepositoryManager 节，与 `Load()` 既有回退路径（从该节导入）闭环，原生读写不可用的环境配置不再丢失。
+- **无 CJK 字体的环境界面全是方框（□□□）**：minimal Linux / 部分 ARM 发行版 / 精简容器没装中文字体，中日韩文本全部渲染为方框。内置 Noto Sans CJK SC 子集字体（Regular + Bold 双字重，覆盖 CJK 统一表意、谚文、假名、CJK 标点、全半角形式等区间），经 Avalonia `FontManagerOptions` 字形级回退生效——系统字体缺字时自动落到内嵌字体，中文界面开箱即用，不依赖目标机安装任何字体。
+- **UI 无响应/崩溃后无从排障**：三层兜底——① 新增 CrashDumper 独立崩溃转储（crash-*.log，与应用日志同目录，最多保留 10 份）：UI 线程未处理异常、AppDomain 终结性异常、未观测任务异常全部落盘，且 UI 线程异常置 `Handled=true` 让应用存活（正在进行的合并/暂存不再因一次异常全丢）；② 修复"每次启动删除旧日志"（DeleteOldFileOnStartup）——崩溃后一重启现场就没了，改为按天滚动归档保留 14 份 + 即时刷盘（KeepFileOpen + AutoFlush）；③ 未观测任务异常显式置 Observed，防御任何遗留的终止配置。崩溃后把 logs/ 目录打包反馈即可定位。
+- **老版本 git 上变基功能整体不可用**：交互式变基硬编码 `--update-refs`（git 2.38 才引入），变基冲突预检硬走 `git replay`（git 2.44 才引入）——内置 git 实例缺失回退系统 git 时，Ubuntu 22.04（git 2.34）/ 24.04（git 2.43）等主流发行版上交互式变基被 git 整条拒收（"unknown option"）、普通变基弹窗直接报错。修复：新增 git 版本能力探测（按实例缓存），`--update-refs` 仅在 git ≥2.38 时附加（老版本变基弹窗同步隐藏该开关，预览与执行一致），变基预检在 git <2.44 时自动降级为旧式三参数 `git merge-tree` 三方合并预演（与拣选/回退预检同款方案，git 1.4 时代即可用）。
+- **构建告警清零**：清理 200 个 AVLN3001（XAML 视图缺公共无参构造——全工程零运行时 XAML 加载路径，项目级抑制并注释论证）及 3 个真实告警（CS0109 多余 `new` 修饰符、CS0219 死变量、AVP1001 兼容封装层局部抑制），主工程 Release 构建达到 **0 警告 0 错误**。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.5-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.5-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.5-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.5-macos-arm64.zip` |
+
 ## v4.0.3
 
 ### 修复

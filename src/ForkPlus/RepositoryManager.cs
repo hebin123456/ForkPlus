@@ -108,11 +108,33 @@ namespace ForkPlus
 
 		public RepositoryManager(string[] sourceDirs, byte scanDepth, string[] ignore, Repository[] repositories)
 		{
-			sourceDirs = sourceDirs ?? new string[0];
-			SourceDirs = sourceDirs.CompactMap((string x) => string.IsNullOrWhiteSpace(x) ? null : ((!x.EndsWith("\\")) ? (x + "\\") : x));
+			SourceDirs = NormalizeSourceDirs(sourceDirs);
 			ScanDepth = scanDepth;
 			Ignore = ignore ?? new string[0];
 			Repositories = repositories ?? new Repository[0];
+		}
+
+		// v4.0.5：源目录统一以平台分隔符结尾。原实现无条件补 "\\"：
+		//   - Windows 行为不变（目录前缀匹配需精确到目录边界，Fork 原始语义）；
+		//   - Unix 上 "/home/user/projects\" 是字面上的另一个文件名——RescanUserRepositoriesCommand
+		//     的 Directory.GetDirectories 直接 DirectoryNotFoundException（扫描静默找不到任何仓库），
+		//     RelativePathFor 的 StartsWith 前缀匹配也全部失配（别名/分类推导失效）。
+		//     同时兼容历史数据中已被写成 "\\" 结尾的条目（TrimEnd 后统一补 "/"）。
+		private static string[] NormalizeSourceDirs(string[] sourceDirs)
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return (sourceDirs ?? new string[0]).CompactMap((string x) => string.IsNullOrWhiteSpace(x) ? null : ((!x.EndsWith("\\")) ? (x + "\\") : x));
+			}
+			return (sourceDirs ?? new string[0]).CompactMap(delegate (string x)
+			{
+				if (string.IsNullOrWhiteSpace(x))
+				{
+					return null;
+				}
+				x = x.TrimEnd('\\');
+				return (!x.EndsWith("/")) ? (x + "/") : x;
+			});
 		}
 
 		public void Save()
@@ -126,10 +148,56 @@ namespace ForkPlus
 			string[] array2 = Repositories.Map((Repository x) => x.Alias ?? "");
 			uint[] array3 = Repositories.Map((Repository x) => (uint)x.Opened.GetValueOrDefault());
 			byte[] array4 = Repositories.Map((Repository x) => (byte)x.Color);
-			BtResult btResult = Bt.bt_save_repository_manager(repositoriesFilePath, sourceDirs, sourceDirs.Length, scanDepth, ignore, ignore.Length, array, array.Length, array2, array2.Length, array3, array3.Length, array4, array4.Length);
-			if (btResult != 0)
+			// v4.0.5：Save 的 21 处调用点大多在 UI 事件处理器里，此前对原生库异常（如 ARM
+			// 老系统 glibc 低于 libbiturbo.so 所需版本时 NativeLibrary.Load 抛 DllNotFoundException）
+			// 零防护——异常直接炸 UI（"无响应崩溃"）且 repositories.toml 一个字节都写不出去，
+			// 表现为"ARM 版本没有持久化配置文件"。此处 try-catch + 托管兜底：任何失败都把
+			// 状态镜像进 settings.json 的 RepositoryManager 节，而 Load() 的既有回退路径正是
+			// 从该节导入，两侧闭环：原生写失败 → settings.json 里有完整数据可恢复。
+			try
 			{
-				Log.Error($"Failed to save repository manager: {btResult}");
+				BtResult btResult = Bt.bt_save_repository_manager(repositoriesFilePath, sourceDirs, sourceDirs.Length, scanDepth, ignore, ignore.Length, array, array.Length, array2, array2.Length, array3, array3.Length, array4, array4.Length);
+				if (btResult != 0)
+				{
+					Log.Error($"Failed to save repository manager: {btResult}");
+					SaveManagedFallback();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error($"Biturbo native save failed ({repositoriesFilePath}), falling back to managed settings persistence", ex);
+				SaveManagedFallback();
+			}
+		}
+
+		/// <summary>
+		/// v4.0.5 托管持久化兜底：把仓库管理器状态镜像进 settings.json 的 RepositoryManager 节。
+		/// 触发条件：bt_save_repository_manager 抛异常（典型为 ARM 老系统加载 libbiturbo.so 失败）
+		/// 或返回非零错误码。Load() 在原生读取失败时会从同一节导入（旧版迁移逻辑），形成闭环。
+		/// 编码遵循 Load.Import 的逆向契约：Name 存 alias（无 alias 时存 RelativePathFor 的
+		/// 父目录相对路径，使导入侧 alias 判等回 null）；Opened 的时间戳按 UnixStartTime 精确往返。
+		/// </summary>
+		internal void SaveManagedFallback()
+		{
+			try
+			{
+				List<ForkPlusSettings.RepositoryManagerSettings.Repository> list = new List<ForkPlusSettings.RepositoryManagerSettings.Repository>(Repositories.Length);
+				int num = 1;
+				Repository[] repositories = Repositories;
+				for (int i = 0; i < repositories.Length; i++)
+				{
+					Repository repository = repositories[i];
+					string text = repository.Alias ?? RelativePathFor(repository.Path, SourceDirs).Item2 ?? PathHelper.GetReadableFileName(repository.Path);
+					DateTime lastAccessTime = repository.Opened.HasValue ? DateTimeExtensions.UnixStartTime.AddSeconds((long)repository.Opened.GetValueOrDefault()) : DateTime.MinValue;
+					list.Add(new ForkPlusSettings.RepositoryManagerSettings.Repository(num++, text, repository.Path, null, lastAccessTime, 0, repository.Color));
+				}
+				ForkPlusSettings.Default.RepositoryManager = new ForkPlusSettings.RepositoryManagerSettings(SourceDirs, new ForkPlusSettings.RepositoryManagerSettings.Category[0], list.ToArray(), ScanDepth);
+				ForkPlusSettings.Default.Save();
+				Log.Info($"Repository manager persisted to settings.json fallback ({Repositories.Length} repositories)");
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to persist repository manager fallback to settings.json", ex);
 			}
 		}
 
@@ -173,7 +241,9 @@ namespace ForkPlus
 
 		public void SetSourceDirs(string[] sourceDirs)
 		{
-			SourceDirs = sourceDirs;
+			// v4.0.5：与构造函数共用规范化——此前裸赋值，WelcomeWindow/偏好设置里
+			// 传入的无后缀目录与构造路径产生的带后缀目录混存，扫描与前缀匹配行为不一致。
+			SourceDirs = NormalizeSourceDirs(sourceDirs);
 		}
 
 		public void RemoveAll()
@@ -225,12 +295,16 @@ namespace ForkPlus
 		public void DeleteFolders(string[] foldersToDelete)
 		{
 			List<string> list = new List<string>();
+			// v4.0.5：Ignore 条目按平台分隔符拼接——原实现无条件补 "\\"，Unix 上
+			// "srcDir/folder\" 与扫描路径（正斜杠）的 StartsWith 永远失配，被忽略目录
+			// 会在下次扫描中原样回来。
+			string text = OperatingSystem.IsWindows() ? "\\" : "/";
 			string[] sourceDirs = SourceDirs;
-			foreach (string text in sourceDirs)
+			foreach (string sourceDir in sourceDirs)
 			{
-				foreach (string text2 in foldersToDelete)
+				foreach (string folder in foldersToDelete)
 				{
-					list.Add(text + text2 + "\\");
+					list.Add(sourceDir + folder + text);
 				}
 			}
 			HashSet<string> hashSet = new HashSet<string>(Ignore);

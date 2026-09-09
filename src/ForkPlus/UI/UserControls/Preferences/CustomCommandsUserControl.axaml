@@ -221,7 +221,7 @@
             <RadioButton Margin="15,0,0,0" Content="Action" IsCheckedChanged="UIMode_Changed" x:Name="ProcessRadioButton" />
           </StackPanel>
           <TextBlock Grid.Row="5" Grid.Column="0" Text="Action:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ProcessActionTypeTextBlock" />
-          <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" HorizontalContentAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
+          <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,0,4,0" HorizontalContentAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
             <ToolTip.Tip>
               <Binding Path="SelectedItem.ActionViewModel.ToolTip" />
             </ToolTip.Tip>
@@ -279,7 +279,7 @@
               </TextBlock>
             </Grid>
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Controls:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-            <Button Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Stretch" Margin="10,4,0,4" Padding="4,2,4,2" Click="UiControlsButton_Click" x:Name="UiControlsButton">
+            <Button Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Stretch" Margin="10,4,0,4" Padding="4,0,4,0" Click="UiControlsButton_Click" x:Name="UiControlsButton">
               <DockPanel>
                 <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                 <controls:AutoTooltipTextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
@@ -311,7 +311,7 @@
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
-              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,2" Click="UiActionButton1_Click" x:Name="UiActionButton1">
+              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,0,4,0" Click="UiActionButton1_Click" x:Name="UiActionButton1">
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
@@ -354,7 +354,7 @@
                   </TextBlock.Tag>
                 </TextBlock>
               </Grid>
-              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,2,4,2" Click="UiActionButton2_Click" x:Name="UiActionButton2">
+              <Button HorizontalContentAlignment="Stretch" Margin="4,0,0,0" Padding="4,0,4,0" Click="UiActionButton2_Click" x:Name="UiActionButton2">
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>

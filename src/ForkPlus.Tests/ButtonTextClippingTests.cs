@@ -27,6 +27,9 @@ namespace ForkPlus.Tests
 	{
 		// 应用内默认 Button 主题（固定 Height=24）按钮的全部真实 padding/字号组合
 		//（修复后）。最后一个元素带 MinHeight=28（AiDevelopmentWindow 的 Clear/Send）。
+		// v4.0.5：内嵌 CJK 回退字体使含中文的行高从 18→19px，垂直 Padding 2 的组合
+		//（Commit/AiCodeReview 的 10,2、ResetItem 的 12,2、CustomCommands 的 4,2 等
+		// 共 20 处按钮）内容槽 22-4=18 < 19 会裁字，已全部垂直归零（见各文件 v4.0.5 注释）。
 		private static readonly (Thickness padding, double fontSize, double minHeight, string label)[] RealCombos =
 		{
 			(new Thickness(10, 0, 10, 0), 13, 0, "主题默认(10,0)"),
@@ -34,10 +37,12 @@ namespace ForkPlus.Tests
 			(new Thickness(12, 0, 12, 0), 13, 0, "Reflog/AiCommitComposer/ImportExport(12,0)"),
 			(new Thickness(8, 0, 8, 0), 12, 0, "AiReviewPreferences(8,0) fs12"),
 			(new Thickness(10, 0, 10, 0), 13, 28, "AiDevelopment(10,0) MinHeight28"),
-			(new Thickness(10, 2, 10, 2), 13, 0, "Commit/AiCodeReview(10,2)"),
-			(new Thickness(12, 2), 13, 0, "CustomColorsDialog ResetItem(12,2)"),
-			(new Thickness(4, 2, 4, 2), 13, 0, "CustomCommands(4,2,4,2)"),
-			(new Thickness(8, 1), 11, 0, "AiDevelopment Stop(8,1) fs11")
+			(new Thickness(10, 0, 10, 0), 13, 0, "Commit/AiCodeReview(10,0)"),
+			(new Thickness(12, 0), 13, 0, "CustomColorsDialog ResetItem(12,0)"),
+			(new Thickness(4, 0, 4, 0), 13, 0, "CustomCommands(4,0,4,0)"),
+			(new Thickness(8, 1), 11, 0, "AiDevelopment Stop(8,1) fs11"),
+			(new Thickness(8, 0, 8, 0), 12, 0, "AiActionButton(8,0) fs12 H22"),
+			(new Thickness(12, 0, 12, 0), 13, 0, "HexDiff LoadMore(12,0)")
 		};
 
 		private static double MeasureLineHeight(double fontSize)

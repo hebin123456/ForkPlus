@@ -130,7 +130,6 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 				// 解压前先校验 zip 内只含白名单文件，防止恶意 zip 路径穿越
 				int importedCount = 0;
-				bool hasSettings = false;
 				using (var archive = ZipFile.OpenRead(zipPath))
 				{
 					foreach (var entry in archive.Entries)
@@ -152,8 +151,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 							longPath = @"\\?\" + longPath;
 						}
 						entry.ExtractToFile(longPath, overwrite: true);
-						importedCount++;
-						if (name == SettingsFileName) hasSettings = true;
+					importedCount++;
 					}
 				}
 

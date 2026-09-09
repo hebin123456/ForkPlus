@@ -108,18 +108,19 @@ namespace ForkPlus.Tests
 					try
 					{
 						// ===== 1) 文件列表按 Space → 弹窗创建并居中 =====
-						PressSpaceOnFileList(commit.StageFileUserControl);
-						DiffPopupWindow popup = null;
-						Assert.True(UiClick.WaitFor(delegate
-						{
-							popup = FindPopup();
-							return popup != null;
-						}), "Space 后应创建 DiffPopupWindow");
-						Assert.Equal("a.txt", popup.Title); // UpdateDiff → Title=ChangedFile.Path
-						Assert.True(popup.FileDiffControl.Content != null && popup.FileDiffControl.Content.Succeeded,
-							"弹窗 FileDiffControl 应装配 diff 内容（UpdateDiff 行内内容）");
-						Assert.True(popup.FileDiffControl is CommitFileDiffControl,
-							"Commit 视图入口应创建 CommitFileDiffControl（CreateCommitDiff）");
+					PressSpaceOnFileList(commit.StageFileUserControl);
+					DiffPopupWindow popup = null;
+					// v4.0.5：弹窗创建 ≠ 装配完成——Title 与 diff 内容由 UpdateDiff 异步设置
+					//（创建时 Title 还是默认 "File Preview"）。慢环境下装配晚于弹窗出现，
+					// 原来的"等弹窗出现后立即断言"是竞态（实测约 30% 翻车率），并入等待条件。
+					Assert.True(UiClick.WaitFor(delegate
+					{
+						popup = FindPopup();
+						return popup != null && popup.Title == "a.txt" // UpdateDiff → Title=ChangedFile.Path
+							&& popup.FileDiffControl.Content != null && popup.FileDiffControl.Content.Succeeded;
+					}), "Space 后应创建 DiffPopupWindow 并装配选中文件（Title=a.txt 且 diff 内容就绪）");
+					Assert.True(popup.FileDiffControl is CommitFileDiffControl,
+						"Commit 视图入口应创建 CommitFileDiffControl（CreateCommitDiff）");
 						// ShowAtCenter：弹窗为父窗 90% 大小居中
 						Assert.True(Math.Abs(popup.Width - window.Width * 0.9) < 2.0,
 							"弹窗宽应为父窗 90%（实际 " + popup.Width.ToString("F0") + " / 期望 " + (window.Width * 0.9).ToString("F0") + "）");
@@ -140,14 +141,14 @@ namespace ForkPlus.Tests
 							"Escape 后弹窗应从 Windows 列表移除（Close）");
 
 						// ===== 3) 再次 Space → 重开（Closed 已把 _diffPopupWindow 置空） =====
-						PressSpaceOnFileList(commit.StageFileUserControl);
-						DiffPopupWindow reopened = null;
-						Assert.True(UiClick.WaitFor(delegate
-						{
-							reopened = FindPopup();
-							return reopened != null;
-						}), "Space 应能重开弹窗");
-						Assert.Equal("a.txt", reopened.Title);
+					PressSpaceOnFileList(commit.StageFileUserControl);
+					DiffPopupWindow reopened = null;
+					// v4.0.5：同上——Title 装配并入等待（重开路径同一 UpdateDiff 异步竞态）。
+					Assert.True(UiClick.WaitFor(delegate
+					{
+						reopened = FindPopup();
+						return reopened != null && reopened.Title == "a.txt";
+					}), "Space 应能重开弹窗并装配选中文件标题");
 						Assert.True(UiClick.WaitFor(delegate
 						{
 							return UiClick.FindAll<CommitCodeEditor>(reopened).FirstOrDefault()?.VisualPatch != null;

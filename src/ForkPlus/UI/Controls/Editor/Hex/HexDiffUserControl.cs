@@ -243,7 +243,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(LoadMoreChunkBytes) + ")",
 				HorizontalAlignment = HorizontalAlignment.Center,
 				Margin = new Thickness(0, 4, 0, 4),
-				Padding = new Thickness(12, 2, 12, 2),
+				// v4.0.5：垂直 Padding 2→0，内嵌 CJK 字体行高 19px 下默认按钮内槽(22px)减 4px 会裁字。
+				Padding = new Thickness(12, 0, 12, 0),
 				IsVisible = false
 			};
 			_loadMoreButton.Click += LoadMoreButton_Click;

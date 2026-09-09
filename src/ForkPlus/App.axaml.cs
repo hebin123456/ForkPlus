@@ -1017,20 +1017,21 @@ namespace ForkPlus
 
 		private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
-			Log.Error("Unhandled UI exception", e.Exception);
+			// v4.0.5 兜底：UI 线程未处理异常此前只记日志、不置 Handled——异常继续上抛，
+			// Dispatcher 直接终止进程（用户感知即"UI 无响应后崩溃退出"）。置 Handled=true
+			// 让本帧中断、应用存活（用户可保存正在进行的合并/暂存状态）；完整现场已由
+			// CrashDumper 独立落盘（crash-*.log），下次排障可直接取。
+			CrashDumper.Dump("UI", e.Exception, "DispatcherUnhandledException (Handled=true, app continues)");
+			e.Handled = true;
 		}
 
 		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
-			Exception ex = e.ExceptionObject as Exception;
-			if (ex != null)
-			{
-				Log.Error("Unhandled AppDomain exception", ex);
-			}
-			else
-			{
-				Log.Error("Unhandled AppDomain exception: " + e.ExceptionObject);
-			}
+			// 终结性异常（进程必死，无法阻止）：崩溃转储必须先于 NLog 缓冲落盘，
+			// 随后同步 flush 常规日志尾部再退出。
+			CrashDumper.Dump(e.IsTerminating ? "AppDomain-fatal" : "AppDomain", e.ExceptionObject as Exception,
+				"Unhandled AppDomain exception, IsTerminating=" + e.IsTerminating);
+			CrashDumper.FlushLogs();
 		}
 
 		private void CurrentDomain_FirstChanceException(object sender, FirstChanceExceptionEventArgs e)
@@ -1052,7 +1053,11 @@ namespace ForkPlus
 
 		private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
 		{
-			Log.Error("Unobserved task exception", e.Exception);
+			// v4.0.5：未观测任务异常多数是后台刷新/IO 的噪声（.NET Core 起默认不再因此终止
+			// 进程），但正是"UI 偶发无响应"排查时最需要的线索——落 crash 转储 + 显式置
+			// Observed 防御任何遗留的 <ThrowUnobservedTaskExceptions> 配置。
+			CrashDumper.Dump("Task-unobserved", e.Exception, "UnobservedTaskException (SetObserved=true)");
+			e.SetObserved();
 		}
 
 		private static bool IsVisualParentingArgumentException(Exception ex)

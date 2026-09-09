@@ -2066,7 +2066,8 @@ Additionally, the user has defined the following coding standards / skills that 
 			{
 				Content = PreferencesLocalization.Current("Undo AI Changes"),
 				FontSize = 12,
-				Padding = new Thickness(8, 2, 8, 2),
+				// v4.0.5：垂直 Padding 2→0，内嵌 CJK 字体行高下默认按钮内槽(22px)减 4px 会裁字。
+				Padding = new Thickness(8, 0, 8, 0),
 				Margin = new Thickness(8, 0, 0, 0),
 				VerticalAlignment = VerticalAlignment.Center
 			};
