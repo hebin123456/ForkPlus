@@ -8,6 +8,7 @@ using ForkPlus.UI.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -26,6 +27,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public ImportExportUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void Initialize(ForkPlusDialogWindow parentWindow)

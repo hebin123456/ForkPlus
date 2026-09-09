@@ -39,6 +39,11 @@ namespace ForkPlus.UI.Dialogs
 		public ReflogWindow(RepositoryUserControl repositoryUserControl)
 		{
 			InitializeComponent();
+			// 注意：此处不能调用 PreferencesLocalization.Apply——基类 ForkPlusDialogWindow
+			// 在 Loaded 时已自动本地化。构造函数里 LoadReflog() 会把 StatusText.Text 动态
+			// 设置为状态文案（"Reflog is empty." / "{0} entries loaded." 等），构造期先 Apply
+			// 会把 XAML 默认提示文本缓存为 Original，Loaded 时基类的二次 Apply 将从缓存恢复，
+			// 覆盖真实状态文案（表现为状态栏恒显示"双击条目可跳转"提示）。
 			_repositoryUserControl = repositoryUserControl;
 			ApplyLocalization();
 			LoadReflog();

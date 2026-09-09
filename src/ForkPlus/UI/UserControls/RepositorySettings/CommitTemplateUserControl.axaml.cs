@@ -9,6 +9,8 @@ using ForkPlus.UI.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.RepositorySettings
 {
@@ -23,6 +25,7 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 		public CommitTemplateUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void Initialize(GitModule gitModule)

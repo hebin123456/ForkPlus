@@ -6,6 +6,7 @@ using Avalonia.Markup;
 using Avalonia.Media;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
@@ -69,7 +70,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				OtherRevisionDetailsContainer.Show();
 				UpdateControls(revision, AuthorAvatarImage, AuthorTextBlock, AuthorDateTextBlock, ShaTextBlock, ShaBackgroundBorder, SubjectTextBlock, DescriptionSymbolTextBlock, CustomTextBlockBorder, CustomTextBlock, bugtrackers, global::ForkPlus.UI.Theme.Diff.RemovedBrush);
-				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, global::ForkPlus.UI.Theme.Diff.AddedBrush, "Local Changes");
+				UpdateControls(revision, OtherAuthorAvatarImage, OtherAuthorTextBlock, OtherAuthorDateTextBlock, OtherShaTextBlock, OtherShaBackgroundBorder, OtherSubjectTextBlock, OtherDescriptionSymbolTextBlock, OtherCustomTextBlockBorder, OtherCustomTextBlock, bugtrackers, global::ForkPlus.UI.Theme.Diff.AddedBrush, PreferencesLocalization.FormatCurrent("Local Changes"));
 				SwapRevisionsButton.Disable();
 			}
 			else if (srcRevision != null)

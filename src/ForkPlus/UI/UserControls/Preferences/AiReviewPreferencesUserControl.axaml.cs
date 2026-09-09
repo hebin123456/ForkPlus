@@ -15,6 +15,7 @@ using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Threading;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -30,6 +31,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public AiReviewPreferencesUserControl()
 		{
 		 InitializeComponent();
+		 PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 
 		 // Build line-numbered input area
 		 BuildCustomSkillInputArea();

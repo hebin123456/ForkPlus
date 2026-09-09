@@ -12,6 +12,7 @@ using ForkPlus.UI.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -38,6 +39,7 @@ namespace ForkPlus.UI.UserControls
 		public RewordUserControl(string subject, string description)
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			Refresh(subject, description);
 			CommitSubjectTextBox.CaretIndex = CommitSubjectTextBox.Text.Length;
 			base.LayoutUpdated += delegate

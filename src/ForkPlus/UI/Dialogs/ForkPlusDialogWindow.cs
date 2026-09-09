@@ -724,6 +724,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_pendingCancelButtonTitle = PreferencesLocalization.Translate("Cancel", ForkPlusSettings.Default.UiLanguage);
 			}
+			// 同上：Submit 按钮默认文本同样硬编码，未显式设置 SubmitButtonTitle 的弹窗
+			// （默认 Submit/自定义布局弹窗等）补默认翻译，已显式设置的不受影响。
+			if (_pendingSubmitButtonTitle == null)
+			{
+				_pendingSubmitButtonTitle = PreferencesLocalization.Translate("Submit", ForkPlusSettings.Default.UiLanguage);
+			}
 			if (_pendingSubmitButtonTitle != null)
 			{
 				SubmitButtonTitle = _pendingSubmitButtonTitle;

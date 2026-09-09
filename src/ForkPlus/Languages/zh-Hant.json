@@ -143,6 +143,7 @@
     "Reason: {0}": "理由：{0}",
     "Skipping group {0}/{1}: no matched files": "跳過分組 {0}/{1}：沒有匹配的檔案",
     "Subject": "標題",
+    "Submit": "提交",
     "Unstaging all files...": "正在取消暫存所有檔案...",
     "{0} staged file(s) not assigned to any group.": "{0} 個暫存檔案未分配到任何分組。",
     "{0}  (not staged)": "{0}  （未暫存）",
@@ -1200,7 +1201,6 @@
     "No active branch to check.": "沒有可檢查的活動分支。",
     "No applicable suggestions for this file.": "此檔案沒有可套用建議。",
     "No command history": "沒有命令歷史",
-    "No conflict markers found in the file.": "檔案中未找到衝突標記。",
     "No controls": "無控件",
     "No fast-forward": "禁止快轉",
     "No fast-forward on merge": "合併時停用快轉",
@@ -1805,7 +1805,6 @@
     "GreenLight": "綠色淺色",
     "GreenDark": "綠色深色",
     "Presets": "預設",
-    "Reset": "重設",
     "Color.BackgroundColor": "背景色",
     "Color.SecondaryBackgroundColor": "次級背景色",
     "Color.PanelBackgroundColor": "面板背景色",
@@ -2318,6 +2317,12 @@
     "Ask": "詢問",
     "No saved credentials yet.": "尚無已儲存的憑證。",
     "Host": "主機",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "開啟後將靜默使用該憑證，不再彈出詢問；關閉後恢復彈窗。"
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "開啟後將靜默使用該憑證，不再彈出詢問；關閉後恢復彈窗。",
+    "API key": "API 金鑰",
+    "Pre-fills the password next time this host asks": "下次該主機再次請求密碼時自動預填",
+    "Remember password": "記住密碼",
+    "Remember password and never ask again": "記住密碼且不再詢問",
+    "SSH configuration:": "SSH 設定：",
+    "SHA256:": "SHA256："
   }
 }

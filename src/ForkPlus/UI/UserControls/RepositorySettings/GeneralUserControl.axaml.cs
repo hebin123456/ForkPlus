@@ -70,6 +70,7 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 		public GeneralUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			_updateAvatarAction = new DelayedAction<UserIdentity>(UpdateAvatar, 0.3);
 		}
 

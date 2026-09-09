@@ -1,6 +1,14 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.3
+
+### 修复
+
+- **已暂存/未暂存区域键盘上下键选择文件时右侧 FileDiff 不刷新**：键盘导航（上下键、`SelectNextFile`/`SelectPreviousFile`）不更新 `TreeView.LastClickedItem`——它仍指向上次鼠标点击的文件，而该文件已不在当前选中集合中，选中事件携带过时文件，`CommitUserControl.UpdateDiff` 末尾的"文件仍在选中集合"守卫丢弃结果，diff 面板停留旧内容（鼠标点击一切正常）。修复：`NotifySelectionChangedFromCurrentItems` 仅当 `LastClickedItem` 仍在当前选中集合中（多选场景下的主选中项）才使用它，否则回退到选中集合的第一个文件；补 E2E 回归测试（键盘迁移选中 + 鼠标多选两个方向）。
+- **界面重构（v4.0.0 WPF → Avalonia）后大量界面国际化丢失**：约 100 个对话框与控件（创建/切换/变基/合并/推送/拉取等全部操作弹窗、仓库设置页、偏好设置的提交/AI/导入导出页、合并冲突视图、变基改写弹窗、服务标签页、修订搜索面板等）在重构中丢失了 `PreferencesLocalization.Apply()` 调用，非英文界面下整页显示英文。统一在构造函数 `InitializeComponent()` 后补回本地化调用（翻译机制幂等，与父级调度共存）；同时补齐 zh-Hans / zh-Hant 各 6 条缺失词条（"记住密码"、"SSH 配置："、"API 密钥"等），并去重语言文件中 2 条完全相同的重复键。
+- **检查更新在多平台 Release 下下载链接错位**：v4.0.2 起四平台安装包（windows-x64 / linux-x64 / linux-arm64 / macos-arm64）并行上传，GitHub API 返回的资产顺序不可控，旧实现固定取 `assets[0]`——三平台时代恰好只有三个 zip 时碰巧可用，四平台后可能给 Windows 用户下载 Linux 包。修复：按运行时平台（OS + 架构）匹配资产名 `ForkPlus-{版本}-{平台}.zip`，精确匹配失败时回退平台后缀匹配，再失败回退 Release 页让用户手动选择。
+
 ## v4.0.2
 
 ### 新增 Linux ARM64（aarch64）平台

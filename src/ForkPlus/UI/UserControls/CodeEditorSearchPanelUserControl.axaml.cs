@@ -16,6 +16,8 @@ using ForkPlus.UI.Helpers;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -134,6 +136,7 @@ namespace ForkPlus.UI.UserControls
 		public CodeEditorSearchPanelUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			// Migration note：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，
 			// 手动声明（字段名与类型同名，C# "Color Color" 规则下成员访问优先）并从根 Border 取值。
 			TranslateTransform = (global::Avalonia.Media.TranslateTransform)((global::Avalonia.Controls.Border)base.Content).RenderTransform;

@@ -6,6 +6,7 @@ using Avalonia.Markup;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs
 {

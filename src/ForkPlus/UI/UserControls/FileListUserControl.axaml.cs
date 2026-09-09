@@ -18,6 +18,7 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -176,6 +177,7 @@ namespace ForkPlus.UI.UserControls
 		public FileListUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			TreeView.SelectionChanged += TreeViewSelectionChanged;
 			TreeView.DoubleTapped += TreeView_MouseDoubleClick;
 			FileListTreeView treeView = TreeView;
@@ -269,7 +271,14 @@ namespace ForkPlus.UI.UserControls
 			MultiselectionTreeViewItem[] items = array;
 			items.RefreshSelectionType();
 			FileListItem clickedFile = TreeView.LastClickedItem as FileListItem;
-			ChangedFile selectedItem = clickedFile != null && !clickedFile.IsDirectory
+			// LastClickedItem 只在鼠标点击时更新；键盘上下键导航不会更新它。
+			// 键盘移动选中后，LastClickedItem 仍指向上次鼠标点击的文件——它已不在
+			// 当前选中集合中，此时继续用它会把过时文件传给 diff，且 UpdateDiff 末尾
+			// 的"文件仍在选中集合"守卫会丢弃结果（表现为 FileDiff 面板不刷新）。
+			// 因此仅当 LastClickedItem 仍在当前选中集合中（多选场景下的主选中项）
+			// 才使用它，否则回退到选中集合的第一个文件。
+			bool clickedFileIsSelected = clickedFile != null && Array.IndexOf(array, clickedFile) >= 0;
+			ChangedFile selectedItem = clickedFileIsSelected && !clickedFile.IsDirectory
 				? clickedFile.ChangedFile
 				: array.FirstOrDefault((FileListItem x) => !x.IsDirectory)?.ChangedFile;
 			SelectionChanged?.Invoke(this, new FileListEventArgs(selectedItem));

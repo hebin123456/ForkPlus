@@ -13,6 +13,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs
 {

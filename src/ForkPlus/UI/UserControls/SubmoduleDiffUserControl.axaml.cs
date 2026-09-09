@@ -15,6 +15,7 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -47,6 +48,7 @@ namespace ForkPlus.UI.UserControls
 		public SubmoduleDiffUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RevisionListView.ItemsSource = _revisionsDataSource;
 			UpdateSubmoduleButton.Collapse();
 			OpenSubmoduleButton.Click += OpenSubmoduleButton_Click;

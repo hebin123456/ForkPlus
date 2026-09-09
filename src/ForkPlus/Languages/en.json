@@ -65,6 +65,7 @@
     "Reason: {0}": "Reason: {0}",
     "Skipping group {0}/{1}: no matched files": "Skipping group {0}/{1}: no matched files",
     "Subject": "Subject",
+    "Submit": "Submit",
     "Unstaging all files...": "Unstaging all files...",
     "{0} staged file(s) not assigned to any group.": "{0} staged file(s) not assigned to any group.",
     "{0}  (not staged)": "{0}  (not staged)",

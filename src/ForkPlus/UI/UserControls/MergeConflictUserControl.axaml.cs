@@ -41,6 +41,7 @@ namespace ForkPlus.UI.UserControls
 		public MergeConflictUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			LocalGitPointView.CustomFontStyle = true;
 			RemoteGitPointView.CustomFontStyle = true;
 		}

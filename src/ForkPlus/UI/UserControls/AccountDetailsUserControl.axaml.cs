@@ -10,6 +10,8 @@ using ForkPlus.UI.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -21,6 +23,7 @@ namespace ForkPlus.UI.UserControls
 		public AccountDetailsUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void ShowDetails([Null] Account account)

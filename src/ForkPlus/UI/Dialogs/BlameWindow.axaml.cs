@@ -132,6 +132,7 @@ namespace ForkPlus.UI.Dialogs
 			// 修复链 23：删除 CenterScreen（多显示器下居中到主显示器而非主窗口所在屏；打开方用 ShowAtOwnerScreen）。
 			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			BlameTitleTextBlock.Text = Translate("Blame");
 			global::Avalonia.Controls.ToolTip.SetTip(UndoButton,Translate("Go Back"));
 			global::Avalonia.Controls.ToolTip.SetTip(RedoButton,Translate("Go Forward"));

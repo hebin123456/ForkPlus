@@ -17,6 +17,7 @@ using ForkPlus.UI.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -209,6 +210,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public GitUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			_updateAvatarAction = new DelayedAction<UserIdentity>(UpdateAvatar, 0.3);
 		}
 

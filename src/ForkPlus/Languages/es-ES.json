@@ -143,6 +143,7 @@
     "Reason: {0}": "Razón: {0}",
     "Skipping group {0}/{1}: no matched files": "Omitiendo grupo {0}/{1}: sin archivos coincidentes",
     "Subject": "Asunto",
+    "Submit": "Aceptar",
     "Unstaging all files...": "Quitando todos los archivos del stage...",
     "{0} staged file(s) not assigned to any group.": "{0} archivo(s) staged no asignado(s) a ningún grupo.",
     "{0}  (not staged)": "{0}  (no staged)",

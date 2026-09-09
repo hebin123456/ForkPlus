@@ -143,6 +143,7 @@
     "Reason: {0}": "이유: {0}",
     "Skipping group {0}/{1}: no matched files": "그룹 {0}/{1} 건너뜀: 일치하는 파일 없음",
     "Subject": "제목",
+    "Submit": "제출",
     "Unstaging all files...": "모든 파일 언스테이지 중...",
     "{0} staged file(s) not assigned to any group.": "{0}개의 스테이지된 파일이 어떤 그룹에도 할당되지 않았습니다.",
     "{0}  (not staged)": "{0}  (스테이지 안 됨)",

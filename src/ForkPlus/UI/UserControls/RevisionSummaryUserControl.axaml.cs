@@ -22,6 +22,7 @@ using ForkPlus.UI.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -46,6 +47,7 @@ namespace ForkPlus.UI.UserControls
 		public RevisionSummaryUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			DescriptionTextBlock.FontFamily = FontConstants.MonospaceFontFamily;
 		}
 

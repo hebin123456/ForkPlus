@@ -10,6 +10,8 @@ using ForkPlus.UI.Helpers;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -70,6 +72,7 @@ namespace ForkPlus.UI.UserControls
 		public RevisionSearchPanelUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			TranslateTransform = (global::Avalonia.Media.TranslateTransform)((global::Avalonia.Controls.Border)base.Content).RenderTransform;
 			base.Loaded += delegate
 			{

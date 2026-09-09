@@ -67,6 +67,7 @@ namespace ForkPlus.UI.Dialogs
 			// 修复链 23：删除 CenterScreen（多显示器下居中到主显示器而非主窗口所在屏；打开方用 ShowAtOwnerScreen）。
 			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			HistoryTitleTextBlock.Text = Translate("History");
 			_delayedAction = new DelayedAction<HistoryEntryViewModel[]>(RefreshDiff);
 			TreeView.RootItem = _root;

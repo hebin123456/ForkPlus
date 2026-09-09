@@ -146,6 +146,7 @@
     "Reason: {0}": "理由：{0}",
     "Skipping group {0}/{1}: no matched files": "跳过分组 {0}/{1}：没有匹配的文件",
     "Subject": "标题",
+    "Submit": "提交",
     "Unstaging all files...": "正在取消暂存所有文件...",
     "{0} staged file(s) not assigned to any group.": "{0} 个暂存文件未分配到任何分组。",
     "{0}  (not staged)": "{0}  （未暂存）",
@@ -1203,7 +1204,6 @@
     "No active branch to check.": "没有可检查的活动分支。",
     "No applicable suggestions for this file.": "此文件没有可应用建议。",
     "No command history": "没有命令历史",
-    "No conflict markers found in the file.": "文件中未找到冲突标记。",
     "No controls": "无控件",
     "No fast-forward": "禁止快进",
     "No fast-forward on merge": "合并时禁用快进",
@@ -1808,7 +1808,6 @@
     "GreenLight": "绿色浅色",
     "GreenDark": "绿色深色",
     "Presets": "预设",
-    "Reset": "重置",
     "Color.BackgroundColor": "背景色",
     "Color.SecondaryBackgroundColor": "次级背景色",
     "Color.PanelBackgroundColor": "面板背景色",
@@ -2321,6 +2320,12 @@
     "Ask": "询问",
     "No saved credentials yet.": "暂无已保存的凭据。",
     "Host": "主机",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "开启后将静默使用该凭据，不再弹出询问；关闭后恢复弹窗。"
+    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "开启后将静默使用该凭据，不再弹出询问；关闭后恢复弹窗。",
+    "API key": "API 密钥",
+    "Pre-fills the password next time this host asks": "下次该主机再次请求密码时自动预填",
+    "Remember password": "记住密码",
+    "Remember password and never ask again": "记住密码且不再询问",
+    "SSH configuration:": "SSH 配置：",
+    "SHA256:": "SHA256："
   }
 }

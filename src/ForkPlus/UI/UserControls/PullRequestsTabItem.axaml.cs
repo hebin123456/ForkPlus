@@ -17,6 +17,7 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -46,6 +47,7 @@ namespace ForkPlus.UI.UserControls
 		public PullRequestsTabItem()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			FallbackUserControl.FallbackMessageFontSize = 14.0;
 			TreeView.RootItem = _root;
 			FilterTextBox.KeyDown += delegate(object s, KeyEventArgs e)

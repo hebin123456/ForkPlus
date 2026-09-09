@@ -30,6 +30,7 @@ namespace ForkPlus.UI.UserControls
 		public AccountTabItem()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			NotificationsCheckBox.IsCheckedChanged+=NotificationsCheckBox_Checked;
 		}
 

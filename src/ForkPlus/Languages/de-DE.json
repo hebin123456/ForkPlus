@@ -143,6 +143,7 @@
     "Reason: {0}": "Grund: {0}",
     "Skipping group {0}/{1}: no matched files": "Gruppe {0}/{1} übersprungen: keine übereinstimmenden Dateien",
     "Subject": "Betreff",
+    "Submit": "Übernehmen",
     "Unstaging all files...": "Alle Dateien werden aus dem Staging entfernt...",
     "{0} staged file(s) not assigned to any group.": "{0} vorgemerkte Datei(en) keiner Gruppe zugewiesen.",
     "{0}  (not staged)": "{0}  (nicht vorgemerkt)",

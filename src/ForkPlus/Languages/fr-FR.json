@@ -143,6 +143,7 @@
     "Reason: {0}": "Raison : {0}",
     "Skipping group {0}/{1}: no matched files": "Groupe {0}/{1} ignoré : aucun fichier correspondant",
     "Subject": "Sujet",
+    "Submit": "Valider",
     "Unstaging all files...": "Désindexation de tous les fichiers...",
     "{0} staged file(s) not assigned to any group.": "{0} fichier(s) indexé(s) non assigné(s) à un groupe.",
     "{0}  (not staged)": "{0}  (non indexé)",

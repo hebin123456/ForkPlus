@@ -219,6 +219,11 @@ namespace ForkPlus.UI.Dialogs
 			_localBranchToSelect = localBranch;
 			_customRefspec = null;
 			InitializeComponent();
+			// 注意：此处不能调用 PreferencesLocalization.Apply——基类 ForkPlusDialogWindow
+			// 在 Loaded 时已自动本地化。构造函数里 RefreshUnpushedCommits() 会同步/异步
+			// 改写 SquashCheckBox.Content（"Squash {N} unpushed commits" 带数量变体），
+			// 构造期先 Apply 会把 XAML 默认文本缓存为 Original，Loaded 时基类的二次
+			// Apply 将从缓存恢复，覆盖带数量的文案。
 			base.DialogTitle = Translate("Push");
 			base.DialogDescription = Translate("Push your local changes to remote repository");
 			base.SubmitButtonTitle = Translate("Push");

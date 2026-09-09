@@ -11,6 +11,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -25,6 +26,7 @@ namespace ForkPlus.UI.UserControls
 		public TooltipRevisionDetailsUserControl(RepositoryUserControl repositoryUserControl, Sha sha)
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			_repositoryUserControl = repositoryUserControl;
 			_sha = sha;
 			RefreshControls();

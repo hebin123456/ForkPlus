@@ -36,6 +36,7 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 		public IssueTrackerUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void Initialize(ForkPlusDialogWindow parentWindow, GitModule gitModule)

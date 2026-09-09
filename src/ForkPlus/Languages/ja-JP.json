@@ -143,6 +143,7 @@
     "Reason: {0}": "理由: {0}",
     "Skipping group {0}/{1}: no matched files": "グループ {0}/{1} をスキップ: 一致するファイルがありません",
     "Subject": "件名",
+    "Submit": "送信",
     "Unstaging all files...": "すべてのファイルをアンステージ中...",
     "{0} staged file(s) not assigned to any group.": "{0} 個のステージ済みファイルがどのグループにも割り当てられていません。",
     "{0}  (not staged)": "{0}  (未ステージ)",

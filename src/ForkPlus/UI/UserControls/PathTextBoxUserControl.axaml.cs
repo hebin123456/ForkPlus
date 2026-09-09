@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -56,7 +57,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			string readableFileName = PathHelper.GetReadableFileName(StringValue);
 			string parent = PathHelper.GetParent(StringValue);
-			if (OpenDialog.SelectFileSaveLocation(_parentWindow, "Save file", parent, readableFileName, out var resultFilePath))
+			if (OpenDialog.SelectFileSaveLocation(_parentWindow, PreferencesLocalization.FormatCurrent("Save file"), parent, readableFileName, out var resultFilePath))
 			{
 				PathTextBox.Text = resultFilePath;
 			}
@@ -65,7 +66,7 @@ namespace ForkPlus.UI.UserControls
 		private void OpenFile()
 		{
 			string parent = PathHelper.GetParent(StringValue);
-			if (OpenDialog.SelectFile(_parentWindow, "Open file", parent, "Any File", "*.*", out var filePath))
+			if (OpenDialog.SelectFile(_parentWindow, PreferencesLocalization.FormatCurrent("Open file"), parent, PreferencesLocalization.FormatCurrent("Any File"), "*.*", out var filePath))
 			{
 				PathTextBox.Text = filePath;
 			}
@@ -74,7 +75,7 @@ namespace ForkPlus.UI.UserControls
 		private void OpenDirectory()
 		{
 			string stringValue = StringValue;
-			if (OpenDialog.SelectDirectory(_parentWindow, "Open directory", stringValue, out var directoryPath))
+			if (OpenDialog.SelectDirectory(_parentWindow, PreferencesLocalization.FormatCurrent("Open directory"), stringValue, out var directoryPath))
 			{
 				PathTextBox.Text = directoryPath;
 			}

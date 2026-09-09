@@ -16,15 +16,19 @@ namespace ForkPlus.Tests
 	{
 		private const string ReleasePath = "/repos/hebin123456/ForkPlus/releases/latest";
 
-		/// <summary>GitHub latest release 正常 JSON 响应。</summary>
+		/// <summary>GitHub latest release 正常 JSON 响应。
+		/// v4.0.3 起下载链接按平台匹配资产名（ForkPlus-{版本}-{平台}.zip），
+		/// 桩数据带当前平台命名的资产，保持"下载地址 = 资产地址"的断言语义。</summary>
 		private static UpdateCheckStubServer.StubResponse SuccessResponse(string tagName)
 		{
+			string version = ForkPlus.UpdateChecker.NormalizeVersion(tagName);
+			string assetName = "ForkPlus-" + version + "-" + ForkPlus.UpdateChecker.GetCurrentPlatformId() + ".zip";
 			return new UpdateCheckStubServer.StubResponse
 			{
 				StatusCode = 200,
 				Body = "{\"tag_name\":\"" + tagName + "\",\"name\":\"r1\",\"body\":\"notes\","
 					+ "\"html_url\":\"https://example.com/r\","
-					+ "\"assets\":[{\"browser_download_url\":\"https://example.com/d\"}]}"
+					+ "\"assets\":[{\"name\":\"" + assetName + "\",\"browser_download_url\":\"https://example.com/d\"}]}"
 			};
 		}
 

@@ -8,6 +8,7 @@ using ForkPlus.Git;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -32,6 +33,11 @@ namespace ForkPlus.UI.Dialogs
 		public AskPassWindow(string arguments, string repositoryPath)
 		{
 			InitializeComponent();
+			// 注意：此处不能调用 PreferencesLocalization.Apply——基类 ForkPlusDialogWindow 在
+			// Loaded 时已自动本地化（ApplyAutomaticLocalization）。本窗口构造函数会按凭据
+			// 询问模式改写 InputTextBlock.Text（User Name:/Passphrase:/Password:），若构造期
+			// 先 Apply，会把 XAML 默认文本 "Password:" 缓存为 OriginalText，Loaded 时基类的
+			// 二次 Apply 将从该缓存恢复，覆盖模式分支设置的文本（表现为用户名弹窗显示"密码："）。
 			_askPassRequest = AskPassRequest.Parse(arguments);
 			_arguments = arguments;
 			RememberCheckBox.Hide();

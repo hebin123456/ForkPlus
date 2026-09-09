@@ -7,6 +7,8 @@ using Avalonia.Markup;
 using ForkPlus.Git;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -23,6 +25,7 @@ namespace ForkPlus.UI.UserControls
 		public ServiceTabItem()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void Initialize(RepositoryUserControl repositoryUserControl)

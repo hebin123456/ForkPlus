@@ -20,6 +20,7 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs
 {

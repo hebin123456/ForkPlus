@@ -14,6 +14,8 @@ using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Input;
+using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {

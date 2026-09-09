@@ -18,6 +18,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public CommitPreferencesUserControl()
 		{
 			InitializeComponent();
+			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 
 		public void Initialize()

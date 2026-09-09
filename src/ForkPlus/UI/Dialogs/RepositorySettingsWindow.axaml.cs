@@ -8,6 +8,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.UserControls.RepositorySettings;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Dialogs
 {

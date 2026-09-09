@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Threading;
 using ForkPlus.Settings;
 using Newtonsoft.Json.Linq;
@@ -100,14 +101,7 @@ namespace ForkPlus
 				info.ReleaseNotes = json["body"]?.Value<string>() ?? "";
 				info.ReleaseUrl = json["html_url"]?.Value<string>() ?? "";
 				JArray assets = json["assets"] as JArray;
-				if (assets != null && assets.Count > 0)
-				{
-					info.DownloadUrl = assets[0]["browser_download_url"]?.Value<string>() ?? info.ReleaseUrl;
-				}
-				else
-				{
-					info.DownloadUrl = info.ReleaseUrl;
-				}
+				info.DownloadUrl = FindPlatformAssetDownloadUrl(assets, info.LatestVersion) ?? info.ReleaseUrl;
 				info.HasUpdate = IsNewerVersion(info.LatestVersion, info.CurrentVersion);
 			}
 			catch (OperationCanceledException)
@@ -175,6 +169,56 @@ namespace ForkPlus
 		private static bool IsLoopbackUrl(string url)
 		{
 			return Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && uri.IsLoopback;
+		}
+
+		/// <summary>
+		/// 当前运行平台标识（与 Release 资产命名一致）：windows-x64 / linux-x64 /
+		/// linux-arm64 / macos-arm64。OS 按 RuntimeInformation，架构按 OSArchitecture
+		/// （Linux ARM64 上返回 Arm64，与 CI 矩阵 rid 命名一一对应）。
+		/// </summary>
+		internal static string GetCurrentPlatformId()
+		{
+			string os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows"
+				: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macos"
+				: "linux";
+			string arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+			return os + "-" + arch;
+		}
+
+		/// <summary>
+		/// 从 Release 资产列表中挑出当前平台的安装包下载地址。
+		/// v4.0.2 起四平台资产（windows-x64 / linux-x64 / linux-arm64 / macos-arm64）
+		/// 并行上传，API 返回顺序不可控——不能像旧版那样直接取 assets[0]
+		/// （三平台时代恰好只有三个 zip，assets[0] 碰巧是 windows 包）。
+		/// 匹配规则：资产名以 "ForkPlus-{version}-{platformId}.zip" 结尾；找不到
+		/// 精确匹配（比如未来的新架构）时退回无版本号的平台后缀匹配，再退回
+		/// null（调用方落回 Release 页让用户手动选择）。
+		/// </summary>
+		internal static string FindPlatformAssetDownloadUrl(JArray assets, string version)
+		{
+			if (assets == null || assets.Count == 0)
+			{
+				return null;
+			}
+			string platformId = GetCurrentPlatformId();
+			string versionedSuffix = string.IsNullOrEmpty(version)
+				? null
+				: $"ForkPlus-{version}-{platformId}.zip";
+			string platformSuffix = $"-{platformId}.zip";
+			string fallback = null;
+			foreach (JToken asset in assets)
+			{
+				string name = asset["name"]?.Value<string>() ?? "";
+				if (versionedSuffix != null && name.EndsWith(versionedSuffix, StringComparison.OrdinalIgnoreCase))
+				{
+					return asset["browser_download_url"]?.Value<string>();
+				}
+				if (fallback == null && name.EndsWith(platformSuffix, StringComparison.OrdinalIgnoreCase))
+				{
+					fallback = asset["browser_download_url"]?.Value<string>();
+				}
+			}
+			return fallback;
 		}
 
 		/// <summary>
