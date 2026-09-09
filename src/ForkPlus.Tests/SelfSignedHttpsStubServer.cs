@@ -44,15 +44,10 @@ namespace ForkPlus.Tests
 
 		public static SelfSignedHttpsStubServer Start()
 		{
-			int port;
-			using (var probe = new TcpListener(IPAddress.Loopback, 0))
-			{
-				probe.Start();
-				port = ((IPEndPoint)probe.LocalEndpoint).Port;
-				probe.Stop();
-			}
-			var listener = new TcpListener(IPAddress.Loopback, port);
+			// 直接绑 port 0（内核分配并立即持有，无 TOCTOU 竞态窗口，UpdateCheckStubServer 同款）
+			var listener = new TcpListener(IPAddress.Loopback, 0);
 			listener.Start();
+			int port = ((IPEndPoint)listener.LocalEndpoint).Port;
 			return new SelfSignedHttpsStubServer(listener, port, CreateSelfSignedCertificate());
 		}
 

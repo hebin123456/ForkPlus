@@ -60,15 +60,13 @@ namespace ForkPlus.Tests
 
 		public static UpdateCheckStubServer Start()
 		{
-			int port;
-			using (var probe = new TcpListener(IPAddress.Loopback, 0))
-			{
-				probe.Start();
-				port = ((IPEndPoint)probe.LocalEndpoint).Port;
-				probe.Stop();
-			}
-			var listener = new TcpListener(IPAddress.Loopback, port);
+			// 直接绑 port 0：内核分配端口且 listener 立即持有，无竞态窗口。
+			// （此前"探测空闲端口→释放→再绑定同一端口"的写法存在 TOCTOU 窗口，
+			// 并行测试的出站连接可能抢占刚释放的临时端口，listener.Start() 报
+			// Address already in use——CI 五分片并行时实测踩中）
+			var listener = new TcpListener(IPAddress.Loopback, 0);
 			listener.Start();
+			int port = ((IPEndPoint)listener.LocalEndpoint).Port;
 			return new UpdateCheckStubServer(listener, port);
 		}
 

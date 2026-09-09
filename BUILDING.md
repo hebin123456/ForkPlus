@@ -71,7 +71,7 @@ dotnet test ForkPlus.sln --nologo
 - 全量 4500+ 用例，含单元测试与 Avalonia.Headless UI 端到端测试（Skia 软件渲染，无需显示服务器，Linux 服务器上可直接跑）；
 - E2E 套件会执行真实 git 管线（含 GitFlow / LFS 链路），需要上表的 gitflow-avh 与 git-lfs；
 - 失败时的证据截图落在 `docs/evidence/`（`.gitignore` 已忽略顶层过程截图）；
-- CI 在 tag 构建与手动触发时于 ubuntu runner 上以**五分片并行矩阵**跑全量测试（2026-09-09 起，`--filter` 互斥分片：E2E 按模块号十位 ×3 片 + 非 E2E 按类名首字母 ×2 片，另有分片完整性守卫防新增用例漏跑；测试墙钟 ~17min → ~8min），本地与 CI 环境差异见 [`.github/workflows/build.yml`](.github/workflows/build.yml) 注释。
+- CI 在 tag 构建与手动触发时于 ubuntu runner 上以**五分片并行矩阵**跑全量测试（2026-09-09 起，`--filter` 互斥分片：E2E 按模块号十位 ×3 片 + 非 E2E 按类名首字母 ×2 片，另有分片完整性守卫防新增用例漏跑；实测测试墙钟 17min → ~2.5min，测试本体最慢分片仅 43s），本地与 CI 环境差异见 [`.github/workflows/build.yml`](.github/workflows/build.yml) 注释。
 
 ## 本地发布（self-contained）
 

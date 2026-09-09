@@ -62,17 +62,30 @@ namespace ForkPlus.Tests
 		/// <summary>启动（随机空闲端口）。responder 为 null 时恒返回 DefaultReply。</summary>
 		public static OpenAiStubServer Start(Func<string, string> responder = null)
 		{
-			int port;
-			using (var probe = new TcpListener(IPAddress.Loopback, 0))
+			// HttpListener 不支持 port 0 动态分配：TcpListener 探测空闲端口后转交绑定，
+			// "释放→重绑"窗口内端口可能被并行测试的出站连接抢占（EADDRINUSE）——
+			// 失败换端口重试兜底（窗口极窄，连续 10 次被抢概率趋零）
+			for (int attempt = 0; ; attempt++)
 			{
-				probe.Start();
-				port = ((IPEndPoint)probe.LocalEndpoint).Port;
-				probe.Stop();
+				int port;
+				using (var probe = new TcpListener(IPAddress.Loopback, 0))
+				{
+					probe.Start();
+					port = ((IPEndPoint)probe.LocalEndpoint).Port;
+					probe.Stop();
+				}
+				var listener = new HttpListener();
+				listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
+				try
+				{
+					listener.Start();
+					return new OpenAiStubServer(listener, port) { ChatResponder = responder };
+				}
+				catch (Exception ex) when (attempt < 10 && (ex is HttpListenerException || ex is SocketException))
+				{
+					listener.Close();
+				}
 			}
-			var listener = new HttpListener();
-			listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
-			listener.Start();
-			return new OpenAiStubServer(listener, port) { ChatResponder = responder };
 		}
 
 		private void AcceptLoop()
