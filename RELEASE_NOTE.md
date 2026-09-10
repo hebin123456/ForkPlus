@@ -1,6 +1,23 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.7
+
+> 文本框专项修复：弹窗里超长内容恢复"能拖选全部、能滚动"。
+
+### 修复
+
+- **弹窗 TextBox 长文本无法拖选全部内容（如重命名贮藏的消息框）**：WPF 原版全部 8 个 TextBox 系模板（TextBox / PlaceholderTextBox / AutoCompleteTextBox / CommitPlaceholderTextBox / CommitDescriptionTextBox / SearchPanelPlaceholderTextBox / FilterTextBox / 编辑型 ComboBox 内嵌 TextBox）的内容宿主都是 `ScrollViewer PART_ContentHost`（滚动条隐藏但可滚动）；迁移时被统一误换成裸 TextPresenter 直接放进 Border——presenter 被裁剪为可视宽度，而 Avalonia TextBox 拖选时把指针坐标钳制到 presenter 边界（= 可视宽度），超出框长的文字永远选不中、也滚不过去。全部模板补回 ScrollViewer（Avalonia 部件契约名 `PART_ScrollViewer`，对齐官方 Fluent 主题做法）：presenter 以内容全宽测量，鼠标拖到框边缘即可扩选全部文字，光标越界自动滚动（多行提交框的垂直滚动同理受益）；Background 显式透明防止主题 ScrollViewer 背景盖掉文本框底色。新增 headless 探针测试覆盖"拖出框缘应全选 + 自动滚动"。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|-----|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.7-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.7-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.7-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.7-macos-arm64.zip` |
+
 ## v4.0.6
 
 > 崩溃/卡顿专项版本：让每一次崩溃和卡住都留下现场，并关掉三条已知的进程级死亡路径。

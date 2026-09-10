@@ -42,7 +42,21 @@
                  自动从 TextBox 渲染选区/光标/密码掩码；Avalonia 必须在 TextPresenter 上显式
                  TemplateBinding 下传（对齐官方 Fluent 主题），漏一个属性对应功能即静默失效。
                  Padding 同理经 Margin 下传（官方 Fluent 主题做法），否则文字贴边框。 -->
-            <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+            <!-- Migration note（2026-09-09 v4.0.6，"内容超框长时鼠标拖不中全部文字"根因）：
+                 WPF 原版模板是 ScrollViewer PART_ContentHost（HSBV/VSBV=Hidden：可滚动但
+                 不显示滚动条），超宽文本的选区/光标滚动全靠它。迁移时被误换成裸
+                 TextPresenter 直接放 Border 里——presenter 被裁剪为可视宽度，而
+                 Avalonia TextBox.OnPointerMoved 把拖选坐标钳制到 presenter.Bounds
+                 （=可视宽度），导致可视区外的文字永远选不中、也滚不过去。补回 ScrollViewer
+                 （Avalonia 部件契约名是 PART_ScrollViewer，TextBox.OnApplyTemplate 按此名
+                 Find；对齐官方 Fluent 主题做法）：presenter 在 ScrollViewer 内以内容宽度
+                 测量，拖到边缘即可扩选全部，光标越界自动滚动。
+                 Background 必须显式 Transparent——本仓库 ScrollViewer 主题默认 Background=
+                 ScrollViewerBackground（各皮肤不透明色），否则会盖掉 TextBox 自身背景。
+                 Focusable=False 对齐 WPF 原版 PART_ContentHost，防止抢占 Tab 焦点。 -->
+            <ScrollViewer x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+              <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+            </ScrollViewer>
           </Border>
 
         </ControlTemplate>

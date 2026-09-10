@@ -197,7 +197,14 @@
              TextBox 家族模板统一模式（编辑型 ComboBox 文字间距现由外层 Border Padding="4,2"
              提供，此绑定当前为 0 的无操作，防止将来显式设 Padding 时静默失效）。 -->
         <ControlTemplate TargetType="TextBox">
-          <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+          <!-- Migration note（2026-09-09 v4.0.6，同 Textbox.axaml 根因）：WPF 原版
+               ComboBoxEditableTextBox 的模板是 ScrollViewer PART_ContentHost（HSBV/VSBV=
+               Hidden），迁移时被换成裸 TextPresenter——编辑型 ComboBox 输入超宽文本时
+               同样拖不中可视区外的文字。补回 ScrollViewer（Avalonia 契约名
+               PART_ScrollViewer），Background=Transparent 防止盖掉外层 border 的背景。 -->
+          <ScrollViewer x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+            <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+          </ScrollViewer>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
