@@ -8,6 +8,36 @@ namespace ForkPlus.Biturbo
 {
 	internal static class BiturboExtensions
 	{
+		// v4.0.6 native 边界钳制：Rust 侧按契约如实填写长度（len/cap 显式传递，已
+		// 逐项核对 Biturbo 源码），但互操作层不做防御时，任何一方的未来回归（Rust bug、
+		// ABI 错位、内存踩踏）都会把"异常长度"直接变成 Marshal.Copy 读越界——SIGSEGV
+		// 硬崩，进程内零现场。上限值远超真实业务规模（revision 单页 1 万、百万级仓库
+		// 全量 oid 也在几百万内），超限即按异常数据对待：记日志 + 返回空，让上层命令
+		// 走 GitCommandResult.Failure 报错，而不是杀进程。
+		private const long MaxNativeArrayElements = 10_000_000;
+
+		private const long MaxNativeBufferBytes = 256L * 1024 * 1024;
+
+		private static bool IsWithinArrayLimit(long length)
+		{
+			if (length > MaxNativeArrayElements)
+			{
+				Log.Error("Biturbo native array length " + length + " exceeds sanity cap " + MaxNativeArrayElements + " (treating as corrupted, returning empty)");
+				return false;
+			}
+			return true;
+		}
+
+		private static bool IsWithinBufferLimit(long length)
+		{
+			if (length > MaxNativeBufferBytes)
+			{
+				Log.Error("Biturbo native buffer length " + length + " exceeds sanity cap " + MaxNativeBufferBytes + " (treating as corrupted, returning empty)");
+				return false;
+			}
+			return true;
+		}
+
 		public static GitCommandError ToGitCommandError(this BtResult btResult)
 		{
 			switch (btResult)
@@ -72,9 +102,16 @@ namespace ForkPlus.Biturbo
 
 		public static string GetUtf8String(this IntPtr _this)
 		{
+			// v4.0.6：nul 终止符扫描加上限（Rust 契约保证 \0，但缓冲被踩/句柄错位时
+			// 无终止符会一路扫出本进程地址空间）。超限按损坏数据处理。
 			int i;
-			for (i = 0; Marshal.ReadByte(_this, i) != 0; i++)
+			for (i = 0; i < MaxNativeBufferBytes && Marshal.ReadByte(_this, i) != 0; i++)
 			{
+			}
+			if (i >= MaxNativeBufferBytes)
+			{
+				Log.Error("Biturbo native string is not null-terminated within " + MaxNativeBufferBytes + " bytes (treating as corrupted, returning empty)");
+				return "";
 			}
 			if (i == 0)
 			{
@@ -91,6 +128,10 @@ namespace ForkPlus.Biturbo
 			{
 				return new byte[0];
 			}
+			if (!IsWithinBufferLimit(length))
+			{
+				return new byte[0];
+			}
 			byte[] array = new byte[length];
 			Marshal.Copy(_this, array, 0, (int)length);
 			return array;
@@ -102,6 +143,10 @@ namespace ForkPlus.Biturbo
 			{
 				return "";
 			}
+			if (!IsWithinBufferLimit(length))
+			{
+				return "";
+			}
 			byte[] array = new byte[length];
 			Marshal.Copy(_this, array, 0, (int)length);
 			return Encoding.UTF8.GetString(array);
@@ -110,6 +155,10 @@ namespace ForkPlus.Biturbo
 		public static string[] GetStringArray(this IntPtr ptr, long length)
 		{
 			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new string[0];
+			}
+			if (!IsWithinArrayLimit(length))
 			{
 				return new string[0];
 			}
@@ -128,6 +177,10 @@ namespace ForkPlus.Biturbo
 			{
 				return new uint[0];
 			}
+			if (!IsWithinArrayLimit(length))
+			{
+				return new uint[0];
+			}
 			int[] array = new int[length];
 			Marshal.Copy(ptr, array, 0, (int)length);
 			return Array.ConvertAll(array, x => unchecked((uint)x));
@@ -139,6 +192,10 @@ namespace ForkPlus.Biturbo
 			{
 				return new byte[0];
 			}
+			if (!IsWithinBufferLimit(length))
+			{
+				return new byte[0];
+			}
 			byte[] array = new byte[length];
 			Marshal.Copy(ptr, array, 0, (int)length);
 			return array;
@@ -147,6 +204,10 @@ namespace ForkPlus.Biturbo
 		public static TResult[] GetStructArray<TSource, TResult>(this IntPtr ptr, long length, Func<TSource, TResult> selector)
 		{
 			if (length <= 0L || ptr == IntPtr.Zero)
+			{
+				return new TResult[0];
+			}
+			if (!IsWithinStructArrayLimit<TSource>(length))
 			{
 				return new TResult[0];
 			}
@@ -166,6 +227,10 @@ namespace ForkPlus.Biturbo
 			{
 				return new TResult[0];
 			}
+			if (!IsWithinStructArrayLimit<TSource>(length))
+			{
+				return new TResult[0];
+			}
 			int num = Marshal.SizeOf<TSource>();
 			TResult[] array = new TResult[length];
 			for (int i = 0; i < length; i++)
@@ -174,6 +239,16 @@ namespace ForkPlus.Biturbo
 				array[i] = selector(i, arg);
 			}
 			return array;
+		}
+
+		private static bool IsWithinStructArrayLimit<TSource>(long length)
+		{
+			if (!IsWithinArrayLimit(length))
+			{
+				return false;
+			}
+			long totalBytes = length * Marshal.SizeOf<TSource>();
+			return IsWithinBufferLimit(totalBytes);
 		}
 
 		[Null]

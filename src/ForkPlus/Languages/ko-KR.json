@@ -1632,6 +1632,7 @@
     "Send (Enter)": "전송 (Enter)",
     "Send (queued: {0})": "전송 (대기열: {0})",
     "Send Crash Report": "크래시 보고서 보내기",
+    "Export Diagnostics...": "진단 정보 내보내기...",
     "Send on Ctrl+Enter": "Ctrl+Enter 전송",
     "Send on Enter": "Enter 전송",
     "Server Type:": "서버 유형:",

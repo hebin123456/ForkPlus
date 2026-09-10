@@ -58,6 +58,8 @@ namespace ForkPlus.UI
 
 		private SendCrashReportCommand _sendCrashReport;
 
+		private ExportDiagnosticsCommand _exportDiagnostics;
+
 		private ShowQuickLaunchWindowCommand _showQuickLaunchWindow;
 
 		private ShowQuickLaunchCheckoutWindowCommand _showQuickLaunchCheckouWindow;
@@ -189,6 +191,9 @@ namespace ForkPlus.UI
 		public ShowConfigureWorkspacesWindowCommand ShowConfigureWorkspacesWindow => CommandContainer.Lazy(ref _showConfigureWorkspacesWindow);
 
 		public SendCrashReportCommand SendCrashReport => CommandContainer.Lazy(ref _sendCrashReport);
+
+		/// <summary>v4.0.6：日志目录一键打包导出（crash/freeze/dump 现场收集）。</summary>
+		public ExportDiagnosticsCommand ExportDiagnostics => CommandContainer.Lazy(ref _exportDiagnostics);
 
 		public ShowQuickLaunchWindowCommand ShowQuickLaunchWindow => CommandContainer.Lazy(ref _showQuickLaunchWindow);
 

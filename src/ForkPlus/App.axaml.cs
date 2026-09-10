@@ -1290,6 +1290,10 @@ namespace ForkPlus
 					desktop.MainWindow = mainWindow;
 				}
 				mainWindow.Show();
+				// v4.0.6：UI 冻结看门狗——主循环已运行、心跳可投递后启动（headless 测试覆写
+				// 了本方法路径，看门狗不进测试进程）。卡住超阈值即写 freeze-*.log + 冻结转储，
+				// "卡着卡着崩溃"的前半段从此有现场可查。
+				UiFreezeWatchdog.Start();
 			}
 		}
 
@@ -1621,6 +1625,8 @@ namespace ForkPlus
 		// Avalonia 挂 IClassicDesktopStyleApplicationLifetime.ShutdownRequested（见文件末尾）。
 		private void RunExit()
 		{
+			// v4.0.6：先停看门狗（退出流程自身可能触发"无心跳"，不应在关机时写冻结报告）。
+			UiFreezeWatchdog.Stop();
 			ForkPlusSettings.Default.Save();
 			_askPassIpcServer.Dispose();
 			_defaultIpcServer.Dispose();

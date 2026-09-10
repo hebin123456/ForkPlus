@@ -1632,6 +1632,7 @@
     "Send (Enter)": "送信 (Enter)",
     "Send (queued: {0})": "送信 (キュー: {0})",
     "Send Crash Report": "クラッシュレポートを送信",
+    "Export Diagnostics...": "診断情報のエクスポート...",
     "Send on Ctrl+Enter": "Ctrl+Enter 送信",
     "Send on Enter": "Enter 送信",
     "Server Type:": "サーバータイプ:",

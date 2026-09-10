@@ -1,6 +1,32 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+## v4.0.6
+
+> 崩溃/卡顿专项版本：让每一次崩溃和卡住都留下现场，并关掉三条已知的进程级死亡路径。
+
+### 新增
+
+- **native 崩溃转储（dump-\*.dmp）**：启用 .NET 运行时自带的 createdump（`DOTNET_DbgEnableMiniDump` + WithHeap 类型），SIGSEGV/SIGABRT 等运行时级硬崩不再"无声消失"——崩溃瞬间自动写转储到日志目录（保留最近 5 份），`dotnet-dump analyze` 可直接看到崩溃线程的完整托管栈。v4.0.5 的 crash-\*.log 只覆盖托管异常，native 层硬崩此前进程内零现场。
+- **UI 冻结看门狗（freeze-\*.log + freeze-\*.dmp）**：独立后台线程每秒向 UI 线程投递心跳，连续 6 秒无响应即写冻结报告（版本/系统/冻结时长/运行中的全部后台任务/GC 状态），并调用 createdump 对自身做一份冻结现场转储（冷却 60 秒）。"卡着卡着崩溃"的前半段——卡住当下 UI 线程在做什么——从此有据可查。单调时钟计时，系统休眠唤醒不误报；环境变量 `FORKPLUS_DISABLE_FREEZE_WATCHDOG=1` 可整体停用。
+- **诊断包一键导出（帮助菜单 → Export Diagnostics...）**：把日志目录（fork.log 滚动归档、crash-\*.log、freeze-\*.log、\*.dmp）打包成单个 zip 供直接反馈，内附版本/系统 README；超过 100MB 的单个文件（通常是 WithHeap 转储）默认跳过并列明。崩溃现场从"藏在 %LOCALAPPDATA% 深处用户很难找到"变成"一次另存为"。八语言词条齐备。
+
+### 修复
+
+- **跑着带输出的 git 命令（fetch/push/stage）时进程无声消失**：biturbo 读管道线程反向调用托管回调（`SpawnWithCallbackInner.HandleCallback`）处无异常防护——任何解析器抛出的托管异常都会试图展开穿过 native（Rust）栈帧，CLR 检测到后直接 FailFast 终止进程，v4.0.5 的三路异常兜底（Dispatcher/AppDomain/TaskScheduler）与 CrashDumper 全部拦不住。边界处就地拦截：异常吞噬并落 crash-\*.log（kind=SpawnCallback，含命令路径与流类型），最坏丢一行输出，进程存活。
+- **文件/文件夹选择对话框卡死界面（慢目录/网络盘死锁）**：WPF 兼容层 OpenFileDialog/SaveFileDialog 的阻塞等待 `GetAwaiter().GetResult()` 在 UI 线程上裸等异步任务——任务完成需要 UI 线程派发（StorageProvider 内部回调）时即死锁；即使不死锁，等待期间主窗口也全程无响应。改为 PushFrame 嵌套消息循环等待（与 ShowDialog/Clipboard 兼容层同款既有模式），等待期间界面持续泵消息，异常语义与原先一致。AI 对话框"复制"按钮的剪贴板同步等待同款修复（async/await 化）。
+- **native 互操作边界零防御**：`BiturboExtensions` 的 Marshal.Copy 此前按对端返回的长度裸拷贝（数组/缓冲/字符串/nul 终止符扫描），对端未来任何回归（Rust bug、ABI 错位、内存踩踏）都会把异常长度直接变成 SIGSEGV 硬崩。全面钳制：数组 ≤1000 万元素 / 缓冲 ≤256MB / nul 扫描有界，越限按损坏数据降级为空结果 + 日志；revision 列表的 indexes 前置范围校验，越界降级为带定位信息的命令失败而非 IndexOutOfRangeException。当前 Biturbo v1.1.3 契约已逐项核对无问题，此为纯防御层（防未来回归时"硬崩"变"报错"）。
+- **冻结报告的任务可见性**：JobQueue 增加进程内全部队列实例的弱引用注册表（主窗口/仓库页/账号页/统计页等十余处各自建队列），冻结报告能看到"卡住当下"真正在跑的全部后台任务（名称/已耗时/进度），而不只是个别静态可达队列。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.6-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.6-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.6-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.6-macos-arm64.zip` |
+
 ## v4.0.5
 
 > v4.0.4 是一个玩笑版本（404 Not Found，没有任何构建产物 😄）——真正的修复都在这里。

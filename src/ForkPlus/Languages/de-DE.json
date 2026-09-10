@@ -1632,6 +1632,7 @@
     "Send (Enter)": "Senden (Enter)",
     "Send (queued: {0})": "Senden (Warteschlange: {0})",
     "Send Crash Report": "Absturzbericht senden",
+    "Export Diagnostics...": "Diagnosepaket exportieren...",
     "Send on Ctrl+Enter": "Strg+Enter zum Senden",
     "Send on Enter": "Enter zum Senden",
     "Server Type:": "Servertyp:",

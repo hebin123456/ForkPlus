@@ -187,7 +187,10 @@ namespace ForkPlus.UI.Dialogs
 			_currentMonitor?.Cancel();
 		}
 
-		private void CopyButton_Click(object sender, RoutedEventArgs e)
+		// v4.0.6：原实现 Clipboard.SetTextAsync(md).GetAwaiter().GetResult() 在 UI 线程
+		// 同步阻塞异步任务——剪贴板写入需要 UI 线程派发时即死锁。事件处理器改 async/await
+		// （try/catch 全覆盖，异常语义与原先一致只记日志）。
+		private async void CopyButton_Click(object sender, RoutedEventArgs e)
 		{
 			string md = AiStreamingView.GetMarkdown();
 			if (string.IsNullOrEmpty(md))
@@ -196,7 +199,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				Clipboard.SetTextAsync(md).GetAwaiter().GetResult(); // Migration note：WPF Clipboard.SetText → Avalonia SetTextAsync（阻塞等待保持同步形状）。
+				await Clipboard.SetTextAsync(md);
 				StatusTextBlock.Text = PreferencesLocalization.Current("Copied to clipboard");
 			}
 			catch (Exception ex)

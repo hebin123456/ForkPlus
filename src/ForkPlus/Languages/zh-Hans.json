@@ -1634,6 +1634,7 @@
     "Send (Enter)": "发送 (Enter)",
     "Send (queued: {0})": "发送 (队列: {0})",
     "Send Crash Report": "发送崩溃报告",
+    "Export Diagnostics...": "导出诊断包...",
     "Send on Ctrl+Enter": "Ctrl+Enter 发送",
     "Send on Enter": "Enter 发送",
     "Server Type:": "服务器类型：",

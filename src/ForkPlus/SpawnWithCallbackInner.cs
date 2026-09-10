@@ -90,10 +90,25 @@ namespace ForkPlus
 
 		private static void HandleCallback(IntPtr cbTargetPtr, byte kind, IntPtr dataPtr, long dataLen)
 		{
-			if (cbTargetPtr.AsManagedObject() is SpawnWithCallbackInner spawnWithCallbackInner)
+			// v4.0.6：本方法由 biturbo 的读管道线程反向调用（reverse P/Invoke）。异常一旦
+			// 从这里抛出，会试图展开穿过 native（Rust）栈帧——CLR 检测到后直接 FailFast
+			// 终止进程，任何 App 级兜底（Dispatcher/AppDomain/TaskScheduler 三路）都拦不住，
+			// 表象为"跑着带输出的 git 命令（fetch/push/stage）时进程无声消失"。因此边界处
+			// 就地拦截：解析/handler 抛出的任何托管异常吞噬并落崩溃转储（kind=SpawnCallback），
+			// 最坏丢一行输出日志，进程存活。
+			string commandPath = null;
+			try
 			{
-				string utf8String = dataPtr.GetUtf8String(dataLen);
-				((kind == 0) ? spawnWithCallbackInner._stdoutLineHandler : spawnWithCallbackInner._stderrLineHandler)?.Invoke(utf8String);
+				if (cbTargetPtr.AsManagedObject() is SpawnWithCallbackInner spawnWithCallbackInner)
+				{
+					commandPath = spawnWithCallbackInner._path;
+					string utf8String = dataPtr.GetUtf8String(dataLen);
+					((kind == 0) ? spawnWithCallbackInner._stdoutLineHandler : spawnWithCallbackInner._stderrLineHandler)?.Invoke(utf8String);
+				}
+			}
+			catch (Exception exception)
+			{
+				CrashDumper.Dump("SpawnCallback", exception, "path=" + (commandPath ?? "<null>") + " kind=" + ((kind == 0) ? "stdout" : "stderr") + " len=" + dataLen);
 			}
 		}
 	}

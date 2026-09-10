@@ -45,7 +45,29 @@ namespace Microsoft.Win32
                 ? desktop.MainWindow
                 : null;
 
-        internal static T BlockingWait<T>(Task<T> task) => task.GetAwaiter().GetResult();
+        internal static T BlockingWait<T>(Task<T> task)
+        {
+            // v4.0.6：原实现 task.GetAwaiter().GetResult() 在 UI 线程上裸同步阻塞——
+            // 任务完成依赖 UI 线程派发（StorageProvider 内部回调）时即死锁；即使不死锁，
+            // 等待期间（慢目录枚举/网络盘）主窗口也全程无响应，是"选个文件卡死界面"的
+            // 直接来源。改为 PushFrame 嵌套消息循环等待（与 ShowDialog/Clipboard 兼容层
+            // 既有模式一致）：UI 线程持续泵消息，任务完成后由后台续体退出帧。
+            // 非 UI 线程调用保持原语义（直接阻塞，本就安全）。
+            if (task.IsCompleted) return task.GetAwaiter().GetResult();
+            if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                return task.GetAwaiter().GetResult();
+            }
+            var frame = new global::Avalonia.Threading.DispatcherFrame();
+            task.ContinueWith(_ =>
+                {
+                    global::Avalonia.Threading.Dispatcher.UIThread.Post(() => frame.Continue = false);
+                },
+                TaskScheduler.Default);
+            global::Avalonia.Threading.Dispatcher.UIThread.PushFrame(frame);
+            // 帧退出即任务已完成；异常语义与原 GetResult() 一致（faulted 抛原异常）。
+            return task.GetAwaiter().GetResult();
+        }
 
         internal static global::Avalonia.Platform.Storage.IStorageFolder TryGetStartLocation(Window owner, string initialDirectory, string fileName)
         {

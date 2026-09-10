@@ -1631,6 +1631,7 @@
     "Send (Enter)": "傳送 (Enter)",
     "Send (queued: {0})": "傳送 (佇列: {0})",
     "Send Crash Report": "傳送當機報告",
+    "Export Diagnostics...": "匯出診斷資料...",
     "Send on Ctrl+Enter": "Ctrl+Enter 傳送",
     "Send on Enter": "Enter 傳送",
     "Server Type:": "伺服器類型：",

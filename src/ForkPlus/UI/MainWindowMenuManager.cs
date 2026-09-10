@@ -347,6 +347,9 @@ namespace ForkPlus.UI
 			yield return new Separator();
 			yield return commands.OpenKeyboardShortcuts.CreateMenuItem(delegate { commands.OpenKeyboardShortcuts.Execute(); });
 			yield return commands.ShowPerformanceDiagnosticsWindow.CreateMenuItem(delegate { commands.ShowPerformanceDiagnosticsWindow.Execute(); });
+			// v4.0.6：诊断包一键导出（crash/freeze/dump 日志目录打包）——"UI 卡着卡着崩溃"
+			// 排障闭环的最后一步：现场已全部落盘，用户一键收集反馈。
+			yield return commands.ExportDiagnostics.CreateMenuItem(delegate { commands.ExportDiagnostics.Execute(); });
 			yield return new Separator();
 			yield return commands.ShowAboutWindow.CreateMenuItem(delegate { commands.ShowAboutWindow.Execute(); });
 		}

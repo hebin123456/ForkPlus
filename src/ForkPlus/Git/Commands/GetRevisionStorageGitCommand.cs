@@ -160,11 +160,26 @@ namespace ForkPlus.Git.Commands
 			});
 		}
 
-		private static GitCommandResult<RevisionStorage> IntoRevisionStorage(ref BtCommitStorage btCommitStorage, long timestamp)
+		// v4.0.6 改 internal：回归测试直测索引校验（native 返回异常索引时降级为命令
+		// 失败而非 IndexOutOfRangeException 崩溃——见下方校验循环注释）。
+		internal static GitCommandResult<RevisionStorage> IntoRevisionStorage(ref BtCommitStorage btCommitStorage, long timestamp)
 		{
 			Sha[] structArray = btCommitStorage.oids.GetStructArray(btCommitStorage.oids_len, (BtOid btOid) => btOid.ToSha());
 			uint[] uInt32Array = btCommitStorage.indexes.GetUInt32Array(btCommitStorage.indexes_len);
 			bool hasMore = btCommitStorage.has_more != 0;
+			// v4.0.6 索引钳制：indexes[i] 语义是"第 i 个提交的 oid 在 oids 中的下标，且
+			// parents 是 (indexes[i], indexes[i+1]) 区间"。Rust 侧契约如实填写，但一旦
+			// 未来回归返回越界索引（Biturbo 源码已核对当前无此问题），下方循环的
+			// structArray[...] 直接 IndexOutOfRangeException——后台 Job 表现为任务失败，
+			// UI 线程路径则炸未处理异常。改为前置校验：越界即按命令失败上报（Bug 错误码，
+			// 带具体索引值便于定位），不产生异常。
+			for (int k = 0; k < uInt32Array.Length; k++)
+			{
+				if (uInt32Array[k] >= structArray.Length)
+				{
+					return GitCommandResult<RevisionStorage>.Failure(new GitCommandError.Bug("bt_get_commits returned indexes[" + k + "]=" + uInt32Array[k] + " out of range for " + structArray.Length + " oids"));
+				}
+			}
 			List<Sha> list = new List<Sha>(uInt32Array.Length);
 			List<Sha> list2 = new List<Sha>((int)((double)list.Count * 1.2));
 			List<int> list3 = new List<int>(uInt32Array.Length);

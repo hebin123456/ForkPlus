@@ -1632,6 +1632,7 @@
     "Send (Enter)": "Envoyer (Enter)",
     "Send (queued: {0})": "Envoyer (file : {0})",
     "Send Crash Report": "Envoyer rapport de crash",
+    "Export Diagnostics...": "Exporter les diagnostics...",
     "Send on Ctrl+Enter": "Ctrl+Entrée pour envoyer",
     "Send on Enter": "Entrée pour envoyer",
     "Server Type:": "Type de serveur :",
