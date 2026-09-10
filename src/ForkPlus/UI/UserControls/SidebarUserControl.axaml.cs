@@ -352,14 +352,6 @@ namespace ForkPlus.UI.UserControls
 			SidebarTreeView.EnsureScrollToTop();
 		}
 
-		private void TagTitleTextBlock_ToolTipOpening(object sender, ToolTipEventArgs e)
-		{
-			if (sender is TextBlock { DataContext: TagSidebarItem { Reference: Tag reference } } textBlock)
-			{
-				global::Avalonia.Controls.ToolTip.SetTip(textBlock,$"Tag '{reference.Name}'\n{reference.CommitterDate}");
-			}
-		}
-
 		private void TruncateSidebarItem_RequestNavigate(object sender, RequestNavigateEventArgs e)
 		{
 			// Migration note：WPF FrameworkContentElement → Avalonia Control（HyperlinkButton 承载内联超链接）。

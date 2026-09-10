@@ -326,10 +326,17 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <Image Grid.Column="0" Source="{DynamicResource TagIcon}" Height="16" Width="16" x:Name="TagImage" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" TextAlignment="Left" ToolTip.Tip="" x:Name="TagTitleTextBlock" Theme="{DynamicResource SidebarTagTitleTextBlock}">
+      <!-- 修复（2026-09-10，"侧边栏 Tags 分组每个标签悬浮 tooltip 为空"）：WPF 原版经
+           ToolTipOpening 事件填充 tip，迁移后模板丢了事件接线、写死 ToolTip.Tip="" →
+           悬浮显示空气泡。改为绑定 TagSidebarItem 已重写的 Tooltip 属性（Tag 'name' +
+           提交日期），与 LocalBranchSidebarItem 模板同款做法。 -->
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" TextAlignment="Left" x:Name="TagTitleTextBlock" Theme="{DynamicResource SidebarTagTitleTextBlock}">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
+        <ToolTip.Tip>
+          <Binding Path="Tooltip" />
+        </ToolTip.Tip>
       </TextBlock>
       <Button Grid.Column="2" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}">
         <Button.IsVisible>

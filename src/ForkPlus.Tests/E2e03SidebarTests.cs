@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.Git;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
@@ -99,6 +100,18 @@ namespace ForkPlus.Tests
 					Assert.True(tagItem != null, "Tags 分组应含 v1.0");
 					Assert.True(tagItem.IsVisible, "Tags 展开后 v1.0 应可见");
 					Assert.StartsWith("refs/tags/", tagItem.Reference.FullReference);
+					// ===== 5b) tag tooltip（2026-09-10 修复回归：模板原先写死 ToolTip.Tip="" → 悬浮空气泡）=====
+					// 找到已渲染模板实例化的 TagTitleTextBlock（App.axaml 隐式 DataTemplate），断言 tooltip
+					// 绑定生效——TagSidebarItem.Tooltip 重写值（"Tag 'v1.0'" + 换行 + 提交日期）。
+					TextBlock tagTitleVisual = null;
+					bool tagTitleFound = UiClick.WaitFor(delegate
+					{
+						tagTitleVisual = treeView.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Name == "TagTitleTextBlock" && Equals(t.DataContext, tagItem));
+						return tagTitleVisual != null;
+					});
+					Assert.True(tagTitleFound, "tag 项模板应已渲染出 TagTitleTextBlock（15s 超时）");
+					string tagTip = global::Avalonia.Controls.ToolTip.GetTip(tagTitleVisual) as string;
+					Assert.True(tagTip != null && tagTip.StartsWith("Tag 'v1.0'"), $"tag tooltip 应为 Tag 'v1.0' 开头的非空串，实际: {tagTip ?? "(null)"}");
 					ScreenshotHelper.Snap(window, "05-sidebar-tags-expanded", "03-sidebar");
 
 					// ===== 6) 过滤框（0.1s 防抖 → UpdateFilter → FilterString → Refilter） =====
