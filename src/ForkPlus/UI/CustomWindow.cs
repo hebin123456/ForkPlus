@@ -293,6 +293,14 @@ namespace ForkPlus.UI
 			AddHandler(global::Avalonia.Input.InputElement.PointerPressedEvent,
 				OnWindowPointerPressedForMoveDrag,
 				global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			// 修复（2026-09-10，"窗口非最大化时边缘无 resize 箭头/无法调整大小"）：
+			// SystemDecorations=None 后系统原生 resize 边框（含鼠标悬停的 SizeXxx 箭头）不再渲染，
+			// 缩放仅靠 OnWindowPointerPressedForMoveDrag 里 6px 握把按住拖拽（TryBeginResizeDrag），
+			// 但悬停时无任何光标提示，用户感知"没法调整"。这里在 PointerMoved（Tunnel 预览，先于
+			// 子控件）里按边缘命中设置窗口 Cursor 为对应 SizeXxx 箭头，离开边缘还原默认。
+			AddHandler(global::Avalonia.Input.InputElement.PointerMovedEvent,
+				OnWindowPointerMovedForResizeCursor,
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 		}
 
 		private void OnWindowPointerPressedForMoveDrag(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
@@ -332,6 +340,79 @@ namespace ForkPlus.UI
 			}
 		}
 
+		// 与 TryBeginResizeDrag 同口径的 6px 边缘握把厚度。
+		private const double ResizeGripThickness = 6.0;
+
+		// 缓存当前已设的 resize 光标类型，避免 PointerMoved 高频回调里反复赋同一值触发无效刷新。
+		private global::Avalonia.Input.StandardCursorType? _currentResizeCursorType;
+
+		private void OnWindowPointerMovedForResizeCursor(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			// 最大化/不可缩放时不显示 resize 光标（与 TryBeginResizeDrag 的判定一致）。
+			if (IsDesignMode || !CanResize || base.WindowState != global::Avalonia.Controls.WindowState.Normal)
+			{
+				ResetResizeCursor();
+				return;
+			}
+			Point point = e.GetPosition(this);
+			double width = Bounds.Width;
+			double height = Bounds.Height;
+			bool left = point.X <= ResizeGripThickness;
+			bool right = point.X >= width - ResizeGripThickness;
+			bool top = point.Y <= ResizeGripThickness;
+			bool bottom = point.Y >= height - ResizeGripThickness;
+
+			// 优先角，再边：角命中时用对角光标，边命中时用单轴光标。
+			// Avalonia StandardCursorType 用 TopLeftCorner/TopRightCorner/BottomLeftCorner/BottomRightCorner
+			// 表对角，SizeWestEast/SizeNorthSouth 表单轴。
+			global::Avalonia.Input.StandardCursorType type;
+			if (top && left)
+			{
+				type = global::Avalonia.Input.StandardCursorType.TopLeftCorner;
+			}
+			else if (top && right)
+			{
+				type = global::Avalonia.Input.StandardCursorType.TopRightCorner;
+			}
+			else if (bottom && left)
+			{
+				type = global::Avalonia.Input.StandardCursorType.BottomLeftCorner;
+			}
+			else if (bottom && right)
+			{
+				type = global::Avalonia.Input.StandardCursorType.BottomRightCorner;
+			}
+			else if (left || right)
+			{
+				type = global::Avalonia.Input.StandardCursorType.SizeWestEast;
+			}
+			else if (top || bottom)
+			{
+				type = global::Avalonia.Input.StandardCursorType.SizeNorthSouth;
+			}
+			else
+			{
+				ResetResizeCursor();
+				return;
+			}
+			// 边缘握把区无子控件占据，窗口级 Cursor 直接生效；进入客户区后还原默认，子控件自身
+			// Cursor（如文本框 Ibeam）仍按其自身设置优先显示。
+			if (_currentResizeCursorType != type)
+			{
+				_currentResizeCursorType = type;
+				this.Cursor = new global::Avalonia.Input.Cursor(type);
+			}
+		}
+
+		private void ResetResizeCursor()
+		{
+			if (_currentResizeCursorType.HasValue)
+			{
+				_currentResizeCursorType = null;
+				this.Cursor = null; // null = 继承默认，子控件自身 Cursor 优先
+			}
+		}
+
 		private bool TryBeginResizeDrag(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			if (!CanResize || base.WindowState != global::Avalonia.Controls.WindowState.Normal)
@@ -343,7 +424,6 @@ namespace ForkPlus.UI
 				return false;
 			}
 
-			const double ResizeGripThickness = 6.0;
 			Point point = e.GetPosition(this);
 			double width = Bounds.Width;
 			double height = Bounds.Height;

@@ -3,11 +3,20 @@
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 ## v4.0.7
 
-> 文本框专项修复：弹窗里超长内容恢复"能拖选全部、能滚动"。
+> 交互专项修复：文本框拖选、侧边栏"显示所有"行为对齐 WPF，外加一批窗口/弹窗/通知问题。
 
 ### 修复
 
+- **侧边栏"显示所有标签 / 显示所有分支 / 显示所有贮藏"单击无反应、右键弹空菜单、双击误弹检出**：TruncateSidebarItem 的 DataTemplate 用 HyperlinkButton 承载超链接，但未设 x:Name，也未接 RequestNavigate（迁移期丢失 WPF Hyperlink.RequestNavigate 接线）→ 单击无响应；右键释放时 ContextMenu 经 ContextRequested 原生路径重开成空菜单（一个小点）；双击时 TruncateSidebarItem 不可选中，SelectedItem 仍是之前选中的分支/标签/贮藏，会误触发"检出"弹窗。修复：按钮点击处理器按 DataContext 识别 truncate 行，单击/双击均切换该分组的截断状态（同一 TruncateSidebarItem 类型覆盖分支/标签/贮藏三处）；右键复用贮藏分组的输入期菜单抑制（清项 + Close + 临时置空引用，彻底杜绝空菜单闪现）；双击在进入检出逻辑前拦截。对齐 WPF 原版行为。
 - **弹窗 TextBox 长文本无法拖选全部内容（如重命名贮藏的消息框）**：WPF 原版全部 8 个 TextBox 系模板（TextBox / PlaceholderTextBox / AutoCompleteTextBox / CommitPlaceholderTextBox / CommitDescriptionTextBox / SearchPanelPlaceholderTextBox / FilterTextBox / 编辑型 ComboBox 内嵌 TextBox）的内容宿主都是 `ScrollViewer PART_ContentHost`（滚动条隐藏但可滚动）；迁移时被统一误换成裸 TextPresenter 直接放进 Border——presenter 被裁剪为可视宽度，而 Avalonia TextBox 拖选时把指针坐标钳制到 presenter 边界（= 可视宽度），超出框长的文字永远选不中、也滚不过去。全部模板补回 ScrollViewer（Avalonia 部件契约名 `PART_ScrollViewer`，对齐官方 Fluent 主题做法）：presenter 以内容全宽测量，鼠标拖到框边缘即可扩选全部文字，光标越界自动滚动（多行提交框的垂直滚动同理受益）；Background 显式透明防止主题 ScrollViewer 背景盖掉文本框底色。新增 headless 探针测试覆盖"拖出框缘应全选 + 自动滚动"。
+- **git mm 结束等场景丢失系统原生 Toast 通知**：Toast 服务在 Avalonia 迁移期被降级为空操作（仅记日志）。恢复 Windows 原生 Toast：非 MSIX 桌面应用发 Toast 需先注册 AUMID——幂等写入 HKCU 注册表路径（DisplayName/IconUri）；发送经 PowerShell 子进程走 WinRT ToastNotificationManager（net10.0 无 WinRT 投影，不引入新 NuGet 包），XML 以 base64 传递规避转义问题，fire-and-forget 不阻塞 UI 线程。非 Windows 平台保持降级记日志。
+- **切换主题偶发卡死（"Grid already has a visual parent ContentPresenter"）**：切主题 = ControlTheme 换新实例 → 模板重建，旧 PART_SelectedContentHost 的 Host 已被清 null，TabControl 基类的 ClearOwningContentPresenter 失效，旧 presenter 仍把选中内容持为视觉子级，新 presenter 测量时抛"already has a visual parent"——异常虽被全局兜底吞掉，但抛在 Measure 阶段导致布局 pass 反复重试，UI 表现为卡死。新增 GuardedTabControl（裸 TabControl 加兜底释放覆写，StyleKey 沿用原生 TabControl，外观零变化）用于侧边栏；TabControlContentHostGuard 兜底同步加固：新 presenter 注册时无条件强制释放旧 presenter 的 Content/ContentTemplate/DataContext，不再依赖基类赋值时序与内容引用相等。
+- **切换某些主题后弹窗外圈边距颜色与内部不一致**：弹窗内容 Grid 有 20/0/20/20 外边距，边距区域露出窗口自身 Background——该值经 ControlTheme 的 DynamicResource Setter 绑定，运行时热替换主题字典后不重新解析（停留在旧主题色，如 Light 灰白），而内容 Grid 走命令式刷新已切到新主题色。初始化与 RefreshBrushes 两条路径同步命令式刷新窗口 Background，外圈与内部配色一致。
+- **交互式变基改过内容后点取消，二次确认框没反应**：确认框默认以 MainWindow 为 owner，但变基窗口本身已是模态（MainWindow 已被禁用），嵌套对话框挂错模态链导致输入无法路由。改为以变基窗口为 owner（与 PushWindow / ConfigureSshKeysWindow 等嵌套对话框同款做法）。
+- **重启后窗口位置/大小/最大化状态没完全恢复**：Windows 端原先走 Win32 SetWindowPlacement，但 Avalonia 的 WindowState 属性不随 Win32 状态变化更新，且实测两者互相打架，恢复不可靠。改为与 Unix 端完全一致的跨平台原生 API 路径：Width/Height（DIP）+ Position（物理像素 = DIP × RenderScaling）+ WindowState，先设正常态几何再切最大化；Win32 GetWindowPlacement 仍用于保存端读取还原矩形。
+- **未暂存区选中文件夹时右上角 Stage 按钮点不动**：按钮启用条件含 `!IsDirectory`，选中目录时直接置灰——但 StageSelectedFiles 走目录展开成文件再暂存，目录本就是可暂存单元；Unstage 侧用 `Length != 0`（含目录）却正常。改为选中目录（无论 ChangeType）或非 Unchanged 文件均可启用，两侧一致。
+- **窗口非最大化时边缘无 resize 箭头/感知不到可调整大小**：SystemDecorations=None 后系统原生 resize 边框（含悬停箭头）不再渲染，仅剩按住拖拽。PointerMoved（Tunnel 预览，先于子控件）里按与拖拽同口径的 6px 边缘命中设置对应 SizeXxx 光标（角/边分级），离开边缘还原默认，子控件自身光标不受影响。
+- **凭据 helper 对 git 2.39+ 协议 v2 参数误警**：`capability[]=authtype` / `wwwauth[]=Basic realm=...` 等数组型参数此前落 default 分支，每条打 "Unknown credentials description parameter" 警告。解析器按前缀识别这两类参数（本 helper 是 v1-only，仅识别不消费，响应时不回显）。
 
 ### 平台覆盖
 

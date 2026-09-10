@@ -455,6 +455,14 @@ namespace ForkPlus.UI.Dialogs
 			RefreshWindowSize();
 			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
 			obj.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
+			// Bug 修复（2026-09-10，"切换某些主题后弹窗外圈边距颜色与内部不一致"）：
+			// 内容 Grid 设了 20/0/20/20 外边距，边距区域露出窗口自身 Background。该 Background
+			// 经 ForkPlusDialogWindowStyle ControlTheme 的 DynamicResource Setter 绑定到
+			// Window.Dialog.Background，但运行时热替换主题字典后，新打开的弹窗实例上该 Setter
+			// 解析到的仍是旧主题色（如 Light #F3F3F3 灰白），而内容 Grid 走命令式 FindBrush 已
+			// 切到新主题色 → 外圈边距与内部不一致。此处与内容 Grid 同步命令式刷新窗口 Background，
+			// 保证新实例与主题切换（RefreshBrushes）两条路径下外圈配色均正确。
+			this.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			RenderOptionsShim.SetClearTypeHint(obj, ClearTypeHint.Enabled);
 			if (ShowHeader)
 			{
@@ -906,11 +914,24 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RefreshBrushes()
 		{
+			Brush dialogBackground = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			Grid obj = base.Content as Grid;
 			if (obj != null)
 			{
-				obj.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
+				obj.Background = dialogBackground;
 			}
+			// Bug 修复（2026-09-10，"切换某些主题时弹窗外圈边距颜色与内部不一致"）：
+			// 内容 Grid 在 InitializeDialogChrome 里设了 20/0/20/20 的外边距，边距区域露出
+			// 窗口自身的 Background。该 Background 经 ForkPlusDialogWindowStyle ControlTheme 的
+			// DynamicResource Setter 绑定到 Window.Dialog.Background，再由模板内层 Border 通过
+			// {TemplateBinding Background} 透传。运行时经 SwitchApplicationThemeCommand 热替换
+			// MergedDictionaries 里的 Colors.*.axaml 时，ControlTheme 上 Window.Background 的
+			// DynamicResource Setter 不会重新解析（标题栏 Border 直接引用同一 DynamicResource
+			// 却能更新，但经 TemplateBinding 透传的内层 Border 停留在旧主题色），导致内容 Grid
+			// 已切到新主题色（如 PurpleLight #EDE5F7）而外圈边距仍是旧主题色（如 Light #F3F3F3
+			// 灰白）。此处与内容 Grid 同步命令式刷新窗口 Background，保证外圈与内部配色一致。
+			// 本地值优先级高于 ControlTheme Setter，后续每次主题切换都会再次走此路径回放，无副作用。
+			this.Background = dialogBackground;
 		}
 	}
 }

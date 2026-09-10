@@ -68,7 +68,7 @@
         </StackPanel>
       </Border>
     </StackPanel>
-    <TabControl Grid.Row="1" Background="{DynamicResource Sidebar.Static.Background}" Padding="0" SelectionChanged="TabControl_SelectionChanged">
+    <controls:GuardedTabControl Grid.Row="1" Background="{DynamicResource Sidebar.Static.Background}" Padding="0" SelectionChanged="TabControl_SelectionChanged">
       <TabItem x:Name="BranchesTabItem">
         <Grid>
           <Grid.RowDefinitions>
@@ -98,6 +98,6 @@
       </TabItem>
       <local:SearchTabItem x:Name="SearchTabItem" />
       <local:ServiceTabItem x:Name="ServiceTabItem" />
-    </TabControl>
+    </controls:GuardedTabControl>
   </Grid>
 </UserControl>

@@ -231,7 +231,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool IrCancelConfirmed()
 		{
-			return new MessageBoxWindow("Do you really want to cancel Interactive Rebase?", "All your changes will be discarded.", "Yes", "No", showCancelButton: true, 550.0).ShowDialog().GetValueOrDefault();
+			// 修复（2026-09-10，"交互式变基改过东西后点取消，二次确认出来后没反应"）：
+			// MessageBoxWindow 构造时基类 ForkPlusDialogWindow 把 owner 设成 MainWindow.Instance，
+			// 但本窗口本身已是模态（ShowDialog 打开），MainWindow 已被本窗口禁用。此时再以
+			// MainWindow 为 owner 调 ShowDialog，新对话框无法正确挂到当前活跃模态链上获取输入
+			// ——确认框弹出但点 Yes/No 无反应。改为把确认框 owner 设成本窗口（与 PushWindow /
+			// ConfigureSshKeysWindow / BlameWindow 等嵌套对话框同一做法），让确认框正确嵌套在
+			// 本窗口之下、禁用本窗口，输入才能路由到确认框。
+			MessageBoxWindow messageBox = new MessageBoxWindow("Do you really want to cancel Interactive Rebase?", "All your changes will be discarded.", "Yes", "No", showCancelButton: true, 550.0);
+			messageBox.SetOwnerCompat(this);
+			return messageBox.ShowDialog().GetValueOrDefault();
 		}
 
 		protected override void OnSubmit()

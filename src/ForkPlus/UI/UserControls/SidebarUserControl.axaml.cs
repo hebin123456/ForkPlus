@@ -176,6 +176,18 @@ namespace ForkPlus.UI.UserControls
 				HideButton_Click(button, e);
 				e.Handled = true;
 				break;
+			default:
+				// 修复（2026-09-10，"标签过多时'显示所有标签'点击无反应"）：
+				// TruncateSidebarItem 的 DataTemplate 用 HyperlinkButton 承载超链接，但未设 x:Name，
+				// 也未接 RequestNavigate（迁移期丢失 WPF Hyperlink.RequestNavigate 接线）→ 单击无响应。
+				// 这里按 DataContext 识别：单击切换该分组的截断状态（显示全部/收起），对齐 WPF 原版。
+				// 同一 TruncateSidebarItem 类型同时用于 Branches/Tags/Stashes，一处修复覆盖三者。
+				if (button.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
+				{
+					ToggleTruncate(parent);
+					e.Handled = true;
+				}
+				break;
 			}
 		}
 
@@ -633,6 +645,18 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			if (!TrySelectContextMenuTarget(e.Source, e.GetPosition(SidebarTreeView)))
 			{
 				SidebarTreeView.ContextMenu?.Close();
+				return;
+			}
+			// 修复（2026-09-10，"右键'显示所有标签/分支/贮藏'出现空菜单（一个小点）"）：
+			// 上一版只 ContextMenu.Close() 不够——Avalonia 的 ContextMenu 在右键释放时经
+			// ContextRequested 自动打开（其内部处理器先于本类的 (_,e)=>e.Handled=true 抑制处理器
+			// 注册），Close 后仍被原生路径重新打开成空菜单（一个小点）。复用 Stashes 组同款
+			// SuppressNativeSidebarContextMenuForCurrentInput：清项 + Close + 临时把
+			// SidebarTreeView.ContextMenu 置 null（让 ContextRequested 找不到菜单可开），
+			// 下一帧再还原引用，彻底杜绝空菜单闪现。对齐 WPF 原版（超链接无右键菜单）。
+			if (SidebarTreeView.LastClickedItem is TruncateSidebarItem)
+			{
+				SuppressNativeSidebarContextMenuForCurrentInput();
 				return;
 			}
 			if (IsStashesContextMenuTarget())
@@ -2734,6 +2758,16 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				return;
 			}
 			MultiselectionTreeViewItem lastClickedItem = SidebarTreeView.LastClickedItem;
+			// 修复（2026-09-09，"双击'显示所有标签/分支/贮藏'弹出检出弹窗"）：
+			// TruncateSidebarItem 不可选中（IsFocusable=false），双击它时 SelectedItem 仍是
+			// 之前选中的分支/标签/贮藏，下方 if 链会误触发"检出"弹窗。超链接项双击应只切换
+			// 截断（与单击一致），绝不应检出。这里在进入检出逻辑前拦截（对齐 WPF 原版）。
+			if (lastClickedItem is TruncateSidebarItem { Parent: FolderSidebarItem parent })
+			{
+				ToggleTruncate(parent);
+				e.Handled = true;
+				return;
+			}
 			if (lastClickedItem != null && lastClickedItem.ShowExpander)
 			{
 				lastClickedItem.IsExpanded = !lastClickedItem.IsExpanded;

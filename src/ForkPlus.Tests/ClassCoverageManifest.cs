@@ -1124,6 +1124,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/GitmojiData.cs", "class", "GitmojiEntry", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/GitPointView.cs", "class", "GitPointView", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/GraphCellView.cs", "class", "GraphCellView", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Controls/GuardedTabControl.cs", "class", "GuardedTabControl", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/HeaderMenuItem.cs", "class", "HeaderMenuItem", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/HighlightableTextBlock.cs", "class", "HighlightableTextBlock", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/HighlightingTextBlockExtensions.cs", "class", "HighlightingTextBlockExtensions", "UNIT-SOURCE-COVERAGE-001"),

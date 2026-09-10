@@ -22,16 +22,18 @@ namespace ForkPlus.UI.Controls
 	/// ClosableTabControl 不受影响——前者走 ItemContainerTheme→RefreshContainers→
 	/// SetControlContent 的同步释放路径，后者模板从不重建。）
 	///
-	/// 兜底：新 PART_SelectedContentHost 注册（RegisterContentPresenter）时，若被跟踪的
-	/// 旧 presenter 还持有同一 Control 内容，先显式释放——不依赖任何时序假设。
+	/// 兜底：新 PART_SelectedContentHost 注册（RegisterContentPresenter）时，只要它是与
+	/// 旧 tracked 不同的实例（即模板重建产生的新 presenter），无条件强制摘除旧 presenter
+	/// 的 Content/ContentTemplate/DataContext，触发内容从旧 presenter 视觉子级释放——
+	/// 不依赖基类赋值 Content 的时序，也不依赖新旧内容引用相等（详见方法注释 2026-09-10 加固）。
 	/// 用法：TabControl 子类覆写 RegisterContentPresenter，在 base 调用后把返回值
 	/// 传给 <see cref="OnSelectedContentHostRegistered"/> 更新跟踪字段。
 	/// </summary>
 	internal static class TabControlContentHostGuard
 	{
-		/// <summary>模板重建兜底释放。tracked 为子类跟踪的上一个 PART_SelectedContentHost；
-		/// registered 为刚注册的新 presenter（base.RegisterContentPresenter 已把它设为
-		/// ContentPart 并赋值 Content=SelectedContent）。返回应继续跟踪的 presenter。</summary>
+	/// <summary>模板重建兜底释放。tracked 为子类跟踪的上一个 PART_SelectedContentHost；
+	/// registered 为刚注册的新 presenter（base.RegisterContentPresenter 已把它设为
+	/// ContentPart）。返回应继续跟踪的 presenter。</summary>
 		internal static ContentPresenter OnSelectedContentHostRegistered(
 			[Null] ContentPresenter tracked, ContentPresenter registered)
 		{
@@ -39,14 +41,23 @@ namespace ForkPlus.UI.Controls
 			{
 				return tracked;
 			}
-			if (tracked != null && !ReferenceEquals(tracked, registered)
-				&& registered.Content is Control content
-				&& ReferenceEquals(tracked.Content, content))
+			// 新 PART_SelectedContentHost 注册即意味着旧 tracked presenter 已被模板重建丢弃
+			//（同一 TabControl 不会同时有两个活跃的 SelectedContentHost）。直接强制摘除旧
+			// presenter 的 Content/ContentTemplate/DataContext，触发 ContentChanged →
+			// VisualChildren.Remove(Child) → 内容从旧 presenter 视觉子级释放，新 presenter
+			// 后续 measure 时 Add 才能成功。
+			//
+			// 加固（2026-09-10，"切主题偶发卡死：Grid already has a visual parent"）：
+			// 原条件依赖 registered.Content 当时已被基类赋上选中内容且与 tracked.Content 同一引用
+			// 才释放——但 base.RegisterContentPresenter 赋值 Content 的时序不稳定，实测切主题偶发
+			// 到达此处时 registered.Content 仍为 null，`is Control` 短路 → 兜底未执行；随后布局阶段
+			// Content 才被设上，旧 presenter 仍持有该 Grid → 新 presenter Measure 抛
+			// "already has a visual parent ContentPresenter (PART_SelectedContentHost)"，异常虽被
+			// DispatcherUnhandledException 吞掉（Handled=true）但抛在 Measure 阶段导致布局 pass
+			// 反复重试，UI 表现为卡死。改为：只要新注册的是不同的 PART_SelectedContentHost 实例，
+			// 无条件释放旧 presenter 的内容，不再依赖基类赋值时序与内容引用相等。
+			if (tracked != null && !ReferenceEquals(tracked, registered))
 			{
-				// 旧 presenter 已脱离逻辑树（模板重建丢弃）：置 null Content 触发
-				// ContentChanged → VisualChildren.Remove(Child) → 内容从旧 presenter 释放，
-				// 新 presenter measure 时 Add 才能成功。模板里 ContentTemplate/DataContext
-				// 一并清理，与 TabControl.ClearPresenterContent 语义对齐。
 				tracked.Content = null;
 				tracked.ContentTemplate = null;
 				tracked.DataContext = null;

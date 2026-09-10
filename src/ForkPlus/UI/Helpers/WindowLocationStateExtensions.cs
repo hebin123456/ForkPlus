@@ -173,27 +173,23 @@ namespace ForkPlus.UI.Helpers
 			{
 				return;
 			}
-			// Migration note：Unix 上 Win32 SetWindowPlacement 不可用；Width/Height 是 DIP 可直接赋值，
-			// Position 是物理像素需乘 RenderScaling。先设几何再切最大化（WPF 同序）。
-			if (!OperatingSystem.IsWindows())
+			// 修复（2026-09-10，"重启后窗口位置/大小/最大化状态没完全恢复"）：
+			// 原先 Windows 走 Win32 SetWindowPlacement（ShowCmd=SW_SHOWMAXIMIZED 切最大化），
+			// 但 Avalonia 的 WindowState 属性不随 Win32 状态变化而更新——仍认为 Normal，
+			// 后续布局/渲染按 Normal 处理，或用户点还原时与 Win32 已最大化冲突，最大化丢失。
+			// 实测即便补 window.WindowState=Maximized 同步，SetWindowPlacement 与 Avalonia 平台层
+			// 仍互相打架，恢复不可靠。改为跨平台统一走 Avalonia 原生 API：Width/Height（DIP）+
+			// Position（物理像素 = DIP × RenderScaling）+ WindowState，与 Unix 路径完全一致。
+			// 先设正常态几何，再切最大化——还原时窗口回到此处设的 normal rect（与 save 端
+			// GetWindowPlacement.normalPosition 语义对齐）。Win32 GetWindowPlacement 仍用于
+			// save 端读取正常态矩形（最大化时取还原矩形），restore 端不再用 SetWindowPlacement。
+			window.Width = state.Width;
+			window.Height = state.Height;
+			double num = (window.RenderScaling > 0.0) ? window.RenderScaling : 1.0;
+			window.Position = new global::Avalonia.PixelPoint((int)(state.Left * num), (int)(state.Top * num));
+			if (state.WindowState == global::Avalonia.Controls.WindowState.Maximized)
 			{
-				window.Width = state.Width;
-				window.Height = state.Height;
-				double num = (window.RenderScaling > 0.0) ? window.RenderScaling : 1.0;
-				window.Position = new global::Avalonia.PixelPoint((int)(state.Left * num), (int)(state.Top * num));
-				if (state.WindowState == global::Avalonia.Controls.WindowState.Maximized)
-				{
-					window.WindowState = global::Avalonia.Controls.WindowState.Maximized;
-				}
-				return;
-			}
-			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window);
-			WindowPlacement windowPlacement = ToWindowPlacement(state, window);
-			windowPlacement.Length = Marshal.SizeOf(typeof(WindowPlacement));
-			windowPlacement.Flags = 0;
-			if (window.WindowState != global::Avalonia.Controls.WindowState.Minimized)
-			{
-				SetWindowPlacement(windowInteropHelper.Handle, ref windowPlacement);
+				window.WindowState = global::Avalonia.Controls.WindowState.Maximized;
 			}
 		}
 

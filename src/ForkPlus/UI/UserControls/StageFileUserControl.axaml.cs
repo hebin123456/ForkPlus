@@ -277,12 +277,17 @@ namespace ForkPlus.UI.UserControls
 			}
 			else
 			{
-				StageButton.Content = Preferences.PreferencesLocalization.Translate("Stage", ForkPlusSettings.Default.UiLanguage);
-			UnstageButton.Content = Preferences.PreferencesLocalization.Translate("Unstage", ForkPlusSettings.Default.UiLanguage);
-			// v3.8.1：开启"显示完整工作目录"时，选中全是未变更文件则 Stage 按钮置灰（只读）
-			StageButton.IsEnabled = Enabled && UnstagedFilesFileListUserControl.SelectedItems.Any((ChangedFile x) => !x.IsDirectory && x.ChangeType != ChangeType.Unchanged);
-			UnstageButton.IsEnabled = Enabled && StagedFilesFileListUserControl.SelectedItems.Length != 0;
-			}
+			StageButton.Content = Preferences.PreferencesLocalization.Translate("Stage", ForkPlusSettings.Default.UiLanguage);
+		UnstageButton.Content = Preferences.PreferencesLocalization.Translate("Unstage", ForkPlusSettings.Default.UiLanguage);
+		// v3.8.1：开启"显示完整工作目录"时，选中全是未变更文件则 Stage 按钮置灰（只读）
+		// 修复（2026-09-10，"未暂存区选中文件夹时右上角 Stage 按钮点不动"）：
+		// 此前条件含 !x.IsDirectory，选中文件夹（目录）时直接置灰。但 StageSelectedFiles 走
+		// ExpandedSelectedUnstagedFiles 把目录展开成其内文件再暂存——目录本就是可暂存单元，
+		// 不应置灰。UnstageButton 那侧用 SelectedItems.Length != 0（含目录）就启用，两侧应一致。
+		// 改为：选中目录（无论 ChangeType）或非目录且非 Unchanged 的文件，都启用 Stage 按钮。
+		StageButton.IsEnabled = Enabled && UnstagedFilesFileListUserControl.SelectedItems.Any((ChangedFile x) => x.IsDirectory || x.ChangeType != ChangeType.Unchanged);
+		UnstageButton.IsEnabled = Enabled && StagedFilesFileListUserControl.SelectedItems.Length != 0;
+		}
 		}
 
 		public void FocusActiveListView()

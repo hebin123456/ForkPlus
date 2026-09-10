@@ -913,6 +913,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Controls/GitmojiData.cs",
 				"src/ForkPlus/UI/Controls/GitPointView.cs",
 				"src/ForkPlus/UI/Controls/GraphCellView.cs",
+				"src/ForkPlus/UI/Controls/GuardedTabControl.cs",
 				"src/ForkPlus/UI/Controls/HeaderMenuItem.cs",
 				"src/ForkPlus/UI/Controls/HighlightableTextBlock.cs",
 				"src/ForkPlus/UI/Controls/HighlightingTextBlockExtensions.cs",
