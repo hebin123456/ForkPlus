@@ -122,14 +122,14 @@ namespace ForkPlus.Tests
 
 	// ============================ 诊断：RaiseEvent 最小复现 ============================
 
-		/// <summary>分层定位 RaiseEvent 断链（临时诊断用例，定位后移除）：
-		/// 1) 裸 Border 上 AddHandler+RaiseEvent —— 验证路由系统本身
-		/// 2) 窗口里挂树的 Border —— 验证视觉树挂载影响
-		/// 3) CLR 事件订阅（+=）与 AddHandler 的行为差异。</summary>
-		// WIP Skip（2026-09-10）：单跑通过、整批跑失败（用例间静态状态污染，如
-		// HeadlessInProcessDragSource 全局注册），修复中。定位后解除 Skip。
-		[Fact(Skip = "WIP：用例间状态污染待修，单跑已通过，见文件头注释")]
-		public void Diag_MinimalRaiseEvent()
+		/// <summary>路由语义回归（原为分层定位 RaiseEvent 断链的诊断用例，坑2定位后保留为
+	/// 路由行为防回归）：1) 裸 Border 上 AddHandler+RaiseEvent —— 验证路由系统本身；
+	/// 2) 窗口里挂树的 Border —— 验证视觉树挂载不影响实例订阅触发。
+	/// 定位结论（2026-09-10）：AddHandler 默认策略是 Direct，在源元素上运行于类处理器
+	/// 之后——TabItem class handler 先标记 Handled 后，handledEventsToo=false 的 Direct/
+	/// CLR(+=) 实例订阅永不触发；Tunnel 订阅先于类处理器执行。生产订阅必须显式 Tunnel。</summary>
+	[Fact]
+	public void Diag_MinimalRaiseEvent()
 		{
 			HeadlessAppBootstrap.Run(delegate
 			{
@@ -181,9 +181,8 @@ namespace ForkPlus.Tests
 
 		// ============================ 1) 单仓 tab 拖拽排序 ============================
 
-		// WIP Skip（2026-09-10）：Tunnel 路由修复已落地，用例仍在修（见文件头）。
-		[Fact(Skip = "WIP：拖拽管线修复验证中，暂跳过避免 CI 变红")]
-		public void SingleRepo_TabDragReorder_FirstGestureWorks()
+		[Fact]
+	public void SingleRepo_TabDragReorder_FirstGestureWorks()
 		{
 			string repoA = TestRepoFactory.CreateBasic();
 			string repoB = TestRepoFactory.CreateBasic();
@@ -228,13 +227,17 @@ namespace ForkPlus.Tests
 						pressAt.Value.Y + (dropAt.Value.Y - pressAt.Value.Y) / 3.0);
 					var gesture = new DragGesture();
 					// 探针 handler：区分"事件路由本身 broken"（探针也不触发）与
-					// "生产订阅 broken"（探针触发、_lastPressArgs 仍空）。
-					bool probePressed = false;
-					bool probeHandledState = false;
-					tabA.AddHandler(InputElement.PointerPressedEvent, delegate (object s, PointerPressedEventArgs e)
-					{
-						probePressed = true;
-					});
+				// "生产订阅 broken"（探针触发、_lastPressArgs 仍空）。
+				// ⚠️ 必须显式 Tunnel（与生产订阅同款）：AddHandler 默认策略是 Direct，
+				// 在源元素上运行于类处理器之后——TabItem class handler 先标记 Handled，
+				// handledEventsToo=false 的 Direct 探针永不触发（实证：整树逐层探针
+				// Tunnel 全过、Direct 探针一次没跑——不是路由问题，是探针写法问题）。
+				bool probePressed = false;
+				bool probeHandledState = false;
+				tabA.AddHandler(InputElement.PointerPressedEvent, delegate (object s, PointerPressedEventArgs e)
+				{
+					probePressed = true;
+				}, global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 					// window 级 handledEventsToo 探针：无论谁把事件 Handled 都能收到，
 					// 并记录 Handled 状态——定位 Tunnel/前置 Bubble 层是否吞了事件。
 					bool windowSawPress = false;
@@ -277,8 +280,8 @@ namespace ForkPlus.Tests
 					gesture.Move(tabA, window, dropAt.Value);
 					Assert.True(HeadlessInProcessDragSource.Instance.SessionsStarted > sessionsBefore,
 						"move 超阈值后应发起拖拽会话（TabItem_PreviewMouseMove → DragDropLauncher → 代理；" + HeadlessInProcessDragSource.Instance.Diag + "）");
-					Assert.True(HeadlessInProcessDragSource.Instance.DropsRaised > 0,
-						"release 前落点应已收到 DragEnter/DragOver（" + HeadlessInProcessDragSource.Instance.Diag + "）");
+					Assert.True(HeadlessInProcessDragSource.Instance.DragEventsRaised > 0,
+						"release 前落点应已收到 DragEnter/DragOver（Drop 要到 release 才触发，此处查 dragEvents；" + HeadlessInProcessDragSource.Instance.Diag + "）");
 
 					gesture.Release(tabA, window, dropAt.Value);
 					Dispatcher.UIThread.RunJobs();
@@ -309,9 +312,8 @@ namespace ForkPlus.Tests
 
 		// ============================ 2) git mm 子仓 tab 拖拽排序 ============================
 
-		// WIP Skip（2026-09-10）：子仓拖拽生产修复已落地，用例仍在修（见文件头）。
-		[Fact(Skip = "WIP：子仓拖拽管线修复验证中，暂跳过避免 CI 变红")]
-		public void GitMm_SubrepoTabDragReorder_Works()
+		[Fact]
+	public void GitMm_SubrepoTabDragReorder_Works()
 		{
 			string ws = TestRepoFactory.CreateGitMmWorkspace();
 			try

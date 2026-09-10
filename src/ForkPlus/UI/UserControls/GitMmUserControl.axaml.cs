@@ -1461,11 +1461,18 @@ namespace ForkPlus.UI.UserControls
 			},subrepo.Path);
 			// Migration note：WPF TabItem.AllowDrop = true → Avalonia 附加属性 DragDrop.SetAllowDrop。
 			global::Avalonia.Input.DragDrop.SetAllowDrop(tabItem, true);
-			tabItem.PointerPressed += SubrepoTabItem_PreviewMouseDown;
-			tabItem.PointerMoved += SubrepoTabItem_PreviewMouseMove;
-			tabItem.PointerReleased += SubrepoTabItem_PreviewMouseUp;
 			// Migration note：WPF element.Drop += handler → Avalonia DragDrop.AddDropHandler。
 			global::Avalonia.Input.DragDrop.AddDropHandler(tabItem, SubrepoTabItem_Drop);
+			// 修复（2026-09-10，坑2"press 记录失效→拖拽发不起"，与 ClosableTabItem 同款）：
+			// WPF 原版是 PreviewMouseLeftButtonDown/PreviewMouseMove/PreviewMouseUp（Tunnel 阶段，
+			// 先于 TabItem 基类选中处理），迁移时被搬成了 CLR += 实例订阅（Direct 策略）——
+			// Avalonia 12 的 TabItem class handler（选中处理，等价 WPF TabItem.OnMouseLeftButtonDown
+			// 的 e.Handled=true）先于实例订阅执行并把事件标记 Handled，实例订阅
+			//（handledEventsToo=false）永不触发（E2e29 实证：dragDiag[session=0]——press 处理器
+			// 一次都没跑，拖拽永不发起）。还原 Tunnel 语义（AddHandler 显式指定路由策略）。
+			tabItem.AddHandler(InputElement.PointerPressedEvent, SubrepoTabItem_PreviewMouseDown, RoutingStrategies.Tunnel);
+			tabItem.AddHandler(InputElement.PointerMovedEvent, SubrepoTabItem_PreviewMouseMove, RoutingStrategies.Tunnel);
+			tabItem.AddHandler(InputElement.PointerReleasedEvent, SubrepoTabItem_PreviewMouseUp, RoutingStrategies.Tunnel);
 				SubreposTabControl.Items.Add(tabItem);
 				if (IsSamePath(subrepo.Path, preferredSubrepoPath))
 				{
