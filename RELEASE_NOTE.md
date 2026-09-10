@@ -1,6 +1,32 @@
 # Release Notes
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
+
+## v4.0.9
+
+> 拖动残留/滚动/窗口状态专项修复：拖动中断后残留矩形、显示更少后滚动条卡底、滚轮与 thumb 失联、最大化保存与启动竞态、git mm 子仓标签拖动等一批问题。
+
+### 修复
+
+- **拖动后残留矩形挡界面**：拖动被中断（取消/丢焦/释放在非法落点）时 OnDrop/OnDragLeave 可能都不触发，ShowDropAdorner/ShowPreview 加的 DropPlaceAdorner（插入位置矩形）与选中态背景染色残留，视觉上"一块矩形挡住界面"。四类拖拽控件（DragAndDropListViewItem / MultiselectionListViewItem / DragAndDropListBoxItem / MultiselectionTreeView）指针离开控件边界（OnPointerExited）时兜底清一次，覆盖"拖出列表外释放"等全部中断路径。
+- **首次启动也偶发矩形挡界面**：虚拟化容器回收/启动期布局竞态可能让 DropPlaceAdorner 残留在图层里、选中态背景染到错位条目上。四类控件加载完成时（OnLoaded）兜底清一次，覆盖启动期与容器回收期的残留。
+- **显示更少标签后滚动条卡在底部、滚轮滚不上去（加强力版）**：截断切换（显示全部/更少）后列表项数变化，旧滚动偏移可能超出新 extent，Avalonia 的 ScrollViewer 不自动 clamp，thumb 卡在底部、滚轮向上 offset 不变。原先 ResetScrollOffset 只在调用方延迟一帧设 Offset=0，虚拟化延迟 realize、extent 异步更新等时序会让单次重置"偶尔失效"，且单设 Offset 会被虚拟化面板的 keep-in-view 每帧还原（保持原底部可见项）。改为 EnsureScrollToTop：挂钩 ScrollViewer 的 PropertyChanged，每当 Extent/Offset 变化即把 Offset 钳到 [0, max(0, extent-viewport)]，超出即强制归零，直到稳定为 0 或重试上限（15 次）后自动解钩——直接在 extent 变化的那一刻钳制，不依赖时序。
+- **滚轮滚动有用但 thumb 不跟随**：Avalonia 内部 ScrollBar.Value 与 Offset 的双向绑定在拖过 thumb 后偶发不反向同步（Offset 变了 Value 不跟），thumb 卡住不动。ScrollBy 设 Offset 后手动把垂直/水平 ScrollBar 的 Value 设成同一值，强制 thumb 跟随移动。
+- **点过滚动条后滚轮滚不动**：点过 ScrollBar thumb 后 ScrollBar 捕获焦点，滚轮事件在 bubble 阶段被 ScrollBar 标记 Handled 并停止冒泡，ScrollViewer 的 OnPointerWheelChanged 永远不触发。改为在 Tunnel（预览）阶段挂处理——ScrollViewer 自身与 PART_VerticalScrollBar / PART_HorizontalScrollBar 两个模板部件（覆盖焦点在 ScrollBar 上、路由路径不经过 ScrollViewer 的情况），先于 ScrollBar 处理并标记 Handled，滚轮总能滚动；垂直滚轮统一自行处理（触控板小步长逐行滚动，鼠标每档 48px）。
+- **窗口最大化没保存/下次启动不最大化**：SystemDecorations.None 自绘 chrome 下 Avalonia WindowState 与 Win32 实际状态偶发不一致（Avalonia 已最大化但 Win32 ShowCmd 仍是 Normal），保存端读取状态用 Win32 ShowCmd 会误存成 Normal。改为状态读 Avalonia 的 window.WindowState（用户实际看到的状态），还原矩形仍取 Win32 placement（还原几何正确）。
+- **最大化启动时矩形挡界面**：原先在构造期设 WindowState=Maximized——此时窗口未 Show，Win32 未真正最大化，Avalonia 属性与 Win32 实际状态不一致引发布局/渲染竞态（矩形挡界面 + 误存小窗口）。改为 OnOpened 同步几何后，最大化延迟到下一渲染帧（Render 优先级，窗口已 Show + 首帧布局完成、Win32 就绪）再设，保证 Avalonia 与 Win32 同步稳定生效。
+- **git mm 子仓标签不能拖动**：上一轮只改了落点读取（GetData("ForkPlusItem")），漏改拖拽发起——DoDragDrop 仍把 WeakReference<TabItem> 直接传入，ToTransfer 的 default 分支把它 ToString 成类型名字符串，落点拿不回原对象，重排不执行。改用 WpfDataObject.SetData 把原始对象引用存进进程内直通表（RuntimePayload），落点用字符串格式名 "ForkPlusItem" 读取，与主窗口 ClosableTabItem 同款做法。
+- **活动管理器 git-mm 标签页单仓也显示**：git-mm 标签页仅在 git mm 仓库有意义，单仓/普通仓库的活动管理器不显示该标签（默认隐藏，按当前活动仓库是否 git mm 仓切换可见性）；保存的视图模式是 git-mm 但当前不是 git mm 仓时回退到"全部"（避免无选中 tab），正停在 git-mm 视图而切到非 git mm 仓时自动切回"全部"视图。
+- **下拉菜单隐藏 Lean Branching 分组**：分支下拉菜单里的 Lean Branching 分组（Start Branch / Sync / Finish）暂不对外暴露，整块移除。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|-----|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.9-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.9-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.9-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.9-macos-arm64.zip` |
 ## v4.0.7
 
 > 交互专项修复：文本框拖选、侧边栏"显示所有"行为对齐 WPF，外加一批窗口/弹窗/通知问题。

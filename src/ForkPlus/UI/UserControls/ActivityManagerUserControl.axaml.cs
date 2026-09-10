@@ -261,6 +261,35 @@ namespace ForkPlus.UI.UserControls
 
 		private readonly ObservableCollection<JobViewModel> _jobs = new ObservableCollection<JobViewModel>();
 
+		// 2026-09-10：git mm 命令输出收编到活动管理器——独立"git-mm"标签页。
+		// 仅 git mm 仓库显示该标签（单仓/普通仓隐藏），Sync 里按 ActiveGitMmUserControl != null 切换可见性。
+		private TabItem _gitMmViewTab;
+
+		private TabItem CreateGitMmViewTab()
+		{
+			return new TabItem
+			{
+				Header = Translate("git-mm"),
+				Tag = ActivityManagerViewMode.GitMm,
+				Height = 27.0,
+				// 默认隐藏，Sync 根据当前活动仓库是否 git mm 仓再决定显隐。
+				IsVisible = false
+			};
+		}
+
+		/// <summary>按 Tag 查找视图模式 tab（ItemCollection 无 OfType，手动遍历）。</summary>
+		private TabItem FindViewTab(ActivityManagerViewMode mode)
+		{
+			foreach (object item in ViewModeTabControl.Items)
+			{
+				if (item is TabItem tab && tab.Tag is ActivityManagerViewMode m && m == mode)
+				{
+					return tab;
+				}
+			}
+			return null;
+		}
+
 		private uint _userJobsVersion;
 
 		private int _selectedOutputJobId = -1;
@@ -298,16 +327,21 @@ namespace ForkPlus.UI.UserControls
 				Height = 27.0
 			});
 			// 2026-09-10：git mm 命令输出收编到活动管理器——独立"git-mm"标签页。
-			ViewModeTabControl.Items.Add(new TabItem
+		// 仅 git mm 仓库显示该标签（单仓/普通仓隐藏），Sync 里按 ActiveGitMmUserControl != null 切换可见性。
+		_gitMmViewTab = CreateGitMmViewTab();
+		ViewModeTabControl.Items.Add(_gitMmViewTab);
+		base.Loaded += delegate
+		{
+			// 2026-09-10：保存的视图模式可能是 git-mm，但当前仓库不是 git mm 仓（tab 已隐藏），
+			// 此时选不到 git-mm tab → 回退到 All，避免无选中 tab。
+			ActivityManagerViewMode saved = ForkPlusSettings.Default.ActivityManagerViewMode;
+			bool isGitMmRepo = MainWindow.Instance?.TabManager.ActiveGitMmUserControl != null;
+			if (saved == ActivityManagerViewMode.GitMm && !isGitMmRepo)
 			{
-				Header = Translate("git-mm"),
-				Tag = ActivityManagerViewMode.GitMm,
-				Height = 27.0
-			});
-			base.Loaded += delegate
-			{
-				ViewModeTabControl.Items.FirstItem((TabItem x) => (ActivityManagerViewMode)x.Tag == ForkPlusSettings.Default.ActivityManagerViewMode).IsSelected = true;
-			};
+				saved = ActivityManagerViewMode.All;
+			}
+			FindViewTab(saved)?.IsSelected = true;
+		};
 		}
 
 		public void Start()
@@ -385,16 +419,34 @@ namespace ForkPlus.UI.UserControls
 			JobDetailsOutputEditor.TextArea.TextView.LinkTextForegroundBrush = Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush;
 		}
 
-		private void Sync()
+	private void Sync()
+	{
+		// 2026-09-10：git-mm 标签页仅在 git mm 仓库显示。当前活动仓库不是 git mm 仓时
+		// （ActiveGitMmUserControl == null）隐藏该标签，避免单仓/普通仓的活动管理器出现无用的 git-mm tab。
+		// 若用户正停在 git-mm 视图而切到非 git mm 仓，下面会把它切回 All 视图。
+		bool isGitMmRepo = MainWindow.Instance?.TabManager.ActiveGitMmUserControl != null;
+		if (_gitMmViewTab != null)
 		{
-			ActivityManagerViewMode viewMode = (ActivityManagerViewMode)((TabItem)ViewModeTabControl.SelectedItem).Tag;
-			// 2026-09-10：git-mm 视图是独立内容区，直接展示当前活动 GitMmUserControl 的命令输出，
-			// 不走作业列表筛选（与 All/User/Background 按 JobFlags 筛选不同）。
-			if (viewMode == ActivityManagerViewMode.GitMm)
+			_gitMmViewTab.IsVisible = isGitMmRepo;
+		}
+		ActivityManagerViewMode viewMode = (ActivityManagerViewMode)((TabItem)ViewModeTabControl.SelectedItem).Tag;
+		// 当前不是 git mm 仓却停在 git-mm 视图 → 切回 All，避免停在隐藏的 tab 上。
+		if (viewMode == ActivityManagerViewMode.GitMm && !isGitMmRepo)
+		{
+			TabItem allTab = FindViewTab(ActivityManagerViewMode.All);
+			if (allTab != null)
 			{
-				SyncGitMmOutput();
-				return;
+				allTab.IsSelected = true;
+				viewMode = ActivityManagerViewMode.All;
 			}
+		}
+		// 2026-09-10：git-mm 视图是独立内容区，直接展示当前活动 GitMmUserControl 的命令输出，
+		// 不走作业列表筛选（与 All/User/Background 按 JobFlags 筛选不同）。
+		if (viewMode == ActivityManagerViewMode.GitMm)
+		{
+			SyncGitMmOutput();
+			return;
+		}
 			// 非 git-mm 视图：恢复作业列表可见（从 git-mm 切回时之前隐藏了它）。
 			JobListBox.IsVisible = true;
 			JobQueue jobQueue = MainWindow.Instance?.TabManager.ActiveGitMmUserControl?.JobQueue ?? MainWindow.ActiveRepositoryUserControl?.JobQueue;

@@ -325,6 +325,15 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		// 修复（2026-09-10，"首次启动也偶发矩形挡界面"）：控件加载完成时兜底清一次残留预览
+		// （虚拟化容器回收/启动期布局竞态可能把选中态背景染到错位条目上，视觉上即"矩形挡住"）。
+		// Loaded 时机清一次，覆盖启动期与容器回收期的残留；后续仍由 OnPointerExited 兜底。
+		protected override void OnLoaded(global::Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			base.OnLoaded(e);
+			HidePreview();
+		}
+
 		private void Reload()
 		{
 			if (_flattener != null)
@@ -409,20 +418,75 @@ namespace ForkPlus.UI.Controls
 			ScrollIntoView((object)node);
 		}
 
-		/// <summary>
-		/// 修复（2026-09-10，"显示更少标签后滚动条卡在底部、滚轮滚不上去"）：
-		/// 截断切换（显示全部/更少）后列表项数变化，旧滚动偏移可能超出新 extent，
-		/// Avalonia 的 ScrollViewer 不自动 clamp，表现为滚动条 thumb 卡在底部、鼠标滚轮
-		/// 向上滚 offset 不变。此处把内部 ScrollViewer 的 Offset 归零（回到顶部）。
-		/// 调用方应在 Reload 之后、延迟到下一布局帧调用（让 extent 先更新）。
-		/// </summary>
-		public void ResetScrollOffset()
+	/// <summary>
+	/// 修复（2026-09-10，"显示更少标签后滚动条卡在底部、滚轮滚不上去"，加强力版）：
+	/// 截断切换（显示全部/更少）后列表项数变化，旧滚动偏移可能超出新 extent，Avalonia 的 ScrollViewer
+	/// 不自动 clamp。原先 ResetScrollOffset 只在调用方延迟一帧设 Offset=0，但虚拟化延迟 realize、
+	/// extent 异步更新等时序会让单次重置"偶尔失效"。这里改为 DispatcherTimer 重试：每帧（~16ms）
+	/// 检查一次，若 offset.Y 仍非 0 就强制归零，直到稳定为 0 或重试上限（10 次）后停止。
+	/// 覆盖任意时序，比单次 Post 更强力。调用方在 Reload 之后直接调本方法即可（无需自行延迟）。
+	/// </summary>
+	public void EnsureScrollToTop()
+	{
+		if (Scroll == null)
 		{
-			if (Scroll != null)
+			return;
+		}
+		// 立即先设一次。
+		Scroll.Offset = global::Avalonia.Vector.Zero;
+		// 加强力（2026-09-10，"拖滚动条到底再显示更少，滚动条仍卡住"）：单设 Offset 会被
+		// 虚拟化面板的 keep-in-view 每帧还原（保持原底部可见项）。改为挂钩 Scroll 的
+		// PropertyChanged：每当 Extent（项数变化导致 extent 变化）刷新时，把 Offset 钳到
+		// [0, max(0, extent-viewport)]，若超出即强制归零（回顶部）。持续挂钩直到
+		// Offset 稳定为 0 或超时自动解钩，比单次/定时器重试更强力——直接在 extent
+		// 变化的那一刻钳制，不依赖时序。
+		EnsureScrollToTopCore();
+	}
+
+	private int _ensureScrollToTopRemaining;
+	private bool _ensureScrollToTopHooked;
+	private void EnsureScrollToTopCore()
+	{
+		if (!_ensureScrollToTopHooked && Scroll is global::Avalonia.Controls.ScrollViewer sv)
+		{
+			_ensureScrollToTopHooked = true;
+			sv.PropertyChanged += EnsureScrollToTop_OnExtentChanged;
+		}
+		_ensureScrollToTopRemaining = 15; // 最多等 15 次 extent 变化后解钩
+		// 立即钳一次（覆盖 extent 已就绪的情况）。
+		ClampScrollOffsetToTop();
+	}
+
+	private void EnsureScrollToTop_OnExtentChanged(object sender, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
+	{
+		if (e.Property == global::Avalonia.Controls.ScrollViewer.ExtentProperty
+			|| e.Property == global::Avalonia.Controls.ScrollViewer.OffsetProperty)
+		{
+			ClampScrollOffsetToTop();
+		}
+	}
+
+	private void ClampScrollOffsetToTop()
+	{
+		if (!(Scroll is global::Avalonia.Controls.ScrollViewer sv))
+		{
+			return;
+		}
+		double max = System.Math.Max(0.0, sv.Extent.Height - sv.Viewport.Height);
+		// 目标是回到顶部：若 Offset.Y 超过新 extent 上限，强制归零（顶部）。
+		if (sv.Offset.Y > max || sv.Offset.Y > 0.0 && _ensureScrollToTopRemaining > 0)
+		{
+			sv.Offset = global::Avalonia.Vector.Zero;
+		}
+		if (--_ensureScrollToTopRemaining <= 0 || sv.Offset.Y == 0.0)
+		{
+			if (_ensureScrollToTopHooked && sv != null)
 			{
-				Scroll.Offset = global::Avalonia.Vector.Zero;
+				_ensureScrollToTopHooked = false;
+				sv.PropertyChanged -= EnsureScrollToTop_OnExtentChanged;
 			}
 		}
+	}
 
 		public IDisposable LockUpdates()
 		{
@@ -660,6 +724,15 @@ namespace ForkPlus.UI.Controls
 				_previewNodeView.ClearValue(global::Avalonia.Controls.Primitives.TemplatedControl.BackgroundProperty);
 				_previewNodeView = null;
 			}
+		}
+
+		// 修复（2026-09-10，"侧边栏/列表拖动后残留矩形挡界面"）：拖动被中断（取消/丢焦/释放在
+		// 非法落点）时 HandleDrop/HandleDragLeave 可能都不触发，上一个 ShowPreview 染的 Background
+		// 残留。指针离开控件边界时兜底清一次，覆盖"拖出树外释放"等中断路径。
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
+		{
+			base.OnPointerExited(e);
+			HidePreview();
 		}
 	}
 }

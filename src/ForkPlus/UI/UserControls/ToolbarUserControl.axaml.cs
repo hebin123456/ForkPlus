@@ -782,25 +782,16 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			Branch mainBranch = references.MainBranch(gitModule, commitGraphCache);
-			if (mainBranch != null)
-			{
-				contextMenu.Items.Add(new Separator());
-				contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Lean Branching", language)));
-				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem(string.Format(Preferences.PreferencesLocalization.Translate("Start Branch on '{0}'...", language), mainBranch.Name), delegate
-				{
-					RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.Execute(repositoryUserControl, mainBranch);
-				}));
-				string header = ((activeBranch == null) ? string.Format(Preferences.PreferencesLocalization.Translate("Sync (Rebase on '{0}')", language), localBranch4.Name) : ((activeBranch != localBranch4) ? string.Format(Preferences.PreferencesLocalization.Translate("Sync '{0}' (Rebase on '{1}')", language), activeBranch.Name, mainBranch.Name) : string.Format(Preferences.PreferencesLocalization.Translate("Sync '{0}' (Rebase on '{1}')", language), activeBranch.Name, remoteBranch.Name)));
-				contextMenu.Items.Add(RepositoryUserControl.Commands.LeanBranchingSync.CreateMenuItem(header, delegate
-				{
-					RepositoryUserControl.Commands.LeanBranchingSync.Execute(repositoryUserControl);
-				}, activeBranch != null));
-				string header2 = ((activeBranch == null || activeBranch == mainBranch) ? string.Format(Preferences.PreferencesLocalization.Translate("Finish (Merge into '{0}')...", language), localBranch4.Name) : string.Format(Preferences.PreferencesLocalization.Translate("Finish '{0}' (Merge into '{1}')...", language), activeBranch.Name, localBranch4.Name));
-				contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingFinishWindow.CreateMenuItem(header2, delegate
-				{
-					RepositoryUserControl.Commands.ShowLeanBranchingFinishWindow.Execute(repositoryUserControl);
-				}, activeBranch != null && activeBranch != localBranch4));
-			}
+			// 隐藏 Lean Branching 选项（2026-09-10）：下拉菜单里的 Lean Branching 分组
+			// （Start Branch / Sync / Finish）暂不对外暴露，整块移除。
+			// if (mainBranch != null)
+			// {
+			// 	contextMenu.Items.Add(new Separator());
+			// 	contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Lean Branching", language)));
+			// 	contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingStartWindow.CreateMenuItem(...));
+			// 	contextMenu.Items.Add(RepositoryUserControl.Commands.LeanBranchingSync.CreateMenuItem(...));
+			// 	contextMenu.Items.Add(RepositoryUserControl.Commands.ShowLeanBranchingFinishWindow.CreateMenuItem(...));
+			// }
 		}
 
 		private void OpenInDropDownButtonContextMenu_Opened(object sender, RoutedEventArgs e)

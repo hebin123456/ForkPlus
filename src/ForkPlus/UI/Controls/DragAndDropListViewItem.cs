@@ -161,6 +161,23 @@ namespace ForkPlus.UI.Controls
 			ClearDropAdorner();
 		}
 
+		// 修复（2026-09-10，"拖动后残留矩形挡界面"）：拖动被中断（取消/丢焦/释放在非法落点）
+		// 时 OnDrop/OnDragLeave 可能都不触发，ShowDropAdorner 加的 DropPlaceAdorner 残留。
+		// 指针离开控件边界时兜底清一次，覆盖"拖出列表外释放"等中断路径。
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
+		{
+			base.OnPointerExited(e);
+			ClearDropAdorner();
+		}
+
+		// 修复（2026-09-10，"首次启动也偶发矩形挡界面"）：控件加载完成时兜底清一次残留 adorner
+		// （虚拟化容器回收/启动期布局竞态可能让 DropPlaceAdorner 残留在图层里，视觉上即"矩形挡住"）。
+		protected override void OnLoaded(global::Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			base.OnLoaded(e);
+			ClearDropAdorner();
+		}
+
 		private DropPosition GetDropPosition(DragEventArgs e)
 		{
 			double actualHeight = base.Bounds.Height;

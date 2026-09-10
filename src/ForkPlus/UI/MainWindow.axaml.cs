@@ -125,10 +125,10 @@ namespace ForkPlus.UI
 			{
 				base.Width = windowLocationState.Width;
 				base.Height = windowLocationState.Height;
-				if (windowLocationState.WindowState == global::Avalonia.Controls.WindowState.Maximized)
-				{
-					base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
-				}
+				// 修复（2026-09-10，"最大化启动时矩形挡界面"）：不在构造期设 WindowState=Maximized——
+				// 此时窗口未 Show，Win32 未真正最大化，Avalonia 属性=Maximized 与 Win32 实际
+				// (Normal)不一致会引发布局/渲染竞态（矩形挡界面 + 误存小窗口）。
+				// 最大化改在 OnOpened 里、延迟到下一渲染帧（窗口已 Show + 布局完成）再设。
 			}
 			(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow = this;
 			TabManager = new TabManager(TabControl);
@@ -251,9 +251,20 @@ namespace ForkPlus.UI
 			{
 				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, global::Avalonia.Controls.WindowState.Normal);
 			}
-			// 先同步几何属性到目标值（DIP），SetWindowLocationState 内部按平台走 Win32/Avalonia 路径
-			// （Unix 路径负责 DIP→物理像素换算并处理最大化）。
-			this.SetWindowLocationState(windowLocationState);
+		// 先同步几何属性到目标值（DIP），SetWindowLocationState 内部按平台走 Win32/Avalonia 路径
+		// （Unix 路径负责 DIP→物理像素换算并处理最大化）。
+		this.SetWindowLocationState(windowLocationState);
+		// 修复（2026-09-10，"最大化启动时矩形挡界面"）：最大化状态延迟到下一渲染帧再设——
+		// OnOpened 时窗口刚 Show，平台层/Win32 尚未完全就绪，此时设 WindowState=Maximized
+		// 可能被后续布局还原，或与 Win32 实际状态不一致引发布局竞态（矩形挡界面）。
+		// 延迟到 Render 优先级（窗口已 Show + 首帧布局/渲染完成、Win32 就绪）再设，
+		// 保证 Avalonia 与 Win32 同步，最大化稳定生效，不再有矩形挡界面。
+		if (windowLocationState.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+		{
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(
+				delegate { base.WindowState = global::Avalonia.Controls.WindowState.Maximized; },
+				global::Avalonia.Threading.DispatcherPriority.Render);
+		}
 		}
 
 		protected override void OnKeyUp(KeyEventArgs e)

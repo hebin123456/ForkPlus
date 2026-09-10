@@ -208,25 +208,30 @@ namespace ForkPlus.UI.Helpers
 			// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
-			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
-			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
-		}
+		TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
+		// 修复（2026-09-10，"最大化没保存/下次启动不最大化"）：状态用 Avalonia 的 window.WindowState
+		// （用户实际看到的状态），不用 Win32 ShowCmd——SystemDecorations.None 自绘 chrome 下
+		// Avalonia WindowState 与 Win32 实际状态偶发不一致（Win32 仍是 Normal），用 Win32
+		// ShowCmd 会误存成 Normal，下次启动不最大化。normal rect 仍取 Win32 placement（还原矩形正确）。
+		return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState);
+	}
 
-		public static WindowLocationState GetWindowLocationStateX(this Window window)
+	public static WindowLocationState GetWindowLocationStateX(this Window window)
+	{
+		if (DesignTimeHelper.IsInDesignMode() || window == null)
 		{
-			if (DesignTimeHelper.IsInDesignMode() || window == null)
-			{
-				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
-			}
-			if (!OperatingSystem.IsWindows())
-			{
-				return GetWindowLocationStateAvalonia(window);
-			}
-			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
-			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
-			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
+			return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
 		}
+		if (!OperatingSystem.IsWindows())
+		{
+			return GetWindowLocationStateAvalonia(window);
+		}
+		WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
+		TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
+		TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
+		// 修复（2026-09-10）：同上，状态用 Avalonia window.WindowState，不用 Win32 ShowCmd。
+		return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState);
+	}
 
 		/// <summary>
 		/// Migration note：Unix 路径的窗口几何读取。最大化/最小化时返回缓存的正常态边界（等价

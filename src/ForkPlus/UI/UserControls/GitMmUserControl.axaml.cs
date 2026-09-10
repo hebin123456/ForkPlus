@@ -1910,7 +1910,13 @@ namespace ForkPlus.UI.UserControls
 			}
 			try
 			{
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
+				// 修复（2026-09-10，"git mm 子仓标签现在不能拖动"）：上一轮只改了落点读取（GetData("ForkPlusItem")），
+				// 漏改拖拽发起——DoDragDrop 仍把 WeakReference<TabItem> 直接传入，ToTransfer 的 default
+				// 分支把它 ToString 成类型名字符串，落点拿不回原对象，重排不执行。改用 WpfDataObject.SetData
+				// 进进程内直通表（RuntimePayload）保留原始对象引用，与主窗口 ClosableTabItem 同款做法。
+				WpfDataObject dataObject = new WpfDataObject();
+				dataObject.SetData("ForkPlusItem", new WeakReference<TabItem>(tabItem));
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(tabItem, dataObject, DragDropEffects.Move);
 			}
 			finally
 			{
@@ -1925,12 +1931,15 @@ namespace ForkPlus.UI.UserControls
 		_subrepoTabDragItem = null;
 	}
 
-		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
+	private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is TabItem targetTabItem) || !(e.WpfData().GetData(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
-			{
-				return;
-			}
+		// 修复（2026-09-10）：落点原先用 GetData(typeof(WeakReference<TabItem>))——WpfDataObject
+		// 只支持 typeof(string) 的 Type 读取，其余 Type 恒返回 null。拖拽数据经 WpfDataObject.SetData
+		// 存进进程内直通表（RuntimePayload），用字符串格式名 "ForkPlusItem" 读取才能拿回原对象。
+		if (!(sender is TabItem targetTabItem) || !(e.WpfData().GetData("ForkPlusItem") is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
+		{
+			return;
+		}
 			if (!IsFromSubrepoTabHeader(targetTabItem, e.Source as global::Avalonia.AvaloniaObject) && e.GetPosition(targetTabItem).Y > targetTabItem.Bounds.Height)
 			{
 				return;

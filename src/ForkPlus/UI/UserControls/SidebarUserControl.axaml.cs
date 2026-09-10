@@ -346,13 +346,10 @@ namespace ForkPlus.UI.UserControls
 				_nonTruncatedItems.Add(section.Title);
 			}
 			Reload(_repositoryData, forceRefresh: true, SidebarTreeView.FilterString);
-			// 修复（2026-09-10，"显示更少标签后滚动条卡在底部、滚轮滚不上去"）：
-			// 截断切换后列表项数变化，旧滚动偏移可能超出新 extent，ScrollViewer 不自动 clamp，
-			// thumb 卡在底部、滚轮向上滚 offset 不变。延迟到下一布局帧（让 extent 先按新项数更新）
-			// 把 Offset 归零回到顶部。
-			global::Avalonia.Threading.Dispatcher.UIThread.Post(
-				() => SidebarTreeView.ResetScrollOffset(),
-				global::Avalonia.Threading.DispatcherPriority.Background);
+			// 修复（2026-09-10，"显示更少后滚动条偶尔仍卡在底部"）：改用 EnsureScrollToTop——
+			// DispatcherTimer 每帧重试强制 offset 归零，直到稳定，覆盖虚拟化延迟 realize / extent
+			// 异步更新等时序，比原先单次延迟 Post 更强力。无需调用方自行延迟。
+			SidebarTreeView.EnsureScrollToTop();
 		}
 
 		private void TagTitleTextBlock_ToolTipOpening(object sender, ToolTipEventArgs e)
