@@ -1015,11 +1015,21 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void ReviewWithAiAgent(GitModule gitModule, AiCodeReviewTarget target, AiAgent aiAgent, bool replaceAll)
+	{
+		_aiReviewJob = _repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("AI Code Review"), delegate(JobMonitor monitor)
 		{
-			_aiReviewJob = _repositoryUserControl.JobQueue.Add(PreferencesLocalization.Current("AI Code Review"), delegate(JobMonitor monitor)
+			// 修复（2026-09-10，"AI 检视一直显示排队中"）：JobQueue 并非串行队列（Schedule 里
+			// task.Start 立即执行），"Queued..." 只是 PrepareAiReviewUi 设的初始文案；Agent
+			//（Claude CLI）路径此前漏了 SetProgressAction 订阅——MakeCodeReviewShellCommand
+			// 里的 monitor.Update 触发 _progressAction?.Invoke() 时为 null，状态栏在整个 CLI
+			// 执行期间（可能数分钟）停在"排队中..."。与 OpenAI 路径（ReviewWithOpenAi/
+			// ReviewFilesWithOpenAi）对齐：订阅进度回调，把阶段文字同步到状态栏。
+			monitor.SetProgressAction(delegate
 			{
-				GitCommandResult<string> codeReviewResult = new MakeCodeReviewShellCommand().Execute(aiAgent, target, gitModule.Path, monitor);
-				if (monitor.IsCanceled)
+				UpdateStatus(monitor.ProgressMessage);
+			});
+			GitCommandResult<string> codeReviewResult = new MakeCodeReviewShellCommand().Execute(aiAgent, target, gitModule.Path, monitor);
+			if (monitor.IsCanceled)
 				{
 					return;
 				}
