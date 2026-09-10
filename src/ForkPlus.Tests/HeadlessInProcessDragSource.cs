@@ -44,6 +44,16 @@ namespace ForkPlus.Tests
 
 		internal bool IsActive { get; private set; }
 
+		// 诊断计数（E2e29 失败定位：一眼看出断链层——SessionsStarted=0 说明生产侧没发起拖拽；
+		// >0 但 DragEventsRaised=0 说明指针事件没路由到 TopLevel；DropsRaised=0 说明
+		// 落点/效果判定挡了 Drop；全 >0 但没重排说明生产 Drop 处理器没拿到数据）。
+		internal int SessionsStarted;
+		internal int DragEventsRaised;
+		internal int DropsRaised;
+
+		/// <summary>测试失败消息用的诊断快照（数字非降序重置，跨用例累计无害——只看相对大小）。</summary>
+		internal string Diag => "dragDiag[session=" + SessionsStarted + ",dragEvents=" + DragEventsRaised + ",drops=" + DropsRaised + "]";
+
 		/// <summary>生产管线经代理实际调用的入口（Avalonia DragDrop.DoDragDropAsync →
 		/// IPlatformDragSource.DoDragDropAsync → DispatchProxy.Invoke → 本方法）。</summary>
 		public Task<DragDropEffects> DoDragDropAsync(PointerPressedEventArgs triggerEvent, IDataTransfer dataTransfer, DragDropEffects allowedEffects)
@@ -54,6 +64,7 @@ namespace ForkPlus.Tests
 				return Task.FromResult(DragDropEffects.None);
 			}
 			IsActive = true;
+			SessionsStarted++;
 			_data = dataTransfer;
 			_allowedEffects = allowedEffects;
 			// Avalonia 12 移除了 VisualExtensions.GetVisualRoot / Visual.VisualRoot（探针实证
@@ -142,6 +153,14 @@ namespace ForkPlus.Tests
 
 		private DragDropEffects RaiseDragEvent(Interactive target, Point topLevelPosition, RoutedEvent<DragEventArgs> routedEvent, KeyModifiers modifiers)
 		{
+			if (routedEvent == DragDrop.DropEvent)
+			{
+				DropsRaised++;
+			}
+			else
+			{
+				DragEventsRaised++;
+			}
 			if (target == null)
 			{
 				return DragDropEffects.None;
@@ -170,8 +189,10 @@ namespace ForkPlus.Tests
 	/// 生成的代理实现 IPlatformDragSource，可安全塞进 AvaloniaLocator——生产管线
 	/// DragDrop.DoDragDropAsync 内部的服务调用发生在 Avalonia.Base 自身 IL 里，
 	/// 运行时绑定到代理 → Invoke → HeadlessInProcessDragSource.Instance。
+	/// ⚠️ 不能 sealed：DispatchProxy 生成的是"继承本类 + 实现接口"的派生代理类型
+	/// （sealed 直接抛 ArgumentException "cannot be sealed"，运行时实证）。
 	/// </summary>
-	internal sealed class HeadlessDragSourceProxy : DispatchProxy
+	internal class HeadlessDragSourceProxy : DispatchProxy
 	{
 		protected override object Invoke(MethodInfo targetMethod, object[] args)
 		{

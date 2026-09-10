@@ -119,8 +119,18 @@ namespace ForkPlus.UI.Controls
 				base.Theme = tabTheme;
 			}
 
-			base.PointerPressed += TabItem_PreviewMouseDown;
-			base.PointerMoved += TabItem_PreviewMouseMove;
+			// 修复（2026-09-10，坑2"press 记录失效→拖拽发不起"）：WPF 原版是 PreviewMouseDown/
+			// PreviewMouseMove（Tunnel 阶段，先于 TabItem 基类选中处理），迁移时被搬成了
+			// base.PointerPressed +=（Bubble 实例订阅）——Avalonia 12 的 TabItem class handler
+			//（选中处理，等价 WPF TabItem.OnMouseLeftButtonDown 的 e.Handled=true）在 Bubble 阶段
+			// 先于实例订阅执行并把事件标记 Handled，实例订阅（默认 handledEventsToo=false）永不触发
+			//（E2e29 逐层探针实证：Tunnel 全程 H=False，Bubble 到达本控件层时 H=True）。真实桌面
+			// 场景同一断链（press 记录不到 → move 时 pressArgs=null 直接 return → 拖拽发不起）。
+			// 还原 Tunnel 语义：AddHandler(..., RoutingStrategies.Tunnel)。
+			this.AddHandler(global::Avalonia.Input.InputElement.PointerPressedEvent, TabItem_PreviewMouseDown,
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			this.AddHandler(global::Avalonia.Input.InputElement.PointerMovedEvent, TabItem_PreviewMouseMove,
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			// 修复（2026-09-10，"标签页有拖动效果但没法换位置"）：Avalonia 里控件要成为拖放落点必须
 			// 显式 DragDrop.SetAllowDrop(true)，否则 DragOver/Drop 事件不会在该控件上触发——拖拽能发起
 			// 但拖到另一个标签上释放时 DropEvent 不 fire，重排逻辑（TabItem_Drop）不执行。WPF 原版

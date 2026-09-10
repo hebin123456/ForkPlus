@@ -151,6 +151,11 @@ namespace ForkPlus.Tests
 			Directory.CreateDirectory(Path.Combine(root, ".mm"));
 			string repoA = Path.Combine(root, "repoA");
 			string repoB = Path.Combine(root, "repoB");
+			// 子仓目录先建：Init → Run 的 ProcessStartInfo.WorkingDirectory 必须已存在
+			//（NewTempDir 只建了根目录；漏建时 Process.Start 直接抛 Win32Exception，
+			// E2e29 首跑实证）。
+			Directory.CreateDirectory(repoA);
+			Directory.CreateDirectory(repoB);
 			Init(repoA);
 			Commit(repoA, "a.txt", "repo a\n", "repoA c1");
 			Commit(repoA, "a2.txt", "repo a 2\n", "repoA c2");
