@@ -7,6 +7,14 @@
 
 ### 修复
 
+- **弹窗 TextBox 长文本无法拖选全部内容（如重命名贮藏的消息框）**：WPF 原版全部 8 个 TextBox 系模板的内容宿主都是 `ScrollViewer PART_ContentHost`（滚动条隐藏但可滚动）；迁移时被误换成裸 TextPresenter——presenter 被裁剪为可视宽度，超出框长的文字永远选不中。全部模板补回 ScrollViewer（`PART_ScrollViewer`，对齐官方 Fluent 主题做法）：鼠标拖到框边缘即可扩选全部文字，光标越界自动滚动。新增 headless 探针测试覆盖"拖出框缘应全选 + 自动滚动"。
+
+## v4.0.8
+
+> 跨平台迁移期 UI/交互修复批次：切主题、弹窗、窗口、凭据、通知、git mm、标签页等一批问题对齐 WPF 原版行为。
+
+### 修复
+
 - **侧边栏"显示所有标签 / 显示所有分支 / 显示所有贮藏"单击无反应、右键弹空菜单、双击误弹检出**：TruncateSidebarItem 的 DataTemplate 用 HyperlinkButton 承载超链接，但未设 x:Name，也未接 RequestNavigate（迁移期丢失 WPF Hyperlink.RequestNavigate 接线）→ 单击无响应；右键释放时 ContextMenu 经 ContextRequested 原生路径重开成空菜单（一个小点）；双击时 TruncateSidebarItem 不可选中，SelectedItem 仍是之前选中的分支/标签/贮藏，会误触发"检出"弹窗。修复：按钮点击处理器按 DataContext 识别 truncate 行，单击/双击均切换该分组的截断状态（同一 TruncateSidebarItem 类型覆盖分支/标签/贮藏三处）；右键复用贮藏分组的输入期菜单抑制（清项 + Close + 临时置空引用，彻底杜绝空菜单闪现）；双击在进入检出逻辑前拦截。对齐 WPF 原版行为。
 - **弹窗 TextBox 长文本无法拖选全部内容（如重命名贮藏的消息框）**：WPF 原版全部 8 个 TextBox 系模板（TextBox / PlaceholderTextBox / AutoCompleteTextBox / CommitPlaceholderTextBox / CommitDescriptionTextBox / SearchPanelPlaceholderTextBox / FilterTextBox / 编辑型 ComboBox 内嵌 TextBox）的内容宿主都是 `ScrollViewer PART_ContentHost`（滚动条隐藏但可滚动）；迁移时被统一误换成裸 TextPresenter 直接放进 Border——presenter 被裁剪为可视宽度，而 Avalonia TextBox 拖选时把指针坐标钳制到 presenter 边界（= 可视宽度），超出框长的文字永远选不中、也滚不过去。全部模板补回 ScrollViewer（Avalonia 部件契约名 `PART_ScrollViewer`，对齐官方 Fluent 主题做法）：presenter 以内容全宽测量，鼠标拖到框边缘即可扩选全部文字，光标越界自动滚动（多行提交框的垂直滚动同理受益）；Background 显式透明防止主题 ScrollViewer 背景盖掉文本框底色。新增 headless 探针测试覆盖"拖出框缘应全选 + 自动滚动"。
 - **git mm 结束等场景丢失系统原生 Toast 通知**：Toast 服务在 Avalonia 迁移期被降级为空操作（仅记日志）。恢复 Windows 原生 Toast：非 MSIX 桌面应用发 Toast 需先注册 AUMID——幂等写入 HKCU 注册表路径（DisplayName/IconUri）；发送经 PowerShell 子进程走 WinRT ToastNotificationManager（net10.0 无 WinRT 投影，不引入新 NuGet 包），XML 以 base64 传递规避转义问题，fire-and-forget 不阻塞 UI 线程。非 Windows 平台保持降级记日志。
@@ -17,15 +25,22 @@
 - **未暂存区选中文件夹时右上角 Stage 按钮点不动**：按钮启用条件含 `!IsDirectory`，选中目录时直接置灰——但 StageSelectedFiles 走目录展开成文件再暂存，目录本就是可暂存单元；Unstage 侧用 `Length != 0`（含目录）却正常。改为选中目录（无论 ChangeType）或非 Unchanged 文件均可启用，两侧一致。
 - **窗口非最大化时边缘无 resize 箭头/感知不到可调整大小**：SystemDecorations=None 后系统原生 resize 边框（含悬停箭头）不再渲染，仅剩按住拖拽。PointerMoved（Tunnel 预览，先于子控件）里按与拖拽同口径的 6px 边缘命中设置对应 SizeXxx 光标（角/边分级），离开边缘还原默认，子控件自身光标不受影响。
 - **凭据 helper 对 git 2.39+ 协议 v2 参数误警**：`capability[]=authtype` / `wwwauth[]=Basic realm=...` 等数组型参数此前落 default 分支，每条打 "Unknown credentials description parameter" 警告。解析器按前缀识别这两类参数（本 helper 是 v1-only，仅识别不消费，响应时不回显）。
+- **二分查找找到首个 bad commit 时弹错误窗**：git bisect 缩到唯一提交时输出 "is the first bad commit" 并退出码 0（成功），但 BisectGitCommand 把它当 Failure 返回，弹 ErrorWindow（红色错误图标），用户误以为出错。改为识别该完成分支，用 MessageBoxWindow 信息窗展示结果，其余真正失败仍走 ErrorWindow。
+- **另存为补丁点保存后取消文件选择窗口，补丁弹窗也被关掉**：OnSubmit 里 Close() 在 if 块外无条件执行——用户在系统文件对话框点取消时补丁弹窗仍被关闭，无法重试。改为仅在确实选了保存位置时才关闭补丁弹窗。
+- **另存为补丁弹窗保存按钮灰色不可点击**：ForkPlusDialogWindow.IsOperationInProgress 原为自动属性，SetStatus 把它从 InProgress 切回 None 后不刷新 Submit 按钮——UpdateSubmitButton 只在 AddFooter/Enable/Disable 里调。改为带副作用的属性，赋值时若变化即调 UpdateSubmitButton，所有用 SetStatus 切换 InProgress↔None 的弹窗都受益。
+- **git mm 命令输出收编到活动管理器**：活动管理器新增 "git-mm" 标签页（独立内容区，排在 全部/用户/后台 右边），右侧直接展示当前活动 GitMmUserControl 的命令输出（经 GetOutputText() 读取，_refreshTimer 周期刷新）；git mm 窗口不再显示命令输出覆盖层（SetOutputOverlayVisible 一律隐藏，输出仍写 _outputLines 供活动管理器读取），顶部 Output 切换按钮隐藏。
+- **git mm 操作时下面的子仓库界面被锁住**：SetBusy 期间把 SubreposTabControl / SubrepoFilterButton 一并禁用，命令运行时整个子仓库界面无法切换/查看。其他 git 操作（fetch/pull 等）不禁用主界面。改为只禁用 Start/Sync/Upload 三个命令按钮（防并发，RunBackground 已会先 Cancel 旧任务），子仓库界面保持可交互。
+- **账号弹窗点一下被置底、可无限开新账号弹窗**：AddAccountWindow / AccountsWindow 打开的 loginWindow 默认 owner 是 MainWindow，但当前已是嵌套模态（MainWindow 被 AccountsWindow 禁用），loginWindow 挂错模态链导致置底、下方可交互、能再开新弹窗。改为把 loginWindow 的 owner 设成当前活跃模态窗口（AddAccountWindow / AccountsWindow），正确嵌套（与 IR 确认框、PushWindow 编辑远端同款修复）。
+- **标签页不能拖动换位置**：ClosableTabItem 的 TabItem_PreviewMouseMove / TabItem_Drop 要求 e.Source 是 ClosableTabItem，但 PointerMoved/Drop 的 e.Source 通常是标签头里的子控件（CenteredDockPanel/TextBlock 等），条件恒假，拖拽永不发起。改为用 this（事件订阅者本身即标签页）作拖拽源/落点，排除点中按钮的情况。
 
 ### 平台覆盖
 
 | 平台 | RID | 产物 |
 |------|-----|-----|
-| Windows x64 | `win-x64` | `ForkPlus-4.0.7-windows-x64.zip` |
-| Linux x64 | `linux-x64` | `ForkPlus-4.0.7-linux-x64.zip` |
-| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.7-linux-arm64.zip` |
-| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.7-macos-arm64.zip` |
+| Windows x64 | `win-x64` | `ForkPlus-4.0.8-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.8-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.8-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.8-macos-arm64.zip` |
 
 ## v4.0.6
 

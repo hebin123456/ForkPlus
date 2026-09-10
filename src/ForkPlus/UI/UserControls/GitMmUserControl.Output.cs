@@ -109,6 +109,35 @@ namespace ForkPlus.UI.UserControls
 			Dispatcher.Invoke(ClearOutputInlines);
 		}
 
+		/// <summary>
+		/// 供活动管理器"git-mm"标签页读取当前命令输出（2026-09-10，git mm 输出收编到活动管理器）。
+		/// 返回已渲染行拼接的纯文本（去除 ANSI 转义序列），供 ActivityManagerUserControl 在
+		/// git-mm 视图下直接展示。线程安全：在 _outputLock 内快照 _outputLines。
+		/// </summary>
+		public string GetOutputText()
+		{
+			lock (_outputLock)
+			{
+				if (_outputLines.Count == 0)
+				{
+					return string.Empty;
+				}
+				return string.Join("\n", _outputLines.ConvertAll(StripAnsiEscapes));
+			}
+		}
+
+		/// <summary>当前是否有命令输出（活动管理器 git-mm 视图据此决定是否显示空态占位）。</summary>
+		public bool HasOutput
+		{
+			get
+			{
+				lock (_outputLock)
+				{
+					return _outputLines.Count > 0;
+				}
+			}
+		}
+
 		private void ClearOutputInlines()
 		{
 			_outputLines.Clear();

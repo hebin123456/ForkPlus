@@ -297,6 +297,13 @@ namespace ForkPlus.UI.UserControls
 				Tag = ActivityManagerViewMode.Background,
 				Height = 27.0
 			});
+			// 2026-09-10：git mm 命令输出收编到活动管理器——独立"git-mm"标签页。
+			ViewModeTabControl.Items.Add(new TabItem
+			{
+				Header = Translate("git-mm"),
+				Tag = ActivityManagerViewMode.GitMm,
+				Height = 27.0
+			});
 			base.Loaded += delegate
 			{
 				ViewModeTabControl.Items.FirstItem((TabItem x) => (ActivityManagerViewMode)x.Tag == ForkPlusSettings.Default.ActivityManagerViewMode).IsSelected = true;
@@ -363,9 +370,13 @@ namespace ForkPlus.UI.UserControls
 				}
 				_userJobsVersion = 0u;
 				Sync();
-				JobListBox.Focus();
-				JobListBox.SelectedIndex = 0;
-				JobListBox.FocusRow(0);
+				// git-mm 视图隐藏了作业列表，不应聚焦/选中它（否则聚焦隐藏控件异常）。
+				if ((ActivityManagerViewMode)tabItem.Tag != ActivityManagerViewMode.GitMm)
+				{
+					JobListBox.Focus();
+					JobListBox.SelectedIndex = 0;
+					JobListBox.FocusRow(0);
+				}
 			}
 		}
 
@@ -376,6 +387,16 @@ namespace ForkPlus.UI.UserControls
 
 		private void Sync()
 		{
+			ActivityManagerViewMode viewMode = (ActivityManagerViewMode)((TabItem)ViewModeTabControl.SelectedItem).Tag;
+			// 2026-09-10：git-mm 视图是独立内容区，直接展示当前活动 GitMmUserControl 的命令输出，
+			// 不走作业列表筛选（与 All/User/Background 按 JobFlags 筛选不同）。
+			if (viewMode == ActivityManagerViewMode.GitMm)
+			{
+				SyncGitMmOutput();
+				return;
+			}
+			// 非 git-mm 视图：恢复作业列表可见（从 git-mm 切回时之前隐藏了它）。
+			JobListBox.IsVisible = true;
 			JobQueue jobQueue = MainWindow.Instance?.TabManager.ActiveGitMmUserControl?.JobQueue ?? MainWindow.ActiveRepositoryUserControl?.JobQueue;
 			if (jobQueue == null)
 			{
@@ -434,6 +455,34 @@ namespace ForkPlus.UI.UserControls
 			}
 			JobListFallBack.Hide(_jobs.Count > 0);
 			RefreshSelectedItem();
+		}
+
+		/// <summary>
+		/// 2026-09-10：git-mm 视图（独立内容区）——直接展示当前活动 GitMmUserControl 的命令输出，
+		/// 不走作业列表。隐藏左侧作业列表，右侧输出面板显示 git mm 输出文本（经
+		/// GitMmUserControl.GetOutputText() 读取，_refreshTimer 周期刷新）。
+		/// </summary>
+		private void SyncGitMmOutput()
+		{
+			GitMmUserControl gitMm = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
+			// 隐藏作业列表与空态占位（git-mm 视图不走作业列表）
+			JobListBox.IsVisible = false;
+			JobListFallBack.IsVisible = false;
+			JobDetailsNameTextBlock.Text = Translate("git-mm");
+			JobDetailsFinishTimeTextBlock.Text = string.Empty;
+			if (gitMm == null || !gitMm.HasOutput)
+			{
+				JobDetailsFallBack.IsVisible = true;
+				JobDetailsOutputEditor.Text = string.Empty;
+				return;
+			}
+			JobDetailsFallBack.IsVisible = false;
+			string output = gitMm.GetOutputText();
+			// 仅在内容变化时赋值，避免每次 tick 重置光标/滚动位置
+			if (JobDetailsOutputEditor.Text != output)
+			{
+				JobDetailsOutputEditor.Text = output;
+			}
 		}
 
 		private void RefreshSelectedItem()

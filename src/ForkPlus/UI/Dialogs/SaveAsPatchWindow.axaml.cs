@@ -103,8 +103,12 @@ namespace ForkPlus.UI.Dialogs
 				{
 					new ErrorWindow(_repositoryUserControl, gitCommandResult.Error).ShowDialog();
 				}
+				// 修复（2026-09-10，"另存为补丁点保存后取消文件选择窗口，补丁弹窗也被关掉"）：
+				// 原先 Close() 在 if 块外无条件执行——用户在系统文件保存对话框点取消（SelectPatchSaveLocation
+				// 返回 false）时，补丁弹窗仍被关闭，无法重试。改为仅在用户确实选了保存位置（未取消）时
+				// 才关闭补丁弹窗；取消则保留弹窗，用户可重新点保存另选位置。
+				Close();
 			}
-			Close();
 		}
 
 		private static string CutInvalidCharacters(string text)

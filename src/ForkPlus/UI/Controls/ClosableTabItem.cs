@@ -114,6 +114,11 @@ namespace ForkPlus.UI.Controls
 
 			base.PointerPressed += TabItem_PreviewMouseDown;
 			base.PointerMoved += TabItem_PreviewMouseMove;
+			// 修复（2026-09-10，"标签页有拖动效果但没法换位置"）：Avalonia 里控件要成为拖放落点必须
+			// 显式 DragDrop.SetAllowDrop(true)，否则 DragOver/Drop 事件不会在该控件上触发——拖拽能发起
+			// 但拖到另一个标签上释放时 DropEvent 不 fire，重排逻辑（TabItem_Drop）不执行。WPF 原版
+			// TabItem.AllowDrop=true 在 Avalonia 无隐式等价，必须显式设。
+			global::Avalonia.Input.DragDrop.SetAllowDrop(this, true);
 			// Migration note：WPF UIElement.Drop += handler（实例 CLR 事件）在 Avalonia 12 的 TabItem 上
 			// 不存在（CS0117）；等价写法是 AddHandler(DragDrop.DropEvent, handler)（Interactive 路由
 			// 事件订阅，默认 Direct|Bubble，与 WPF Drop 冒泡行为一致）。
@@ -359,9 +364,21 @@ namespace ForkPlus.UI.Controls
 			// Migration note：WPF Mouse.PrimaryDevice.LeftButton（全局查询鼠标左键状态）在 Avalonia 无
 			// 全局鼠标状态 API（CS0117）；拖动语义等价物 = 当前 PointerMoved 事件指针点位的
 			// IsLeftButtonPressed（按下并移动才会走到这里，行为一致）。
-			if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
+			// 修复（2026-09-10，"标签页不能拖动换位置"）：原条件要求 e.Source 是 ClosableTabItem，
+			// 但 PointerMoved 的 e.Source 通常是标签头里的子控件（CenteredDockPanel/TextBlock 等），
+			// 不是 ClosableTabItem 本身 → 条件恒假，拖拽永不发起。改为用 this（事件订阅者本身即标签页）
+			// 作拖拽源，并排除点中按钮（关闭按钮）的情况。
+			// 修复（2026-09-10，"拖动有效果但没法换位置"）：原先把 WeakReference<ClosableTabItem> 直接
+			// 交给 DoDragDrop，ToTransfer 的 default 分支把它 ToString 成类型名字符串存进 DataTransfer——
+			// 落点 GetData("ForkPlusItem") 拿到的是字符串，is WeakReference<ClosableTabItem> 恒假，
+			// 重排逻辑永不执行。改为用 WpfDataObject.SetData 进进程内直通表（RuntimePayload），
+			// 保留原始对象引用，落点能拿回 WeakReference（与侧边栏/文件列表拖放同款做法）。
+			if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button))
 			{
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (global::Avalonia.Input.DragDropEffects)7);
+				ClosableTabItem closableTabItem = this;
+				WpfDataObject dataObject = new WpfDataObject();
+				dataObject.SetData("ForkPlusItem", new WeakReference<ClosableTabItem>(closableTabItem));
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, dataObject, (global::Avalonia.Input.DragDropEffects)7);
 			}
 		}
 
@@ -371,8 +388,11 @@ namespace ForkPlus.UI.Controls
 			// WpfDataObject 只有 GetData(string)（CS1503），且 DragDropLauncher.DoDragDrop 把自定义
 			// 对象统一存为 "ForkPlusItem" 格式（WpfCompat.Batch2.cs ToTransfer 默认分支），
 			// 故按该格式名读取，读取结果仍以类型模式匹配校验，语义等价。
-			if (e.WpfData().GetData("ForkPlusItem") is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			// 修复（2026-09-10）：同 TabItem_PreviewMouseMove——e.Source 通常是标签头子控件，
+			// 不是 ClosableTabItem。用 this（DropEvent 订阅者本身=落点标签页）作落点标签。
+			if (e.WpfData().GetData("ForkPlusItem") is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target))
 			{
+				ClosableTabItem closableTabItem = this;
 				ClosableTabControl closableTabControl = closableTabItem.GetOwnerTabControl();
 				if (closableTabControl != null && closableTabItem != target)
 				{

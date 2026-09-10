@@ -69,7 +69,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		protected override void OnSubmit()
 		{
 			ForkPlusDialogWindow loginWindow = SelectedService.ServiceType.GetLoginWindow();
-			if (loginWindow != null && loginWindow.ShowDialog().GetValueOrDefault())
+			if (loginWindow != null && ShowLoginDialogOwnedToThis(loginWindow).GetValueOrDefault())
 			{
 				CloseWithOk();
 			}
@@ -78,10 +78,23 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		private void ServicesListBox_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			ForkPlusDialogWindow loginWindow = SelectedService.ServiceType.GetLoginWindow();
-			if (loginWindow != null && loginWindow.ShowDialog().GetValueOrDefault())
+			if (loginWindow != null && ShowLoginDialogOwnedToThis(loginWindow).GetValueOrDefault())
 			{
 				CloseWithOk();
 			}
+		}
+
+		// 修复（2026-09-10，"账号弹窗点一下被置底、可无限开新账号弹窗"）：
+		// loginWindow 经 ForkPlusDialogWindow 基类构造把 owner 设成 MainWindow，但本窗口本身已是模态
+		// （AddAccountWindow 经 AccountsWindow.ShowDialog 打开，AccountsWindow 又经 MainWindow.ShowDialog
+		// 打开），MainWindow 已被 AccountsWindow 禁用。loginWindow 以 MainWindow 为 owner 调 ShowDialog
+		// 无法正确挂到当前活跃模态链（AddAccountWindow）上——弹窗被置底、AccountsWindow 仍可交互、
+		// 能再开新账号弹窗。改为把 loginWindow 的 owner 设成本窗口（AddAccountWindow），让它正确嵌套在
+		// 本窗口之下、禁用本窗口，输入路由到 loginWindow（与 IR 确认框、PushWindow 编辑远端同款修复）。
+		private bool? ShowLoginDialogOwnedToThis(ForkPlusDialogWindow loginWindow)
+		{
+			loginWindow.SetOwnerCompat(this);
+			return loginWindow.ShowDialog();
 		}
 
 		private void ServicesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

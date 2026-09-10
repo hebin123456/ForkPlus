@@ -193,10 +193,12 @@ namespace ForkPlus.UI.UserControls
 		GitMmUserControl activeGitMmUserControl = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
 		RepositoryUserControl activeRepositoryUserControl = MainWindow.ActiveRepositoryUserControl;
 
-		// v3.11.0：git mm 激活时显示 History / Output 按钮
+		// v3.11.0：git mm 激活时显示 History 按钮
 		bool isGitMmActive = activeGitMmUserControl != null;
 		GitMmHistoryButton.IsVisible = isGitMmActive ? true : false;
-		GitMmOutputButton.IsVisible = isGitMmActive ? true : false;
+		// 2026-09-10：git mm 命令输出已收编到活动管理器"git-mm"标签页，git mm 窗口不再有命令输出覆盖层，
+		// 原 Output 切换按钮已无作用，隐藏。
+		GitMmOutputButton.IsVisible = false;
 
 		// v3.11.0：git mm 命令执行中——优先显示 busy 状态
 		if (isGitMmActive && activeGitMmUserControl.IsGitMmBusy)

@@ -21,10 +21,11 @@
 // ① headless 的 TopLevel.StorageProvider 是 Avalonia.Platform.Storage.NoopStorageProvider
 //    ——SaveFilePickerAsync 立即 RanToCompletion 返回 null（不挂起），生产同步桥接
 //    StorageProviderDialogs.ShowSaveDialog 返回 false。因此 SaveAsPatchWindow.OnSubmit 的
-//    系统保存对话框在 headless 下=用户点"取消"：SelectPatchSaveLocation false → 直接
-//    Close() 无导出。真实导出链走生产同一命令对象 ExportPatchGitCommand 直测（窗口
-//    OnSubmit 内部调用的就是它）；取消降级路径本身作为用例断言（窗口关闭 + 零文件 +
-//    RecentPatchDirectory 不被改写）。
+//    系统保存对话框在 headless 下=用户点"取消"：SelectPatchSaveLocation false → 零导出、
+//    弹窗保持打开（v4.0.8 修复：取消文件选择不再无条件 Close 补丁弹窗，可重试）。真实
+//    导出链走生产同一命令对象 ExportPatchGitCommand 直测（窗口 OnSubmit 内部调用的就是
+//    它）；取消降级路径本身作为用例断言（弹窗仍可见 + 零文件 + RecentPatchDirectory
+//    不被改写）。
 // ② git stash create [<message>] 的 --include-untracked 会被当 message 吞掉（stash create
 //    子命令不支持该选项，只有 push/save 支持）——subject 变 "On main: --include-untracked"
 //    且 untracked 文件不入快照。WPF 原仓 SnapshotGitCommand 逐字节同款（原始行为非迁移
@@ -163,12 +164,13 @@ namespace ForkPlus.Tests
 						ScreenshotHelper.Snap(dialog, "01-save-as-patch-single", ModuleDir);
 
 						// —— OnSubmit 降级路径：headless NoopStorageProvider = 用户在系统保存
-						// 对话框点"取消"（探针①）→ 窗口关闭、零导出、RecentPatchDirectory 不被改写
+						// 对话框点"取消"（探针①）→ 弹窗保持打开（v4.0.8 修复：取消文件选择不再
+						// 无条件关闭补丁弹窗，用户可重试另选位置）、零导出、RecentPatchDirectory 不被改写
 						UiClick.Click(footer.SubmitButton);
-						Assert.True(UiClick.WaitFor(delegate { return !dialog.IsVisible; }),
-							"保存对话框取消后应关闭弹窗（15s 超时）");
+						Assert.True(dialog.IsVisible, "保存对话框取消后补丁弹窗应保持打开（v4.0.8 修复，可重试）");
 						Assert.Null(ForkPlusSettings.Default.RecentPatchDirectory);
 						Assert.Equal("", GitOf(repo, "status --porcelain"));
+						dialog.Close();
 
 						// —— 实例 B：RecentPatchDirectory 预置（含空格目录 → 引号；预览在
 						// OnInitialized 加载完成的 RefreshCommandPreview 读设置）——

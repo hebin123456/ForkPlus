@@ -79,6 +79,13 @@ namespace ForkPlus.UI.Dialogs.Accounts
 				return;
 			}
 			ForkPlusDialogWindow loginWindow = value.ServiceType.GetLoginWindow(value);
+			// 修复（2026-09-10）：同 AddAccountWindow——loginWindow 默认 owner 是 MainWindow，但
+			// AccountsWindow 本身已是模态（MainWindow 已被禁用），loginWindow 需嵌套在 AccountsWindow
+			// 之下才能正确置顶、禁用 AccountsWindow。改为 owner 设成本窗口（AccountsWindow）。
+			if (loginWindow != null)
+			{
+				loginWindow.SetOwnerCompat(this);
+			}
 			if (loginWindow != null && loginWindow.ShowDialog().GetValueOrDefault())
 			{
 				Account account2 = (loginWindow as IServiceLoginWindow)?.Account;

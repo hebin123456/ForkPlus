@@ -67,7 +67,24 @@ namespace ForkPlus.UI.Dialogs
 
 	private bool _commandPreviewInitialized;
 
-		public bool IsOperationInProgress { get; private set; }
+		// 修复（2026-09-10，"另存为补丁弹窗保存按钮灰色不可点击"）：
+		// 原为自动属性，SetStatus 把它从 true（InProgress）切回 false（None）后不会刷新 Submit 按钮
+		// 的 IsEnabled——UpdateSubmitButton 只在 AddFooter/Enable/DisableEditableControls 里调，
+		// SetStatus 改完 IsOperationInProgress 就 return，导致操作完成后保存按钮仍置灰。
+		// 改为带副作用的属性：赋值时若值变化即调 UpdateSubmitButton，让 Submit 按钮随操作状态实时启用/禁用。
+		private bool _isOperationInProgress;
+		public bool IsOperationInProgress
+		{
+			get => _isOperationInProgress;
+			private set
+			{
+				if (_isOperationInProgress != value)
+				{
+					_isOperationInProgress = value;
+					UpdateSubmitButton();
+				}
+			}
+		}
 
 		protected new bool ShowHeader { get; set; } = true;
 

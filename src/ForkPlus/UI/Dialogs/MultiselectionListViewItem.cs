@@ -163,6 +163,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ShowDropAdorner(DropPosition dropPosition)
 		{
+			// 修复（2026-09-10）：同 DragAndDropListViewItem——先清旧 adorner 再加新的，避免堆积残留挡界面。
+			ClearDropAdorner();
 			_dropAdorner = new DropPlaceAdorner(this, dropPosition);
 			if (_dropAdorner != null)
 			{

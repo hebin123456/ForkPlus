@@ -179,6 +179,11 @@ namespace ForkPlus.UI.Controls
 
 		private void ShowDropAdorner(DropPosition dropPosition, global::Avalonia.Controls.ListBoxItem targetListViewItem)
 		{
+			// 修复（2026-09-10，"ScrollViewer 界面下面总有一块东西挡界面"）：原实现每次 OnDragOver
+			// 都 new 一个 DropPlaceAdorner 加进 AdornerLayer，却不先移除上一个 _dropAdorner——
+			// 拖动期间 OnDragOver 反复触发，多个 adorner 堆积在图层里，每个都画一个填充矩形/线条，
+			// ClearDropAdorner 只移除最后一个 _dropAdorner，其余残留下来持续挡界面。先清旧的再加新的。
+			ClearDropAdorner();
 			_dropAdorner = new DropPlaceAdorner(this, dropPosition, targetListViewItem);
 			AdornerLayer.GetAdornerLayer(ParentListView)?.Add(_dropAdorner);
 		}

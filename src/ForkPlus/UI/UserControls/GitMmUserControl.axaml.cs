@@ -1012,11 +1012,15 @@ namespace ForkPlus.UI.UserControls
 		private void SetBusy(bool isBusy)
 	{
 		_isBusy = isBusy;
+		// 修复（2026-09-10，"git mm 操作时下面的界面被锁住"）：
+		// 此前 SetBus 期间把 SubreposTabControl / SubrepoFilterButton 一并禁用，导致
+		// git mm 命令运行时整个子仓库界面被锁住、无法切换/查看。其他 git 操作（fetch/pull 等）
+		// 经 RepositoryUserControl.JobQueue 跑、不禁用主界面，git mm 应对齐——子仓库界面保持可交互。
+		// 仅禁用 Start/Sync/Upload 三个命令按钮，防止并发起命令（RunBackground 已会先 Cancel
+		// 旧任务，这里禁用是额外的并发保护）。
 		StartButton.IsEnabled = !isBusy;
 		SyncButton.IsEnabled = !isBusy;
 		UploadButton.IsEnabled = !isBusy;
-		SubreposTabControl.IsEnabled = !isBusy;
-		SubrepoFilterButton.IsEnabled = !isBusy;
 	}
 
 	private void SetStatus(string text)
@@ -1038,19 +1042,12 @@ namespace ForkPlus.UI.UserControls
 	/// Bug 修复（2026-09-04，"弹出位置跑到别的地方"）：显示前锚定命令输出按钮。</summary>
 	private void SetOutputOverlayVisible(bool visible, bool save)
 	{
-		if (visible)
-		{
-			PositionOutputOverlayAtCommandOutputButton();
-		}
-		OutputOverlayBorder.IsVisible = visible;
-		if (visible)
-		{
-			AttachOutputOverlayDismissHandlers();
-		}
-		else
-		{
-			DetachOutputOverlayDismissHandlers();
-		}
+		// 2026-09-10：git mm 命令输出收编到活动管理器——git mm 窗口不再显示命令输出覆盖层。
+		// 命令输出经 AppendOutput 写入 _outputLines，由活动管理器"git-mm"标签页读取展示
+		// （GitMmUserControl.GetOutputText()）。此处一律隐藏覆盖层，所有调用方（工具栏切换按钮、
+		// 命令运行时自动弹出、dismiss 处理器）均变为 no-op，覆盖层永不显示。保留代码以最小化风险。
+		OutputOverlayBorder.IsVisible = false;
+		DetachOutputOverlayDismissHandlers();
 		if (save)
 		{
 			SaveSettings();

@@ -409,6 +409,21 @@ namespace ForkPlus.UI.Controls
 			ScrollIntoView((object)node);
 		}
 
+		/// <summary>
+		/// 修复（2026-09-10，"显示更少标签后滚动条卡在底部、滚轮滚不上去"）：
+		/// 截断切换（显示全部/更少）后列表项数变化，旧滚动偏移可能超出新 extent，
+		/// Avalonia 的 ScrollViewer 不自动 clamp，表现为滚动条 thumb 卡在底部、鼠标滚轮
+		/// 向上滚 offset 不变。此处把内部 ScrollViewer 的 Offset 归零（回到顶部）。
+		/// 调用方应在 Reload 之后、延迟到下一布局帧调用（让 extent 先更新）。
+		/// </summary>
+		public void ResetScrollOffset()
+		{
+			if (Scroll != null)
+			{
+				Scroll.Offset = global::Avalonia.Vector.Zero;
+			}
+		}
+
 		public IDisposable LockUpdates()
 		{
 			return new UpdateLock(this);
@@ -626,6 +641,11 @@ namespace ForkPlus.UI.Controls
 
 		private void ShowPreview(TreeViewControlItem item)
 		{
+			// 修复（2026-09-10，"侧边栏树拖动后界面底部残留色块挡界面"）：原实现每次 HandleDragOver
+			// 都把新条目的 Background 设成选中态预览色，却不先清上一个 _previewNodeView 的预览背景——
+			// 拖动期间 OnDragOver 反复触发，多个条目被染上预览色，HidePreview 只清最后一个，
+			// 其余残留下来持续挡界面。先清旧的再设新的。
+			HidePreview();
 			_previewNodeView = item;
 			_previewNodeView.Background = Application.Current.TryFindResource("TreeViewItem.SelectedInactive.Background") as Brush;
 		}

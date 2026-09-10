@@ -122,9 +122,14 @@ namespace ForkPlus.UI.WpfCompat
                     int x, y;
                     if (owner != null && owner.WindowState != WindowState.Minimized)
                     {
-                        // owner 窗口中心（DIP → 物理像素；显式走原生扩展——项目内 InputCompat
-                        // 有同名 PointToScreen shim（返回 DIP Point），会被优先解析导致类型错配）。
-                        PixelPoint centerPx = global::Avalonia.VisualExtensions.PointToScreen(owner, new Point(owner.Width / 2.0, owner.Height / 2.0));
+                        // 修复（2026-09-10，"主窗口最大化后弹窗不在窗口中间弹出"）：原先用 owner.Width/Height，
+                        // 但 Avalonia 里最大化窗口的 Width/Height 是还原矩形（normal rect，如 650×400），
+                        // 不是当前最大化尺寸——弹窗中心对齐到这个不可见的小矩形中心，观感"跑偏"。
+                        // 改用 owner.Bounds.Width/Height（实际渲染尺寸：最大化时即全屏工作区，正常态即窗口尺寸），
+                        // 弹窗中心对齐到可见窗口中心，最大化时落在屏幕中央，正常态落在窗口中央。
+                        double ownerW = owner.Bounds.Width;
+                        double ownerH = owner.Bounds.Height;
+                        PixelPoint centerPx = global::Avalonia.VisualExtensions.PointToScreen(owner, new Point(ownerW / 2.0, ownerH / 2.0));
                         x = centerPx.X - wPx / 2;
                         y = centerPx.Y - hPx / 2;
                     }

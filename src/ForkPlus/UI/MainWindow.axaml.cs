@@ -113,12 +113,22 @@ namespace ForkPlus.UI
 			base.Closing += Window_Closing;
 			base.Activated += Window_Activated;
 			// 预同步几何（Width/Height 是 DIP 属性，Show 前设置可避免 1000x600 → 恢复尺寸的闪跳；
-			// Position/最大化在 OnOpened 里恢复，避免未显示窗口操作 PlatformImpl 的时序问题）。
+			// Position 在 OnOpened 里恢复（需要窗口句柄）。
+			// 修复（2026-09-10，"每次启动都是小窗口，前一次最大化没继承"）：
+			// 原先最大化状态只在 OnOpened 里用 window.WindowState=Maximized 恢复，但实测在
+			// SystemDecorations.None 的自绘 chrome 窗口上，OnOpened 时设 WindowState 不可靠
+			//（平台层时序问题），窗口仍停在构造期设的 Width/Height（小窗口）。改为在 Show 前
+			//（构造期）直接设 WindowState=Maximized——Avalonia 在 Show 时按该属性值打开窗口，
+			// 窗口直接以最大化出现，不再依赖 OnOpened 的后置恢复。Width/Height 仍作为还原矩形。
 			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
 			if (windowLocationState.WindowState != global::Avalonia.Controls.WindowState.Minimized)
 			{
 				base.Width = windowLocationState.Width;
 				base.Height = windowLocationState.Height;
+				if (windowLocationState.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+				{
+					base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
+				}
 			}
 			(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow = this;
 			TabManager = new TabManager(TabControl);
