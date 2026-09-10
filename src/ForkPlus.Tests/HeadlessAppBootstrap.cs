@@ -355,6 +355,37 @@ namespace ForkPlus.Tests
 			});
 		}
 
+		private static bool _registerHeadlessDragSourceDone;
+
+		/// <summary>向 AvaloniaLocator 注册 headless 进程内拖拽源（反射，绕过 PrivateApi 编译封锁）。
+		/// 等价于 Avalonia 11 公开写法 AvaloniaLocator.CurrentMutable
+		/// .Bind&lt;IPlatformDragSource&gt;().ToConstant(HeadlessDragSourceProxy.CreatePlatformDragSource())。
+		/// 只在首次启动注册一次（幂等防御：已注册时跳过——代理本身无状态，重复注册无害但没必要）。</summary>
+		private static void RegisterHeadlessDragSource()
+		{
+			if (_registerHeadlessDragSourceDone)
+			{
+				return;
+			}
+			// 经公开类型 DragDrop 定位 Avalonia.Base 真实程序集（运行时加载 lib 实现，
+			// 非编译期 ref 程序集——PrivateApi 哨兵签名替换只存在于 ref，真实成员可反射）。
+			global::System.Type locatorType = typeof(global::Avalonia.Input.DragDrop).Assembly
+				.GetType("Avalonia.AvaloniaLocator");
+			global::System.Type dragSourceType = typeof(global::Avalonia.Input.Platform.IPlatformDragSource);
+			const global::System.Reflection.BindingFlags StaticFlags =
+				global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.Static;
+			const global::System.Reflection.BindingFlags InstanceFlags =
+				global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.Instance;
+			object mutableLocator = locatorType.GetProperty("CurrentMutable", StaticFlags).GetValue(null);
+			object helper = locatorType.GetMethod("Bind", InstanceFlags)
+				.MakeGenericMethod(dragSourceType)
+				.Invoke(mutableLocator, null);
+			helper.GetType().GetMethod("ToConstant", InstanceFlags)
+				.MakeGenericMethod(dragSourceType)
+				.Invoke(helper, new object[] { HeadlessDragSourceProxy.CreatePlatformDragSource() });
+			_registerHeadlessDragSourceDone = true;
+		}
+
 		private static void StartAsync()
 		{
 			if (Interlocked.Exchange(ref startRequested, 1) == 0)
@@ -409,6 +440,19 @@ namespace ForkPlus.Tests
 								toast: new global::ForkPlus.Services.Wpf.WpfToastNotificationService(),
 								windowManager: new global::ForkPlus.Services.Wpf.WpfWindowManagerService());
 						}
+						// E2E 拖拽（E2e29，2026-09-10）：headless 平台无 IPlatformDragSource——
+					// DragDrop.DoDragDropAsync 查不到服务直接 no-op，DragOver/Drop 永不触发。
+					// 注册进程内拖拽源（把后续指针事件转成拖放路由事件，语义对齐 DragDropDevice/
+					// Win32 OLE，详见 HeadlessInProcessDragSource 注释），tab 拖拽用例得以走完整管线。
+					// PrivateApi 双重封锁（2026-09-10 实证，Avalonia 12.1.1 源码）：不但
+					// IPlatformDragSource 标了 [PrivateApi]，整个 AvaloniaLocator 类也标了
+					// [PrivateApi]——编译器把 CurrentMutable 当不存在（CS0117），Bind/ToConstant
+					// 同样不可访问。反射注册：运行时加载的是 lib 实现程序集（真实签名未裁），
+					// 经 DragDrop 所在程序集定位 AvaloniaLocator 类型后逐级反射调用
+					// CurrentMutable.Bind<IPlatformDragSource>().ToConstant(代理)。
+					// 服务查询路径（DragDrop.cs 源码）：AvaloniaLocator.Current.GetService<T>——
+					// 静态构造 Current = CurrentMutable 同一实例，往 CurrentMutable 注册即生效。
+					RegisterHeadlessDragSource();
 						// E2E 环境隔离（2026-09-09，CI 偶发红 "QuickFetch 不应弹窗: ErrorWindow →
 						// cannot lock ref"）：每个测试窗口都带一个 1 分钟首 tick 的
 						// AutomaticBackgroundFetchManager（FetchRemotesAutomatically 默认 true），

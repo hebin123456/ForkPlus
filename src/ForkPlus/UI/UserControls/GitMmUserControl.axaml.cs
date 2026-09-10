@@ -95,8 +95,15 @@ namespace ForkPlus.UI.UserControls
 
 		private Point _tabDragStartPoint;
 
-		[Null]
-		private TabItem _subrepoTabDragItem;
+	[Null]
+	private TabItem _subrepoTabDragItem;
+
+	// 修复（2026-09-10，坑1"首次拖拽不生效"）：子仓 tab 由 RebuildSubrepoTabs 动态重建（状态刷新/
+	// 过滤/选中变化等 10 处调用点），新实例在 DragDropLauncher 的 ConditionalWeakTable 里都是
+	// "首次"——按下记录器未注册，拖动手势被吞，直到同一实例的第二次手势。重建频繁导致
+	// "子仓拖动排序完全是坏的"。改为直接存本手势的 PointerPressedEventArgs，一次手势即可发起。
+	[Null]
+	private global::Avalonia.Input.PointerPressedEventArgs _subrepoTabLastPressArgs;
 
 		[Null]
 		private HashSet<string> _visibleSubrepoPaths;
@@ -1881,12 +1888,16 @@ namespace ForkPlus.UI.UserControls
 		private void SubrepoTabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 	{
 		_subrepoTabDragItem = null;
+		// 坑1修复（2026-09-10）：每次手势开始先清旧记录（见 _subrepoTabLastPressArgs 字段注释）。
+		_subrepoTabLastPressArgs = null;
 		// Migration note：WPF MouseButtonEventArgs.LeftButton == MouseButtonState.Pressed →
 		// Avalonia 用 GetCurrentPoint(null).Properties.IsLeftButtonPressed 判断。
 		if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as global::Avalonia.AvaloniaObject))
 		{
 			_tabDragStartPoint = e.GetPosition(null);
 			_subrepoTabDragItem = tabItem;
+			// 坑1修复：存本手势按下参数，move 超阈值后经 press 重载一次发起（无需两段式）。
+			_subrepoTabLastPressArgs = e;
 		}
 	}
 
@@ -1914,15 +1925,20 @@ namespace ForkPlus.UI.UserControls
 				// 漏改拖拽发起——DoDragDrop 仍把 WeakReference<TabItem> 直接传入，ToTransfer 的 default
 				// 分支把它 ToString 成类型名字符串，落点拿不回原对象，重排不执行。改用 WpfDataObject.SetData
 				// 进进程内直通表（RuntimePayload）保留原始对象引用，与主窗口 ClosableTabItem 同款做法。
-				WpfDataObject dataObject = new WpfDataObject();
-				dataObject.SetData("ForkPlusItem", new WeakReference<TabItem>(tabItem));
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(tabItem, dataObject, DragDropEffects.Move);
-			}
-			finally
-			{
-				_subrepoTabDragItem = null;
-			}
+				// 修复（2026-09-10，坑1"首次拖拽不生效"）：改走 DragDropLauncher.DoDragDrop(press,...) 重载，
+			// 用本手势按下的 PointerPressedEventArgs 直接发起——子仓 tab 频繁 RebuildSubrepoTabs 重建，
+			// 新实例走旧 DoDragDrop(source,...) 首次手势必被吞。finally 置空防止同一手势重复发起
+			//（_subrepoTabDragItem 状态机已有同款防线，双保险）。
+			WpfDataObject dataObject = new WpfDataObject();
+			dataObject.SetData("ForkPlusItem", new WeakReference<TabItem>(tabItem));
+			global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(_subrepoTabLastPressArgs, dataObject, DragDropEffects.Move);
 		}
+		finally
+		{
+			_subrepoTabDragItem = null;
+			_subrepoTabLastPressArgs = null;
+		}
+	}
 
 		// Migration note：WPF 版签名是 (object, PointerPressedEventArgs)，与 Avalonia 的
 	// PointerReleased（EventHandler<PointerReleasedEventArgs>）不匹配，改为对应的释放事件参数。
@@ -1975,19 +1991,26 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private static bool IsFromSubrepoTabHeader(TabItem tabItem, global::Avalonia.AvaloniaObject source)
+	{
+		// 修复（2026-09-10，"按住子仓标签空白处拖不动"）：原判定只查 source 祖先链上是否有
+		// tabItem.Header 对象——按下在 header 内容元素（标题/图标）上成立，但按在 header 空白
+		// 区域时命中元素是 TabItem 模板的 Grid/Border（Header 的视觉祖先而非后代），判定为
+		// false → 拖拽永不发起。TabItem 在标签条上的视觉子树本身就是 header 区域，补一条
+		// "source 祖先链含该 TabItem" 的等价判定，整个标签（含空白处）都能起拖。
+		if (tabItem == null)
 		{
-			if (tabItem?.Header is global::Avalonia.AvaloniaObject header)
-			{
-				for (global::Avalonia.AvaloniaObject current = source; current != null; current = GetParentObject(current))
-				{
-					if (current == header)
-					{
-						return true;
-					}
-				}
-			}
 			return false;
 		}
+		global::Avalonia.AvaloniaObject header = tabItem.Header as global::Avalonia.AvaloniaObject;
+		for (global::Avalonia.AvaloniaObject current = source; current != null; current = GetParentObject(current))
+		{
+			if (current == header || current == tabItem)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 		[Null]
 	private static global::Avalonia.AvaloniaObject GetParentObject(global::Avalonia.AvaloniaObject source)

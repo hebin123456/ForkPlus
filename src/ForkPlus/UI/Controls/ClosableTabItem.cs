@@ -40,6 +40,13 @@ namespace ForkPlus.UI.Controls
 
 		private Point _dragStartPoint;
 
+		// 修复（2026-09-10，坑1"首次拖拽不生效"）：DragDropLauncher.DoDragDrop(source,...) 的
+		// ConditionalWeakTable 首次调用只注册按下记录器并返回 None（手势被吞），第二次手势起才生效。
+		// 这里直接存本手势的 PointerPressedEventArgs，move 超阈值时经 DoDragDrop(press,...) 重载
+		// 一次发起。发起后置 null 兼做防重——Avalonia 的 DoDragDropAsync 不再阻塞（WPF 阻塞语义下
+		// 同一手势天然只发起一次），PointerMoved 会继续触发，不置空会对同一手势重复发起。
+		private PointerPressedEventArgs _lastPressArgs;
+
 		// 若模板/主题未生效（回落到默认 TabItem 模板），用运行时 header chrome 兜底：
 		// 右键菜单/关闭按钮/颜色标记不会缺失。
 		private bool _useFallbackHeaderChrome;
@@ -347,13 +354,20 @@ namespace ForkPlus.UI.Controls
 		private void TabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			_dragStartPoint = e.GetPosition(null);
+			_lastPressArgs = null;
 			if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
 			{
 				e.Handled = true;
 				Close();
 				return;
 			}
-			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			{
+				IsSelected = true;
+				// 坑1修复：记录本手势按下参数（仅在左键按下时），供 move 超阈值后一次发起拖拽。
+				_lastPressArgs = e;
+			}
+			else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
 			{
 				IsSelected = true;
 			}
@@ -373,12 +387,21 @@ namespace ForkPlus.UI.Controls
 			// 落点 GetData("ForkPlusItem") 拿到的是字符串，is WeakReference<ClosableTabItem> 恒假，
 			// 重排逻辑永不执行。改为用 WpfDataObject.SetData 进进程内直通表（RuntimePayload），
 			// 保留原始对象引用，落点能拿回 WeakReference（与侧边栏/文件列表拖放同款做法）。
+			// 修复（2026-09-10，坑1"首次拖拽不生效"）：改走 DragDropLauncher.DoDragDrop(press,...) 重载，
+			// 用本手势按下的 PointerPressedEventArgs 直接发起，不再依赖 ConditionalWeakTable 两段式
+			//（首次手势被吞的问题）。发起后 _lastPressArgs 置 null，防止同一手势重复发起。
 			if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button))
 			{
+				global::Avalonia.Input.PointerPressedEventArgs pressArgs = _lastPressArgs;
+				_lastPressArgs = null;
+				if (pressArgs == null)
+				{
+					return;
+				}
 				ClosableTabItem closableTabItem = this;
 				WpfDataObject dataObject = new WpfDataObject();
 				dataObject.SetData("ForkPlusItem", new WeakReference<ClosableTabItem>(closableTabItem));
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, dataObject, (global::Avalonia.Input.DragDropEffects)7);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(pressArgs, dataObject, (global::Avalonia.Input.DragDropEffects)7);
 			}
 		}
 

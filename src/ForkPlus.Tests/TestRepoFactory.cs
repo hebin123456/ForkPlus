@@ -141,6 +141,25 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>git mm 工作区（E2e29 拖拽测试）：根目录 .mm 标记 + 2 个子仓。
+		/// GitMmUserControl.IsGitMmWorkspace 以 .mm/.repo 目录判定；子仓经目录扫描发现
+		/// （Walk 跳过 .git/.mm/node_modules 等，逐目录 IsGitWorkTree），不依赖真实
+		/// git-mm 工具链——与用户"没有 git mm 可以用 git repo 模拟"的口径一致。</summary>
+		public static string CreateGitMmWorkspace()
+		{
+			string root = NewTempDir("gitmm");
+			Directory.CreateDirectory(Path.Combine(root, ".mm"));
+			string repoA = Path.Combine(root, "repoA");
+			string repoB = Path.Combine(root, "repoB");
+			Init(repoA);
+			Commit(repoA, "a.txt", "repo a\n", "repoA c1");
+			Commit(repoA, "a2.txt", "repo a 2\n", "repoA c2");
+			Init(repoB);
+			Commit(repoB, "b.txt", "repo b\n", "repoB c1");
+			Commit(repoB, "b2.txt", "repo b 2\n", "repoB c2");
+			return root;
+		}
+
 		/// <summary>大量变更文件仓库（供暂存区滚动条刷新回归，v4.0.1 bug3）：
 		/// folders×filesPerFolder 个已提交文件全部追加修改 → 全量未暂存（Modified）。
 		/// Tree 模式列表 = folders 个文件夹节点 + folders×filesPerFolder 行，行数远超视口

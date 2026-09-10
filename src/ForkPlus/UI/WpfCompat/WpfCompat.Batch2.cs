@@ -162,6 +162,23 @@ namespace ForkPlus.UI.WpfCompat
             return DragDropEffects.None; // 异步结果不回传（WPF 语义近似），Migration note
         }
 
+        /// <summary>
+        /// 修复（2026-09-10，"第一次拖不动，第二次才生效"）：上面的 DoDragDrop(source, ...) 依赖
+        /// ConditionalWeakTable 里"最近一次按下"的记录，而记录器在该 source 首次调用时才注册——
+        /// 首次手势必然返回 None 被吞掉，第二次手势起才生效。对动态重建的控件（git mm 子仓 tab
+        /// 每次 RebuildSubrepoTabs 全新创建）几乎每次都是"首次"，拖动排序完全失效。
+        /// 本重载由调用方直接传入本手势的 PointerPressedEventArgs，一次手势即可发起，无两段式。
+        /// tab 标签拖拽（ClosableTabItem / GitMmUserControl 子仓 tab）改走本重载。
+        /// </summary>
+        public static DragDropEffects DoDragDrop(PointerPressedEventArgs triggerEvent, object data, DragDropEffects allowedEffects)
+        {
+            if (triggerEvent == null) return DragDropEffects.None;
+            var transfer = ToTransfer(data);
+            if (transfer == null) return DragDropEffects.None;
+            _ = global::Avalonia.Input.DragDrop.DoDragDropAsync(triggerEvent, transfer, allowedEffects);
+            return DragDropEffects.None; // 异步结果不回传（WPF 语义近似）
+        }
+
         private static IDataTransfer ToTransfer(object data)
         {
             // Avalonia 12：DataObject 已废弃（error 级），统一改用 DataTransfer + DataTransferItem。
