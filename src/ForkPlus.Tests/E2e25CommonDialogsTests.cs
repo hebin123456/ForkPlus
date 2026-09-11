@@ -576,13 +576,13 @@ namespace ForkPlus.Tests
 					RunJobs();
 
 					// 构造期 RefreshSamples：标头 + 慢样本/最近样本两段
-					Assert.Contains("Slowest samples", diagnostics.SamplesTextBox.Text);
-					Assert.Contains("Recent samples", diagnostics.SamplesTextBox.Text);
+					Assert.Contains("Slowest samples", diagnostics.SamplesTextBlock.Text);
+					Assert.Contains("Recent samples", diagnostics.SamplesTextBlock.Text);
 
 					// RefreshButton → RefreshSamples（重新装配，文本等价）
 					UiClick.Click(diagnostics.RefreshButton);
 					RunJobs();
-					Assert.Contains("Slowest samples", diagnostics.SamplesTextBox.Text);
+					Assert.Contains("Slowest samples", diagnostics.SamplesTextBlock.Text);
 
 					// CopyButton → 剪贴板 SetText（headless Noop 提供器不抛异常即通过）
 					UiClick.Click(diagnostics.CopyButton);

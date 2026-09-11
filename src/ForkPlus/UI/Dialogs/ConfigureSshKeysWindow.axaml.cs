@@ -47,7 +47,35 @@ namespace ForkPlus.UI.Dialogs
 
 		private void SshKeyListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			// Migration note：删除按钮的使能实时跟随选中项（有选中才可删；无选中置灰）。
+			// 与添加按钮（DropDownButton）不同，删除作用于"当前选中的密钥"，选中项变化即刷新。
+			DeleteSSHKeyButton.IsEnabled = SshKeyListBox.SelectedItem is SshKeyViewModel;
 			RefreshDetails();
+		}
+
+		private void DeleteSSHKeyButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(SshKeyListBox.SelectedItem is SshKeyViewModel selected))
+			{
+				return;
+			}
+			// "删除"语义：仅从 ForkPlus 配置（SshKeys）移除该密钥的引用并取消激活，
+			// 不删除磁盘上的私钥/公钥文件（用户可随时经"Open Existing SSH Key"重新添加）。
+			string[] sshKeys = ForkPlusSettings.Default.SshKeys;
+			List<string> list = new List<string>(sshKeys.Length);
+			foreach (string keyPath in sshKeys)
+			{
+				if (string.Equals(keyPath, selected.KeyPath, StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+				list.Add(keyPath);
+			}
+			ForkPlusSettings.Default.SshKeys = list.ToArray();
+			ForkPlusSettings.Default.Save();
+			Refresh();
+			DeleteSSHKeyButton.IsEnabled = false;
+			SshKeyListBox.Focus();
 		}
 
 		private void SshKeyCheckBox_Changed(object sender, RoutedEventArgs e)

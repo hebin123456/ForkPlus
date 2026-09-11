@@ -32,12 +32,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CopyButton_Click(object sender, RoutedEventArgs e)
 		{
-			ServiceLocator.Clipboard.SetText(SamplesTextBox.Text);
+			ServiceLocator.Clipboard.SetText(SamplesTextBlock.Text);
 		}
 
 		private void RefreshSamples()
 		{
-			SamplesTextBox.Text = FormatSamples();
+			SamplesTextBlock.Text = FormatSamples();
 		}
 
 		private static string FormatSamples()

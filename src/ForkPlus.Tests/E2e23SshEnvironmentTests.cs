@@ -424,6 +424,64 @@ namespace ForkPlus.Tests
 			}
 		}
 
+		// 删除按钮语义（2026-09-11）：仅从 ForkPlus 配置引用（SshKeys）移除，不删磁盘文件。
+		// 探针：预设一个位于 ~/.ssh 的密钥并将其路径写入 settings 引用 → 打开窗口选中 →
+		// 点删除 → SshKeys 移除该引用且磁盘私/公钥仍在，列表可从 ~/.ssh 扫描再次装配。
+		[Fact]
+		public void SshKeys_DeleteRemovesReferenceOnly_KeepsFiles()
+		{
+			var snap = SnapshotAppSettings();
+			Action restoreSshDir = IsolateSshDir();
+			try
+			{
+				GenerateKey("e2e-del", "del@test.example");
+				string privatePath = Path.Combine(SystemEnvironment.LocalSSHDirectory, "e2e-del");
+				string publicPath = privatePath + ".pub";
+				ForkPlusSettings.Default.SshKeys = new string[] { privatePath };
+				ForkPlusSettings.Default.Save();
+				HeadlessAppBootstrap.Run(delegate
+				{
+					var window = new ConfigureSshKeysWindow();
+					window.Show();
+					RunJobs();
+					try
+					{
+						// 选中列表中的删除目标（来自 ~/.ssh 扫描装配的 e2e-del；构造期 SelectedIndex=0
+						// 已预选首项，故显式选中目标项确保点击作用于 e2e-del）
+						var target = window.SshKeyListBox.Items.OfType<SshKeyViewModel>()
+							.First(v => v.KeyFileName == "e2e-del");
+						window.SshKeyListBox.SelectedItem = target;
+						RunJobs();
+						Assert.True(window.DeleteSSHKeyButton.IsEnabled, "选中密钥后删除按钮应启用");
+
+						// 点击删除 → 仅移除配置引用
+						UiClick.Click(window.DeleteSSHKeyButton);
+						RunJobs();
+						Assert.False(ForkPlusSettings.Default.SshKeys.Contains(privatePath, StringComparer.OrdinalIgnoreCase),
+							"删除后该密钥引用应从 SshKeys 移除");
+						// 删除后删除按钮复位禁用（Refresh 重建列表 + OnSubmit 不落盘，引用已是空）
+						Assert.False(window.DeleteSSHKeyButton.IsEnabled, "删除后应复位为禁用");
+
+						// 磁盘私钥/公钥文件必须仍存在（"仅移除引用"语义，不删文件）
+						Assert.True(File.Exists(privatePath), "删除仅移除引用，私钥文件应保留");
+						Assert.True(File.Exists(publicPath), "删除仅移除引用，公钥文件应保留");
+					}
+					finally
+					{
+						if (window.IsVisible)
+						{
+							window.Close();
+						}
+					}
+				});
+			}
+			finally
+			{
+				restoreSshDir();
+				RestoreAppSettings(snap);
+			}
+		}
+
 		// ============================ 4) 生成新 SSH 密钥：校验/预览/真实生成 ============================
 
 		[Fact]

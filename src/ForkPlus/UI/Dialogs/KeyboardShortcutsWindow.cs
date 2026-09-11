@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using ForkPlus.Settings;
+using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -131,11 +132,13 @@ namespace ForkPlus.UI.Dialogs
 			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0.0) });
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			// Migration note（2026-09-11）：普通 ScrollViewer → TouchpadAwareScrollViewer，
+			// 与主界面一致修复"滚轮滚动有用但 thumb 不跟随 / 点过滚动条后滚轮失效"问题。
 			// 中间区域必须是 *，否则 ScrollViewer 可能被 Auto 行撑开导致无法滚动。
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-			ScrollViewer scrollViewer = new ScrollViewer
+			TouchpadAwareScrollViewer scrollViewer = new TouchpadAwareScrollViewer
 			{
 				HorizontalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
 				VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Visible,

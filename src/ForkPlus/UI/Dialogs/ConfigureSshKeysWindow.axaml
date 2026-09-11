@@ -94,6 +94,9 @@
                 </ContextMenu>
               </controls:DropDownButton.ContextMenu>
             </controls:DropDownButton>
+            <Button Width="24" Height="24" Padding="0" Margin="-1" BorderBrush="{DynamicResource BorderBrush}" x:Name="DeleteSSHKeyButton" Click="DeleteSSHKeyButton_Click" Theme="{DynamicResource {x:Type Button}}" IsEnabled="False">
+              <Image Source="{DynamicResource RemoveIcon}" Width="14" Height="14" VerticalAlignment="Center" />
+            </Button>
           </StackPanel>
         </Border>
       </Grid>

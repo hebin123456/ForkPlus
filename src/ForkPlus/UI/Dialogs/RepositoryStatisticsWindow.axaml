@@ -11,9 +11,9 @@
     </DockPanel>
     <Grid Grid.Row="1">
       <Border BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
-        <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <controls:TouchpadAwareScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
           <usercontrols:StatisticsUserControl HorizontalAlignment="Stretch" x:Name="StatisticsUserControl" />
-        </ScrollViewer>
+        </controls:TouchpadAwareScrollViewer>
       </Border>
     </Grid>
   </Grid>

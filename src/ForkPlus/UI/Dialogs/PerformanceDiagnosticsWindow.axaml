@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow Height="520" Width="760" MinHeight="320" MinWidth="520" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PerformanceDiagnosticsWindow" xmlns="https://github.com/avaloniaui" CanResize="True">
+<dialogs:ForkPlusDialogWindow Height="520" Width="760" MinHeight="320" MinWidth="520" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PerformanceDiagnosticsWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui" CanResize="True">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -15,16 +15,14 @@
       <Button DockPanel.Dock="Right" Content="Refresh" Click="RefreshButton_Click" x:Name="RefreshButton" Theme="{DynamicResource TextButtonStyle}" />
       <TextBlock Text="Recent samples" FontWeight="Medium" VerticalAlignment="Center" />
     </DockPanel>
-    <TextBox Text=""
-             Grid.Row="2"
-             Grid.Column="1"
-             FontFamily="Consolas"
-             FontSize="12"
-             IsReadOnly="True"
-             AcceptsReturn="True"
-             TextWrapping="NoWrap"
-             ScrollViewer.VerticalScrollBarVisibility="Auto"
-             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-             x:Name="SamplesTextBox" />
+    <!-- Migration note（2026-09-11）：原为 TextBox 直接展示只读采样文本。TextBox 模板
+         PART_ScrollViewer 是普通 ScrollViewer（Hidden），带"滚轮滚动但 thumb 不跟随 /
+         点过滚动条后滚轮失效"问题且无可视滚动条。改为 TouchpadAwareScrollViewer（与主
+         界面一致的修复级滚动容器 + 可见滚动条）包裹只读 TextBlock；Copy 按钮仍工作。 -->
+    <Border Grid.Row="2" Grid.Column="1" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+      <controls:TouchpadAwareScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Padding="4,4,0,0" x:Name="SamplesTextBlock" />
+      </controls:TouchpadAwareScrollViewer>
+    </Border>
   </Grid>
 </dialogs:ForkPlusDialogWindow>
