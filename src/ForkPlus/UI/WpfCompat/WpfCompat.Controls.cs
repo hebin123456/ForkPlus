@@ -859,6 +859,7 @@ namespace ForkPlus.UI.WpfCompat
             private EventHandler _ownerWindowDeactivatedHandler;
             private EventHandler<PointerPressedEventArgs> _ownerWindowPointerPressedHandler;
             private EventHandler<PointerReleasedEventArgs> _ownerWindowPointerReleasedHandler;
+            private EventHandler<KeyEventArgs> _ownerWindowKeyDownHandler;
             private bool _ignoreNextLeftPointerRelease;
 
             public AutoDismissState(ContextMenu contextMenu)
@@ -897,6 +898,14 @@ namespace ForkPlus.UI.WpfCompat
                     }
                 };
                 _ownerWindow.Deactivated += _ownerWindowDeactivatedHandler;
+                // 右键菜单快捷键修复（2026-09-11，"右键菜单的快捷键都用不了"）：
+                // 菜单打开期间在宿主窗口上挂 Tunnel KeyDown——覆盖焦点仍留在主窗口的场景
+                // （Avalonia ContextMenu 弹层不强制取走键盘焦点），按键若命中本菜单某项
+                // 显示的 InputGesture 则触发该项并吞掉事件（先于窗口级 CommandBinding）。
+                // 焦点在弹层内部的场景由 AttachAutoDismiss 挂在 ContextMenu 自身的
+                // 同名 Tunnel 处理器覆盖，两条路径互斥（按键只沿其中一棵树路由）。
+                _ownerWindowKeyDownHandler = (_, e) => OnKeyDownMatchGesture(_contextMenu, e);
+                _ownerWindow.AddHandler(InputElement.KeyDownEvent, _ownerWindowKeyDownHandler, RoutingStrategies.Tunnel);
                 // Bug3 修复：原 Tunnel|Bubble 双路由使同一 PointerReleased 调用处理器两次
                 //（第一次消耗 _ignoreNextLeftPointerRelease，第二次立即 Close，下拉刚打开就被收拢）。
                 // 改为单一 Bubble 路由：handledEventsToo 仍保证拦截被处理的事件，
@@ -919,10 +928,15 @@ namespace ForkPlus.UI.WpfCompat
                 {
                     _ownerWindow.RemoveHandler(InputElement.PointerReleasedEvent, _ownerWindowPointerReleasedHandler);
                 }
+                if (_ownerWindow != null && _ownerWindowKeyDownHandler != null)
+                {
+                    _ownerWindow.RemoveHandler(InputElement.KeyDownEvent, _ownerWindowKeyDownHandler);
+                }
                 _ownerWindow = null;
                 _ownerWindowDeactivatedHandler = null;
                 _ownerWindowPointerPressedHandler = null;
                 _ownerWindowPointerReleasedHandler = null;
+                _ownerWindowKeyDownHandler = null;
                 _ignoreNextLeftPointerRelease = false;
             }
         }
@@ -948,7 +962,72 @@ namespace ForkPlus.UI.WpfCompat
                 Dispatcher.UIThread.Post(state.AttachForOpen, DispatcherPriority.Background);
             };
             contextMenu.Closed += (_, _) => state.Detach();
+            // 右键菜单快捷键修复（2026-09-11，"右键菜单的快捷键都用不了"）：
+            // 菜单打开时按键路由到弹层内部（焦点在弹层），ContextMenu 自身挂 Tunnel
+            // KeyDown 接管；触发逻辑与窗口级处理器共用 OnKeyDownMatchGesture。
+            // IsOpen 检查兜底（未打开时不误吃别的控件按键）。
+            contextMenu.AddHandler(InputElement.KeyDownEvent, (EventHandler<KeyEventArgs>)((s, e) =>
+            {
+                if (s is ContextMenu menu)
+                {
+                    OnKeyDownMatchGesture(menu, e);
+                }
+            }), RoutingStrategies.Tunnel);
             state.IsHooked = true;
+        }
+
+        /// <summary>
+        /// 右键菜单快捷键匹配（WPF 原版语义补齐）：菜单打开时按下某项显示的手势
+        /// （CreateMenuItem 从 command.Shortcut 设置到 InputGesture，如分支菜单 Delete 项
+        /// 的 Del），等价于点击该项——触发 Click、收起菜单、吞掉按键（先于窗口级
+        /// CommandBinding 生效，避免同一手势双触发）。Avalonia 的 InputGesture 仅显示
+        /// 不响应按键，此处在 compat 层补齐。只匹配启用状态的叶子项，子菜单递归查找；
+        /// 命中多个时取第一个（与菜单自上而下的视觉顺序一致）。
+        /// </summary>
+        private static void OnKeyDownMatchGesture(ContextMenu contextMenu, KeyEventArgs e)
+        {
+            if (contextMenu == null || e == null || e.Handled || !contextMenu.IsOpen)
+            {
+                return;
+            }
+            MenuItem match = FindGestureMatch(contextMenu.Items, e);
+            if (match == null)
+            {
+                return;
+            }
+            e.Handled = true;
+            match.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            // 与点击叶子项关闭菜单同款：Post 收起，避免在路由回调内改弹层状态
+            Dispatcher.UIThread.Post(contextMenu.Close, DispatcherPriority.Background);
+        }
+
+        private static MenuItem FindGestureMatch(ItemCollection items, KeyEventArgs e)
+        {
+            if (items == null)
+            {
+                return null;
+            }
+            foreach (object item in items)
+            {
+                if (item is not MenuItem menuItem)
+                {
+                    continue;
+                }
+                if (menuItem.Items.Count > 0)
+                {
+                    MenuItem nested = FindGestureMatch(menuItem.Items, e);
+                    if (nested != null)
+                    {
+                        return nested;
+                    }
+                }
+                else if (menuItem.IsEnabled && menuItem.InputGesture is KeyGesture gesture
+                    && gesture.Key == e.Key && gesture.KeyModifiers == e.KeyModifiers)
+                {
+                    return menuItem;
+                }
+            }
+            return null;
         }
 
         /// <summary>
