@@ -111,10 +111,27 @@ namespace ForkPlus.UI.Dialogs
 			RetryButton.IsEnabled = false;
 
 			_currentMonitor = new JobMonitor();
-			_currentMonitor.SetCancellationAction(delegate
+		// v4.0.9 修复（"AI 解释 commit 排队时状态栏一直显示'排队中'"）：与 AiCodeReviewWindow
+		// 同款 bug——RunRequest 的初始文案是 "Queued..."，但 monitor 未订阅 SetProgressAction，
+		// ExplainCommit → OpenAiRequestStreamingWithRetry 遇排队类错误（429/busy）时的
+		// monitor.Update("Queued. Waiting {0}..."/"Retrying...") 全部无人监听，状态栏在整个
+		// 排队等待期（最长 30 分钟）停在"排队中..."，直到开始生成（StreamingProgress 接管）
+		// 或失败。订阅进度回调，把排队/重试阶段文字同步到状态栏。
+		// 注意闭包捕获局部 monitor（而非 _currentMonitor 字段）：Retry 会替换字段并 new 新
+		// monitor，旧请求的回调若读字段会错位读到新 monitor 的消息。
+		JobMonitor progressMonitor = _currentMonitor;
+		progressMonitor.SetProgressAction(delegate
+		{
+			string message = progressMonitor.ProgressMessage;
+			Dispatcher.Post(delegate
 			{
-				Dispatcher.Post(delegate { StopStreamingRender(); });
+				StatusTextBlock.Text = message ?? "";
 			});
+		});
+		_currentMonitor.SetCancellationAction(delegate
+		{
+			Dispatcher.Post(delegate { StopStreamingRender(); });
+		});
 			// 后台线程执行 AI 请求
 			Task.Run(delegate
 			{
