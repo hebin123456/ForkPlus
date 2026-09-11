@@ -40,6 +40,11 @@ namespace ForkPlus.Tests
 		[InlineData("Username for 'https://git.corp.local:8443':", "git.corp.local", null)]
 		[InlineData("Password for 'https://octocat@example.com':", "example.com", "octocat")]
 		[InlineData("Password for 'http://plain.example.com':", "plain.example.com", "")]
+		// 修复（2026-09-11，用户名窗变成之前输过的密码）：prompt URL 的 userinfo 可能携带
+		// "<用户名>:<密码>@" 密文，解析须剥掉 ':' 后的密码部分，只留纯用户名——否则恰会
+		// 存成 Username，下次 Username 询问把 `octocat:secret` 预填进用户名框。
+		[InlineData("Password for 'https://octocat:topsecret@example.com':", "example.com", "octocat")]
+		[InlineData("Password for 'https://:onlysecret@example.com':", "example.com", "")]
 		public void Parse_HttpsPrompts_ExtractHostAndUsername(string prompt, string expectedHost, string expectedUsername)
 		{
 			if (expectedUsername == null)
@@ -295,6 +300,29 @@ namespace ForkPlus.Tests
 
 				command.Execute("Username for 'https://example.com':", noPrompt: false, "", out string result2);
 				Assert.Equal("octocat", result2);
+			}
+			finally
+			{
+				SavedCredentialStore.SwapForTests(previous);
+			}
+		}
+
+		[Fact]
+		public void Command_SilentPasswordWithoutUserInfo_ReturnsPasswordNotUsername()
+		{
+			SavedCredentialStore previous = SavedCredentialStore.SwapForTests(_store);
+			try
+			{
+				// 修复（2026-09-11，passphrase 识别 Bug）："不再弹出"的 Password 询问其 prompt URL
+				// 可能不含 userinfo（promptUsername=null，如 'https://example.com'）。修复前该分支
+				// 走 `promptUsername != null || entry.Username != null` 的共用判定，会误把主机账号
+				// （octocat）当密码返回——认证必败。修复后严格按"密码询问回密码"分流，与 userinfo 无关。
+				_store.RememberPassword("example.com", "octocat", "secret123");
+				_store.SetNeverAsk("example.com", enabled: true);
+				var command = new ShowAskPassWindowCommand();
+
+				command.Execute("Password for 'https://example.com':", noPrompt: false, "", out string result);
+				Assert.Equal("secret123", result);
 			}
 			finally
 			{

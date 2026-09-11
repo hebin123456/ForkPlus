@@ -30,24 +30,35 @@ namespace ForkPlus.UI.Commands
 			// "不再弹出"但密码缺失（失效被 erase）→ 快速失败（空响应），偏好设置 > Credentials
 			// 的开关可重新打开。第二档（记住密码未开不再弹出）/第一档（仅记账号）→ 弹窗，
 			// 由 AskPassWindow 预填密码/账号。
-			// （先试 Password：out promptUsername 需在所有路径有值，避免 || 短路后 CS0165；
-			//  一个 prompt 至多匹配二者之一。）
+			// （Username 与 Password 询问分别独立解析，绝不混判：见下——Password 询问的
+			//   URL 可能不带 userinfo（promptUsername=null），若复用同一 host 分支回 Username
+			//   （修复前），"不再弹出"的密码询问会误把主机账号当密码返回，认证必败。）
 			string host = null;
 			string promptUsername = null;
-			if (SavedCredentialStore.TryParsePasswordPrompt(request, out host, out promptUsername)
-				|| SavedCredentialStore.TryParseUsernamePrompt(request, out host))
+			bool isPasswordPrompt = SavedCredentialStore.TryParsePasswordPrompt(request, out host, out promptUsername);
+			bool isUsernamePrompt = !isPasswordPrompt && SavedCredentialStore.TryParseUsernamePrompt(request, out host);
+			if (isPasswordPrompt || isUsernamePrompt)
 			{
 				SavedCredentialStore.SavedCredential entry = SavedCredentialStore.Current.FindEntry(host);
 				if (entry != null && entry.NeverAskAgain)
 				{
-					if (entry.HasPassword)
+					if (!entry.HasPassword)
 					{
-						// 第三档静默：密码询问回密码；账号询问回已记账号（无账号可回则快速失败）
-						if (promptUsername != null || entry.Username != null)
-						{
-							result = ((promptUsername != null) ? entry.Password : entry.Username);
-							return;
-						}
+						// "不再弹出"但密码缺失（被 erase）：快速失败，偏好设置开关可重新打开
+						result = string.Empty;
+						return;
+					}
+					if (isPasswordPrompt)
+					{
+						// 密码询问：回已记住的密码（与 prompt 是否带 userinfo 无关）
+						result = entry.Password;
+						return;
+					}
+					if (!string.IsNullOrEmpty(entry.Username))
+					{
+						// 账号询问：回已记住的账号（无账号可回则快速失败）
+						result = entry.Username;
+						return;
 					}
 					result = string.Empty;
 					return;

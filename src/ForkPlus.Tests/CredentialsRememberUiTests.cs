@@ -403,13 +403,13 @@ namespace ForkPlus.Tests
 					Window host = HostInWindow(control);
 					RunJobs();
 
-					// 列表装配：2 行（host 排序），行内值可编辑
-					var texts = UiClick.FindAll<global::Avalonia.Controls.TextBlock>(control)
-						.Select((global::Avalonia.Controls.TextBlock t) => t.Text)
+					// 列表装配：2 行（host 排序），行内 host 为可编辑输入框（2026-09-11 改为编辑框）
+					var boxTexts = UiClick.FindAll<global::Avalonia.Controls.TextBox>(control)
+						.Select((global::Avalonia.Controls.TextBox t) => t.Text)
 						.Where((string t) => !string.IsNullOrEmpty(t))
 						.ToList();
-					Assert.Contains("a.example.com", texts);
-					Assert.Contains("b.example.com", texts);
+					Assert.Contains("a.example.com", boxTexts);
+					Assert.Contains("b.example.com", boxTexts);
 
 					// ===== Ask Again for All Hosts：批量清"不再弹出"（账号/密码保留） =====
 					Button askAll = UiClick.FindAll<Button>(control)

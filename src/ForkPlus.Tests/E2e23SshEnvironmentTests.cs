@@ -424,11 +424,12 @@ namespace ForkPlus.Tests
 			}
 		}
 
-		// 删除按钮语义（2026-09-11）：仅从 ForkPlus 配置引用（SshKeys）移除，不删磁盘文件。
-		// 探针：预设一个位于 ~/.ssh 的密钥并将其路径写入 settings 引用 → 打开窗口选中 →
-		// 点删除 → SshKeys 移除该引用且磁盘私/公钥仍在，列表可从 ~/.ssh 扫描再次装配。
+		// 删除按钮语义（2026-09-11 修复）：先弹确认框，确认后真正删除磁盘私/公钥文件
+		// 并从 SshKeys 移除引用 → Refresh() 重扫 ~/.ssh 时该密钥不再出现（列表删除生效）。
+		// 探针：预设一个位于 ~/.ssh 的密钥写入 settings 引用 → 打开窗口选中 → 点删除 →
+		// 确认框点 Delete → SshKeys 引用移除且磁盘私/公钥文件被删除、列表项消失。
 		[Fact]
-		public void SshKeys_DeleteRemovesReferenceOnly_KeepsFiles()
+		public void SshKeys_DeleteMovesFilesAndListEntry()
 		{
 			var snap = SnapshotAppSettings();
 			Action restoreSshDir = IsolateSshDir();
@@ -454,17 +455,50 @@ namespace ForkPlus.Tests
 						RunJobs();
 						Assert.True(window.DeleteSSHKeyButton.IsEnabled, "选中密钥后删除按钮应启用");
 
-						// 点击删除 → 仅移除配置引用
+						// 点删除 → 弹确认框；用 Post Background 泵在模态框阻塞前点 Delete
+						// （E2e23 Workspaces 删除同款模式：先 Post 处理器再 Click，避免模态永久等待）
+						var deleteHandled = new bool[1];
+						var deleteError = new string[1];
+						Dispatcher.UIThread.Post(delegate
+						{
+							try
+							{
+								MessageBoxWindow msgBox = global::ForkPlus.UI.WpfCompat.WpfApp.Windows
+									.OfType<MessageBoxWindow>().FirstOrDefault();
+								if (msgBox == null)
+								{
+									deleteError[0] = "删除确认框未出现";
+									return;
+								}
+								Button delete = UiClick.FindAll<Button>(msgBox)
+									.FirstOrDefault(b => UiClick.ContentText(b) == Tr("Delete"));
+								if (delete == null)
+								{
+									deleteError[0] = "确认框中找不到 Delete 按钮";
+									return;
+								}
+								delete.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+								deleteHandled[0] = true;
+							}
+							catch (Exception ex)
+							{
+								deleteError[0] = ex.ToString();
+							}
+						}, DispatcherPriority.Background);
 						UiClick.Click(window.DeleteSSHKeyButton);
+						Assert.True(deleteHandled[0], "删除确认框处理器未执行: " + deleteError[0]);
+						Assert.Null(deleteError[0]);
 						RunJobs();
+
 						Assert.False(ForkPlusSettings.Default.SshKeys.Contains(privatePath, StringComparer.OrdinalIgnoreCase),
 							"删除后该密钥引用应从 SshKeys 移除");
-						// 删除后删除按钮复位禁用（Refresh 重建列表 + OnSubmit 不落盘，引用已是空）
 						Assert.False(window.DeleteSSHKeyButton.IsEnabled, "删除后应复位为禁用");
-
-						// 磁盘私钥/公钥文件必须仍存在（"仅移除引用"语义，不删文件）
-						Assert.True(File.Exists(privatePath), "删除仅移除引用，私钥文件应保留");
-						Assert.True(File.Exists(publicPath), "删除仅移除引用，公钥文件应保留");
+						// 磁盘私钥/公钥文件必须已删除（真正从列表消失的根基，否则重扫又出现）
+						Assert.False(File.Exists(privatePath), "删除后私钥文件应被移除（列表由 ~/.ssh 扫描装配）");
+						Assert.False(File.Exists(publicPath), "删除后公钥文件应被移除");
+						// 列表重扫后不再含该密钥
+						Assert.DoesNotContain(window.SshKeyListBox.Items.OfType<SshKeyViewModel>(),
+							v => v.KeyFileName == "e2e-del");
 					}
 					finally
 					{

@@ -59,8 +59,25 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			// "删除"语义：仅从 ForkPlus 配置（SshKeys）移除该密钥的引用并取消激活，
-			// 不删除磁盘上的私钥/公钥文件（用户可随时经"Open Existing SSH Key"重新添加）。
+			// 修复（2026-09-11，"删除 SSH 密钥没效果、无法从列表里删除"）：
+			// 列表由 ~/.ssh 目录扫描装配而来，旧实现仅从 ForkPlus 配置（SshKeys）移除引用，
+			// 磁盘私/公钥文件仍在 → Refresh() 重扫又把它加回来，用户感知为"删不掉"。
+			// 现在先弹确认框（不可逆操作防误删），确认后真正删除磁盘上的私钥 + 公钥文件，
+			// 再从 SshKeys 移除引用，Refresh() 重扫时该密钥自然消失。
+			bool confirmed = new MessageBoxWindow(
+				string.Format(Translate("Do you want to delete SSH key '{0}'?"), selected.KeyFileName),
+				Translate("The private and public key files will be permanently removed from your disk. This action can't be undone."),
+				Translate("Delete"),
+				Translate("Cancel"),
+				showCancelButton: true,
+				520.0,
+				showWarningIcon: true).ShowDialog().GetValueOrDefault();
+			if (!confirmed)
+			{
+				return;
+			}
+			DeleteSshKeyFilesFromDisk(selected.KeyPath);
+
 			string[] sshKeys = ForkPlusSettings.Default.SshKeys;
 			List<string> list = new List<string>(sshKeys.Length);
 			foreach (string keyPath in sshKeys)
@@ -76,6 +93,51 @@ namespace ForkPlus.UI.Dialogs
 			Refresh();
 			DeleteSSHKeyButton.IsEnabled = false;
 			SshKeyListBox.Focus();
+		}
+
+		// 删除私钥文件及其同名的 .pub 公钥文件。单独失败不阻断另一个删除，
+		// 全部失败向用户报错；任一成功即视为删除完成（列表随之消失）。
+		private static void DeleteSshKeyFilesFromDisk(string privateKeyPath)
+		{
+			if (string.IsNullOrEmpty(privateKeyPath))
+			{
+				return;
+			}
+			string publicKeyPath = Path.ChangeExtension(privateKeyPath, ".pub");
+			List<string> failed = new List<string>(2);
+			if (File.Exists(privateKeyPath))
+			{
+				try
+				{
+					File.Delete(privateKeyPath);
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to delete SSH private key '" + privateKeyPath + "'", ex);
+					failed.Add(privateKeyPath);
+				}
+			}
+			if (File.Exists(publicKeyPath))
+			{
+				try
+				{
+					File.Delete(publicKeyPath);
+				}
+				catch (Exception ex2)
+				{
+					Log.Error("Failed to delete SSH public key '" + publicKeyPath + "'", ex2);
+					failed.Add(publicKeyPath);
+				}
+			}
+			if (failed.Count > 0)
+			{
+				new MessageBoxWindow(
+					Translate("Failed to delete SSH key"),
+					string.Format(Translate("The following SSH key files could not be deleted: '{0}'. Please delete them manually."), string.Join("', '", failed)),
+					Translate("OK"),
+					"Cancel",
+					showCancelButton: false).ShowDialog();
+			}
 		}
 
 		private void SshKeyCheckBox_Changed(object sender, RoutedEventArgs e)

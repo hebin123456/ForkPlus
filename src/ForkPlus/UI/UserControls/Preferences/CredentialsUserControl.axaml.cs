@@ -135,12 +135,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private Control BuildCredentialRow(SavedCredentialStore.SavedCredential entry)
 		{
 			Grid grid = NewRowGrid();
-			TextBlock host = new TextBlock
+			// 修复（2026-09-11，"主机没有编辑框，应该改成编辑框"）：宿主列由只读 TextBlock
+			// 改为可编辑输入框，允许行内直接修改 host（改完 Save 即按新 host 落盘）。
+			PlaceholderTextBox host = new PlaceholderTextBox
 			{
 				Text = entry.Host,
+				Placeholder = PreferencesLocalization.Current("Host (e.g. github.com)"),
 				FontSize = 13,
-				FontWeight = FontWeight.Medium,
-				VerticalAlignment = VerticalAlignment.Center
+				Margin = new Thickness(0, 0, 6, 0),
+				VerticalContentAlignment = VerticalAlignment.Center
 			};
 			Grid.SetColumn(host, 0);
 			PlaceholderTextBox username = new PlaceholderTextBox
@@ -191,7 +194,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			grid.Children.Add(save);
 			grid.Children.Add(remove);
 			// Save/Remove 读取行内编辑值：Tag 携带行上下文（host + 编辑框 + 开关）
-			RowContext context = new RowContext(entry.Host, username, password, neverAsk);
+			RowContext context = new RowContext(entry.Host, host, username, password, neverAsk);
 			save.Tag = context;
 			remove.Tag = context;
 			return grid;
@@ -200,7 +203,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		/// <summary>行上下文：Save/Remove 处理器从控件 Tag 回捞行内编辑值。</summary>
 		private class RowContext
 		{
-			public readonly string Host;
+			public readonly string OriginalHost;
+
+			public readonly PlaceholderTextBox HostBox;
 
 			public readonly PlaceholderTextBox UsernameBox;
 
@@ -208,9 +213,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 			public readonly ToggleSwitch NeverAskToggle;
 
-			public RowContext(string host, PlaceholderTextBox usernameBox, PlaceholderTextBox passwordBox, ToggleSwitch neverAskToggle)
+			public RowContext(string originalHost, PlaceholderTextBox hostBox, PlaceholderTextBox usernameBox, PlaceholderTextBox passwordBox, ToggleSwitch neverAskToggle)
 			{
-				Host = host;
+				OriginalHost = originalHost;
+				HostBox = hostBox;
 				UsernameBox = usernameBox;
 				PasswordBox = passwordBox;
 				NeverAskToggle = neverAskToggle;
@@ -248,8 +254,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			if (sender is Button button && button.Tag is RowContext row)
 			{
-				// 行内编辑保存：账号/密码 + 开关现状一次写入（空密码=清密码，保留账号）
-				SavedCredentialStore.Current.Upsert(row.Host, row.UsernameBox.Text, row.PasswordBox.Text, row.NeverAskToggle.IsChecked.GetValueOrDefault());
+				// 行内编辑保存：host 可改（改 host 等于重建条目：删旧 host 残留 + 按新 host 落盘）
+				string newHost = row.HostBox.Text?.Trim();
+				if (!string.IsNullOrEmpty(newHost)
+					&& !string.Equals(newHost, row.OriginalHost, StringComparison.OrdinalIgnoreCase))
+				{
+					SavedCredentialStore.Current.Remove(row.OriginalHost);
+				}
+				// 账号/密码 + 开关现状一次写入（空密码=清密码，保留账号）
+				SavedCredentialStore.Current.Upsert(newHost, row.UsernameBox.Text, row.PasswordBox.Text, row.NeverAskToggle.IsChecked.GetValueOrDefault());
 				LoadCredentials();
 			}
 		}
@@ -258,7 +271,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			if (sender is Button button && button.Tag is RowContext row)
 			{
-				SavedCredentialStore.Current.Remove(row.Host);
+				string host = row.HostBox.Text?.Trim();
+				if (string.IsNullOrEmpty(host))
+				{
+					host = row.OriginalHost;
+				}
+				SavedCredentialStore.Current.Remove(host);
 				LoadCredentials();
 			}
 		}

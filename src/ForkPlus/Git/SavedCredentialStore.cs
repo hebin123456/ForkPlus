@@ -154,8 +154,30 @@ namespace ForkPlus.Git
 				return false;
 			}
 			host = uri.Host;
-			username = uri.UserInfo;
+			// 修复（2026-09-11，"下次用户名窗口变成之前输过的密码"）：prompt URL 的 userinfo
+			// 可能以 `<用户名>:<密码>@host` 携带密文（旧 git / 细粒度 token 链接），
+			// 若原样整个存进 Username，下一次 Username 询问就会把 `user:secret` 预填进用户名框
+			// （用户感知为"密码串进了用户名窗"）。这里只取第一个 ':' 前的用户名部分，
+			// 与 AskPassRequest.SshUserPassword.ParseUsername 的既有解析口径对齐；密文在后端
+			// 仅作展示冗余剥离，凭据匹配仍按 host 唯一、与 userinfo 无关。
+			username = ParseUserInfoUsername(uri.UserInfo);
 			return true;
+		}
+
+		/// <summary>从 URL userinfo 提取纯用户名：空 → null；含 ':' 时只取冒号前（丢弃密文）。</summary>
+		[Null]
+		private static string ParseUserInfoUsername([Null] string userInfo)
+		{
+			if (string.IsNullOrEmpty(userInfo))
+			{
+				return null;
+			}
+			int colon = userInfo.IndexOf(':');
+			if (colon == 0)
+			{
+				return null;
+			}
+			return colon < 0 ? userInfo : userInfo.Substring(0, colon);
 		}
 
 		// ============================ 查询 ============================
