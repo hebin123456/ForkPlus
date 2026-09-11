@@ -73,8 +73,10 @@ git ≥ 2.38 的本地子模块安全限制等）。
 |------|------|
 | 操作系统 | Windows 10+ / Linux（主流发行版）/ macOS |
 | .NET 运行时 | .NET 10 |
-| Git | 系统自带或使用 ForkPlus 内置 Git 实例（可在设置中选择） |
+| Git | Windows：随包内置（也可在设置中改用系统实例）；Linux/macOS：需系统自行安装 Git（ForkPlus 使用系统环境中的 Git，置于 System PATH 或设置中指定） |
 | 可选组件 | git-flow（GitFlow 套件）、git-lfs（LFS 功能）、git-mm（GitMm 套件） |
+
+> **内置 Git 说明**：ForkPlus 仅为 **Windows** 发行包内置了 Git 与 Git-AI 可执行文件，目标机即便未安装 Git 也能直接使用仓库功能。**Linux 与 macOS** 发行包只内置 Git-AI，Git 使用用户自己环境中的版本（默认按 System PATH 查找，也可在“设置 → Git”中手动指定实例）；若系统未安装 Git，请用系统包管理器安装（如 Ubuntu `sudo apt install git`、macOS `brew install git`），否则仓库相关功能不可用。
 
 ### 2.2 从源码构建
 

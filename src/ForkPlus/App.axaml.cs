@@ -83,6 +83,9 @@ namespace ForkPlus
 
 		public static readonly string ForkGitInstancePath;
 
+		/// <summary>应用目录下内嵌的 git/git-ai 根目录（与发布物同目录，见 <c>AppContext.BaseDirectory</c>）。</summary>
+		public static readonly string EmbeddedToolsRoot;
+
 		public static readonly string AppName;
 
 		public static readonly Version OSVersion;
@@ -128,7 +131,13 @@ namespace ForkPlus
 		/// </summary>
 		public static string[] OverrideCredentialHelper => _overrideCredentialHelper;
 
-		public static string GitPath => EnvironmentGitInstancePath ?? ForkPlusSettings.Default.GitInstancePath ?? ForkGitInstancePath;
+		/// <summary>
+		/// git 可执行文件解析链：环境变量 git 实例 → 用户设置 git 实例 → 内置（embedded）git →
+		/// ForkPlus 数据目录 git 实例兜底。
+		/// 新增内置层（2026-09-11）：把随发布物分发的 git 作为"无 git/版本过老"环境的关键兜底，
+		/// 使目标机即便完全没装 git 也能运行仓库操作。环境变量与用户设置仍最优先（尊重用户显式选择）。
+		/// </summary>
+		public static string GitPath => EnvironmentGitInstancePath ?? ForkPlusSettings.Default.GitInstancePath ?? EmbeddedGitExecutablePath ?? ForkGitInstancePath;
 
 		/// <summary>
 		/// sh 路径（运行钩子/自定义命令 ${sh} 用）。Windows：Git for Windows 与 git.exe 同目录
@@ -741,6 +750,13 @@ namespace ForkPlus
 			{
 				return saved;
 			}
+			// 内置 git-ai（2026-09-11）：随发布物分发的 git-ai 作为兜底，优先于 PATH 查找——
+			// 目标机即便完全没装 git-ai，AI 归属功能也能经内置实例工作。用户显式设置仍最优先。
+			string embedded = EmbeddedGitAiExecutablePath;
+			if (embedded != null)
+			{
+				return embedded;
+			}
 			string fromPath = GitAiPathFromPath;
 			if (fromPath != null)
 			{
@@ -963,6 +979,10 @@ namespace ForkPlus
 			};
 			EnvironmentGitInstancePath = GetEnvironmentGitInstancePath();
 			ForkGitInstancePath = GetForkGitInstancePath();
+			// 内置 git/git-ai 根目录 = 应用安装目录下的 embedded/（与 ForkPlus 程序集同级，
+			// publish 时随产物分发；便携版同目录也成立）。刻意不缓存可执行文件路径——
+			// 嵌在发布物根，AppContext.BaseDirectory 运行期恒定，路径本身即终值。
+			EmbeddedToolsRoot = Path.Combine(AppContext.BaseDirectory, "embedded");
 			AppName = Assembly.GetExecutingAssembly().GetName().Name;
 			OSVersion = Environment.OSVersion.Version;
 			CliArguments = new CliArguments();
@@ -1682,6 +1702,87 @@ namespace ForkPlus
 		{
 			// Migration note：git 二进制名跨平台。
 			return Path.Combine(ForkDirectoryPath, "gitInstance", "2.50.1", "bin", SystemEnvironment.GitExecutableName);
+		}
+
+		/// <summary>内置 git 目录（发布物 embedded/git）。</summary>
+		private static string EmbeddedGitDirectory => Path.Combine(EmbeddedToolsRoot, "git");
+
+		/// <summary>内置 git 可执行文件路径（embedded/git/git 或 git.exe）；不存在返回 null。</summary>
+		private static string _cachedEmbeddedGitPath;
+
+		private static bool _embeddedGitResolved;
+
+		/// <summary>
+		/// 内置 git 可执行文件路径。各平台 embedded/git 解压布局不同：
+		/// Windows/macOS 为完整 git 树，入口在 embedded/git/bin/git(.exe)；
+		/// Linux 为动态 git + 启动 wrapper，入口为 embedded/git/git（wrapper 脚本自动设
+		/// LD_LIBRARY_PATH/GIT_EXEC_PATH）。存在性结果进程内缓存一次（GitPath 是热路径，
+		/// 每次 git 命令都访问；发布物路径运行期恒定，无需重复磁盘探测）。
+		/// </summary>
+		internal static string EmbeddedGitExecutablePath
+		{
+			get
+			{
+				if (_embeddedGitResolved)
+				{
+					return _cachedEmbeddedGitPath;
+				}
+				_embeddedGitResolved = true;
+				string candidate = null;
+				try
+				{
+					// 优先深路径 bin/git(.exe)（完整 git 树布局），回退 embedded/git/git(.exe)
+					// （Linux wrapper / 扁平布局）。与 GetSshKeygenPath 的 git 根推导一致。
+					candidate = Path.Combine(EmbeddedGitDirectory, "bin", SystemEnvironment.GitExecutableName);
+					if (!File.Exists(candidate))
+					{
+						candidate = Path.Combine(EmbeddedGitDirectory, SystemEnvironment.GitExecutableName);
+					}
+					if (!File.Exists(candidate))
+					{
+						candidate = null;
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to resolve embedded git path", ex);
+					candidate = null;
+				}
+				_cachedEmbeddedGitPath = candidate;
+				return candidate;
+			}
+		}
+
+		/// <summary>内置 git-ai 可执行文件路径（embedded/git-ai/git-ai 或 git-ai.exe）；不存在返回 null。</summary>
+		private static string _cachedEmbeddedGitAiPath;
+
+		private static bool _embeddedGitAiResolved;
+
+		internal static string EmbeddedGitAiExecutablePath
+		{
+			get
+			{
+				if (_embeddedGitAiResolved)
+				{
+					return _cachedEmbeddedGitAiPath;
+				}
+				_embeddedGitAiResolved = true;
+				string candidate = null;
+				try
+				{
+					string p = Path.Combine(EmbeddedToolsRoot, "git-ai", GitAiExecutableName);
+					if (File.Exists(p))
+					{
+						candidate = p;
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Failed to resolve embedded git-ai path", ex);
+				}
+				_cachedEmbeddedGitAiPath = candidate;
+				return candidate;
+			}
 		}
 
 		private static void MigrateLegacyAppData()
