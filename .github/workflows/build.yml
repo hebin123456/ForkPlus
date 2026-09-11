@@ -213,25 +213,6 @@ jobs:
               -o "publish/${{ matrix.rid }}" --nologo
           done
 
-      # 内置 git + git-ai（2026-09-11 回退策略）：从分发仓库（git-release 2.55.0 /
-      #  git-ai-release 1.7.5）下载对应平台产物，整理为 embedded/ 布局，拷入 publish/<rid>/embedded/。
-      #   - Windows：内置 git（完整树）+ git-ai
-      #   - Linux/macOS：只内置 git-ai；git 用用户环境（运行时自动回退，见 EmbeddedGitExecutablePath）
-      # 运行时 App.EmbeddedGitExecutablePath / EmbeddedGitAiExecutablePath 从
-      # AppContext.BaseDirectory/embedded 定位（与 biturbo/tokei 的"CI 下载+base 目录加载"同模式）。
-      # 平台切割全部集中在 .github/scripts/prepare-embedded-git.sh。
-      - name: Prepare embedded git & git-ai
-        shell: bash
-        run: |
-          set -e
-          mkdir -p third_party
-          ./.github/scripts/prepare-embedded-git.sh "${{ matrix.name }}" third_party
-          # 拷入发布物 embedded/（AppContext.BaseDirectory=publish/<rid>，embedded 必须与其同目录）
-          rm -rf "publish/${{ matrix.rid }}/embedded"
-          cp -a "third_party/embedded" "publish/${{ matrix.rid }}/embedded"
-          echo "== publish/<rid>/embedded =="
-          ls -la "publish/${{ matrix.rid }}/embedded"
-
       - name: Verify critical outputs
         shell: bash
         run: |
@@ -255,17 +236,8 @@ jobs:
           # self-contained 断言：运行时组件必须随产物分发（缺了 = 变回框架依赖发布）
           [ -f "$clr" ] || { echo "MISSING self-contained runtime: $clr"; missing=1; }
           [ -f "$policy" ] || { echo "MISSING self-contained runtime: $policy"; missing=1; }
-          # 内置 git + git-ai 入口断言，与 prepare-embedded-git.sh 策略一致：
-          #   Windows：内置 git 树 bin/git.exe + git-ai；Linux/macOS：仅内置 git-ai
-          # （git 用用户环境，embedded/git 不打包，故不在此断言 git）
-          emb_gitai="embedded/git-ai/$( [ "${{ matrix.name }}" = "windows-x64" ] && echo git-ai.exe || echo git-ai )"
-          [ -f "$emb_gitai" ] || { echo "MISSING embedded git-ai: $emb_gitai"; missing=1; }
-          if [ "${{ matrix.name }}" = "windows-x64" ]; then
-            [ -f embedded/git/bin/git.exe ] || { echo "MISSING embedded git: embedded/git/bin/git.exe"; missing=1; }
-          fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "All critical outputs present (native=$native, tokei=$tokei_file, self-contained runtime OK)."
-          echo "Embedded git-ai present ($emb_gitai); embedded git bundled on windows only."
 
       # 直接上传产物目录内容，不先打 zip：
       # GitHub Actions 下载 artifact 时本身就会自动包一层 zip（无法关闭），
