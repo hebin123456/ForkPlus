@@ -173,6 +173,15 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 - 正式发布版本：[Releases 页面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自带 .NET 10 运行时，无需安装任何框架，三平台 zip）
 - 各版本变更详情请查阅 [Release Notes](RELEASE_NOTE.md)（含 WPF 版历史）
 
+## Git / Git-AI 客户端
+
+ForkPlus 的仓库操作依赖系统环境中的 `git`，AI 相关功能依赖 `git-ai`。推荐使用以下两个仓库发布的客户端版本：
+
+- **Git**：[hebin123456/git-release](https://github.com/hebin123456/git-release/releases)（推荐的 Git 客户端，含 Windows / Linux / macOS 各平台产物）
+- **Git-AI**：[hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases)（推荐的 Git-AI 客户端，含各平台与架构产物）
+
+请将下载后的 `git`、`git-ai` 放入 System PATH，或使用 ForkPlus 设置中的 Git 实例选择功能手动指定其路径。Git 版本低于 2.40 时启动会警告，部分功能可能异常（应用内置 git 实例版本为 2.50.1，缺失时回退系统 git）。
+
 ## 开发约定
 
 - 修改应用程序本身时，保持在 `src/ForkPlus` 目录内；`third_party/` 下的运行时二进制（biturbo native 库、tokei）由构建期自动拉取，不要手动提交二进制文件
