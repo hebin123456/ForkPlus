@@ -20,9 +20,9 @@
     </DockPanel>
     <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0" />
     <!-- Main content area: message list -->
-    <ScrollViewer Grid.Row="2" x:Name="MainScrollViewer" Margin="4,4,8,0" ScrollViewer.VerticalScrollBarVisibility="Auto">
+    <controls:TouchpadAwareScrollViewer Grid.Row="2" x:Name="MainScrollViewer" Margin="4,4,8,0" ScrollViewer.VerticalScrollBarVisibility="Auto">
       <StackPanel x:Name="MessagePanel" Margin="8,4,8,8" />
-    </ScrollViewer>
+    </controls:TouchpadAwareScrollViewer>
     <!-- Bottom area: progress + input -->
     <Grid Grid.Row="3" Margin="8,4,12,10">
       <Grid.RowDefinitions>

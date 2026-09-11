@@ -948,6 +948,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Controls/ResizeModeToVisibilityConverter.cs",
 				"src/ForkPlus/UI/Controls/RevisionSubjectTextField.cs",
 				"src/ForkPlus/UI/Controls/RevisionTimeLine.cs",
+				"src/ForkPlus/UI/Controls/ScrollViewerWheelFix.cs",
 				"src/ForkPlus/UI/Controls/SelectableTextBlock.cs",
 				"src/ForkPlus/UI/Controls/SpellingPlaceholderTextBox.cs",
 				"src/ForkPlus/UI/Controls/SidebarOptionButtonVisibilityConverter.cs",

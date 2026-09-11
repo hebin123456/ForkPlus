@@ -20,7 +20,15 @@
                   </TextBlock>
                 </oxy:TrackerControl.Content>
               </oxy:TrackerControl>
-    -->
+      -->
+        <!-- 2026-09-11：用 Avalonia 原生控件实现 tracker（tooltip）——OxyPlot.Wpf 的 TrackerControl
+           已隔离不可用，原先模板被注释成空，鼠标悬浮柱状图无数据。改为 Border+TextBlock，
+           DataContext 是 OxyPlot.Avalonia PlotView 的 TrackerHitResult，其 ToString 返回
+           TrackerFormatString 格式化后的文本（如"周五: 52"）。{Binding} 绑定到 DataContext
+           并经 TextBlock.Text 隐式 ToString 显示。 -->
+        <Border Background="#FFF1F2F7" BorderBrush="#FF767676" BorderThickness="1" CornerRadius="3" Padding="7" HorizontalAlignment="Left" VerticalAlignment="Top">
+          <TextBlock Foreground="#FF575757" Text="{Binding}" TextWrapping="NoWrap" />
+        </Border>
       </ControlTemplate>
     </ResourceDictionary>
   </UserControl.Resources>

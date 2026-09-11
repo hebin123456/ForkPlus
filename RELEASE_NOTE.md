@@ -2,6 +2,27 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.0.10
+
+> SSH 密钥删除修复收官 + 全局滚动滚轮修复 + 统计图表悬浮提示恢复 + 首次启动细条标题栏修复。
+
+### 修复
+
+- **删除 SSH 密钥确认框置底、点"删除"没反应**：确认框默认 owner 是 MainWindow，但 SSH 密钥窗口本身已是模态（MainWindow 已被禁用），确认框挂错模态链导致置底、点击无效、密钥删不掉。改为把确认框 owner 设成当前 SSH 密钥窗口（与账号弹窗 / 变基确认框同款修复），模态链正确嵌套后确认生效，私钥/公钥文件真正删除并从列表消失。
+- **删除 SSH 密钥确认框文案未翻译**：补齐全部语言词条——"要删除 SSH 密钥 '{0}' 吗？"、"私钥和公钥文件将从磁盘永久删除……"、"删除 SSH 密钥失败"、"以下 SSH 密钥文件无法删除……"（德/西/法/日/韩/简中/繁中），确认框完整本地化。
+- **所有裸 ScrollViewer 点过滚动条后滚轮滚不动 / thumb 不跟随**：v4.0.9 的修复只覆盖显式使用 TouchpadAwareScrollViewer 的地方，普通 ScrollViewer（AI 辅助开发弹窗、提交界面、RevisionSummary 等）仍有同款 bug。新增 ScrollViewerWheelFix 附加属性，在 ScrollViewer 主题里一个 Setter 全局生效：Tunnel（预览）阶段接管滚轮、ScrollBy 设 Offset 后手动同步垂直/水平 ScrollBar 的 Value，任意 ScrollViewer 无需逐处改 XAML 即修复；模板先于属性应用的情况（PART 滚动条挂接竞态）也做了兜底。
+- **AI 辅助开发弹窗、RevisionSummary 滚动改用 TouchpadAwareScrollViewer**：消息列表与提交详情这两处原先还是裸 ScrollViewer，替换后获得同款滚动修复（含触控板小步长逐行滚动）。
+- **统计页柱状图鼠标悬浮无数据提示**：OxyPlot.Wpf 的 TrackerControl 已在迁移期隔离不可用，原先 tracker 模板被注释成空，悬浮柱状图看不到任何数据。改用 Avalonia 原生 Border+TextBlock 实现 tracker（DataContext 绑定 TrackerHitResult，ToString 输出格式化文本），悬浮即可看到星期/小时维度的数值。
+- **首次启动偶发一个细条标题栏的怪弹窗**：WPF 兼容层的代理 owner 窗口（透明 1x1 占位）默认仍带系统 chrome，即便不透明度 0 也会在屏幕上渲染出一条细的空标题栏。改为 SystemDecorations.None 无边框，配合原透明/不进任务栏设置，彻底不可见。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|-----|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.10-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.10-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.10-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.10-macos-arm64.zip` |
 ## v4.0.9
 
 > 拖动残留/滚动/窗口状态专项修复：拖动中断后残留矩形、显示更少后滚动条卡底、滚轮与 thumb 失联、最大化保存与启动竞态、git mm 子仓标签拖动等一批问题。

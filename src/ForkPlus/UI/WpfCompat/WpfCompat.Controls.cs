@@ -164,6 +164,11 @@ namespace ForkPlus.UI.WpfCompat
                     Opacity = 0.0,
                     CanResize = false,
                     Title = string.Empty,
+                    // 修复（2026-09-11，"首次启动出现细条标题栏弹窗"）：代理 owner 默认带系统 chrome
+                    // （标题栏），即便 Opacity=0 也会渲染出细条标题栏。改为无边框（SystemDecorations.None），
+                    // 彻底无 chrome，配合 1x1 + 透明 + 不进任务栏，完全不可见。
+                    SystemDecorations = WindowDecorations.None,
+                    ExtendClientAreaToDecorationsHint = false,
                 };
                 // 居中定位：代理 owner 放到“主窗口所在屏幕”的中心，避免双屏时弹窗跑到另一块屏幕。
                 CenterToScreen(_proxyOwner, GetPreferredScreen() ?? _proxyOwner.Screens?.Primary);

@@ -347,6 +347,10 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
     <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
+    <!-- 2026-09-11：全局修复"点过滚动条后滚轮滚不动 / thumb 不跟随"——
+         附加行为在 Tunnel 阶段挂滚轮 + ScrollBy 设 Offset 并同步 vbar.Value，
+         覆盖所有裸 ScrollViewer（AI 辅助开发弹窗、提交界面等），无需逐处改 XAML。 -->
+    <Setter Property="controls:ScrollViewerWheelFix.Apply" Value="True" />
     <!-- WPF 默认 HorizontalScrollBarVisibility=Auto；Avalonia 12 裸默认是 Disabled。
          迁移自 WPF 的 20+ 处 ScrollViewer 大多没显式设 HSBV（依赖 WPF 的 Auto），
          主题层补齐默认，保持“内容超宽时允许横向滚动”的原版行为。 -->

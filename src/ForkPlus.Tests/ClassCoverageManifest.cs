@@ -1162,6 +1162,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/ResizeModeToVisibilityConverter.cs", "class", "ResizeModeToVisibilityConverter", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/RevisionSubjectTextField.cs", "class", "RevisionSubjectTextField", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/RevisionTimeLine.cs", "class", "RevisionTimeLine", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Controls/ScrollViewerWheelFix.cs", "class", "ScrollViewerWheelFix", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/SelectableTextBlock.cs", "class", "SelectableTextBlock", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/SidebarOptionButtonVisibilityConverter.cs", "class", "SidebarOptionButtonIconConverter", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/SidebarOptionButtonVisibilityConverter.cs", "class", "SidebarOptionButtonVisibilityConverter", "UNIT-SOURCE-COVERAGE-001"),

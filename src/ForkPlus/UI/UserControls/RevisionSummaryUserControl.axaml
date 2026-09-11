@@ -4,7 +4,7 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <ScrollViewer Grid.Row="0" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+    <controls:TouchpadAwareScrollViewer Grid.Row="0" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
       <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -148,6 +148,6 @@
         <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="DiffListLimitTextBlock" IsVisible="False" />
       </Grid>
       </Grid>
-    </ScrollViewer>
+    </controls:TouchpadAwareScrollViewer>
   </Grid>
 </UserControl>

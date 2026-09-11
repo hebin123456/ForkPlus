@@ -182,13 +182,15 @@ namespace ForkPlus.UI.UserControls
 							ItemsSource = daysOfWeek.Map((DayOfWeek x) => Translate(x.ToString().Substring(0, 3)))
 						}
 					},
-					Series = { (Series)new BarSeries
-					{
-						XAxisKey = "Value",
-						YAxisKey = "Category",
-						StrokeThickness = 0.0,
-						FillColor = _colors[2]
-					} }
+				Series = { (Series)new BarSeries
+				{
+					XAxisKey = "Value",
+					YAxisKey = "Category",
+					StrokeThickness = 0.0,
+					FillColor = _colors[2]
+					// 2026-09-11：移除 TrackerFormatString，先用默认 tracker（与 PieSeries 一致），
+					// 排查柱状图 tooltip 不显示的根因。若默认能显示再调格式。
+				} }
 				};
 				RefreshPlotColors(obj);
 				return obj;
@@ -225,13 +227,14 @@ namespace ForkPlus.UI.UserControls
 						"20", "21", "22", "23"
 					}
 				});
-				plotModel.Series.Add(new BarSeries
-				{
-					XAxisKey = "Value",
-					YAxisKey = "Category",
-					StrokeThickness = 0.0,
-					FillColor = _colors[2]
-				});
+			plotModel.Series.Add(new BarSeries
+			{
+				XAxisKey = "Value",
+				YAxisKey = "Category",
+				StrokeThickness = 0.0,
+				FillColor = _colors[2]
+				// 2026-09-11：移除 TrackerFormatString，先用默认 tracker 排查。
+			});
 				RefreshPlotColors(plotModel);
 				return plotModel;
 			}

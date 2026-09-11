@@ -64,14 +64,19 @@ namespace ForkPlus.UI.Dialogs
 			// 磁盘私/公钥文件仍在 → Refresh() 重扫又把它加回来，用户感知为"删不掉"。
 			// 现在先弹确认框（不可逆操作防误删），确认后真正删除磁盘上的私钥 + 公钥文件，
 			// 再从 SshKeys 移除引用，Refresh() 重扫时该密钥自然消失。
-			bool confirmed = new MessageBoxWindow(
-				string.Format(Translate("Do you want to delete SSH key '{0}'?"), selected.KeyFileName),
-				Translate("The private and public key files will be permanently removed from your disk. This action can't be undone."),
-				Translate("Delete"),
-				Translate("Cancel"),
-				showCancelButton: true,
-				520.0,
-				showWarningIcon: true).ShowDialog().GetValueOrDefault();
+		// 修复（2026-09-11，"删除 SSH 密钥确认框置底、点删除没用"）：确认框默认 owner 是 MainWindow，
+		// 但本窗口已是模态（MainWindow 已被禁用），确认框挂错模态链导致置底、本窗口仍可交互。
+		// 改为把确认框 owner 设成本窗口（与 AddAccountWindow / IR 确认框同款修复）。
+		MessageBoxWindow confirmDialog = new MessageBoxWindow(
+			string.Format(Translate("Do you want to delete SSH key '{0}'?"), selected.KeyFileName),
+			Translate("The private and public key files will be permanently removed from your disk. This action can't be undone."),
+			Translate("Delete"),
+			Translate("Cancel"),
+			showCancelButton: true,
+			520.0,
+			showWarningIcon: true);
+		confirmDialog.SetOwnerCompat(this);
+		bool confirmed = confirmDialog.ShowDialog().GetValueOrDefault();
 			if (!confirmed)
 			{
 				return;
