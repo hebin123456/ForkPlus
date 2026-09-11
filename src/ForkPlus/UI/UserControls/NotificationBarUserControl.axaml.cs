@@ -25,6 +25,9 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isControlVisible;
 
+		// WPF 原版 DataTrigger + Storyboard 的动画目标高度（见 Border.axaml 迁移注释）。
+		private const double ExpandedHeight = 28.0;
+
 		private RepositoryUserControl _repositoryUserControl { get; set; }
 
 		public bool IsControlVisible
@@ -39,6 +42,15 @@ namespace ForkPlus.UI.UserControls
 				{
 					_isControlVisible = value;
 					NotifyPropertyChanged("IsControlVisible");
+					// 修复（2026-09-11，"仓库→二分查找后标签下方通知条不出现"）：
+					// WPF 原版由 NotificationBarBorder 样式的 DataTrigger + Storyboard 把
+					// Height 0↔28 动画；迁移到 Avalonia 时样式被注释（Border.axaml），
+					// Border.Height 硬编码 0 永远生效，IsControlVisible 无人消费——
+					// merge/rebase/cherry-pick/revert/bisect/gitignore 建议等所有通知条
+					// 全部不可见（bisect 的 Good/Bad/Skip 只在此通知条上，故完全不可用）。
+					// 这里由 setter 直接驱动 RootBorder.Height；展开/收起的动画观感由
+					// axaml 中 RootBorder 的 DoubleTransition(0.7s) 承担，对齐 WPF 语义。
+					RootBorder.Height = value ? ExpandedHeight : 0.0;
 				}
 			}
 		}

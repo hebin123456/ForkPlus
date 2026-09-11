@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.NotificationBarUserControl">
-  <Border>
+  <Border x:Name="RootBorder">
     <Border.BorderBrush>
       <DynamicResource ResourceKey="BorderBrush" />
     </Border.BorderBrush>
@@ -8,11 +8,22 @@
     </Border.Background>
     <Border.BorderThickness>0,0,0,1</Border.BorderThickness>
     <Border.Height>0</Border.Height>
+    <!-- 修复（2026-09-11，"仓库→二分查找后标签下方通知条不出现"）：
+         WPF 原版靠 NotificationBarBorder 样式的 DataTrigger + Storyboard 把 Height
+         0↔28 动画（见 Border.axaml 迁移注释），迁移时样式被注释、Height 硬编码 0，
+         通知条（merge/rebase/bisect/gitignore 建议等）全部不可见。现由 code-behind
+         的 IsControlVisible setter 直接驱动 RootBorder.Height（初始 0），展开/收起
+         动画由下面的 DoubleTransition 承担（对齐 WPF 0.7s + accel/decel 0.4 缓动）。 -->
+    <Border.Transitions>
+      <Transitions>
+        <DoubleTransition Property="Height" Duration="0:0:0.7" Easing="CubicEaseInOut" />
+      </Transitions>
+    </Border.Transitions>
 <!-- Migration note：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
     <Border.Style>
       <StaticResource ResourceKey="NotificationBarBorder" />
     </Border.Style>
--->
+    （修复后的可见性/高度联动不再依赖该样式，见上方 Border.Transitions 注释。）-->
     <Border.Child>
       <Grid>
         <Grid.ColumnDefinitions>

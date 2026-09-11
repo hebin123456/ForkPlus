@@ -2,6 +2,25 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.0.11
+
+> 二分查找通知条不可用修复 + 好/坏互斥 + 右键菜单快捷键：仓库菜单"二分查找"后标签下方通知条不出现（WPF 迁移丢失动画），右键菜单快捷键原仅显示不生效，同提交既标好又标坏会毒化 bisect 会话。
+
+### 修复
+
+- **仓库菜单"二分查找"后标签下方通知条不出现**：WPF 原版通知条由 NotificationBarBorder 样式的 DataTrigger + Storyboard 把高度 0↔28 动画；迁移 Avalonia 时该样式被注释成空壳，Border 高度硬编码 0 永远生效，IsControlVisible 属性无人消费——二分查找的 Good/Bad/Skip 按钮只在该通知条上，导致功能整体不可用；同因受害 merge / rebase / cherry-pick / revert / squash / am / unmerged / .gitignore 建议等所有通知条全场景不可见。修复为 IsControlVisible 直接驱动通知条高度、axaml 挂 DoubleTransition(0.7s) 对齐 WPF 原版观感。
+- **二分查找同一提交可以同时标记好和坏**：git 对同一提交既标好又标坏是先落库再报错（`<sha> was both good and bad`），双标记一旦落库后所有后续 bisect 命令（good/bad/skip）全部卡死，只有 reset 能救。修复为执行 good/bad 前按 git 实时 refs 预检相反标记（读 refs/bisect/*，不受 UI 异步刷新滞后影响），冲突时直接返回 git 同款错误并弹窗提示"不能同时标记好和坏"，不执行命令、不毒化会话，双向（先好后坏 / 先坏后好）均有拦截。
+- **右键菜单快捷键只显示不生效**：Avalonia 的 MenuItem.InputGesture 仅用于显示快捷键提示文本，不像 WPF 会自动响应按键执行命令，因此右键菜单各项的快捷键（如分支右键 Delete 删除分支）全部无效。在 WpfCompat 层补齐 WPF 语义——ContextMenu 自身与宿主窗口均挂 Tunnel KeyDown，菜单打开时按键命中某启用叶子项显示的 InputGesture 即等价点击该项（触发 Click、收起菜单、吞掉按键并避免与窗口级 CommandBinding 双触发），子菜单递归查找。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|-----|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.11-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.11-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.11-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.11-macos-arm64.zip` |
+
 ## v4.0.10
 
 > SSH 密钥删除修复收官 + 全局滚动滚轮修复 + 统计图表悬浮提示恢复 + 首次启动细条标题栏修复。

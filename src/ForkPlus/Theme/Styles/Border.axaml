@@ -1,4 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- 修复说明（2026-09-11）：此空壳 ControlTheme 仅存档，无运行时作用（无任何 Border
+       引用该 Key）。WPF 原版 NotificationBarBorder 样式的职责——按 IsControlVisible 把
+       Height 0↔28 动画（0.7s）——已改由 NotificationBarUserControl.axaml 的 RootBorder
+       DoubleTransition + code-behind 的 IsControlVisible setter 实现，见该文件注释。 -->
   <ControlTheme x:Key="NotificationBarBorder" TargetType="Border">
     
   

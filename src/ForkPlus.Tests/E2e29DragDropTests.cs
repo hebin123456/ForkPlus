@@ -120,6 +120,48 @@ namespace ForkPlus.Tests
 				}));
 		}
 
+		/// <summary>布局稳定门（CI e2e-3 红灯修复，2026-09-11）：连续两轮"补渲染帧 +
+		/// 排空 UI 队列"采样两 tab 布局一致才返回 true。红灯实证（run 34592102350）：
+		/// dragDiag[session=2,dragEvents=2,drops=2]——会话发起、一次 DragEnter、Drop 全
+		/// 触发了，但顺序不换；TabItem_Drop 唯一的不重排路径是"源==落点短路"——dropAt
+		/// 的 hit-test 打回了源 tabA。失配根源是"取点时的 tab bounds"与"手势时 hit-test
+		/// 几何"不同帧：① RunJobs 只排空布局 job，hit-test 的渲染几何要 ForceRenderTimerTick
+		/// 推进（headless 渲染时钟手动，NotificationBarBisectTests 同款坑）；② tab 标题经
+		/// RepositoryManager 收编 + 两同名仓库消歧异步刷新（初始长路径形式 → 短名），宽度
+		/// 骤变落在"取点之后、手势之前"时，按旧布局取的中心坐标命中重排后的源 tab。
+		/// 每轮轮询 50ms 真实时隙（UiClick.WaitFor）给后台标题刷新完成的机会。</summary>
+		private static bool WaitForStableTabLayout(ClosableTabItem tabA, ClosableTabItem tabB, int timeoutMs)
+		{
+			bool hadPrev = false;
+			Rect prev = default(Rect);
+			return UiClick.WaitFor(delegate
+			{
+				Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+				Dispatcher.UIThread.RunJobs();
+				// 覆盖"tabA 左上 → tabB 右下"的包围盒：任一 tab 的位置/尺寸变化都能感知
+				Rect now = new Rect(tabA.Bounds.TopLeft, new Point(tabB.Bounds.Right, tabB.Bounds.Bottom));
+				bool stable = hadPrev && now == prev;
+				prev = now;
+				hadPrev = true;
+				return stable;
+			}, timeoutMs);
+		}
+
+		/// <summary>换位断言失败时的 hit-test 实况（下次红灯直接看出落点打在哪）：
+		/// dropAt 现坐标下 InputHitTest 命中的最深元素、经祖先链解析出的拖放 target、
+		/// 命中元素是否落在 tabA/tabB 子树内，以及两 tab 当下 Bounds。</summary>
+		private static string DescribeHitAt(Window window, Point position, ClosableTabItem tabA, ClosableTabItem tabB)
+		{
+			var hit = window.InputHitTest(position) as Visual;
+			global::Avalonia.Interactivity.Interactive target = hit?.GetSelfAndVisualAncestors().OfType<global::Avalonia.Interactivity.Interactive>().FirstOrDefault();
+			bool hitInTabA = hit != null && (ReferenceEquals(hit, tabA) || tabA.GetVisualDescendants().Contains(hit));
+			bool hitInTabB = hit != null && (ReferenceEquals(hit, tabB) || tabB.GetVisualDescendants().Contains(hit));
+			return "hit@(" + position.X.ToString("F1") + "," + position.Y.ToString("F1") + ")="
+				+ (hit?.GetType().Name ?? "null") + " target=" + (target?.GetType().Name ?? "null")
+				+ " inTabA=" + hitInTabA + " inTabB=" + hitInTabB
+				+ " tabABounds=" + tabA.Bounds + " tabBBounds=" + tabB.Bounds;
+		}
+
 	// ============================ 诊断：RaiseEvent 最小复现 ============================
 
 		/// <summary>路由语义回归（原为分层定位 RaiseEvent 断链的诊断用例，坑2定位后保留为
@@ -218,6 +260,15 @@ namespace ForkPlus.Tests
 					Point? dropAt = PointIn(tabB, window, 0.5, 0.5);
 					Assert.True(pressAt.HasValue && dropAt.HasValue, "tab 应完成布局（bounds 非零）");
 
+					// 布局稳定门（CI e2e-3 红灯修复，2026-09-11）：补渲染帧 + 排空轮询两帧一致
+					//（取点坐标与 hit-test 几何同帧的先决条件，详见 WaitForStableTabLayout 注释）。
+					Assert.True(WaitForStableTabLayout(tabA, tabB, 15000),
+						"取点前 tab 布局应稳定（两帧一致；tabA=" + tabA.Bounds + " tabB=" + tabB.Bounds + "）");
+					// 门后布局可能已因标题收编刷新而变化——落点按稳定后的当下布局重新取
+					pressAt = PointIn(tabA, window, 0.5, 0.5);
+					dropAt = PointIn(tabB, window, 0.5, 0.5);
+					Assert.True(pressAt.HasValue && dropAt.HasValue, "布局稳定后取点应成功");
+
 					// 分步手势 + 分层断言（断链时一眼看出层）：
 					// press → _lastPressArgs 已记录（坑1修复的记录机制）
 					// move 超阈值 → 拖拽会话已发起（DoDragDropAsync → 代理 → Instance）
@@ -277,19 +328,25 @@ namespace ForkPlus.Tests
 
 					int sessionsBefore = HeadlessInProcessDragSource.Instance.SessionsStarted;
 					gesture.Move(tabA, window, midAt);
-					gesture.Move(tabA, window, dropAt.Value);
+					// 落点现取（CI e2e-3 红灯修复，2026-09-11）：midAt 这步的同步链上，
+					// 探针 press 的选中样式变化可能被 hit-test 强制重排兑现——落点按当下
+					// tabB bounds 重新换算，保证与本次 Move 内 hit-test 几何同帧（对齐真实
+					// 用户"看向当前布局、拖到当前落点"的语义）。
+					Point? dropAtNow = PointIn(tabB, window, 0.5, 0.5);
+					Assert.True(dropAtNow.HasValue, "落点现取时 tabB 应仍有有效布局");
+					gesture.Move(tabA, window, dropAtNow.Value);
 					Assert.True(HeadlessInProcessDragSource.Instance.SessionsStarted > sessionsBefore,
 						"move 超阈值后应发起拖拽会话（TabItem_PreviewMouseMove → DragDropLauncher → 代理；" + HeadlessInProcessDragSource.Instance.Diag + "）");
 					Assert.True(HeadlessInProcessDragSource.Instance.DragEventsRaised > 0,
 						"release 前落点应已收到 DragEnter/DragOver（Drop 要到 release 才触发，此处查 dragEvents；" + HeadlessInProcessDragSource.Instance.Diag + "）");
 
-					gesture.Release(tabA, window, dropAt.Value);
+					gesture.Release(tabA, window, dropAtNow.Value);
 					Dispatcher.UIThread.RunJobs();
 					Assert.True(HeadlessInProcessDragSource.Instance.DropsRaised > 0,
 						"release 后应已触发 Drop（" + HeadlessInProcessDragSource.Instance.Diag + "）");
 
-						Assert.True(tabControl.Items.IndexOf(tabB) < tabControl.Items.IndexOf(tabA),
-						"单次手势后 repoB tab 应移到 repoA 前（实际顺序：" + DescribeTabOrder(tabControl) + "；" + HeadlessInProcessDragSource.Instance.Diag + "）");
+					Assert.True(tabControl.Items.IndexOf(tabB) < tabControl.Items.IndexOf(tabA),
+						"单次手势后 repoB tab 应移到 repoA 前（实际顺序：" + DescribeTabOrder(tabControl) + "；" + HeadlessInProcessDragSource.Instance.Diag + "；" + DescribeHitAt(window, dropAtNow.Value, tabA, tabB) + "）");
 						Assert.True(tabA.IsSelected, "拖拽完成后被拖 tab 应被选中");
 						Assert.False(HeadlessInProcessDragSource.Instance.IsActive, "拖拽会话应已结束");
 
