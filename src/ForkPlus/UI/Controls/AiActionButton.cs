@@ -19,6 +19,9 @@ namespace ForkPlus.UI.Controls
 
 		private string _savedToolTip;
 		private bool _isBusy;
+		// v4.0.9：busy 期间按钮上直接可见的动态状态（排队等待/重试/生成进度），
+		// 解决此前仅 ToolTip 承载、不悬停看不到的问题（AI 服务排队时 UI 静默最长 30 分钟）
+		private string _busyStatus;
 
 		/// <summary>Migration note：WPF Control.ToolTip 属性 → Avalonia ToolTip.SetTip/GetTip 附加属性转发。</summary>
 		private object ToolTip
@@ -71,8 +74,17 @@ namespace ForkPlus.UI.Controls
 				ToolTip = busyToolTip ?? _savedToolTip;
 				_savedToolTip = null;
 				IsEnabled = true;
+				_busyStatus = null;
 			}
 			_isBusy = busy;
+			UpdateContent();
+		}
+
+		/// <summary>v4.0.9：busy 期间更新按钮上直接可见的动态状态文案（排队/重试/生成进度）。
+		/// 传 null 恢复为默认 busy 文案。非 busy 时调用无效果。</summary>
+		public void SetBusyStatus([Null] string status)
+		{
+			_busyStatus = status;
 			UpdateContent();
 		}
 
@@ -81,6 +93,10 @@ namespace ForkPlus.UI.Controls
 			string prefix = _isBusy ? "⏳" : "🤖";
 			string verb = ActionVerb;
 			string text = string.IsNullOrWhiteSpace(verb) ? prefix + " AI" : prefix + " AI " + verb;
+			if (_isBusy && !string.IsNullOrWhiteSpace(_busyStatus))
+			{
+				text = text + " · " + _busyStatus;
+			}
 			Content = new TextBlock
 			{
 				Text = text,

@@ -418,40 +418,70 @@ namespace ForkPlus.UI.Dialogs
 			bool canceled = false;
 
 			await Task.Run(delegate
+		{
+			try
 			{
-				try
+				OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+				JobMonitor monitor = new JobMonitor();
+				// v4.0.9 修复（"AI 解决冲突排队时无反馈"，与 MergeConflictUserControl 同款）：
+				// 此前裸 JobMonitor 未订阅进度回调，OpenAiRequestStreamingWithRetry 遇排队类
+				// 错误每 30s 静默重试、最长 30 分钟，按钮全程静态 busy，用户以为卡死。
+				// 订阅进度回调，把排队/重试阶段文字同步到按钮可见文案。
+				monitor.SetProgressAction(delegate
 				{
-					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-					JobMonitor monitor = new JobMonitor();
-					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
-						prompt,
-						monitor,
-						delegate(string delta)
+					string message = monitor.ProgressMessage;
+					Dispatcher.Post(delegate
+					{
+						if (_aiResolving)
 						{
-							if (string.IsNullOrEmpty(delta))
-							{
-								return;
-							}
-							lock (responseBuilder)
-							{
-								responseBuilder.Append(delta);
-							}
-						});
-					if (monitor.IsCanceled)
+							AiResolveButton.SetBusyStatus(message);
+						}
+					});
+				});
+				long receivedChars = 0L;
+				long reportedChars = -1L;
+				ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
+					prompt,
+					monitor,
+					delegate(string delta)
 					{
-						canceled = true;
-						return;
-					}
-					if (!result.Succeeded)
-					{
-						requestError = new Exception(result.Error?.FriendlyMessage ?? PreferencesLocalization.Current("Unknown error"));
-					}
-				}
-				catch (Exception ex)
+						if (string.IsNullOrEmpty(delta))
+						{
+							return;
+						}
+						lock (responseBuilder)
+						{
+							responseBuilder.Append(delta);
+							receivedChars += delta.Length;
+							// 生成中每 200 字符刷新一次已接收字数，让用户感知进度
+							if (receivedChars - reportedChars >= 200)
+							{
+								reportedChars = receivedChars;
+								Dispatcher.Post(delegate
+								{
+									if (_aiResolving)
+									{
+										AiResolveButton.SetBusyStatus(PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", receivedChars));
+									}
+								});
+							}
+						}
+					});
+				if (monitor.IsCanceled)
 				{
-					requestError = ex;
+					canceled = true;
+					return;
 				}
-			}).ConfigureAwait(true);
+				if (!result.Succeeded)
+				{
+					requestError = new Exception(result.Error?.FriendlyMessage ?? PreferencesLocalization.Current("Unknown error"));
+				}
+			}
+			catch (Exception ex)
+			{
+				requestError = ex;
+			}
+		}).ConfigureAwait(true);
 
 			// v3.8.3：await 后窗口可能已关闭，访问已关闭窗口的 UI 元素会崩溃
 			if (!IsLoaded)

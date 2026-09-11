@@ -247,51 +247,82 @@ namespace ForkPlus.UI.UserControls
 		}
 
 			_aiResolving = true;
-			// v3.9.0：统一用 AiActionButton.SetBusy 管理 Loading 态
-			AiResolveButton.SetBusy(true, PreferencesLocalization.Current("AI is resolving conflicts..."));
+		// v3.9.0：统一用 AiActionButton.SetBusy 管理 Loading 态
+		AiResolveButton.SetBusy(true, PreferencesLocalization.Current("AI is resolving conflicts..."));
 
-			string fileName = Path.GetFileName(_changedFile.Path);
-			string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
+		string fileName = Path.GetFileName(_changedFile.Path);
+		string prompt = OpenAiService.BuildResolveConflictsPrompt(fileName, conflictedContent);
 
-			StringBuilder responseBuilder = new StringBuilder();
-			Exception requestError = null;
-			bool canceled = false;
+		StringBuilder responseBuilder = new StringBuilder();
+		Exception requestError = null;
+		bool canceled = false;
 
-			await Task.Run(delegate
+		await Task.Run(delegate
+		{
+			try
 			{
-				try
+				OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
+				JobMonitor monitor = new JobMonitor();
+				// v4.0.9 修复（"AI 解决冲突排队时无反馈"）：此前裸 JobMonitor 未订阅进度回调，
+				// OpenAiRequestStreamingWithRetry 遇排队类错误（429/busy 等）每 30s 静默重试、
+				// 最长可等 30 分钟（MaxQueuedWaitSeconds），按钮全程只显示静态 busy 态，用户
+				// 以为卡死。订阅进度回调，把"排队中。{0} 后再次检查..."/"重试中..."同步到按钮
+				// 可见文案（与 AI 检视窗口状态栏对齐）。
+				monitor.SetProgressAction(delegate
 				{
-					OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-					JobMonitor monitor = new JobMonitor();
-					ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
-						prompt,
-						monitor,
-						delegate(string delta)
+					string message = monitor.ProgressMessage;
+					Dispatcher.Post(delegate
+					{
+						if (_aiResolving)
 						{
-							if (string.IsNullOrEmpty(delta))
-							{
-								return;
-							}
-							lock (responseBuilder)
-							{
-								responseBuilder.Append(delta);
-							}
-						});
-					if (monitor.IsCanceled)
+							AiResolveButton.SetBusyStatus(message);
+						}
+					});
+				});
+				long receivedChars = 0L;
+				long reportedChars = -1L;
+				ServiceResult<OpenAiResponse> result = aiService.OpenAiRequestStreamingWithRetry(
+					prompt,
+					monitor,
+					delegate(string delta)
 					{
-						canceled = true;
-						return;
-					}
-					if (!result.Succeeded)
-					{
-						requestError = new Exception(result.Error?.FriendlyMessage ?? PreferencesLocalization.Current("Unknown error"));
-					}
-				}
-				catch (Exception ex)
+						if (string.IsNullOrEmpty(delta))
+						{
+							return;
+						}
+						lock (responseBuilder)
+						{
+							responseBuilder.Append(delta);
+							receivedChars += delta.Length;
+							// 生成中每 200 字符刷新一次已接收字数，让用户感知进度
+							if (receivedChars - reportedChars >= 200)
+							{
+								reportedChars = receivedChars;
+								Dispatcher.Post(delegate
+								{
+									if (_aiResolving)
+									{
+										AiResolveButton.SetBusyStatus(PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", receivedChars));
+									}
+								});
+							}
+						}
+					});
+				if (monitor.IsCanceled)
 				{
-					requestError = ex;
+					canceled = true;
+					return;
 				}
-			}).ConfigureAwait(true);
+				if (!result.Succeeded)
+				{
+					requestError = new Exception(result.Error?.FriendlyMessage ?? PreferencesLocalization.Current("Unknown error"));
+				}
+			}
+			catch (Exception ex)
+			{
+				requestError = ex;
+			}
+		}).ConfigureAwait(true);
 
 			// v3.8.3：await 后控件可能已卸载（用户切换了 Tab/文件），async void 未捕获异常会闪退
 			if (!IsLoaded)
