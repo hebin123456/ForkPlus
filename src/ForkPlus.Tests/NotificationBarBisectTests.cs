@@ -329,5 +329,165 @@ namespace ForkPlus.Tests
 			}, 30000);
 			Assert.True(resetOk, "冲突被拦截后 bisect 会话应仍可用（reset 正常收尾）");
 		}
+
+		// ===== 用例4：完整二分查找端到端——真正找到第一个坏提交 =====
+		// 用户要求（2026-09-11）："有没有端到端测试用例，比如完整的查找一次，然后找到
+		// 真正的那个commit，你每步要有截图"。前三个用例是单元/链路级，从没真正跑完一次
+		// 二分到收敛。本用例构造 c0(init)+c1..c8 共 9 个提交，c5 起 f.txt 含 "BUG"（首坏
+		// 提交=c5）。全程驱动 UI：菜单"二分查找"启动 → 通知条点 Bad 标当前 HEAD(c8) 为坏
+		// → 检出已知好提交 c1（真实用户"找一个肯定好的提交"的操作）→ 点 Good 标好 →
+		// git 自动检出候选 → 测试按 f.txt 是否含 BUG 自动点 Good/Bad → 每步截图 → 收敛时
+		// git 输出 "<c5> is the first bad commit"（BisectGitCommand 以 Failure 弹
+		// ErrorWindow，看门狗捕获其文本）→ 断言收敛 SHA 确实等于 c5。
+		private const string ModuleDir = "bisect-e2e";
+
+		[Fact]
+		public void Bisect_CompleteWorkflow_ConvergesToFirstBadCommit()
+		{
+			string repoRoot = CreateBisectRepoWithKnownBadCommit();
+			try
+			{
+				// 基线 SHA（HEAD=c8）：c5=c8~3（首坏提交）、c1=c8~7（已知好基准）
+				string firstGood = RunGit("rev-parse HEAD~7", repoRoot).Trim();
+				string expectedFirstBad = RunGit("rev-parse HEAD~3", repoRoot).Trim();
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repoRoot, out var window);
+					try
+					{
+						var bar = window.GetVisualDescendants().OfType<NotificationBarUserControl>().First();
+						Assert.True(bar != null, "仓库视图中应存在通知条控件");
+						int snapNo = 1;
+
+						// Step 1: 菜单"仓库→二分查找"启动 → 通知条展开
+						RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Start);
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return repoControl.RepositoryStatus?.RepositoryState is RepositoryState.BisectInProgress;
+						}, 30000), "bisect start 后仓库状态应为 BisectInProgress");
+						Assert.True(WaitForHeightAnimated(bar, 28.0, 30000), "bisect start 后通知条应展开");
+						ScreenshotHelper.Snap(window, $"0{snapNo++}-bisect-started", ModuleDir);
+
+						// Step 2: 点 Bad 标当前 HEAD(c8) 为坏（首个标记）
+						bar.Button2.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							string logPath = Path.Combine(repoRoot, ".git", "BISECT_LOG");
+							return File.Exists(logPath) && File.ReadAllText(logPath).Contains("# bad:");
+						}, 30000), "点击 Bad 应真实执行 git bisect bad（BISECT_LOG 记录）");
+						ScreenshotHelper.Snap(window, $"0{snapNo++}-marked-bad-HEAD", ModuleDir);
+
+						// Step 3: 检出已知好提交 c1（导航操作）后点 Good；有了 good/bad 区间 git 自动检出候选
+						RunGit("checkout -q " + firstGood, repoRoot);
+						string prevBaseline = HeadSha(repoRoot); // 应为 c1
+						bar.Button1.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return File.ReadAllText(Path.Combine(repoRoot, ".git", "BISECT_LOG")).Contains("# good:");
+						}, 30000), "点击 Good 应真实执行 git bisect good（BISECT_LOG 记录）");
+						Assert.True(WaitForAdvanceOrConverge(repoRoot, prevBaseline), "good=c1/bad=c8 基准建立后 git 应自动检出首个候选提交");
+						ScreenshotHelper.Snap(window, $"0{snapNo++}-baseline-good-bad-set", ModuleDir);
+
+						// Step 4+: 自动按 f.txt 是否含 BUG 决策（候选=当前检出的提交），每步截图，直到收敛
+						// 收敛信号 = BISECT_LOG 写入 "# first bad commit: <sha>"（实证：git 找到首坏
+						// 提交后不自动 reset，BISECT_START 仍在、HEAD 停在结论提交上——不能靠它判断）。
+						bool converged = false;
+						while (!converged && snapNo <= 12)
+						{
+							string sha = HeadSha(repoRoot);
+							string fileContent = File.ReadAllText(Path.Combine(repoRoot, "f.txt"));
+							ScreenshotHelper.Snap(window, $"0{snapNo}-candidate-{sha.Substring(0, 7)}", ModuleDir);
+							bool isBad = fileContent.Contains("BUG");
+							if (isBad)
+							{
+								bar.Button2.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+							}
+							else
+							{
+								bar.Button1.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+							}
+							snapNo++;
+							converged = WaitForAdvanceOrConverge(repoRoot, sha);
+							if (!converged && !HasBisectState(repoRoot))
+							{
+								break; // 意外终止（会话丢失），让后续断言报出根因
+							}
+						}
+						Assert.True(converged, "二分应收敛（BISECT_LOG 应写入 '# first bad commit:'）");
+
+						// Step 5: 断言收敛到真正首坏提交 c5。权威证据 = git 分写进 BISECT_LOG 的结论
+						// "# first bad commit: [<c5>] c5"（headless 下收敛结论的 MessageBoxWindow 经
+						// 后台 Dispatcher.Post 异步模态投递、无法可靠呈现/捕获——诊断实证，故以
+						// git 自身落盘的结论为准，同样能从数据上证明"找到真正那个 commit"）。
+						string logText = File.ReadAllText(Path.Combine(repoRoot, ".git", "BISECT_LOG"));
+						Assert.True(logText.Contains("# first bad commit: [" + expectedFirstBad + "]"),
+							"BISECT_LOG 的 first bad commit 应指向真正首坏提交 " + expectedFirstBad);
+						ScreenshotHelper.Snap(window, $"0{snapNo}-first-bad-commit-found", ModuleDir);
+
+						// 终态：bisect reset 干净收尾（git 找到首坏后不自复位），通知条收起补终态截图
+						RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Reset);
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return !File.Exists(Path.Combine(repoRoot, ".git", "BISECT_START"));
+						}, 30000), "bisect reset 应清除 BISECT_START");
+						Assert.True(WaitForHeightAnimated(bar, 0.0, 30000), "reset 后通知条应收起");
+						ScreenshotHelper.Snap(window, "09-converged-to-first-bad", ModuleDir);
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repoRoot);
+					}
+				});
+			}
+			finally
+			{
+				try { Directory.Delete(repoRoot, true); } catch { /* 清理尽力而为 */ }
+			}
+		}
+
+		private static string HeadSha(string repoRoot)
+		{
+			return RunGit("rev-parse HEAD", repoRoot).Trim();
+		}
+
+		private static bool HasBisectState(string repoRoot)
+		{
+			return File.Exists(Path.Combine(repoRoot, ".git", "BISECT_START"));
+		}
+
+		/// <summary>收敛判定：BISECT_LOG 出现 "# first bad commit:" 即收敛；否则等待 git 推进
+		/// 到新的候选（HEAD 变化）。经验区间很短（首坏实测 6 个决策以内），单步等 30s 足够。</summary>
+		private static bool WaitForAdvanceOrConverge(string repoRoot, string prevSha)
+		{
+			return UiClick.WaitFor(delegate
+			{
+				string logPath = Path.Combine(repoRoot, ".git", "BISECT_LOG");
+				if (File.Exists(logPath) && File.ReadAllText(logPath).Contains("# first bad commit:"))
+				{
+					return true; // 已收敛
+				}
+				return HeadSha(repoRoot) != prevSha; // 未收敛但已推进到新候选
+			}, 30000);
+		}
+
+		/// <summary>9 个提交（c0=init + c1..c8），c5 起 f.txt 含 "BUG"（真实首坏提交 = c5）。</summary>
+		private static string CreateBisectRepoWithKnownBadCommit()
+		{
+			string root = Path.Combine(Path.GetTempPath(), "fpbisecte2e_" + Guid.NewGuid().ToString("N").Substring(0, 8));
+			Directory.CreateDirectory(root);
+			RunGit("init -q -b main", root);
+			RunGit("config user.email test@example.com", root);
+			RunGit("config user.name Test", root);
+			File.WriteAllText(Path.Combine(root, ".gitignore"), "*.tmp\n");
+			RunGit("add .gitignore", root);
+			RunGit("commit -q -m c0", root);
+			for (int i = 1; i <= 8; i++)
+			{
+				File.WriteAllText(Path.Combine(root, "f.txt"), (i >= 5 ? "BUG\n" : "") + "content v" + i + "\n");
+				RunGit("add f.txt", root);
+				RunGit("commit -q -m c" + i, root);
+			}
+			return root;
+		}
 	}
 }
