@@ -237,16 +237,17 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			SetRow(editorsGrid, 3);
 
 			// v3.7.1：Row 4 — "加载更多"按钮。大文件首屏只渲染 16KB，用户点击此处增量加载下一段 16KB。
-			// 初始 Collapsed，SetContent 完成后若任一侧被截断则显示。
-			_loadMoreButton = new Button
-			{
-				Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(LoadMoreChunkBytes) + ")",
-				HorizontalAlignment = HorizontalAlignment.Center,
-				Margin = new Thickness(0, 4, 0, 4),
-				// v4.0.5：垂直 Padding 2→0，内嵌 CJK 字体行高 19px 下默认按钮内槽(22px)减 4px 会裁字。
-				Padding = new Thickness(12, 0, 12, 0),
-				IsVisible = false
-			};
+		// 初始 Collapsed，SetContent 完成后若任一侧被截断则显示。
+		_loadMoreButton = new Button
+		{
+			// v4.0.12 国际化：按钮文案整串走 FormatCurrent("{0} (+{1} / {2})")，避免拼接中文
+			Content = BuildLoadMoreText(LoadMoreChunkBytes, LoadMoreChunkBytes),
+			HorizontalAlignment = HorizontalAlignment.Center,
+			Margin = new Thickness(0, 4, 0, 4),
+			// v4.0.5：垂直 Padding 2→0，内嵌 CJK 字体行高 19px 下默认按钮内槽(22px)减 4px 会裁字。
+			Padding = new Thickness(12, 0, 12, 0),
+			IsVisible = false
+		};
 			_loadMoreButton.Click += LoadMoreButton_Click;
 			Children.Add(_loadMoreButton);
 			SetRow(_loadMoreButton, 4);
@@ -324,8 +325,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
 					_dstEditor.HighlightBytes(dstDiff);
-					_srcMd5TextBlock.Text = "MD5: " + srcMd5 + (srcTruncated ? "  (部分显示)" : "");
-					_dstMd5TextBlock.Text = "MD5: " + dstMd5 + (dstTruncated ? "  (部分显示)" : "");
+					_srcMd5TextBlock.Text = "MD5: " + srcMd5 + (srcTruncated ? "  (" + PreferencesLocalization.Current("Partially shown") + ")" : "");
+					_dstMd5TextBlock.Text = "MD5: " + dstMd5 + (dstTruncated ? "  (" + PreferencesLocalization.Current("Partially shown") + ")" : "");
 					UpdateLoadMoreButton();
 				}));
 			}, token).ContinueWith(t =>
@@ -351,11 +352,26 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				return;
 			}
 			int nextChunk = Math.Min(LoadMoreChunkBytes, maxRemaining);
-			_loadMoreButton.Content = PreferencesLocalization.Current("Load more") + " (+" + FormatByteSize(nextChunk) + " / 剩余 " + FormatByteSize(maxRemaining) + ")";
+			_loadMoreButton.Content = BuildLoadMoreText(nextChunk, maxRemaining);
 			_loadMoreButton.IsVisible = true;
 		}
 
-		/// <summary>v3.7.1：点击"加载更多" — 后台格式化两侧下一段字节，增量追加到 editor 末尾并刷新高亮。</summary>
+		/// <summary>v4.0.12 国际化：组装"加载更多"按钮文案（此前 "剩余"/"部分显示" 硬编码中文，
+		/// 且 "Load more" 键在 8 个语言文件中全部缺失，非英文界面显示英文原文）。</summary>
+		private static string BuildLoadMoreText(int nextChunk, int remaining)
+		{
+			return PreferencesLocalization.FormatCurrent("Load more (+{0} / {1} remaining)",
+				FormatByteSize(nextChunk), FormatByteSize(remaining));
+		}
+
+		/// <summary>v3.7.1：点击"加载更多" — 后台格式化两侧下一段字节，增量追加到 editor 末尾并刷新高亮。
+		/// v4.0.12 修复三处：
+		/// ① 追加段 offset 列接续前段（HexFormatter.Format 传 startOffset），此前每段从 00000000
+		///   重新计数，追加内容视觉上像错误数据，选中反推字节区间（GetSelectedBytes）也错位；
+		/// ② _src/_dstRenderedLen 紧跟各自 Append 立即更新（原实现放在整条 post 链最末，中途被
+		///   新点击/SetContent 取消时状态与已渲染内容脱节，快速连点会把同一段重复追加两遍）；
+		/// ③ 追加后把视口滚到新段首行——此前内容只往文档末尾追加而视口纹丝不动，
+		///   用户点击后界面毫无变化，看起来就是"点了没用"。</summary>
 		private void LoadMoreButton_Click(object sender, RoutedEventArgs e)
 		{
 			if ((_srcFull == null || _srcRenderedLen >= _srcFull.Length) &&
@@ -382,9 +398,10 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			Task.Run(() =>
 			{
 				token.ThrowIfCancellationRequested();
-				string srcAddText = srcAdd == null ? "" : HexFormatter.Format(srcAdd, bytesPerRow, showOffset, showAscii);
+				// v4.0.12①：追加段 offset 从前段末尾接续编号（srcOldLen / dstOldLen）
+				string srcAddText = srcAdd == null ? "" : HexFormatter.Format(srcAdd, bytesPerRow, showOffset, showAscii, srcOldLen);
 				token.ThrowIfCancellationRequested();
-				string dstAddText = dstAdd == null ? "" : HexFormatter.Format(dstAdd, bytesPerRow, showOffset, showAscii);
+				string dstAddText = dstAdd == null ? "" : HexFormatter.Format(dstAdd, bytesPerRow, showOffset, showAscii, dstOldLen);
 
 				// 重新计算 [0, newLen) 范围的 diff（覆盖已加载全部，保证高亮连续）
 				token.ThrowIfCancellationRequested();
@@ -397,18 +414,35 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				Dispatcher.Post(new Action(async () =>
 				{
 					if (token.IsCancellationRequested) return;
-					if (srcAdd != null) _srcEditor.AppendBytesWithText(srcAdd, srcAddText, srcNewLen);
+					if (srcAdd != null)
+					{
+						_srcEditor.AppendBytesWithText(srcAdd, srcAddText, srcNewLen);
+						// v4.0.12②：渲染进度紧跟 Append 立即推进，中途取消也不与已渲染内容脱节
+						_srcRenderedLen = srcNewLen;
+					}
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
 					_srcEditor.HighlightBytes(srcDiff);
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
-					if (dstAdd != null) _dstEditor.AppendBytesWithText(dstAdd, dstAddText, dstNewLen);
+					if (dstAdd != null)
+					{
+						_dstEditor.AppendBytesWithText(dstAdd, dstAddText, dstNewLen);
+						_dstRenderedLen = dstNewLen;
+					}
 					await Dispatcher.Yield(DispatcherPriority.Background);
 					if (token.IsCancellationRequested) return;
 					_dstEditor.HighlightBytes(dstDiff);
-					_srcRenderedLen = srcNewLen;
-					_dstRenderedLen = dstNewLen;
+					// v4.0.12③：滚动到新段首行给用户即时视觉反馈（src 主导；开启"左右行对齐"
+					// 时另一侧由滚动同步带动，关闭时 dst 也显式滚到自己的新段）
+					if (srcAdd != null && srcOldLen > 0)
+					{
+						_srcEditor.ScrollToLine(srcOldLen / bytesPerRow + 1);
+					}
+					if (dstAdd != null && dstOldLen > 0)
+					{
+						_dstEditor.ScrollToLine(dstOldLen / bytesPerRow + 1);
+					}
 					UpdateLoadMoreButton();
 				}));
 			}, token).ContinueWith(t =>

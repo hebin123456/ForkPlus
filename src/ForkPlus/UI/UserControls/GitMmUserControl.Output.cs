@@ -19,11 +19,34 @@ namespace ForkPlus.UI.UserControls
 	{
 		private const int MaxOutputLineCount = 4000;
 
+		// v4.0.12（2026-09-12，git mm sync 输出洪峰）：git mm sync 认证循环可在秒级产生数千行
+		// 输出，FlushOutput 是 UI 线程批量渲染（每行一串 inline），洪峰期间 pending 无界堆积、
+		// 一次 Flush 渲染数万行 → UI freeze（用户日志：6s 无心跳）且内存随输出量线性涨。
+		// 有界 pending（渲染上限 4000 行的 2 倍余量），溢出丢最旧保最新（终端滚动语义）。
+		private const int MaxPendingOutputLines = MaxOutputLineCount * 2;
+
 		private static readonly Regex UrlRegex = new Regex(@"https?://[^\s<>""']+", RegexOptions.Compiled);
 
 		private static readonly Regex AnsiSgrRegex = new Regex(@"\x1B\[([0-9;]*)m", RegexOptions.Compiled);
 
-		private static readonly Regex AnsiEscapeRegex = new Regex(@"\x1B\[[0-?]*[ -/]*[@-~]", RegexOptions.Compiled);
+		// v4.0.12（2026-09-12，"git mm 输出一堆不可见字符被当成乱码"）：原正则只匹配 CSI
+		// 序列（ESC[...终符），git mm 经管道输出时常见的其他 ANSI/控制字符全部漏网——
+		// 用户看到 ESC、BEL 等以乱码/豆腐块渲染。完整覆盖：
+		//   ① CSI：ESC [ 参数 中间 终符（原有，SGR/光标移动/私有序列 ?25l 等）
+		//   ② OSC：ESC ] ... BEL 或 ST(ESC \)——设置终端标题/超链接等，未终结（行截断）也吞
+		//   ③ 字符集指定：ESC ( B / ESC ) 0 / ESC # 8 等——吃掉 ESC + 指定符 + 终结符
+		//   ④ 其他两字符转义：ESC 7 / ESC = / ESC M 等（ESC 后跟任意非 [ ] 字符）
+		private static readonly Regex AnsiEscapeRegex = new Regex(
+			@"\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1B]*(?:\x07|\x1B\\)?|[()#%][0-9A-B]?|.)",
+			RegexOptions.Compiled);
+
+		// ①~④ 之外的 C0 控制字符（BEL/BS/VT/FF/CR/SO/SI 等）与 DEL：不可渲染，直接删除。
+		// 保留 \t（0x09）——制表符有排版意义。\r 虽在 AppendOutputText 分行处理，但 git
+		// 进度条类输出（"45%\r78%\r100%"）的行内 CR 会残留——ReadLine 只按 \n 分行，行内
+		// \r 一并删除（终端 CR=行首重绘语义，GUI 文本取最终文本即可）。
+		// 注意顺序：先删转义序列再删残余控制字符（②④ 未配对吞掉的孤立 ESC 也在此兜底）。
+		private static readonly Regex ControlCharRegex = new Regex(
+			@"[\x00-\x08\x0B-\x1F\x7F]", RegexOptions.Compiled);
 
 		private readonly object _outputLock = new object();
 
@@ -64,6 +87,11 @@ namespace ForkPlus.UI.UserControls
 			lock (_outputLock)
 			{
 				_pendingOutputLines.Add(text ?? "");
+				if (_pendingOutputLines.Count > MaxPendingOutputLines)
+				{
+					// 洪峰溢出：丢最旧 pending 行（渲染上限会再裁一次，终端滚动语义保最新输出）。
+					_pendingOutputLines.RemoveRange(0, _pendingOutputLines.Count - MaxPendingOutputLines);
+				}
 				if (_outputFlushScheduled)
 				{
 					return;
@@ -89,9 +117,17 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static string StripAnsiEscapes(string text)
+		/// <summary>v4.0.12：完整 ANSI/控制字符清洗——先删 ①~④ 类转义序列，再删残余
+		/// C0 控制字符（保留 \t）。供活动管理器 git-mm 视图（GetOutputText）与主视图
+		/// 渲染路径（ParseAnsiSegments 纯文本段）共用。internal 供回归测试直调。</summary>
+		internal static string StripAnsiEscapes(string text)
 		{
-			return string.IsNullOrEmpty(text) ? text : AnsiEscapeRegex.Replace(text, "");
+			if (string.IsNullOrEmpty(text))
+			{
+				return text;
+			}
+			string withoutEscapes = AnsiEscapeRegex.Replace(text, "");
+			return ControlCharRegex.Replace(withoutEscapes, "");
 		}
 
 		private void ClearOutput()

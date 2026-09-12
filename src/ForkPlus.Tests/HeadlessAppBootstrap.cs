@@ -62,6 +62,50 @@ namespace ForkPlus.Tests
 		// 可见 ErrorWindow 并记录其文本——把"无限挂死"变成"带根因文本的测试失败"。
 		internal static readonly List<string> CapturedErrorDialogs = new List<string>();
 
+		// v4.0.12（2026-09-12，bisect E2E 卡死根因）：BisectCommand 收敛分支弹
+		// MessageBoxWindow 信息窗（2026-09-10 修复"收敛误报错误窗"时引入），模态
+		// ShowDialog 的 PushFrame 在 headless 下无人点 OK 永不退出——UI 线程死锁、
+		// 用例死等（dotnet-stack 实证：UI 线程停在 BisectCommand+<>c.<Execute>b__1 →
+		// WindowDialogCompat.ShowDialog）。看门狗同步关闭信息窗并记录文本（信息窗
+		// 非错误，不参与 Run 收尾失败判定；PeekCapturedMessageBoxes 供断言弹窗内容）。
+		private static readonly List<string> CapturedMessageBoxes = new List<string>();
+
+		// v4.0.12（2026-09-12，信息窗宽限期——169 用例连锁失败修复）：看门狗 tick 跑在
+		// Default 优先级，而测试驱动确认框的处理器普遍以 Background 优先级 Post（点击
+		// 触发命令 → 同步/异步 git 工作 ≥200ms → ShowDialog 进模态泵，期间到期的看门狗
+		// tick 优先级更高、抢先执行）——直接关窗会在处理器看到窗口前把它关掉，E2e05
+		//（丢弃确认）/E2e21（删除确认）等一批用例报"确认框未出现"，失败又经 Workspaces
+		// 会话残留毒化后续用例（E2e06/E2e27）、泄漏窗口被 AnyDialogWatchdog 关闭触发
+		// MainWindow.Closed→Shutdown 杀死调度器 → 全套件 169 例 TaskCanceledException。
+		// 宽限期：tick 首次见到窗口只记时间戳，持续可见超过 3s 才兜底关闭——有处理器的
+		// 用例毫秒级点按钮关窗（正常路径），无处理器的泄漏窗口（bisect 收敛弹窗）3s 后
+		// 被兜底关闭，PushFrame 死锁防线不变（bisect 用例轮询 Peek 10s，3s 宽限充裕）。
+		// Run<T> 收尾的同步扫描传 immediate:true 立即关闭（func 已返回+RunJobs 排空，
+		// 不会再有处理器来，残留即泄漏）。StrongBox<long> 存 UtcNow.Ticks，0=未记录。
+		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<
+			global::ForkPlus.UI.Dialogs.MessageBoxWindow,
+			System.Runtime.CompilerServices.StrongBox<long>> MessageBoxFirstSeenTicks = new();
+
+		private static readonly long MessageBoxWatchdogGraceTicks = TimeSpan.FromSeconds(3.0).Ticks;
+
+		/// <summary>窥视（不清空）看门狗已关闭的 MessageBoxWindow 信息窗文本。</summary>
+		internal static string[] PeekCapturedMessageBoxes()
+		{
+			lock (CapturedMessageBoxes)
+			{
+				return CapturedMessageBoxes.ToArray();
+			}
+		}
+
+		/// <summary>清空已捕获的信息窗文本（用例开头调用，避免用例间遗留干扰断言）。</summary>
+		internal static void ClearCapturedMessageBoxes()
+		{
+			lock (CapturedMessageBoxes)
+			{
+				CapturedMessageBoxes.Clear();
+			}
+		}
+
 		private static DispatcherTimer _errorDialogWatchdog;
 
 		// 模块 25（2026-09-06）：ErrorWindow 自身 E2E 用例的看门狗暂停开关——
@@ -77,8 +121,10 @@ namespace ForkPlus.Tests
 		}
 
 		/// <summary>扫描并关闭当前所有可见 ErrorWindow，记录其文本（看门狗 tick 与
-		/// Run&lt;T&gt; 收尾同步调用——后者消除 200ms 定时器滞后带来的漏检窗口）。</summary>
-		private static void CloseVisibleErrorDialogs()
+		/// Run&lt;T&gt; 收尾同步调用——后者消除 200ms 定时器滞后带来的漏检窗口）。
+		/// immediate：Run 收尾同步调用传 true（处理器不会再来，残留即泄漏，立即关）；
+		/// 看门狗 tick 传 false（MessageBoxWindow 走 3s 宽限期，见字段注释）。</summary>
+		private static void CloseVisibleErrorDialogs(bool immediate = false)
 		{
 			try
 			{
@@ -91,28 +137,68 @@ namespace ForkPlus.Tests
 					return;
 				}
 				Window[] windows = lifetime.Windows.ToArray();
-				foreach (Window window in windows)
+			foreach (Window window in windows)
+			{
+				if (window is global::ForkPlus.UI.Dialogs.ErrorWindow errorWindow && errorWindow.IsVisible)
 				{
-					if (window is global::ForkPlus.UI.Dialogs.ErrorWindow errorWindow && errorWindow.IsVisible)
+					string text;
+					try
 					{
-						string text;
-						try
-						{
-							text = errorWindow.MessageTextBox?.Text;
-						}
-						catch
-						{
-							text = null;
-						}
-						lock (CapturedErrorDialogs)
-						{
-							CapturedErrorDialogs.Add(string.IsNullOrEmpty(text)
-								? "<ErrorWindow 无文本>"
-								: text);
-						}
-						errorWindow.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+						text = errorWindow.MessageTextBox?.Text;
 					}
+					catch
+					{
+						text = null;
+					}
+					lock (CapturedErrorDialogs)
+					{
+						CapturedErrorDialogs.Add(string.IsNullOrEmpty(text)
+							? "<ErrorWindow 无文本>"
+							: text);
+					}
+					errorWindow.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
 				}
+				else if (window is global::ForkPlus.UI.Dialogs.MessageBoxWindow messageBox && messageBox.IsVisible)
+				{
+					// v4.0.12：关闭模态信息窗（bisect 收敛弹窗等），否则 PushFrame 永不退出
+					// 导致 UI 线程死锁。信息窗非错误：只记录文本（DialogDescriptionText 内部
+					// 转发——基类 DialogDescription 是 protected），不触发 Run 收尾的用例失败
+					// 判定——需要断言弹窗内容的用例用 PeekCapturedMessageBoxes。
+					if (!immediate)
+					{
+						// 宽限期路径（看门狗 tick）：首次见到只记时间戳；持续可见超宽限期才关。
+						System.Runtime.CompilerServices.StrongBox<long> firstSeen =
+							MessageBoxFirstSeenTicks.GetOrCreateValue(messageBox);
+						long nowTicks = DateTime.UtcNow.Ticks;
+						if (firstSeen.Value == 0)
+						{
+							firstSeen.Value = nowTicks;
+							continue;
+						}
+						if (nowTicks - firstSeen.Value < MessageBoxWatchdogGraceTicks)
+						{
+							continue;
+						}
+					}
+					string infoText;
+					try
+					{
+						infoText = messageBox.DialogDescriptionText;
+					}
+					catch
+					{
+						infoText = null;
+					}
+					lock (CapturedMessageBoxes)
+					{
+						CapturedMessageBoxes.Add(string.IsNullOrEmpty(infoText)
+							? "<MessageBoxWindow 无文本>"
+							: infoText);
+					}
+					MessageBoxFirstSeenTicks.Remove(messageBox);
+					messageBox.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+				}
+			}
 			}
 			catch
 			{
@@ -293,6 +379,10 @@ namespace ForkPlus.Tests
 				string[] capturedDuringRun = null;
 				try
 				{
+					lock (CapturedMessageBoxes)
+					{
+						CapturedMessageBoxes.Clear(); // 信息窗捕获按用例隔离（Peek 断言不受用例间遗留干扰）
+					}
 					lock (CapturedErrorDialogs)
 					{
 						if (!expectErrors && CapturedErrorDialogs.Count > 0)
@@ -311,8 +401,8 @@ namespace ForkPlus.Tests
 						}
 					}
 					T result = func();
-					Dispatcher.UIThread.RunJobs();
-					CloseVisibleErrorDialogs(); // 同步扫描一次，消除定时器 200ms 滞后的漏检
+				Dispatcher.UIThread.RunJobs();
+				CloseVisibleErrorDialogs(immediate: true); // 同步扫描一次，消除定时器 200ms 滞后的漏检（残留即泄漏，立即关）
 					lock (CapturedErrorDialogs)
 					{
 						capturedDuringRun = CapturedErrorDialogs.ToArray();

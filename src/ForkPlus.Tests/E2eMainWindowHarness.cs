@@ -31,8 +31,12 @@ namespace ForkPlus.Tests
 		/// ActiveRepository + /tmp 仓库目录三者全部残留 → 下轮 CreateWindow 的
 		/// RestoreSession 恢复该仓库 → "无仓库 tab 按钮禁用"类用例（E2e06）必挂。
 		/// RemoveTestReposFromManager 只清 RepositoryManager（"最近"列表），Workspaces
-		/// 是独立污染面。清理口径：Repositories 移除 fpe2e_ 前缀路径；ActiveRepository
-		/// 为 fpe2e_ 或目录已不存在时置 null（崩溃残留的 /tmp 仓库无法合法恢复）。</summary>
+		/// 是独立污染面。清理口径（v4.0.12 扩围）：条目位于系统临时目录（/tmp、%TEMP%）
+		/// 一律视为测试仓库移除——原判据只认 "fpe2e_" 子串，bisect 用例的 fpbisect_* /
+		/// fpbisecte2e_* 前缀漏网（崩溃轮残留实证：Workspaces.Work 恢复了
+		/// /tmp/fpbisecte2e_* 仓库 → E2e27 空会话断言 NotNull 失败）；临时目录判据
+		/// 一劳永逸覆盖此后新增的任何测试前缀。另：目录已不存在的条目同样清除。
+		/// </summary>
 		private static void PurgeStaleTestWorkspaceEntries()
 		{
 			try
@@ -43,6 +47,7 @@ namespace ForkPlus.Tests
 				{
 					return;
 				}
+				string tempRoot = System.IO.Path.GetTempPath();
 				bool changed = false;
 				foreach (var workspace in workspaces.All)
 				{
@@ -53,7 +58,8 @@ namespace ForkPlus.Tests
 					string[] repos = workspace.Repositories ?? new string[0];
 					string[] kept = repos.Where(delegate (string p)
 					{
-						return p != null && !p.Contains("fpe2e_", StringComparison.Ordinal)
+						return p != null
+							&& !p.StartsWith(tempRoot, System.StringComparison.OrdinalIgnoreCase)
 							&& System.IO.Directory.Exists(p);
 					}).ToArray();
 					if (kept.Length != repos.Length)
@@ -62,7 +68,7 @@ namespace ForkPlus.Tests
 						changed = true;
 					}
 					string active = workspace.ActiveRepository;
-					if (active != null && (active.Contains("fpe2e_", StringComparison.Ordinal)
+					if (active != null && (active.StartsWith(tempRoot, System.StringComparison.OrdinalIgnoreCase)
 						|| !System.IO.Directory.Exists(active)))
 					{
 						workspace.ActiveRepository = null;

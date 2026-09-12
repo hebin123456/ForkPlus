@@ -2268,6 +2268,8 @@
     "Search (ASCII or hex bytes like 41 42)": "Suchen (ASCII oder Hex-Bytes wie 41 42)",
     "Copy as raw bytes": "Als Rohbytes kopieren",
     "Sync scroll": "Synchrones Scrollen",
+    "Load more (+{0} / {1} remaining)": "Mehr laden (+{0} / {1} verbleibend)",
+    "Partially shown": "Teilweise angezeigt",
     "Solid Colors": "Einfarbig",
     "RedLight": "Rot Hell",
     "RedDark": "Rot Dunkel",

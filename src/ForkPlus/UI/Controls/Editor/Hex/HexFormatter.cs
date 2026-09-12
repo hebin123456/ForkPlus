@@ -14,6 +14,15 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		/// <summary>格式化整个字节数组为 hex 文本。</summary>
 		public static string Format(byte[] bytes, int bytesPerRow, bool showOffset, bool showAscii)
 		{
+			return Format(bytes, bytesPerRow, showOffset, showAscii, 0);
+		}
+
+		/// <summary>v4.0.12：格式化字节数组为 hex 文本，offset 列从 startOffset 起连续编号。
+		/// 用于"加载更多"追加段：追加段不是独立文档，offset 必须接续已渲染前段
+		/// （否则每段都从 00000000 重新计数，视觉上像错误数据，
+		/// 且 CharOffsetsToByteRange 的选中反推字节区间也会错位）。</summary>
+		public static string Format(byte[] bytes, int bytesPerRow, bool showOffset, bool showAscii, int startOffset)
+		{
 			if (bytes == null || bytes.Length == 0)
 			{
 				return "";
@@ -22,16 +31,16 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			StringBuilder sb = new StringBuilder(bytes.Length * 4 + rowCount * 2);
 			for (int row = 0; row < rowCount; row++)
 			{
-				int offset = row * bytesPerRow;
-				AppendLine(sb, bytes, offset, bytesPerRow, showOffset, showAscii);
+				int offset = startOffset + row * bytesPerRow;
+				AppendLine(sb, bytes, offset, row * bytesPerRow, bytesPerRow, showOffset, showAscii);
 				if (row < rowCount - 1) sb.Append('\n');
 			}
 			return sb.ToString();
 		}
 
-		private static void AppendLine(StringBuilder sb, byte[] bytes, int offset, int bytesPerRow, bool showOffset, bool showAscii)
+		private static void AppendLine(StringBuilder sb, byte[] bytes, int offset, int arrayOffset, int bytesPerRow, bool showOffset, bool showAscii)
 		{
-			int remaining = bytes.Length - offset;
+			int remaining = bytes.Length - arrayOffset;
 			int count = Math.Min(bytesPerRow, remaining);
 
 			// offset 列
@@ -47,7 +56,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			{
 				if (i < count)
 				{
-					AppendHexByte(sb, bytes[offset + i]);
+					AppendHexByte(sb, bytes[arrayOffset + i]);
 				}
 				else
 				{
@@ -70,7 +79,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				sb.Append("  ");
 				for (int i = 0; i < count; i++)
 				{
-					byte b = bytes[offset + i];
+					byte b = bytes[arrayOffset + i];
 					sb.Append(IsPrintable(b) ? (char)b : '.');
 				}
 			}

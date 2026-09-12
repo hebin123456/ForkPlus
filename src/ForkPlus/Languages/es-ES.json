@@ -2268,6 +2268,8 @@
     "Search (ASCII or hex bytes like 41 42)": "Buscar (ASCII o bytes hex como 41 42)",
     "Copy as raw bytes": "Copiar bytes sin procesar",
     "Sync scroll": "Desplazamiento sincronizado",
+    "Load more (+{0} / {1} remaining)": "Cargar más (+{0} / {1} restante(s))",
+    "Partially shown": "Mostrado parcialmente",
     "Solid Colors": "Colores sólidos",
     "RedLight": "Rojo claro",
     "RedDark": "Rojo oscuro",

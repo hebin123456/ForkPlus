@@ -12,6 +12,8 @@
     "Search (ASCII or hex bytes like 41 42)": "Search (ASCII or hex bytes like 41 42)",
     "Copy as raw bytes": "Copy as raw bytes",
     "Sync scroll": "Sync scroll",
+    "Load more (+{0} / {1} remaining)": "Load more (+{0} / {1} remaining)",
+    "Partially shown": "Partially shown",
     "Solid Colors": "Solid Colors",
     "RedLight": "Red Light",
     "RedDark": "Red Dark",

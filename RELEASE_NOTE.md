@@ -4,12 +4,16 @@
 
 ## v4.0.12
 
-> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
+> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
 
 ### 修复
 
 - **打开/切换文件时代码编辑器行号边距随机崩溃（AppDomain 致命，VisualLinesInvalidException）**：`CodeEditorLineNumberMargin.Render` 在视觉行失效期（文档变更/Redraw() 后、下一轮 Measure 重建前）直接读 `TextView.VisualLines`，AvaloniaEdit 的 getter 在该状态下抛 `VisualLinesInvalidException`；而 Avalonia 渲染管线存在同步提交路径（窗口消息 WndProc → Compositor.Commit → CompositingRenderer.UpdateCore → margin.Render），异常沿调用链上抛到消息循环即进程终止（IsTerminating=True，crash-20260912-103134/-103202 双转储实证）。修复为与 `TextView.Render` 自身及 `ChunkSelectionLayer` 同款 `VisualLinesValid` 防御：视觉行无效期跳过行号绘制（下一帧排版重建后自然恢复），背景与分隔线照常绘制；Diff / Merge 视图行号边距（`DiffLineNumberMargin` / `MergeLineNumberMargin`）存在同因未防护访问，一并加固。
 - **每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style: Object reference not set to an instance of an object"**：WPF 原版 hack 反射查找 PresentationFramework 内部类型 `TextEditorContextMenu+EditorContextMenu`（TextBox 右键默认菜单）并把隐式 ContextMenu 样式补注册到该类型键下；迁移 Avalonia 后 `typeof(TextElement).Assembly` 是 Avalonia.Controls，不存在该 WPF 内部类型，`GetType()` 返回 null 后直接对 null 调 `GetNestedType` → NullReferenceException 被 catch 打 Error 日志，样式注册从未生效。修复为类型不存在时静默跳过（Avalonia 无此内部菜单机制：本工程 TextBox ControlTheme 自带全套模板未设 ContextFlyout，应用内所有 ContextMenu 均为公开类型、直接命中 `{x:Type ContextMenu}` ControlTheme，无需等价注册）；类型存在（假想 WPF 兼容路径）时幂等注册（原版重复 Add 抛 ArgumentException 也会刷日志）。
+- **FileDiff 二进制文件"加载更多"点击无效果 + 加载后 offset 列从 00000000 重新计数 + 文案未国际化**：追加段渲染进度变量在异步批处理完成时才推进，重复点击期间旧任务与新 SetContent 竞争使追加被跳过；追加段 hex 格式化总是从 offset 0 起编号，与已渲染前段形成"每段都从 00000000 重新计数"的断号视觉（且选中反推字节区间错位）；按钮与"部分显示"等文案为硬编码中文。修复为渲染进度紧跟 Append 立即推进 + 复用加载取消令牌机制防竞争，`HexFormatter.Format` 增加 startOffset 接续编号（追加段 offset 从前段末尾连续编号），点击后滚动到新段首行给即时视觉反馈；新增 "Load more (+{0} / {1} remaining)" / "Partially shown" 翻译键补齐 8 种语言。
+- **活动管理器 git mm 标签页命令输出显示乱码（不可见字符被当乱码输出，ESC 等）**：输出清洗正则只匹配 CSI 转义序列（`ESC[` 开头），git mm 经管道输出的其他 ANSI 序列全部漏网——OSC 标题/超链接序列（`ESC]0;... BEL`）、字符集指定（`ESC(B`）、两字符转义（`ESC7` / `ESC=`）、行内 CR（git 进度条 "45%\r78%\r100%" 重绘）、BEL 响铃等 C0 控制字符与 DEL 均以乱码/豆腐块渲染。修复为完整四类转义序列匹配 + 残余控制字符清洗（保留制表符），git mm 主视图渲染路径与活动管理器视图共用。
+- **git mm sync 过程中 OutOfMemoryException 崩溃（伴随 UI freeze）**：`GitRequest.ExecuteLong` 逐行读管道并把 stdout / stderr 全量累积进无上限 StringBuilder、结尾一次性 `ToString()` 物化；git mm sync 遇凭据失败时 AskPass 按子仓库×认证项循环输出（freeze-20260912 转储实证：`System.OutOfMemoryException at StringBuilder.ToString() at GitRequest.ExecuteLong`，日志数小时 GB 级输出）。修复为有界捕获：每管道 4M 字符上限的滚动窗口（超限丢头部保尾部——错误诊断信息集中在尾部，加截断标记），实时 UI 输出回调不受影响；同时给 git mm 输出渲染的 pending 队列加 8000 行上限（洪峰时一次 Flush 渲染数万行导致 UI freeze 6s 无心跳，内存随输出量线性涨）。
+- **git mm 命令输出不自动滚动到最新内容**：活动管理器 git-mm 视图的输出编辑器每次刷新整体替换 Text 会重置视口，命令运行中新输出到来用户却停留在旧位置。修复为终端式 stick-to-bottom：更新前视口已在底部附近（或初次显示/从其他视图切回）→ 更新后自动滚到底跟随最新输出；用户上翻查看历史时不打断，滚回底部后恢复跟随。
 
 ### 平台覆盖
 

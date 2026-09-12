@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ForkPlus.UI.WpfCompat;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Markup;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
@@ -513,7 +515,28 @@ namespace ForkPlus.UI.UserControls
 		/// 2026-09-10：git-mm 视图（独立内容区）——直接展示当前活动 GitMmUserControl 的命令输出，
 		/// 不走作业列表。隐藏左侧作业列表，右侧输出面板显示 git mm 输出文本（经
 		/// GitMmUserControl.GetOutputText() 读取，_refreshTimer 周期刷新）。
+		/// v4.0.12（2026-09-12，"命令输出不会自动滚到最下面"）：CodeEditor 的 Text 整体替换会
+		/// 重置视口，命令运行中新输出到来时用户停留在旧位置看不到最新内容。终端式
+		/// stick-to-bottom：更新前视口已在底部附近（或初次显示/刚从其他视图切回）→ 更新后
+		/// 滚到底跟随最新输出；用户上翻查看历史时不打断，滚回底部后恢复跟随。
 		/// </summary>
+		private bool _gitMmOutputWasEmpty = true;
+
+		private bool IsOutputEditorNearBottom()
+		{
+			// 经模板 PART_ScrollViewer 判定（与 CodeEditor.SetScrollPosition 同通道；
+			// AvaloniaEdit 12 的 TextView 不暴露 Extent/Viewport，ScrollViewer 才有）。
+			ScrollViewer sv = JobDetailsOutputEditor.GetVisualDescendants().OfType<ScrollViewer>()
+				.FirstOrDefault((ScrollViewer x) => x.Name == "PART_ScrollViewer");
+			if (sv == null)
+			{
+				return true; // 找不到滚动器（模板未套用）：保守视为在底部，保持跟随
+			}
+			double maxOffset = sv.Extent.Height - sv.Viewport.Height;
+			// maxOffset<=0：内容不足一屏（恒在底部）；容差 24≈一行，避免像素级判断漏判。
+			return maxOffset <= 0.0 || sv.Offset.Y >= maxOffset - 24.0;
+		}
+
 		private void SyncGitMmOutput()
 		{
 			GitMmUserControl gitMm = MainWindow.Instance?.TabManager.ActiveGitMmUserControl;
@@ -526,6 +549,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				JobDetailsFallBack.IsVisible = true;
 				JobDetailsOutputEditor.Text = string.Empty;
+				_gitMmOutputWasEmpty = true;
 				return;
 			}
 			JobDetailsFallBack.IsVisible = false;
@@ -533,7 +557,18 @@ namespace ForkPlus.UI.UserControls
 			// 仅在内容变化时赋值，避免每次 tick 重置光标/滚动位置
 			if (JobDetailsOutputEditor.Text != output)
 			{
+				bool stickToBottom = _gitMmOutputWasEmpty || IsOutputEditorNearBottom();
 				JobDetailsOutputEditor.Text = output;
+				if (stickToBottom)
+				{
+					// Render 优先级在布局之后执行：Text 整体替换引起的高度变化先落进
+					// Extent，大偏移经 TextView clamp 到新文档底部（同步调用会用旧高度）。
+					Dispatcher.UIThread.Post(delegate
+					{
+						JobDetailsOutputEditor.SetScrollPosition(double.MaxValue);
+					}, DispatcherPriority.Render);
+				}
+				_gitMmOutputWasEmpty = false;
 			}
 		}
 
@@ -569,17 +604,20 @@ namespace ForkPlus.UI.UserControls
 				_ => Translate("succeeded"), 
 			} + jobViewModel.FinishTime?.ToString(" d MMM yyyy HH:mm:ss");
 			JobDetailsFinishTimeTextBlock.Text = text;
-			int outputLength = jobViewModel.Job.Monitor.OutputLength;
-			if (_selectedOutputLength != outputLength)
+		int outputLength = jobViewModel.Job.Monitor.OutputLength;
+		if (_selectedOutputLength != outputLength)
+		{
+			string output = jobViewModel.Job.Monitor.Output;
+			if (JobDetailsOutputEditor.Text != output)
 			{
-				string output = jobViewModel.Job.Monitor.Output;
-				if (JobDetailsOutputEditor.Text != output)
-				{
-					JobDetailsOutputEditor.Text = output;
-				}
-				_selectedOutputLength = outputLength;
+				JobDetailsOutputEditor.Text = output;
+				// 普通作业视图占用了输出编辑器：下次 git-mm 视图刷新视为初次 → 滚到底
+				//（用户切回 git-mm 视图时直接看到最新输出，而不是普通视图残留的滚动位置）。
+				_gitMmOutputWasEmpty = true;
 			}
+			_selectedOutputLength = outputLength;
 		}
+	}
 
 		private static string Translate(string text)
 		{

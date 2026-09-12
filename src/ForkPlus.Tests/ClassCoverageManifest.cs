@@ -572,6 +572,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/GitCommand.cs", "class", "GitCommand", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/GitLfsProgressHandler.cs", "class", "GitLfsProgressHandler", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/GitRequest.cs", "struct", "GitRequest", "UNIT-SOURCE-COVERAGE-001"),
+			new ClassCoverageEntry("src/ForkPlus/Git/Interaction/GitRequest.cs", "class", "BoundedPipeCapture", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/GitRequestResult.cs", "class", "GitRequestResult", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/ProcessOutputHandler.cs", "enum", "OutputKind", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Interaction/ProcessOutputHandler.cs", "class", "ProcessOutputHandler", "UNIT-SOURCE-COVERAGE-001"),

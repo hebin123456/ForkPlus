@@ -39,6 +39,11 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowWarningIcon = showWarningIcon;
 		}
 
+		/// <summary>v4.0.12（2026-09-12）：headless 测试看门狗读取信息窗文本用。
+		/// 基类 DialogDescription 是 protected，测试程序集（InternalsVisibleTo 只覆盖
+		/// internal）够不着；此 internal 转发专供看门狗捕获 bisect 收敛弹窗等内容。</summary>
+		internal string DialogDescriptionText => base.DialogDescription;
+
 		private static string Translate(string text)
 		{
 			return PreferencesLocalization.Translate(text, ForkPlusSettings.Default.UiLanguage);

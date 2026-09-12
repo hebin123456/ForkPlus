@@ -2268,6 +2268,8 @@
     "Search (ASCII or hex bytes like 41 42)": "검색 (ASCII 또는 16진수 바이트, 예: 41 42)",
     "Copy as raw bytes": "원시 바이트로 복사",
     "Sync scroll": "좌우 동기 스크롤",
+    "Load more (+{0} / {1} remaining)": "더 불러오기 (+{0} / {1} 남음)",
+    "Partially shown": "일부 표시",
     "Solid Colors": "단색",
     "RedLight": "빨강 밝은",
     "RedDark": "빨강 어두운",

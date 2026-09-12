@@ -326,6 +326,25 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>大二进制仓库（2026-09-12，v4.0.12 加载更多回归）：data.bin
+		/// 基线 48KB → 工作区 56KB，均超过 HexDiffUserControl 的 16KB 首屏截断阈值
+		/// （InitialChunkBytes），选中后应出现"加载更多"按钮。远低于 MaxHexDiffSize(10MB)
+		/// 与 MaxBytesForDiffHighlight(2MB)。</summary>
+		public static string CreateLargeBinary()
+		{
+			string root = NewTempDir("bigbinary");
+			Init(root);
+			byte[] v1 = new byte[48 * 1024];
+			new Random(7).NextBytes(v1);
+			File.WriteAllBytes(Path.Combine(root, "data.bin"), v1);
+			Run(root, "add .");
+			Run(root, "commit -q -m " + Quote("big binary base"));
+			byte[] v2 = new byte[56 * 1024];
+			new Random(8).NextBytes(v2);
+			File.WriteAllBytes(Path.Combine(root, "data.bin"), v2);
+			return root;
+		}
+
 		/// <summary>工作区仓库：多种未暂存改动（修改 a.txt / 删除 b.txt / 未跟踪 new.txt）
 		/// + 1 个已暂存修改（c.txt），供模块5 Commit 视图（暂存/取消暂存/提交）测试。</summary>
 		public static string CreateWorkingDir()

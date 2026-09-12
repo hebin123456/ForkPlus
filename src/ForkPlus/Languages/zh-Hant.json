@@ -2269,6 +2269,8 @@
     "Search (ASCII or hex bytes like 41 42)": "搜尋（ASCII 或十六進位位元組，如 41 42）",
     "Copy as raw bytes": "複製原始位元組",
     "Sync scroll": "左右行對齊",
+    "Load more (+{0} / {1} remaining)": "載入更多（+{0} / 剩餘 {1}）",
+    "Partially shown": "部分顯示",
     "Solid Colors": "純色",
     "RedLight": "紅色淺色",
     "RedDark": "紅色深色",

@@ -301,6 +301,53 @@ namespace ForkPlus.Git.Interaction
 			}
 		}
 
+		// v4.0.12（2026-09-12，git mm sync OOM 崩溃修复）：ExecuteLong 逐行读管道并把
+		// stdout/stderr 全量累积进 StringBuilder、结尾 ToString() 一次性物化——git mm sync
+		// 遇到凭据失败时 AskPass 会按子仓库×认证项循环输出（用户日志实证：数小时产生 GB 级
+		// 输出），StringBuilder 无上限增长，ToString() 需要分配等量连续内存直接 OOM
+		//（freeze-20260912 转储：System.OutOfMemoryException at StringBuilder.ToString()
+		//  at GitRequest.ExecuteLong）。有界捕获：每管道上限 4M 字符，超限时滚动丢弃头部
+		// 保留尾部（错误诊断信息集中在尾部），并加截断标记。实时 UI 回调（pipeHandler）
+		// 不受影响——git mm 输出区有自己的 4000 行渲染上限。
+		private const int MaxPipeCaptureChars = 4 * 1024 * 1024;
+
+		internal sealed class BoundedPipeCapture
+		{
+			private readonly int _maxChars;
+			private readonly StringBuilder _sb = new StringBuilder();
+			private long _droppedChars;
+
+			/// <summary>maxChars 参数化供回归测试（生产走默认 MaxPipeCaptureChars）。</summary>
+			public BoundedPipeCapture(int maxChars = MaxPipeCaptureChars)
+			{
+				_maxChars = maxChars;
+			}
+
+			public void AppendLine(string line)
+			{
+				int extra = (line?.Length ?? 0) + Environment.NewLine.Length;
+				if (_sb.Length + extra > _maxChars && _sb.Length > 0)
+				{
+					// 滚动窗口：丢头部一半，保尾部（最近输出=错误诊断价值最高）。
+					int drop = Math.Min(_sb.Length, _maxChars / 2);
+					_sb.Remove(0, drop);
+					_droppedChars += drop;
+				}
+				_sb.AppendLine(line);
+			}
+
+			public string ToTruncatedString()
+			{
+				string captured = _sb.ToString();
+				if (_droppedChars <= 0)
+				{
+					return captured;
+				}
+				return "[output truncated: dropped ~" + _droppedChars + " leading chars, keep latest "
+					+ captured.Length + "]" + Environment.NewLine + captured;
+			}
+		}
+
 		public GitRequestResult ExecuteLong(Action<string> outputPipeHandler, Action<string> errorPipeHandler, JobMonitor monitor)
 		{
 			if (!File.Exists(App.GitPath))
@@ -320,7 +367,7 @@ namespace ForkPlus.Git.Interaction
 					try
 					{
 						process.Start();
-						StringBuilder outputSb = new StringBuilder();
+						BoundedPipeCapture outputCapture = new BoundedPipeCapture();
 						Task task = Task.Run(delegate
 						{
 							StreamReader standardOutput = process.StandardOutput;
@@ -331,12 +378,12 @@ namespace ForkPlus.Git.Interaction
 								if (text3 != null)
 								{
 									outputPipeHandler(text3);
-									outputSb.AppendLine(text3);
+									outputCapture.AppendLine(text3);
 								}
 							}
 							while (text3 != null);
 						});
-						StringBuilder errorSb = new StringBuilder();
+						BoundedPipeCapture errorCapture = new BoundedPipeCapture();
 						Task task2 = new Task(delegate
 						{
 							StreamReader standardError = process.StandardError;
@@ -347,7 +394,7 @@ namespace ForkPlus.Git.Interaction
 								if (text2 != null)
 								{
 									errorPipeHandler(text2);
-									errorSb.AppendLine(text2);
+									errorCapture.AppendLine(text2);
 								}
 							}
 							while (text2 != null);
@@ -355,8 +402,8 @@ namespace ForkPlus.Git.Interaction
 						task2.Start();
 					task.Wait();
 					task2.Wait();
-					string stdout = outputSb.ToString();
-					string text = errorSb.ToString();
+					string stdout = outputCapture.ToTruncatedString();
+					string text = errorCapture.ToTruncatedString();
 					// Migration note：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
 					process.WaitForExit();
 					if (process.ExitCode != 0)

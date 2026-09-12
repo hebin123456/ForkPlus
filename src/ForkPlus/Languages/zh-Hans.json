@@ -2272,6 +2272,8 @@
     "Search (ASCII or hex bytes like 41 42)": "搜索（ASCII 或十六进制字节，如 41 42）",
     "Copy as raw bytes": "复制原始字节",
     "Sync scroll": "左右行对齐",
+    "Load more (+{0} / {1} remaining)": "加载更多（+{0} / 剩余 {1}）",
+    "Partially shown": "部分显示",
     "Solid Colors": "纯色",
     "RedLight": "红色浅色",
     "RedDark": "红色深色",
