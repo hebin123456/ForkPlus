@@ -12,6 +12,8 @@
 - **git mm 有子仓但未选中任一子仓时内容区空白引导**：有子仓而当前无选中子仓（列表刚建未选中 / 子仓被筛选入口全部隐藏，SelectedSubrepo==null）时，子仓 tab 内容区完全空白。现在居中显示提示"没有选中子仓显示，请在右上角选中"（8 语言国际化），选中/取消选中时即时显隐。
 - **AI 操作按钮动词未国际化（"🤖 AI Explain" 显示英文）**：`AiActionButton` 点按文案对 "AI {verb}" 硬编码拼接，Explain / Resolve 等动词在非英文界面显示英文。改为对 "AI {verb}" 整体走 `PreferencesLocalization.Current` 翻译（复用既有 "AI Explain" / "AI Resolve" 键），与按钮 ToolTip 口径一致，修复所有语言界面的 AI 按钮文案。
 - **"将当前分支重置到修订"对话框的重置类型下拉未国际化**：基类 Loaded 的自动本地化不递归进 ComboBox 未物化的下拉项（关闭态仅物化选中项、下拉弹层按需生成），重置类型的 Soft / Mixed / Hard 与三条说明文案永远是英文。改为构造函数按当前 UI 语言显式翻译下拉项（一次设置，幂等）。
+- **所有下拉框弹层相对上方矩形左偏移几个像素**：三套 ComboBox 模板（普通 / 编辑型 / InteractiveRebase）的 `Popup.HorizontalOffset="-8"` 与阴影边框 `ComboboxShadowBorderStyle` 的 `Padding="8,0,8,8"` 是一对 WPF 迁移时的"负偏移补偿"耦合——offset 向左 8px、padding 再消耗 8px，指望抵消后下拉框左缘对齐 ComboBox。但该抵消依赖平台对 Border.Padding 参与弹层内布局的差分行为，Windows 上左侧 8px 补偿未被 padding 抵消，导致下拉弹层恒比上方矩形左移。修复为去掉左/右阴影留白、只保留下侧向下阴影，offset 归零——下拉框左/右缘与 ComboBox 矩形在任意平台都精确对齐。
+- **下拉框展开后失焦不自动收起**：ComboBox 弹层未开 light-dismiss，展开后点击弹层外部/窗口失活不会收起。三个弹层模板统一加 `IsLightDismissEnabled="True"`（Avalonia 轻关闭语义，已在 CustomColors 取色器 / 统计引用弹层使用），展开后点外部即关闭，ToggleButton 的 checked 态随 `IsDropDownOpen` 双向绑定同步收起。
 
 ### 修复
 

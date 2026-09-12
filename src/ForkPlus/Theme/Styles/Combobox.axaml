@@ -1,7 +1,13 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ControlTheme x:Key="ComboboxShadowBorderStyle" TargetType="Border">
     <Setter Property="Background" Value="#00FFFFFF" />
-    <Setter Property="Padding" Value="8,0,8,8" />
+    <!-- v4.0.12（"下拉框比上面矩形左偏移几个像素"）：原 Padding "8,0,8,8" 与三个弹层模板的
+         Popup.HorizontalOffset="-8" 是一对 WPF 迁移时的"负偏移补偿"耦合——padding 给左/右 8px 阴影
+         留白、offset -8 再向左补偿，本指望两者抵消后下拉框左缘对齐 ComboBox。但该抵消依赖平台对
+         Border.Padding 参与弹层内布局的差分行为，非全平台成立（用户报告 Windows 上下拉框明显左移、
+         左侧 8px 补偿未被 padding 抵消）。改为去掉左/右阴影留白、只保留下侧向下阴影（8px），配套
+         offset 归零——下拉框左/右缘与 ComboBox 矩形在任意平台都精确对齐。 -->
+    <Setter Property="Padding" Value="0,0,0,8" />
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Effect">
       <Setter.Value>
@@ -135,7 +141,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="0" VerticalOffset="1" Margin="1" IsLightDismissEnabled="True" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
@@ -215,7 +221,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="0" VerticalOffset="-8" IsLightDismissEnabled="True" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
@@ -327,7 +333,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="10" />
       </Grid.ColumnDefinitions>
-      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" TextElement.Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="0" VerticalOffset="-8" Margin="1" IsLightDismissEnabled="True" TextElement.Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
