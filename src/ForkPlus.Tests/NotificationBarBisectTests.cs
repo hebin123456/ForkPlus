@@ -360,7 +360,10 @@ namespace ForkPlus.Tests
 						int snapNo = 1;
 
 						// Step 1: 菜单"仓库→二分查找"启动 → 通知条展开
-						RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Start);
+					//（管线静默守卫见循环内注释——仓库刚打开的初始刷新任务可能仍在途，
+					// 与 bisect start 的 git 命令并发同样会撞 index.lock）
+					WaitForRepositoryPipelineIdle(repoControl, "bisect start");
+					RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Start);
 						Assert.True(UiClick.WaitFor(delegate
 						{
 							return repoControl.RepositoryStatus?.RepositoryState is RepositoryState.BisectInProgress;
@@ -369,7 +372,8 @@ namespace ForkPlus.Tests
 						ScreenshotHelper.Snap(window, $"0{snapNo++}-bisect-started", ModuleDir);
 
 						// Step 2: 点 Bad 标当前 HEAD(c8) 为坏（首个标记）
-						bar.Button2.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					WaitForRepositoryPipelineIdle(repoControl, "点击 Bad");
+					bar.Button2.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 						Assert.True(UiClick.WaitFor(delegate
 						{
 							string logPath = Path.Combine(repoRoot, ".git", "BISECT_LOG");
@@ -378,9 +382,10 @@ namespace ForkPlus.Tests
 						ScreenshotHelper.Snap(window, $"0{snapNo++}-marked-bad-HEAD", ModuleDir);
 
 						// Step 3: 检出已知好提交 c1（导航操作）后点 Good；有了 good/bad 区间 git 自动检出候选
-						RunGit("checkout -q " + firstGood, repoRoot);
-						string prevBaseline = HeadSha(repoRoot); // 应为 c1
-						bar.Button1.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					RunGit("checkout -q " + firstGood, repoRoot);
+					string prevBaseline = HeadSha(repoRoot); // 应为 c1
+					WaitForRepositoryPipelineIdle(repoControl, "点击 Good");
+					bar.Button1.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 						Assert.True(UiClick.WaitFor(delegate
 						{
 							return File.ReadAllText(Path.Combine(repoRoot, ".git", "BISECT_LOG")).Contains("# good:");
@@ -393,11 +398,23 @@ namespace ForkPlus.Tests
 					// 提交后不自动 reset，BISECT_START 仍在、HEAD 停在结论提交上——不能靠它判断）。
 					bool converged = false;
 					while (!converged && snapNo <= 12)
-					{
-						string sha = HeadSha(repoRoot);
-						string fileContent = File.ReadAllText(Path.Combine(repoRoot, "f.txt"));
-						ScreenshotHelper.Snap(window, $"0{snapNo}-candidate-{sha.Substring(0, 7)}", ModuleDir);
-						bool isBad = fileContent.Contains("BUG");
+				{
+					string sha = HeadSha(repoRoot);
+					string fileContent = File.ReadAllText(Path.Combine(repoRoot, "f.txt"));
+					ScreenshotHelper.Snap(window, $"0{snapNo}-candidate-{sha.Substring(0, 7)}", ModuleDir);
+					// v4.0.12 修复#2（CI run 34674917472 失败根因，本地从未复现）：JobQueue 无
+					// 串行约束（Schedule 直接 Task.Start 到线程池并发执行，见 JobQueue.cs），而
+					// 决策点击的依据是磁盘信号（HEAD/BISECT_LOG）——上一轮 bisect git 进程写完
+					// BISECT_LOG/检出新候选后，其收尾管线（post-back → InvalidateAndRefresh →
+					// 同一队列再排 git status 刷新任务）仍在途。等 HEAD 变化就点击，新一轮
+					// git bisect 与在途 git 任务并发操作同一仓库，撞 .git/index.lock 直接失败
+					//（ErrorWindow），HEAD 永不推进 → WaitForAdvanceOrConverge 30s 超时 →
+					// "二分应收敛"断言失败（CI 实证 32s ≈ 30s 超时+开销；本地快机 git 收尾远快
+					// 于 50ms 轮询检测延迟，竞态窗口从不命中，本地×3+CI×2 仅 CI 失败）。
+					// 修复：每轮决策点击前等 JobQueue.IsIdle——上一轮命令及其触发的全部刷新
+					// 任务落定后再决策，消除并发窗口。
+					WaitForRepositoryPipelineIdle(repoControl, "决策点击");
+					bool isBad = fileContent.Contains("BUG");
 						if (isBad)
 						{
 							bar.Button2.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -449,7 +466,8 @@ namespace ForkPlus.Tests
 						+ string.Join(" | ", HeadlessAppBootstrap.PeekCapturedMessageBoxes()));
 
 					// 终态：bisect reset 干净收尾（git 找到首坏后不自复位），通知条收起补终态截图
-					RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Reset);
+				WaitForRepositoryPipelineIdle(repoControl, "bisect reset");
+				RepositoryUserControl.Commands.Bisect.Execute(repoControl, BisectGitCommand.BisectCommand.Reset);
 					Assert.True(UiClick.WaitFor(delegate
 					{
 						return !File.Exists(Path.Combine(repoRoot, ".git", "BISECT_START"));
@@ -472,6 +490,30 @@ namespace ForkPlus.Tests
 		private static string HeadSha(string repoRoot)
 		{
 			return RunGit("rev-parse HEAD", repoRoot).Trim();
+		}
+
+		/// <summary>v4.0.12：等仓库 JobQueue 静默（IsIdle）再驱动下一轮 git 交互。
+		/// 磁盘信号（BISECT_LOG/HEAD 变化）先于命令收尾管线出现：git 进程写完 BISECT_LOG/
+		/// 检出候选后，job 的 post-back（InvalidateAndRefresh）还会往同一 JobQueue 排
+		/// git status 等刷新任务。JobQueue 无串行约束（Schedule 直接 Task.Start 到线程池
+		/// 并发执行），立即发起下一命令会与在途 git 任务并发操作同一仓库、撞
+		/// .git/index.lock（git 不重试直接失败）。IsIdle 保证上一轮命令及其触发的全部
+		/// 刷新任务落定，消除并发窗口（CI 慢机竞态窗口命中实证，本地快机从不命中）。
+		/// 二次确认：job 的 Dispatcher.Post(post-back) 严格先于 RemoveJob 执行——post-back
+		/// 可能恰在 WaitFor 的 RunJobs 返回与 IsIdle 检查之间的间隙入队（此刻 IsIdle 已
+		/// true 但收尾刷新未排入队列），IsIdle 后再冲一轮 dispatcher 让它落地、复查仍
+		/// IsIdle 才算真正静默。</summary>
+		private static void WaitForRepositoryPipelineIdle(RepositoryUserControl repoControl, string what)
+		{
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				if (!repoControl.JobQueue.IsIdle)
+				{
+					return false;
+				}
+				Dispatcher.UIThread.RunJobs();
+				return repoControl.JobQueue.IsIdle;
+			}, 30000), what + " 前仓库任务队列应静默（JobQueue.IsIdle，上一轮命令及其刷新全部完成）");
 		}
 
 		private static bool HasBisectState(string repoRoot)

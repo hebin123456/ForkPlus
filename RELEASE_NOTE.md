@@ -14,6 +14,7 @@
 - **活动管理器 git mm 标签页命令输出显示乱码（不可见字符被当乱码输出，ESC 等）**：输出清洗正则只匹配 CSI 转义序列（`ESC[` 开头），git mm 经管道输出的其他 ANSI 序列全部漏网——OSC 标题/超链接序列（`ESC]0;... BEL`）、字符集指定（`ESC(B`）、两字符转义（`ESC7` / `ESC=`）、行内 CR（git 进度条 "45%\r78%\r100%" 重绘）、BEL 响铃等 C0 控制字符与 DEL 均以乱码/豆腐块渲染。修复为完整四类转义序列匹配 + 残余控制字符清洗（保留制表符），git mm 主视图渲染路径与活动管理器视图共用。
 - **git mm sync 过程中 OutOfMemoryException 崩溃（伴随 UI freeze）**：`GitRequest.ExecuteLong` 逐行读管道并把 stdout / stderr 全量累积进无上限 StringBuilder、结尾一次性 `ToString()` 物化；git mm sync 遇凭据失败时 AskPass 按子仓库×认证项循环输出（freeze-20260912 转储实证：`System.OutOfMemoryException at StringBuilder.ToString() at GitRequest.ExecuteLong`，日志数小时 GB 级输出）。修复为有界捕获：每管道 4M 字符上限的滚动窗口（超限丢头部保尾部——错误诊断信息集中在尾部，加截断标记），实时 UI 输出回调不受影响；同时给 git mm 输出渲染的 pending 队列加 8000 行上限（洪峰时一次 Flush 渲染数万行导致 UI freeze 6s 无心跳，内存随输出量线性涨）。
 - **git mm 命令输出不自动滚动到最新内容**：活动管理器 git-mm 视图的输出编辑器每次刷新整体替换 Text 会重置视口，命令运行中新输出到来用户却停留在旧位置。修复为终端式 stick-to-bottom：更新前视口已在底部附近（或初次显示/从其他视图切回）→ 更新后自动滚到底跟随最新输出；用户上翻查看历史时不打断，滚回底部后恢复跟随。
+- **CI 稳定性：二分查找端到端用例在 CI 慢机必然超时未收敛（test only）**：用例以磁盘信号（HEAD/BISECT_LOG 变化）判定时机后立即点击下一轮 Good/Bad 决策，但上一轮 bisect git 命令的收尾管线（post-back → 状态刷新 → 同一 JobQueue 再排 git status 任务）仍在途——JobQueue 无串行约束（任务直接并发跑在线程池），新一轮 git bisect 与在途 git 任务并发操作同一仓库撞 `.git/index.lock`，git 不重试直接失败，HEAD 永不推进，用例 30s 超时断言"二分应收敛"失败（CI 慢机竞态窗口稳定命中，本地快机 git 收尾快于轮询延迟从不复现）。修复为每次驱动 git 的交互前等待 `JobQueue.IsIdle`（含二次 RunJobs 确认，堵 post-back 入队与检查间的微秒间隙），上一轮命令及其触发的全部刷新任务落定后再决策，消除并发窗口；bisect start / Bad / Good / 每轮决策 / reset 五处交互全加固。
 
 ### 平台覆盖
 
