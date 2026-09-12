@@ -38,11 +38,45 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
-			if (gitRequestResult.Stdout.Contains("is the first bad commit"))
+			if (IsFirstBadCommitConclusion(gitRequestResult.Stdout))
 			{
 				return GitCommandResult.Failure(new GitCommandError.GitError(gitRequestResult.Stdout));
 			}
 			return GitCommandResult.Success();
+		}
+
+		// ==== git 版本兼容口径（v4.0.12，CI bisect E2E 失败根因）====
+		// git 2.55.0（2026 起；CI ubuntu-latest 已预装，本地沙箱仍 2.34.1）bisect 收敛输出给
+		// 术语加单引号，以下三个判定集中维护两代格式，收敛检测（本类 Execute）、收敛信息窗
+		// 分流（BisectCommand）、活动日志着色（GitOutputColorizer）、E2E 测试的收敛轮询/断言
+		//（NotificationBarBisectTests）全部共用，杜绝口径再次漂移：
+		//   stdout（bisect.c）："&lt;sha&gt; is the first 'bad' commit"（≤2.54 无引号）
+		//   BISECT_LOG（builtin/bisect.c）："# first 'bad' commit: [&lt;sha&gt;] &lt;subject&gt;"（≤2.54 无引号）
+		// 其余 bisect 输出（"# good:"/"# bad:" 标记行、Bisecting 进度行）两版格式一致，无需兼容。
+
+		/// <summary>判断 git bisect 输出是否为"找到首个坏提交"的收敛结论（两代格式）。</summary>
+		public static bool IsFirstBadCommitConclusion(string output)
+		{
+			return !string.IsNullOrEmpty(output)
+				&& (output.Contains("is the first bad commit") || output.Contains("is the first 'bad' commit"));
+		}
+
+		/// <summary>判断 BISECT_LOG 文本是否已写入收敛结论行（两代格式）。</summary>
+		public static bool LogHasFirstBadCommitConclusion(string logText)
+		{
+			return !string.IsNullOrEmpty(logText)
+				&& (logText.Contains("# first bad commit:") || logText.Contains("# first 'bad' commit:"));
+		}
+
+		/// <summary>判断 BISECT_LOG 收敛结论行是否指向指定提交（两代格式，含完整 [sha] 段）。</summary>
+		public static bool LogConcludesFirstBadCommitIs(string logText, string sha)
+		{
+			if (string.IsNullOrEmpty(logText) || string.IsNullOrEmpty(sha))
+			{
+				return false;
+			}
+			return logText.Contains("# first bad commit: [" + sha + "]")
+				|| logText.Contains("# first 'bad' commit: [" + sha + "]");
 		}
 
 		/// <summary>good↔bad 互斥预检：当前 HEAD 是否已带相反的 bisect 标记。

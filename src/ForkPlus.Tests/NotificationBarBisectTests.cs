@@ -336,8 +336,9 @@ namespace ForkPlus.Tests
 		// 二分到收敛。本用例构造 c0(init)+c1..c8 共 9 个提交，c5 起 f.txt 含 "BUG"（首坏
 		// 提交=c5）。全程驱动 UI：菜单"二分查找"启动 → 通知条点 Bad 标当前 HEAD(c8) 为坏
 		// → 检出已知好提交 c1（真实用户"找一个肯定好的提交"的操作）→ 点 Good 标好 →
-		// git 自动检出候选 → 测试按 f.txt 是否含 BUG 自动点 Good/Bad → 每步截图 → 收敛时
-		// git 输出 "<c5> is the first bad commit"（BisectGitCommand 以 Failure 弹
+		// 测试按 f.txt 是否含 BUG 自动点 Good/Bad → 每步截图 → 收敛时
+					// git 输出 "<c5> is the first bad commit"（git ≥2.55 为 "is the first 'bad'
+					// commit"；BisectGitCommand 以 Failure 弹
 		// ErrorWindow，看门狗捕获其文本）→ 断言收敛 SHA 确实等于 c5。
 		private const string ModuleDir = "bisect-e2e";
 
@@ -394,8 +395,11 @@ namespace ForkPlus.Tests
 						ScreenshotHelper.Snap(window, $"0{snapNo++}-baseline-good-bad-set", ModuleDir);
 
 						// Step 4+: 自动按 f.txt 是否含 BUG 决策（候选=当前检出的提交），每步截图，直到收敛
-					// 收敛信号 = BISECT_LOG 写入 "# first bad commit: <sha>"（实证：git 找到首坏
-					// 提交后不自动 reset，BISECT_START 仍在、HEAD 停在结论提交上——不能靠它判断）。
+				// 收敛信号 = BISECT_LOG 写入 first bad commit 结论行（git ≤2.54 为
+				// "# first bad commit: <sha>"，≥2.55 为 "# first 'bad' commit: <sha>"——CI
+				// ubuntu-latest 已预装 2.55.0，本地沙箱 2.34.1，判定须两代都认；实证：git
+				// 找到首坏提交后不自动 reset，BISECT_START 仍在、HEAD 停在结论提交上——
+				// 不能靠它判断）。
 					bool converged = false;
 					while (!converged && snapNo <= 12)
 				{
@@ -427,10 +431,10 @@ namespace ForkPlus.Tests
 						// v4.0.12 修复（CI run 34669400520 失败根因，本地稳定复现）：原代码
 						// converged = WaitForAdvanceOrConverge(repoRoot, sha) 把"HEAD 推进到
 						// 下一候选"（同样返回 true）误当"已收敛"——第一轮决策后 HEAD 必然推进，
-						// 循环随即退出，二分从未真正跑完，末尾 "# first bad commit: [<c5>]"
-						// 断言必然失败（证据：历次运行本地×3 + CI×1 的证据目录都只有一张
-						// 04-candidate-*.png，从无 05+）。正确语义：推进 → 继续下一轮决策；
-						// 仅 BISECT_LOG 出现 "# first bad commit:" 才算收敛。
+						// 循环随即退出，二分从未真正跑完，末尾 first bad commit 结论行断言必然失败
+					//（证据：历次运行本地×3 + CI×1 的证据目录都只有一张
+					// 04-candidate-*.png，从无 05+）。正确语义：推进 → 继续下一轮决策；
+					// 仅 BISECT_LOG 出现 first bad commit 结论行（两代格式）才算收敛。
 						bool advancedOrConverged = WaitForAdvanceOrConverge(repoRoot, sha);
 						converged = HasConverged(repoRoot);
 						if (!advancedOrConverged)
@@ -442,15 +446,16 @@ namespace ForkPlus.Tests
 							break; // 意外终止（会话丢失），让后续断言报出根因
 						}
 					}
-					Assert.True(converged, "二分应收敛（BISECT_LOG 应写入 '# first bad commit:'）");
+					Assert.True(converged, "二分应收敛（BISECT_LOG 应写入 first bad commit 结论行——git ≤2.54 为 '# first bad commit:'，≥2.55 为 \"# first 'bad' commit:\"）");
 
-					// Step 5: 断言收敛到真正首坏提交 c5。权威证据 = git 分写进 BISECT_LOG 的结论
-					// "# first bad commit: [<c5>] c5"（headless 下收敛结论的 MessageBoxWindow 经
-					// 后台 Dispatcher.Post 异步模态投递、无法可靠呈现/捕获——诊断实证，故以
-					// git 自身落盘的结论为准，同样能从数据上证明"找到真正那个 commit"）。
-					string logText = File.ReadAllText(Path.Combine(repoRoot, ".git", "BISECT_LOG"));
-					Assert.True(logText.Contains("# first bad commit: [" + expectedFirstBad + "]"),
-						"BISECT_LOG 的 first bad commit 应指向真正首坏提交 " + expectedFirstBad);
+				// Step 5: 断言收敛到真正首坏提交 c5。权威证据 = git 分写进 BISECT_LOG 的结论
+				// "# first bad commit: [<c5>] c5"（git ≥2.55 为 "# first 'bad' commit: [<c5>] c5"；
+				// headless 下收敛结论的 MessageBoxWindow 经后台 Dispatcher.Post 异步模态投递、
+				// 无法可靠呈现/捕获——诊断实证，故以 git 自身落盘的结论为准，同样能从数据上
+				// 证明"找到真正那个 commit"）。
+				string logText = File.ReadAllText(Path.Combine(repoRoot, ".git", "BISECT_LOG"));
+				Assert.True(BisectGitCommand.LogConcludesFirstBadCommitIs(logText, expectedFirstBad),
+					"BISECT_LOG 的 first bad commit 结论行应指向真正首坏提交 " + expectedFirstBad);
 					ScreenshotHelper.Snap(window, $"0{snapNo}-first-bad-commit-found", ModuleDir);
 
 					// v4.0.12：收敛信息窗守卫。2026-09-10 产品修复让 BisectCommand 收敛时改弹
@@ -459,11 +464,13 @@ namespace ForkPlus.Tests
 					// 扩展为同步关闭信息窗并记录文本。此断言验证：①收敛信息窗真实弹出（产品行为）；
 					// ②内容指向首坏提交；③被看门狗关闭后 UI 线程不再卡死（本断言能执行到即证明）。
 					Assert.True(UiClick.WaitFor(delegate
-					{
-						string[] messages = HeadlessAppBootstrap.PeekCapturedMessageBoxes();
-						return messages.Any((string t) => t.Contains("is the first bad commit"));
-					}, 10000), "bisect 收敛信息窗应弹出并被看门狗捕获（含 'is the first bad commit'），实际捕获："
-						+ string.Join(" | ", HeadlessAppBootstrap.PeekCapturedMessageBoxes()));
+				{
+					string[] messages = HeadlessAppBootstrap.PeekCapturedMessageBoxes();
+					// 两代格式：git ≤2.54 "is the first bad commit"，≥2.55 "is the first 'bad' commit"
+					//（统一走 BisectGitCommand.IsFirstBadCommitConclusion，与生产收敛检测同口径）
+					return messages.Any((string t) => BisectGitCommand.IsFirstBadCommitConclusion(t));
+				}, 10000), "bisect 收敛信息窗应弹出并被看门狗捕获（含 first bad commit 收敛结论），实际捕获："
+					+ string.Join(" | ", HeadlessAppBootstrap.PeekCapturedMessageBoxes()));
 
 					// 终态：bisect reset 干净收尾（git 找到首坏后不自复位），通知条收起补终态截图
 				WaitForRepositoryPipelineIdle(repoControl, "bisect reset");
@@ -522,23 +529,26 @@ namespace ForkPlus.Tests
 		}
 
 		/// <summary>v4.0.12：真正收敛判定——git 已把二分结论写入 BISECT_LOG
-		/// （"# first bad commit: &lt;sha&gt;"）。与 WaitForAdvanceOrConverge 的"推进或收敛"
-		/// 双语义区分开：循环退出只认本方法，推进必须继续下一轮决策。</summary>
+		///（"# first bad commit: &lt;sha&gt;"；git ≥2.55 为 "# first 'bad' commit: ..."，见
+		/// BisectGitCommand.LogHasFirstBadCommitConclusion 的版本兼容注释）。与
+		/// WaitForAdvanceOrConverge 的"推进或收敛"双语义区分开：循环退出只认本方法，
+		/// 推进必须继续下一轮决策。</summary>
 		private static bool HasConverged(string repoRoot)
 		{
 			string logPath = Path.Combine(repoRoot, ".git", "BISECT_LOG");
-			return File.Exists(logPath) && File.ReadAllText(logPath).Contains("# first bad commit:");
+			return File.Exists(logPath) && BisectGitCommand.LogHasFirstBadCommitConclusion(File.ReadAllText(logPath));
 		}
 
-		/// <summary>推进或收敛判定（双语义）：BISECT_LOG 出现 "# first bad commit:" 即收敛；
-		/// 否则等待 git 推进到新的候选（HEAD 变化）。经验区间很短（首坏实测 6 个决策以内），
-		/// 单步等 30s 足够。注意：返回 true 不代表收敛——调用方需要收敛语义时用 HasConverged。</summary>
+		/// <summary>推进或收敛判定（双语义）：BISECT_LOG 出现 first bad commit 结论行
+		///（两代格式，见 HasConverged）即收敛；否则等待 git 推进到新的候选（HEAD 变化）。
+		/// 经验区间很短（首坏实测 6 个决策以内），单步等 30s 足够。注意：返回 true 不代表
+		/// 收敛——调用方需要收敛语义时用 HasConverged。</summary>
 		private static bool WaitForAdvanceOrConverge(string repoRoot, string prevSha)
 		{
 			return UiClick.WaitFor(delegate
 			{
 				string logPath = Path.Combine(repoRoot, ".git", "BISECT_LOG");
-				if (File.Exists(logPath) && File.ReadAllText(logPath).Contains("# first bad commit:"))
+				if (File.Exists(logPath) && BisectGitCommand.LogHasFirstBadCommitConclusion(File.ReadAllText(logPath)))
 				{
 					return true; // 已收敛
 				}

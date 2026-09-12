@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
+using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
@@ -160,7 +161,9 @@ namespace ForkPlus.UI.Controls.Editor
 			{
 				return true;
 			}
-			if (line.EndsWith("is the first bad commit"))
+			// bisect 收敛结论行（git ≥2.55 输出 "is the first 'bad' commit"，≤2.54 无引号）——
+			// 两代格式统一走 BisectGitCommand.IsFirstBadCommitConclusion，详见该方法的版本兼容注释。
+			if (BisectGitCommand.IsFirstBadCommitConclusion(line))
 			{
 				return true;
 			}
@@ -177,7 +180,7 @@ namespace ForkPlus.UI.Controls.Editor
 			{
 				return true;
 			}
-			if (line.EndsWith("is the first bad commit"))
+			if (BisectGitCommand.IsFirstBadCommitConclusion(line))
 			{
 				return true;
 			}
