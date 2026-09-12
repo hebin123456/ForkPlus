@@ -1203,6 +1203,7 @@
     "No active branch to check.": "Aucune branche active à vérifier.",
     "No applicable suggestions for this file.": "Aucune suggestion applicable pour ce fichier.",
     "No command history": "Aucun historique de commande",
+    "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "Aucun sous-dépôt. Cliquez d'abord sur le bouton Synchroniser, puis sur le bouton Démarrer pour commencer le développement git mm.",
     "No conflict markers found in the file.": "Aucun marqueur de conflit trouvé dans le fichier.",
     "No controls": "Aucun contrôle",
     "No fast-forward": "Pas d'avance rapide",

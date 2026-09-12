@@ -118,8 +118,18 @@
           </controls:ToolbarButton>
         </WrapPanel>
 
-        <!-- 子仓 tab（获得全部剩余高度） -->
-        <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SubreposTabControl" Theme="{StaticResource GitMmSubrepoTabControlStyle}" />
+        <!-- 子仓 tab（获得全部剩余高度）。
+             v4.0.12：外层包 Grid 挂 0 子仓空状态覆盖层——git mm 刚 init 结束、尚未 sync 出
+             子仓时，tab 区域完全空白，给出居中引导文案（下方 Sync→Start 两步流程）。 -->
+        <Grid>
+          <controls:ModernTabControl BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SubreposTabControl" Theme="{StaticResource GitMmSubrepoTabControlStyle}" />
+          <!-- 0 子仓空状态（代码后置 RefreshCommandButtonStates 按子仓数驱动显隐）：
+               不透明背景盖住空 tab 条；文案居中、自动换行、限宽长句不拉满。
+               Text 为英文 key（无绑定），PreferencesLocalization.Apply 走树翻译并记忆原文。 -->
+          <Border x:Name="SubrepoEmptyStateBorder" IsVisible="False" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TextBlock Text="No sub repositories. Click the Sync button first, then click the Start button to begin git mm development." Foreground="{DynamicResource SecondaryLabelBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" />
+          </Border>
+        </Grid>
       </DockPanel>
     </Border>
 

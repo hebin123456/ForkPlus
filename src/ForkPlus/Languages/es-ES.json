@@ -1203,6 +1203,7 @@
     "No active branch to check.": "No hay rama activa para comprobar.",
     "No applicable suggestions for this file.": "Sin sugerencias aplicables para este archivo.",
     "No command history": "Sin historial de comandos",
+    "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "Sin subrepositorios. Haga clic primero en el botón Sincronizar y luego en el botón Iniciar para comenzar el desarrollo de git mm.",
     "No conflict markers found in the file.": "No se encontraron marcadores de conflicto en el archivo.",
     "No controls": "Sin controles",
     "No fast-forward": "Sin fast-forward",

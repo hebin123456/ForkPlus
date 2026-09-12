@@ -558,6 +558,9 @@ namespace ForkPlus.UI.UserControls
 					RebuildSubrepoTabs();
 					RefreshSubreposTitle();
 					RefreshSubrepoRuntimeState(force: true);
+					// v4.0.12：子仓列表落定即重算命令按钮三态（0 子仓 → Start/Upload 禁用 +
+					// 空状态引导；CurrentBranch 经 MigrateRuntimeState 迁移或状态刷新落定后修正）
+					RefreshCommandButtonStates();
 					SetStatus("");
 					SaveSettings();
 				});
@@ -867,6 +870,9 @@ namespace ForkPlus.UI.UserControls
 							EnsureVisibleSubrepos();
 							RebuildSubrepoTabs();
 							RefreshSubreposTitle();
+							// v4.0.12：sync 重扫后子仓列表已变（0→N 或增减）——立即重算命令按钮三态
+							// （空状态隐藏、Start 解禁；Sync/Upload 待状态刷新带出 CurrentBranch）。
+							RefreshCommandButtonStates();
 							RefreshSubrepoRuntimeState();
 							SaveSettings();
 						});
@@ -876,17 +882,20 @@ namespace ForkPlus.UI.UserControls
 						Dispatcher.Post(RefreshLoadedSubrepoControls);
 						Dispatcher.Post(delegate
 						{
-							RefreshSubrepoRuntimeState();
+							// v4.0.12：start 检出本地分支后必须绕过 RuntimeStateCacheTtl(60s) 强制刷
+							// CurrentBranch——常规刷新会跳过 60s 内已刷过的子仓，分支名拿不回来，
+							// 命令按钮三态就停在"未 start"（Sync/Upload 禁用）最长一分钟。
+							RefreshSubrepoRuntimeState(force: string.Equals(args.FirstItem(), "start", StringComparison.OrdinalIgnoreCase));
 						});
 					}
 				}
 			});
-		}
+	}
 
-		private static bool ShouldRescanSubreposAfterCommand(string[] args)
-		{
-			return args.FirstItem() == "sync";
-		}
+	private static bool ShouldRescanSubreposAfterCommand(string[] args)
+	{
+		return args.FirstItem() == "sync";
+	}
 
 		private void SaveCommandHistory(string commandText)
 		{
@@ -1025,9 +1034,38 @@ namespace ForkPlus.UI.UserControls
 		// 经 RepositoryUserControl.JobQueue 跑、不禁用主界面，git mm 应对齐——子仓库界面保持可交互。
 		// 仅禁用 Start/Sync/Upload 三个命令按钮，防止并发起命令（RunBackground 已会先 Cancel
 		// 旧任务，这里禁用是额外的并发保护）。
-		StartButton.IsEnabled = !isBusy;
-		SyncButton.IsEnabled = !isBusy;
-		UploadButton.IsEnabled = !isBusy;
+		// v4.0.12：按钮可用性不再只看 busy——busy 与"0 子仓/未 start/已 start"三态由
+		// RefreshCommandButtonStates 统一计算（见该方法注释）。
+		RefreshCommandButtonStates();
+	}
+
+	/// <summary>v4.0.12：git mm 三命令按钮的可用状态机（0 子仓 / 未 start / 已 start 三态）：
+	/// ① 0 子仓（git mm 刚 init 结束，还没 sync 出子仓）：没有子仓可 start/upload——
+	///   Start、Upload 禁用；Sync 保留可用（空状态引导文案的入口就是"先点同步"）。
+	/// ② 有子仓但从未 start（git mm start 前所有子仓都停在 detached HEAD，检测不到
+	///   任何本地分支）：Sync/Upload 没有可操作的目标分支，禁用；Start 启用（开启
+	///   git mm 开发的入口）。
+	/// ③ 有子仓且检测到本地分支（已 start）：三按钮全部可用。
+	/// busy（git mm 命令运行中）一律全禁用（SetBusy 原有防并发语义不变）。
+	/// 判定依据 GitMmSubrepoItem.CurrentBranch：git status -b 头部 detached HEAD
+	///（"HEAD (no branch)"）解析为空、本地分支解析为分支名，由
+	/// RefreshSubrepoRuntimeState 异步填充——列表重建（RefreshSubrepos / sync 后重扫）
+	/// 与状态刷新落定时都要重算本方法。同时驱动 0 子仓空状态覆盖层（SubrepoEmptyStateBorder）
+	/// 的显隐与引导文案。</summary>
+	private void RefreshCommandButtonStates()
+	{
+		bool hasSubrepos = _workspace.Subrepos.Count > 0;
+		bool hasLocalBranch = hasSubrepos && _workspace.Subrepos.Any(delegate (GitMmSubrepoItem subrepo)
+		{
+			return !string.IsNullOrWhiteSpace(subrepo.CurrentBranch);
+		});
+		StartButton.IsEnabled = !_isBusy && hasSubrepos;
+		SyncButton.IsEnabled = !_isBusy && (!hasSubrepos || hasLocalBranch);
+		UploadButton.IsEnabled = !_isBusy && hasLocalBranch;
+		// 0 子仓空状态引导：subrepos 列表变化的两条路径（首次扫描、sync 后重扫）都经
+		// 本方法刷新；全部子仓被筛选隐藏时（VisibleSubrepos 过滤）不算"没有子仓"，
+		// 不误报引导文案。
+		SubrepoEmptyStateBorder.IsVisible = !hasSubrepos;
 	}
 
 	private void SetStatus(string text)
@@ -2297,13 +2335,17 @@ namespace ForkPlus.UI.UserControls
 						subrepos[i].StagedDeleted = states[i].StagedDeleted;
 						subrepos[i].RuntimeStateUpdatedAtUtc = DateTime.UtcNow;
 					}
+					// v4.0.12：CurrentBranch 落定后重算命令按钮三态——git mm start 前子仓全在
+					// detached HEAD（CurrentBranch 空，Sync/Upload 禁用），start 检出本地分支后
+					// 首次状态刷新即解禁（本方法 force 刷新在 start 命令收尾时触发）。
+					RefreshCommandButtonStates();
 					if (!string.IsNullOrWhiteSpace(_activeSummaryFilterMode) && TryApplySummaryFilterMode(_activeSummaryFilterMode, save: false))
-					{
-						NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);
-						return;
-					}
-					RefreshSubrepoTabHeaders();
-					RefreshSubrepoSummary();
+						{
+							NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);
+							return;
+						}
+						RefreshSubrepoTabHeaders();
+						RefreshSubrepoSummary();
 					NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);
 				});
 			}, JobFlags.SaveToLog | JobFlags.Background, showMessageWhenDone: false);

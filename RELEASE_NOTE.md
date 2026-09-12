@@ -4,7 +4,11 @@
 
 ## v4.0.12
 
-> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
+> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复 + git mm 0 子仓空状态引导：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
+
+### 优化
+
+- **git mm 0 子仓空状态引导 + 三命令按钮状态机**：git mm 刚 init 结束尚未 sync 出子仓时，子仓 tab 区域完全空白且无任何引导；且 Start / Sync / Upload 三按钮始终可点，误点即报错。现在 0 子仓时子仓区域居中显示引导文案"没有子仓，请先点击同步按钮，然后点击开始按钮开启 git mm 开发"（8 语言国际化），三按钮按 git mm 工作区生命周期三态管理：**0 子仓**（刚 init）Start / Upload 禁用、Sync 可用（引导文案的入口）；**有子仓但未 start**（子仓全在 detached HEAD、检测不到本地分支）Sync / Upload 禁用、Start 可用；**已 start**（检测到本地分支）三按钮全部可用；命令运行中（busy）一律全禁用防并发。分支检测依据子仓 `git status -b` 的当前分支（detached HEAD 解析为空），`git mm start` 收尾强制绕过 60s 状态缓存刷新分支，start 后按钮即时解禁。
 
 ### 修复
 
