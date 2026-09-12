@@ -1066,9 +1066,14 @@ namespace ForkPlus.UI.UserControls
 		// 本方法刷新；全部子仓被筛选隐藏时（VisibleSubrepos 过滤）不算"没有子仓"，
 		// 不误报引导文案。
 		SubrepoEmptyStateBorder.IsVisible = !hasSubrepos;
-		// 有子仓但未选中任何子仓（无内容可显示）引导：hasSubrepos 而
-		// SelectedSubrepo==null 时子仓内容区空白，居中提示用户去右上角筛选入口选中子仓。
-		SubrepoNoSelectionBorder.IsVisible = hasSubrepos && _workspace.SelectedSubrepo == null;
+		// 有子仓但未选中任何子仓（无内容可显示）引导。条件用 SubreposTabControl.SelectedItem
+		// （弹层事件触发时已是"当前实际选中"的 ground-truth）而非 _workspace.SelectedSubrepo
+		// （它在 SelectionChanged 分支内部、本方法调用之后才被赋值，读到的是过期值）——
+		// 否则：取消选中后 SelectedSubrepo 未清（非 null）→ 空状态不漏显（内容区空白）；
+		// 重新点选同个子仓时 SelectedSubrepo 仍为 null → 空状态残留不消失，必须先选另一个
+		// 子仓才恢复（v4.0.12 用户报告"连续两次选择才正常"）。列重建时 Items.Clear() 会瞬态
+		// 置空 SelectedItem，但 RebuildSubrepoTabs 随即重新选中首个/偏好子仓，仅一帧过渡无碍。
+		SubrepoNoSelectionBorder.IsVisible = hasSubrepos && SubreposTabControl.SelectedItem == null;
 	}
 
 	private void SetStatus(string text)
@@ -1476,9 +1481,6 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			// v4.0.12：选中变化（含取消选中 SelectedItem==null）都要重算"未选中子仓"空状态
-			// 覆盖层显隐——有子仓但当前无选中时内容区空白，需居中提示（见该方法注释）。
-			RefreshCommandButtonStates();
 			if (SubreposTabControl.SelectedItem is TabItem tabItem && tabItem.Tag is GitMmSubrepoItem subrepo)
 			{
 				// 不调用 CancelStatusRefresh()。
@@ -1490,6 +1492,17 @@ namespace ForkPlus.UI.UserControls
 				EnsureSubrepoContent(tabItem, subrepo);
 				NotificationCenter.Current.RaiseActiveTabChanged(this, MainWindow.Instance?.TabManager.ActiveTab);
 			}
+			else
+			{
+				// v4.0.12：用户点击取消选中当前子仓（SelectedItem→null）→ 同步清空选中引用，
+				// 内容区落回"未选中子仓"空状态。此前不清空，空状态判定读过期 SelectedSubrepo
+				// 而漏显（内容区空白）。
+				_workspace.SelectedSubrepo = null;
+			}
+			// v4.0.12：选中/取消选中状态落定后再统一重算按钮与两个空状态覆盖层。此前本方法
+			// 在最前面调用（读到的是更新前的旧选中态）——取消选中后空状态不出现（空白）、
+			// 重新点选同个子仓时空状态残留不消失（见 RefreshCommandButtonStates 注释）。
+			RefreshCommandButtonStates();
 		}
 
 		private void RebuildSubrepoTabs()
