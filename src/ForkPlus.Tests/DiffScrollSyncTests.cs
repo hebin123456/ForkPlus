@@ -12,12 +12,14 @@ using System.Linq;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.WpfCompat;
 using Xunit;
 
@@ -159,6 +161,86 @@ namespace ForkPlus.Tests
 				report = (sbHolder[0]?.ToString() ?? "") + "\nOUTER EXCEPTION: " + ex;
 			}
 			System.IO.File.WriteAllText("/tmp/diff_scroll_sync_e2e.txt", report);
+			Assert.DoesNotContain("OUTER EXCEPTION", report);
+		}
+
+		// 回归测试（2026-09-12，"FileDiff 短栏在长栏滚到底后仍能继续下滚"修复产物）：
+		// 根因：同步时用 IsVerticalOffsetWithinDocumentArea 判断"目标偏移在目标文档区内"才放行，
+		// 偏长侧滚到偏短侧够不到的位置时直接跳过（偏短侧留在原地、滚动条还有空余可继续下滚），
+		// 两侧就"不对齐"。修复：改用 ClampVerticalOffsetToDocumentArea 把目标夹到目标栏自己的
+		// 文档末尾（对齐定格），短栏不再留滚动空余。
+		// 本测试守卫两条防线：
+		//   1) ClampVerticalOffsetToDocumentArea 把超界期望值压回自身文档最大偏移；
+		//   2) 短文档（少行）编辑器滚到底后 offset <= 自身最大偏移，滚动条无空余。
+		[Fact]
+		public void ClampVerticalOffset_ClampsToOwnDocumentEnd()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			string report;
+			var sbHolder = new StringBuilder[1];
+			try
+			{
+				report = Dispatcher.UIThread.InvokeAsync(delegate
+				{
+					var sb = new StringBuilder();
+					sbHolder[0] = sb;
+					// 短文档：20 行，约 380px；视口 400px → extent<viewport → max=0。
+					var shortEditor = new CodeEditor();
+					shortEditor.Text = string.Concat(Enumerable.Repeat("short line\n", 20));
+					var winShort = new Window { Width = 800, Height = 400, Content = shortEditor };
+					winShort.Show();
+					Dispatcher.UIThread.RunJobs();
+
+					double shortExtent = ((IScrollable)shortEditor.TextArea.TextView).Extent.Height;
+					double shortViewport = ((IScrollable)shortEditor.TextArea.TextView).Viewport.Height;
+					double shortMax = Math.Max(0.0, shortExtent - shortViewport);
+					// 期望值远超文档区（模拟长栏滚到很远处同步过来）→ 必须被压回 shortMax。
+					double clamped = shortEditor.ClampVerticalOffsetToDocumentArea(shortMax + 5000.0);
+					sb.AppendLine("short: extent=" + shortExtent.ToString("F1")
+						+ ", viewport=" + shortViewport.ToString("F1")
+						+ ", max=" + shortMax.ToString("F1")
+						+ ", clamp(>max)=" + clamped.ToString("F1"));
+
+					// 按钳制值滚动后，offset 恰好 = max，滚动条到顶/到底，无多余空余。
+					shortEditor.ScrollToVerticalOffsetCompat(clamped);
+					Dispatcher.UIThread.RunJobs();
+					double shortOffset = shortEditor.TextArea.TextView.ScrollOffset.Y;
+					sb.AppendLine("short offset after clamp scroll=" + shortOffset.ToString("F1"));
+
+					winShort.Close();
+
+					// 长文档：300 行，约 5700px，远超 400px 视口。
+					var longEditor = new CodeEditor();
+					longEditor.Text = string.Concat(Enumerable.Repeat("long line\n", 300));
+					var winLong = new Window { Width = 800, Height = 400, Content = longEditor };
+					winLong.Show();
+					Dispatcher.UIThread.RunJobs();
+					double longExtent = ((IScrollable)longEditor.TextArea.TextView).Extent.Height;
+					double longViewport = ((IScrollable)longEditor.TextArea.TextView).Viewport.Height;
+					double longMax = Math.Max(0.0, longExtent - longViewport);
+					double longClampInRange = longEditor.ClampVerticalOffsetToDocumentArea(250.0);
+					double longClampOver = longEditor.ClampVerticalOffsetToDocumentArea(longMax + 5000.0);
+					sb.AppendLine("long: max=" + (longMax).ToString("F1")
+						+ ", clamp(250)=" + longClampInRange.ToString("F1")
+						+ ", clamp(>max)=" + longClampOver.ToString("F1"));
+					winLong.Close();
+
+					Assert.True(shortOffset >= shortMax - 0.5 && shortOffset <= shortMax + 0.5,
+						"短栏按钳制值滚动后应停在自身文档末尾：offset=" + shortOffset.ToString("F1") + "（期望 ~" + shortMax.ToString("F1") + "）");
+					Assert.True(shortMax == 0.0 || Math.Abs(clamped - shortMax) < 0.5,
+						"ClampVerticalOffsetToDocumentArea 未把超界期望夹回短栏文档末尾：clamped=" + clamped.ToString("F1") + "（期望 ~" + shortMax.ToString("F1") + "）");
+					Assert.True(Math.Abs(longClampInRange - 250.0) < 0.5,
+						"长栏在区内期望不应被钳制：clamp(250)=" + longClampInRange.ToString("F1"));
+					Assert.True(Math.Abs(longClampOver - longMax) < 0.5,
+						"长栏超界期望应夹回其文档末尾：clamp(>max)=" + longClampOver.ToString("F1") + "（期望 " + longMax.ToString("F1") + "）");
+					return sb.ToString();
+				}).GetAwaiter().GetResult();
+			}
+			catch (Exception ex)
+			{
+				report = (sbHolder[0]?.ToString() ?? "") + "\nOUTER EXCEPTION: " + ex;
+			}
+			System.IO.File.WriteAllText("/tmp/diff_scroll_sync_clamp.txt", report);
 			Assert.DoesNotContain("OUTER EXCEPTION", report);
 		}
 	}

@@ -643,28 +643,36 @@ namespace ForkPlus.UI.Dialogs
 				if (!(DateTime.Now - _lastVerticalScrollTime < TimeSpan.FromMilliseconds(100.0)
 					&& editor != _lastVerticalEditor))
 				{
+					// 与 SideBySideTextDiffControl 同源修复（2026-09-12）：目标偏移先夹到
+					// 各侧自己的文档区，偏短侧钳到其自身文档末尾"对齐定格"，不再留可继续下滚空余。
 					const double vTolerance = 0.5;
 					bool synced = false;
-					if (editor != RemoteMergeEditor
-						&& RemoteMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
-						&& Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					if (editor != RemoteMergeEditor)
 					{
-						ScrollToVerticalOffset(RemoteMergeEditor, verticalOffset);
-						synced = true;
+						double target = RemoteMergeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
+						if (Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.Y - target) > vTolerance)
+						{
+							ScrollToVerticalOffset(RemoteMergeEditor, target);
+							synced = true;
+						}
 					}
-					if (editor != LocalMergeEditor
-						&& LocalMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
-						&& Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					if (editor != LocalMergeEditor)
 					{
-						ScrollToVerticalOffset(LocalMergeEditor, verticalOffset);
-						synced = true;
+						double target = LocalMergeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
+						if (Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.Y - target) > vTolerance)
+						{
+							ScrollToVerticalOffset(LocalMergeEditor, target);
+							synced = true;
+						}
 					}
-					if (editor != MergedMergeEditor
-						&& MergedMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
-						&& Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					if (editor != MergedMergeEditor)
 					{
-						ScrollToVerticalOffset(MergedMergeEditor, verticalOffset);
-						synced = true;
+						double target = MergedMergeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
+						if (Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.Y - target) > vTolerance)
+						{
+							ScrollToVerticalOffset(MergedMergeEditor, target);
+							synced = true;
+						}
 					}
 					if (synced)
 					{
@@ -681,28 +689,35 @@ namespace ForkPlus.UI.Dialogs
 				if (!(DateTime.Now - _lastHorizontalScrollTime < TimeSpan.FromMilliseconds(100.0)
 					&& editor != _lastHorizontalEditor))
 				{
+					// 与垂直同源（2026-09-12）：偏窄侧钳到其自身文档末尾"对齐定格"。
 					const double hTolerance = 0.5;
 					bool synced = false;
-					if (editor != RemoteMergeEditor
-						&& RemoteMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
-						&& Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					if (editor != RemoteMergeEditor)
 					{
-						ScrollToHorizontalOffset(RemoteMergeEditor, horizontalOffset);
-						synced = true;
+						double target = RemoteMergeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
+						if (Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.X - target) > hTolerance)
+						{
+							ScrollToHorizontalOffset(RemoteMergeEditor, target);
+							synced = true;
+						}
 					}
-					if (editor != LocalMergeEditor
-						&& LocalMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
-						&& Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					if (editor != LocalMergeEditor)
 					{
-						ScrollToHorizontalOffset(LocalMergeEditor, horizontalOffset);
-						synced = true;
+						double target = LocalMergeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
+						if (Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.X - target) > hTolerance)
+						{
+							ScrollToHorizontalOffset(LocalMergeEditor, target);
+							synced = true;
+						}
 					}
-					if (editor != MergedMergeEditor
-						&& MergedMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
-						&& Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					if (editor != MergedMergeEditor)
 					{
-						ScrollToHorizontalOffset(MergedMergeEditor, horizontalOffset);
-						synced = true;
+						double target = MergedMergeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
+						if (Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.X - target) > hTolerance)
+						{
+							ScrollToHorizontalOffset(MergedMergeEditor, target);
+							synced = true;
+						}
 					}
 					if (synced)
 					{

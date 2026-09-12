@@ -281,21 +281,27 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				if (!(DateTime.Now - _lastVerticalScrollTime < TimeSpan.FromMilliseconds(100.0)
 					&& editor != _lastVerticalEditor))
 				{
+					// 与 SideBySideTextDiffControl 同源修复（2026-09-12）：目标偏移先夹到
+					// 对侧自己的文档区，偏短侧钳到其自身文档末尾"对齐定格"，不再留可继续下滚空余。
 					const double vTolerance = 0.5;
 					bool synced = false;
-					if (editor != _leftDiffCodeEditor
-						&& _leftDiffCodeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
-						&& Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					if (editor != _leftDiffCodeEditor)
 					{
-						_leftDiffCodeEditor.ScrollToVerticalOffsetCompat(verticalOffset);
-						synced = true;
+						double targetLeft = _leftDiffCodeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
+						if (Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - targetLeft) > vTolerance)
+						{
+							_leftDiffCodeEditor.ScrollToVerticalOffsetCompat(targetLeft);
+							synced = true;
+						}
 					}
-					if (editor != _rightDiffCodeEditor
-						&& _rightDiffCodeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
-						&& Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					if (editor != _rightDiffCodeEditor)
 					{
-						_rightDiffCodeEditor.ScrollToVerticalOffsetCompat(verticalOffset);
-						synced = true;
+						double targetRight = _rightDiffCodeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
+						if (Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - targetRight) > vTolerance)
+						{
+							_rightDiffCodeEditor.ScrollToVerticalOffsetCompat(targetRight);
+							synced = true;
+						}
 					}
 					if (synced)
 					{
@@ -312,21 +318,26 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				if (!(DateTime.Now - _lastHorizontalScrollTime < TimeSpan.FromMilliseconds(100.0)
 					&& editor != _lastHorizontalEditor))
 				{
+					// 与垂直同步同源（2026-09-12）：偏窄侧钳到其自身文档末尾"对齐定格"。
 					const double hTolerance = 0.5;
 					bool synced = false;
-					if (editor != _leftDiffCodeEditor
-						&& _leftDiffCodeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
-						&& Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					if (editor != _leftDiffCodeEditor)
 					{
-						_leftDiffCodeEditor.ScrollToHorizontalOffsetCompat(horizontalOffset);
-						synced = true;
+						double targetLeft = _leftDiffCodeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
+						if (Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.X - targetLeft) > hTolerance)
+						{
+							_leftDiffCodeEditor.ScrollToHorizontalOffsetCompat(targetLeft);
+							synced = true;
+						}
 					}
-					if (editor != _rightDiffCodeEditor
-						&& _rightDiffCodeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
-						&& Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					if (editor != _rightDiffCodeEditor)
 					{
-						_rightDiffCodeEditor.ScrollToHorizontalOffsetCompat(horizontalOffset);
-						synced = true;
+						double targetRight = _rightDiffCodeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
+						if (Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.X - targetRight) > hTolerance)
+						{
+							_rightDiffCodeEditor.ScrollToHorizontalOffsetCompat(targetRight);
+							synced = true;
+						}
 					}
 					if (synced)
 					{
