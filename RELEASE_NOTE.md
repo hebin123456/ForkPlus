@@ -2,6 +2,24 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.0.12
+
+> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
+
+### 修复
+
+- **打开/切换文件时代码编辑器行号边距随机崩溃（AppDomain 致命，VisualLinesInvalidException）**：`CodeEditorLineNumberMargin.Render` 在视觉行失效期（文档变更/Redraw() 后、下一轮 Measure 重建前）直接读 `TextView.VisualLines`，AvaloniaEdit 的 getter 在该状态下抛 `VisualLinesInvalidException`；而 Avalonia 渲染管线存在同步提交路径（窗口消息 WndProc → Compositor.Commit → CompositingRenderer.UpdateCore → margin.Render），异常沿调用链上抛到消息循环即进程终止（IsTerminating=True，crash-20260912-103134/-103202 双转储实证）。修复为与 `TextView.Render` 自身及 `ChunkSelectionLayer` 同款 `VisualLinesValid` 防御：视觉行无效期跳过行号绘制（下一帧排版重建后自然恢复），背景与分隔线照常绘制；Diff / Merge 视图行号边距（`DiffLineNumberMargin` / `MergeLineNumberMargin`）存在同因未防护访问，一并加固。
+- **每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style: Object reference not set to an instance of an object"**：WPF 原版 hack 反射查找 PresentationFramework 内部类型 `TextEditorContextMenu+EditorContextMenu`（TextBox 右键默认菜单）并把隐式 ContextMenu 样式补注册到该类型键下；迁移 Avalonia 后 `typeof(TextElement).Assembly` 是 Avalonia.Controls，不存在该 WPF 内部类型，`GetType()` 返回 null 后直接对 null 调 `GetNestedType` → NullReferenceException 被 catch 打 Error 日志，样式注册从未生效。修复为类型不存在时静默跳过（Avalonia 无此内部菜单机制：本工程 TextBox ControlTheme 自带全套模板未设 ContextFlyout，应用内所有 ContextMenu 均为公开类型、直接命中 `{x:Type ContextMenu}` ControlTheme，无需等价注册）；类型存在（假想 WPF 兼容路径）时幂等注册（原版重复 Add 抛 ArgumentException 也会刷日志）。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.0.12-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.0.12-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.0.12-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.0.12-macos-arm64.zip` |
+
 ## v4.0.11
 
 > 二分查找通知条不可用修复 + 好/坏互斥 + 右键菜单快捷键：仓库菜单"二分查找"后标签下方通知条不出现（WPF 迁移丢失动画），右键菜单快捷键原仅显示不生效，同提交既标好又标坏会毒化 bisect 会话。

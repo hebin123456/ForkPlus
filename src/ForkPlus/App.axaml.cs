@@ -1503,9 +1503,46 @@ namespace ForkPlus
 		{
 			try
 			{
-				Type nestedType = typeof(TextElement).Assembly.GetType("System.Windows.Documents.TextEditorContextMenu").GetNestedType("EditorContextMenu", BindingFlags.NonPublic);
-				Style value = Application.Current.Resources[typeof(ContextMenu)] as Style;
-				Application.Current.Resources.Add(nestedType, value);
+				// v4.0.12 修复（"Cannot initialize TextEditorContextMenu style: Object reference not
+				// set to an instance of an object"，每次启动/切主题必现，crash-20260912 日志实证）：
+				//
+				// WPF 原版 hack：PresentationFramework 内部类型 TextEditorContextMenu+EditorContextMenu
+				//（TextBox/RichTextBox 右键默认菜单，派生自 ContextMenu）不匹配隐式 ContextMenu 样式
+				//（隐式样式按精确类型解析），把同一样式以该内部类型为键补注册进 Application.Resources，
+				// 让内置编辑器右键菜单也吃上应用主题。
+				//
+				// 迁移 Avalonia 后该反射恒失败：typeof(TextElement).Assembly 是 Avalonia.Controls，
+				// 不存在 "System.Windows.Documents.TextEditorContextMenu" 类型，GetType() 返回 null，
+				// 原代码直接对 null 调 GetNestedType → NullReferenceException → catch 打 Error 日志，
+				// 样式注册从未生效。
+				//
+				// Avalonia 无此内部菜单机制，无需等价注册：① TextBox 内置右键菜单位于官方
+				// Fluent/Simple 主题的 ContextFlyout（公开 MenuFlyout 类型，MenuFlyoutPresenter 的
+				// ControlTheme 自动接管样式），且本工程 TextBox ControlTheme 自带全套模板、未设
+				// ContextFlyout，内置菜单根本不出现；② 应用内所有 ContextMenu（含 diff 编辑器右键
+				// 菜单）均为公开 ContextMenu 类型，直接命中 Menu.axaml 的 {x:Type ContextMenu}
+				// ControlTheme。
+				//
+				// 修复：类型不存在时安全跳过（不再 NRE/刷错误日志）；类型存在（假想的 WPF 兼容
+				// 路径）时幂等注册——原版 Resources.Add 重复调用（每次切主题都会走到这里）抛
+				// ArgumentException，先 ContainsKey 挡掉。
+				Type textEditorContextMenuType = typeof(TextElement).Assembly.GetType("System.Windows.Documents.TextEditorContextMenu");
+				Type nestedType = textEditorContextMenuType?.GetNestedType("EditorContextMenu", BindingFlags.NonPublic);
+				if (nestedType == null)
+				{
+					return;
+				}
+				IResourceDictionary resources = Application.Current?.Resources;
+				if (resources == null || resources.ContainsKey(nestedType))
+				{
+					return;
+				}
+				Style value = resources[typeof(ContextMenu)] as Style;
+				if (value == null)
+				{
+					return;
+				}
+				resources.Add(nestedType, value);
 			}
 			catch (Exception ex)
 			{

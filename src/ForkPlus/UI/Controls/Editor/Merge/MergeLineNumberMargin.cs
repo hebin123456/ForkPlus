@@ -123,7 +123,17 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
-			foreach (VisualLine visualLine in base.TextView.VisualLines)
+			// v4.0.12 同类加固（CodeEditorLineNumberMargin 崩溃同因）：视觉行失效期（Redraw()/
+			// 文档变更后、Measure 重建前）访问 TextView.VisualLines 会抛 VisualLinesInvalidException，
+			// 且 Avalonia 同步提交路径（WndProc → Compositor.Commit）会把异常上抛成进程终止。
+			// 与 TextView.Render / CodeEditorLineNumberMargin 同款防御：无效期整帧跳过
+			//（该帧 TextView 自身也不渲染任何文本），背景已由 base.Render 绘制。
+			TextView textView = base.TextView;
+			if (textView == null || !textView.VisualLinesValid)
+			{
+				return;
+			}
+			foreach (VisualLine visualLine in textView.VisualLines)
 			{
 				IBrush brush = _textBrush;
 				if (_editor.ViewMode == MergeConflictPart.Local || _editor.ViewMode == MergeConflictPart.Remote)

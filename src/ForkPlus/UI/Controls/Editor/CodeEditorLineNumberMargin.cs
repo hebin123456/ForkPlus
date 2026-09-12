@@ -78,14 +78,26 @@ namespace ForkPlus.UI.Controls.Editor
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
-			foreach (VisualLine visualLine in base.TextView.VisualLines)
+			// v4.0.12 修复（AppDomain 致命崩溃 VisualLinesInvalidException，crash-20260912-103134 /
+			// -103202 双转储实证）：TextView.VisualLines 在排版失效期（Redraw()/文档变更后、
+			// 下一轮 Measure 重建前）getter 直接抛 VisualLinesInvalidException；而 Avalonia 渲染
+			// 管线存在同步提交路径（WndProc → HandlePaint → ImmediateRenderRequested →
+			// Compositor.Commit → CompositingRenderer.UpdateCore → 本 Render），异常沿调用链
+			// 上抛到消息循环即进程终止（IsTerminating=True）。与 TextView.Render 自身
+			// （"if (!VisualLinesValid) return;"）及 ChunkSelectionLayer 同款防御：视觉行
+			// 无效期跳过行号绘制（下一帧排版重建后自然恢复），背景/分隔线照常绘制。
+			TextView textView = base.TextView;
+			if (textView != null && textView.VisualLinesValid)
 			{
-				// v3.13 修复（行号两位数以上被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin)
-				// 以 origin 为右上角向左绘制（原版行号右缘贴 Width-10）；Avalonia 的 origin 恒为
-				// 左上角，须显式减去文本宽度，否则文本从 Width-10 向右溢出 margin 边界——
-				// 一位数勉强在界内，两位数右缘溢出 ~4px、三位数更多，被代码区遮住。
-				FormattedText text = CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString());
-				drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0 - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
+				foreach (VisualLine visualLine in textView.VisualLines)
+				{
+					// v3.13 修复（行号两位数以上被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin)
+					// 以 origin 为右上角向左绘制（原版行号右缘贴 Width-10）；Avalonia 的 origin 恒为
+					// 左上角，须显式减去文本宽度，否则文本从 Width-10 向右溢出 margin 边界——
+					// 一位数勉强在界内，两位数右缘溢出 ~4px、三位数更多，被代码区遮住。
+					FormattedText text = CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString());
+					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0 - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
+				}
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - HorizontalMargin, 0.0), new Point(base.Bounds.Size.Width - HorizontalMargin, base.Bounds.Size.Height));
 		}

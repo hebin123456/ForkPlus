@@ -163,9 +163,19 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
+			// v4.0.12 同类加固（CodeEditorLineNumberMargin 崩溃同因）：视觉行失效期（Redraw()/
+			// 文档变更后、Measure 重建前）访问 TextView.VisualLines 会抛 VisualLinesInvalidException，
+			// 且 Avalonia 同步提交路径（WndProc → Compositor.Commit）会把异常上抛成进程终止。
+			// 与 TextView.Render / CodeEditorLineNumberMargin 同款防御：无效期整帧跳过
+			//（该帧 TextView 自身也不渲染任何文本），背景已由 base.Render 绘制。
+			TextView textView = base.TextView;
+			if (textView == null || !textView.VisualLinesValid)
+			{
+				return;
+			}
 			if (_diffViewMode == DiffViewMode.Split)
 			{
-				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine in base.TextView.VisualLines)
+				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine in textView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 					{
@@ -196,7 +206,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			else if (_diffViewMode == DiffViewMode.SideBySideOld)
 			{
-				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine2 in base.TextView.VisualLines)
+				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine2 in textView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine2.FirstDocumentLine.LineNumber - 1, out var value2))
 					{
@@ -215,7 +225,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			else if (_diffViewMode == DiffViewMode.SideBySideNew)
 			{
-				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine3 in base.TextView.VisualLines)
+				foreach (global::AvaloniaEdit.Rendering.VisualLine visualLine3 in textView.VisualLines)
 				{
 					if (!_lineNumbers.TryGetValue(visualLine3.FirstDocumentLine.LineNumber - 1, out var value3))
 					{
