@@ -581,5 +581,69 @@ namespace ForkPlus.Tests
 				TestRepoFactory.Cleanup(repo);
 			}
 		}
+
+		// ============================ 8) Undo 快照对抗过期 fsmonitor daemon ============================
+
+		/// <summary>
+		/// 问题7（fsmonitor 系列第 7 处，版本号不变）回归：开启 core.fsmonitor 的仓库在 daemon 漏报（过期脏文件列表）时，
+		/// git stash create 会把被漏报的 tracked 变更静默排除出快照 commit —— Undo 快照缺文件，
+		/// undo discard/stage/unstage 时恢复不回来 → 变更永久丢失。
+		/// 复现：先在工作区干净时经 fsmonitor-aware 的 update-index/status 把 FSMONITOR 扩展写进
+		/// index 并拿到 token，然后把 core.fsmonitor 指向一个"恒报无变更"的桩脚本，再改 tracked 文件。
+		/// 此时裸 `git stash create` 信 daemon 判"干净"→ 无快照；修复后 SnapshotGitCommand 走
+		/// ReliableGitFlags.Prefix（-c core.fsmonitor=false ...）强制真实 stat → 快照必含该文件变更。
+		/// 断言锁定"快照 commit 必须包含 a.txt 的修改内容"这一防丢失契约。
+		/// </summary>
+		[Fact]
+		public void Snapshot_StashCreateSurvivesStaleFsmonitorDaemon()
+		{
+			string repo = TestRepoFactory.CreateStashWork(); // main，a.txt/b.txt 已修改，c.txt untracked
+			try
+			{
+				// 把 a.txt/b.txt 改回基线，并清掉 CreateStashWork 遗留的 untracked c.txt，
+				// 只留干净树用于 seeding（避免其余噪声干扰后续"快照必含 a.txt 变更"断言）
+				GitOf(repo, "checkout -- a.txt b.txt");
+				File.Delete(Path.Combine(repo, "c.txt"));
+				Assert.Equal("", GitOf(repo, "status --porcelain"));
+
+				// —— 恒报"无变更"的 fsmonitor 桩脚本（token 后空路径表）——
+				string hook = Path.Combine(repo, "fsmon-stale.sh");
+				File.WriteAllText(hook, "#!/bin/sh\nprintf 'stale-token\\0'\n");
+				GitOf(repo, "config core.fsmonitor " + Quote(hook));
+
+				// —— seeding：工作区干净时经 fsmonitor-aware 命令把 FSMONITOR 扩展 + 各条目 stale-标记写进 index。
+				// update-index --fsmonitor 是官方 priming：用当前 hook token 把全部条目标为
+				// fsmonitor-clean 并写盘，后续 fsmonitor-aware 命令（裸 stash create）因 token
+				// 命中（返回同 `stale-token`）信任基线、跳过对 a.txt 的真实 stat → 复现漏报 ——
+				GitOf(repo, "update-index --refresh");
+				GitOf(repo, "update-index --fsmonitor");
+				GitOf(repo, "status --porcelain");
+
+				// —— 现在修改 tracked 文件（daemon 桩仍报告无变更）——
+				File.WriteAllText(Path.Combine(repo, "a.txt"), "a modified after seed\n");
+
+				// —— 前置 sanity：裸 git stash create（信 daemon）判"干净"是复现前提；
+				// 万一某 git 版本不信任该桩而回退 stat，修复后的行为仍必须恒成立 ——
+				string bareStash = TestRepoFactory.GitOutputOrNull(repo, "stash create");
+				_ = bareStash; // 预留：CI 诊断时判断"未复现 daemon 漏报"（非空）还是"修复失效"（快照缺文件）
+
+				// —— 生产快照：修复后必须捕获 a.txt 的变更 ——
+				var gitModule = new GitModule(repo, Path.Combine(repo, ".git"), null, null);
+				var snapshot = new SnapshotGitCommand().Execute(gitModule, "fsmonitor regression");
+				Assert.True(snapshot.Succeeded);
+				Assert.NotNull(snapshot.Result.PreOperationStashSha);
+				string captured = GitOf(repo, "show " + snapshot.Result.PreOperationStashSha + ":a.txt");
+				Assert.Contains("a modified after seed", captured.Replace("\r\n", "\n"));
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
+		private static string Quote(string s)
+		{
+			return "\"" + s.Replace("\\", "\\\\") + "\"";
+		}
 	}
 }

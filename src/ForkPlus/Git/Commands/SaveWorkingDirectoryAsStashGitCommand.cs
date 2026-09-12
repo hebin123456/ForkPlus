@@ -30,13 +30,13 @@ namespace ForkPlus.Git.Commands
 			}
 			monitor.Update(0.0, PreferencesLocalization.Current("Stashing..."));
 			string text = ((!string.IsNullOrEmpty(stashMessage)) ? stashMessage.Quotify() : $"Snapshot on '{sourceString}' {DateTime.Now}");
-			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("stash", "create", text).Execute(monitor);
+			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "stash", "create", text)).Execute(monitor);
 			if (!gitRequestResult.Success)
 			{
 				return GitCommandResult.Failure(gitRequestResult.ToGitCommandError());
 			}
 			string text2 = gitRequestResult.Stdout.Trim();
-			GitRequestResult gitRequestResult2 = new GitRequest(gitModule).Command("stash", "store", text2).Execute(monitor);
+			GitRequestResult gitRequestResult2 = new GitRequest(gitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "stash", "store", text2)).Execute(monitor);
 			if (!gitRequestResult2.Success)
 			{
 				return GitCommandResult.Failure(gitRequestResult2.ToGitCommandError());

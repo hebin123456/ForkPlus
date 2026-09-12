@@ -10,7 +10,7 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult Execute(GitModule gitModule)
 		{
-			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command("diff-index", "HEAD", "--").Execute();
+			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "diff-index", "HEAD", "--")).Execute();
 			string input = PathHelper.NormalizeUnix(Path.Combine(AppContext.BaseDirectory, Consts.ForkPlus.RIHelperFilename));
 			GitCommandResult helperMissing = CheckRebaseHelperExists(input);
 			if (helperMissing != null)

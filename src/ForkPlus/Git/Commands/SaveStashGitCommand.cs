@@ -23,7 +23,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult<bool>.Failure(gitCommandResult2.Error);
 				}
 			}
-			GitCommand gitCommand = new GitCommand("stash", "save");
+			GitCommand gitCommand = new GitCommand(ReliableGitFlags.Prefix, "stash", "save");
 			if (!string.IsNullOrEmpty(stashMessage))
 			{
 				gitCommand.Add("--message");
@@ -42,7 +42,7 @@ namespace ForkPlus.Git.Commands
 			List<ChangedFile> list = filesToStash.Filter((ChangedFile x) => !x.Tracked);
 			if (list.Count > 0)
 			{
-				GitCommand gitCommand = new GitCommand("add", "-f", "--");
+				GitCommand gitCommand = new GitCommand(ReliableGitFlags.Prefix, "add", "-f", "--");
 				foreach (ChangedFile item in list)
 				{
 					gitCommand.Add(item.Path.Quotify());
@@ -60,7 +60,7 @@ namespace ForkPlus.Git.Commands
 			List<ChangedFile> list2 = filesToStash.Filter((ChangedFile x) => x.ChangeType == ChangeType.Deleted || x.ChangeType == ChangeType.Renamed);
 			if (list2.Count > 0)
 			{
-				GitCommand gitCommand2 = new GitCommand("reset", "HEAD", "--");
+				GitCommand gitCommand2 = new GitCommand(ReliableGitFlags.Prefix, "reset", "HEAD", "--");
 				foreach (ChangedFile item2 in list2)
 				{
 					if (item2.ChangeType == ChangeType.Deleted)
@@ -83,7 +83,7 @@ namespace ForkPlus.Git.Commands
 					return GitCommandResult.Failure(gitRequestResult2.ToGitCommandError());
 				}
 			}
-			GitCommand gitCommand3 = new GitCommand("stash", "push");
+			GitCommand gitCommand3 = new GitCommand(ReliableGitFlags.Prefix, "stash", "push");
 			if (!string.IsNullOrEmpty(stashMessage))
 			{
 				gitCommand3.Add("--message");

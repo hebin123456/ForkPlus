@@ -1033,7 +1033,9 @@ namespace ForkPlus.UI.UserControls
 		{
 			try
 			{
-				GitRequestResult r = new GitRequest(GitModule).Command("status", "--porcelain").Execute(silent: true);
+				// 问题7：与 status 四件套对齐（见 GetChangedFilesGitCommand.CreateReliableStatusCommand）。
+				// 否则 fsmonitor daemon 漏报时会误判"干净"→ 跳过 Undo 快照 → 破坏性操作不可撤销 → 变更丢失。
+				GitRequestResult r = new GitRequest(GitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "status", "--porcelain")).Execute(silent: true);
 				return r.Success && !string.IsNullOrWhiteSpace(r.Stdout);
 			}
 			catch

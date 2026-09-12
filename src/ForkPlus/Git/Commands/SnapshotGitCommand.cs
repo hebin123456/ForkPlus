@@ -74,12 +74,19 @@ namespace ForkPlus.Git.Commands
 		{
 			try
 			{
+				// 问题7（fsmonitor 系列第 7 处，版本号不变）：stash create 写入侧四件套对齐——与 status/diff/add/reset 同源
+				// （见 ReliableGitFlags）。根因：repo 开启 core.fsmonitor 且 daemon 运行时，
+				// git stash create 计算工作区快照 diff 前会先问 fsmonitor daemon"哪些文件脏了"；
+				// daemon 的脏文件列表可能过期漏报（inotify 事件合并/守护进程重启窗口期/index
+				// stat 缓存陈旧/时序竞争），stash 信了 → 该文件的变更被静默排除出快照 commit。
+				// 快照是 Undo discard/stage/unstage/删分支 等破坏性操作的前置防线（PreOperationStashSha），
+				// 快照缺了 → Undo 时 stash apply 恢复不回来那部分工作区变更，被永久丢弃（"丢失变更"）。
 				// --include-untracked：捕获 untracked 文件（需 git >= 2.35，老版本回退到不带该选项）
-				GitRequestResult r = new GitRequest(gitModule).Command("stash", "create", "--include-untracked").Execute(silent: true);
+				GitRequestResult r = new GitRequest(gitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "stash", "create", "--include-untracked")).Execute(silent: true);
 				if (!r.Success)
 				{
 					// 回退：不带 --include-untracked（仅捕获 tracked 文件变更 + index 状态）
-					r = new GitRequest(gitModule).Command("stash", "create").Execute(silent: true);
+					r = new GitRequest(gitModule).Command(new GitCommand(ReliableGitFlags.Prefix, "stash", "create")).Execute(silent: true);
 					if (!r.Success)
 					{
 						return null;
