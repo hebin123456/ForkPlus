@@ -32,6 +32,16 @@
 <!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+    <!-- 修复（2026-09-12，"gitignore 弹窗两个文本框内容多时无滚动条"）：
+         模板内层 PART_ScrollViewer 原先硬编码 HSBV/VSBV=Hidden，XAML 里写的
+         ScrollViewer.VerticalScrollBarVisibility="Auto" 被彻底无视 → 行多时既无滚动条
+         也无法滚选。改为与官方 Fluent 主题一致：TemplateBinding 到 TextBox 上的
+         ScrollViewer.* 附加属性。此处用主题 Setter 把默认值固定为 Hidden：未显式设滚动
+         属性的输入框保持"可滚动但不显示滚动条"（对齐 WPF 原版 PART_ContentHost），
+         显式设 Auto 的（本弹窗 Pattern/Preview）则在内容超框时出现滚动条。局部值优先
+         于主题 Setter，不会互相干扰。 -->
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
@@ -44,7 +54,7 @@
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
               <Image Source="{TemplateBinding controls:PlaceholderTextBox.Icon}" Height="14" Width="14" Margin="4,0,0,0" x:Name="IconElement" />
-              <ScrollViewer Grid.Column="1" x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+              <ScrollViewer Grid.Column="1" x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                 <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
               </ScrollViewer>
               <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" IsVisible="False" />

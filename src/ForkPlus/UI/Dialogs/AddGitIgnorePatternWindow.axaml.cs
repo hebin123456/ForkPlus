@@ -38,10 +38,19 @@ namespace ForkPlus.UI.Dialogs
 			PatternLabelTextBlock.Text = Translate("(one pattern per line)");
 			PreviewLabelTextBlock.Text = Translate("0 files match");
 			PatternTextBox.Text = _initialPattern;
-			_updatePreviewAction.InvokeNow(_initialPattern);
 			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 PatternTextBox 尚未赋值，
 			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
 			RefreshCommandPreview();
+			// 修复（2026-09-12，"首开 Pattern 已填字但 Preview 未自动生成"）：
+			// UpdatePreview 已改为 Task.Run 后台跑 git + Dispatcher.UIThread.Post 显式回 UI，
+			// 不再依赖构造期的同步上下文——此处构造期立即预填一次（热启动预览），
+			// 并在 Opened 后再刷一次兜底（窗口显示时 UI 线程 Dispatcher 必定就绪，
+			// 规避某些时机下构造期线程池回填竞态）。
+			_updatePreviewAction.InvokeNow(_initialPattern);
+			base.Opened += delegate
+			{
+				_updatePreviewAction.InvokeNow(PatternTextBox.Text);
+			};
 		}
 
 		protected override string GetCommandPreview()
@@ -80,12 +89,31 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdatePreview(string pattern)
 		{
 			string[] patterns = pattern.Trim().Split(Consts.Chars.NewLine);
-			Task<GitCommandResult<string[]>> task = new Task<GitCommandResult<string[]>>(() => new GetFilesToIgnoreGitCommand().Execute(_gitModule, patterns));
+			Task<GitCommandResult<string[]>> task = Task.Run(delegate
+			{
+				return new GetFilesToIgnoreGitCommand().Execute(_gitModule, patterns);
+			});
 			task.ContinueWith(delegate(Task<GitCommandResult<string[]>> taskResult)
 			{
-				if (PatternTextBox.Text == pattern)
+				// 修复（2026-09-12，与 Opened 首刷配套）：原用
+				// TaskScheduler.FromCurrentSynchronizationContext() 抓构造期/线程池的同步上下文
+				// 回 UI 线程回填，首开时不可靠导致 Preview 空白。改为 Task.Run 后台跑 git、
+				// 经 Dispatcher.UIThread.Post 显式回 UI 线程更新控件，路径确定、线程安全。
+				GitCommandResult<string[]> result;
+				if (taskResult.IsFaulted || taskResult.IsCanceled)
 				{
-					GitCommandResult<string[]> result = taskResult.Result;
+					result = GitCommandResult<string[]>.Failure(new InvalidOperationException("GetFilesToIgnoreGitCommand failed"));
+				}
+				else
+				{
+					result = taskResult.Result;
+				}
+				Dispatcher.UIThread.Post(delegate
+				{
+					if (PatternTextBox.Text != pattern)
+					{
+						return;
+					}
 					string text = "";
 					string text2 = "";
 					if (result.Succeeded)
@@ -102,10 +130,9 @@ namespace ForkPlus.UI.Dialogs
 					PreviewTextBox.Text = text;
 					PreviewLabelTextBlock.Text = text2;
 					SetStatus(ForkPlusDialogStatus.None, "");
-				}
-			}, TaskScheduler.FromCurrentSynchronizationContext());
+				});
+			});
 			SetStatus(ForkPlusDialogStatus.InProgress, "");
-			task.Start();
 		}
 
 		private static string Translate(string text)
