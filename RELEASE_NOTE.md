@@ -9,6 +9,9 @@
 ### 优化
 
 - **git mm 0 子仓空状态引导 + 三命令按钮状态机**：git mm 刚 init 结束尚未 sync 出子仓时，子仓 tab 区域完全空白且无任何引导；且 Start / Sync / Upload 三按钮始终可点，误点即报错。现在 0 子仓时子仓区域居中显示引导文案"没有子仓，请先点击同步按钮，然后点击开始按钮开启 git mm 开发"（8 语言国际化），三按钮按 git mm 工作区生命周期三态管理：**0 子仓**（刚 init）Start / Upload 禁用、Sync 可用（引导文案的入口）；**有子仓但未 start**（子仓全在 detached HEAD、检测不到本地分支）Sync / Upload 禁用、Start 可用；**已 start**（检测到本地分支）三按钮全部可用；命令运行中（busy）一律全禁用防并发。分支检测依据子仓 `git status -b` 的当前分支（detached HEAD 解析为空），`git mm start` 收尾强制绕过 60s 状态缓存刷新分支，start 后按钮即时解禁。
+- **git mm 有子仓但未选中任一子仓时内容区空白引导**：有子仓而当前无选中子仓（列表刚建未选中 / 子仓被筛选入口全部隐藏，SelectedSubrepo==null）时，子仓 tab 内容区完全空白。现在居中显示提示"没有选中子仓显示，请在右上角选中"（8 语言国际化），选中/取消选中时即时显隐。
+- **AI 操作按钮动词未国际化（"🤖 AI Explain" 显示英文）**：`AiActionButton` 点按文案对 "AI {verb}" 硬编码拼接，Explain / Resolve 等动词在非英文界面显示英文。改为对 "AI {verb}" 整体走 `PreferencesLocalization.Current` 翻译（复用既有 "AI Explain" / "AI Resolve" 键），与按钮 ToolTip 口径一致，修复所有语言界面的 AI 按钮文案。
+- **"将当前分支重置到修订"对话框的重置类型下拉未国际化**：基类 Loaded 的自动本地化不递归进 ComboBox 未物化的下拉项（关闭态仅物化选中项、下拉弹层按需生成），重置类型的 Soft / Mixed / Hard 与三条说明文案永远是英文。改为构造函数按当前 UI 语言显式翻译下拉项（一次设置，幂等）。
 
 ### 修复
 

@@ -1066,6 +1066,9 @@ namespace ForkPlus.UI.UserControls
 		// 本方法刷新；全部子仓被筛选隐藏时（VisibleSubrepos 过滤）不算"没有子仓"，
 		// 不误报引导文案。
 		SubrepoEmptyStateBorder.IsVisible = !hasSubrepos;
+		// 有子仓但未选中任何子仓（无内容可显示）引导：hasSubrepos 而
+		// SelectedSubrepo==null 时子仓内容区空白，居中提示用户去右上角筛选入口选中子仓。
+		SubrepoNoSelectionBorder.IsVisible = hasSubrepos && _workspace.SelectedSubrepo == null;
 	}
 
 	private void SetStatus(string text)
@@ -1473,6 +1476,9 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			// v4.0.12：选中变化（含取消选中 SelectedItem==null）都要重算"未选中子仓"空状态
+			// 覆盖层显隐——有子仓但当前无选中时内容区空白，需居中提示（见该方法注释）。
+			RefreshCommandButtonStates();
 			if (SubreposTabControl.SelectedItem is TabItem tabItem && tabItem.Tag is GitMmSubrepoItem subrepo)
 			{
 				// 不调用 CancelStatusRefresh()。

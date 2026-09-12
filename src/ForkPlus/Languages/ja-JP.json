@@ -1204,6 +1204,7 @@
     "No applicable suggestions for this file.": "このファイルに適用可能な提案はありません。",
     "No command history": "コマンド履歴なし",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "サブリポジトリがありません。まず同期ボタンをクリックし、その後開始ボタンをクリックして git mm 開発を始めてください。",
+    "No sub repository is selected. Please select one from the top right.": "サブリポジトリが選択されていません。右上から選択してください",
     "No conflict markers found in the file.": "ファイルに競合マーカーが見つかりません。",
     "No controls": "コントロールなし",
     "No fast-forward": "ファストフォワードしない",

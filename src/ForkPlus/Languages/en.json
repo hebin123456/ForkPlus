@@ -15,6 +15,7 @@
     "Load more (+{0} / {1} remaining)": "Load more (+{0} / {1} remaining)",
     "Partially shown": "Partially shown",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.",
+    "No sub repository is selected. Please select one from the top right.": "No sub repository is selected. Please select one from the top right.",
     "Solid Colors": "Solid Colors",
     "RedLight": "Red Light",
     "RedDark": "Red Dark",

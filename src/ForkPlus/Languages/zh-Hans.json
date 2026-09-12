@@ -1207,6 +1207,7 @@
     "No applicable suggestions for this file.": "此文件没有可应用建议。",
     "No command history": "没有命令历史",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "没有子仓，请先点击同步按钮，然后点击开始按钮开启 git mm 开发",
+    "No sub repository is selected. Please select one from the top right.": "没有选中子仓显示，请在右上角选中",
     "No controls": "无控件",
     "No fast-forward": "禁止快进",
     "No fast-forward on merge": "合并时禁用快进",

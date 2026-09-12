@@ -1204,6 +1204,7 @@
     "No applicable suggestions for this file.": "Keine anwendbaren Vorschläge für diese Datei.",
     "No command history": "Keine Befehlshistorie",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "Keine Sub-Repos. Klicken Sie zuerst auf die Schaltfläche Sync und dann auf Start, um die git mm-Entwicklung zu beginnen.",
+    "No sub repository is selected. Please select one from the top right.": "Kein Unterrepository ausgewählt. Bitte wählen Sie oben rechts eines aus.",
     "No conflict markers found in the file.": "Keine Konfliktmarkierungen in der Datei gefunden.",
     "No controls": "Keine Steuerelemente",
     "No fast-forward": "Kein Fast-Forward",

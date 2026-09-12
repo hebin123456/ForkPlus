@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using ForkPlus.Accounts.AiServices;
+using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -88,11 +89,16 @@ namespace ForkPlus.UI.Controls
 			UpdateContent();
 		}
 
+		/// <summary>v4.0.12：action 动词点击文案国际化——原 "🤖 AI {verb}" 的 verb 直接裸露
+		/// （"AI Explain"/"AI Resolve" 显示英文）。改为对 "AI {verb}" 整体走
+		/// PreferencesLocalization.Current 翻译（键 "AI Explain"/"AI Resolve" 等已存在于
+		/// 各语言字典；无键/verb 为空时回退原样），与按钮 ToolTip 的翻译口径一致。</summary>
 		private void UpdateContent()
 		{
 			string prefix = _isBusy ? "⏳" : "🤖";
 			string verb = ActionVerb;
-			string text = string.IsNullOrWhiteSpace(verb) ? prefix + " AI" : prefix + " AI " + verb;
+			string label = string.IsNullOrWhiteSpace(verb) ? "AI" : "AI " + verb;
+			string text = prefix + " " + PreferencesLocalization.Current(label);
 			if (_isBusy && !string.IsNullOrWhiteSpace(_busyStatus))
 			{
 				text = text + " · " + _busyStatus;

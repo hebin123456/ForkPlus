@@ -63,7 +63,17 @@ namespace ForkPlus.UI.Dialogs
 			// 同步，不产生 IsSet 本地值、不反选、不产生空 AddedItems 事件），与 _resetType 默认值
 			// 一致，SelectionChanged 同步 _resetType 与命令预览，关闭态正确显示 Mixed。
 			ResetTypeCombobox.SelectedIndex = 1;
-			_repositoryUserControl = repositoryUserControl;
+		// v4.0.12：重置类型下拉项国际化。基类 Loaded 的 ApplyAutomaticLocalization 不会递归
+		// 进 ComboBox 未物化的下拉项（关闭态仅物化选中项、下拉弹层按需生成），这三个
+		// TextBlock 的原油画 xaml 默认文本是英文。此处按选中的 UI 语言显式翻译
+		// 类型名（Soft/Mixed/Hard）与说明文案（Keep all changes... / Discard...）。
+		SoftResetTypeText.Text = PreferencesLocalization.Current("Soft");
+		SoftResetDescriptionText.Text = PreferencesLocalization.Current("Keep all changes. Stage differences");
+		MixedResetTypeText.Text = PreferencesLocalization.Current("Mixed");
+		MixedResetDescriptionText.Text = PreferencesLocalization.Current("Keep all changes. Unstage differences");
+		HardResetTypeText.Text = PreferencesLocalization.Current("Hard");
+		HardResetDescriptionText.Text = PreferencesLocalization.Current("Discard all local changes");
+		_repositoryUserControl = repositoryUserControl;
 			_branch = activeBranch;
 			_destination = destination;
 			if (activeBranch != null)

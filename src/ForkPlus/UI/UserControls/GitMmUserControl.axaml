@@ -129,6 +129,13 @@
           <Border x:Name="SubrepoEmptyStateBorder" IsVisible="False" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <TextBlock Text="No sub repositories. Click the Sync button first, then click the Start button to begin git mm development." Foreground="{DynamicResource SecondaryLabelBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" />
           </Border>
+          <!-- 有子仓但未选中任何子仓（无内容可显示）空状态：
+               v4.0.12 同款覆盖层，代码后置 RefreshCommandButtonStates 按
+               hasSubrepos && SelectedSubrepo==null 驱动显隐（子仓被筛选全部隐藏 / 列表
+               刚建未选中时内容区空白，引导用户去右上角筛选入口选中子仓）。 -->
+          <Border x:Name="SubrepoNoSelectionBorder" IsVisible="False" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TextBlock Text="No sub repository is selected. Please select one from the top right." Foreground="{DynamicResource SecondaryLabelBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" />
+          </Border>
         </Grid>
       </DockPanel>
     </Border>
