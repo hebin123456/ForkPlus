@@ -46,11 +46,16 @@
          暂存/取消暂存改变列表长度后 thumb 视觉上"冻住不动"，长度与左侧文件树
          内容比例失真（E2E 实证：extent=4620 viewport=199 时 ideal=7.9 被钳到 18）。
          且 Avalonia 12 的 Track.ComputeScrollBarLengths 内置 thumbMinLength=10 下限，
-         仅当 Thumb 显式 IsSet(MinHeight) 时才采用自定义值——彻底不设置会落到 10px
-         （第二次 E2E 实证 thumb=10.0）。故必须显式设 0 覆盖内置下限，
-         对齐 WPF 原版：thumb 始终精确反映内容比例。 -->
+        仅当 Thumb 显式 IsSet(MinHeight) 时才采用自定义值——彻底不设置会落到 10px
+        （第二次 E2E 实证 thumb=10.0）。
+     Migration note（2026-09-13，修复未忽略 node_modules 时上万文件滚动条滑块被压成 1px）：
+         在 MinHeight=0 基础上加回 10px 下限。E2E/探针实证：纯比例缩放时，2 千文件滑块
+         2.0px、2 万+文件 1.0px——滑块过小无法用鼠标抓住。故设 MinHeight=10（对齐 Avalonia
+         内置 thumbMinLength），保证任意大列表滑块仍可拖动。10px 远小于此前 18px 下限，
+         对几百级长列表（比例 thumb ~8px）仅轻微钳到 10px，暂存/取消暂存改变列表长度时
+         thumb 仍随内容明显移动，不重蹈 bug3"冻住不动"覆辙。 -->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MinHeight" Value="10" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">

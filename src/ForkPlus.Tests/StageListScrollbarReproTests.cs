@@ -310,6 +310,48 @@ namespace ForkPlus.Tests
 			}).GetAwaiter().GetResult();
 		}
 
+		// 用户反馈（2026-09-13）：未忽略 node_modules 时未暂存区上万文件，滚动条滑块消失
+		// 无法鼠标拖动。根因是 ScrollBarThumbVertical MinHeight=0 时滑块随比例塌缩（2 千文件
+		// 2.0px、2 万+文件 1.0px）。修复设为 MinHeight=10，滑块不再低于可用高度。
+		[Fact]
+		public void FileList_LargeFileCount_ScrollbarThumb_Stays_Grabbable()
+		{
+			HeadlessAppBootstrap.Run(delegate
+			{
+				var window = new Window { Width = 420, Height = 300 };
+				var list = new FileListUserControl { Mode = FileListMode.Tree };
+				window.Content = list;
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+
+				// node_modules 场景：2 万 + 文件（含深层目录展开）
+				var files = new ChangedFile[20000];
+				for (int i = 0; i < files.Length; i++)
+				{
+					files[i] = new ChangedFile($"node_modules/pkg{i:D6}/f{i:D6}.txt", StatusType.Modified, StatusType.None);
+				}
+				list.SetItemSource(files, forceRefresh: true, restoreSelection: false);
+				Pump();
+				Pump();
+
+				double thumbH = ThumbHeight(list);
+				_output.WriteLine(Probe(list, "20000 files"));
+				Assert.True(svHasScroll(list), "2 万文件应产生滚动区域");
+				Assert.True(thumbH >= 9.0,
+					$"大列表滑块不应塌缩：thumbH={thumbH:F1}px（修复前 MinHeight=0 时 1.0px 无法拖动，修复后应 ≥10px）");
+				Assert.True(thumbH >= 9.0 && thumbH <= 12.0,
+					$"滑块应保持最小可用高度而非过小或异常放大：thumbH={thumbH:F1}px");
+
+				window.Close();
+			});
+		}
+
+		private static bool svHasScroll(FileListUserControl list)
+		{
+			ScrollViewer sv = GetScrollViewer(list);
+			return sv != null && sv.ScrollBarMaximum.Y > 0;
+		}
+
 		private static double ParseExtent(string probe)
 		{
 			string token = probe.Split(' ').First(p => p.StartsWith("extent="));
