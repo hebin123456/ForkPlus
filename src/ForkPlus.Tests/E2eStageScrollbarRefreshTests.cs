@@ -75,6 +75,10 @@ namespace ForkPlus.Tests
 			{
 				HeadlessAppBootstrap.Run(delegate
 				{
+					// 产品滚动条滑块最小高度下限（Scrollviewer.axaml ScrollBarThumbVertical MinHeight=10，
+					// 为修 node_modules 上万文件时滑块按比例塌成 1px 不可拖动而设）。该测试断言滑块
+					// 需同时满足"随内容比例变化"（即：确认滚动条刷新）与"不低于该下限"（大列表仍可拖动）。
+					const double minThumb = 10.0;
 					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
 					try
 					{
@@ -131,16 +135,20 @@ namespace ForkPlus.Tests
 						Assert.True(unstagedSv.Offset.Y <= unstagedSv.ScrollBarMaximum.Y + 0.5,
 							"暂存后 offset 超出 max：" + probe1);
 
-						// thumb 长度应与 viewport/extent 比例精确一致（WPF 原版无 MinHeight 下限；
-						// 修复前被 18px 下限钳制成 2.3 倍失真，±15% 容差）
+						// thumb 长度应与 viewport/extent 比例一致，且不低于产品下限 minThumb=10
+						// （Scrollviewer.axaml ScrollBarThumbVertical MinHeight；WPF 原版虽无下限，
+						// 但 node_modules 上万文件时纯比例滑块塌成 1px 无法拖动，故设 10px 下限）。
+						// 期望值 = clamp(ideal, minThumb, trackH)，±15% 容差。
 						double trackH = TrackHeight(unstagedList);
 						double thumbH = ThumbHeight(unstagedList);
 						if (trackH > 10 && thumbH > 0)
 						{
 							double ideal = trackH * unstagedSv.Viewport.Height / Math.Max(unstagedSv.Extent.Height, 1);
-							Assert.True(Math.Abs(thumbH - ideal) <= Math.Max(ideal * 0.15, 2),
-								"暂存后 thumb 长度与内容比例不符：thumb=" + thumbH.ToString("F1")
-									+ " ideal=" + ideal.ToString("F1") + "（" + probe1 + "）");
+							double expected = Math.Min(Math.Max(ideal, minThumb), trackH);
+							Assert.True(Math.Abs(thumbH - expected) <= Math.Max(expected * 0.15, 2),
+								"暂存后 thumb 长度与内容比例（或下限）不符：thumb=" + thumbH.ToString("F1")
+									+ " ideal=" + ideal.ToString("F1") + " expected=" + expected.ToString("F1")
+									+ "（" + probe1 + "）");
 						}
 
 						// thumb 位置：offset=max（滚到底）时 thumb 底边应贴住轨道底端
@@ -161,9 +169,10 @@ namespace ForkPlus.Tests
 						if (stagedTrackH > 10 && stagedThumbH > 0)
 						{
 							double stagedIdeal = stagedTrackH * stagedSv.Viewport.Height / Math.Max(stagedSv.Extent.Height, 1);
-							Assert.True(Math.Abs(stagedThumbH - stagedIdeal) <= Math.Max(stagedIdeal * 0.15, 2),
+							double stagedExpected = Math.Min(Math.Max(stagedIdeal, minThumb), stagedTrackH);
+							Assert.True(Math.Abs(stagedThumbH - stagedExpected) <= Math.Max(stagedExpected * 0.15, 2),
 								"暂存后已暂存列表 thumb 长度应随内容扩张变长：thumb=" + stagedThumbH.ToString("F1")
-									+ " ideal=" + stagedIdeal.ToString("F1"));
+									+ " ideal=" + stagedIdeal.ToString("F1") + " expected=" + stagedExpected.ToString("F1"));
 						}
 
 						// ===== 6) 滚动已暂存列表到底 → 点 Unstage（收缩方向 + 钳制）=====
@@ -208,9 +217,11 @@ namespace ForkPlus.Tests
 						if (trackH2 > 10 && thumbH2 > 0)
 						{
 							double ideal2 = trackH2 * unstagedSv.Viewport.Height / Math.Max(unstagedSv.Extent.Height, 1);
-							Assert.True(Math.Abs(thumbH2 - ideal2) <= Math.Max(ideal2 * 0.15, 2),
+							double expected2 = Math.Min(Math.Max(ideal2, minThumb), trackH2);
+							Assert.True(Math.Abs(thumbH2 - expected2) <= Math.Max(expected2 * 0.15, 2),
 								"取消暂存后 thumb 比例应回到初始水平：thumb=" + thumbH2.ToString("F1")
-									+ " ideal=" + ideal2.ToString("F1") + "（" + probe3 + "）");
+									+ " ideal=" + ideal2.ToString("F1") + " expected=" + expected2.ToString("F1")
+									+ "（" + probe3 + "）");
 						}
 					}
 					finally
