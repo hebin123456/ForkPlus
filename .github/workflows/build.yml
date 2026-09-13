@@ -393,12 +393,20 @@ jobs:
           mapfile -t FILTERS < <(grep -oP '^\s+test-filter:\s*"\K[^"]+' .github/workflows/build.yml)
           echo "discovered ${#FILTERS[@]} shard filters from workflow matrix"
           [ "${#FILTERS[@]}" -ge 2 ] || { echo "::error::未能从 workflow 提取分片 filter"; exit 1; }
-          # 构建一次（增量），后续 --no-build 枚举秒级
-          dotnet test ForkPlus.sln --list-tests --nologo > /dev/null
-          total=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo 2>/dev/null | grep -c '^    ')
+          # 构建一次（增量），后续 --no-build 枚举秒级。输出落盘+失败 tail：MSBuild 错误
+          # 走 stdout，直接 >/dev/null 会被静默吞掉（v4.1.0 CI 实证：守卫 40s 静默
+          # exit 1 无任何线索，2026-09-13）。
+          if ! dotnet test ForkPlus.sln --list-tests --nologo > /tmp/guard-build.log 2>&1; then
+            echo "::error::守卫预构建失败（--list-tests 构建阶段），日志尾部："
+            tail -n 40 /tmp/guard-build.log
+            exit 1
+          fi
+          # 枚举计数不因 dotnet 崩溃/零匹配静默死（set -e + pipefail 会直接无声退出）：
+          # || true 放行后计数失真交给下方 sum≠total 显式报错定位
+          total=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo 2>/dev/null | grep -c '^    ' || true)
           sum=0
           for f in "${FILTERS[@]}"; do
-            n=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo --filter "$f" 2>/dev/null | grep -c '^    ')
+            n=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo --filter "$f" 2>/dev/null | grep -c '^    ' || true)
             echo "  $n tests  <- $f"
             sum=$((sum + n))
           done

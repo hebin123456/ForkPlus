@@ -88,6 +88,40 @@ namespace ForkPlus.Tests
 
 		private static readonly long MessageBoxWatchdogGraceTicks = TimeSpan.FromSeconds(3.0).Ticks;
 
+		// v4.1.0（2026-09-13，CI 全分片挂死根因）：ReleaseNotesWindow（首次启动新版本
+		// "更新内容"弹窗）与 bisect 信息窗同类的模态死锁源——CI 全新 runner 无
+		// settings.json，首个开 MainWindow 的用例（E2e1/E2e2 harness、UiSmoke、
+		// CredentialsRememberUi）必触发"首次启动"判定弹该窗；MainWindow 的
+		// Dispatcher.Post 启动钩子在 headless 下无人点 Close → ShowDialog 的
+		// PushFrame 永不退出 → UI 线程死锁、整分片挂死（实证：本地移走 settings.json
+		// 后 E2e1 过滤器 50s 零用例完成，settings 里 LastShownReleaseNotesVersion
+		// 已写入——卡在 ShowDialog 恰好发生在写入之后）。处理方式与信息窗一致：
+		// 3s 宽限 + 记录正文（供断言/诊断）+ 兜底关闭，同版本幂等（settings 已记录，
+		// 同 runner 后续用例不再弹，仅首例付出 3s 宽限）。
+		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<
+			global::ForkPlus.UI.Dialogs.ReleaseNotesWindow,
+			System.Runtime.CompilerServices.StrongBox<long>> ReleaseNotesFirstSeenTicks = new();
+
+		private static readonly List<string> CapturedReleaseNotes = new();
+
+		/// <summary>窥视（不清空）看门狗已关闭的 ReleaseNotesWindow 弹窗正文。</summary>
+		internal static string[] PeekCapturedReleaseNotes()
+		{
+			lock (CapturedReleaseNotes)
+			{
+				return CapturedReleaseNotes.ToArray();
+			}
+		}
+
+		/// <summary>清空已捕获的更新内容弹窗正文（用例开头调用，避免用例间遗留干扰断言）。</summary>
+		internal static void ClearCapturedReleaseNotes()
+		{
+			lock (CapturedReleaseNotes)
+			{
+				CapturedReleaseNotes.Clear();
+			}
+		}
+
 		/// <summary>窥视（不清空）看门狗已关闭的 MessageBoxWindow 信息窗文本。</summary>
 		internal static string[] PeekCapturedMessageBoxes()
 		{
@@ -196,10 +230,49 @@ namespace ForkPlus.Tests
 							: infoText);
 					}
 					MessageBoxFirstSeenTicks.Remove(messageBox);
-					messageBox.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+				messageBox.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+			}
+			else if (window is global::ForkPlus.UI.Dialogs.ReleaseNotesWindow releaseNotes && releaseNotes.IsVisible)
+			{
+				// v4.1.0（CI 全分片挂死根因，见 ReleaseNotesFirstSeenTicks 字段注释）：
+				// 更新内容弹窗与信息窗同款宽限期语义（首见记时间戳、持续可见超 3s 才
+				// 兜底关闭；有处理器的用例正常路径毫秒级自行关闭）。信息类弹窗不参与
+				// Run 收尾失败判定，正文记录进 CapturedReleaseNotes 供断言/诊断。
+				if (!immediate)
+				{
+					System.Runtime.CompilerServices.StrongBox<long> notesFirstSeen =
+						ReleaseNotesFirstSeenTicks.GetOrCreateValue(releaseNotes);
+					long notesNowTicks = DateTime.UtcNow.Ticks;
+					if (notesFirstSeen.Value == 0)
+					{
+						notesFirstSeen.Value = notesNowTicks;
+						continue;
+					}
+					if (notesNowTicks - notesFirstSeen.Value < MessageBoxWatchdogGraceTicks)
+					{
+						continue;
+					}
 				}
+				string notesText;
+				try
+				{
+					notesText = releaseNotes.ReleaseNotesTextBox?.Text;
+				}
+				catch
+				{
+					notesText = null;
+				}
+				lock (CapturedReleaseNotes)
+				{
+					CapturedReleaseNotes.Add(string.IsNullOrEmpty(notesText)
+						? "<ReleaseNotesWindow 无文本>"
+						: notesText);
+				}
+				ReleaseNotesFirstSeenTicks.Remove(releaseNotes);
+				releaseNotes.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
 			}
-			}
+		}
+		}
 			catch
 			{
 				// 看门狗自身异常绝不能影响测试线程

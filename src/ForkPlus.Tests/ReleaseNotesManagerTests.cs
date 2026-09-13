@@ -206,19 +206,51 @@ namespace ForkPlus.Tests
 						delegate (TextBlock tb) { return tb.Text == "更新内容"; });
 
 					// Footer 单 Close 按钮形态：Submit = 关闭，Cancel 收起
-					ForkPlusDialogFooter footer = window.GetVisualDescendants().OfType<ForkPlusDialogFooter>().FirstOrDefault();
-					Assert.NotNull(footer);
-					Assert.Equal("关闭", footer.SubmitButton.Content as string);
-					Assert.False(footer.CancelButton.IsVisible, "只读信息弹窗不应显示 Cancel 按钮");
+				ForkPlusDialogFooter footer = window.GetVisualDescendants().OfType<ForkPlusDialogFooter>().FirstOrDefault();
+				Assert.NotNull(footer);
+				Assert.Equal("关闭", footer.SubmitButton.Content as string);
+				Assert.False(footer.CancelButton.IsVisible, "只读信息弹窗不应显示 Cancel 按钮");
 
-					window.Close();
-					Dispatcher.UIThread.RunJobs();
-				}
-				finally
-				{
-					ForkPlusSettings.Default.UiLanguage = originalLanguage;
-				}
+				window.Close();
+				Dispatcher.UIThread.RunJobs();
+			}
+			finally
+			{
+				ForkPlusSettings.Default.UiLanguage = originalLanguage;
+			}
 			});
+		}
+
+		[Fact]
+		public void VisibleReleaseNotesWindow_IsAutoClosedByWatchdog_AfterGracePeriod()
+		{
+			// v4.1.0（2026-09-13，CI 全分片挂死回归防线）：CI 全新 runner 无 settings.json，
+			// 首个开 MainWindow 的用例必触发"首次启动新版本"弹 ReleaseNotesWindow；模态
+			// ShowDialog 在 headless 下无人点 Close → PushFrame 永不退出 → UI 线程死锁、
+			// 整分片挂死（e2e-1/2/3 + core-a/b 五片实证）。看门狗按信息窗同款语义兜底：
+			// 模态泵期间 tick 3s 宽限后关闭（E2e1 全绿即证该路径）；Run 收尾同步扫描
+			// immediate 关闭残留（本用例确定性验证的路径）。断言：①宽限期内不误关；
+			// ②func 返回后收尾关闭；③正文捕获进 PeekCapturedReleaseNotes 可断言。
+			// 窗口在 UI 线程创建/读取（Avalonia 线程归属铁律），故终态经第二个 Run 复核。
+			var holder = new ReleaseNotesWindow[1];
+			HeadlessAppBootstrap.Run(delegate
+			{
+				HeadlessAppBootstrap.ClearCapturedReleaseNotes();
+				var window = new ReleaseNotesWindow("4.1.0", "看门狗回归：更新内容正文");
+				holder[0] = window;
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+				Assert.True(window.IsVisible, "宽限期内不应被关闭（首见只记时间戳）");
+				// 故意不关窗口：func 返回后的 Run 收尾扫描（immediate）负责兜底关闭
+			});
+			bool closed = false;
+			HeadlessAppBootstrap.Run(delegate
+			{
+				closed = !holder[0].IsVisible; // UI 线程复核终态（首个 Run 的收尾已执行）
+			});
+			Assert.True(closed, "Run 收尾应兜底关闭泄漏的 ReleaseNotesWindow（模态场景 UI 线程即由此解锁）");
+			Assert.Contains(HeadlessAppBootstrap.PeekCapturedReleaseNotes(),
+				delegate (string t) { return t != null && t.Contains("看门狗回归"); });
 		}
 	}
 }
