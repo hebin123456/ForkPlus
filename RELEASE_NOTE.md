@@ -4,7 +4,7 @@
 
 ## v4.0.12
 
-> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复 + git mm 0 子仓空状态引导：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
+> 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复 + git mm 0 子仓空状态引导 + 未暂存区上万文件滚动条滑块可拖修复 + gitignore 弹窗预览/滚动条修复 + 仓库状态加载期五弹窗竞态崩溃修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。
 
 ### 优化
 
@@ -28,6 +28,10 @@
 - **git ≥2.55 上二分查找收敛后不弹"找到首个坏提交"信息窗 + 端到端用例在 CI 必失败**：git 2.55.0（CI ubuntu-latest 已预装，本地沙箱仍 2.34.1）把 bisect 收敛输出的术语加了单引号——stdout 变为 `<sha> is the first 'bad' commit`、BISECT_LOG 变为 `# first 'bad' commit: [<sha>]`（≤2.54 无引号，git 源码 builtin/bisect.c 实证），而收敛检测、收敛信息窗分流、活动日志着色、E2E 断言四处硬编码旧格式：新版 git 上收敛被当普通成功（信息窗不弹、不着色），CI 用例收敛轮询永远等不到旧格式结论行 30s 超时（连续 3 轮 CI 仅此用例失败、本地 2.34.1 从不复现的根因）。修复为两代格式判定集中到 `BisectGitCommand`（stdout 结论 / BISECT_LOG 结论行 / 结论行指向指定 SHA 三个判定），生产三处（收敛检测、MessageBoxWindow 信息窗分流、GitOutputColorizer 着色）与 E2E 测试四处共用同一口径，新增 24 个纯单元格式兼容用例锁定（两代格式正/负样本 + null/空串边界）。
 - **开启 core.fsmonitor 的仓库"丢失变更"：Undo 快照 / stash 创建漏掉被 fsmonitor daemon 漏报的文件（fsmonitor 系列第 7 处）**：`git stash create / push / save`、`git add -f`、`git reset HEAD` 及工作区干净判定（`git status` / `git diff-index`）此前未带 `-c core.fsmonitor=false` 四件套。repo 开启 core.fsmonitor 且 daemon 运行时，stash 计算工作区快照 diff 前先问 daemon"哪些文件脏了"，daemon 的脏文件列表过期漏报（inotify 事件合并 / 守护进程重启窗口期 / index stat 缓存陈旧 / 时序竞争）时，被漏报文件的变更被静默排除出快照 commit。Undo 的 `PreOperationStashSha` 是 discard/stage/unstage/删分支等破坏性操作的前置防线，快照缺文件 → Undo 时 `stash apply` 恢复不回被漏报的那部分工作区变更，被永久丢弃（"丢失变更"）。修复为把上述右链全部切到 `ReliableGitFlags.Prefix`（与 status/diff/add/reset 同源四件套），强制真实 stat + 内容比较；新增回归用例：先经 fsmonitor-aware 命令把 FSMONITOR 扩展 seed 进 index，再用恒报"无变更"的桩脚本使裸 `stash create` 判"干净"，断言快照 commit 必含该文件变更（防丢失契约）。
 - **FileDiff 短栏在长栏滚到底后仍能继续下滚（左右不对齐，2026-09-12）**：SideBySide 模式滚动同步原逻辑用 `IsVerticalOffsetWithinDocumentArea` 判断"目标偏移在目标文档区内"才放行——偏长侧（如右侧）滚到偏短侧（如左侧）够不到的位置时直接跳过同步，偏短侧被留在原地且滚动条仍有空余，用户手动还能继续往下滚，两侧视觉"不对齐"。修复为同步时改用新增的 `ClampVerticalOffsetToDocumentArea` 把目标偏移先夹到目标栏自己的文档区（`0 .. extent-viewport`）再滚动：偏短侧被钳到其自身文档末尾"对齐定格"，滚动条随之到顶/到底，不再留可继续下滚的空余；配套新增 `ClampHorizontalOffsetToDocumentArea`（水平同源修复备用），并新增回归用例覆盖钳制语义（超界期望压回自身最大偏移、区内期望原样放行）。
+- **仓库刚打开即开"创建分支"等五个对话框随机崩溃（NullReferenceException）**：仓库刚打开、状态刷新（RepositoryStatusUpdate 管线）尚未完成时 `RepositoryStatus` 为 null——此时打开创建分支等窗口（Ctrl+Shift+B / 菜单），`CreateBranchWindow` 构造直呼 `WorkingDirectoryIsDirty` 扩展方法 NRE 崩溃（E2e28 RepoDialogs 实证）；`CheckoutRevision` / `TrackRemoteBranch` / `CheckoutBranch` / `LeanBranchingStart` 四窗同款调用一并暴露。修复为扩展方法收口 null 安全：状态未知按"干净"处理（各窗口只用它决定 stash 提示文案/选项，不涉及写入路径）。
+- **未暂存区上万文件时滚动条滑块被压成 1px 无法拖动**：v4.0.9 的滚动条修复为对齐 WPF"thumb 精确反映内容比例"把 Thumb 的 `MinHeight` 显式设为 0 覆盖 Avalonia 内置下限，纯比例缩放下 2 千文件滑块仅 2.0px、2 万+ 文件 1.0px（如未忽略 node_modules 级误选），鼠标无法命中拖动、只能靠滚轮。修复为在比例语义基础上加回 `MinHeight=10` 下限（对齐 Avalonia 内置 thumbMinLength）：任意大列表滑块仍可拖动；10px 远小于曾致"冻住不动"的 18px 下限，几百级长列表（比例滑块约 8px）仅轻微钳到 10px，暂存/取消暂存改变列表长度时 thumb 仍随内容明显移动，不重蹈"冻住不动"覆辙。新增回归测试 StageListScrollbarReproTests 锁定下限语义；既有 E2E E2eStageScrollbarRefresh 原精确比例断言同步适配 10px 下限语义（test only）。
+- **gitignore 弹窗首开 Pattern 已填字但 Preview 不自动生成**：`UpdatePreview` 原用 `TaskScheduler.FromCurrentSynchronizationContext()` 抓构造期同步上下文回 UI 线程，首开时机不可靠（构造期/线程池同步上下文竞态），首次打开弹窗预览区空白、必须手改 Pattern 才出内容。修复为 `Task.Run` 后台跑 git + `Dispatcher.UIThread.Post` 显式回 UI 线程回填（路径确定、线程安全），构造期立即预填一次（热启动预览）+ 窗口 `Opened` 后再兜底刷一次，首开即出 Preview。
+- **gitignore 弹窗 Pattern/Preview 多行内容超框无滚动条**：`PlaceholderTextBox` 模板内层 `PART_ScrollViewer` 硬编码水平/垂直滚动条可见性 Hidden，无视 XAML 对弹窗两文本框显式设置的 `ScrollViewer.VerticalScrollBarVisibility=Auto`——Pattern/Preview 行数超框也无滚动条，长内容看不全。改为 TemplateBinding 到 `ScrollViewer.*` 附加属性：默认仍 Hidden（对齐 WPF 原版 PART_ContentHost 观感），显式设 Auto 的控件（本弹窗 Pattern/Preview）内容超框即出滚动条。新增回归测试 GitIgnoreDialogTests（预览数据源 + 滚动条可见性）。
 
 ### 平台覆盖
 
