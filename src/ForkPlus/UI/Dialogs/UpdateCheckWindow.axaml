@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow Width="520" MinHeight="160" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.UpdateCheckWindow" xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="520" MinHeight="160" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.UpdateCheckWindow" xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />
@@ -22,6 +22,13 @@
         <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
         <CheckBox x:Name="SkipVersionCheckBox" Content="Don't remind me for this version" Margin="0,8,0,0" FontSize="13" />
       </StackPanel>
+      <!-- 重置下载中：进度面板（与 UpdateAvailableWindow 自动更新同款，重置流切换显示） -->
+      <fuu:UpdateDownloadPanel x:Name="DownloadPanel" IsVisible="False" Margin="0,4,0,8" />
+      <!-- "重置此版本"：版本损坏时的就地修复入口（重新从 GitHub 拉当前版本解压替换；
+           点击后经两次确认（重置确认 + 是否重置设置）再启动重置流） -->
+      <HyperlinkButton x:Name="ResetVersionButton" Theme="{DynamicResource BlueUnderlineHyperlinkStyle}" Click="ResetVersionButton_Click" FontSize="13" Margin="0,2,0,2" HorizontalAlignment="Left">
+        <TextBlock x:Name="ResetVersionButtonTextBlock" Text="Reset this version" />
+      </HyperlinkButton>
     </StackPanel>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

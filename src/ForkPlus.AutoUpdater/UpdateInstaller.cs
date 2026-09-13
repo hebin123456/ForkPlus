@@ -167,6 +167,38 @@ namespace ForkPlus.AutoUpdater
 			}
 		}
 
+		/// <summary>
+		/// 删除主程序设置文件（"重置此版本"流的设置重置步）。settingsFile 为空时按约定
+		/// 位置推导（LocalApplicationData/ForkPlus/settings.json，与主程序
+		/// App.ForkDirectoryPath 同构）。best effort：文件不存在为幂等成功，删除失败
+		///（占用/权限）吞异常不阻断更新主流程。
+		/// </summary>
+		public static void DeleteSettingsFile(string settingsFile)
+		{
+			string path = string.IsNullOrWhiteSpace(settingsFile)
+				? GetDefaultSettingsFilePath()
+				: settingsFile;
+			try
+			{
+				if (File.Exists(path))
+				{
+					File.Delete(path);
+				}
+			}
+			catch (Exception)
+			{
+				// 主程序退出后文件被短暂占用的窗口极小；失败不阻断更新重启
+			}
+		}
+
+		/// <summary>约定设置文件位置（主程序未显式传 --settings-file 时的兜底推导）。</summary>
+		internal static string GetDefaultSettingsFilePath()
+		{
+			return Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"ForkPlus", "settings.json");
+		}
+
 		private void TryRollback(string newFilesDir, string backupDir, bool newMoved)
 		{
 			try

@@ -16,6 +16,9 @@ namespace ForkPlus.AutoUpdater
 	///   --wait-pid &lt;主程序pid&gt;        等待退出的主程序 pid（替换前必须退出）
 	///   --no-restart                  只安装不重启（测试用）
 	///   --wait-timeout-ms &lt;毫秒&gt;      等主程序退出的超时（默认 60000，测试用）
+	///   --reset-settings              重置当前版本模式：文件替换成功后删除主程序设置
+	///   --settings-file &lt;路径&gt;         要删除的 settings.json（缺省按约定位置推导；
+	///                                 与 --reset-settings 配套，主程序生产路径会显式传入）
 	/// 主程序侧约定：updater 总是自临时副本目录运行（主程序启动前已复制），
 	/// 因此安装目录内没有被 updater 自身锁定的文件。退出码：0 成功 / 1 失败 /
 	/// 130 被取消（进程被 Kill 时无退出码，此码用于参数级早退路径的语义完整性）。
@@ -38,7 +41,7 @@ namespace ForkPlus.AutoUpdater
 				UpdateOptions options = UpdateOptions.Parse(args);
 				if (options == null)
 				{
-					Console.Error.WriteLine("Usage: ForkPlus.AutoUpdater --url <zip url> --install-dir <dir> [--restart-command <exe>] [--pipe-pid <pid>] [--wait-pid <pid>] [--no-restart] [--wait-timeout-ms <ms>]");
+					Console.Error.WriteLine("Usage: ForkPlus.AutoUpdater --url <zip url> --install-dir <dir> [--restart-command <exe>] [--pipe-pid <pid>] [--wait-pid <pid>] [--no-restart] [--wait-timeout-ms <ms>] [--reset-settings] [--settings-file <path>]");
 					return ExitError;
 				}
 				return Run(options);
@@ -96,6 +99,14 @@ namespace ForkPlus.AutoUpdater
 					ReportProgress(progress, UpdateMessageProtocol.Phase(UpdateMessageProtocol.PhaseReplacing));
 					string backupDir = Path.Combine(sessionDir, "backup");
 					installer.Replace(newFilesDir, backupDir);
+
+					// ④.5 重置设置（--reset-settings，"重置此版本"流）：仅在文件替换成功后
+					// 删除——更新失败路径（下载/解压/回滚）设置必须原样保留。best effort：
+					// 删除失败（占用等）不阻断重启，仅 stderr 记录。
+					if (options.ResetSettings)
+					{
+						UpdateInstaller.DeleteSettingsFile(options.SettingsFile);
+					}
 
 					// ⑤ 重启
 					ReportProgress(progress, UpdateMessageProtocol.Phase(UpdateMessageProtocol.PhaseRestarting));
@@ -163,6 +174,12 @@ namespace ForkPlus.AutoUpdater
 
 			public int WaitTimeoutMs { get; private set; } = UpdateInstaller.WaitExitTimeoutMs;
 
+			/// <summary>"重置此版本"模式：文件替换成功后删除主程序设置文件。</summary>
+			public bool ResetSettings { get; private set; }
+
+			/// <summary>要删除的 settings.json 路径（--reset-settings 配套）。空 = 按约定位置推导。</summary>
+			public string SettingsFile { get; private set; }
+
 			/// <summary>解析失败（缺必填项/未知键/值非法）返回 null，由 Main 打用法。</summary>
 			public static UpdateOptions Parse(string[] args)
 			{
@@ -199,8 +216,16 @@ namespace ForkPlus.AutoUpdater
 							i++;
 							break;
 						case "--no-restart":
-							options.NoRestart = true;
-							break;
+						options.NoRestart = true;
+						break;
+					case "--reset-settings":
+						options.ResetSettings = true;
+						break;
+					case "--settings-file":
+						if (string.IsNullOrWhiteSpace(value)) return null;
+						options.SettingsFile = value;
+						i++;
+						break;
 						case "--wait-timeout-ms":
 							if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutMs) || timeoutMs < 0) return null;
 							options.WaitTimeoutMs = timeoutMs;

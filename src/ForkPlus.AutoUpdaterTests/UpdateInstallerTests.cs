@@ -189,5 +189,48 @@ namespace ForkPlus.AutoUpdaterTests
 		{
 			UpdateInstaller.CleanupStaleWorkDirs(Path.Combine(_root, "no-such-root"), TimeSpan.FromDays(1));
 		}
+
+		// ===== "重置此版本"设置删除（v4.1.1） =====
+
+		[Fact]
+		public void DeleteSettingsFile_ExistingFile_DeletesIt()
+		{
+			string settings = Path.Combine(_root, "settings.json");
+			File.WriteAllText(settings, "{\"UiLanguage\":\"zh-Hans\"}");
+			UpdateInstaller.DeleteSettingsFile(settings);
+			Assert.False(File.Exists(settings), "设置文件应被删除");
+		}
+
+		[Fact]
+		public void DeleteSettingsFile_MissingFile_IsIdempotent()
+		{
+			UpdateInstaller.DeleteSettingsFile(Path.Combine(_root, "no-such-settings.json"));
+		}
+
+		[Fact]
+		public void DeleteSettingsFile_OnlyDeletesExactFile_NotSiblings()
+		{
+			string settings = Path.Combine(_root, "settings.json");
+			string sibling = Path.Combine(_root, "other.json");
+			File.WriteAllText(settings, "{}");
+			File.WriteAllText(sibling, "{}");
+			UpdateInstaller.DeleteSettingsFile(settings);
+			Assert.False(File.Exists(settings));
+			Assert.True(File.Exists(sibling), "同目录其他文件不应被波及");
+		}
+
+		/// <summary>约定位置推导：与主程序 App.ForkDirectoryPath 同构
+		///（LocalApplicationData/ForkPlus/settings.json）。纯路径拼接断言，不做任何真实
+		/// profile 下的文件操作（删除真实用户设置文件是破坏性的）。</summary>
+		[Fact]
+		public void GetDefaultSettingsFilePath_FollowsMainAppConvention()
+		{
+			string path = UpdateInstaller.GetDefaultSettingsFilePath();
+			string expected = Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"ForkPlus", "settings.json");
+			Assert.Equal(expected, path);
+			Assert.EndsWith(Path.Combine("ForkPlus", "settings.json"), path);
+		}
 	}
 }

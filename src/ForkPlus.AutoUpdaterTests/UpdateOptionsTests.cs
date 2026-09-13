@@ -139,5 +139,79 @@ namespace ForkPlus.AutoUpdaterTests
 			Assert.NotNull(options);
 			Assert.Equal("Fork_Pipe4242_Update", options.PipeName);
 		}
+
+		// ===== "重置此版本"参数（--reset-settings / --settings-file，v4.1.1） =====
+
+		[Fact]
+		public void Parse_ResetSettingsFlag_IsApplied()
+		{
+			string[] args = new string[5]
+			{
+				"--url", "https://example.com/a.zip",
+				"--install-dir", "/opt/forkplus",
+				"--reset-settings"
+			};
+			Program.UpdateOptions options = Program.UpdateOptions.Parse(args);
+			Assert.NotNull(options);
+			Assert.True(options.ResetSettings, "--reset-settings 开关应置位");
+			Assert.Null(options.SettingsFile);
+		}
+
+		[Fact]
+		public void Parse_SettingsFileValue_IsApplied()
+		{
+			string[] args = new string[7]
+			{
+				"--url", "https://example.com/a.zip",
+				"--install-dir", "/opt/forkplus",
+				"--reset-settings",
+				"--settings-file", "/home/u/.local/share/ForkPlus/settings.json"
+			};
+			Program.UpdateOptions options = Program.UpdateOptions.Parse(args);
+			Assert.NotNull(options);
+			Assert.True(options.ResetSettings);
+			Assert.Equal("/home/u/.local/share/ForkPlus/settings.json", options.SettingsFile);
+		}
+
+		[Fact]
+		public void Parse_Default_NoResetSettings()
+		{
+			Program.UpdateOptions options = Program.UpdateOptions.Parse(FullArgs());
+			Assert.NotNull(options);
+			Assert.False(options.ResetSettings, "普通更新流不带重置语义");
+			Assert.Null(options.SettingsFile);
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData("  ")]
+		public void Parse_SettingsFileEmptyValue_ReturnsNull(string value)
+		{
+			string[] args = new string[7]
+			{
+				"--url", "https://example.com/a.zip",
+				"--install-dir", "/opt/forkplus",
+				"--reset-settings",
+				"--settings-file", value
+			};
+			Assert.Null(Program.UpdateOptions.Parse(args));
+		}
+
+		/// <summary>--settings-file 不带 --reset-settings 也合法（显式路径优先，语义由开关决定）。</summary>
+		[Fact]
+		public void Parse_SettingsFileWithoutResetSettings_IsStillValid()
+		{
+			string[] args = new string[6]
+			{
+				"--url", "https://example.com/a.zip",
+				"--install-dir", "/opt/forkplus",
+				"--settings-file", "/tmp/settings.json"
+			};
+			Program.UpdateOptions options = Program.UpdateOptions.Parse(args);
+			Assert.NotNull(options);
+			Assert.False(options.ResetSettings);
+			Assert.Equal("/tmp/settings.json", options.SettingsFile);
+		}
 	}
 }

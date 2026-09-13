@@ -138,6 +138,10 @@ namespace ForkPlus
 
 		private readonly bool _noRestart;
 
+		private readonly bool _resetSettings;
+
+		private readonly string _settingsFile;
+
 		private readonly string _tempLaunchDir;
 
 		private Process _updaterProcess;
@@ -169,17 +173,35 @@ namespace ForkPlus
 		}
 
 		/// <summary>
+		/// 生产构造（"重置此版本"流）：与默认构造同目标（重下当前版本包 → 替换安装目录 →
+		/// 自动重启），resetSettings=true 时附加设置重置语义——由 updater 在文件替换成功后
+		/// 删除 settings.json（App.ForkDirectoryPath 下，更新失败路径不动设置）。
+		/// </summary>
+		public static AutoUpdateRunner CreateForVersionReset(bool resetSettings)
+		{
+			return new AutoUpdateRunner(
+				AppContext.BaseDirectory, AppContext.BaseDirectory, Environment.ProcessPath,
+				waitPid: App.ProcessId, noRestart: false,
+				resetSettings: resetSettings,
+				settingsFile: resetSettings ? Path.Combine(App.ForkDirectoryPath, "settings.json") : null);
+		}
+
+		/// <summary>
 		/// 生产/测试通用构造。updaterExeSourceDir：从哪里复制 ForkPlus.AutoUpdater.exe；
 		/// installDir：要替换的目录；restartCommand：替换后重启的 exe 路径；
-		/// waitPid：替换前等待退出的进程（生产 = 主程序自身）；noRestart：只安装不重启（测试）。
+		/// waitPid：替换前等待退出的进程（生产 = 主程序自身）；noRestart：只安装不重启（测试）；
+		/// resetSettings/settingsFile：文件替换成功后删除的设置文件（"重置此版本"流，
+		/// settingsFile 仅在 resetSettings 时随命令行传给 updater）。
 		/// </summary>
-		internal AutoUpdateRunner(string updaterExeSourceDir, string installDir, string restartCommand, int waitPid, bool noRestart)
+		internal AutoUpdateRunner(string updaterExeSourceDir, string installDir, string restartCommand, int waitPid, bool noRestart, bool resetSettings = false, string settingsFile = null)
 		{
 			_updaterExeSourceDir = updaterExeSourceDir;
 			_installDir = installDir;
 			_restartCommand = restartCommand;
 			_waitPid = waitPid;
 			_noRestart = noRestart;
+			_resetSettings = resetSettings;
+			_settingsFile = settingsFile;
 			_tempLaunchDir = Path.Combine(Path.GetTempPath(), "ForkPlusUpdate", "launch-" + Guid.NewGuid().ToString("N").Substring(0, 12));
 			// 进度管道监听：先起好再 spawn updater（updater 连不上会静默降级，因此顺序上
 			// 必须先 listen 后 start）。消息循环在 IpcServer 自有线程，回调统一转 UI 线程。
@@ -245,6 +267,15 @@ namespace ForkPlus
 			if (_noRestart)
 			{
 				sb.Append(" --no-restart");
+			}
+			if (_resetSettings)
+			{
+				// "重置此版本"流：updater 在文件替换成功后删除设置文件（失败路径不动）
+				sb.Append(" --reset-settings");
+				if (!string.IsNullOrEmpty(_settingsFile))
+				{
+					sb.Append(" --settings-file ").Append(Quote(_settingsFile));
+				}
 			}
 			return sb.ToString();
 		}

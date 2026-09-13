@@ -2,6 +2,26 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.1.1
+
+> 升级区域新增"重置此版本"入口：版本偶尔会坏掉（升级中断/文件缺失/损坏）又无新版本可用时，不再需要手动删包重装——在"检查更新"窗口点"重置此版本"，先确认重置当前版本（重新从 GitHub 拉当前版本安装包解压替换本地安装），再二次确认是否同时重置设置，随后走 v4.1.0 的完整替换链路（下载 → 解压 → 关闭应用 → 备份替换安装目录 → 自动重启）就地修复当前版本。
+
+### 新增
+
+- **"重置此版本"就地修复入口（升级区域）**：在"检查更新"弹窗（UpdateCheckWindow）底部新增"重置此版本"超链接入口。点击后两次确认：① 确认重置当前版本（弹窗提示"当前版本 {0} 将从 GitHub 重新下载并替换本地安装"，含警告图标 + Reset/Cancel）；② 二次确认是否同时重置设置（弹窗提示"重置设置将把所有偏好（仓库、外观、语言等）恢复为默认值，且无法撤销"，提供"重置设置"/"保留设置"两个选择）。确认后按当前版本号 + 当前平台构造 GitHub 规则直链（`releases/download/v{版本}/ForkPlus-{版本}-{平台}.zip`），复用 AutoUpdater 子进程完成 下载 → 解压 → 等待退出 → 备份替换 → 自动重启 全链路，交互与 v4.1.0 的自动更新流同款（进度面板 + Footer Cancel 复用为"取消下载"，失败走 Footer 状态区错误展示，waiting-exit 后应用自动关闭交由 updater 替换重启）。任一步确认取消即中止，不启动重置流。重置进行中隐藏入口防重入；取消/失败/早退时恢复窗口常态（检查已完成回结果区、被中止则重新发起检查）允许重试或关闭。
+- **可选的重置设置语义（--reset-settings / --settings-file）**：仅当用户在二次确认中选择"重置设置"时，updater 附加设置重置语义——文件替换成功后删除主程序设置文件（`App.ForkDirectoryPath/settings.json`）；更新失败路径（下载/解压/回滚）设置必须原样保留，best effort 删除（主程序退出后短暂占用窗口极小，失败吞异常不阻断重启）。主程序生产路径显式传 `--settings-file`（`AutoUpdateRunner.CreateForVersionReset(resetSettings)`）；未传时 updater 按约定位置（`LocalApplicationData/ForkPlus/settings.json`）推导兜底。选"保留设置"则照常重置当前版本、设置文件不动。
+- **8 语言国际化**：新增"Reset this version"、"The current version {0} will be re-downloaded from GitHub and will replace your local installation."、"Reset settings?"、"Resetting your settings will restore all preferences..."、"Reset settings"、"Keep settings"、"Reset"/"Cancel" 等翻译键（en / zh-Hans / zh-Hant / de-DE / es-ES / fr-FR / ja-JP / ko-KR 全部 8 种语言）。
+- **测试覆盖（v4.1.1 重置流 E2E + 单元）**：新增 `UpdateCheckWindowResetTests`——真实拉起 updater 子进程对本地桩服务器跑重置全链路五条路径：① 确认重置 + 重置设置（两次确认 → runner 带 --reset-settings/--settings-file 启动 → 全链路成功后 settings.json 被删除、安装目录被新包替换、退出码 0）；② 确认重置 + 保留设置（runner 不带重置设置参数 → 设置文件原样保留、安装目录被替换）；③ 第一次确认取消（不启动重置流、下载面板不出现、runner 工厂不被调用）；④ 二次确认取消（等价"保留设置"）；⑤ 下载失败（Footer 状态区"更新失败：{原因}"、窗口恢复可重试、设置文件保留、退出码 1）。AutoUpdater 侧补充 `--reset-settings`/`--settings-file` 命令行解析与 `DeleteSettingsFile` 单元用例（删除成功 / 文件不存在幂等 / best effort 吞异常）。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.1.1-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.1.1-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.1.1-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.1.1-macos-arm64.zip` |
+
 ## v4.1.0
 
 > 自动更新全链路（AutoUpdater.exe 子进程）+ 下载进度条可随时取消 + 首次启动新版本"更新内容"弹窗：此前检测到更新只能弹窗提示、点下载按钮跳浏览器手动装；现在点击下载按钮即自动下载 GitHub 最新对应平台包（进度条 + 随时取消）→ 解压 → 关闭应用 → 备份替换安装目录 → 自动重启回到新版本，升级全程不再离开应用。
