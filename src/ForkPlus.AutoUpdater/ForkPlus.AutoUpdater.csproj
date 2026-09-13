@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- 与主工程 ForkPlus.csproj 同 TFM，便于 CopyHelperExecutables 用
+         $(TargetFramework) 定位 exe 输出路径。AutoUpdater 是自动更新子进程，
+         被 ForkPlus.exe 通过 Process.Start 调用：下载 GitHub 最新平台包 →
+         解压 → 等主程序退出 → 备份并替换安装目录 → 重启主程序。
+         纯后台进程（无 UI），不需要 Avalonia。HttpClient / ZipFile 均在
+         net10.0 共享框架内，无外部包依赖。-->
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ForkPlus.AutoUpdater</AssemblyName>
+    <TargetName>ForkPlus.AutoUpdater</TargetName>
+    <RootNamespace>ForkPlus.AutoUpdater</RootNamespace>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <!-- 不生成 .xml 文档注释导出文件（运行时不需要，仅供 IDE IntelliSense / API 文档用途）。-->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 测试工程访问 internal（Program.UpdateOptions / UpdateInstaller / 协议构造器）。
+         UpdateMessageProtocol 注释提到的 ForkPlus.AutoUpdaterTests 即此工程。 -->
+    <InternalsVisibleTo Include="ForkPlus.AutoUpdaterTests" />
+  </ItemGroup>
+</Project>

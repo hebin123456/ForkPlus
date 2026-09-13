@@ -22,6 +22,10 @@ namespace ForkPlus
 
 			public static readonly string RIHelperFilename = ExecutableName("ForkPlus.RI");
 
+			// v4.1.0 起随安装目录分发的自动更新子进程：主程序把它复制到临时目录再启动
+			//（避免 updater 替换安装目录时锁住自身），下载/解压/替换安装目录并重启主程序。
+			public static readonly string AutoUpdaterFilename = ExecutableName("ForkPlus.AutoUpdater");
+
 			public static readonly string BashFilename = ExecutableName("bash");
 
 			public static readonly string GitInstanceEnvVariable = "forkgitinstance";

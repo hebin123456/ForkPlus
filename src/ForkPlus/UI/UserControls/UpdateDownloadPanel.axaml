@@ -1,0 +1,7 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.UpdateDownloadPanel">
+  <StackPanel>
+    <!-- 与 UpdateCheckWindow 检测进度同款视觉：3px 细条 + AccentColorBrush + FontSize 13 状态文本 -->
+    <ProgressBar x:Name="DownloadProgressBar" Height="3" Minimum="0" Maximum="100" Foreground="{DynamicResource AccentColorBrush}" />
+    <TextBlock x:Name="StatusTextBlock" Text="Downloading update..." FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

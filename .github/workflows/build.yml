@@ -2,9 +2,10 @@
 #
 # 触发：push v* 标签 / 手动（workflow_dispatch，仅构建+测试不发 Release）
 # 产物：self-contained publish 目录（自带 .NET 10 运行时，目标机无需安装任何框架）。
-#       主程序与 AskPass/RI 两个 git 子进程 helper 三 exe 全部自包含发布到同一目录
-#       （helper 由 git 以独立进程拉起，漏掉它们则无运行时机器上凭证输入/交互式变基
-#       直接挂）。含各平台 biturbo native 库（构建期由 workflow 显式 curl +
+#       主程序与 AskPass/RI/AutoUpdater 三个子进程 exe 全部自包含发布到同一目录
+#       （AskPass/RI helper 由 git 以独立进程拉起，漏掉它们则无运行时机器上凭证输入/
+#       交互式变基直接挂；AutoUpdater 是 v4.1.0 起的自动更新子进程，漏掉则更新回退
+#       浏览器打开）。含各平台 biturbo native 库（构建期由 workflow 显式 curl +
 #       ForkPlus.csproj 的 RestoreBiturbo Target 兜底，从 hebin123456/Biturbo latest release 拉取：
 #       win→biturbo.dll / linux→libbiturbo.so（arm64 资产名为 libbiturbo-arm64.so）
 #       / macos→libbiturbo.dylib）+ tokei 代码统计工具
@@ -206,7 +207,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          for proj in src/ForkPlus.AskPass/ForkPlus.AskPass.csproj src/ForkPlus.RI/ForkPlus.RI.csproj; do
+          # v4.1.0 起加 ForkPlus.AutoUpdater（自动更新子进程）：主程序点击"下载并更新"
+          # 后从安装目录复制它到临时目录拉起（下载 zip → 解压 → 等主程序退出 → 备份替换
+          # → 重启）。漏发它则已装用户拿不到自动更新（回退浏览器打开）。
+          for proj in src/ForkPlus.AskPass/ForkPlus.AskPass.csproj src/ForkPlus.RI/ForkPlus.RI.csproj src/ForkPlus.AutoUpdater/ForkPlus.AutoUpdater.csproj; do
             dotnet publish "$proj" -c Release -r ${{ matrix.rid }} --self-contained true \
               -p:PlatformTarget=${{ matrix.platformtarget }} \
               -p:DebugType=none -p:AllowedReferenceRelatedFileExtensions=none \
@@ -222,7 +226,9 @@ jobs:
           missing=0
           for f in ForkPlus.dll ForkPlus.runtimeconfig.json \
                    "ForkPlus.AskPass${ext}" ForkPlus.AskPass.dll ForkPlus.AskPass.runtimeconfig.json ForkPlus.AskPass.deps.json \
-                   "ForkPlus.RI${ext}" ForkPlus.RI.dll ForkPlus.RI.runtimeconfig.json ForkPlus.RI.deps.json OxyPlot.Avalonia.dll; do
+                   "ForkPlus.RI${ext}" ForkPlus.RI.dll ForkPlus.RI.runtimeconfig.json ForkPlus.RI.deps.json \
+                   "ForkPlus.AutoUpdater${ext}" ForkPlus.AutoUpdater.dll ForkPlus.AutoUpdater.runtimeconfig.json ForkPlus.AutoUpdater.deps.json \
+                   Docs/RELEASE_NOTE.md OxyPlot.Avalonia.dll; do
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
           done
           case "${{ matrix.name }}" in
@@ -285,15 +291,16 @@ jobs:
   # Tests）不会被误伤）：
   #   e2e-1/2/3 ：E2E 家族按模块号十位分组（E2e0*=01-09，E2e1*=10-19，E2e2*=20-28，
   #               E2e2 前缀顺带覆盖未来新增的 E2e29），两个无编号类 E2eInfraSmoke /
-  #               E2eStageScrollbarRefresh 显式并入 e2e-3；AskPass/RI 两个秒级小工程
-  #               （10+6 用例）搭最轻的 e2e-1 凑平衡。
+  #               E2eStageScrollbarRefresh 显式并入 e2e-3；AskPass/RI/AutoUpdaterTests
+  #               三个秒级小工程（10+6+54 用例）搭最轻的 e2e-1 凑平衡（core-a 的纯
+  #               否定式 filter 同步排除三工程，防 solution 级命令重叠吸入）。
   #   core-a/b  ：非 E2E 用例按类名首字母在 T 处切两半。T-W 片集中 Theme*/TextBox*
   #               等重量级 UI 类，A-S 片摊平其余（按用例数 4053 vs 277 悬殊，但 A-S
   #               的大头是 Class/Source 两个 Coverage 清单类（1900+/1500+ 用例，纯
   #               内存断言 <1s）；CI 实测两片测试本体仅 36s/15s，墙钟差可忽略）。
-  #               core-a 是纯否定式 filter，须显式排除 AskPass/RI 命名空间（否则
-  #               solution 级命令会把这两个小工程的用例吸进来，与 e2e-1 片重叠——
-  #               该重叠正是"分片完整性守卫"在开发期实锤抓到的第一只虫）。
+  #               core-a 是纯否定式 filter，须显式排除 AskPass/RI/AutoUpdaterTests
+  #               命名空间（否则 solution 级命令会把这三个小工程的用例吸进来，与
+  #               e2e-1 片重叠——该重叠正是"分片完整性守卫"在开发期实锤抓到的第一只虫）。
   # 维护：新增 E2e3x 模块（E2e30+）时需显式扩 e2e-3 的 filter（E2e2 前缀覆盖不到
   # E2e3x，且会被 core 片的 !~ 排除）；否则 e2e-1 里的"分片完整性守卫"会红灯
   # （各片 --list-tests 求和 != 全量总数），不会静默丢覆盖。
@@ -306,13 +313,13 @@ jobs:
       matrix:
         include:
           - shard: e2e-1
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e0|FullyQualifiedName~ForkPlus.AskPass|FullyQualifiedName~ForkPlus.RI"
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e0|FullyQualifiedName~ForkPlus.AskPass|FullyQualifiedName~ForkPlus.RI|FullyQualifiedName~ForkPlus.AutoUpdaterTests"
           - shard: e2e-2
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
           - shard: e2e-3
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
           - shard: core-a
-            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
+            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
           - shard: core-b
             test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName~ForkPlus.Tests.T|FullyQualifiedName~ForkPlus.Tests.U|FullyQualifiedName~ForkPlus.Tests.V|FullyQualifiedName~ForkPlus.Tests.W)"
     steps:

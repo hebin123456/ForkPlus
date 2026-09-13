@@ -1099,6 +1099,10 @@ namespace ForkPlus.Settings
 
 		private string _skippedUpdateVersion;
 
+		// v4.1.0：首次启动新版本时弹"更新内容"的判定基准——记录上次已展示
+		//（或已标记无需展示）的版本号；与当前版本不一致即首次启动该版本。
+		private string _lastShownReleaseNotesVersion;
+
 		private string _gitInstancePath;
 
 		private string _gitMmInstancePath;
@@ -2482,6 +2486,19 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>上次已展示（或已标记无需展示）更新内容的版本号；空 = 从未展示。</summary>
+		public string LastShownReleaseNotesVersion
+		{
+			get
+			{
+				return _lastShownReleaseNotesVersion;
+			}
+			set
+			{
+				_lastShownReleaseNotesVersion = value;
+			}
+		}
+
 		public string GitInstancePath
 		{
 			get
@@ -2835,6 +2852,7 @@ namespace ForkPlus.Settings
 			bool checkForUpdatesAutomatically = json["CheckForUpdatesAutomatically"]?.Value<bool>() ?? true;
 			int updateCheckIntervalHours = json["UpdateCheckIntervalHours"]?.Value<int>() ?? 24;
 			string skippedUpdateVersion = json["SkippedUpdateVersion"]?.Value<string>() ?? "";
+			string lastShownReleaseNotesVersion = json["LastShownReleaseNotesVersion"]?.Value<string>() ?? "";
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
@@ -2960,6 +2978,7 @@ namespace ForkPlus.Settings
 				CheckForUpdatesAutomatically = checkForUpdatesAutomatically,
 				UpdateCheckIntervalHours = updateCheckIntervalHours,
 				SkippedUpdateVersion = skippedUpdateVersion,
+				LastShownReleaseNotesVersion = lastShownReleaseNotesVersion,
 				GitInstancePath = gitInstancePath,
 				GitMmInstancePath = gitMmInstancePath,
 				GitAiInstancePath = gitAiInstancePath,
@@ -3512,6 +3531,10 @@ namespace ForkPlus.Settings
 				{
 					"SkippedUpdateVersion",
 					new JValue(target.SkippedUpdateVersion)
+				},
+				{
+					"LastShownReleaseNotesVersion",
+					new JValue(target.LastShownReleaseNotesVersion)
 				},
 				{
 					"GitInstancePath",

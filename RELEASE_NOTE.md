@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.1.0
+
+> 自动更新全链路（AutoUpdater.exe 子进程）+ 下载进度条可随时取消 + 首次启动新版本"更新内容"弹窗：此前检测到更新只能弹窗提示、点下载按钮跳浏览器手动装；现在点击下载按钮即自动下载 GitHub 最新对应平台包（进度条 + 随时取消）→ 解压 → 关闭应用 → 备份替换安装目录 → 自动重启回到新版本，升级全程不再离开应用。
+
+### 新增
+
+- **自动更新子进程 ForkPlus.AutoUpdater.exe（下载 → 解压 → 替换 → 重启全链路）**：新增独立工程 `ForkPlus.AutoUpdater`（纯后台进程，无 UI、无 Avalonia 依赖，随四平台包一并分发）。主程序侧新增 `AutoUpdateRunner`：把安装目录里的 updater 复制到临时目录再拉起（updater 要替换安装目录，不能锁住自身）；点击"下载"按钮后不再开浏览器，而是解析当前平台的 zip 直链（优先 GitHub API 返回的平台资产直链，资产缺失时按版本号+平台构造规则下载地址）交给 updater 自动完成：下载 → 解压（兼容单根目录/平铺两种 zip 形态）→ 等主进程退出 → 旧安装目录整体移入备份目录 → 新文件就位 → 重启主程序。替换失败自动回滚（备份目录原样移回，安装目录不留半新半旧态）；zip 直链解析不出或本地缺少 updater 时回退旧的浏览器打开路径。updater 侧含 2 次重试下载、最低字节数校验（防 0 字节/截断包）、安装目录历史残留备份清理。
+- **下载进度条 + 随时取消**：下载期间展示实时进度（已收/总字节数、百分比、瞬时速度），任意时刻可点 Cancel 取消（Kill updater 进程、安装目录未动、恢复"结果区"可重试或关闭）；解压及之后的替换阶段不可安全中断，Cancel 按钮自动收起避免出现点了没反应的按钮；收到"等待退出"信号时应用自动关闭交由 updater 完成替换并重启。进度面板与 Footer 按钮完全复用现有弹窗组件框架（ForkPlusDialogWindow）——进度条与"检测更新"弹窗的进行中面板同款（3px 细条 + Accent 色 + 13 号状态文本），取消走 Footer 按钮（语义切为"取消下载"，不关窗），失败走 Footer 状态区错误展示，与全部现有弹窗风格一致。
+- **首次启动新版本"更新内容"弹窗（ReleaseNotesWindow）**：首次启动某个新版本（当前版本与设置项 `LastShownReleaseNotesVersion` 记录不一致）时，自动弹出该版本的更新内容——数据来自随安装包分发的 `Docs/RELEASE_NOTE.md`（新增 `ReleaseNotesProvider` 解析 "## v{版本}" 章节）。关闭后记录版本号，同版本后续启动不再弹；章节缺失同样记录版本（不弹窗也不每次启动重试 IO）。弹窗复用 ForkPlusDialogWindow 组件框架（头部标题 + logo + 单 Close 按钮的 Footer），标题走 "What's New in {0}" 本地化，正文只读文本框与"发现更新"/"检查更新"弹窗的 Release Notes 区同款样式；主窗口 Loaded 后延迟一帧触发，不阻塞启动链路。任何异常吞掉只记日志——启动路径上的装饰性功能不影响主流程。
+- **进程间进度管道**：主程序与 updater 之间新增命名管道 IPC（`Fork_Pipe{pid}_Update`）：updater 按阶段上报 `download:已收:总`、`phase:downloading/extracting/waiting-exit/replacing/restarting`、`error:原因` 三类消息；主程序解析后驱动进度条、按钮状态与失败提示。管道连不上时 updater 静默降级（更新照常完成，只是主程序侧无进度显示），不中断更新链路。双方协议格式由 54 个单元测试共同锁定。
+- **8 语言国际化**：新增下载/取消/各阶段/失败/更新内容弹窗等翻译键（"Download" 按钮下载中语义、"Cancel download"、"Downloading update..."、"Extracting update..."、"Installing update..."、"Update failed: {0}"、"What's New in {0}"、"Restarting ForkPlus..." 等），覆盖 en / zh-Hans / zh-Hant / de-DE / es-ES / fr-FR / ja-JP / ko-KR 全部 8 种语言。
+- **测试覆盖（54 AutoUpdater + 23 ReleaseNotes + 6 更新弹窗 E2E/单元用例）**：AutoUpdater 侧新增 `ForkPlus.AutoUpdaterTests` 工程：管道协议构造/解析（非法输入/段数/数字边界）、命令行解析（全参/乱序/缺参/非法值）、安装器（zip 两形态解压、备份替换、失败回滚完整性、等待进程退出超时、历史残留清理）、下载器（HTTP 桩服务器真实收发：成功/非 200/进度回调/最小字节数校验/取消/重试）。发布说明侧：章节提取（多版本竞争/末版本到 EOF/v 前缀与空格归一/不存在版本）、管理器行为契约（首次弹+记录、同版本幂等不读数据源、缺失不弹但记录、异常吞掉不记录可重试）、弹窗 UI 冒烟（标题本地化/正文入只读框/单 Close 按钮）。更新弹窗 E2E（`UpdateAvailableWindowTests`）：真实拉起 updater 子进程对本地桩服务器跑全链路——成功路径（进度面板切换 → 管道阶段回流 → waiting-exit 触发关闭钩子 → 安装目录被新包整体替换、旧文件移入 backup、退出码 0）、下载中取消（Footer Cancel 语义切"取消下载"不关窗 → Kill updater → 恢复结果区可重试、安装目录未被触碰）、下载失败（重试耗尽 → Footer 状态区"更新失败：{原因}"、窗口保持可重试、退出码 1）；另含 zip 直链解析纯单元（直链透传 / Release 页按版本+平台构造规则地址 / 缺参回退 null 走浏览器）。CI 五分片测试矩阵同步扩容（AutoUpdaterTests 并入 e2e-1 轻量分片，core-a 否定式 filter 同步排除，分片完整性守卫继续有效）；四平台发布包产物清单加入 updater 四件套断言（apphost/dll/runtimeconfig/deps.json），漏发即红灯。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.1.0-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.1.0-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.1.0-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.1.0-macos-arm64.zip` |
+
 ## v4.0.12
 
 > 代码编辑器行号边距致命崩溃修复 + 主题切换错误日志修复 + 二进制文件差异"加载更多"修复 + git mm 输出乱码/自动滚动/同步 OOM 修复 + git mm 0 子仓空状态引导 + 未暂存区上万文件滚动条滑块可拖修复 + gitignore 弹窗预览/滚动条修复 + 仓库状态加载期五弹窗竞态崩溃修复：查看/切换文件时行号边距渲染在视觉行失效期抛 VisualLinesInvalidException 直接杀死进程（AppDomain 致命），每次启动/切主题必刷 "Cannot initialize TextEditorContextMenu style" 空引用错误日志。

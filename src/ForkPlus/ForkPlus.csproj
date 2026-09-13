@@ -121,6 +121,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <!-- AutoUpdater（自动更新子进程，v4.1.0 起）：与 AskPass/RI 同模式——ReferenceOutputAssembly=false
+         不引用程序集，只为构建顺序（CollectHelperOutputs 从其 bin 拷 exe/dll/runtimeconfig）。 -->
+    <ProjectReference Include="..\ForkPlus.AutoUpdater\ForkPlus.AutoUpdater.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
        Biturbo 仓库最新 release 拉取。Biturbo v1.1.3 起发布四平台 asset：
@@ -215,6 +218,14 @@
       <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI')" />
       <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll')" />
       <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json')" />
+      <!-- AutoUpdater（v4.1.0）：AutoUpdateRunner 从安装目录把它复制到临时目录拉起
+           （updater 替换安装目录时不能锁住自身），安装目录缺它则回退浏览器下载。
+           CI 的 self-contained publish（build.yml）会覆盖这里的框架依赖版，与 AskPass/RI 同款顺序契约。 -->
+      <_HelperOutputs Include="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.exe" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater')" />
+      <_HelperOutputs Include="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.dll" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.runtimeconfig.json" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.runtimeconfig.json')" />
+      <_HelperOutputs Include="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.deps.json" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AutoUpdater.deps.json')" />
       <!-- biturbo 原生库按平台：Exists 守卫确保只拷实际存在的那一份（每平台 CI 只有一份） -->
       <_HelperOutputs Include="..\..\third_party\biturbo.dll" Condition="Exists('..\..\third_party\biturbo.dll')" />
       <_HelperOutputs Include="..\..\third_party\libbiturbo.so" Condition="Exists('..\..\third_party\libbiturbo.so')" />

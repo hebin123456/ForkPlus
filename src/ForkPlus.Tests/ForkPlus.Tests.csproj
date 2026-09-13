@@ -28,6 +28,11 @@
     <ProjectReference Include="..\ForkPlus\ForkPlus.csproj" />
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <!-- AutoUpdater（v4.1.0）：更新弹窗 E2E（UpdateAvailableWindowTests）用真实 updater
+         进程跑全链路（窗口 → Runner → 管道 → 子进程下载/解压/替换），需要测试输出目录
+         里有完整四件套（apphost/dll/runtimeconfig/deps）。构建顺序经 ForkPlus.csproj 的
+         ProjectReference 保证（AutoUpdater 先于 ForkPlus 构建完成）。-->
+    <ProjectReference Include="..\ForkPlus.AutoUpdater\ForkPlus.AutoUpdater.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
   <!-- biturbo 原生库构建期从 Biturbo 仓库最新 release 拉取（缺失时下载）。
        与主工程 ForkPlus.csproj 的 RestoreBiturbo 同样按 OS 分支拉取。-->
@@ -53,6 +58,14 @@
     <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
     <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
+    <!-- AutoUpdater 四件套（v4.1.0）：apphost（Windows .exe / Unix 无扩展名双守卫）+ 托管
+         dll + runtimeconfig + deps，E2E 真实拉起子进程缺一不可（与主工程
+         CollectHelperOutputs 的清单同口径）。-->
+    <Copy SourceFiles="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.exe')" />
+    <Copy SourceFiles="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater')" />
+    <Copy SourceFiles="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.dll')" />
+    <Copy SourceFiles="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.runtimeconfig.json')" />
+    <Copy SourceFiles="..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.deps.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AutoUpdater\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AutoUpdater.deps.json')" />
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />

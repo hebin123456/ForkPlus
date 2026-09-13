@@ -376,6 +376,12 @@ namespace ForkPlus.UI
 			_updateCheckManager.Start();
 			App.CliArguments.RunCommand();
 			base.Dispatcher.Post(StartupTimeReporter.UIReady);
+			// v4.1.0：首次启动新版本时弹"更新内容"（延迟一帧，等 CLI/首个渲染完成；
+			// 模态弹窗挂起在独立 dispatcher 帧，不阻塞启动链路）
+			base.Dispatcher.Post(delegate
+			{
+				ReleaseNotesManager.ShowIfFirstLaunchOfNewVersion();
+			});
 		}
 
 		/// <summary>手动触发更新检测（由帮助菜单"Check for Updates..."调用）。</summary>
