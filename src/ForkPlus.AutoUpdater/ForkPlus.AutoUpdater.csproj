@@ -17,6 +17,8 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- 复用主程序 ForkPlus 的应用图标（app.ico）：子进程 exe 文件/任务栏图标与主程序一致。 -->
+    <ApplicationIcon>../ForkPlus/app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <!-- 测试工程访问 internal（Program.UpdateOptions / UpdateInstaller / 协议构造器）。

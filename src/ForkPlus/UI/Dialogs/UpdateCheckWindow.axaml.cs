@@ -192,6 +192,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return ConfirmResetDialogForTests();
 			}
+			// 显式把自己设为 owner（SetOwnerAndCenter 登记，ShowDialog 优先用真实 owner
+			// 而非活动窗口兜底）：确保确认弹窗是"检查更新"窗口的模态子弹窗、居中于其上，
+			// 避免行为异常地挂到其他活动窗口/落在别的屏幕。
 			return new MessageBoxWindow(
 				"Reset this version",
 				PreferencesLocalization.FormatCurrent(
@@ -199,7 +202,9 @@ namespace ForkPlus.UI.Dialogs
 					App.Version),
 				"Reset",
 				"Cancel",
-				showCancelButton: true, 550.0, showWarningIcon: true).ShowDialog().GetValueOrDefault();
+				showCancelButton: true, 550.0, showWarningIcon: true)
+				.SetOwnerAndCenter(this)
+				.ShowDialog().GetValueOrDefault();
 		}
 
 		/// <summary>二次确认：是否同时重置设置（重置后恢复默认，不可撤销）。</summary>
@@ -214,7 +219,9 @@ namespace ForkPlus.UI.Dialogs
 				"Resetting your settings will restore all preferences (repositories, appearance, language, etc.) to their defaults. This cannot be undone.",
 				"Reset settings",
 				"Keep settings",
-				showCancelButton: true, 550.0, showWarningIcon: true).ShowDialog().GetValueOrDefault();
+				showCancelButton: true, 550.0, showWarningIcon: true)
+				.SetOwnerAndCenter(this)
+				.ShowDialog().GetValueOrDefault();
 		}
 
 		/// <summary>启动重置流：中止在途检查、切换进度面板并启动 updater 子进程。</summary>
