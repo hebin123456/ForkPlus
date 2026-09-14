@@ -406,6 +406,28 @@ namespace ForkPlus
 					File.Copy(source, Path.Combine(_tempLaunchDir, fileName), overwrite: true);
 				}
 			}
+			// 自包含发布（生产产物，无 .NET 运行时机器）下，updater 的 apphost 启动时必须在
+			// 自身同一目录找到 hostfxr / hostpolicy / coreclr，否则进程立刻以错误退出——
+			// 表现为"点击重置此版本后 updater 没跑起来、窗口静默回退到'已是最新版本'"。
+			// 这里把安装目录里自包含运行时组件一并复制（安装目录与主程序同一自包含运行时，
+			// 一定存在；框架依赖构建/测试输出里没有则跳过，行为不变）。
+			CopyIfPresent("hostfxr.dll", "libhostfxr.so", "libhostfxr.dylib");
+			CopyIfPresent("hostpolicy.dll", "libhostpolicy.so", "libhostpolicy.dylib");
+			CopyIfPresent("coreclr.dll", "libcoreclr.so", "libcoreclr.dylib");
+		}
+
+		/// <summary>把安装目录里的宿主运行时文件复制到临时启动目录（按当前平台取一个候选名，存在才拷）。</summary>
+		private void CopyIfPresent(params string[] candidates)
+		{
+			foreach (string fileName in candidates)
+			{
+				string source = Path.Combine(_updaterExeSourceDir, fileName);
+				if (File.Exists(source))
+				{
+					File.Copy(source, Path.Combine(_tempLaunchDir, fileName), overwrite: true);
+					return;
+				}
+			}
 		}
 
 		/// <summary>命令行引号（含空格路径安全；updater 侧按整段读值不解析引号内容）。</summary>
