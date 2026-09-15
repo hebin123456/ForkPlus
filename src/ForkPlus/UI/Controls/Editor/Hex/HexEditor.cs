@@ -85,6 +85,11 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			base.WordWrap = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// 行密度对齐 WPF 3.13.2（2026-09-15，同 CodeEditor 的"同区域 36 行 → 43 行"修复）：
+			// AvaloniaEdit 12.0.0 默认 LineHeightFactor=1.16 把行槽放大 16%，十六进制视图
+			// 同视口可见行数比 WPF 原版少；显式置 1.0 回到自然行高。Hex 视图为纯 ASCII
+			// 文本（offset/hex/ascii 三列），无 CJK 回退行高问题，置 1.0 无副作用。
+			base.Options.LineHeightFactor = 1.0;
 			// Bug 修复（2026-09-04）：AvaloniaEdit 12.x 默认 AllowScrollBelowDocument=true
 			//（WPF AvalonEdit 默认 false），十六进制视图同样能滚到内容底下一大块空白。
 			base.Options.AllowScrollBelowDocument = false;

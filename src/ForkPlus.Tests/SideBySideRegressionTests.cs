@@ -14,16 +14,18 @@
 //     修复（v4.1.2）：SideBySideLineHeightSynchronizer 把两侧 LineHeightFactor 同步
 //     抬到最大自然行高/DefaultTextHeight（行槽统一，左右逐行等高）；行号/±标记改
 //     基线对齐（ClearTypeLineNumberMargin.GetLineTextBaselineY）。
-//     修复（v4.1.3，行间距收紧）：上述同步器把含中文文件的全部行槽抬到 CJK 自然高
-//     （Linux 18.82px / Win 21.05px），行间距过宽。根因治理：把内嵌 Noto Sans CJK SC
-//     子集垂直度量收紧到 1.25em（hhea/OS/2 win/OS/2 typo 三处一致，ascent 1000 /
-//     descent 250 / lineGap 0，原 1.448em；汉字墨迹 0.88em 上/0.12em 下，不裁字，
-//     33739 字形中仅 9 个竖排标点越界且横排不使用）→ CJK 自然高 16.25px@13px ≤
-//     默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），含中文 diff 的行槽回到统一
-//     默认值（v4.1.2 之前的行间距），左右天然等高，同步器无需再抬 factor（保留为
-//     异常字体度量下的安全网）。行号按基线绘制，不受字体度量影响。
+//     修复（v4.1.3，行间距收紧，两步）：
+//     第一步：内嵌 Noto Sans CJK SC 子集垂直度量收紧到 1.25em（CJK 自然高 16.25px
+//     ≤ 默认槽 17.66px），同步器不再抬 factor——行间距回到"默认"（factor 1.16 的槽）。
+//     第二步（"同区域 WPF 3.13.2 显示 43 行、Avalonia 只有 36 行"）：WPF AvalonEdit
+//     行槽 = 自然行高；AvaloniaEdit 默认 LineHeightFactor=1.16 把槽再放大 16%（15.22
+//     → 17.66px）→ 可见行数少 16%（43→36）。CodeEditor/HexEditor 显式置 1.0 后槽 =
+//     ASCII 自然高（15.22px@Win/15.13px@Linux），CJK 度量随之再收紧到 1.16em（15.08px
+//     ≤ 新槽，hhea/OS/2 win/typo 三处一致；否则同步器会把全部行槽抬到 16.25px，比 WPF
+//     宽 7%）。行号按基线绘制，不受字体度量影响。
 // 本测试守卫四条防线：滚轮后 thumb 仍跟随程序化滚动；CJK 混排左右行像素对齐；
-// CJK 字体度量不超默认行槽（行间距不回弹）；纯 ASCII 文件 factor 保持初始值。
+// CJK 字体度量不超默认行槽（factor=1.0 口径，行间距不回弹）；纯 ASCII 文件 factor
+// 保持初始值 1.0（行密度与 WPF 一致，DefaultLineHeight=自然行高）。
 using System;
 using System.Linq;
 using System.Text;
@@ -172,16 +174,18 @@ namespace ForkPlus.Tests
 					TextView ltv = left.TextArea.TextView;
 					TextView rtv = right.TextArea.TextView;
 
-					// 1) 行高统一（v4.1.3 度量收紧后）：CJK 自然行高 16.25px@13px ≤ 默认行槽
-				//    （DefaultTextHeight×1.16 ≈ 17.55px@Linux/17.66px@Win），行槽回到统一
-				//    默认值——v4.1.2 之前行间距，两侧 factor 相等且保持初始值（不再抬高），
-				//    DefaultLineHeight ≥ 可见最大自然行高 → 所有行槽等高。
+					// 1) 行高统一（v4.1.3 两步收紧后）：CJK 自然行高 15.08px@13px ≤ 默认行槽
+				//    （CodeEditor 置 factor=1.0 → 槽 = ASCII 自然高 ≈ 15.13px@Linux/
+				//    15.22px@Win），行槽统一为自然行高密度——两侧 factor 相等且保持
+				//    初始值 1.0（不再抬高），DefaultLineHeight ≥ 可见最大自然行高 →
+				//    所有行槽等高。
 				Assert.True(Math.Abs(left.Options.LineHeightFactor - right.Options.LineHeightFactor) < 0.001,
 					"两侧 LineHeightFactor 应相等：left=" + left.Options.LineHeightFactor.ToString("F3")
 					+ " right=" + right.Options.LineHeightFactor.ToString("F3"));
-				Assert.True(left.Options.LineHeightFactor < 1.17,
-					"v4.1.3 字体度量收紧后 CJK 自然行高应落入默认行槽，LineHeightFactor 不应再被抬高"
-					+ "（实际 " + left.Options.LineHeightFactor.ToString("F3") + "，若 >1.17 说明字体垂直度量回弹）");
+				Assert.True(left.Options.LineHeightFactor < 1.01,
+					"v4.1.3 字体度量收紧（1.16em）后 CJK 自然行高应落入 factor=1.0 的默认行槽，"
+					+ "LineHeightFactor 不应被抬高（实际 " + left.Options.LineHeightFactor.ToString("F3")
+					+ "，若 >1.01 说明字体垂直度量回弹或 CodeEditor factor=1.0 丢失）");
 					Assert.True(Math.Abs(ltv.DefaultLineHeight - rtv.DefaultLineHeight) < 0.01,
 						"两侧 DefaultLineHeight 应相等");
 					foreach (AvaloniaEdit.Rendering.VisualLine v in rtv.VisualLines)
@@ -221,51 +225,62 @@ namespace ForkPlus.Tests
 		[Fact]
 	public void CjkFallbackFontMetrics_FitDefaultLineSlot_SpacingNotInflated()
 	{
-		// v4.1.3 回归守卫（"FileDiff 行间距太宽"根因）：AvaloniaEdit 行槽 =
-		// max(行自然高, DefaultTextHeight × LineHeightFactor=1.16)，CJK 行自然高来自
-		// 全局回退 Noto Sans CJK SC 的垂直度量。v4.1.2 时该度量 1.448em（hhea；Win
-		// DWrite 下 1.619em）→ 13px 下 CJK 自然高 18.82/21.05px 超默认行槽 17.55/
-		// 17.66px，SideBySideLineHeightSynchronizer 被迫把含中文文件全部行槽抬到
-		// CJK 自然高（行间距过宽）。v4.1.3 把子集字体度量收紧到 1.25em（hhea/OS/2
-		// win/typo 三处一致）→ CJK 自然高 16.25px ≤ 默认行槽，行槽回到统一默认值。
-		// 本测试直接守卫该不变量：CJK 自然行高 ≤ ASCII 自然行高 × 1.16（同环境实测，
-		// 跨平台成立；走真实 CodeEditor VisualLine 度量，与 TextView 排版同口径），
-		// 若字体文件被替换回宽度量（或子集工具重建丢失度量修正）将在此失败而不是
-		// 悄悄放大行距。
+		// v4.1.3 回归守卫（"FileDiff 行间距太宽"/"同区域 36 行 vs WPF 43 行"根因）：
+		// AvaloniaEdit 行槽 = max(行自然高, DefaultTextHeight × LineHeightFactor)，CJK
+		// 行自然高来自全局回退 Noto Sans CJK SC 的垂直度量。v4.1.2 时该度量 1.448em
+		//（hhea；Win DWrite 下 1.619em）→ 13px 下 CJK 自然高 18.82/21.05px，且默认
+		// factor 1.16 的槽也只有 17.66px，SideBySideLineHeightSynchronizer 被迫把含
+		// 中文文件全部行槽抬到 CJK 自然高（行间距过宽）。v4.1.3 两步修复：CodeEditor
+		// 置 LineHeightFactor=1.0（行槽 = ASCII 自然高，行密度对齐 WPF 3.13.2），子集
+		// 字体度量收紧到 1.16em（hhea/OS/2 win/typo 三处一致，15.08px@13px）≤ 新槽。
+		// 本测试守卫两个不变量（同环境实测，跨平台成立；走真实 CodeEditor VisualLine
+		// 度量，与 TextView 排版同口径），若字体文件被替换回宽度量（或子集工具重建丢失
+		// 度量修正）将在此失败而不是悄悄放大行距：
+		//   1) CJK 自然行高 ≤ ASCII 自然行高（factor=1.0 时行槽即 ASCII 自然高）；
+		//   2) DefaultLineHeight == ASCII 自然行高（factor=1.0 生效，无 1.16 放大——
+		//      行密度守卫，回归"36 行"症状时在此红）。
 		HeadlessAppBootstrap.EnsureStarted();
 		Dispatcher.UIThread.InvokeAsync(delegate
 		{
-			double asciiHeight = MeasureNaturalLineHeight("x = 123;");
-			double cjkHeight = MeasureNaturalLineHeight("// 中文注释行验证回退字体行高");
-			Assert.True(asciiHeight > 0.0 && cjkHeight > 0.0,
-				"行高测量失败：ascii=" + asciiHeight + " cjk=" + cjkHeight);
-			double slot = asciiHeight * 1.16;
-			Assert.True(cjkHeight <= slot + 0.01,
-				"CJK 回退字体自然行高 " + cjkHeight.ToString("F2") + "px 超过默认行槽 " + slot.ToString("F2")
-				+ "px（ASCII " + asciiHeight.ToString("F2") + " × 1.16）——含中文 diff 行距会被放大"
-				+ "（v4.1.3 度量收紧回弹？CJK 应 ≤ 1.25em，即 ≤16.25px@13px）");
+			var probe = new ForkPlus.UI.Controls.Editor.CodeEditor();
+			probe.FontSize = 13.0;
+			var window = new Window { Width = 400, Height = 200, Content = probe };
+			window.Show();
+			Dispatcher.UIThread.RunJobs();
+			try
+			{
+				double asciiHeight = MeasureNaturalLineHeight(probe, "x = 123;");
+				double cjkHeight = MeasureNaturalLineHeight(probe, "// 中文注释行验证回退字体行高");
+				Assert.True(asciiHeight > 0.0 && cjkHeight > 0.0,
+					"行高测量失败：ascii=" + asciiHeight + " cjk=" + cjkHeight);
+				// 1) CJK ≤ 行槽（factor=1.0 → 槽 = ASCII 自然高）
+				Assert.True(cjkHeight <= asciiHeight + 0.01,
+					"CJK 回退字体自然行高 " + cjkHeight.ToString("F2") + "px 超过默认行槽 " + asciiHeight.ToString("F2")
+					+ "px（ASCII 自然高，factor=1.0 口径）——含中文 diff 行距会被放大"
+					+ "（v4.1.3 度量收紧回弹？CJK 应 ≤ 1.16em，即 ≤15.08px@13px）");
+				// 2) 行密度守卫：DefaultLineHeight 就是 ASCII 自然高（CodeEditor factor=1.0）
+				double defaultLineHeight = probe.TextArea.TextView.DefaultLineHeight;
+				Assert.True(Math.Abs(defaultLineHeight - asciiHeight) < 0.05,
+					"DefaultLineHeight " + defaultLineHeight.ToString("F2") + "px ≠ ASCII 自然行高 "
+					+ asciiHeight.ToString("F2") + "px——LineHeightFactor 应为 1.0（CodeEditor 构造设置），"
+					+ "若放大 ≈16% 即『同区域 36 行 vs WPF 43 行』回归（factor 被改回 1.16？）");
+			}
+			finally
+			{
+				window.Close();
+				Dispatcher.UIThread.RunJobs();
+			}
 		}).GetAwaiter().GetResult();
 	}
 
-	/// <summary>真实 CodeEditor 排版一行文本，返回首行自然行高（TextLine.Height，
-	/// 与 TextView.CalculateDefaultTextMetrics 同口径，走生产 CJK 回退链）。</summary>
-	private static double MeasureNaturalLineHeight(string text)
+	/// <summary>已挂树的 CodeEditor 排版一行文本，返回首行自然行高（TextLine.Height，
+	/// 与 TextView.CalculateDefaultTextMetrics 同口径，走生产 CJK 回退链）。
+	/// probe 编辑器复用同一实例连续测量（DefaultLineHeight 守卫需要它保持挂树）。</summary>
+	private static double MeasureNaturalLineHeight(ForkPlus.UI.Controls.Editor.CodeEditor probe, string text)
 	{
-		var editor = new ForkPlus.UI.Controls.Editor.CodeEditor();
-		editor.FontSize = 13.0;
-		editor.Text = text + "\n";
-		var window = new Window { Width = 400, Height = 200, Content = editor };
-		window.Show();
+		probe.Text = text + "\n";
 		Dispatcher.UIThread.RunJobs();
-		try
-		{
-			return editor.TextArea.TextView.VisualLines[0].TextLines[0].Height;
-		}
-		finally
-		{
-			window.Close();
-			Dispatcher.UIThread.RunJobs();
-		}
+		return probe.TextArea.TextView.VisualLines[0].TextLines[0].Height;
 	}
 
 	[Fact]
@@ -286,13 +301,14 @@ namespace ForkPlus.Tests
 						.First((DiffCodeEditor e) => e.DiffViewMode == DiffViewMode.SideBySideOld);
 					DiffCodeEditor right = control.GetVisualDescendants().OfType<DiffCodeEditor>()
 						.First((DiffCodeEditor e) => e.DiffViewMode == DiffViewMode.SideBySideNew);
-					// 纯 ASCII：最大自然行高 15.22 ≤ 初始 DefaultLineHeight 17.66，
-					// factor 必须保持初始值（构造时捕获，AvaloniaEdit 12.0.0 默认 1.16）——
-					// 保证无 CJK 文件视觉零变化（不放大行距）。
-					Assert.True(Math.Abs(left.Options.LineHeightFactor - right.Options.LineHeightFactor) < 0.001,
-						"两侧 factor 应相等");
-					Assert.True(left.Options.LineHeightFactor < 1.17,
-						"纯 ASCII 文件 factor 不应被抬高（实际 " + left.Options.LineHeightFactor.ToString("F3") + "）");
+					// 纯 ASCII：最大自然行高 15.22 ≤ 初始 DefaultLineHeight（factor=1.0 →
+				// 15.22px，v4.1.3 起 CodeEditor 构造即置 1.0），factor 必须保持初始值——
+				// 无 CJK 文件行密度与 WPF 3.13.2 一致（同视口可见行数相同）。
+				Assert.True(Math.Abs(left.Options.LineHeightFactor - right.Options.LineHeightFactor) < 0.001,
+					"两侧 factor 应相等");
+				Assert.True(left.Options.LineHeightFactor < 1.01,
+					"纯 ASCII 文件 factor 不应被抬高（实际 " + left.Options.LineHeightFactor.ToString("F3")
+					+ "，初始值应为 CodeEditor 构造设置的 1.0）");
 				}
 				finally
 				{

@@ -15,13 +15,17 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-15，v4.1.3）：FileDiff 行间距收紧——v4.1.2 为修左右行对齐
-//   （CJK 行高差）装的行高同步器把含中文文件的全部行槽抬到 CJK 自然行高（根因：
-//   全局回退 Noto Sans CJK SC 垂直度量 1.448em，Win DWrite 实测 1.619em，CJK 行
-//   自然高超默认行槽），行间距过宽。本版把内嵌 CJK 子集字体度量收紧到 1.25em
-//   （hhea/OS/2 win/typo 三处一致），CJK 自然高 16.25px@13px 回到默认行槽以内，
-//   行间距恢复 v4.1.2 之前水平；左右行对齐与行号基线对齐保持不变（守卫测试
-//   SideBySideRegressionTests 四条防线）。上一个正式版 v4.1.2 为凭据链路系列
+// 版本号说明（2026-09-15，v4.1.3）：FileDiff 行间距收紧 + 行密度对齐 WPF 3.13.2——
+//   v4.1.2 为修左右行对齐（CJK 行高差）装的行高同步器把含中文文件的全部行槽抬到
+//   CJK 自然行高（根因：全局回退 Noto Sans CJK SC 垂直度量 1.448em，Win DWrite
+//   实测 1.619em，CJK 行自然高超默认行槽），行间距过宽。本版两步修复：
+//   1) 内嵌 CJK 子集字体度量收紧到 1.16em（hhea/OS/2 win/typo 三处一致），
+//      CJK 自然高 15.08px@13px；
+//   2) CodeEditor/HexEditor 置 LineHeightFactor=1.0——AvaloniaEdit 默认 1.16 把
+//      行槽放大 16%（同视口 43 行 → 36 行的差距来源），置 1.0 后行槽 = 自然行高，
+//      行密度与 WPF 3.13.2 一致；CJK 15.08px ≤ 新行槽（ASCII 自然高 ≈ 15.22px@Win/
+//      15.13px@Linux），含中文行不再超槽。左右行对齐与行号基线对齐保持不变（守卫
+//   测试 SideBySideRegressionTests 四条防线）。上一个正式版 v4.1.2 为凭据链路系列
 //   修复 + FileDiff SideBySide 严格对齐系列。AssemblyVersion /
 //   AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。App.Version
 //   运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.1.3"；

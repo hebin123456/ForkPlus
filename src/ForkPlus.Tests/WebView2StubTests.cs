@@ -13,6 +13,9 @@
 //     两条路径下全部静默失效。这里锁住 scrollHeight 返回可解析像素值 + scrollTo 真滚动。
 //  E. WebMessageReceived 兼容桥：降级渲染器按钮回调 → CoreWebView2.WebMessageReceived
 //     （AiCodeReviewWindow 的 preview/apply suggestion 按钮链路）。
+//  F.（2026-09-15，"AI 辅助开发/AI 解释在程序目录释放 WebView2 目录"）原生路径的
+//     用户数据目录重定向：Windows 引擎（WebView2）未配置 UserDataFolder 时回落
+//     exe 同级默认位置——守卫 ConfigureNativeEnvironment 把它固定到 ForkData\WebView2。
 using System;
 using System.Globalization;
 using System.Text;
@@ -259,6 +262,69 @@ namespace ForkPlus.Tests
 
 				Assert.True(navigations > afterFirst, "切换 PreferredColorScheme 应触发重导航/重渲染");
 			});
+		}
+
+		// ── F. 原生路径用户数据目录重定向（2026-09-15） ──
+
+		[Fact]
+		public void ConfigureNativeEnvironment_WindowsWebView2_UserDataFolderRedirectedToForkData()
+		{
+			// "AI 辅助开发/AI 解释在程序目录释放 WebView2 目录"根因守卫：
+			// Windows 上 NativeWebView 的引擎就是真 WebView2，不配置 UserDataFolder 时
+			// 运行时对未打包 Win32 应用回落默认位置 = exe 同级 "<exe名>.WebView2"。
+			// WebView2Stub.EnsureNative 经 EnvironmentRequested 调 ConfigureNativeEnvironment
+			// 把它固定到 ForkData\WebView2。headless 走不到适配器创建路径，这里直接
+			// 构造官方事件参数（ctor 非 public → 反射）验证赋值契约。
+			Type argsType = typeof(Avalonia.Controls.NativeWebView).Assembly
+				.GetType("Avalonia.Platform.WindowsWebView2EnvironmentRequestedEventArgs");
+			Assert.NotNull(argsType);
+
+			object args = CreateEnvironmentArgs(argsType);
+			var property = argsType.GetProperty("UserDataFolder");
+			Assert.NotNull(property);
+			property.SetValue(args, null);
+
+			Wv2.ConfigureNativeEnvironment((Avalonia.Controls.WebViewEnvironmentRequestedEventArgs)args);
+
+			string folder = (string)property.GetValue(args);
+			Assert.Equal(ForkPlus.UI.Dialogs.WebView2EnvironmentHelper.UserDataFolder, folder);
+			// 必须在 ForkData 内且名为 WebView2——任何回落 exe 同级的回退都会在此失败
+			Assert.StartsWith(ForkPlus.App.ForkDataDirectoryPath, folder, StringComparison.Ordinal);
+			Assert.EndsWith("WebView2", folder, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void WebView2UserDataFolder_NotUnderExecutableDirectory()
+		{
+			// 用户可见行为守卫：AI 窗口打开后程序目录（exe 所在处）不得再出现 WebView2
+			// 用户数据目录。ForkData 在各平台均为用户数据根（%LOCALAPPDATA%/ForkPlusData
+			// 等），与 AppContext.BaseDirectory（安装/便携目录）不同树。
+			string folder = ForkPlus.UI.Dialogs.WebView2EnvironmentHelper.UserDataFolder;
+			Assert.StartsWith(ForkPlus.App.ForkDataDirectoryPath, folder, StringComparison.Ordinal);
+			string baseDir = System.IO.Path.GetFullPath(AppContext.BaseDirectory);
+			string folderFull = System.IO.Path.GetFullPath(folder);
+			Assert.False(folderFull.StartsWith(baseDir, StringComparison.Ordinal)
+				|| baseDir.StartsWith(folderFull, StringComparison.Ordinal),
+				"WebView2 用户数据目录不应与程序目录同树：" + folderFull + " vs " + baseDir);
+		}
+
+		/// <summary>构造官方 EnvironmentRequested 参数实例：包内 ctor 非 public
+		///（实测 12.1.0 签名为 (DeferralManager)），按已知签名反射创建；签名变更时
+		/// 回退未初始化实例（本测试只关心属性赋值，不依赖字段初始化）。</summary>
+		private static object CreateEnvironmentArgs(Type argsType)
+		{
+			try
+			{
+				return Activator.CreateInstance(argsType,
+					System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public,
+					null, new object[] { null }, null);
+			}
+			catch (MissingMethodException)
+			{
+#pragma warning disable SYSLIB0051 // GetUninitializedObject 仅作构造回退，本用例不读字段
+				return System.Runtime.Serialization.FormatterServices.GetUninitializedObject(argsType);
+#pragma warning restore SYSLIB0051
+			}
 		}
 
 		private static T Find<T>(Control root) where T : Control

@@ -43,6 +43,7 @@ using ForkPlus.UI.WpfCompat;
 using NativeWebView = Avalonia.Controls.NativeWebView;
 using WebViewAdapterInfo = Avalonia.Platform.WebViewAdapterInfo;
 using WebViewAdapterType = Avalonia.Platform.WebViewAdapterType;
+using WindowsWebView2EnvironmentRequestedEventArgs = Avalonia.Platform.WindowsWebView2EnvironmentRequestedEventArgs;
 
 namespace Microsoft.Web.WebView2.Core
 {
@@ -406,6 +407,20 @@ namespace Microsoft.Web.WebView2.Wpf
                 // 主题底色（非 Transparent）：原生引擎首帧前的表面不再黑屏
                 Background = Brushes.Transparent,
             };
+            // 修复（2026-09-15，"AI 辅助开发/AI 解释在程序目录释放 WebView2 目录"）：
+            // Windows 上 NativeWebView 的引擎就是真 WebView2（Edge 运行时）。此前从未
+            // 配置用户数据目录——WebView2EnvironmentHelper 传给 EnsureCoreWebView2Async
+            // 的"环境"在兼容层里是空壳（参数无人消费），WebView2 运行时对未打包 Win32
+            // 应用回落默认位置 = exe 同级 "<exe名>.WebView2"，每次打开 AI 窗口都在
+            // 程序目录落目录。官方 API：EnvironmentRequested 在适配器创建前触发
+            //（此处订阅先于 Content=_native 挂树，时序必然覆盖），在此把
+            // UserDataFolder 固定到 ForkData\WebView2（与降级前 WPF 原版环境参数同位）。
+            // 非 Windows 平台 args 类型不同（WPE/WebKitGTK/WKWebView），模式匹配不
+            // 命中即无副作用。
+            _native.EnvironmentRequested += delegate (object sender, WebViewEnvironmentRequestedEventArgs e)
+            {
+                ConfigureNativeEnvironment(e);
+            };
             ApplyThemedBackground();
             _native.AdapterCreated += delegate
             {
@@ -439,6 +454,19 @@ namespace Microsoft.Web.WebView2.Wpf
                 CoreWebView2.RaiseWebMessageReceived(e.Body);
             };
             Content = _native;
+        }
+
+        /// <summary>
+        /// EnvironmentRequested 处理：Windows 平台把 WebView2 用户数据目录固定到
+        /// ForkData\WebView2（详见 EnsureNative 内注释）。独立成 internal 静态方法，
+        /// 回归测试直接构造 args 验证（headless 测试环境走不到原生适配器路径）。
+        /// </summary>
+        internal static void ConfigureNativeEnvironment(WebViewEnvironmentRequestedEventArgs e)
+        {
+            if (e is WindowsWebView2EnvironmentRequestedEventArgs wv2Args)
+            {
+                wv2Args.UserDataFolder = ForkPlus.UI.Dialogs.WebView2EnvironmentHelper.UserDataFolder;
+            }
         }
 
         private async Task TryInvokeScriptAsync(string script)

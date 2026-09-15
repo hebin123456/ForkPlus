@@ -48,6 +48,14 @@ namespace ForkPlus.UI.Controls.Editor
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// Bug 修复（2026-09-15，"同一区域 WPF 3.13.2 显示 43 行、Avalonia 只有 36 行"）：
+			// WPF AvalonEdit 的行槽 = TextLine 自然行高（Consolas@13 实测 ~15.22px）；
+			// AvaloniaEdit 12.0.0 的 TextEditorOptions.LineHeightFactor 默认 1.16，行槽被
+			// 放大到 自然高×1.16（≈17.66px）→ 同视口可见行数少 16%（43→36）。显式置 1.0
+			// 对齐 WPF 自然行高，行密度与 3.13.2 一致。副作用联动：默认行槽变矮后，含中文
+			// 行的自然高必须 ≤ 新行槽——内嵌 CJK 回退字体垂直度量同版本从 1.25em 收紧到
+			// 1.16em（见 FontSetup），否则 CJK 行槽超默认槽，SideBySide 行错位回归。
+			base.Options.LineHeightFactor = 1.0;
 			// Bug 修复（2026-09-04，"FileDiff 高度计算多了，滚动条可拉到很下面有一大块空白"）：
 			// WPF AvalonEdit 的 AllowScrollBelowDocument 默认 false（拉到底即文档末尾）；
 			// AvaloniaEdit 12.x 把默认值改成了 true——TextView.MeasureOverride 会给

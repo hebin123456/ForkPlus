@@ -19,16 +19,23 @@ namespace ForkPlus
 	/// 本类被 Program.BuildAvaloniaApp 与测试启动器 HeadlessAppBootstrap 共用，
 	/// 保证测试环境的字体解析与生产一致（字形度量一致，像素级回归不受影响）。
 	///
-	/// v4.1.3（行间距收紧）：子集字体垂直度量统一收紧到 1.25em（hhea ascent 1000 /
-	/// descent -250 / lineGap 0，OS/2 win 与 typo 三处一致；原 1.448em，Win DWrite
-	/// 实测 1.619em）。原度量使含中文的 AvaloniaEdit 行自然高（16.25→18.82/21.05px
-	/// @13px）超默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），v4.1.2 的
-	/// SideBySideLineHeightSynchronizer 被迫把全部行槽抬到 CJK 自然高 → 行间距过宽。
-	/// 收紧后 CJK 自然高 16.25px ≤ 默认槽，行槽回到统一默认值（v4.1.2 之前的间距），
-	/// 左右天然等高。汉字墨迹 0.88em 上/0.12em 下不裁字；33739 字形中仅 9 个竖排
-	/// 标点（U+3031-3035、U+FFE8 等）越界且横排文本不使用。守卫测试：
-	/// SideBySideRegressionTests.CjkFallbackFontMetrics_FitDefaultLineSlot_SpacingNotInflated
-	///（若子集工具重建字体丢失度量修正将在此失败）。
+	/// v4.1.3（行间距收紧，两步）：子集字体垂直度量统一收紧到 1.16em（hhea ascent 928 /
+	/// descent -232 / lineGap 0，OS/2 win 与 typo 三处一致；v4.1.2 时 1.448em，Win
+	/// DWrite 实测 1.619em；第一步先收到 1.25em，配合 LineHeightFactor=1.0 后仍超
+	/// 新行槽，再收紧到 1.16em）。行槽公式随 CodeEditor 的修复变化：
+	///   v4.1.2：槽 = max(自然高, DefaultTextHeight × 1.16 ≈ 17.66px@Win) —— 1.25em
+	///          （16.25px）已足够入槽，同步器不再抬 factor，行间距回到"默认偏宽"；
+	///   v4.1.3：CodeEditor/HexEditor 显式 LineHeightFactor=1.0（对齐 WPF 自然行高，
+	///          "同区域 36 行 → 43 行"），槽 = ASCII 自然行高本身（Consolas@13 ≈
+	///          15.22px@Win / 15.13px@Linux）——1.25em 的 16.25px 再次超槽，会触发
+	///          SideBySideLineHeightSynchronizer 把全部行槽抬到 16.25px（比 WPF 的
+	///          15.22px 宽 7%）；收紧到 1.16em（15.08px@13px）≤ 两侧平台 ASCII 自然
+	///          行高，含中文行不再超槽，行密度与 WPF 3.13.2 一致。
+	/// 拆分沿用 4:1（ascent 0.928em / descent 0.232em），汉字墨迹 0.88em 上/0.12em 下
+	/// 不裁字；33739 字形中仅 9 个竖排标点（U+3031-3035、U+FFE8 等）越界且横排文本
+	/// 不使用。守卫测试：SideBySideRegressionTests.
+	/// CjkFallbackFontMetrics_FitDefaultLineSlot_SpacingNotInflated（若子集工具重建
+	/// 字体丢失度量修正将在此失败）。
 	/// </summary>
 	public static class FontSetup
 	{
