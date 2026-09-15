@@ -277,6 +277,31 @@ namespace ForkPlus.Tests
 			{
 				return commit.FileDiffControl.Content != null && commit.FileDiffControl.Content.Succeeded;
 			}), "a.txt 的 working dir diff 未加载");
+			// 等 diff 加载链静默（Content 引用连续多轮不变）后再取编辑器：
+			// 打开仓库会触发两轮状态刷新 + 列表选中恢复，同一文件的 working dir diff 被竞争性
+			// 重载多次（每次 UpdateDiff → Task.Run(git diff) → Post 回调重新赋值 Content →
+			// ShowSubView 复用现有视图 + SetDiff 重设 editor.Text）。迟到的回调会把程序化选区
+			// 清零（TextDocument.Replace → 选区/caret 重置），选区浮窗（Stage/Discard）链路的
+			// 前提消失 → 假红（2026-09-15 沙盒探针实证：Select 后一轮迟到 Content 赋值把
+			// Selection.Length 从 15 清到 0、caret 回 line 1）。
+			// v4.1.2 前 RefreshRepositoryStatusUiAsync 每轮开头无条件 Content=null 销毁视图，
+			// 上面 Content.Succeeded 的等待天然被重置、拿到的必是最终稳定编辑器；v4.1.2 起
+			// 刷新保留当前 diff（不清空，热替换），中间轮即满足等待条件 → 必须显式等静默。
+			// 每轮 ~50ms，连续 4 轮（~200ms）Content 引用未变视为静默；飞行中的 git diff
+			// 回调落地会更换 Content 引用 → 自动续等。
+			object lastContent = null;
+			int stableRounds = 0;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				object current = commit.FileDiffControl.Content;
+				if (current != null && object.ReferenceEquals(current, lastContent))
+				{
+					return ++stableRounds >= 4;
+				}
+				stableRounds = 0;
+				lastContent = current;
+				return false;
+			}), "working dir diff 加载未静默（后台状态刷新持续重载）");
 			CommitCodeEditor editor = null;
 			Assert.True(UiClick.WaitFor(delegate
 			{

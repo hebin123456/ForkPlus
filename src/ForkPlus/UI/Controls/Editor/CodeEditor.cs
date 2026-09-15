@@ -62,6 +62,28 @@ namespace ForkPlus.UI.Controls.Editor
 				RenderOptionsShim.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
 			}
 			ReplaceBrokenCaretFollowScroll();
+			// 修复（2026-09-15，"程序化替换 Text 后视口跳到文档底部"）：Text setter（TextDocument.Replace）
+			// 过程中 caret 会先被临时移动到文档末行再重置回行首，每次移动都触发上面新装的
+			// caret 跟随 → ScrollTo 在视觉行未重建时会挂 pending 滚动，布局完成后按"末行"
+			// 的陈旧请求把视口滚到文档底部（诊断探针实证：500 行文档 Text 赋值后
+			// Offset.Y 已等于 maxOffset，GitMmAnsiOutputTests 滚动通道测试假红；
+			// 产品侧表现为打开大文件/diff 后视口不在顶部而在底部）。WPF 原版语义是
+			// 程序化文档替换不跟随滚动 → 这里在 TextChanged 时挂起跟随一轮，用
+			// Background 优先级的延迟恢复（吞掉本 dispatcher 轮次内 Text 替换引发的
+			// 全部 caret 事件，包括布局管线里 pending 的那一次），之后的用户键盘/
+			// 鼠标 caret 移动恢复正常跟随。
+			base.TextChanged += CodeEditor_TextChanged_SuspendCaretFollow;
+		}
+
+		private bool _suppressCaretFollow;
+
+		private void CodeEditor_TextChanged_SuspendCaretFollow(object sender, EventArgs e)
+		{
+			_suppressCaretFollow = true;
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+			{
+				_suppressCaretFollow = false;
+			}, global::Avalonia.Threading.DispatcherPriority.Background);
 		}
 
 		/// <summary>
@@ -90,10 +112,10 @@ namespace ForkPlus.UI.Controls.Editor
 			TextArea.PointerCaptureLost += TextArea_PointerCaptureLost;
 		}
 
-		/// <summary>正确的 caret 跟随滚动：真实像素定位（视口比例滚动）；鼠标按住选取期间不滚动。</summary>
+		/// <summary>正确的 caret 跟随滚动：真实像素定位（视口比例滚动）；鼠标按住选取与程序化文档替换期间不滚动。</summary>
 		private void CaretFollowScrollHandler(object sender, EventArgs e)
 		{
-			if (_pointerSelecting)
+			if (_pointerSelecting || _suppressCaretFollow)
 			{
 				return;
 			}

@@ -153,6 +153,21 @@ namespace ForkPlus.Tests
 				{
 					return false; // 模板未套用：滚动通道不存在，视为失败
 				}
+				// TextView 的文档高度是多帧渐进计算的（v4.1.2 的 caret 跟随修复后，程序化
+				// Text 替换不再有 caret pending 滚动顺带强制同步建全高），tick 渲染帧直到
+				// Extent 收敛（覆盖全部 500 行）再判定初始位置，避免拿 1 行高的中间态
+				// extent 把 maxOffset 算成负值假红。
+				double lastExtent = -1.0;
+				for (int i = 0; i < 40; i++)
+				{
+					Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+					Dispatcher.UIThread.RunJobs();
+					if (sv.Extent.Height == lastExtent)
+					{
+						break;
+					}
+					lastExtent = sv.Extent.Height;
+				}
 				double maxOffset = sv.Extent.Height - sv.Viewport.Height;
 				// 修复前形态守卫：初始视口不在底部
 				bool initiallyNotAtBottom = maxOffset > 0 && sv.Offset.Y < maxOffset - 24.0;
