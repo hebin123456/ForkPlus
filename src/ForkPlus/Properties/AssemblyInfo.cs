@@ -15,19 +15,19 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-15，v4.1.2）：凭据链路系列修复——credential.usehttppath=true
-//   （git mm workspace 用户全局配置）下查不到 GCM 存量凭据反复弹窗；git mm 自有询问
-//   变体（小写 + URL 不带引号 + 空 userinfo）解析失败；"记住密码"勾选后仍反复询问
-//   （并入静默回填语义）；askpass 单词询问会话桥接。另存为补丁内容多时界面卡住（后台
-//   执行 + 新增进度弹窗）；FileDiff SideBySide 左右不严格对齐系列（"\ No newline"
-//   pragma 行对齐 / CJK 行高差 / 两水平滚动条末端失步）；loading 环形动画转不起来；
-//   行号与代码垂直错位（基线对齐）；二进制差异高亮像素单侧显示。上一个正式版
-//   v4.1.1 为"重置此版本"就地修复入口。AssemblyVersion / AssemblyFileVersion 只接受
-//   纯数字（major.minor.build[.revision]）。App.Version 运行时优先读
-//   InformationalVersion → 关于/更新检查/UserAgent 显示 "4.1.2"；程序集标识与文件
-//   版本同为 4.1.2（.0）。
-[assembly: AssemblyFileVersion("4.1.2")]
-[assembly: AssemblyInformationalVersion("4.1.2")]
+// 版本号说明（2026-09-15，v4.1.3）：FileDiff 行间距收紧——v4.1.2 为修左右行对齐
+//   （CJK 行高差）装的行高同步器把含中文文件的全部行槽抬到 CJK 自然行高（根因：
+//   全局回退 Noto Sans CJK SC 垂直度量 1.448em，Win DWrite 实测 1.619em，CJK 行
+//   自然高超默认行槽），行间距过宽。本版把内嵌 CJK 子集字体度量收紧到 1.25em
+//   （hhea/OS/2 win/typo 三处一致），CJK 自然高 16.25px@13px 回到默认行槽以内，
+//   行间距恢复 v4.1.2 之前水平；左右行对齐与行号基线对齐保持不变（守卫测试
+//   SideBySideRegressionTests 四条防线）。上一个正式版 v4.1.2 为凭据链路系列
+//   修复 + FileDiff SideBySide 严格对齐系列。AssemblyVersion /
+//   AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。App.Version
+//   运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.1.3"；
+//   程序集标识与文件版本同为 4.1.3（.0）。
+[assembly: AssemblyFileVersion("4.1.3")]
+[assembly: AssemblyInformationalVersion("4.1.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("4.1.2.0")]
+[assembly: AssemblyVersion("4.1.3.0")]

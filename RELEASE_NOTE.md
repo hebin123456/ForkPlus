@@ -2,6 +2,23 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.1.3
+
+> FileDiff 行间距收紧（单修复版本）：v4.1.2 修"左右视图行不对齐"时，因全局 CJK 回退字体 Noto Sans CJK SC 垂直度量偏宽（1.448em，Windows DWrite 下实测 1.619em），含中文文件的行自然高超出默认行槽，行高同步器被迫把全部行槽抬到 CJK 自然行高，行间距明显变宽。本版从根因治理：内嵌 CJK 字体度量收紧到 1.25em，CJK 行自然高回到默认行槽以内，行间距恢复 v4.1.2 之前的水平；左右行对齐、行号基线对齐全部保持不变。
+
+### 修复
+
+- **FileDiff 行间距过宽（v4.1.2 行对齐修复的副作用）**：AvaloniaEdit 行槽高 = max(行自然高, 默认行高 × 1.16)，v4.1.2 时含中文的行自然高（Win 21.05px / Linux 18.82px@13px）超默认行槽（约 17.66px），SideBySideLineHeightSynchronizer 为保左右对齐把两侧全部行槽统一抬到 CJK 自然高 → 含中文文件行间距过宽。修复为把内嵌 Noto Sans CJK SC 子集（Regular + Bold）垂直度量统一收紧到 1.25em（hhea / OS/2 win / OS/2 typo 三处一致，ascent 1000 / descent -250 / lineGap 0）——Linux（FreeType/hhea）、Windows（DirectWrite）、macOS（CoreText）无论读哪张表都收敛到同一行高；CJK 行自然高 16.25px@13px ≤ 默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），含中文 diff 的行槽回到统一默认值，左右天然等高、行号基线对齐不受影响（行号按基线绘制，与字体度量无关）。汉字墨迹（0.88em 上 / 0.12em 下）完整落在新度量内不裁字；33739 个字形中仅 9 个竖排标点（U+3031-3035、U+FFE8）越界且横排文本不使用。行高同步器保留为异常字体度量下的对齐安全网，正常字体下不再抬高行距。新增守卫测试：CJK 字体度量不超默认行槽（行间距不回弹，若子集工具重建字体丢失度量修正将在此失败）、纯 ASCII 文件行高零变化、CJK 混排左右行像素对齐、滚轮后滚动条 thumb 跟随。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.1.3-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.1.3-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.1.3-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.1.3-macos-arm64.zip` |
+
 ## v4.1.2
 
 > 凭据链路系列修复 + 另存为补丁后台进度化 + FileDiff SideBySide 严格对齐系列 + 一批 WPF→Avalonia 迁移遗留 UI 修复：credential.usehttppath=true（git mm workspace 常见配置）下明明凭据管理器里有凭据还是反复弹窗；git mm 自有询问变体解析失败；"记住密码"勾选后仍反复询问；另存为补丁内容多时界面卡住；带 "\ No newline at end of file" 的 diff 左右错位一行；CJK 行高差导致左右视图行不对齐；loading 环形动画转不起来；滑块把手钉死不动；行号与代码垂直错位；二进制差异高亮像素只显示一侧。

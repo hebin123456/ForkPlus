@@ -18,6 +18,17 @@ namespace ForkPlus
 	///
 	/// 本类被 Program.BuildAvaloniaApp 与测试启动器 HeadlessAppBootstrap 共用，
 	/// 保证测试环境的字体解析与生产一致（字形度量一致，像素级回归不受影响）。
+	///
+	/// v4.1.3（行间距收紧）：子集字体垂直度量统一收紧到 1.25em（hhea ascent 1000 /
+	/// descent -250 / lineGap 0，OS/2 win 与 typo 三处一致；原 1.448em，Win DWrite
+	/// 实测 1.619em）。原度量使含中文的 AvaloniaEdit 行自然高（16.25→18.82/21.05px
+	/// @13px）超默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），v4.1.2 的
+	/// SideBySideLineHeightSynchronizer 被迫把全部行槽抬到 CJK 自然高 → 行间距过宽。
+	/// 收紧后 CJK 自然高 16.25px ≤ 默认槽，行槽回到统一默认值（v4.1.2 之前的间距），
+	/// 左右天然等高。汉字墨迹 0.88em 上/0.12em 下不裁字；33739 字形中仅 9 个竖排
+	/// 标点（U+3031-3035、U+FFE8 等）越界且横排文本不使用。守卫测试：
+	/// SideBySideRegressionTests.CjkFallbackFontMetrics_FitDefaultLineSlot_SpacingNotInflated
+	///（若子集工具重建字体丢失度量修正将在此失败）。
 	/// </summary>
 	public static class FontSetup
 	{

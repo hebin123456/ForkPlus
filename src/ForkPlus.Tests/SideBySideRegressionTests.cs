@@ -8,15 +8,22 @@
 //     优先级，绑定继续双向生效，Avalonia 原生拖拽路径同款 API）。
 //   症状2/3：行号与代码垂直错位；左右视图行不对齐（common.ts 1226 行中文注释实测）。
 //     根因：Avalonia TextLine 行高 = 行内所有 run 的 max 字体度量，全局 CJK 回退
-//     Noto Sans CJK SC 行框更高（探针实测 CJK 自然高 21.05px、ASCII 15.22px），
-//     行槽 = max(自然高, DefaultTextHeight×1.16=17.66) → CJK 行槽比 ASCII 高
-//     3.39px，左右内容不同时逐行累积错位（12 行漂移 13.55px）；行号画在槽顶而
-//     代码文本按槽内居中偏移绘制（CJK 行 +5.42px vs ASCII +1.22px）→ 行号错位。
-//     修复：SideBySideLineHeightSynchronizer 把两侧 LineHeightFactor 同步抬到
-//     最大自然行高/DefaultTextHeight（行槽统一，左右逐行等高）；行号/±标记改
+//     Noto Sans CJK SC 行框更高（v4.1.2 修复时探针实测 CJK 自然高 21.05px@Win/
+//     18.82px@Linux、ASCII 15.22/15.13px），行槽 = max(自然高, DefaultTextHeight
+//     ×1.16) → CJK 行槽超默认槽，左右内容不同时逐行累积错位。
+//     修复（v4.1.2）：SideBySideLineHeightSynchronizer 把两侧 LineHeightFactor 同步
+//     抬到最大自然行高/DefaultTextHeight（行槽统一，左右逐行等高）；行号/±标记改
 //     基线对齐（ClearTypeLineNumberMargin.GetLineTextBaselineY）。
-// 本测试守卫三条防线：滚轮后 thumb 仍跟随程序化滚动；CJK 混排左右行像素对齐；
-// 纯 ASCII 文件 factor 保持初始值（视觉零变化）。
+//     修复（v4.1.3，行间距收紧）：上述同步器把含中文文件的全部行槽抬到 CJK 自然高
+//     （Linux 18.82px / Win 21.05px），行间距过宽。根因治理：把内嵌 Noto Sans CJK SC
+//     子集垂直度量收紧到 1.25em（hhea/OS/2 win/OS/2 typo 三处一致，ascent 1000 /
+//     descent 250 / lineGap 0，原 1.448em；汉字墨迹 0.88em 上/0.12em 下，不裁字，
+//     33739 字形中仅 9 个竖排标点越界且横排不使用）→ CJK 自然高 16.25px@13px ≤
+//     默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），含中文 diff 的行槽回到统一
+//     默认值（v4.1.2 之前的行间距），左右天然等高，同步器无需再抬 factor（保留为
+//     异常字体度量下的安全网）。行号按基线绘制，不受字体度量影响。
+// 本测试守卫四条防线：滚轮后 thumb 仍跟随程序化滚动；CJK 混排左右行像素对齐；
+// CJK 字体度量不超默认行槽（行间距不回弹）；纯 ASCII 文件 factor 保持初始值。
 using System;
 using System.Linq;
 using System.Text;
@@ -165,13 +172,16 @@ namespace ForkPlus.Tests
 					TextView ltv = left.TextArea.TextView;
 					TextView rtv = right.TextArea.TextView;
 
-					// 1) 行高统一：两侧 factor 相等且被 CJK 行抬高（21.05/15.22≈1.383 > 初始 1.16），
-					//    DefaultLineHeight ≥ 可见最大自然行高 → 所有行槽等高。
-					Assert.True(Math.Abs(left.Options.LineHeightFactor - right.Options.LineHeightFactor) < 0.001,
-						"两侧 LineHeightFactor 应相等：left=" + left.Options.LineHeightFactor.ToString("F3")
-						+ " right=" + right.Options.LineHeightFactor.ToString("F3"));
-					Assert.True(left.Options.LineHeightFactor > 1.17,
-						"CJK 行应把 LineHeightFactor 抬过初始值 1.16（实际 " + left.Options.LineHeightFactor.ToString("F3") + "）");
+					// 1) 行高统一（v4.1.3 度量收紧后）：CJK 自然行高 16.25px@13px ≤ 默认行槽
+				//    （DefaultTextHeight×1.16 ≈ 17.55px@Linux/17.66px@Win），行槽回到统一
+				//    默认值——v4.1.2 之前行间距，两侧 factor 相等且保持初始值（不再抬高），
+				//    DefaultLineHeight ≥ 可见最大自然行高 → 所有行槽等高。
+				Assert.True(Math.Abs(left.Options.LineHeightFactor - right.Options.LineHeightFactor) < 0.001,
+					"两侧 LineHeightFactor 应相等：left=" + left.Options.LineHeightFactor.ToString("F3")
+					+ " right=" + right.Options.LineHeightFactor.ToString("F3"));
+				Assert.True(left.Options.LineHeightFactor < 1.17,
+					"v4.1.3 字体度量收紧后 CJK 自然行高应落入默认行槽，LineHeightFactor 不应再被抬高"
+					+ "（实际 " + left.Options.LineHeightFactor.ToString("F3") + "，若 >1.17 说明字体垂直度量回弹）");
 					Assert.True(Math.Abs(ltv.DefaultLineHeight - rtv.DefaultLineHeight) < 0.01,
 						"两侧 DefaultLineHeight 应相等");
 					foreach (AvaloniaEdit.Rendering.VisualLine v in rtv.VisualLines)
@@ -209,7 +219,57 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void SideBySide_PureAscii_FactorStaysInitial_NoVisualChange()
+	public void CjkFallbackFontMetrics_FitDefaultLineSlot_SpacingNotInflated()
+	{
+		// v4.1.3 回归守卫（"FileDiff 行间距太宽"根因）：AvaloniaEdit 行槽 =
+		// max(行自然高, DefaultTextHeight × LineHeightFactor=1.16)，CJK 行自然高来自
+		// 全局回退 Noto Sans CJK SC 的垂直度量。v4.1.2 时该度量 1.448em（hhea；Win
+		// DWrite 下 1.619em）→ 13px 下 CJK 自然高 18.82/21.05px 超默认行槽 17.55/
+		// 17.66px，SideBySideLineHeightSynchronizer 被迫把含中文文件全部行槽抬到
+		// CJK 自然高（行间距过宽）。v4.1.3 把子集字体度量收紧到 1.25em（hhea/OS/2
+		// win/typo 三处一致）→ CJK 自然高 16.25px ≤ 默认行槽，行槽回到统一默认值。
+		// 本测试直接守卫该不变量：CJK 自然行高 ≤ ASCII 自然行高 × 1.16（同环境实测，
+		// 跨平台成立；走真实 CodeEditor VisualLine 度量，与 TextView 排版同口径），
+		// 若字体文件被替换回宽度量（或子集工具重建丢失度量修正）将在此失败而不是
+		// 悄悄放大行距。
+		HeadlessAppBootstrap.EnsureStarted();
+		Dispatcher.UIThread.InvokeAsync(delegate
+		{
+			double asciiHeight = MeasureNaturalLineHeight("x = 123;");
+			double cjkHeight = MeasureNaturalLineHeight("// 中文注释行验证回退字体行高");
+			Assert.True(asciiHeight > 0.0 && cjkHeight > 0.0,
+				"行高测量失败：ascii=" + asciiHeight + " cjk=" + cjkHeight);
+			double slot = asciiHeight * 1.16;
+			Assert.True(cjkHeight <= slot + 0.01,
+				"CJK 回退字体自然行高 " + cjkHeight.ToString("F2") + "px 超过默认行槽 " + slot.ToString("F2")
+				+ "px（ASCII " + asciiHeight.ToString("F2") + " × 1.16）——含中文 diff 行距会被放大"
+				+ "（v4.1.3 度量收紧回弹？CJK 应 ≤ 1.25em，即 ≤16.25px@13px）");
+		}).GetAwaiter().GetResult();
+	}
+
+	/// <summary>真实 CodeEditor 排版一行文本，返回首行自然行高（TextLine.Height，
+	/// 与 TextView.CalculateDefaultTextMetrics 同口径，走生产 CJK 回退链）。</summary>
+	private static double MeasureNaturalLineHeight(string text)
+	{
+		var editor = new ForkPlus.UI.Controls.Editor.CodeEditor();
+		editor.FontSize = 13.0;
+		editor.Text = text + "\n";
+		var window = new Window { Width = 400, Height = 200, Content = editor };
+		window.Show();
+		Dispatcher.UIThread.RunJobs();
+		try
+		{
+			return editor.TextArea.TextView.VisualLines[0].TextLines[0].Height;
+		}
+		finally
+		{
+			window.Close();
+			Dispatcher.UIThread.RunJobs();
+		}
+	}
+
+	[Fact]
+	public void SideBySide_PureAscii_FactorStaysInitial_NoVisualChange()
 		{
 			HeadlessAppBootstrap.EnsureStarted();
 			Dispatcher.UIThread.InvokeAsync(delegate

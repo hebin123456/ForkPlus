@@ -11,9 +11,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 	/// 根因（诊断探针 + 反编译 AvaloniaEdit 12.0.0 实证）：
 	///   1) Avalonia TextLine 的行高 = 行内所有 run 的最大字体度量（TextLineImpl）；
 	///      App 全局把内嵌 Noto Sans CJK SC 注册为 CJK 回退字体（FontSetup），含中文的行
-	///      自然高 21.05px、纯 ASCII 行 15.22px（Consolas 13px，探针实测）；
+	///      自然高（v4.1.3 度量收紧前 21.05px@Win/18.82px@Linux）、纯 ASCII 行 15.22px
+	///      （Consolas 13px，探针实测）；
 	///   2) AvaloniaEdit 行槽高 = max(自然高, DefaultTextHeight × LineHeightFactor=17.66px)
-	///      （factor 默认 1.16）——CJK 行槽 21.05、ASCII 行槽 17.66，逐行相差 3.39px；
+	///      （factor 默认 1.16）——CJK 行槽超默认行槽，逐行相差 3.39px+；
 	///   3) SideBySide 左右两侧内容不同（Add 场景左侧全为对齐空行、右侧含大量中文注释），
 	///      行槽逐行累积差 → 左右行错位（探针实测 12 行内漂移 13.55px，common.ts
 	///      1226 行含数百中文注释行时达数百 px）；行号与代码的槽内居中偏移也随之逐行不等。
@@ -21,6 +22,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 	/// Options.LineHeightFactor 同步抬到 h / DefaultTextHeight——DefaultLineHeight = h 后
 	/// 所有行槽统一为 max(自然高, h) = h，左右行逐行等高对齐（纯 ASCII 文件 h=15.22 ≤
 	/// 17.66，factor 保持初始值，视觉零变化）。换文件/改字号时 Reset() 重建。
+	/// v4.1.3 更新（行间距收紧）：本同步器把含中文文件的全部行槽抬到 CJK 自然高
+	/// （Win 21.05px / Linux 18.82px@13px），行间距过宽。根因治理见 FontSetup——内嵌
+	/// CJK 子集字体垂直度量收紧到 1.25em（hhea/OS/2 三处一致），CJK 自然高 16.25px ≤
+	/// 默认行槽（ASCII 自然高 × 1.16 ≈ 17.55/17.66px），行槽回到统一默认值（左右天然
+	/// 等高），正常字体下本同步器不再需要抬 factor；保留为异常字体度量（用户换更宽
+	/// CJK 字体/超常规字号）下的对齐安全网，行为不变。
 	/// 兼容性：只用公共 API（Options.LineHeightFactor / VisualLines / TextLines），
 	/// 无反射；TextView 对 LineHeightFactor 变更自带 InvalidateDefaultTextMetrics+Redraw
 	///（OnOptionChanged），设值即全量重排。
